@@ -8,103 +8,103 @@
 #include <QLabel>
 #include <QHBoxLayout>
 
-namespace Ui { 
-    class TextGUI;
+namespace Ui {
+class TextGUI;
 }
 
 namespace lc {
-    namespace ui {
-        namespace api {
-            /**
-            * \brief Text GUI Widget
-            */
-            class TextGUI : public InputGUI
-            {
-                Q_OBJECT
+namespace ui {
+namespace api {
+/**
+* \brief Text GUI Widget
+*/
+class TextGUI : public InputGUI
+{
+    Q_OBJECT
 
-            public:
-                /**
-                * \brief TextGUI constructor
-                * \param string gui label
-                * \param parent qwidget parent
-                */
-                TextGUI(std::string label, QWidget* parent = nullptr);
-                
-                /**
-                * \brief TextGUI destructor
-                */
-                ~TextGUI();
+public:
+    /**
+    * \brief TextGUI constructor
+    * \param string gui label
+    * \param parent qwidget parent
+    */
+    TextGUI(std::string label, QWidget* parent = nullptr);
 
-                /**
-                * \brief Add callback for editingFinished
-                * \param LuaRef lua callback
-                */
-                void addFinishCallback(kaguya::LuaRef cb);
+    /**
+    * \brief TextGUI destructor
+    */
+    ~TextGUI();
 
-                /**
-                * \brief Add callback for textChanged
-                * \param LuaRef lua callback
-                */
-                void addOnChangeCallback(kaguya::LuaRef cb);
+    /**
+    * \brief Add callback for editingFinished
+    * \param LuaRef lua callback
+    */
+    void addFinishCallback(kaguya::LuaRef cb);
 
-                /**
-                * \brief Overriden Set Text GUI widget label
-                * \param string gui label
-                */
-                void setLabel(const std::string& newLabel) override;
+    /**
+    * \brief Add callback for textChanged
+    * \param LuaRef lua callback
+    */
+    void addOnChangeCallback(kaguya::LuaRef cb);
 
-                /**
-                * \brief Return lineedit text
-                * \return string text
-                */
-                std::string value() const;
+    /**
+    * \brief Overriden Set Text GUI widget label
+    * \param string gui label
+    */
+    void setLabel(const std::string& newLabel) override;
 
-                /**
-                * \brief Set lineedit text
-                * \param string text
-                */
-                void setValue(const std::string& newText);
+    /**
+    * \brief Return lineedit text
+    * \return string text
+    */
+    std::string value() const;
 
-                /**
-                * \brief Return lua value
-                * \param LuaRef value
-                */
-                void getLuaValue(kaguya::LuaRef& table) override;
+    /**
+    * \brief Set lineedit text
+    * \param string text
+    */
+    void setValue(const std::string& newText);
 
-                /**
-                * \brief Hide widget label
-                */
-                void hideLabel() override;
+    /**
+    * \brief Return lua value
+    * \param LuaRef value
+    */
+    void getLuaValue(kaguya::LuaRef& table) override;
 
-            public slots:
-                /**
-                * \brief Run callbacks for editing finished
-                */
-                void editingFinishedCallbacks();
+    /**
+    * \brief Hide widget label
+    */
+    void hideLabel() override;
 
-                /**
-                * \brief Run callbacks for text changed
-                */
-                void textChangedCallbacks(const QString& changedText);
+public slots:
+    /**
+    * \brief Run callbacks for editing finished
+    */
+    void editingFinishedCallbacks();
 
-            protected:
-                /**
-                * \brief Copy widget value to the clipboard
-                */
-                void copyValue(QDataStream& stream) override;
+    /**
+    * \brief Run callbacks for text changed
+    */
+    void textChangedCallbacks(const QString& changedText);
 
-                /**
-                * \brief Set widget value from clipboard
-                */
-                void pasteValue(QDataStream& stream) override;
+protected:
+    /**
+    * \brief Copy widget value to the clipboard
+    */
+    void copyValue(QDataStream& stream) override;
 
-            private:
-                Ui::TextGUI* ui;
-                QLabel* _textLabel;
-                QLineEdit* _lineEdit;
-                std::vector<kaguya::LuaRef> _callbacks_finished;
-                std::vector<kaguya::LuaRef> _callbacks_onchange;
-            };
-        }
-    }
+    /**
+    * \brief Set widget value from clipboard
+    */
+    void pasteValue(QDataStream& stream) override;
+
+private:
+    Ui::TextGUI* ui;
+    QLabel* _textLabel;
+    QLineEdit* _lineEdit;
+    std::vector<kaguya::LuaRef> _callbacks_finished;
+    std::vector<kaguya::LuaRef> _callbacks_onchange;
+};
+}
+}
 }

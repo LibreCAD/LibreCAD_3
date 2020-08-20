@@ -5,7 +5,7 @@ lc::entity::CustomEntity::CustomEntity(const lc::builder::InsertBuilder& builder
 }
 
 lc::entity::CustomEntity::CustomEntity(const lc::entity::Insert_CSPtr& insert, bool sameID) :
-        Insert(insert, sameID) {
+    Insert(insert, sameID) {
 
 }
 

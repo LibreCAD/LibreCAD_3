@@ -5,12 +5,12 @@ using namespace lc;
 using namespace geo;
 
 Arc::Arc(Coordinate center, double radius, double startAngle, double endAngle, bool isCCW) :
-        Base(),
-        _center(std::move(center)),
-        _radius(radius),
-        _startAngle(startAngle),
-        _endAngle(endAngle),
-        _CCW(isCCW) {
+    Base(),
+    _center(std::move(center)),
+    _radius(radius),
+    _startAngle(startAngle),
+    _endAngle(endAngle),
+    _CCW(isCCW) {
     if (radius <= 0.0) {
         throw std::runtime_error("Invalid radius");
     }
@@ -165,14 +165,14 @@ double Arc::bulge() const {
     auto k=d/(2.*tan(ang/2.));
     auto h=radius();
     if(ang<M_PI && CCW())
-    	h+=k;
+        h+=k;
     else
-    	h-=k;
+        h-=k;
 
     auto bulge=h*2/d;
-    
+
     if(!CCW())
-    	bulge*=-1;
-    
+        bulge*=-1;
+
     return bulge;
 }

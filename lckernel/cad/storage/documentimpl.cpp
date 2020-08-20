@@ -10,10 +10,10 @@ using namespace lc;
 using namespace lc::storage;
 
 DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
-        Document() ,
-        _storageManager(std::move(storageManager)) {
+    Document(),
+    _storageManager(std::move(storageManager)) {
     _storageManager->addDocumentMetaType(std::make_shared<meta::Layer>("0", meta::MetaLineWidthByValue(1.0), Color(255, 255, 255)));
-	//Add papers too
+    //Add papers too
     _storageManager->addDocumentMetaType(std::make_shared<lc::meta::Block>("*Paper_Space", geo::Coordinate()));
     _storageManager->addDocumentMetaType(std::make_shared<lc::meta::Block>("*Paper_Space0", geo::Coordinate()));
 }
@@ -93,12 +93,12 @@ void DocumentImpl::addDocumentMetaType(const lc::meta::DocumentMetaType_CSPtr& d
         addLayerEvent()(event);
     }
 
-/*	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
-    if (viewport != nullptr) {
-        event::AddViewportEvent event(viewport);
-        addViewportEvent()(event);
-    }
-*/
+    /*	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
+        if (viewport != nullptr) {
+            event::AddViewportEvent event(viewport);
+            addViewportEvent()(event);
+        }
+    */
 
     auto linePattern = std::dynamic_pointer_cast<const meta::DxfLinePatternByValue>(dmt);
     if (linePattern != nullptr) {
@@ -167,7 +167,7 @@ lc::meta::Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) co
 }
 
 lc::meta::Block_CSPtr DocumentImpl::blockByName(const std::string& blockName) const {
-    if(blockName=="*Model_Space"){
+    if(blockName=="*Model_Space") {
         return nullptr;
     }
     auto x =  _storageManager->blockByName(blockName);

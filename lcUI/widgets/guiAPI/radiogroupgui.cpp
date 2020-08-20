@@ -30,9 +30,9 @@ void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
     if (checkButton != nullptr) {
         table[_key] = checkButton->label();
     }
-    
+
     QList<QAbstractButton*> buttons = qbuttongroup->buttons();
-    for (QAbstractButton* abstractButton : buttons){
+    for (QAbstractButton* abstractButton : buttons) {
         RadioButtonGUI* guiButton = qobject_cast<RadioButtonGUI*>(abstractButton);
         if (guiButton != nullptr) {
             guiButton->getLuaValue(table);

@@ -7,8 +7,8 @@
 using namespace lc::viewer;
 
 LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric) :
-        LCVDrawItem(dimDiametric, true),
-        _dimDiametric(dimDiametric) {
+    LCVDrawItem(dimDiametric, true),
+    _dimDiametric(dimDiametric) {
 }
 
 /**
@@ -23,10 +23,10 @@ void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, cons
     const double capSize = 2.;
 
     auto value = lc::tools::StringHelper::dim_value(
-            _dimDiametric->explicitValue(),
-            options.diametricFormat(),
-            diameterCircle
-    );
+                     _dimDiametric->explicitValue(),
+                     options.diametricFormat(),
+                     diameterCircle
+                 );
 
     /* get text size  */
     painter.save();
@@ -45,28 +45,28 @@ void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, cons
         painter.stroke();
 
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                _dimDiametric->definitionPoint().x(), _dimDiametric->definitionPoint().y(),
-                _dimDiametric->definitionPoint2().x(), _dimDiametric->definitionPoint2().y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            _dimDiametric->definitionPoint().x(), _dimDiametric->definitionPoint().y(),
+            _dimDiametric->definitionPoint2().x(), _dimDiametric->definitionPoint2().y(),
+            capSize
         );
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                _dimDiametric->definitionPoint2().x(), _dimDiametric->definitionPoint2().y(),
-                _dimDiametric->definitionPoint().x(), _dimDiametric->definitionPoint().y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            _dimDiametric->definitionPoint2().x(), _dimDiametric->definitionPoint2().y(),
+            _dimDiametric->definitionPoint().x(), _dimDiametric->definitionPoint().y(),
+            capSize
         );
 
         this->drawText(
-                value,
-                _dimDiametric->textAngle(),
-                lc::TextConst::AttachmentPoint::Top_center,
-                _dimDiametric->middleOfText(),
-                painter,
-                options,
-                rect
+            value,
+            _dimDiametric->textAngle(),
+            lc::TextConst::AttachmentPoint::Top_center,
+            _dimDiametric->middleOfText(),
+            painter,
+            options,
+            rect
         );
 
     }
@@ -84,13 +84,13 @@ void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, cons
             painter.line_to(p2.x(), p2.y());
             painter.stroke();
             this->drawText(
-                    value,
-                    _dimDiametric->textAngle(),
-                    lc::TextConst::AttachmentPoint::Top_left,
-                    lc::geo::Coordinate(p1.x(), p1.y()),
-                    painter,
-                    options,
-                    rect
+                value,
+                _dimDiametric->textAngle(),
+                lc::TextConst::AttachmentPoint::Top_left,
+                lc::geo::Coordinate(p1.x(), p1.y()),
+                painter,
+                options,
+                rect
             );
         } else {
             painter.move_to(p2.x() + capSize, p2.y());
@@ -98,29 +98,29 @@ void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, cons
             painter.line_to(p1.x(), p1.y());
             painter.stroke();
             this->drawText(
-                    value,
-                    _dimDiametric->textAngle(),
-                    lc::TextConst::AttachmentPoint::Top_right,
-                    lc::geo::Coordinate(p2.x(), p2.y()),
-                    painter,
-                    options,
-                    rect
+                value,
+                _dimDiametric->textAngle(),
+                lc::TextConst::AttachmentPoint::Top_right,
+                lc::geo::Coordinate(p2.x(), p2.y()),
+                painter,
+                options,
+                rect
             );
         }
 
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                p1.x(), p1.y(),
-                _dimDiametric->definitionPoint().x(), _dimDiametric->definitionPoint().y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            p1.x(), p1.y(),
+            _dimDiametric->definitionPoint().x(), _dimDiametric->definitionPoint().y(),
+            capSize
         );
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                p2.x(), p2.y(),
-                _dimDiametric->definitionPoint2().x(), _dimDiametric->definitionPoint2().y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            p2.x(), p2.y(),
+            _dimDiametric->definitionPoint2().x(), _dimDiametric->definitionPoint2().y(),
+            capSize
         );
     }
 }

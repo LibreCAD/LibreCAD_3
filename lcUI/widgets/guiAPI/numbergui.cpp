@@ -4,7 +4,7 @@
 using namespace lc::ui::api;
 
 NumberGUI::NumberGUI(std::string label, double minVal, double maxVal, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     ui(new Ui::NumberGUI)
 {

@@ -145,7 +145,7 @@ TEST(InputGUIWidgetsTest, HorizontalGroupTest) {
     kaguya::State state;
     state["testtable"] = kaguya::NewTable();
     kaguya::LuaRef table = state["testtable"];
-    
+
     horizGroupGUI.getLuaValue(table);
     EXPECT_EQ("TEST", state["testtable"]["testtext"].get<std::string>());
     double diff1 = state["testtable"]["testnumber"].get<double>() - 5;

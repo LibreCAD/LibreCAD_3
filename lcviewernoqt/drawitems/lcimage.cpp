@@ -6,8 +6,8 @@
 using namespace lc::viewer;
 
 LCImage::LCImage(const lc::entity::Image_CSPtr& image) :
-        LCVDrawItem(image, true),
-        _image(image) {
+    LCVDrawItem(image, true),
+    _image(image) {
 }
 
 void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
@@ -30,12 +30,12 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
 
         // Apply Transform
         std::vector<lc::geo::Coordinate> c2 =
-                lc::maths::HelperMethods::transform2d<lc::geo::Coordinate>(
-                        c,
-                        _image->uv().x(), _image->uv().y(),
-                        _image->vv().x(), _image->vv().y(),
-                        _image->base().x(), _image->base().y()
-                );
+            lc::maths::HelperMethods::transform2d<lc::geo::Coordinate>(
+                c,
+                _image->uv().x(), _image->uv().y(),
+                _image->vv().x(), _image->vv().y(),
+                _image->base().x(), _image->base().y()
+            );
 
         painter.save();
         auto color = options.imageOutlineColor();

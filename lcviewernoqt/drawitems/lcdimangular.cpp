@@ -8,8 +8,8 @@
 using namespace lc::viewer;
 
 LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular) :
-        LCVDrawItem(dimAngular, true),
-        _dimAngular(dimAngular) {
+    LCVDrawItem(dimAngular, true),
+    _dimAngular(dimAngular) {
 }
 
 /**

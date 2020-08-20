@@ -8,33 +8,33 @@
   */
 
 namespace lc {
-    namespace viewer {
-        class LcPainter;
+namespace viewer {
+class LcPainter;
 
-        namespace event {
-            class MouseReleaseEvent {
-                public:
-                    MouseReleaseEvent() {
-                    }
-
-                    MouseReleaseEvent(const lc::geo::Coordinate& mousePosition,
-                                      std::vector<lc::EntityDistance> entities) :
-                            _mousePosition(mousePosition),
-                            _entities(entities) {
-                    }
-
-                    lc::geo::Coordinate mousePosition() const {
-                        return _mousePosition;
-                    }
-
-                    std::vector<lc::EntityDistance> entities() const {
-                        return _entities;
-                    }
-
-                private:
-                    lc::geo::Coordinate _mousePosition;
-                    std::vector<lc::EntityDistance> _entities;
-            };
-        }
+namespace event {
+class MouseReleaseEvent {
+public:
+    MouseReleaseEvent() {
     }
+
+    MouseReleaseEvent(const lc::geo::Coordinate& mousePosition,
+                      std::vector<lc::EntityDistance> entities) :
+        _mousePosition(mousePosition),
+        _entities(entities) {
+    }
+
+    lc::geo::Coordinate mousePosition() const {
+        return _mousePosition;
+    }
+
+    std::vector<lc::EntityDistance> entities() const {
+        return _entities;
+    }
+
+private:
+    lc::geo::Coordinate _mousePosition;
+    std::vector<lc::EntityDistance> _entities;
+};
+}
+}
 }

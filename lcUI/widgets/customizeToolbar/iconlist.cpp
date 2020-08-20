@@ -9,7 +9,7 @@ using namespace lc::ui::widgets;
 
 IconList::IconList(QWidget* parent)
     :
-      QListView(parent)
+    QListView(parent)
 {
     opModel = new OperationDragModel();
     setModel(opModel);
@@ -24,7 +24,7 @@ void IconList::dropEvent(QDropEvent *event)
 {
     const QMimeData* mimeData = event->mimeData();
 
-    if (event->dropAction() == Qt::IgnoreAction || !mimeData->hasFormat("application/x-dnditemdata")){
+    if (event->dropAction() == Qt::IgnoreAction || !mimeData->hasFormat("application/x-dnditemdata")) {
         return;
     }
 
@@ -36,13 +36,13 @@ void IconList::dropEvent(QDropEvent *event)
     bool isFromDropModel;
     dataStream >> isFromDropModel;
 
-    if(!isFromDropModel){
+    if(!isFromDropModel) {
         return;
     }
 
     QTableView* parentTableView = qobject_cast<QTableView*>(event->source());
 
-    if(parentTableView == nullptr){
+    if(parentTableView == nullptr) {
         return;
     }
 

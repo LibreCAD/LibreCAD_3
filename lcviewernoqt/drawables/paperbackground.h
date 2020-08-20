@@ -9,22 +9,22 @@
   */
 
 namespace lc {
-    namespace viewer {
-        namespace drawable {
-            typedef struct _cairo cairo_t;
+namespace viewer {
+namespace drawable {
+typedef struct _cairo cairo_t;
 
-            class PaperBackground {
-                public:
-                    PaperBackground(int width,int height);
+class PaperBackground {
+public:
+    PaperBackground(int width,int height);
 
-                    ~PaperBackground() = default;
+    ~PaperBackground() = default;
 
-                    void draw(event::DrawEvent const& event) const;
+    void draw(event::DrawEvent const& event) const;
 
-                private:
-                    const int _width;
-                    const int _height;
-            };
-        }
-    }
+private:
+    const int _width;
+    const int _height;
+};
+}
+}
 }

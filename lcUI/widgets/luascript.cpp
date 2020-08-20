@@ -8,8 +8,8 @@ using namespace lc::ui::widgets;
 LuaScript::LuaScript(lc::ui::MainWindow* mainWindow) :
     ui(new Ui::LuaScript),
     _mainWindow(mainWindow),
-	_mdiChild(mainWindow->cadMdiChild()),
-	_cliCommand(mainWindow->cliCommand()){
+    _mdiChild(mainWindow->cadMdiChild()),
+    _cliCommand(mainWindow->cliCommand()) {
     ui->setupUi(this);
 
     auto lcLua = lc::lua::LCLua(luaState.state());
@@ -34,43 +34,43 @@ void LuaScript::on_luaRun_clicked() {
 }
 
 void LuaScript::on_open_clicked() {
-	auto fileName = QFileDialog::getOpenFileName(
-		nullptr,
-		tr("Open File"),
-		QString(),
-		tr("Lua (*.lua)")
-	);
+    auto fileName = QFileDialog::getOpenFileName(
+                        nullptr,
+                        tr("Open File"),
+                        QString(),
+                        tr("Lua (*.lua)")
+                    );
 
-	if(!fileName.isEmpty()) {
-		QFile file(fileName);
+    if(!fileName.isEmpty()) {
+        QFile file(fileName);
 
-		file.open(QFile::ReadOnly | QFile::Text);
-		QTextStream stream(&file);
+        file.open(QFile::ReadOnly | QFile::Text);
+        QTextStream stream(&file);
 
-		ui->luaInput->setPlainText(stream.readAll());
+        ui->luaInput->setPlainText(stream.readAll());
 
-		file.close();
-	}
+        file.close();
+    }
 }
 
 void LuaScript::on_save_clicked() {
-	auto fileName = QFileDialog::getSaveFileName(
-		nullptr,
-		tr("Save File"),
-		QString(),
-		tr("Lua (*.lua)")
-	);
+    auto fileName = QFileDialog::getSaveFileName(
+                        nullptr,
+                        tr("Save File"),
+                        QString(),
+                        tr("Lua (*.lua)")
+                    );
 
-	if(!fileName.isEmpty()) {
-		QFile file(fileName);
+    if(!fileName.isEmpty()) {
+        QFile file(fileName);
 
-		file.open(QFile::WriteOnly | QFile::Text);
-		QTextStream stream(&file);
+        file.open(QFile::WriteOnly | QFile::Text);
+        QTextStream stream(&file);
 
-		stream << ui->luaInput->toPlainText();
+        stream << ui->luaInput->toPlainText();
 
-		file.close();
-	}
+        file.close();
+    }
 }
 
 void LuaScript::registerGlobalFunctions(kaguya::State& luaState) {

@@ -67,7 +67,7 @@ void EntityGUI::entitySelected() {
     if (_entitySelectionEnabled) {
         lc::ui::CadMdiChild* cadMdiChild = mainWindow->cadMdiChild();
         std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = cadMdiChild->selection();
-        
+
         if (selectedEntities.size() == 0) {
             return;
         }

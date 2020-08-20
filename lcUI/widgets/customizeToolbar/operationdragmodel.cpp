@@ -28,12 +28,12 @@ QVariant OperationDragModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if(role == Qt::DecorationRole || role == Qt::DisplayRole){
+    if(role == Qt::DecorationRole || role == Qt::DisplayRole) {
         QPair<QString, QIcon> element = operations.at(index.row());
 
         if(role == Qt::DecorationRole)
         {
-          return element.second;
+            return element.second;
         }
         else
         {

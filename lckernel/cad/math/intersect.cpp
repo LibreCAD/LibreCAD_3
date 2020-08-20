@@ -6,8 +6,8 @@ using namespace lc::maths;
 
 
 Intersect::Intersect(Method method, double tolerance) :
-        _method(method),
-        _tolerance(tolerance) {
+    _method(method),
+    _tolerance(tolerance) {
 }
 
 std::vector<lc::geo::Coordinate> Intersect::result() const {
@@ -31,12 +31,12 @@ bool Intersect::operator()(const lc::geo::Vector& v, const lc::geo::Arc& a) {
 }
 
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::geo::Ellipse& e) {
-	geovisit(v, e);
-	return false;
+    geovisit(v, e);
+    return false;
 }
 
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::geo::Spline& s) {
-	geovisit(s, v);
+    geovisit(s, v);
     return false;
 }
 
@@ -106,7 +106,7 @@ bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Ellipse& ell
 }
 
 bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Spline& s) {
-	geovisit(s, c);
+    geovisit(s, c);
     return false;
 }
 
@@ -136,45 +136,45 @@ bool Intersect::operator()(const lc::geo::Circle&c, const lc::entity::LWPolyline
 //    geovisit(v, a);
 //    return false;
 
-    /* Please do not delete this for the moment
-    const geo::Coordinate nearest = line.nearestPointOnPath(arc.center());
-    double dist = arc.center().distanceTo(nearest);
+/* Please do not delete this for the moment
+const geo::Coordinate nearest = line.nearestPointOnPath(arc.center());
+double dist = arc.center().distanceTo(nearest);
 
-    // special case: arc touches line (tangent):
-    // TODO: We properly should add a tolorance here ??
-    if (fabs(dist - arc.radius()) < _tolerance) {
-        _intersectionPoints.push_back(nearest);
-        return;
+// special case: arc touches line (tangent):
+// TODO: We properly should add a tolorance here ??
+if (fabs(dist - arc.radius()) < _tolerance) {
+    _intersectionPoints.push_back(nearest);
+    return;
+}
+
+const geo::Coordinate d = line.end() - line.start();
+const double r = arc.radius();
+const geo:: Coordinate delta = line.start() - arc.center();
+const double d2 = d.squared();
+
+//intersection
+// solution = p + t d;
+//| p -c+ t d|^2 = r^2
+// |d|^2 t^2 + 2 (p-c).d t + |p-c|^2 -r^2 = 0
+const double a1 = delta.dot(d);
+const double discriminant = a1 * a1 - d2 * (delta.squared() - r * r);
+
+if (discriminant < - _tolerance) {
+    return;
+} else {
+    const double t = sqrtf(fabs(discriminant));
+    //two intersections
+    const geo::Coordinate c1(line.start() + d * (t - a1) / d2);
+    const geo::Coordinate c2(line.start() - d * (t + a1) / d2);
+
+    if (_method == Method::OnPath || (_method == Method::OnEntity && arc.isCoordinateOnPath(c1) && line.isCoordinateOnPath(c1))) {
+        _intersectionPoints.push_back(c1);
     }
 
-    const geo::Coordinate d = line.end() - line.start();
-    const double r = arc.radius();
-    const geo:: Coordinate delta = line.start() - arc.center();
-    const double d2 = d.squared();
-
-    //intersection
-    // solution = p + t d;
-    //| p -c+ t d|^2 = r^2
-    // |d|^2 t^2 + 2 (p-c).d t + |p-c|^2 -r^2 = 0
-    const double a1 = delta.dot(d);
-    const double discriminant = a1 * a1 - d2 * (delta.squared() - r * r);
-
-    if (discriminant < - _tolerance) {
-        return;
-    } else {
-        const double t = sqrtf(fabs(discriminant));
-        //two intersections
-        const geo::Coordinate c1(line.start() + d * (t - a1) / d2);
-        const geo::Coordinate c2(line.start() - d * (t + a1) / d2);
-
-        if (_method == Method::OnPath || (_method == Method::OnEntity && arc.isCoordinateOnPath(c1) && line.isCoordinateOnPath(c1))) {
-            _intersectionPoints.push_back(c1);
-        }
-
-        if (_method == Method::OnPath || (_method == Method::OnEntity && arc.isCoordinateOnPath(c2) && line.isCoordinateOnPath(c2))) {
-            _intersectionPoints.push_back(c2);
-        }
-    } */
+    if (_method == Method::OnPath || (_method == Method::OnEntity && arc.isCoordinateOnPath(c2) && line.isCoordinateOnPath(c2))) {
+        _intersectionPoints.push_back(c2);
+    }
+} */
 //}
 //----------- cont..
 bool Intersect::operator()(const lc::geo::Arc& a1, const lc::geo::Arc& a2) {
@@ -188,7 +188,7 @@ bool Intersect::operator()(const lc::geo::Arc& a, const lc::geo::Ellipse& e) {
 }
 
 bool Intersect::operator()(const lc::geo::Arc& a, const lc::geo::Spline& s) {
-	geovisit(s, a);
+    geovisit(s, a);
     return false;
 }
 
@@ -217,7 +217,7 @@ bool Intersect::operator()(const lc::geo::Ellipse& e1, const lc::geo::Ellipse& e
 }
 
 bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::geo::Spline& s) {
-	geovisit(s, e);
+    geovisit(s, e);
     return false;
 }
 
@@ -241,8 +241,8 @@ bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::entity::LWPolyli
 
 // Spline
 bool Intersect::operator()(const lc::geo::Spline& s1, const lc::geo::Spline& s2) {
-	//geovisit(s1, s2);
-	//Causing crashes
+    //geovisit(s1, s2);
+    //Causing crashes
     return false;
 }
 
@@ -326,13 +326,13 @@ void Intersect::geovisit(const geo::Vector& v1, const geo::Vector& v2) {
         } else if (a1b && a2b) { // Test if it positivly fit's within a area
             _intersectionPoints.push_back(coord);
         } else if (
-                (p1.x() == p2.x() && ys >= a1.minP().y() && ys <= a1.maxP().y() && a2b) ||
-                // when we deal with horizontal or vertical lines, inArea might not
-                (p3.x() == p4.x() && ys >= a2.minP().y() && ys <= a2.maxP().y() && a1b) ||
-                // give a positive result, this conditions will confirm without using tolerance
-                (p1.y() == p2.y() && xs >= a1.minP().x() && xs <= a1.maxP().x() && a2b) ||
-                (p3.y() == p4.y() && xs >= a2.minP().x() && xs <= a2.maxP().x() && a1b)
-                ) {
+            (p1.x() == p2.x() && ys >= a1.minP().y() && ys <= a1.maxP().y() && a2b) ||
+            // when we deal with horizontal or vertical lines, inArea might not
+            (p3.x() == p4.x() && ys >= a2.minP().y() && ys <= a2.maxP().y() && a1b) ||
+            // give a positive result, this conditions will confirm without using tolerance
+            (p1.y() == p2.y() && xs >= a1.minP().x() && xs <= a1.maxP().x() && a2b) ||
+            (p3.y() == p4.y() && xs >= a2.minP().x() && xs <= a2.maxP().x() && a1b)
+        ) {
             _intersectionPoints.push_back(coord);
         }
     }
@@ -349,7 +349,7 @@ void Intersect::geovisit(const geo::Vector& v, const geo::Arc& arc) {
         for (auto &point : coords) {
             double a = (point - arc.center()).angle();
             if (arc.isAngleBetween(a) &&
-                v.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
+                    v.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -367,7 +367,7 @@ void Intersect::geovisit(const geo::Vector& v, const geo::Ellipse& ellipse) {
         for (auto &point : coords) {
             double a = (point - ellipse.center()).angle();
             if (ellipse.isAngleBetween(a) &&
-                v.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
+                    v.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -386,7 +386,7 @@ void Intersect::geovisit(const geo::Arc& arc1, const geo::Arc& arc2) {
             double a1 = (point - arc1.center()).angle();
             double a2 = (point - arc2.center()).angle();
             if (arc1.isAngleBetween(a1) &&
-                arc2.isAngleBetween(a2)) {
+                    arc2.isAngleBetween(a2)) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -405,7 +405,7 @@ void Intersect::geovisit(const geo::Arc& arc, const geo::Ellipse& ellipse) {
             double a1 = (point - arc.center()).angle();
             double a2 = (point - ellipse.center()).angle();
             if (arc.isAngleBetween(a1) &&
-                ellipse.isAngleBetween(a2)) {
+                    ellipse.isAngleBetween(a2)) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -424,80 +424,80 @@ void Intersect::geovisit(const geo::Ellipse& ellipse1, const geo::Ellipse& ellip
             double a1 = (point - ellipse1.center()).angle();
             double a2 = (point - ellipse2.center()).angle();
             if (ellipse1.isAngleBetween(a1) &&
-                ellipse2.isAngleBetween(a2)) {
+                    ellipse2.isAngleBetween(a2)) {
                 _intersectionPoints.push_back(point);
             }
         }
     }
 }
 
-void Intersect::geovisit(const geo::Spline& S, const geo::Vector& V){
-	auto &&coords = maths::Intersection::splineLine(S,V);
+void Intersect::geovisit(const geo::Spline& S, const geo::Vector& V) {
+    auto &&coords = maths::Intersection::splineLine(S,V);
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     }
     else {
-    	for(auto &point : coords){
-    		_intersectionPoints.push_back(point);
-    	}
+        for(auto &point : coords) {
+            _intersectionPoints.push_back(point);
+        }
     }
 }
 
-void Intersect::geovisit(const geo::Spline& S, const geo::Circle& C){
-	auto &&coords = maths::Intersection::splineCircle(S,C);
+void Intersect::geovisit(const geo::Spline& S, const geo::Circle& C) {
+    auto &&coords = maths::Intersection::splineCircle(S,C);
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     }
     else {
-    	for(auto &point : coords){
-    		_intersectionPoints.push_back(point);
-    	}
+        for(auto &point : coords) {
+            _intersectionPoints.push_back(point);
+        }
     }
 }
 
-void Intersect::geovisit(const geo::Spline& S, const geo::Arc& A){
-	auto &&coords = maths::Intersection::splineArc(S,A);
+void Intersect::geovisit(const geo::Spline& S, const geo::Arc& A) {
+    auto &&coords = maths::Intersection::splineArc(S,A);
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     }
     else {
-    	for(auto &point : coords){
-    		_intersectionPoints.push_back(point);
-    	}
+        for(auto &point : coords) {
+            _intersectionPoints.push_back(point);
+        }
     }
 }
 
-void Intersect::geovisit(const geo::Spline& S, const geo::Ellipse& E){
-	auto &&coords = maths::Intersection::splineEllipse(S,E);
+void Intersect::geovisit(const geo::Spline& S, const geo::Ellipse& E) {
+    auto &&coords = maths::Intersection::splineEllipse(S,E);
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     }
     else {
-    	for(auto &point : coords){
-    		_intersectionPoints.push_back(point);
-    	}
+        for(auto &point : coords) {
+            _intersectionPoints.push_back(point);
+        }
     }
 }
 
-void Intersect::geovisit(const geo::Spline& S1, const geo::Spline& S2){
-	auto &&coords = maths::Intersection::splineSpline(S1,S2);
+void Intersect::geovisit(const geo::Spline& S1, const geo::Spline& S2) {
+    auto &&coords = maths::Intersection::splineSpline(S1,S2);
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     }
     else {
-    	for(auto &point : coords){
-    		_intersectionPoints.push_back(point);
-    	}
+        for(auto &point : coords) {
+            _intersectionPoints.push_back(point);
+        }
     }
 }
 
@@ -507,9 +507,9 @@ void Intersect::geovisit(const geo::Spline& S1, const geo::Spline& S2){
  *                                      /
  */
 IntersectMany::IntersectMany(std::vector<entity::CADEntity_CSPtr> entities, Intersect::Method method, double tolerance) :
-        _entities(std::move(entities)),
-        _method(method),
-        _tolerance(tolerance) {
+    _entities(std::move(entities)),
+    _method(method),
+    _tolerance(tolerance) {
 
 }
 
@@ -528,15 +528,15 @@ std::vector<lc::geo::Coordinate> IntersectMany::result() const {
 /***
  *    ~|~ _ _|_ _  _ _ _  __|_/\  _  _ . _  __|_/~\_|_|_  _  _ _
  *    _|_| | | (/_| _\(/_(_ |/~~\(_|(_||| |_\ | \_/ | | |(/_| _\
- *                                _|                            
+ *                                _|
  */
 IntersectAgainstOthers::IntersectAgainstOthers(std::vector<entity::CADEntity_CSPtr> entities,
-                                               std::vector<entity::CADEntity_CSPtr> others, Intersect::Method method,
-                                               double tolerance) :
-        _entities(std::move(entities)),
-        _others(std::move(others)),
-        _method(method),
-        _tolerance(tolerance) {
+        std::vector<entity::CADEntity_CSPtr> others, Intersect::Method method,
+        double tolerance) :
+    _entities(std::move(entities)),
+    _others(std::move(others)),
+    _method(method),
+    _tolerance(tolerance) {
 }
 
 std::vector<lc::geo::Coordinate> IntersectAgainstOthers::result() const {
@@ -549,14 +549,14 @@ std::vector<lc::geo::Coordinate> IntersectAgainstOthers::result() const {
     }
     */
 #ifdef __GNUC__
-	std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 #elif _MSC_VER
-	std::cerr << __FUNCSIG__ << " requires implementation" << std::endl;
+    std::cerr << __FUNCSIG__ << " requires implementation" << std::endl;
 #else
-	std::cerr << "Intersection function requires implementation" << std::endl;
+    std::cerr << "Intersection function requires implementation" << std::endl;
 #endif // __GNUC__
 
-    
+
 
     return intersect.result();
 }

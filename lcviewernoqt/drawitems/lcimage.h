@@ -7,25 +7,25 @@
 #include <cad/primitive/image.h>
 
 namespace lc {
-    namespace viewer {
-        class LCImage : public LCVDrawItem {
-            public:
-                LCImage(const lc::entity::Image_CSPtr& image);
+namespace viewer {
+class LCImage : public LCVDrawItem {
+public:
+    LCImage(const lc::entity::Image_CSPtr& image);
 
-                virtual ~LCImage() = default;
+    virtual ~LCImage() = default;
 
-                /**
-                 * @brief draw, Draw the Arc
-                 * @param LcPainter painter, surface to be painted
-                 * @param LcDrawOptions options
-                 * @param geo::Area rect
-                 */
-                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
+    /**
+     * @brief draw, Draw the Arc
+     * @param LcPainter painter, surface to be painted
+     * @param LcDrawOptions options
+     * @param geo::Area rect
+     */
+    void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
 
-                lc::entity::CADEntity_CSPtr entity() const override;
+    lc::entity::CADEntity_CSPtr entity() const override;
 
-            private:
-                lc::entity::Image_CSPtr _image;
-        };
-    }
+private:
+    lc::entity::Image_CSPtr _image;
+};
+}
 }

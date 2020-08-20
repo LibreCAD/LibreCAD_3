@@ -5,7 +5,7 @@
 #define SETTINGS_GL_FONT_PATH "fontpath"
 
 namespace lc {
-  namespace viewer {
-    extern lc::storage::settings::ModuleSettings viewerSettings;
-    }
+namespace viewer {
+extern lc::storage::settings::ModuleSettings viewerSettings;
+}
 }

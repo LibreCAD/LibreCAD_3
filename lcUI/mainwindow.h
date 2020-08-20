@@ -173,6 +173,17 @@ namespace lc
             */
             void changeDockLayout(int i);
 
+            /**
+            * \brief Save the dock layout
+            */
+            void saveDockLayout();
+
+            /**
+            * \brief Load dock layout
+            */
+            void loadDockLayout();
+
+
         private:
             /**
             * \brief Add Menu items as actions, replace QAction with MenuItem

@@ -73,15 +73,15 @@ Ellipse Ellipse::geoscale(const Coordinate& center, const Coordinate &factor) co
     double minor_ = vp6.magnitude() * ratio;
 
     return Ellipse(this->center().scale(center, factor), vp6,
-                                                    minor_,
-                                                    isArc() ? this->getEllipseAngle(startPoint) : 0.,
-                                                    isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
+                   minor_,
+                   isArc() ? this->getEllipseAngle(startPoint) : 0.,
+                   isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
 }
 
 Ellipse Ellipse::georotate(const geo::Coordinate& center, const double rotation_angle) const {
     return Ellipse(_center.rotate(center, rotation_angle),
-                    majorP().rotate(center, rotation_angle),
-                    minorRadius(), startAngle(), endAngle());
+                   majorP().rotate(center, rotation_angle),
+                   minorRadius(), startAngle(), endAngle());
 }
 
 std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &coord) const {

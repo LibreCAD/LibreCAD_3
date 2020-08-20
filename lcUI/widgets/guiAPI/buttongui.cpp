@@ -25,7 +25,7 @@ void ButtonGUI::addCallback(kaguya::LuaRef cb) {
 }
 
 void ButtonGUI::callbackCalled() {
-    for (kaguya::LuaRef& cb : _callbacks){
+    for (kaguya::LuaRef& cb : _callbacks) {
         cb();
     }
 }

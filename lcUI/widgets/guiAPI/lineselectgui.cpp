@@ -38,7 +38,7 @@ void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
     auto lineWidthInfo = entity->metaInfo<lc::meta::MetaLineWidthByValue>("_LINEWIDTH");
     auto lineColorInfo = entity->metaInfo<lc::meta::MetaColorByValue>("_COLOR");
     auto linePatternInfo = entity->metaInfo<lc::meta::DxfLinePatternByValue>("_LINEPATTERN");
-    
+
     _lineWidthSelect.setWidth(lineWidthInfo);
 
     if (lineColorInfo != nullptr) {

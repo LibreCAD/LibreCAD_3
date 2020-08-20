@@ -38,16 +38,16 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
     }
     else if(role == Qt::DecorationRole) {
         switch (index.column()) {
-            case EDIT:
-                return _editIcon;
+        case EDIT:
+            return _editIcon;
 
-            case LOCKED:
-                if (layer->isFrozen()) {
-                    return _lockedIcon;
-                }
-                return _unlockedIcon;
-            default:
-                break;
+        case LOCKED:
+            if (layer->isFrozen()) {
+                return _lockedIcon;
+            }
+            return _unlockedIcon;
+        default:
+            break;
         }
     }
 

@@ -11,21 +11,21 @@ Line::Line(const geo::Coordinate& start,
            meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Vector(start, end) {
-    
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Vector(start, end) {
+
 }
 
 Line::Line(const geo::Vector& vector,
            meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Vector(vector) {
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Vector(vector) {
 }
 
 Line::Line(const Line_CSPtr& other, bool sameID) : CADEntity(other, sameID),
-                                                  geo::Vector(other->start(), other->end()) {
+    geo::Vector(other->start(), other->end()) {
 }
 
 Line::Line(const builder::LineBuilder& builder) :
@@ -34,9 +34,9 @@ Line::Line(const builder::LineBuilder& builder) :
 }
 
 std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord,
-                                               const SimpleSnapConstrain & constrain,
-                                               double minDistanceToSnap,
-                                               int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain & constrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
@@ -70,30 +70,30 @@ geo::Coordinate Line::nearestPointOnEntity(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnEntity(coord);
 }
 
-std::vector<CADEntity_CSPtr> Line::splitEntity(const geo::Coordinate& coord) const{
-	std::vector<CADEntity_CSPtr> out;
-	auto nearestPoint = this->nearestPointOnEntity(coord);
-	if(nearestPoint.distanceTo(coord)<LCTOLERANCE){
-	    auto newLine = std::make_shared<Line>(this->start(),
-		                                  nearestPoint,
-		                                  layer(),
-		                                  metaInfo(),
-		                                  block()
-	    );
-	    out.push_back(newLine);
-	    newLine = std::make_shared<Line>(nearestPoint,
-		                                  this->end(),
-		                                  layer(),
-		                                  metaInfo(),
-		                                  block()
-	    );
-	    out.push_back(newLine);
-	}
-	return out;
+std::vector<CADEntity_CSPtr> Line::splitEntity(const geo::Coordinate& coord) const {
+    std::vector<CADEntity_CSPtr> out;
+    auto nearestPoint = this->nearestPointOnEntity(coord);
+    if(nearestPoint.distanceTo(coord)<LCTOLERANCE) {
+        auto newLine = std::make_shared<Line>(this->start(),
+                                              nearestPoint,
+                                              layer(),
+                                              metaInfo(),
+                                              block()
+                                             );
+        out.push_back(newLine);
+        newLine = std::make_shared<Line>(nearestPoint,
+                                         this->end(),
+                                         layer(),
+                                         metaInfo(),
+                                         block()
+                                        );
+        out.push_back(newLine);
+    }
+    return out;
 }
 
-lc::geo::Coordinate Line::representingPoint() const{
-	return (this->start() + this->end())/2;
+lc::geo::Coordinate Line::representingPoint() const {
+    return (this->start() + this->end())/2;
 }
 
 CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
@@ -102,7 +102,7 @@ CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
                                           layer(),
                                           metaInfo(),
                                           block()
-    );
+                                         );
     newLine->setID(this->id());
     return newLine;
 }
@@ -153,12 +153,12 @@ const geo::Area Line::boundingBox() const {
 
 CADEntity_CSPtr Line::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<Line>(
-            this->start(),
-            this->end(),
-            layer,
-            metaInfo,
-            block
-    );
+                         this->start(),
+                         this->end(),
+                         layer,
+                         metaInfo,
+                         block
+                     );
     newEntity->setID(this->id());
 
     return newEntity;
@@ -167,22 +167,22 @@ CADEntity_CSPtr Line::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaI
 std::map<unsigned int, lc::geo::Coordinate> Line::dragPoints() const {
     std::map<unsigned int, lc::geo::Coordinate> points;
 
-	points[0] = start();
-	points[1] = end();
+    points[0] = start();
+    points[1] = end();
 
-	return points;
+    return points;
 }
 
 CADEntity_CSPtr Line::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-	    auto newEntity = std::make_shared<Line>(dragPoints.at(0),
+        auto newEntity = std::make_shared<Line>(dragPoints.at(0),
                                                 dragPoints.at(1),
                                                 layer(),
                                                 metaInfo(),
                                                 block()
-        );
-	    newEntity->setID(this->id());
-	    return newEntity;
+                                               );
+        newEntity->setID(this->id());
+        return newEntity;
     }
     catch(const std::out_of_range& e) {
         //A point was not in the map, don't change the entity

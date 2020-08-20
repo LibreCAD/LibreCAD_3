@@ -5,7 +5,7 @@ using namespace lc;
 using namespace builder;
 
 PointBuilder::PointBuilder() :
-        _coordinate() {
+    _coordinate() {
 
 }
 
