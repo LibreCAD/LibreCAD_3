@@ -1,4 +1,7 @@
 #include <QDialog>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QTextEdit>
 
 namespace Ui {
     class TextDialog;
@@ -15,6 +18,11 @@ namespace lc {
                 TextDialog(QWidget* parent = nullptr);
                 ~TextDialog();
 
+            protected slots:
+                void okButtonClicked();
+
+                void cancelButtonClicked();
+
             private:
                 Ui::TextDialog* ui;
                 QComboBox* drawingDirectionComboBox;
@@ -22,6 +30,7 @@ namespace lc {
                 QComboBox* valignComboBox;
                 QDoubleSpinBox* heightSpinBox;
                 QDoubleSpinBox* angleSpinBox;
+                QTextEdit* textEdit;
             };
         }
     }

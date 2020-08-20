@@ -9,14 +9,42 @@ TextDialog::TextDialog(QWidget* parent)
 {
     ui->setupUi(this);
 
-    drawingDirectionComboBox = ui->horizontalLayout->findChild<QComboBox*>("comboBox");
-    halignComboBox = ui->horizontalLayout_2->findChild<QComboBox*>("comboBox_2");
-    valignComboBox = ui->horizontalLayout_3->findChild<QComboBox*>("comboBox_3");
-    heightSpinBox = ui->horizontalLayout_4->findChild<QDoubleSpinBox*>("doubleSpinBox");
-    angleSpinBox = ui->horizontalLayout_5->findChild<QDoubleSpinBox*>("doubleSpinBox_2");
+    textEdit = qobject_cast<QTextEdit*>(ui->verticalLayout->itemAt(0)->widget());
+    drawingDirectionComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout->itemAt(1)->widget());
+    halignComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_2->itemAt(1)->widget());
+    valignComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_3->itemAt(1)->widget());
+    heightSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_4->itemAt(1)->widget());
+    angleSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_5->itemAt(1)->widget());
+
+    drawingDirectionComboBox->addItem("None");
+    drawingDirectionComboBox->addItem("Backward");
+    drawingDirectionComboBox->addItem("Upside Down");
+
+    halignComboBox->addItem("HALeft");
+    halignComboBox->addItem("HARight");
+    halignComboBox->addItem("HAAligned");
+    halignComboBox->addItem("HAMiddle");
+    halignComboBox->addItem("HAFit");
+
+    valignComboBox->addItem("VABaseline");
+    valignComboBox->addItem("VABottom");
+    valignComboBox->addItem("VAMiddle");
+    valignComboBox->addItem("VATop");
+
+    QPushButton* okButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(0)->widget());
+    QPushButton* cancelButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(1)->widget());
+    connect(okButton, &QPushButton::released, this, &TextDialog::okButtonClicked);
+    connect(cancelButton, &QPushButton::released, this, &TextDialog::cancelButtonClicked);
 }
 
 TextDialog::~TextDialog()
 {
     delete ui;
+}
+
+void TextDialog::okButtonClicked() {
+}
+
+void TextDialog::cancelButtonClicked() {
+    this->close();
 }
