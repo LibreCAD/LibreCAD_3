@@ -87,6 +87,7 @@ dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
 dialogs/aboutdialog.h
 managers/uisettings.h
+managers/hookmanager.h
 managers/contextmenumanager.h
 managers/copymanager.h
 managers/metainfomanager.cpp
@@ -155,6 +156,7 @@ dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
+managers/hookmanager.cpp
 managers/uisettings.cpp
 managers/contextmenumanager.cpp
 managers/copymanager.cpp
