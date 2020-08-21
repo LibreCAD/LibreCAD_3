@@ -35,8 +35,12 @@ function TextOperations:enterInsertionPoint(eventName, data)
         self.builder:setInsertionPoint(data["position"])
     elseif(eventName == "point") then
         self.builder:setInsertionPoint(data["position"])
-        self.step = "enterHeight"
-        message("Enter height of text")
+        if self.byTextDialog ~= nil and self.byTextDialog then
+            self:createEntity()
+        else
+            self.step = "enterHeight"
+            message("Enter height of text")
+        end
     end
 end
 
@@ -71,4 +75,7 @@ end
 
 function TextOperations:copyEntity(textEntity)
     self.builder:copy(textEntity)
+    self.byTextDialog = true
+    self.step = "enterInsertionPoint"
+    message("Enter insertion point")
 end

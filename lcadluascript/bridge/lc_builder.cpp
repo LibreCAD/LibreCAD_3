@@ -291,5 +291,6 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("setHeight", &lc::builder::TextBuilder::setHeight)
         .addFunction("angle", &lc::builder::TextBuilder::angle)
         .addFunction("setAngle", &lc::builder::TextBuilder::setAngle)
+        .addFunction("copy", &lc::builder::TextBuilder::copy)
     );
 }
