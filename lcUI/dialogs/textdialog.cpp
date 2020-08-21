@@ -3,9 +3,10 @@
 
 using namespace lc::ui::dialog;
 
-TextDialog::TextDialog(QWidget* parent)
-    : QDialog(parent)
-    , ui(new Ui::TextDialog)
+TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
+    : QDialog(parent),
+    _mainWindow(mainWindowIn),
+    ui(new Ui::TextDialog)
 {
     ui->setupUi(this);
 
@@ -43,6 +44,9 @@ TextDialog::~TextDialog()
 }
 
 void TextDialog::okButtonClicked() {
+    kaguya::State state(_mainWindow->luaInterface()->luaState());
+    _mainWindow->runOperation(state["TextOperations"]);
+    this->close();
 }
 
 void TextDialog::cancelButtonClicked() {

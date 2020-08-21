@@ -34,9 +34,9 @@ Text::Text(const builder::TextBuilder& builder)
     _height(builder.height()),
     _angle(builder.angle()),
     _style(""),
-    _textgeneration(lc::TextConst::DrawingDirection::None),
-    _halign(lc::TextConst::HAlign::HACenter),
-    _valign(lc::TextConst::VAlign::VAMiddle)
+    _textgeneration(builder.drawingDirection()),
+    _halign(builder.horizontalAlign()),
+    _valign(builder.verticalAlign())
 {
 
 }

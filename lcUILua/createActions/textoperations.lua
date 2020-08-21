@@ -26,6 +26,7 @@ function TextOperations:enterTextValue(eventName, data)
     elseif(eventName == "text") then
         self.builder:setTextValue(data["text"])
         self.step = "enterInsertionPoint"
+        message("Enter insertion point")
     end
 end
 
@@ -35,6 +36,7 @@ function TextOperations:enterInsertionPoint(eventName, data)
     elseif(eventName == "point") then
         self.builder:setInsertionPoint(data["position"])
         self.step = "enterHeight"
+        message("Enter height of text")
     end
 end
 
@@ -49,6 +51,7 @@ function TextOperations:enterHeight(eventName, data)
     elseif(eventName == "number") then
         self.builder:setHeight(data["number"])
         self.step = "enterAngle"
+        message("Enter angle of text (in degrees)")
     end
 end
 
@@ -56,7 +59,6 @@ function TextOperations:enterAngle(eventName, data)
     if(eventName == "mouseMove") then
         local ang = self.builder:insertionPoint():distanceTo(data["position"]) * 0.05
         self.builder:setAngle(ang)
-        message("Enter angle of text (in degrees)")
     elseif(eventName == "point") then
         local ang = self.builder:insertionPoint():distanceTo(data["position"]) * 0.05
         self.builder:setAngle(ang)
@@ -65,4 +67,8 @@ function TextOperations:enterAngle(eventName, data)
         self.builder:setAngle(data["number"] * 3.1416/180)
         self:createEntity()
     end
+end
+
+function TextOperations:copyEntity(textEntity)
+    self.builder:copy(textEntity)
 end

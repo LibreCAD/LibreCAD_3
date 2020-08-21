@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cadentity.h"
+#include <cad/primitive/textconst.h>
 
 namespace lc {
     namespace builder {
@@ -27,11 +28,28 @@ namespace lc {
 
             entity::Text_CSPtr build();
 
+            TextBuilder* setDrawingDirection(lc::TextConst::DrawingDirection drawingDirectionIn);
+
+            lc::TextConst::DrawingDirection drawingDirection() const;
+
+            TextBuilder* setHorizontalAlign(lc::TextConst::HAlign halignin);
+
+            lc::TextConst::HAlign horizontalAlign() const;
+
+            TextBuilder* setVerticalAlign(lc::TextConst::VAlign valignin);
+
+            lc::TextConst::VAlign verticalAlign() const;
+
+            void copy(lc::entity::Text_CSPtr entity);
+
         private:
             lc::geo::Coordinate _insertionPoint;
             std::string _textValue;
             double _height;
             double _angle;
+            lc::TextConst::DrawingDirection _drawingDirection;
+            lc::TextConst::HAlign _hAlign;
+            lc::TextConst::VAlign _vAlign;
         };
     }
 }

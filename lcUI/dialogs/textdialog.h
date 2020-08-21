@@ -3,6 +3,8 @@
 #include <QDoubleSpinBox>
 #include <QTextEdit>
 
+#include <mainwindow.h>
+
 namespace Ui {
     class TextDialog;
 }
@@ -15,7 +17,7 @@ namespace lc {
                 Q_OBJECT
 
             public:
-                TextDialog(QWidget* parent = nullptr);
+                TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent = nullptr);
                 ~TextDialog();
 
             protected slots:
@@ -31,6 +33,7 @@ namespace lc {
                 QDoubleSpinBox* heightSpinBox;
                 QDoubleSpinBox* angleSpinBox;
                 QTextEdit* textEdit;
+                lc::ui::MainWindow* _mainWindow;
             };
         }
     }

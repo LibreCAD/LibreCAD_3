@@ -61,7 +61,7 @@ MainWindow::MainWindow()
         aboutDialog->show();
     });
     state["run_textdialog"] = kaguya::function([&] {
-        auto textDialog = new dialog::TextDialog(this);
+        auto textDialog = new dialog::TextDialog(this, this);
         textDialog->show();
     });
 
