@@ -228,6 +228,8 @@ public:
 
     void selectEntity(lc::entity::CADEntity_CSPtr entityPtr);
 
+    std::vector<std::string> getFontList() const;
+
 private:
     void on_addEntityEvent(const lc::event::AddEntityEvent&);
 

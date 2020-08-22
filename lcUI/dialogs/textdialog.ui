@@ -39,6 +39,20 @@
      <widget class="QTextEdit" name="textEdit"/>
     </item>
     <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_1">
+            <item>
+                <widget class="QLabel" name="label_1">
+                    <property name="text">
+                        <string>Font</string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QComboBox" name="comboBox_1"/>
+            </item>
+        </layout>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label">

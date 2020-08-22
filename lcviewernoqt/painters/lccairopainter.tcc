@@ -511,6 +511,10 @@ public:
     void dash_destroy(){
     }
 
+    std::vector<std::string> getFontList() const {
+        return std::vector<std::string>();
+    }
+
 
    //##############################################################
     //##############################################################

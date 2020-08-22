@@ -40,11 +40,16 @@ namespace lc {
 
             lc::TextConst::VAlign verticalAlign() const;
 
+            TextBuilder* setTextFont(std::string font);
+
+            std::string textStyle() const;
+
             void copy(lc::entity::Text_CSPtr entity);
 
         private:
             lc::geo::Coordinate _insertionPoint;
             std::string _textValue;
+            std::string _textStyle;
             double _height;
             double _angle;
             lc::TextConst::DrawingDirection _drawingDirection;

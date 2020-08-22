@@ -237,3 +237,7 @@ void OpenglRenderPainter::deleteEntityCached(unsigned long id)
 {
     _cacher_painter->deleteEntityCached(id);
 }
+
+std::vector<std::string> OpenglRenderPainter::getFontList() const {
+    return _renderer->getFontBook().getFontList();
+}

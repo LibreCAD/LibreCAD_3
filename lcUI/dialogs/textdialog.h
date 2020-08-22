@@ -44,6 +44,7 @@ namespace lc {
 
             private:
                 Ui::TextDialog* ui;
+                QComboBox* fontComboBox;
                 QComboBox* drawingDirectionComboBox;
                 QComboBox* halignComboBox;
                 QComboBox* valignComboBox;

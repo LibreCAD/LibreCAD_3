@@ -69,4 +69,5 @@ public:
     void device_to_user(double* x, double* y) override;
     void user_to_device_distance(double* dx, double* dy) override;
     void device_to_user_distance(double* dx, double* dy) override;
+    std::vector<std::string> getFontList() const override;
 };

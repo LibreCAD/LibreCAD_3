@@ -13,6 +13,7 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     ui->setupUi(this);
 
     textEdit = qobject_cast<QTextEdit*>(ui->verticalLayout->itemAt(0)->widget());
+    fontComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_1->itemAt(1)->widget());
     drawingDirectionComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout->itemAt(1)->widget());
     halignComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_2->itemAt(1)->widget());
     valignComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_3->itemAt(1)->widget());
@@ -33,6 +34,11 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     valignComboBox->addItem("VABottom", lc::TextConst::VAlign::VABottom);
     valignComboBox->addItem("VAMiddle", lc::TextConst::VAlign::VAMiddle);
     valignComboBox->addItem("VATop", lc::TextConst::VAlign::VATop);
+
+    std::vector<std::string> fontList = _mainWindow->cadMdiChild()->viewer()->docCanvas()->getFontList();
+    for (const std::string& font : fontList) {
+        fontComboBox->addItem(QString(font.c_str()), QString(font.c_str()));
+    }
 
     heightSpinBox->setMaximum(100000);
     heightSpinBox->setValue(100);
@@ -61,6 +67,7 @@ void TextDialog::okButtonClicked() {
     textBuilder.setBlock(_mainWindow->cadMdiChild()->activeViewport());
 
     textBuilder.setTextValue(textEdit->toPlainText().toStdString());
+    textBuilder.setTextFont(fontComboBox->itemData(fontComboBox->currentIndex()).toString().toStdString());
     textBuilder.setHeight(heightSpinBox->value());
     textBuilder.setAngle(angleSpinBox->value() * 3.1416/180);
     textBuilder.setDrawingDirection((lc::TextConst::DrawingDirection)drawingDirectionComboBox->itemData(drawingDirectionComboBox->currentIndex()).toInt());

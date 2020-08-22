@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 namespace lc {
 namespace viewer {
 
@@ -137,7 +138,7 @@ public:
 
     virtual void deleteEntityCached(unsigned long id) = 0;
 
-
+    virtual std::vector<std::string> getFontList() const = 0;
 };
 }
 }

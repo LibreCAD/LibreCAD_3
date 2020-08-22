@@ -47,3 +47,11 @@ GL_Font* Font_Book::pickFont(const std::string& font_name)
     else
         return _default_font;
 }
+
+std::vector<std::string> Font_Book::getFontList() const {
+    std::vector<std::string> result;
+    for (const auto& font : _font_map) {
+        result.push_back(font.first);
+    }
+    return result;
+}

@@ -33,12 +33,11 @@ Text::Text(const builder::TextBuilder& builder)
     _text_value(builder.textValue()),
     _height(builder.height()),
     _angle(builder.angle()),
-    _style("STANDARD"),
+    _style(builder.textStyle()),
     _textgeneration(builder.drawingDirection()),
     _halign(builder.horizontalAlign()),
     _valign(builder.verticalAlign())
 {
-
 }
 
 Text::Text(const Text_CSPtr& other, bool sameID) :

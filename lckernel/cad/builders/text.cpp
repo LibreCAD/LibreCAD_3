@@ -76,6 +76,15 @@ lc::TextConst::VAlign TextBuilder::verticalAlign() const {
     return _vAlign;
 }
 
+TextBuilder* TextBuilder::setTextFont(std::string font) {
+    _textStyle = font;
+    return this;
+}
+
+std::string TextBuilder::textStyle() const {
+    return _textStyle;
+}
+
 lc::entity::Text_CSPtr TextBuilder::build() {
     checkValues(true);
     return entity::Text_CSPtr(new entity::Text(*this));
@@ -86,6 +95,7 @@ void TextBuilder::copy(lc::entity::Text_CSPtr entity) {
 
     setInsertionPoint(entity->insertion_point());
     setTextValue(entity->text_value());
+    setTextFont(entity->style());
     setHeight(entity->height());
     setAngle(entity->angle());
     setDrawingDirection(entity->textgeneration());

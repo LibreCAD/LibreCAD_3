@@ -23,7 +23,9 @@ LCVText::LCVText(const lc::entity::Text_CSPtr& text) :
 */
 void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     painter.font_size(_text->height(), false);
-    painter.select_font_face("stick3.ttf");
+    if (_text->style() != "" && _text->style() != "STANDARD") {
+        painter.select_font_face(_text->style().c_str());
+    }
 
     TextExtends te = painter.text_extends(_text->text_value().c_str());
     double alignX = 0.0;

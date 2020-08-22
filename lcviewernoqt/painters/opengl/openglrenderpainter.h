@@ -70,6 +70,8 @@ public:
     void renderEntityCached(unsigned long id) override;
     void deleteEntityCached(unsigned long id) override;
 
+    std::vector<std::string> getFontList() const override;
+
     //-------------No need---------------------------------
     void startcaching() override;
     void finishcaching(unsigned long id) override;
