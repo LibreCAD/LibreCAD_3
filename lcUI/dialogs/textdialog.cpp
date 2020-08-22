@@ -23,18 +23,21 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
     drawingDirectionComboBox->addItem("Upside Down", lc::TextConst::DrawingDirection::UpsideDown);
 
-    halignComboBox->addItem("HALeft");
-    halignComboBox->addItem("HARight");
-    halignComboBox->addItem("HAAligned");
-    halignComboBox->addItem("HAMiddle");
-    halignComboBox->addItem("HAFit");
+    halignComboBox->addItem("HALeft", lc::TextConst::HAlign::HALeft);
+    halignComboBox->addItem("HARight", lc::TextConst::HAlign::HARight);
+    halignComboBox->addItem("HAAligned", lc::TextConst::HAlign::HAAligned);
+    halignComboBox->addItem("HAMiddle", lc::TextConst::HAlign::HAMiddle);
+    halignComboBox->addItem("HAFit", lc::TextConst::HAlign::HAFit);
 
-    valignComboBox->addItem("VABaseline");
-    valignComboBox->addItem("VABottom");
-    valignComboBox->addItem("VAMiddle");
-    valignComboBox->addItem("VATop");
+    valignComboBox->addItem("VABaseline", lc::TextConst::VAlign::VABaseline);
+    valignComboBox->addItem("VABottom", lc::TextConst::VAlign::VABottom);
+    valignComboBox->addItem("VAMiddle", lc::TextConst::VAlign::VAMiddle);
+    valignComboBox->addItem("VATop", lc::TextConst::VAlign::VATop);
 
+    heightSpinBox->setMaximum(100000);
     heightSpinBox->setValue(100);
+    angleSpinBox->setMaximum(360);
+    angleSpinBox->setWrapping(true);
     angleSpinBox->setValue(0);
 
     QPushButton* okButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(0)->widget());

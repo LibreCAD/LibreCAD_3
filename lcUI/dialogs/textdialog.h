@@ -12,17 +12,34 @@ namespace Ui {
 namespace lc {
     namespace ui {
         namespace dialog {
+            /**
+            * \brief Text Dialog
+            */
             class TextDialog : public QDialog
             {
                 Q_OBJECT
 
             public:
+                /**
+                * \brief Text Dialog Constructor
+                * \param pointer to MainWindow
+                */
                 TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent = nullptr);
+                
+                /**
+                * \brief Text Dialog Destructor
+                */
                 ~TextDialog();
 
             protected slots:
+                /**
+                * \brief Slot for the ok button being clicked
+                */
                 void okButtonClicked();
 
+                /**
+                * \brief Slot for the cancel button being clicked
+                */
                 void cancelButtonClicked();
 
             private:

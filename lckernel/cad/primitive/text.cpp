@@ -33,7 +33,7 @@ Text::Text(const builder::TextBuilder& builder)
     _text_value(builder.textValue()),
     _height(builder.height()),
     _angle(builder.angle()),
-    _style(""),
+    _style("STANDARD"),
     _textgeneration(builder.drawingDirection()),
     _halign(builder.horizontalAlign()),
     _valign(builder.verticalAlign())
