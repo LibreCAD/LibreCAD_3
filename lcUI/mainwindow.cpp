@@ -6,6 +6,8 @@
 #include "propertyeditor.h"
 #include "managers/contextmenumanager.h"
 
+#include <QStandardPaths>
+
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/entitygui.h"
 #include "widgets/guiAPI/buttongui.h"
@@ -94,6 +96,13 @@ MainWindow::MainWindow()
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 
     this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
+
+    QStringList fontPaths = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
+    std::vector<std::string> fontPathList;
+    for (QString font : fontPaths) {
+        fontPathList.push_back(font.toStdString());
+    }
+    //_cadMdiChild.viewer()->documentCanvas()->addFontsFromPath(fontPathList);
 }
 
 MainWindow::~MainWindow()

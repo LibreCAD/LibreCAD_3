@@ -139,6 +139,8 @@ public:
     virtual void deleteEntityCached(unsigned long id) = 0;
 
     virtual std::vector<std::string> getFontList() const = 0;
+
+    virtual void addFontsFromPath(const std::vector<std::string>& paths) = 0;
 };
 }
 }

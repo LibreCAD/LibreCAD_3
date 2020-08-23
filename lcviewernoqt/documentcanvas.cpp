@@ -828,3 +828,7 @@ void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
 std::vector<std::string> DocumentCanvas::getFontList() const {
     return _painterPtr->getFontList();
 }
+
+void DocumentCanvas::addFontsFromPath(const std::vector<std::string>& paths) {
+    _painterPtr->addFontsFromPath(paths);
+}

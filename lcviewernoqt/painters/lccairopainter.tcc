@@ -515,6 +515,9 @@ public:
         return std::vector<std::string>();
     }
 
+    void addFontsFromPath(const std::vector<std::string>& paths) {
+    }
+
 
    //##############################################################
     //##############################################################

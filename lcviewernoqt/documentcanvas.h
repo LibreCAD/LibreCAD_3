@@ -230,6 +230,8 @@ public:
 
     std::vector<std::string> getFontList() const;
 
+    void addFontsFromPath(const std::vector<std::string>& paths);
+
 private:
     void on_addEntityEvent(const lc::event::AddEntityEvent&);
 

@@ -42,7 +42,7 @@ void Renderer::createResources()
     _cacherPtr->setShaderBook(_shaders);
 
     _fonts.createDefaultFont("ABeeZee-Regular",_font_path+"ABeeZee-Regular.otf");
-    _fonts.createFont("LeonSans-Thin", _font_path + "LeonSans-Thin.otf");
+    _fonts.createFontsFromDir(_font_path);
 
     _cacherPtr->setFontBook(_fonts);
 
@@ -243,7 +243,11 @@ void Renderer::renderCachedPack(GL_Pack* pack)
     }
 }
 
-const Font_Book& Renderer::getFontBook() const
+const Font_Book& Renderer::fontBook() const
 {
+    return _fonts;
+}
+
+Font_Book& Renderer::fontBook() {
     return _fonts;
 }

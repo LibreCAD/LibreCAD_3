@@ -22,11 +22,13 @@ bool GL_Font::readyFont(const std::string& path)
     if (FT_Init_FreeType(&ft))
     {
         //("ERROR::FREETYPE: Could not init FreeType Library");
+        return false;
     }
 
     if (FT_New_Face(ft, font_path, 0, &face))
     {
         //("ERROR::FREETYPE: Failed to load font");
+        return false;
     }
 
     FT_Set_Pixel_Sizes(face, 64,64);
@@ -65,8 +67,6 @@ bool GL_Font::readyFont(const std::string& path)
                       GL_RED,
                       GL_UNSIGNED_BYTE,
                       face->glyph->bitmap.buffer);
-
-        glGenerateMipmap(GL_TEXTURE_2D);
 
         //Now saving coordinate data for the glypph
 

@@ -3,6 +3,7 @@
 #include "gl_font.h"
 #include <map>
 #include <vector>
+#include <boost/filesystem.hpp>
 
 namespace lc
 {
@@ -21,8 +22,12 @@ public:
     ~Font_Book();
     bool createDefaultFont(const std::string& name,const std::string& file_path);
     bool createFont(const std::string& name,const std::string& file_path);
+    bool createFontsFromDir(const std::string& directoryPath);
     GL_Font* pickFont(const std::string& font_style);
     std::vector<std::string> getFontList() const;
+
+private:
+    void createFontFromEntry(boost::filesystem::directory_entry& entry, const std::string& directoryPath);
 };
 }
 }

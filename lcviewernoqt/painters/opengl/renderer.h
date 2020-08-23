@@ -84,7 +84,8 @@ public:
     void renderCachedPack(GL_Pack* pack);
 
     //-----------------------------font ---------------
-    const Font_Book& getFontBook() const;
+    const Font_Book& fontBook() const;
+    Font_Book& fontBook();
 };
 }
 }

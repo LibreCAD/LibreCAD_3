@@ -55,3 +55,26 @@ std::vector<std::string> Font_Book::getFontList() const {
     }
     return result;
 }
+
+bool Font_Book::createFontsFromDir(const std::string& directoryPath) {
+    if (!boost::filesystem::is_directory(directoryPath)) {
+        return false;
+    }
+
+    for (boost::filesystem::directory_entry& entry : boost::filesystem::directory_iterator(directoryPath)) {
+        createFontFromEntry(entry, directoryPath);
+    }
+
+    return true;
+}
+
+void Font_Book::createFontFromEntry(boost::filesystem::directory_entry& entry, const std::string& directoryPath) {
+    std::string fontFileStem = entry.path().stem().string();
+    std::string fontFileName = entry.path().filename().string();
+
+    if (entry.path().extension().string() == ".ttf" || entry.path().extension().string() == ".otf") {
+        if (_font_map.find(fontFileStem) == _font_map.end()) {
+            createFont(fontFileStem, directoryPath + "/" + fontFileName);
+        }
+    }
+}
