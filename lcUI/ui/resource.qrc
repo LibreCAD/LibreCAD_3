@@ -33,5 +33,6 @@
         <file alias="snap_middle.svg">icons/snap_middle.svg</file>
         <file alias="point.svg">icons/point.svg</file>
         <file alias="infoarea.png">icons/infoarea.png</file>
+        <file alias="text.svg">icons/text.svg</file>
     </qresource>
 </RCC>

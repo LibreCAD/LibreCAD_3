@@ -68,6 +68,8 @@ bool GL_Font::readyFont(const std::string& path)
                       GL_UNSIGNED_BYTE,
                       face->glyph->bitmap.buffer);
 
+        glGenerateMipmap(GL_TEXTURE_2D);
+
         //Now saving coordinate data for the glypph
 
         xpos = (float)(face->glyph->bitmap_left);

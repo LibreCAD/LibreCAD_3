@@ -85,7 +85,11 @@ MainWindow::MainWindow()
 
     api::Menu* aboutMenu = addMenu("About");
     aboutMenu->addItem("About", state["run_aboutdialog"]);
-    aboutMenu->addItem("TextDialog", state["run_textdialog"]);
+
+    api::Menu* textMenu = menuByName("Create")->menuByName("Text");
+    if (textMenu != nullptr) {
+        textMenu->addItem("Text Dialog", state["run_textdialog"]);
+    }
 
     _toolbar.generateButtonsMap();
     readUiSettings();
@@ -97,12 +101,12 @@ MainWindow::MainWindow()
 
     this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
 
-    QStringList fontPaths = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
+    /*QStringList fontPaths = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
     std::vector<std::string> fontPathList;
     for (QString font : fontPaths) {
         fontPathList.push_back(font.toStdString());
     }
-    //_cadMdiChild.viewer()->documentCanvas()->addFontsFromPath(fontPathList);
+    _cadMdiChild.viewer()->documentCanvas()->addFontsFromPath(fontPathList);*/
 }
 
 MainWindow::~MainWindow()

@@ -1,6 +1,10 @@
 TextOperations = {
     name = "TextOperations",
-    command_line = "TEXT"
+    command_line = "TEXT",
+    icon = "text.svg",
+    menu_actions = {
+        default = "actionText_Operation"
+    }
 }
 TextOperations.__index = TextOperations
 
