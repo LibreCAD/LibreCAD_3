@@ -42,6 +42,11 @@ namespace lc {
                 */
                 void cancelButtonClicked();
 
+                /**
+                * \brief Slot for the insert button being clicked
+                */
+                void insertSymbolClicked();
+
             private:
                 Ui::TextDialog* ui;
                 QComboBox* fontComboBox;

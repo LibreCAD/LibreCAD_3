@@ -94,6 +94,32 @@
       </item>
      </layout>
     </item>
+       <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <item>
+                   <widget class="QLabel" name="label_7">
+                       <property name="text">
+                           <string>Insert Symbol</string>
+                       </property>
+                   </widget>
+               </item>
+               <item>
+                   <layout class="QHBoxLayout" name="verticalLayout_8">
+                       <item>
+                           <widget class="QComboBox" name="cbSymbol">
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QPushButton" name="pushButton_3">
+                               <property name="text">
+                                   <string>Insert</string>
+                               </property>
+                           </widget>
+                       </item>
+                   </layout>
+               </item>
+           </layout>
+       </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>

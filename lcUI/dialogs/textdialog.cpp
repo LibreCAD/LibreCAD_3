@@ -12,6 +12,23 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
 {
     ui->setupUi(this);
 
+    const std::vector<std::pair<QString, QString>> symbolData = {
+        {"Diameter(⌀)", "⌀"},
+        {"Degree(°)", "°"},
+        {"Plus / Minus(±)", "±"},
+        {"At(@)", "@"},
+        {"Hash(#)", "#"},
+        {"Dollar($)", "$"},
+        {"Copyright(©)", "©"},
+        {"Registered(®)", "®"},
+        {"Paragraph(§)", "§"},
+        {"Pi(π)", "π"},
+        {"Pound(£)", "£"},
+        {"Yen(¥)", "¥"},
+        {"Times(×)", "×"},
+        {"Division(÷)", "÷"}
+    };
+
     textEdit = qobject_cast<QTextEdit*>(ui->verticalLayout->itemAt(0)->widget());
     fontComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_1->itemAt(1)->widget());
     drawingDirectionComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout->itemAt(1)->widget());
@@ -46,10 +63,17 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     angleSpinBox->setWrapping(true);
     angleSpinBox->setValue(0);
 
+    QComboBox* symbolComboBox = qobject_cast<QComboBox*>(ui->verticalLayout_8->itemAt(0)->widget());
+    for (const std::pair<QString, QString>& symbol : symbolData) {
+        symbolComboBox->addItem(symbol.first, symbol.second);
+    }
+
     QPushButton* okButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(0)->widget());
     QPushButton* cancelButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(1)->widget());
+    QPushButton* insertSymbolButton = qobject_cast<QPushButton*>(ui->verticalLayout_8->itemAt(1)->widget());
     connect(okButton, &QPushButton::released, this, &TextDialog::okButtonClicked);
     connect(cancelButton, &QPushButton::released, this, &TextDialog::cancelButtonClicked);
+    connect(insertSymbolButton, &QPushButton::released, this, &TextDialog::insertSymbolClicked);
 }
 
 TextDialog::~TextDialog()
@@ -81,4 +105,12 @@ void TextDialog::okButtonClicked() {
 
 void TextDialog::cancelButtonClicked() {
     this->close();
+}
+
+void TextDialog::insertSymbolClicked() {
+    QComboBox* symbolComboBox = qobject_cast<QComboBox*>(ui->verticalLayout_8->itemAt(0)->widget());
+
+    if (symbolComboBox != nullptr) {
+        textEdit->insertPlainText(symbolComboBox->itemData(symbolComboBox->currentIndex()).toString());
+    }
 }
