@@ -103,6 +103,7 @@ CADEntity_CSPtr DimLinear::rotate(const geo::Coordinate& rotation_center, double
                         this->_oblique,
                         this->layer(), metaInfo(), block()
                                                    );
+    newDimLinear->setID(this->id());
     return newDimLinear;
 }
 
@@ -120,6 +121,7 @@ CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo:
                         this->_oblique,
                         this->layer(), metaInfo(), block()
                                                    );
+    newDimLinear->setID(this->id());
     return newDimLinear;
 }
 
@@ -145,7 +147,7 @@ CADEntity_CSPtr DimLinear::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr 
                             metaInfo,
                             block
                         );
-
+    newDimLinear->setID(this->id());
     return newDimLinear;
 }
 
