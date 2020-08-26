@@ -130,8 +130,22 @@ CADEntity_CSPtr DimAligned::mirror(const geo::Coordinate& axis1,
 }
 
 const geo::Area DimAligned::boundingBox() const {
-    // TODO create proper bounding box for DimAligned
-    return geo::Area(this->middleOfText(), 0., 0.);
+    lc::geo::Vector vec23(_definitionPoint2, _definitionPoint3);
+    auto vec23eq = vec23.equation();
+    const std::vector<double> vec23coeffs = vec23eq.Coefficients();
+    double d1 = vec23coeffs[3] * this->definitionPoint().x() + vec23coeffs[4] * this->definitionPoint().y() + vec23coeffs[5];
+    double dist = std::abs(d1) / std::sqrt(vec23coeffs[3] * vec23coeffs[3] + vec23coeffs[4] * vec23coeffs[4]);
+
+    lc::geo::Coordinate geo23 = _definitionPoint3 - _definitionPoint2;
+    geo23 = geo23.norm().rotate(d1 >= 0 ? (M_PI/2) : (-M_PI/2));
+    geo23 = geo23 * dist;
+    lc::geo::Coordinate rectPoint2 = _definitionPoint2 + geo23;
+    lc::geo::Coordinate rectPoint3 = _definitionPoint3 + geo23;
+    
+    lc::geo::Coordinate minPoints = lc::geo::Coordinate(std::min(_definitionPoint2.x(), std::min(_definitionPoint3.x(), std::min(rectPoint2.x(), rectPoint3.x()))), std::min(_definitionPoint2.y(), std::min(_definitionPoint3.y(), std::min(rectPoint2.y(), rectPoint3.y()))));
+    lc::geo::Coordinate maxPoints = lc::geo::Coordinate(std::max(_definitionPoint2.x(), std::max(_definitionPoint3.x(), std::max(rectPoint2.x(), rectPoint3.x()))), std::max(_definitionPoint2.y(), std::max(_definitionPoint3.y(), std::max(rectPoint2.y(), rectPoint3.y()))));
+
+    return geo::Area(minPoints, maxPoints);
 }
 
 CADEntity_CSPtr DimAligned::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
