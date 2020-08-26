@@ -157,8 +157,10 @@ CADEntity_CSPtr DimAngular::mirror(const geo::Coordinate& axis1, const geo::Coor
 }
 
 const geo::Area DimAngular::boundingBox() const {
-    // TODO create proper bounding box for DimAngular
-    return geo::Area(this->middleOfText(), 0., 0.);
+    double radius = (this->middleOfText() - this->definitionPoint()).magnitude();
+    lc::geo::Coordinate topLeft = this->definitionPoint() + (lc::geo::Coordinate(-radius, radius));
+    lc::geo::Coordinate bottomRight = this->definitionPoint() + (lc::geo::Coordinate(radius, -radius));
+    return geo::Area(topLeft, bottomRight);
 }
 
 CADEntity_CSPtr DimAngular::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

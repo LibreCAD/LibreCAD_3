@@ -126,8 +126,9 @@ CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo:
 }
 
 const geo::Area DimLinear::boundingBox() const {
-    // TODO create proper bounding box for DimLinear
-    return geo::Area(this->middleOfText(), 0., 0.);
+    lc::geo::Coordinate minPoints = lc::geo::Coordinate(std::min(definitionPoint().x(), std::min(definitionPoint2().x(), definitionPoint3().x())), std::min(definitionPoint().y(), std::min(definitionPoint2().y(), definitionPoint3().y())));
+    lc::geo::Coordinate maxPoints = lc::geo::Coordinate(std::max(definitionPoint().x(), std::max(definitionPoint2().x(), definitionPoint3().x())), std::max(definitionPoint().y(), std::max(definitionPoint2().y(), definitionPoint3().y())));
+    return geo::Area(minPoints, maxPoints);
 }
 
 CADEntity_CSPtr DimLinear::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
