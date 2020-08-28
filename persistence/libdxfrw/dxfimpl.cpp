@@ -287,7 +287,7 @@ void DXFimpl::addText(const DRW_Text& data) {
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
                   data.text, data.height,
-                  data.angle, data.style,
+                  data.angle * M_PI / 180, data.style,
                   lc::TextConst::DrawingDirection(data.textgen),
                   lc::TextConst::HAlign(data.alignH),
                   lc::TextConst::VAlign(data.alignV),
@@ -490,6 +490,20 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
 
 void DXFimpl::addMText(const DRW_MText& data) {
     LOG_WARNING << "addMText";
+    auto layer = getLayer(data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+    auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
+        data.text, data.height,
+        data.angle * M_PI / 180, data.style,
+        lc::TextConst::DrawingDirection(data.textgen),
+        lc::TextConst::HAlign(data.alignH),
+        lc::TextConst::VAlign(data.alignV),
+        layer,
+        mf,
+        getBlock(data)
+        );
+
+    _entityBuilder->appendEntity(lcText);
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
@@ -1274,6 +1288,19 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
 }
 
 void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
+    DRW_Text tex;
+    getEntityAttributes(&tex, t);
+
+    tex.basePoint.x = t->insertion_point().x();
+    tex.basePoint.y = t->insertion_point().y();
+    tex.text = t->text_value();
+    tex.textgen = t->textgeneration();
+    tex.height = t->height();
+    tex.angle = t->angle() * 180 / M_PI;
+    tex.alignH = DRW_Text::HAlign(t->halign());
+    tex.alignV = DRW_Text::VAlign(t->valign());
+
+    dxfW->writeText(&tex);
 }
 
 void DXFimpl::writeEntities() {
