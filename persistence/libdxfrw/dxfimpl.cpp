@@ -492,12 +492,62 @@ void DXFimpl::addMText(const DRW_MText& data) {
     LOG_WARNING << "addMText";
     auto layer = getLayer(data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+    lc::TextConst::HAlign halign;
+    lc::TextConst::VAlign valign;
+    //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
+    lc::TextConst::DrawingDirection drawingDir;
+    //lc::TextConst::LineSpacingStyle lineSpacingStyle;
+
+    switch (data.textgen % 3) {
+        default:
+        case 1:
+            halign = lc::TextConst::HAlign::HALeft;
+            break;
+        case 2:
+            halign = lc::TextConst::HAlign::HACenter;
+            break;
+        case 0:
+            halign = lc::TextConst::HAlign::HARight;
+            break;
+    }
+
+    switch ((int)(std::ceil(data.textgen) / 3.0)) {
+        default:
+        case 1:
+            valign = lc::TextConst::VAlign::VATop;
+            break;
+        case 2:
+            valign = lc::TextConst::VAlign::VAMiddle;
+            break;
+        case 3:
+            valign = lc::TextConst::VAlign::VABottom;
+            break;
+    }
+
+    if (data.alignH == 1) {
+        drawingDir = lc::TextConst::DrawingDirection::Backward;
+    }
+    else if (data.alignH == 3) {
+        drawingDir = lc::TextConst::DrawingDirection::UpsideDown;
+    }
+    else {
+        drawingDir = lc::TextConst::DrawingDirection::None;
+    }
+
+    // Uncomment when line spacing style has been implemented
+    /*if (data.alignV == 1) {
+        lineSpacingStyle = lc::TextConst::LineSpacingStyle::AtLeast;
+    }
+    else {
+        lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
+    }*/
+
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
         data.text, data.height,
         data.angle * M_PI / 180, data.style,
-        lc::TextConst::DrawingDirection(data.textgen),
-        lc::TextConst::HAlign(data.alignH),
-        lc::TextConst::VAlign(data.alignV),
+        lc::TextConst::DrawingDirection(drawingDir),
+        lc::TextConst::HAlign(halign),
+        lc::TextConst::VAlign(valign),
         layer,
         mf,
         getBlock(data)

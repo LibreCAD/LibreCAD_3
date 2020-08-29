@@ -42,7 +42,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
     case lc::TextConst::VABottom:
         alignX += 0.0;
-        alignY += -_text->height() + (_text->height() * .2);
+        alignY += 0.0 + (_text->height() * .2);
         break;
 
     case lc::TextConst::VABaseline:
@@ -52,7 +52,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
     case lc::TextConst::VATop:
         alignX += 0.0;
-        alignY += 0.0 + (_text->height() * .2);
+        alignY += -_text->height() + (_text->height() * .2);
         break;
 
     default:
@@ -62,7 +62,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     // Horizontal Align:
     switch (_text->halign()) {
     case lc::TextConst::HALeft:
-        alignX += - te.width;
+        alignX += 0;
         alignY += 0.;
         break;
 
@@ -77,7 +77,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
         break;
 
     case lc::TextConst::HARight:
-        alignX += 0.;
+        alignX += -te.width;
         alignY += 0.;
         break;
 

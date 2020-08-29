@@ -40,7 +40,6 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     drawingDirectionComboBox->addItem("None", lc::TextConst::DrawingDirection::None);
     drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
     drawingDirectionComboBox->addItem("Upside Down", lc::TextConst::DrawingDirection::UpsideDown);
-    drawingDirectionComboBox->addItem("Backward | Upside Down", lc::TextConst::DrawingDirection::Backward | lc::TextConst::DrawingDirection::UpsideDown);
 
     halignComboBox->addItem("HALeft", lc::TextConst::HAlign::HALeft);
     halignComboBox->addItem("HACenter", lc::TextConst::HAlign::HACenter);
