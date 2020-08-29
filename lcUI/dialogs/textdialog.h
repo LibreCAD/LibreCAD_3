@@ -4,6 +4,7 @@
 #include <QTextEdit>
 
 #include <mainwindow.h>
+#include <cad/builders/text.h>
 
 namespace Ui {
     class TextDialog;
@@ -47,16 +48,29 @@ namespace lc {
                 */
                 void insertSymbolClicked();
 
+                /**
+                * \brief Slot for alignment option being toggled
+                */
+                void alignmentToggled(bool toggle);
+
+            private:
+                /**
+                * \brief Helper function to set alignment
+                */
+                void setAlignment(int i);
+
             private:
                 Ui::TextDialog* ui;
                 QComboBox* fontComboBox;
                 QComboBox* drawingDirectionComboBox;
-                QComboBox* halignComboBox;
-                QComboBox* valignComboBox;
                 QDoubleSpinBox* heightSpinBox;
                 QDoubleSpinBox* angleSpinBox;
                 QTextEdit* textEdit;
                 lc::ui::MainWindow* _mainWindow;
+                QGroupBox* alignmentGroupBox;
+
+                lc::TextConst::HAlign halign;
+                lc::TextConst::VAlign valign;
             };
         }
     }

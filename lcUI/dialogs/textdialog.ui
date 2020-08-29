@@ -67,34 +67,6 @@
                     </layout>
                 </item>
                 <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_2">
-                        <item>
-                            <widget class="QLabel" name="label_2">
-                                <property name="text">
-                                    <string>Horizontal Align</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
-                            <widget class="QComboBox" name="comboBox_2"/>
-                        </item>
-                    </layout>
-                </item>
-                <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_3">
-                        <item>
-                            <widget class="QLabel" name="label_3">
-                                <property name="text">
-                                    <string>Vertical Align</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
-                            <widget class="QComboBox" name="comboBox_3"/>
-                        </item>
-                    </layout>
-                </item>
-                <item>
                     <layout class="QHBoxLayout" name="horizontalLayout_4">
                         <item>
                             <widget class="QLabel" name="label_4">

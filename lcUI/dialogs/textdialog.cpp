@@ -1,8 +1,6 @@
 #include "textdialog.h"
 #include "ui_textdialog.h"
 
-#include <cad/builders/text.h>
-
 using namespace lc::ui::dialog;
 
 TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
@@ -32,26 +30,12 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     textEdit = qobject_cast<QTextEdit*>(ui->verticalLayout->itemAt(0)->widget());
     fontComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_1->itemAt(1)->widget());
     drawingDirectionComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout->itemAt(1)->widget());
-    halignComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_2->itemAt(1)->widget());
-    valignComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout_3->itemAt(1)->widget());
     heightSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_4->itemAt(1)->widget());
     angleSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_5->itemAt(1)->widget());
 
     drawingDirectionComboBox->addItem("None", lc::TextConst::DrawingDirection::None);
     drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
     drawingDirectionComboBox->addItem("Upside Down", lc::TextConst::DrawingDirection::UpsideDown);
-
-    halignComboBox->addItem("HALeft", lc::TextConst::HAlign::HALeft);
-    halignComboBox->addItem("HACenter", lc::TextConst::HAlign::HACenter);
-    halignComboBox->addItem("HARight", lc::TextConst::HAlign::HARight);
-    halignComboBox->addItem("HAAligned", lc::TextConst::HAlign::HAAligned);
-    halignComboBox->addItem("HAMiddle", lc::TextConst::HAlign::HAMiddle);
-    halignComboBox->addItem("HAFit", lc::TextConst::HAlign::HAFit);
-
-    valignComboBox->addItem("VABaseline", lc::TextConst::VAlign::VABaseline);
-    valignComboBox->addItem("VABottom", lc::TextConst::VAlign::VABottom);
-    valignComboBox->addItem("VAMiddle", lc::TextConst::VAlign::VAMiddle);
-    valignComboBox->addItem("VATop", lc::TextConst::VAlign::VATop);
 
     std::vector<std::string> fontList = _mainWindow->cadMdiChild()->viewer()->docCanvas()->getFontList();
     for (const std::string& font : fontList) {
@@ -67,6 +51,15 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     QComboBox* symbolComboBox = qobject_cast<QComboBox*>(ui->verticalLayout_8->itemAt(0)->widget());
     for (const std::pair<QString, QString>& symbol : symbolData) {
         symbolComboBox->addItem(symbol.first, symbol.second);
+    }
+
+    alignmentGroupBox = qobject_cast<QGroupBox*>(ui->horizontalLayout_8->itemAt(0)->widget());
+    int numAlignments = alignmentGroupBox->layout()->count();
+
+    for (int i = 0; i < numAlignments; i++) {
+        QToolButton* toolButton = qobject_cast<QToolButton*>(alignmentGroupBox->layout()->itemAt(i)->widget());
+        toolButton->setAutoExclusive(true);
+        connect(toolButton, &QToolButton::toggled, this, &TextDialog::alignmentToggled);
     }
 
     QPushButton* okButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(0)->widget());
@@ -96,8 +89,8 @@ void TextDialog::okButtonClicked() {
     textBuilder.setHeight(heightSpinBox->value());
     textBuilder.setAngle(angleSpinBox->value() * 3.1416/180);
     textBuilder.setDrawingDirection((lc::TextConst::DrawingDirection)drawingDirectionComboBox->itemData(drawingDirectionComboBox->currentIndex()).toInt());
-    textBuilder.setHorizontalAlign((lc::TextConst::HAlign)halignComboBox->itemData(halignComboBox->currentIndex()).toInt());
-    textBuilder.setVerticalAlign((lc::TextConst::VAlign)valignComboBox->itemData(valignComboBox->currentIndex()).toInt());
+    textBuilder.setHorizontalAlign(halign);
+    textBuilder.setVerticalAlign(valign);
 
     state["updateTextOp"](textBuilder.build());
 
@@ -113,5 +106,73 @@ void TextDialog::insertSymbolClicked() {
 
     if (symbolComboBox != nullptr) {
         textEdit->insertPlainText(symbolComboBox->itemData(symbolComboBox->currentIndex()).toString());
+    }
+}
+
+void TextDialog::alignmentToggled(bool toggle) {
+    if (toggle) {
+        int numAlignments = alignmentGroupBox->layout()->count();
+        for (int i = 0; i < numAlignments; i++) {
+            QToolButton* toolButton = qobject_cast<QToolButton*>(alignmentGroupBox->layout()->itemAt(i)->widget());
+            if (toolButton->isChecked()) {
+                if (toolButton->toolTip() == "Top Right") {
+                    setAlignment(3);
+                }
+                else if (toolButton->toolTip() == "Top Left") {
+                    setAlignment(1);
+                }
+                else if (toolButton->toolTip() == "Top Center") {
+                    setAlignment(2);
+                }
+                else if (toolButton->toolTip() == "Bottom Right") {
+                    setAlignment(9);
+                }
+                else if (toolButton->toolTip() == "Bottom Left") {
+                    setAlignment(7);
+                }
+                else if (toolButton->toolTip() == "Bottom Center") {
+                    setAlignment(8);
+                }
+                else if (toolButton->toolTip() == "Middle Right") {
+                    setAlignment(6);
+                }
+                else if (toolButton->toolTip() == "Middle Left") {
+                    setAlignment(4);
+                }
+                else if (toolButton->toolTip() == "Middle Center") {
+                    setAlignment(5);
+                }
+
+                return;
+            }
+        }
+    }
+}
+
+void TextDialog::setAlignment(int i) {
+    switch (i % 3) {
+    default:
+    case 1:
+        halign = lc::TextConst::HAlign::HALeft;
+        break;
+    case 2:
+        halign = lc::TextConst::HAlign::HACenter;
+        break;
+    case 0:
+        halign = lc::TextConst::HAlign::HARight;
+        break;
+    }
+
+    switch ((int)(std::ceil(i / 3.0))) {
+    default:
+    case 1:
+        valign = lc::TextConst::VAlign::VATop;
+        break;
+    case 2:
+        valign = lc::TextConst::VAlign::VAMiddle;
+        break;
+    case 3:
+        valign = lc::TextConst::VAlign::VABottom;
+        break;
     }
 }

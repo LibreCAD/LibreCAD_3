@@ -511,7 +511,7 @@ void DXFimpl::addMText(const DRW_MText& data) {
             break;
     }
 
-    switch ((int)(std::ceil(data.textgen) / 3.0)) {
+    switch ((int)(std::ceil(data.textgen / 3.0))) {
         default:
         case 1:
             valign = lc::TextConst::VAlign::VATop;
