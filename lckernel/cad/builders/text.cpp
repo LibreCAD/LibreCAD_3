@@ -9,7 +9,9 @@ TextBuilder::TextBuilder()
     _angle(0),
     _drawingDirection(lc::TextConst::DrawingDirection::None),
     _hAlign(lc::TextConst::HAlign::HACenter),
-    _vAlign(lc::TextConst::VAlign::VAMiddle)
+    _vAlign(lc::TextConst::VAlign::VAMiddle),
+    _underlined(true),
+    _strikethrough(true)
 {
 }
 
@@ -85,6 +87,24 @@ std::string TextBuilder::textStyle() const {
     return _textStyle;
 }
 
+TextBuilder* TextBuilder::setUnderlined(bool underline) {
+    _underlined = underline;
+    return this;
+}
+
+bool TextBuilder::underlined() const {
+    return _underlined;
+}
+
+TextBuilder* TextBuilder::setStrikethrough(bool strikethrough) {
+    _strikethrough = strikethrough;
+    return this;
+}
+
+bool TextBuilder::strikethrough() const {
+    return _strikethrough;
+}
+
 lc::entity::Text_CSPtr TextBuilder::build() {
     checkValues(true);
     return entity::Text_CSPtr(new entity::Text(*this));
@@ -101,4 +121,6 @@ void TextBuilder::copy(lc::entity::Text_CSPtr entity) {
     setDrawingDirection(entity->textgeneration());
     setHorizontalAlign(entity->halign());
     setVerticalAlign(entity->valign());
+    setUnderlined(entity->underlined());
+    setStrikethrough(entity->strikethrough());
 }

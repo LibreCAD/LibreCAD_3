@@ -40,6 +40,8 @@ public:
          const TextConst::DrawingDirection textgeneration,
          const TextConst::HAlign halign,
          const TextConst::VAlign valign,
+         bool underlined,
+         bool strikethrough,
          meta::Layer_CSPtr layer,
          meta::MetaInfo_CSPtr metaInfo = nullptr,
          meta::Block_CSPtr block = nullptr
@@ -59,6 +61,8 @@ public:
     const TextConst::DrawingDirection _textgeneration;
     const TextConst::VAlign _valign;
     const TextConst::HAlign _halign;
+    const bool _underlined;
+    const bool _strikethrough;
 
     geo::Coordinate insertion_point() const {
         return _insertion_point;
@@ -90,6 +94,14 @@ public:
 
     double height() const {
         return _height;
+    }
+
+    bool underlined() const {
+        return _underlined;
+    }
+
+    bool strikethrough() const {
+        return _strikethrough;
     }
 
     /**

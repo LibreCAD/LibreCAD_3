@@ -44,6 +44,14 @@ namespace lc {
 
             std::string textStyle() const;
 
+            TextBuilder* setUnderlined(bool underline);
+
+            bool underlined() const;
+
+            TextBuilder* setStrikethrough(bool strikethrough);
+
+            bool strikethrough() const;
+
             void copy(lc::entity::Text_CSPtr entity);
 
         private:
@@ -55,6 +63,8 @@ namespace lc {
             lc::TextConst::DrawingDirection _drawingDirection;
             lc::TextConst::HAlign _hAlign;
             lc::TextConst::VAlign _vAlign;
+            bool _underlined;
+            bool _strikethrough;
         };
     }
 }

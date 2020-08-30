@@ -2,6 +2,7 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QTextEdit>
+#include <QCheckBox>
 
 #include <mainwindow.h>
 #include <cad/builders/text.h>
@@ -68,6 +69,8 @@ namespace lc {
                 QTextEdit* textEdit;
                 lc::ui::MainWindow* _mainWindow;
                 QGroupBox* alignmentGroupBox;
+                QCheckBox* underlineCheckBox;
+                QCheckBox* strikethroughCheckBox;
 
                 lc::TextConst::HAlign halign;
                 lc::TextConst::VAlign valign;

@@ -32,6 +32,8 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     drawingDirectionComboBox = qobject_cast<QComboBox*>(ui->horizontalLayout->itemAt(1)->widget());
     heightSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_4->itemAt(1)->widget());
     angleSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_5->itemAt(1)->widget());
+    underlineCheckBox = qobject_cast<QCheckBox*>(ui->horizontalLayout_9->itemAt(0)->widget());
+    strikethroughCheckBox = qobject_cast<QCheckBox*>(ui->horizontalLayout_9->itemAt(1)->widget());
 
     drawingDirectionComboBox->addItem("None", lc::TextConst::DrawingDirection::None);
     drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
@@ -91,6 +93,8 @@ void TextDialog::okButtonClicked() {
     textBuilder.setDrawingDirection((lc::TextConst::DrawingDirection)drawingDirectionComboBox->itemData(drawingDirectionComboBox->currentIndex()).toInt());
     textBuilder.setHorizontalAlign(halign);
     textBuilder.setVerticalAlign(valign);
+    textBuilder.setUnderlined(underlineCheckBox->isChecked());
+    textBuilder.setStrikethrough(strikethroughCheckBox->isChecked());
 
     state["updateTextOp"](textBuilder.build());
 

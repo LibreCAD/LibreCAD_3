@@ -93,6 +93,26 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.text(_text->text_value().c_str());
     painter.stroke();
     painter.restore();
+    
+    if (_text->strikethrough()) {
+        painter.save();
+        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.width / 50.0));
+        painter.rotate(-_text->angle());
+        painter.move_to(0., 0);
+        painter.line_to(te.width, 0);
+        painter.stroke();
+        painter.restore();
+    }
+
+    if (_text->underlined()) {
+        painter.save();
+        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() + 8.0);
+        painter.rotate(-_text->angle());
+        painter.move_to(0., 0);
+        painter.line_to(te.width, 0);
+        painter.stroke();
+        painter.restore();
+    }
 }
 
 lc::entity::CADEntity_CSPtr LCVText::entity() const {
