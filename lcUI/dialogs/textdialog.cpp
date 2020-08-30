@@ -35,6 +35,9 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     underlineCheckBox = qobject_cast<QCheckBox*>(ui->horizontalLayout_9->itemAt(0)->widget());
     strikethroughCheckBox = qobject_cast<QCheckBox*>(ui->horizontalLayout_9->itemAt(1)->widget());
 
+    connect(underlineCheckBox, &QCheckBox::toggled, this, &TextDialog::underlineToggled);
+    connect(strikethroughCheckBox, &QCheckBox::toggled, this, &TextDialog::strikethroughToggled);
+
     drawingDirectionComboBox->addItem("None", lc::TextConst::DrawingDirection::None);
     drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
     drawingDirectionComboBox->addItem("Upside Down", lc::TextConst::DrawingDirection::UpsideDown);
@@ -179,4 +182,16 @@ void TextDialog::setAlignment(int i) {
         valign = lc::TextConst::VAlign::VABottom;
         break;
     }
+}
+
+void TextDialog::underlineToggled(bool toggle) {
+    auto f = textEdit->font();
+    f.setUnderline(toggle);
+    textEdit->setFont(f);
+}
+
+void TextDialog::strikethroughToggled(bool toggle) {
+    auto f = textEdit->font();
+    f.setStrikeOut(toggle);
+    textEdit->setFont(f);
 }

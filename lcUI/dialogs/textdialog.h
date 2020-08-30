@@ -54,6 +54,16 @@ namespace lc {
                 */
                 void alignmentToggled(bool toggle);
 
+                /**
+                * \brief Slot for text underline toggling
+                */
+                void underlineToggled(bool toggle);
+
+                /**
+                * \brief Slot for text strikethrough toggling
+                */
+                void strikethroughToggled(bool toggle);
+
             private:
                 /**
                 * \brief Helper function to set alignment

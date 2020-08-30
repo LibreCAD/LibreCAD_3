@@ -96,7 +96,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     
     if (_text->strikethrough()) {
         painter.save();
-        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.width / 50.0));
+        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.height / 6.0));
         painter.rotate(-_text->angle());
         painter.move_to(0., 0);
         painter.line_to(te.width, 0);
