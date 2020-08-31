@@ -98,6 +98,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
         painter.save();
         painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.height / 6.0));
         painter.rotate(-_text->angle());
+        painter.translate(alignX, -alignY);
         painter.move_to(0., 0);
         painter.line_to(te.width, 0);
         painter.stroke();
@@ -108,6 +109,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
         painter.save();
         painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() + 8.0);
         painter.rotate(-_text->angle());
+        painter.translate(alignX, -alignY);
         painter.move_to(0., 0);
         painter.line_to(te.width, 0);
         painter.stroke();
