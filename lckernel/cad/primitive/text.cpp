@@ -221,6 +221,10 @@ PropertiesMap Text::availableProperties() const {
     propertyValues["textValue"] = this->text_value();
     propertyValues["height"] = this->height();
     propertyValues["angle"] = AngleProperty(this->angle());
+    propertyValues["bold"] = this->bold();
+    propertyValues["italic"] = this->italic();
+    propertyValues["underlined"] = this->underlined();
+    propertyValues["strikethrough"] = this->strikethrough();
 
     return propertyValues;
 }
@@ -230,6 +234,10 @@ CADEntity_CSPtr Text::setProperties(const PropertiesMap& propertiesMap) const {
     std::string textValuep = this->text_value();
     double heightp = this->height();
     double anglep = this->angle();
+    bool boldp = this->bold();
+    bool italicp = this->italic();
+    bool underlinedp = this->underlined();
+    bool strikethroughp = this->strikethrough();
 
     for(auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
         if (iter->first == "insertionPoint") {
@@ -247,9 +255,25 @@ CADEntity_CSPtr Text::setProperties(const PropertiesMap& propertiesMap) const {
         if (iter->first == "angle") {
             anglep = boost::get<AngleProperty>(iter->second).Get();
         }
+
+        if (iter->first == "bold") {
+            boldp = boost::get<bool>(iter->second);
+        }
+
+        if (iter->first == "italic") {
+            italicp = boost::get<bool>(iter->second);
+        }
+
+        if (iter->first == "underlined") {
+            underlinedp = boost::get<bool>(iter->second);
+        }
+
+        if (iter->first == "strikethrough") {
+            strikethroughp = boost::get<bool>(iter->second);
+        }
     }
 
-    auto textEntity = std::make_shared<Text>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), underlined(), strikethrough(), bold(), italic(), layer(), metaInfo(), block());
+    auto textEntity = std::make_shared<Text>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), underlinedp, strikethroughp, boldp, italicp, layer(), metaInfo(), block());
     textEntity->setID(this->id());
     return textEntity;
 }

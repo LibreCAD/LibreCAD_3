@@ -69,6 +69,10 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
         QToolButton* toolButton = qobject_cast<QToolButton*>(alignmentGroupBox->layout()->itemAt(i)->widget());
         toolButton->setAutoExclusive(true);
         connect(toolButton, &QToolButton::toggled, this, &TextDialog::alignmentToggled);
+
+        if (numAlignments / 2 == i) {
+            toolButton->setChecked(true);
+        }
     }
 
     QPushButton* okButton = qobject_cast<QPushButton*>(ui->horizontalLayout_6->itemAt(0)->widget());
