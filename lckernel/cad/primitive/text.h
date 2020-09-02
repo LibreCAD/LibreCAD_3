@@ -42,6 +42,8 @@ public:
          const TextConst::VAlign valign,
          bool underlined,
          bool strikethrough,
+         bool bold,
+         bool italic,
          meta::Layer_CSPtr layer,
          meta::MetaInfo_CSPtr metaInfo = nullptr,
          meta::Block_CSPtr block = nullptr
@@ -63,6 +65,8 @@ public:
     const TextConst::HAlign _halign;
     const bool _underlined;
     const bool _strikethrough;
+    const bool _bold;
+    const bool _italic;
 
     geo::Coordinate insertion_point() const {
         return _insertion_point;
@@ -102,6 +106,14 @@ public:
 
     bool strikethrough() const {
         return _strikethrough;
+    }
+
+    bool bold() const {
+        return _bold;
+    }
+
+    bool italic() const {
+        return _italic;
     }
 
     /**

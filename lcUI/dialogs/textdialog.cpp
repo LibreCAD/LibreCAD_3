@@ -34,9 +34,13 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     angleSpinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout_5->itemAt(1)->widget());
     underlineCheckBox = qobject_cast<QCheckBox*>(ui->horizontalLayout_9->itemAt(0)->widget());
     strikethroughCheckBox = qobject_cast<QCheckBox*>(ui->horizontalLayout_9->itemAt(1)->widget());
+    boldCheckbox = qobject_cast<QCheckBox*>(ui->horizontalLayout_10->itemAt(0)->widget());
+    italicCheckbox = qobject_cast<QCheckBox*>(ui->horizontalLayout_10->itemAt(1)->widget());
 
     connect(underlineCheckBox, &QCheckBox::toggled, this, &TextDialog::underlineToggled);
     connect(strikethroughCheckBox, &QCheckBox::toggled, this, &TextDialog::strikethroughToggled);
+    connect(boldCheckbox, &QCheckBox::toggled, this, &TextDialog::boldToggled);
+    connect(italicCheckbox, &QCheckBox::toggled, this, &TextDialog::italicToggled);
 
     drawingDirectionComboBox->addItem("None", lc::TextConst::DrawingDirection::None);
     drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
@@ -98,6 +102,8 @@ void TextDialog::okButtonClicked() {
     textBuilder.setVerticalAlign(valign);
     textBuilder.setUnderlined(underlineCheckBox->isChecked());
     textBuilder.setStrikethrough(strikethroughCheckBox->isChecked());
+    textBuilder.setBold(boldCheckbox->isChecked());
+    textBuilder.setItalic(italicCheckbox->isChecked());
 
     state["updateTextOp"](textBuilder.build());
 
@@ -193,5 +199,17 @@ void TextDialog::underlineToggled(bool toggle) {
 void TextDialog::strikethroughToggled(bool toggle) {
     auto f = textEdit->font();
     f.setStrikeOut(toggle);
+    textEdit->setFont(f);
+}
+
+void TextDialog::boldToggled(bool toggle) {
+    auto f = textEdit->font();
+    f.setBold(toggle);
+    textEdit->setFont(f);
+}
+
+void TextDialog::italicToggled(bool toggle) {
+    auto f = textEdit->font();
+    f.setItalic(toggle);
     textEdit->setFont(f);
 }

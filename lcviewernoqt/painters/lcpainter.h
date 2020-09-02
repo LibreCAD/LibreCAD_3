@@ -74,7 +74,7 @@ public:
 
     virtual void font_size(double size, bool deviceCoords) = 0;
 
-    virtual void select_font_face(const char* text_val) = 0;
+    virtual void select_font_face(const char* text_val, const char* font_type) = 0;
 
     virtual void text(const char* text_val) = 0;
 

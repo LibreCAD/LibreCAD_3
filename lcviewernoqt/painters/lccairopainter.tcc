@@ -392,7 +392,7 @@ public:
         *dy = -*dy;
     }
 
-    void select_font_face(const char *text_val) {
+    void select_font_face(const char *text_val, const char* font_type) {
         cairo_select_font_face(_cr, text_val, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     }
 

@@ -64,6 +64,16 @@ namespace lc {
                 */
                 void strikethroughToggled(bool toggle);
 
+                /**
+                * \brief Slot for text bold toggling
+                */
+                void boldToggled(bool toggle);
+
+                /**
+                * \brief Slot for text italic toggling
+                */
+                void italicToggled(bool toggle);
+
             private:
                 /**
                 * \brief Helper function to set alignment
@@ -81,6 +91,8 @@ namespace lc {
                 QGroupBox* alignmentGroupBox;
                 QCheckBox* underlineCheckBox;
                 QCheckBox* strikethroughCheckBox;
+                QCheckBox* boldCheckbox;
+                QCheckBox* italicCheckbox;
 
                 lc::TextConst::HAlign halign;
                 lc::TextConst::VAlign valign;

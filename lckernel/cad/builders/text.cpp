@@ -10,8 +10,10 @@ TextBuilder::TextBuilder()
     _drawingDirection(lc::TextConst::DrawingDirection::None),
     _hAlign(lc::TextConst::HAlign::HACenter),
     _vAlign(lc::TextConst::VAlign::VAMiddle),
-    _underlined(true),
-    _strikethrough(true)
+    _underlined(false),
+    _strikethrough(false),
+    _bold(false),
+    _italic(false)
 {
 }
 
@@ -105,6 +107,24 @@ bool TextBuilder::strikethrough() const {
     return _strikethrough;
 }
 
+TextBuilder* TextBuilder::setBold(bool bold) {
+    _bold = bold;
+    return this;
+}
+
+bool TextBuilder::bold() const {
+    return _bold;
+}
+
+TextBuilder* TextBuilder::setItalic(bool italic) {
+    _italic = italic;
+    return this;
+}
+
+bool TextBuilder::italic() const {
+    return _italic;
+}
+
 lc::entity::Text_CSPtr TextBuilder::build() {
     checkValues(true);
     return entity::Text_CSPtr(new entity::Text(*this));
@@ -123,4 +143,6 @@ void TextBuilder::copy(lc::entity::Text_CSPtr entity) {
     setVerticalAlign(entity->valign());
     setUnderlined(entity->underlined());
     setStrikethrough(entity->strikethrough());
+    setBold(entity->bold());
+    setItalic(entity->italic());
 }

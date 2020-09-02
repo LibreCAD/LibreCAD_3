@@ -14,7 +14,9 @@ bool Font_Book::createDefaultFont(const std::string& name,const std::string& fil
 {
     _default_font=new GL_Font();
 
-    if(_default_font->readyFont(file_path))
+    std::string fontFamily;
+    std::string fontStyle;
+    if(_default_font->readyFont(file_path, fontFamily, fontStyle))
     {
         _font_map.insert(std::make_pair( name, _default_font ) );
         return true;
@@ -27,25 +29,64 @@ bool Font_Book::createFont(const std::string& name,const std::string& file_path)
 {
     GL_Font* font=new GL_Font();
 
-    if(font->readyFont(file_path))
+    std::string fontFamily;
+    std::string fontStyle;
+    if(font->readyFont(file_path, fontFamily, fontStyle))
     {
-        _font_map.insert(std::make_pair( name, font ) );
+        if (fontStyle == "Regular") {
+            _font_map.insert(std::make_pair(fontFamily, font));
+        }
+        else if (fontStyle == "Bold") {
+            _font_bold_map.insert(std::make_pair(fontFamily, font));
+        }
+        else if (fontStyle == "Italic") {
+            _font_italic_map.insert(std::make_pair(fontFamily, font));
+        }
+        else if (fontStyle == "Bold Italic") {
+            _font_bold_italic_map.insert(std::make_pair(fontFamily, font));
+        }
+        else {
+            _font_map.insert(std::make_pair(name, font));
+        }
+
         return true;
     }
 
     return false;
 }
 
-GL_Font* Font_Book::pickFont(const std::string& font_name)
+GL_Font* Font_Book::pickFont(const std::string& font_name, FontType fontType)
 {
+    std::map<const std::string, GL_Font*>* fontMap;
+
+    if (fontType == FontType::BOLD) {
+        fontMap = &_font_bold_map;
+    }
+    else if (fontType == FontType::ITALIC) {
+        fontMap = &_font_italic_map;
+    } 
+    else if (fontType == FontType::BOLD_ITALIC) {
+        fontMap = &_font_bold_italic_map;
+    }
+    else {
+        fontMap = &_font_map;
+    }
+
     std::map<const std::string, GL_Font* >::iterator it;
 
-    it = _font_map.find(font_name);
+    it = fontMap->find(font_name);
 
-    if (it != _font_map.end())
+    if (it != fontMap->end()) {
         return (it->second);
-    else
-        return _default_font;
+    }
+    else {
+        if (_font_map.find(font_name) != _font_map.end()) {
+            return _font_map.find(font_name)->second;
+        }
+        else {
+            return _default_font;
+        }
+    }
 }
 
 std::vector<std::string> Font_Book::getFontList() const {

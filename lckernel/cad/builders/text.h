@@ -52,6 +52,14 @@ namespace lc {
 
             bool strikethrough() const;
 
+            TextBuilder* setBold(bool bold);
+
+            bool bold() const;
+
+            TextBuilder* setItalic(bool italic);
+
+            bool italic() const;
+
             void copy(lc::entity::Text_CSPtr entity);
 
         private:
@@ -65,6 +73,8 @@ namespace lc {
             lc::TextConst::VAlign _vAlign;
             bool _underlined;
             bool _strikethrough;
+            bool _bold;
+            bool _italic;
         };
     }
 }

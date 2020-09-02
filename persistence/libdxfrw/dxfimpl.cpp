@@ -293,6 +293,8 @@ void DXFimpl::addText(const DRW_Text& data) {
                   lc::TextConst::VAlign(data.alignV),
                   false,
                   false,
+                  false,
+                  false,
                   layer,
                   mf,
                   getBlock(data)
@@ -550,6 +552,8 @@ void DXFimpl::addMText(const DRW_MText& data) {
         lc::TextConst::DrawingDirection(drawingDir),
         lc::TextConst::HAlign(halign),
         lc::TextConst::VAlign(valign),
+        false,
+        false,
         false,
         false,
         layer,

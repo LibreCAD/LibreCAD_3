@@ -14,6 +14,8 @@ Text::Text(geo::Coordinate insertion_point,
            const TextConst::VAlign valign,
            bool underlined,
            bool strikethrough,
+           bool bold,
+           bool italic,
            meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
@@ -27,7 +29,9 @@ Text::Text(geo::Coordinate insertion_point,
     _valign(valign),
     _halign(halign),
     _underlined(underlined),
-    _strikethrough(strikethrough)
+    _strikethrough(strikethrough),
+    _bold(bold),
+    _italic(italic)
 {
 }
 
@@ -43,7 +47,9 @@ Text::Text(const builder::TextBuilder& builder)
     _halign(builder.horizontalAlign()),
     _valign(builder.verticalAlign()),
     _underlined(builder.underlined()),
-    _strikethrough(builder.strikethrough())
+    _strikethrough(builder.strikethrough()),
+    _bold(builder.bold()),
+    _italic(builder.italic())
 {
 }
 
@@ -58,7 +64,9 @@ Text::Text(const Text_CSPtr& other, bool sameID) :
     _valign(other->_valign),
     _halign(other->_halign),
     _underlined(other->_underlined),
-    _strikethrough(other->_strikethrough)
+    _strikethrough(other->_strikethrough),
+    _bold(other->_bold),
+    _italic(other->_italic)
 {
 }
 
@@ -73,6 +81,8 @@ CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
                                           this->_valign,
                                           this->_underlined,
                                           this->_strikethrough,
+                                          this->_bold,
+                                          this->_italic,
                                           layer()
                                           , metaInfo(), block()
                                          );
@@ -92,6 +102,8 @@ CADEntity_CSPtr Text::copy(const geo::Coordinate& offset) const {
                        this->_valign,
                        this->_underlined,
                        this->_strikethrough,
+                       this->_bold,
+                       this->_italic,
                        layer()
                        , metaInfo(), block());
     newText->setID(this->id());
@@ -110,6 +122,8 @@ CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, double rota
                        this->_valign,
                        this->_underlined,
                        this->_strikethrough,
+                       this->_bold,
+                       this->_italic,
                        layer()
                        , metaInfo(), block());
     return newText;
@@ -127,6 +141,8 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
                        this->_valign,
                        this->_underlined,
                        this->_strikethrough,
+                       this->_bold,
+                       this->_italic,
                        this->layer()
                        , metaInfo(), block());
     newText->setID(this->id());
@@ -154,6 +170,8 @@ CADEntity_CSPtr Text::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr
                        this->_valign,
                        this->_underlined,
                        this->_strikethrough,
+                       this->_bold,
+                       this->_italic,
                        layer,
                        metaInfo,
                        block
@@ -183,6 +201,8 @@ CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> 
                                                 valign(),
                                                 underlined(),
                                                 strikethrough(),
+                                                bold(),
+                                                italic(),
                                                 layer(),
                                                 metaInfo(), block()
                                                );
@@ -229,7 +249,7 @@ CADEntity_CSPtr Text::setProperties(const PropertiesMap& propertiesMap) const {
         }
     }
 
-    auto textEntity = std::make_shared<Text>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), underlined(), strikethrough(), layer(), metaInfo(), block());
+    auto textEntity = std::make_shared<Text>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), underlined(), strikethrough(), bold(), italic(), layer(), metaInfo(), block());
     textEntity->setID(this->id());
     return textEntity;
 }

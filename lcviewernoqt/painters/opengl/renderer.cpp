@@ -180,7 +180,7 @@ void Renderer::readyCurrentEntity()
 {
     addDataToCurrentEntity();
     getCurrentEntity()->setType(_shaders);
-    getCurrentEntity()->setFont(_fonts,_font_style);
+    getCurrentEntity()->setFont(_fonts, _font_style, _font_type);
 }
 
 void Renderer::selectColor(float R,float G,float B,float A)

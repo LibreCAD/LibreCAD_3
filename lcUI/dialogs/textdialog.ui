@@ -71,6 +71,24 @@
                     </layout>
                 </item>
                 <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_10">
+                        <item>
+                            <widget class="QCheckBox" name="checkBox_3">
+                                <property name="text">
+                                    <string>Bold</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QCheckBox" name="checkBox_4">
+                                <property name="text">
+                                    <string>Italic</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </item>
+                <item>
                     <layout class="QHBoxLayout" name="horizontalLayout">
                         <item>
                             <widget class="QLabel" name="label">
