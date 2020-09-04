@@ -23,7 +23,20 @@ LCVText::LCVText(const lc::entity::Text_CSPtr& text) :
 */
 void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     painter.font_size(_text->height(), false);
-    painter.select_font_face("stick3.ttf");
+    if (_text->style() != "" && _text->style() != "STANDARD") {
+        if (_text->bold() && _text->italic()) {
+            painter.select_font_face(_text->style().c_str(), "BOLD_ITALIC");
+        }
+        else if (_text->bold()) {
+            painter.select_font_face(_text->style().c_str(), "BOLD");
+        }
+        else if (_text->italic()) {
+            painter.select_font_face(_text->style().c_str(), "ITALIC");
+        }
+        else {
+            painter.select_font_face(_text->style().c_str(), "REGULAR");
+        }
+    }
 
     TextExtends te = painter.text_extends(_text->text_value().c_str());
     double alignX = 0.0;
@@ -40,7 +53,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
     case lc::TextConst::VABottom:
         alignX += 0.0;
-        alignY += -_text->height() + (_text->height() * .2);
+        alignY += 0.0 + (_text->height() * .2);
         break;
 
     case lc::TextConst::VABaseline:
@@ -50,7 +63,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
     case lc::TextConst::VATop:
         alignX += 0.0;
-        alignY += 0.0 + (_text->height() * .2);
+        alignY += -_text->height() + (_text->height() * .2);
         break;
 
     default:
@@ -60,7 +73,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     // Horizontal Align:
     switch (_text->halign()) {
     case lc::TextConst::HALeft:
-        alignX += - te.width;
+        alignX += 0;
         alignY += 0.;
         break;
 
@@ -75,7 +88,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
         break;
 
     case lc::TextConst::HARight:
-        alignX += 0.;
+        alignX += -te.width;
         alignY += 0.;
         break;
 
@@ -91,6 +104,28 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.text(_text->text_value().c_str());
     painter.stroke();
     painter.restore();
+    
+    if (_text->strikethrough()) {
+        painter.save();
+        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.height / 6.0));
+        painter.rotate(-_text->angle());
+        painter.translate(alignX, -alignY);
+        painter.move_to(0., 0);
+        painter.line_to(te.width, 0);
+        painter.stroke();
+        painter.restore();
+    }
+
+    if (_text->underlined()) {
+        painter.save();
+        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() + 8.0);
+        painter.rotate(-_text->angle());
+        painter.translate(alignX, -alignY);
+        painter.move_to(0., 0);
+        painter.line_to(te.width, 0);
+        painter.stroke();
+        painter.restore();
+    }
 }
 
 lc::entity::CADEntity_CSPtr LCVText::entity() const {

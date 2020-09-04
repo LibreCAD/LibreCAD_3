@@ -112,6 +112,7 @@ CADEntity_CSPtr DimAngular::rotate(const geo::Coordinate& rotation_center, const
                              layer(),
                              metaInfo()
                          );
+    newDimAngular->setID(this->id());
     return newDimAngular;
 }
 
@@ -131,6 +132,7 @@ CADEntity_CSPtr DimAngular::scale(const geo::Coordinate& scale_center, const geo
                              layer(),
                              metaInfo()
                          );
+    newDimAngular->setID(this->id());
     return newDimAngular;
 }
 
@@ -150,12 +152,15 @@ CADEntity_CSPtr DimAngular::mirror(const geo::Coordinate& axis1, const geo::Coor
                              layer(),
                              metaInfo()
                          );
+    newDimAngular->setID(this->id());
     return newDimAngular;
 }
 
 const geo::Area DimAngular::boundingBox() const {
-    // TODO create proper bounding box for DimAngular
-    return geo::Area(this->middleOfText(), 0., 0.);
+    double radius = (this->middleOfText() - this->definitionPoint()).magnitude();
+    lc::geo::Coordinate topLeft = this->definitionPoint() + (lc::geo::Coordinate(-radius, radius));
+    lc::geo::Coordinate bottomRight = this->definitionPoint() + (lc::geo::Coordinate(radius, -radius));
+    return geo::Area(topLeft, bottomRight);
 }
 
 CADEntity_CSPtr DimAngular::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -175,7 +180,7 @@ CADEntity_CSPtr DimAngular::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr
                              metaInfo,
                              block
                          );
-
+    newDimAngular->setID(this->id());
     return newDimAngular;
 }
 

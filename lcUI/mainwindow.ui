@@ -140,6 +140,12 @@
      <addaction name="actionEllipse_FociPoints"/>
      <addaction name="actionEllipse_4Points"/>
     </widget>
+    <widget class="lc::ui::api::Menu" name="menuText">
+     <property name="title">
+      <string>Text</string>
+     </property>
+     <addaction name="actionText_Operation"/>
+    </widget>
     <widget class="lc::ui::api::Menu" name="menuDimension">
      <property name="title">
       <string>&amp;Dimension</string>
@@ -291,6 +297,11 @@
           <string>&amp;Ellipse 4 Points</string>
       </property>
   </action>
+    <action name="actionText_Operation">
+        <property name="text">
+            <string>&amp;Text</string>
+        </property>
+    </action>
   <action name="actionPolyline">
    <property name="text">
     <string>&amp;Polyline</string>

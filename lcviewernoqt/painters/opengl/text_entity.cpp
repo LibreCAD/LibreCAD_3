@@ -73,9 +73,9 @@ void Text_Entity::applyGradient(float* vertices,int size)
     // NO Need (Used by Gradient_Entity)
 }
 
-void Text_Entity::setFont(Font_Book& fonts,const std::string& style)
+void Text_Entity::setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType)
 {
-    _font= fonts.pickFont(style);  //default
+    _font= fonts.pickFont(style, fontType);  //default
 }
 
 void Text_Entity::addTextData(glm::vec4 pos, std::string textval, float font_size, bool retain)

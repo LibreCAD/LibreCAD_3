@@ -7,7 +7,7 @@
                     {
                         "label": "Creation",
                         "width": 3,
-                        "buttons": [ "LineOperations", "PointOperations", "EllipseOperations", "SplineOperations", "LWPolylineOperations", "CircleOperations", "ArcOperations" ]
+                        "buttons": [ "LineOperations", "PointOperations", "EllipseOperations", "SplineOperations", "LWPolylineOperations", "CircleOperations", "ArcOperations", "TextOperations" ]
                     },
                     {
                         "label": "Modify",

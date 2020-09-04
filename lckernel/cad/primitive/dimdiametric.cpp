@@ -88,6 +88,7 @@ CADEntity_CSPtr DimDiametric::rotate(const geo::Coordinate& rotation_center, con
                                this->_definitionPoint2.rotate(rotation_center, rotation_angle),
                                this->_leader,
                                this->layer(), metaInfo(), block());
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 
@@ -102,6 +103,7 @@ CADEntity_CSPtr DimDiametric::scale(const geo::Coordinate& scale_center, const g
                            this->_definitionPoint2.scale(scale_center, scale_factor),
                            this->_leader,
                            this->layer(), metaInfo(), block());
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 
@@ -116,12 +118,12 @@ CADEntity_CSPtr DimDiametric::mirror(const geo::Coordinate& axis1, const geo::Co
                            this->_definitionPoint2.mirror(axis1, axis2),
                            this->_leader,
                            this->layer(), metaInfo(), block());
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 
 const geo::Area DimDiametric::boundingBox() const {
-    // TODO create proper bounding box for DimLinear
-    return geo::Area(this->middleOfText(), 0., 0.);
+    return geo::Area(this->definitionPoint(), this->definitionPoint2());
 }
 
 CADEntity_CSPtr DimDiametric::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -139,7 +141,7 @@ CADEntity_CSPtr DimDiametric::modify(meta::Layer_CSPtr layer, const meta::MetaIn
                                metaInfo,
                                block
                            );
-
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 

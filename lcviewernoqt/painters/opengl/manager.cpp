@@ -178,9 +178,10 @@ void Manager::selectFontSize(float size, bool deviceCoords)
     _no_text_magnify=deviceCoords;
 }
 
-void Manager::selectFontFace(const char* text_style)
+void Manager::selectFontFace(const char* text_style, Font_Book::FontType fontType)
 {
-    _font_style=text_style;
+    _font_style = text_style;
+    _font_type = fontType;
 }
 
 void Manager::selectFontValue(const char* text_val)
@@ -193,6 +194,7 @@ void Manager::setDefault()
 {
     clearData();
     _font_style="ABeeZee-Regular";
+    _font_type = Font_Book::FontType::REGULAR;
     _text_value=" ";
     _text_height=12;
     _no_text_magnify=false;

@@ -140,7 +140,7 @@ void Shape_Entity::applyGradient(float* vertices,int size)
     // NO Need (Used by Gradient_Entity)
 }
 
-void Shape_Entity::setFont(Font_Book& fonts,const std::string& style)
+void Shape_Entity::setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType)
 {
     // NO Need (Used by Tex_Entity)
 }
