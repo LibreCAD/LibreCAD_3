@@ -48,7 +48,7 @@ public:
     virtual void addGradientColorPoint(float R,float G,float B,float A) = 0;
     virtual void applyGradient(float* vertices,int size) = 0;
 
-    virtual void setFont(Font_Book& fonts,const std::string& style) = 0;
+    virtual void setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType = Font_Book::FontType::REGULAR) = 0;
     virtual void addTextData(glm::vec4 pos, std::string text_val, float font_size, bool retain) = 0;
 
     virtual void freeGPU() = 0;

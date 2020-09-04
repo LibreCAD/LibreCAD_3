@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>TextDialog</class>
+    <widget class="QDialog" name="TextDialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>400</width>
+                <height>600</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>TextDialog</string>
+        </property>
+        <widget class="QWidget" name="layoutWidget">
+            <property name="leftMargin">
+                <number>10</number>
+            </property>
+            <property name="topMargin">
+                <number>10</number>
+            </property>
+            <property name="rightMargin">
+                <number>10</number>
+            </property>
+            <property name="bottomMargin">
+                <number>10</number>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>400</width>
+                    <height>600</height>
+                </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                    <widget class="QTextEdit" name="textEdit"/>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_1">
+                        <item>
+                            <widget class="QLabel" name="label_1">
+                                <property name="text">
+                                    <string>Font</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QComboBox" name="comboBox_1"/>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_9">
+                        <item>
+                            <widget class="QCheckBox" name="checkBox_2">
+                                <property name="text">
+                                    <string>Underline</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QCheckBox" name="checkBox">
+                                <property name="text">
+                                    <string>Strikethrough</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_10">
+                        <item>
+                            <widget class="QCheckBox" name="checkBox_3">
+                                <property name="text">
+                                    <string>Bold</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QCheckBox" name="checkBox_4">
+                                <property name="text">
+                                    <string>Italic</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout">
+                        <item>
+                            <widget class="QLabel" name="label">
+                                <property name="text">
+                                    <string>Drawing Direction</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QComboBox" name="comboBox"/>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_4">
+                        <item>
+                            <widget class="QLabel" name="label_4">
+                                <property name="text">
+                                    <string>Height</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_5">
+                        <item>
+                            <widget class="QLabel" name="label_5">
+                                <property name="text">
+                                    <string>Angle</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_8">
+                        <item>
+                            <widget class="QGroupBox" name="bgAlignment">
+                                <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="title">
+                                    <string>Alignment</string>
+                                </property>
+                                <layout class="QGridLayout">
+                                    <item row="0" column="2">
+                                        <widget class="QToolButton" name="bTR">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Top Right</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_topright.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="0" column="0">
+                                        <widget class="QToolButton" name="bTL">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Top Left</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_topleft.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="1" column="0">
+                                        <widget class="QToolButton" name="bML">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Middle Left</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_middleleft.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="1" column="1">
+                                        <widget class="QToolButton" name="bMC">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Middle Center</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_middlecenter.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="1" column="2">
+                                        <widget class="QToolButton" name="bMR">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Middle Right</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_middleright.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="0">
+                                        <widget class="QToolButton" name="bBL">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Bottom Left</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_bottomleft.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="2">
+                                        <widget class="QToolButton" name="bBR">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Bottom Right</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_bottomright.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="1">
+                                        <widget class="QToolButton" name="bBC">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Bottom Center</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_bottomcenter.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="0" column="1">
+                                        <widget class="QToolButton" name="bTC">
+                                            <property name="sizePolicy">
+                                                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                                    <horstretch>0</horstretch>
+                                                    <verstretch>0</verstretch>
+                                                </sizepolicy>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>25</width>
+                                                    <height>25</height>
+                                                </size>
+                                            </property>
+                                            <property name="toolTip">
+                                                <string>Top Center</string>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                            <property name="icon">
+                                                <iconset>:/icons/mtext_align_topcenter.svg</iconset>
+                                            </property>
+                                            <property name="checkable">
+                                                <bool>true</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                </layout>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QGroupBox" name="bgInsertSymbol">
+                                <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="title">
+                                    <string>Insert Symbol</string>
+                                </property>
+                                <layout class="QVBoxLayout" name="verticalLayout_8">
+                                    <item>
+                                        <widget class="QComboBox" name="cbSymbol">
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <widget class="QPushButton" name="pushButton_3">
+                                            <property name="text">
+                                                <string>Insert</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                </layout>
+                            </widget>
+                        </item>
+                    </layout>
+                </item>
+                <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_6">
+                        <item>
+                            <widget class="QPushButton" name="pushButton">
+                                <property name="text">
+                                    <string>Ok</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QPushButton" name="pushButton_2">
+                                <property name="text">
+                                    <string>Cancel</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </item>
+            </layout>
+        </widget>
+    </widget>
+    <resources/>
+    <connections/>
+</ui>

@@ -212,9 +212,20 @@ void OpenglPainter::font_size(double size, bool deviceCoords)
     _manager->selectFontSize(size,deviceCoords);
 }
 
-void OpenglPainter::select_font_face(const char* text_val)
+void OpenglPainter::select_font_face(const char* text_val, const char* font_type)
 {
-    _manager->selectFontFace(text_val);
+    if (font_type == "BOLD") {
+        _manager->selectFontFace(text_val, Font_Book::FontType::BOLD);
+    }
+    else if (font_type == "ITALIC") {
+        _manager->selectFontFace(text_val, Font_Book::FontType::ITALIC);
+    }
+    else if (font_type == "BOLD_ITALIC") {
+        _manager->selectFontFace(text_val, Font_Book::FontType::BOLD_ITALIC);
+    }
+    else {
+        _manager->selectFontFace(text_val, Font_Book::FontType::REGULAR);
+    }
 }
 
 void OpenglPainter::set_dash(const double* dashes, const int num_dashes, double offset, bool scaled)
