@@ -378,7 +378,9 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
 {
     QWidget::mousePressEvent(event);
     _hookManager.onMouseEvent("press", event);
-    emit mousePressEvent();
+    if (event->buttons() != Qt::RightButton) {
+        emit mousePressEvent();
+    }
 }
 
 
