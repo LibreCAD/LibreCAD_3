@@ -202,3 +202,10 @@ void OpenglCacherPainter::deleteEntityCached(unsigned long id)
 {
     _cacher->erasePack(id);
 }
+
+std::vector<std::string> OpenglCacherPainter::getFontList() const {
+    return std::vector<std::string>();
+}
+
+void OpenglCacherPainter::addFontsFromPath(const std::vector<std::string>& paths) {
+}

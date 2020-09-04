@@ -25,7 +25,7 @@ public:
     void setType(Shaders_book& shaders) override;
     void setModelMatrix(glm::mat4 model) override;
 
-    void setFont(Font_Book& fonts,const std::string& style) override;
+    void setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType = Font_Book::FontType::REGULAR) override;
     void addTextData(glm::vec4 pos, std::string textval, float font_size, bool retain) override;
 
     void freeGPU() override;

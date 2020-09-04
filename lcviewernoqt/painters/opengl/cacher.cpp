@@ -63,7 +63,7 @@ void Cacher::readyCurrentEntity()
     getCurrentEntity()->setModelMatrix(_model);
     addDataToCurrentEntity();
     getCurrentEntity()->setType(_shaders);
-    getCurrentEntity()->setFont(_fonts,_font_style);
+    getCurrentEntity()->setFont(_fonts,_font_style,_font_type);
 }
 
 void Cacher::selectColor(float R,float G,float B,float A)

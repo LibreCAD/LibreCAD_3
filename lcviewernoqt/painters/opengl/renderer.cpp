@@ -42,6 +42,7 @@ void Renderer::createResources()
     _cacherPtr->setShaderBook(_shaders);
 
     _fonts.createDefaultFont("ABeeZee-Regular",_font_path+"ABeeZee-Regular.otf");
+    _fonts.createFontsFromDir(_font_path);
 
     _cacherPtr->setFontBook(_fonts);
 
@@ -179,7 +180,7 @@ void Renderer::readyCurrentEntity()
 {
     addDataToCurrentEntity();
     getCurrentEntity()->setType(_shaders);
-    getCurrentEntity()->setFont(_fonts,_font_style);
+    getCurrentEntity()->setFont(_fonts, _font_style, _font_type);
 }
 
 void Renderer::selectColor(float R,float G,float B,float A)
@@ -240,4 +241,13 @@ void Renderer::renderCachedPack(GL_Pack* pack)
         gl_entity_in_pack=pack->getEntityAt(i);
         renderCachedEntity(gl_entity_in_pack);
     }
+}
+
+const Font_Book& Renderer::fontBook() const
+{
+    return _fonts;
+}
+
+Font_Book& Renderer::fontBook() {
+    return _fonts;
 }

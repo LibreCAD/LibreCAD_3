@@ -91,6 +91,7 @@ CADEntity_CSPtr DimRadial::rotate(const geo::Coordinate& rotation_center, double
                         this->_leader,
                         this->layer(), metaInfo(), block()
                                                    );
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
@@ -106,6 +107,7 @@ CADEntity_CSPtr DimRadial::scale(const geo::Coordinate& scale_center, const geo:
                         this->_leader,
                         this->layer(), metaInfo(), block()
                                                    );
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
@@ -121,12 +123,12 @@ CADEntity_CSPtr DimRadial::mirror(const geo::Coordinate& axis1, const geo::Coord
                         this->_leader,
                         this->layer(), metaInfo(), block()
                                                    );
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
 const geo::Area DimRadial::boundingBox() const {
-    // TODO create proper bounding box for DimLinear
-    return geo::Area(this->middleOfText(), 0., 0.);
+    return geo::Area(this->middleOfText(), this->definitionPoint2());
 }
 
 CADEntity_CSPtr DimRadial::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -143,7 +145,7 @@ CADEntity_CSPtr DimRadial::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr 
                             layer,
                             metaInfo, block
                         );
-
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
