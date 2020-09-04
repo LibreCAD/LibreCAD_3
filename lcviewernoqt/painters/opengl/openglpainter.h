@@ -44,7 +44,7 @@ public:
     void line_width(double lineWidth) override;
 
     void font_size(double size, bool deviceCoords) override;
-    void select_font_face(const char* text_val) override;
+    void select_font_face(const char* text_val, const char* font_type) override;
 
     void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled) override;
     void dash_destroy() override;

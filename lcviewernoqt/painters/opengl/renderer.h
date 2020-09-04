@@ -82,6 +82,10 @@ public:
     //-----------------------------rendering cached entities---------------
     void renderCachedEntity(GL_Entity* entity);
     void renderCachedPack(GL_Pack* pack);
+
+    //-----------------------------font ---------------
+    const Font_Book& fontBook() const;
+    Font_Book& fontBook();
 };
 }
 }

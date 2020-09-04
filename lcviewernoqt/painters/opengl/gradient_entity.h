@@ -55,7 +55,7 @@ public:
     void setFillMode(bool fill) override;
     void setLineWidth(float width) override;
     void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) override;
-    void setFont(Font_Book& fonts,const std::string& style) override;
+    void setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType = Font_Book::FontType::REGULAR) override;
     void addTextData(glm::vec4 pos, std::string text_val, float font_size, bool retain) override;
 };
 }
