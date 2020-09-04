@@ -53,6 +53,7 @@ private:
 public:
     float _text_height;
     std::string _font_style;
+    Font_Book::FontType _font_type = Font_Book::FontType::REGULAR;
     Manager();
     ~Manager();
     //-----------------Functions manipulating entities-----------------------------
@@ -79,7 +80,7 @@ public:
     void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
 
     //----------------Functions manipulating Font data-----------------------------
-    void selectFontFace(const char* text_style);
+    void selectFontFace(const char* text_style, Font_Book::FontType fontType = Font_Book::FontType::REGULAR);
     void selectFontValue(const char* text_val);
     void selectFontSize(float size, bool deviceCoords);
     //----------------Functions adding data to entity--------------------------------

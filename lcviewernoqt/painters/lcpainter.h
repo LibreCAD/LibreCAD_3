@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 namespace lc {
 namespace viewer {
 
@@ -73,7 +74,7 @@ public:
 
     virtual void font_size(double size, bool deviceCoords) = 0;
 
-    virtual void select_font_face(const char* text_val) = 0;
+    virtual void select_font_face(const char* text_val, const char* font_type) = 0;
 
     virtual void text(const char* text_val) = 0;
 
@@ -137,7 +138,9 @@ public:
 
     virtual void deleteEntityCached(unsigned long id) = 0;
 
+    virtual std::vector<std::string> getFontList() const = 0;
 
+    virtual void addFontsFromPath(const std::vector<std::string>& paths) = 0;
 };
 }
 }
