@@ -78,11 +78,11 @@ public:
      * @return
      */
     CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
-                                  const geo::Coordinate &scale_factor) const override;
+                          const geo::Coordinate &scale_factor) const override;
 
     CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                                   const geo::Coordinate& axis2) const override {
-        return NULL; // TODO: no return statement, not implemented in dimlinear.cpp
+                           const geo::Coordinate& axis2) const override {
+        return NULL; /// @todo no return statement, not implemented in dimlinear.cpp
     }
     /**
      * @brief boundingBox of the entity
@@ -91,7 +91,7 @@ public:
     const geo::Area boundingBox() const override;
 
     CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo,
-                                   meta::Block_CSPtr block) const override;
+                           meta::Block_CSPtr block) const override;
 
     // Oblique angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
     double oblique() const;

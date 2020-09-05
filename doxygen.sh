@@ -1,12 +1,24 @@
 #!/bin/bash
+OUTPUT_DIRECTORY=doxygen/doc
+#doxygen is main module
+MODULES=( lckernel persistence lcviewernoqt lcadluascript lcUI luacmdinterface unittest )
+#here order matters, if cyclic 2 run
 
 #This file generate Doxygen documentation
 #Maybe we should execute the following commands with CMake.
 
-(cat librecad.dox; echo "INPUT=lcadluascript"; echo "OUTPUT_DIRECTORY=doc/lcadluascript"; echo "EXCLUDE_PATTERNS = */lua-intf/*") | doxygen -
-(cat librecad.dox; echo "INPUT=persistence"; echo "OUTPUT_DIRECTORY=doc/persistence") | doxygen -
-(cat librecad.dox; echo "INPUT=lckernel"; echo "OUTPUT_DIRECTORY=doc/lckernel"; echo "EXCLUDE_PATTERNS = */nano-signal-slot/*") | doxygen -
-(cat librecad.dox; echo "INPUT=lcUI"; echo "OUTPUT_DIRECTORY=doc/lcUI") | doxygen -
-(cat librecad.dox; echo "INPUT=lcviewernoqt"; echo "OUTPUT_DIRECTORY=doc/lcviewernoqt") | doxygen -
-(cat librecad.dox; echo "INPUT=luacmdinterface"; echo "OUTPUT_DIRECTORY=doc/luacmdinterface") | doxygen -
-(cat librecad.dox; echo "INPUT=unittest"; echo "OUTPUT_DIRECTORY=doc/unittest") | doxygen -
+createDirectory(){
+    if [ ! -r "$1" ]; then
+        echo "Creating directory $1"
+        mkdir "$1"
+    fi
+}
+
+createDirectory $OUTPUT_DIRECTORY
+for module in ${MODULES[@]}
+do
+    createDirectory $OUTPUT_DIRECTORY/$module
+    (cat $OUTPUT_DIRECTORY/../librecad.dox; echo "INPUT=$module"; echo "OUTPUT_DIRECTORY=$OUTPUT_DIRECTORY/$module"; echo "PROJECT_BRIEF=LibreCAD_3" ; echo "PROJECT_NAME=$module" ; cat doxygen/$module.cfg) | doxygen -
+done
+createDirectory $OUTPUT_DIRECTORY/main
+(cat $OUTPUT_DIRECTORY/../librecad.dox; echo "INPUT=doxygen"; echo "OUTPUT_DIRECTORY=$OUTPUT_DIRECTORY/main"; cat doxygen/main.cfg) | doxygen -

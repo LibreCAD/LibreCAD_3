@@ -1,7 +1,7 @@
 LibreCAD_3
 ==========
 
-![Build status](https://api.travis-ci.org/LibreCAD/LibreCAD_3.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/LibreCAD/LibreCAD_3/badge.svg?branch=master)](https://coveralls.io/github/LibreCAD/LibreCAD_3?branch=master)
+![Build status](https://api.travis-ci.org/LibreCAD/LibreCAD_3.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/LibreCAD/LibreCAD_3/badge.svg?branch=master)](https://coveralls.io/github/LibreCAD/LibreCAD_3?branch=master) [![CodeFactor](https://www.codefactor.io/repository/github/librecad/librecad_3/badge)](https://www.codefactor.io/repository/github/librecad/librecad_3)
 
 Compilation Instructions
 ==========

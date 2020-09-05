@@ -26,9 +26,9 @@ public:
                                       double yy,
                                       double x0,
                                       double y0) {
-        // TODO
-        // you can transform all points at once, essentially by using a Eigen::Map<const Eigen::Matrix<double, 2, Eigen::Dynamic> >,
-        // initialized with the address of the first coordinate of the first element of the vector
+        /// @todo
+        /// you can transform all points at once, essentially by using a Eigen::Map<const Eigen::Matrix<double, 2, Eigen::Dynamic> >,
+        /// initialized with the address of the first coordinate of the first element of the vector
 
         std::vector<T> out;
         for (auto c : in) {

@@ -51,7 +51,7 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
     std::vector<EntityCoordinate> points;
 
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
-        //TODO: Add logical constrain
+        /// @todo Add logical constrain
     }
 
 
@@ -60,7 +60,7 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
         points.emplace_back(npoe, 2);
     }
 
-    /* TODO
+    /** @todo
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
         if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
             points.emplace_back(npoe, 3);
@@ -76,7 +76,7 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
 
 geo::Coordinate Image::nearestPointOnPath(const geo::Coordinate& coord) const {
     std::vector<geo::Coordinate> points;
-    /* TODO: nearestPointOnPath
+    /** @todo nearestPointOnPath
         auto v1 = geo::Vector(_bottomLeft, geo::Coordinate(_bottomLeft.x(), _topRight.y()));
         auto v2 = geo::Vector(_bottomLeft, geo::Coordinate(_topRight.x(), _bottomLeft.y()));
         auto v3 = geo::Vector(_topRight, geo::Coordinate(_topRight.x(), _bottomLeft.y()));

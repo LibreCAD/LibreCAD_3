@@ -19,11 +19,10 @@ void lc::builder::DimAlignedBuilder::setDefinitionPoint3(const lc::geo::Coordina
 
 void lc::builder::DimAlignedBuilder::dimAuto(lc::geo::Coordinate p2,
         lc::geo::Coordinate p3,
-        lc::geo::Coordinate middleOfText) {
-
+        lc::geo::Coordinate middleOfText)
+{
     auto nearestPoint = geo::Vector(p2, p3).nearestPointOnPath(middleOfText);
     auto distance = nearestPoint.distanceTo(middleOfText);
-
     geo::Coordinate dir;
     if(((p3.x() - p2.x()) * (middleOfText.y() - p2.y()) - (p3.y() - p2.y()) * (middleOfText.x() - p2.x())) >= 0) {
         dir = (p3 - p2).rotate(0.5 * M_PI);
@@ -40,6 +39,5 @@ void lc::builder::DimAlignedBuilder::dimAuto(lc::geo::Coordinate p2,
 
 lc::entity::DimAligned_CSPtr lc::builder::DimAlignedBuilder::build() {
     checkValues(true);
-
     return lc::entity::DimAligned_CSPtr(new lc::entity::DimAligned(*this));
 }

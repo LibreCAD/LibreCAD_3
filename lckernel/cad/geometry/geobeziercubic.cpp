@@ -122,7 +122,7 @@ std::vector<double> CubicBezier::nearestPointTValue(const lc::geo::Coordinate &c
 
     //    return lc::Math::cubicSolver({b, c, d});
     std::vector<double> empty(0, 0.);
-    return empty; // TODO: no return statement
+    return empty; /// @todo no return statement
 }
 
 const std::vector<geo::Coordinate> CubicBezier::getCP() const {
@@ -155,7 +155,7 @@ const lc::geo::Coordinate CubicBezier::returnCasesForNearestPoint(
     //    }
     //    // Point is end of curve
     //    return _pointC;
-    return ret; // TODO: no return statement
+    return ret; /// @todo no return statement
 }
 
 Coordinate CubicBezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
@@ -192,7 +192,7 @@ const std::vector<Coordinate> CubicBezier::Curve(double precession) {
 }
 
 const double CubicBezier::length() const {
-    return 0; // TODO: no return statement
+    return 0; /// @todo no return statement
 }
 
 BB_CSPtr CubicBezier::rotate(const geo::Coordinate& center, double angle) const {
@@ -223,12 +223,12 @@ BB_CSPtr CubicBezier::move(const geo::Coordinate& offset) const {
 
 const Coordinate CubicBezier::tangent(double t) const {
     const Coordinate empty;
-    return empty; // TODO: no return statement
+    return empty; /// @todo no return statement
 }
 
 const Coordinate CubicBezier::normal(double t) const {
     const Coordinate empty;
-    return empty; // TODO: no return statement
+    return empty; /// @todo no return statement
 }
 
 BB_CSPtr  CubicBezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
@@ -255,7 +255,7 @@ std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
 }
 
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {
-    return nullptr; // TODO: no return statement
+    return nullptr; /// @todo no return statement
 }
 
 BB_CSPtr CubicBezier::splitAtT(double t) const {

@@ -76,7 +76,6 @@ public:
         return (_constrain & constrain) != 0;
     }
 
-
 private:
     uint16_t _constrain;
     int _divisions;

@@ -213,6 +213,7 @@ public slots:
     void triggerMousePressed();
     void triggerMouseReleased();
     void triggerMouseMoved();
+    void triggerSelectionChanged();
     void triggerKeyPressed(int key);
 
     // CliCommand slots

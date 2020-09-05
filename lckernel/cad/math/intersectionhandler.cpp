@@ -143,7 +143,6 @@ std::vector<geo::Coordinate> Intersection::bezierCircle(const geo::BB_CSPtr& B, 
 
 
 std::vector<geo::Coordinate> Intersection::bezierArc(const geo::BB_CSPtr& B, const geo::Arc& A) {
-
     // BezierCircle Intersection
 
     // Check intersection points are on Arc.
@@ -164,7 +163,6 @@ std::vector<geo::Coordinate> Intersection::bezierArc(const geo::BB_CSPtr& B, con
 std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B, const geo::Ellipse& E) {
     std::vector<double> roots;
     std::vector<geo::Coordinate> arc_ret, ret;
-
 
     auto C = geo::Ellipse(E.center() - E.center(), E.majorP(), E.minorRadius(), E.startAngle(), E.endAngle())
              .georotate(geo::Coordinate(0,0), -E.getAngle())
@@ -199,7 +197,7 @@ std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B,
         roots = lc::maths::Math::quarticSolver({t3, t2, t1, coeff});
 
     } else {
-        // TODO CUBIC BEZIER/ELLIPSE INTERSECTION
+        /// @todo CUBIC BEZIER/ELLIPSE INTERSECTION
     }
 
     for(const auto &root : roots) {

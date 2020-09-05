@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Dimradial builder
+*/
+
 #pragma once
 
 #include "dimension.h"

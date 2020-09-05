@@ -102,7 +102,7 @@ CADEntity_CSPtr Circle::rotate(const geo::Coordinate &rotation_center, const dou
 }
 
 CADEntity_CSPtr Circle::scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) const {
-    // TODO return ellipse if scalefactor.x != scalefactor.y
+    /// @todo return ellipse if scalefactor.x != scalefactor.y
 
     auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor),
                      this->radius() * fabs(scale_factor.x()), layer(), metaInfo(), block());

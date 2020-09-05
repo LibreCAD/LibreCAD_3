@@ -31,7 +31,6 @@ DimLinear::DimLinear(geo::Coordinate definitionPoint,
     _oblique(oblique),
     _definitionPoint2(std::move(definitionPoint2)),
     _definitionPoint3(std::move(definitionPoint3)) {
-
 }
 
 
@@ -51,7 +50,6 @@ DimLinear::DimLinear(const lc::builder::DimLinearBuilder& builder) :
     _oblique(builder.oblique()),
     _definitionPoint2(builder.definitionPoint2()),
     _definitionPoint3(builder.definitionPoint3()) {
-
 }
 
 CADEntity_CSPtr DimLinear::move(const geo::Coordinate& offset) const {

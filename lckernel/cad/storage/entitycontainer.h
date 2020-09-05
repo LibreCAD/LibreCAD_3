@@ -155,7 +155,7 @@ public:
      * \brief entitiesByMetaType
      * Return all entities that contain's a specific metaInfo
      * \param metaTypeName
-     * @TODO: this does nothing
+     * @todo this does nothing
      * \return
      */
     EntityContainer entitiesByMetaType(const std::string& metaName) const {
@@ -175,7 +175,7 @@ public:
      * Find all entities within a selected area based on boundingbox of the entities
      * @param area
      * @return
-     * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
+     * @todo Consider giving a container to drop entities into. This can be used for example during drawing
      * where we don't require  a QuadTree but just a linear array of entities tobe drawn
      */
     EntityContainer entitiesFullWithinArea(const geo::Area& area,
@@ -214,9 +214,9 @@ public:
      * @param area
      * @return
      *
-     * TODO: create a version like this to get a rought estimate of what's located within a area
+     * @todo create a version like this to get a rought estimate of what's located within a area
      * this can be used to accelerate drawing performance.
-     * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
+     * @todo Consider giving a container to drop entities into. This can be used for example during drawing
      * where we don't require  a QuadTree but just a linear array of entities tobe drawn
      */
     EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area,

@@ -13,7 +13,6 @@ Line::Line(const geo::Coordinate& start,
            meta::Block_CSPtr block) :
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     geo::Vector(start, end) {
-
 }
 
 Line::Line(const geo::Vector& vector,

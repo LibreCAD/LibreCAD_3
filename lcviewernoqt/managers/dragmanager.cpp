@@ -33,6 +33,11 @@ std::vector<lc::geo::Coordinate> DragManager::selectedEntitiesDragPoints() {
     return dragPoints;
 }
 
+void DragManager::onSelectionChanged() {
+    if(!_entityDragged) //if it's not me
+        _dragPointsEvent(lc::viewer::event::DragPointsEvent(selectedEntitiesDragPoints(), _size));
+}
+
 void DragManager::moveEntities() {
     std::vector<lc::entity::CADEntity_CSPtr> replacementEntities;
     for(const auto& entity : _replacementEntities) {
@@ -84,7 +89,6 @@ void DragManager::onMousePress() {
 
     _entityDragged=false;
     std::vector<lc::viewer::LCVDrawItem_SPtr> selectedDrawables = _docCanvas->selectedDrawables();
-    _docCanvas->removeSelection(); //Clears selection
     if(selectedDrawables.empty()) {
         return;
     }
@@ -134,6 +138,7 @@ void DragManager::onMouseRelease() {
         }
         _builder->execute();
         _replacementEntities.clear();
+        _docCanvas->updateSelection();
 
         _entityDragged = false;
     }

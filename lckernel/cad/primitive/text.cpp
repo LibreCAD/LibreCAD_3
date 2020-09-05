@@ -150,7 +150,7 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
 }
 
 const geo::Area Text::boundingBox() const {
-    //TODO Fix this
+    /// @todo Fix this
     // Rough bounding box
     // Assume that the font has char max. width equal to height
     // Assume single line

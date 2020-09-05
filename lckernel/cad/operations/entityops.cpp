@@ -44,7 +44,7 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
     std::vector<entity::CADEntity_CSPtr> _start;
 
     for (const auto& base : operationStack) {
-        //TODO can we get rid of dynamic_cast??
+        /// @todo can we get rid of dynamic_cast??
         auto begin = dynamic_cast<const lc::operation::Begin*>(base.get());
 
         if (begin != nullptr) {
@@ -52,7 +52,6 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
             _start.insert(_start.end(), entities.begin(), entities.end());
         }
     }
-
 
     // run the operation queue
     std::vector<entity::CADEntity_CSPtr> entitySet2(entities);

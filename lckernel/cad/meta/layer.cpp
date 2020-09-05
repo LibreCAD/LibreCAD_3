@@ -33,6 +33,7 @@ Layer::Layer(const builder::LayerBuilder& builder) :
 lc::Color Layer::color() const {
     return _color;
 }
+
 MetaLineWidthByValue Layer::lineWidth() const {
     return _lineWidth;
 }

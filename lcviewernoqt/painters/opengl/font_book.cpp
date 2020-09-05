@@ -64,7 +64,7 @@ GL_Font* Font_Book::pickFont(const std::string& font_name, FontType fontType)
     }
     else if (fontType == FontType::ITALIC) {
         fontMap = &_font_italic_map;
-    } 
+    }
     else if (fontType == FontType::BOLD_ITALIC) {
         fontMap = &_font_bold_italic_map;
     }

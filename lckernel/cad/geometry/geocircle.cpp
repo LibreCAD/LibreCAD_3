@@ -11,7 +11,6 @@ Circle::Circle(Coordinate center, double radius) :
     if (radius < 0.0) {
         throw std::runtime_error("Invalid radius");
     }
-
 }
 
 const Coordinate Circle::center() const {
@@ -20,7 +19,6 @@ const Coordinate Circle::center() const {
 double Circle::radius() const {
     return _radius;
 }
-
 
 Coordinate Circle::nearestPointOnPath(const Coordinate& coord) const {
     return _center + Coordinate((coord - _center).angle()) * _radius;

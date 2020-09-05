@@ -1,6 +1,10 @@
-//
-// Created by R. van Twisk on 3/28/15.
-//
+/**
+* @file
+* @author R. van Twisk
+* @section DESCRIPTION
+*
+* This file implements the visitor for CADEntities
+*/
 
 #pragma once
 
@@ -78,9 +82,6 @@ class Hatch;
 DECLARE_SHORT_SHARED_PTR(Hatch)
 }
 }
-
-
-
 
 // sequence of size_t // not in C++11
 template <std::size_t ...> struct index_sequence {};
@@ -304,16 +305,12 @@ Ret visitorDispatcher(F&& f, Ts&...args)
 }
 
 namespace lc {
-
-
-
 using GeoEntityVisitor = IVisitorTs<
                          lc::Visitable,
                          geo::Vector, geo::Circle, geo::Arc, geo::Area, geo::Ellipse, geo::Spline,
                          entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse, entity::Spline,
                          entity::LWPolyline, entity::Image
                          >;
-
 class Visitable {
 public:
     virtual ~Visitable() = default;

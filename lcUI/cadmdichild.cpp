@@ -37,6 +37,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     QObject::connect(_viewerProxy, &LCADViewerProxy::mousePressEvent, this, &CadMdiChild::mousePressEvent);
     QObject::connect(_viewerProxy, &LCADViewerProxy::mouseReleaseEvent, this, &CadMdiChild::mouseReleaseEvent);
     QObject::connect(_viewerProxy, &LCADViewerProxy::mouseMoveEvent, this, &CadMdiChild::mouseMoveEvent);
+    QObject::connect(_viewerProxy, &LCADViewerProxy::selectionChangeEvent, this, &CadMdiChild::selectionChangeEvent);
 }
 
 CadMdiChild::~CadMdiChild() {

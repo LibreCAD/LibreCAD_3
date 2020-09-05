@@ -53,7 +53,7 @@ protected:
     Dimension(const builder::DimensionBuilder& builder);
 
 public:
-    //TODO: re-enable those methods
+    /// @todo re-enable those methods
     /**
      * @brief move, moves by an offset
      * @param geo::Coordinate offset

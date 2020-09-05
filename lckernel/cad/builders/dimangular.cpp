@@ -46,6 +46,5 @@ void lc::builder::DimAngularBuilder::dimAuto(const lc::geo::Coordinate& center,
 
 lc::entity::DimAngular_CSPtr lc::builder::DimAngularBuilder::build() {
     checkValues(true);
-
     return lc::entity::DimAngular_CSPtr(new lc::entity::DimAngular(*this));
 }

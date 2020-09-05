@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Ellipse builder
+*/
+
 #pragma once
 
 #include "cadentity.h"

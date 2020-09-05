@@ -124,6 +124,8 @@ signals:
 
     void mouseReleaseEvent();
 
+    void selectionChangeEvent();
+
     void keyPressEvent(int);
 
     void drawEvent(const lc::viewer::event::DrawEvent&);
@@ -134,6 +136,8 @@ public slots:
     void messageLogged(const QOpenGLDebugMessage &msg);
 
 private:
+    void _selectionChanged();
+
     bool dragHandler(lc::ui::HookEvent&);
     bool selectHandler(lc::ui::HookEvent&);
     bool panHandler(lc::ui::HookEvent&);

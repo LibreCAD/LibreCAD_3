@@ -11,10 +11,10 @@ namespace lc {
 namespace geo {
 class Vector : public Base, virtual public Visitable {
 public:
-    // TODO: Test for validity?
+    /// @todo Test for validity?
     explicit Vector(const Coordinate& start, const Coordinate& end) : _start(start), _end(end) {}
 
-    // TODO: Test for validity?
+    /// @todo Test for validity?
     Vector(const Vector& v) : _start(v._start), _end(v._end)  {}
 
     inline const Coordinate start() const {
@@ -99,8 +99,8 @@ public:
 
 
     /**
-         * @return The angle of the line (from start to endpoint).
-         */
+     * @return The angle of the line (from start to endpoint).
+     */
     double Angle1() const {
         return _start.angleTo(_end);
     }

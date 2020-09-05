@@ -104,7 +104,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.text(_text->text_value().c_str());
     painter.stroke();
     painter.restore();
-    
+
     if (_text->strikethrough()) {
         painter.save();
         painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.height / 6.0));
