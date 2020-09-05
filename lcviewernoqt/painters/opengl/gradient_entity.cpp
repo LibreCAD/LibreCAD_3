@@ -127,7 +127,7 @@ void Gradient_Entity::applyGradient(float* vertices,int count)
     }
 }
 
-void Gradient_Entity::setFont(Font_Book& fonts,const std::string& style)
+void Gradient_Entity::setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType)
 {
     // NO Need (Used by Tex_Entity)
 }

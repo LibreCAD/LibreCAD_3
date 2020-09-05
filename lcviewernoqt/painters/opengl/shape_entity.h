@@ -55,7 +55,7 @@ public:
     void addLinearGradient(float x0,float y0,float x1,float y1) override;
     void addGradientColorPoint(float R,float G,float B,float A) override;
     void applyGradient(float* vertices,int size) override;
-    void setFont(Font_Book& fonts,const std::string& style) override;
+    void setFont(Font_Book& fonts,const std::string& style, Font_Book::FontType fontType = Font_Book::FontType::REGULAR) override;
     void addTextData(glm::vec4 pos, std::string text_val, float font_size, bool retain) override;
 };
 }

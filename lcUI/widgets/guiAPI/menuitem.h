@@ -103,6 +103,16 @@ public:
     */
     void remove();
 
+    /**
+    * \brief Set menu item to be checkable
+    */
+    void setCheckable(bool checkable);
+
+    /**
+    * \brief Set menu item to be checked
+    */
+    void setChecked(bool checked);
+
 public slots:
     void itemTriggered();
 

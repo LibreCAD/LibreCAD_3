@@ -122,7 +122,7 @@
      <addaction name="actionStart_Center_Length"/>
      <addaction name="separator"/>
      <addaction name="actionStart_End_Angle_3"/>
-     <addaction name="actionStart_End_Direction_2"/>
+     <addaction name="actionStart_End_Center_2"/>
      <addaction name="actionStart_End_Radius_2"/>
      <addaction name="separator"/>
      <addaction name="actionCenter_Start_End_2"/>
@@ -139,6 +139,12 @@
      <addaction name="actionEllipse_Arc"/>
      <addaction name="actionEllipse_FociPoints"/>
      <addaction name="actionEllipse_4Points"/>
+    </widget>
+    <widget class="lc::ui::api::Menu" name="menuText">
+     <property name="title">
+      <string>Text</string>
+     </property>
+     <addaction name="actionText_Operation"/>
     </widget>
     <widget class="lc::ui::api::Menu" name="menuDimension">
      <property name="title">
@@ -291,6 +297,11 @@
           <string>&amp;Ellipse 4 Points</string>
       </property>
   </action>
+    <action name="actionText_Operation">
+        <property name="text">
+            <string>&amp;Text</string>
+        </property>
+    </action>
   <action name="actionPolyline">
    <property name="text">
     <string>&amp;Polyline</string>
@@ -416,9 +427,9 @@
     <string>Start, End, Angle</string>
    </property>
   </action>
-  <action name="actionStart_End_Direction">
+  <action name="actionStart_End_Center_2">
    <property name="text">
-    <string>Start, End, Direction</string>
+    <string>Start, End, Center</string>
    </property>
   </action>
   <action name="actionStart_End_Radius">

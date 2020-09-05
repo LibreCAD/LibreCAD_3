@@ -12,7 +12,7 @@ GL_Font::~GL_Font()
 {
 }
 
-bool GL_Font::readyFont(const std::string& path)
+bool GL_Font::readyFont(const std::string& path, std::string& fontFamily, std::string& fontStyle)
 {
     const char* font_path= path.c_str();
 
@@ -22,11 +22,13 @@ bool GL_Font::readyFont(const std::string& path)
     if (FT_Init_FreeType(&ft))
     {
         //("ERROR::FREETYPE: Could not init FreeType Library");
+        return false;
     }
 
     if (FT_New_Face(ft, font_path, 0, &face))
     {
         //("ERROR::FREETYPE: Failed to load font");
+        return false;
     }
 
     FT_Set_Pixel_Sizes(face, 64,64);
@@ -119,6 +121,9 @@ bool GL_Font::readyFont(const std::string& path)
 
         _characters.insert(std::pair<unsigned int, Character>(c, ch));
     }
+
+    fontFamily = face->family_name;
+    fontStyle = face->style_name;
 
     //Finished working with Freetype
     FT_Done_Face(face);

@@ -21,12 +21,18 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
 
 std::vector<lc::geo::Coordinate> Intersection::LineQuad(const Equation& l1,
         const Equation& q1) {
-    auto&& tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
-    std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c) {
-        return c.flipXY();
-    });
-
-    return tcoords;
+    // Horizontal intersection broken so check if rotation is required
+    // @todo fix this method
+    auto& coeff = l1.Coefficients();
+    if(coeff[3]==0.) { //Horiziontal need flip
+        auto&& tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
+        std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c) {
+            return c.flipXY();
+        });
+        return tcoords;
+    } else {
+        return QuadQuad(l1, q1);
+    }
 }
 
 std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1, const Equation& l2) {

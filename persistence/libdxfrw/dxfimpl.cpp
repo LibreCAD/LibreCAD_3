@@ -287,10 +287,14 @@ void DXFimpl::addText(const DRW_Text& data) {
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
                   data.text, data.height,
-                  data.angle, data.style,
+                  data.angle * M_PI / 180, data.style,
                   lc::TextConst::DrawingDirection(data.textgen),
                   lc::TextConst::HAlign(data.alignH),
                   lc::TextConst::VAlign(data.alignV),
+                  false,
+                  false,
+                  false,
+                  false,
                   layer,
                   mf,
                   getBlock(data)
@@ -490,6 +494,74 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
 
 void DXFimpl::addMText(const DRW_MText& data) {
     LOG_WARNING << "addMText";
+    auto layer = getLayer(data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+    lc::TextConst::HAlign halign;
+    lc::TextConst::VAlign valign;
+    //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
+    lc::TextConst::DrawingDirection drawingDir;
+    //lc::TextConst::LineSpacingStyle lineSpacingStyle;
+
+    switch (data.textgen % 3) {
+    default:
+    case 1:
+        halign = lc::TextConst::HAlign::HALeft;
+        break;
+    case 2:
+        halign = lc::TextConst::HAlign::HACenter;
+        break;
+    case 0:
+        halign = lc::TextConst::HAlign::HARight;
+        break;
+    }
+
+    switch ((int)(std::ceil(data.textgen / 3.0))) {
+    default:
+    case 1:
+        valign = lc::TextConst::VAlign::VATop;
+        break;
+    case 2:
+        valign = lc::TextConst::VAlign::VAMiddle;
+        break;
+    case 3:
+        valign = lc::TextConst::VAlign::VABottom;
+        break;
+    }
+
+    if (data.alignH == 1) {
+        drawingDir = lc::TextConst::DrawingDirection::Backward;
+    }
+    else if (data.alignH == 3) {
+        drawingDir = lc::TextConst::DrawingDirection::UpsideDown;
+    }
+    else {
+        drawingDir = lc::TextConst::DrawingDirection::None;
+    }
+
+    // Uncomment when line spacing style has been implemented
+    /*if (data.alignV == 1) {
+        lineSpacingStyle = lc::TextConst::LineSpacingStyle::AtLeast;
+    }
+    else {
+        lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
+    }*/
+
+    auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
+                  data.text, data.height,
+                  data.angle * M_PI / 180, data.style,
+                  lc::TextConst::DrawingDirection(drawingDir),
+                  lc::TextConst::HAlign(halign),
+                  lc::TextConst::VAlign(valign),
+                  false,
+                  false,
+                  false,
+                  false,
+                  layer,
+                  mf,
+                  getBlock(data)
+                                                    );
+
+    _entityBuilder->appendEntity(lcText);
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
@@ -1273,6 +1345,19 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
 }
 
 void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
+    DRW_Text tex;
+    getEntityAttributes(&tex, t);
+
+    tex.basePoint.x = t->insertion_point().x();
+    tex.basePoint.y = t->insertion_point().y();
+    tex.text = t->text_value();
+    tex.textgen = t->textgeneration();
+    tex.height = t->height();
+    tex.angle = t->angle() * 180 / M_PI;
+    tex.alignH = DRW_Text::HAlign(t->halign());
+    tex.alignV = DRW_Text::VAlign(t->valign());
+
+    dxfW->writeText(&tex);
 }
 
 void DXFimpl::writeEntities() {

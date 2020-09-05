@@ -53,7 +53,7 @@ public:
     GL_Font();
     ~GL_Font();
 
-    bool readyFont(const std::string& path);
+    bool readyFont(const std::string& path, std::string& fontFamily, std::string& fontStyle);
     void renderText(std::string text,
                     glm::mat4 proj,
                     glm::mat4 view,

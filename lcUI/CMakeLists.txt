@@ -86,6 +86,7 @@ dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
 dialogs/aboutdialog.h
+dialogs/textdialog.h
 managers/uisettings.h
 managers/contextmenumanager.h
 managers/hookmanager.h
@@ -155,6 +156,7 @@ dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
+dialogs/textdialog.cpp
 managers/uisettings.cpp
 managers/contextmenumanager.cpp
 managers/hookmanager.cpp
@@ -180,6 +182,7 @@ widgets/guiAPI/listgui.ui
 widgets/customizeToolbar/customizetoolbar.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
+dialogs/textdialog.ui
 dialogs/addlayerdialog.ui
 dialogs/addlinepatterndialog.ui
 dialogs/linepatternmanager.ui)

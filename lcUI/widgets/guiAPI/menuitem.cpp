@@ -210,3 +210,11 @@ void MenuItem::updateItemPositionsAfterSet(QList<QAction*>& items) {
         }
     }
 }
+
+void MenuItem::setCheckable(bool checkable) {
+    QAction::setCheckable(checkable);
+}
+
+void MenuItem::setChecked(bool checked) {
+    QAction::setChecked(checked);
+}

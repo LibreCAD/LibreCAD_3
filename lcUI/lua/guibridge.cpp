@@ -263,6 +263,9 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                       .addFunction("setPosition", &lc::ui::api::MenuItem::setPosition)
                                       .addFunction("remove", &lc::ui::api::MenuItem::remove)
                                       .addFunction("removeCallback", &lc::ui::api::MenuItem::removeCallback)
+                                      .addFunction("setCheckable", &lc::ui::api::MenuItem::setCheckable)
+                                      .addFunction("setChecked", &lc::ui::api::MenuItem::setChecked)
+                                      .addFunction("addCheckedCallback", &lc::ui::api::MenuItem::addCheckedCallback)
     .addOverloadedFunctions("hide", [](lc::ui::api::MenuItem& self) {
         self.hide();
     })
