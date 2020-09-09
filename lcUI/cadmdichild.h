@@ -74,6 +74,7 @@ signals:
     void mouseMoveEvent();
     void mousePressEvent();
     void mouseReleaseEvent();
+    void selectionChangeEvent();
 
 public:
     QWidget* view() const;

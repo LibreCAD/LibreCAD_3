@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Insert builder
+*/
+
 #pragma once
 
 #include <cad/storage/document.h>

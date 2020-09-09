@@ -18,7 +18,7 @@ namespace entity {
      * @brief The Spline class
      *
      *
-     * TODO SPLINE IMPLEMENTATION.
+     * @todo SPLINE IMPLEMENTATION.
      * THIS CLASS NEEDS TO BE VERIFIED.
      * SPLINE IS DEPENDENT ON BEZIER CURVE.
      *
@@ -53,73 +53,32 @@ public:
            meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo = nullptr,
            meta::Block_CSPtr block = nullptr);
-
     Spline(const Spline_CSPtr& other, bool sameID = false);
-
     Spline(const lc::builder::SplineBuilder& builder);
 
     std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
             const SimpleSnapConstrain & constrain,
             double minDistanceToSnap,
             int maxNumberOfSnapPoints) const override;
-
     geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
     geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
-
-    /**
-     * @brief move, moves by an offset
-     * @param geo::Coordinate offset
-     * @return CADEntity_CSPtr moved entity
-     */
     CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
-
-    /**
-     * @brief copy, copies line by an offset
-     * @param geo::Coordinate offset
-     * @return CADEntity_CSPtr copied entity
-     */
     CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
-
-    /**
-     * @brief rotate, rotate operation
-     * @param geo::Coordinate rotation_center
-     * @param double rotation_angle
-     * @return CADEntity_CSPtr rotated entity
-     */
     CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
-
-    /**
-     * @brief scale, scales the entity
-     * @param geo::Coordinate scale_center
-     * @param double scale_factor
-     * @return
-     */
     CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                           const geo::Coordinate &scale_factor) const override;
-
     CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;
-
-    /**
-     * @brief boundingBox of the entity
-     * @return geo::Area area
-     */
     const geo::Area boundingBox() const override;
-
     CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
-
     void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
-
     void dispatch(EntityDispatch &ed) const override {
         ed.visit(shared_from_this());
     }
-
     std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
     CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
-
     PropertiesMap availableProperties() const override;
-
     CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
 
 private:

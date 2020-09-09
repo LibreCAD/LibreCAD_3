@@ -6,7 +6,6 @@
 namespace lc {
 class EntityDispatch {
 public:
-
     virtual void visit(entity::Line_CSPtr) = 0;
     virtual void visit(entity::Point_CSPtr) = 0;
     virtual void visit(entity::Circle_CSPtr) = 0;

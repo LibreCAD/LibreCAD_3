@@ -52,7 +52,6 @@ Spline::Spline(const lc::builder::SplineBuilder& builder) :
                 builder.normalVector().y(),
                 builder.normalVector().z(),
                 builder.flags()) {
-
 }
 
 Spline::Spline(const Spline_CSPtr& other, bool sameID) :
@@ -76,7 +75,7 @@ std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord,
         const SimpleSnapConstrain & constrain,
         double minDistanceToSnap,
         int maxNumberOfSnapPoints) const {
-    /* TODO implement
+    /** @todo implement
      * fix compiler warning
      */
     return std::vector<EntityCoordinate>();
@@ -266,7 +265,7 @@ CADEntity_CSPtr Spline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr met
 }
 
 void Spline::calculateBoundingBox() {
-    //TODO: better bounding box generation
+    /// @todo better bounding box generation
     _boundingBox = geo::Area(this->controlPoints()[0], this->controlPoints()[0]);
 
     for(const auto& cp : this->controlPoints()) {

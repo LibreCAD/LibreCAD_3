@@ -9,7 +9,6 @@ lc::builder::CircleBuilder::CircleBuilder() {
     lp_builder.setName("tempEntity");
     lp_builder.addElement(1);
     lp_builder.addElement(-10);
-
     linePattern = lp_builder.build();
 }
 

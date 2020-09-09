@@ -33,7 +33,6 @@ DimAngular::DimAngular(
     _defLine12(std::move(defLine12)),
     _defLine21(std::move(defLine21)),
     _defLine22(std::move(defLine22)) {
-
 }
 
 
@@ -53,7 +52,6 @@ DimAngular::DimAngular(const lc::builder::DimAngularBuilder& builder) :
     _defLine12(builder.defLine12()),
     _defLine21(builder.defLine21()),
     _defLine22(builder.defLine22()) {
-
 }
 
 

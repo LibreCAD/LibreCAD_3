@@ -41,25 +41,21 @@ LayerBuilder* LayerBuilder::setName(const std::string& name) {
 
 LayerBuilder* LayerBuilder::setLineWidth(const meta::MetaLineWidthByValue& lineWidth) {
     _lineWidth = lineWidth;
-
     return this;
 }
 
 LayerBuilder* LayerBuilder::setColor(const Color& color) {
     _color = color;
-
     return this;
 }
 
 LayerBuilder* LayerBuilder::setLinePattern(const meta::DxfLinePatternByValue_CSPtr& linePattern) {
     _linePattern = linePattern;
-
     return this;
 }
 
 LayerBuilder* LayerBuilder::setIsFrozen(bool isFrozen) {
     _isFrozen = isFrozen;
-
     return this;
 }
 
@@ -67,7 +63,6 @@ meta::Layer_CSPtr LayerBuilder::build() {
     if(!checkValues()) {
         throw std::runtime_error("Missing values");
     }
-
     return meta::Layer_CSPtr(new meta::Layer(*this));
 }
 

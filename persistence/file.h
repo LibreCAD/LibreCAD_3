@@ -7,7 +7,7 @@ namespace persistence {
 class File {
 public:
     //This enum should be grouped by library, format and ordered by version ascending.
-    //TODO: test enum (is libdxfrw, is dxf, is dxb)
+    /// @todo test enum (is libdxfrw, is dxf, is dxb)
     enum Type {
         LIBDXFRW_DXF_R12,
         LIBDXFRW_DXF_R14,

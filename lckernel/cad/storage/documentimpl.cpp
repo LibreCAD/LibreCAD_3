@@ -197,3 +197,7 @@ std::vector<lc::meta::Block_CSPtr> DocumentImpl::blocks() const {
 std::unordered_set<lc::entity::Insert_CSPtr> DocumentImpl::waitingCustomEntities(const std::string& pluginName) {
     return _waitingCustomEntities[pluginName];
 }
+
+entity::CADEntity_CSPtr DocumentImpl::entityByID(ID_DATATYPE id) const {
+    return _storageManager->entityByID(id);
+}

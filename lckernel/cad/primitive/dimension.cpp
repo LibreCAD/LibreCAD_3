@@ -43,7 +43,6 @@ Dimension::Dimension(const Dimension& other) :
     _lineSpacingFactor(other._lineSpacingFactor),
     _lineSpacingStyle(other._lineSpacingStyle),
     _explicitValue(other._explicitValue) {
-
 }
 
 Dimension::Dimension(const builder::DimensionBuilder& builder) :
@@ -54,7 +53,6 @@ Dimension::Dimension(const builder::DimensionBuilder& builder) :
     _lineSpacingFactor(builder.lineSpacingFactor()),
     _lineSpacingStyle(builder.lineSpacingStyle()),
     _explicitValue(builder.explicitValue()) {
-
 }
 
 const geo::Coordinate& Dimension::definitionPoint() const noexcept {

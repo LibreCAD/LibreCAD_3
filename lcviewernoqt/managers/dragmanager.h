@@ -52,6 +52,11 @@ public:
     void onMouseRelease();
 
     /**
+    * \brief Selection changed
+    */
+    void onSelectionChanged();
+
+    /**
      * \brief Return true if a point is selected.
      * This is used to disable selection.
      */

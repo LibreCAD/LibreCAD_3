@@ -40,6 +40,7 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0) {
     connect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
     connect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
     connect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
+    connect(_activeView, SIGNAL(selectionChangeEvent()), this, SIGNAL(selectionChangeEvent()));
     connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 }
 
@@ -68,12 +69,14 @@ void LCADViewerProxy::setActive(LCADViewer* view,bool isModel) {
         disconnect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
         disconnect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
         disconnect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
+        disconnect(_activeView, SIGNAL(selectionChangeEvent()), this, SIGNAL(selectionChangeEvent()));
         disconnect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 
         _activeView = view;
         connect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
         connect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
         connect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
+        connect(_activeView, SIGNAL(selectionChangeEvent()), this, SIGNAL(selectionChangeEvent()));
         connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
     }
 }

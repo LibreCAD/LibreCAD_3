@@ -60,6 +60,5 @@ void ArcBuilder::copy(entity::Arc_CSPtr entity) {
     setStartAngle(entity->startAngle());
     setEndAngle(entity->endAngle());
     setIsCCW(entity->CCW());
-
     CADEntityBuilder::copy(entity);
 }

@@ -178,8 +178,6 @@ void MainWindow::operationFinished() {
     // remove operation group
     _toolbar.removeGroupByName("Current operation");
     _cadMdiChild.viewer()->setOperationActive(false);
-
-    selectionChanged();
 }
 
 lc::ui::widgets::CliCommand* MainWindow::cliCommand() {
@@ -212,6 +210,8 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
+    QObject::connect(&_cadMdiChild, &CadMdiChild::selectionChangeEvent, this, &MainWindow::triggerSelectionChanged);
+    QObject::connect(&_cadMdiChild, &CadMdiChild::selectionChangeEvent, this, &MainWindow::selectionChanged);
     QObject::connect(&_cadMdiChild, &CadMdiChild::keyPressEventx, this, &MainWindow::triggerKeyPressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::keyPressed, &_cliCommand, &widgets::CliCommand::onKeyPressed);
 
@@ -516,9 +516,15 @@ void MainWindow::triggerMouseReleased()
     kaguya::State state(_luaInterface.luaState());
     state["mouseRelease"] = kaguya::NewTable();
     state["mouseRelease"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("selectionChanged", state["mouseRelease"]);
+    _luaInterface.triggerEvent("mouseRelease", state["mouseRelease"]);
+}
 
-    selectionChanged();
+void MainWindow::triggerSelectionChanged()
+{
+    kaguya::State state(_luaInterface.luaState());
+    state["selectionChanged"] = kaguya::NewTable();
+    state["selectionChanged"]["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("selectionChanged", state["selectionChanged"]);
 }
 
 void MainWindow::triggerMouseMoved()
@@ -641,21 +647,18 @@ void MainWindow::redo()
 void MainWindow::selectAll()
 {
     _cadMdiChild.viewer()->docCanvas()->selectAll();
-    selectionChanged();
     _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::selectNone()
 {
     _cadMdiChild.viewer()->docCanvas()->removeSelection();
-    selectionChanged();
     _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
-    selectionChanged();
     _cadMdiChild.viewer()->update();
 }
 

@@ -34,11 +34,6 @@ public:
     std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive>
     allMetaTypes() override;
 
-    /**
-     * @brief entitiesByLayer
-     * @param layer
-     * @return
-     */
     EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const meta::Layer_CSPtr& layer) override;
 
     EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const meta::Block_CSPtr& block) override;
@@ -53,28 +48,15 @@ public:
 
     meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 
-    /**
-     * @brief return all line patterns
-     */
     std::vector<meta::DxfLinePatternByValue_CSPtr> linePatterns() const override;
 
+    entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const override;
+
 protected:
-    /*!
-     * \brief execute's a operation
-     * \param operation
-     */
     void execute(const operation::DocumentOperation_SPtr& operation) override;
 
-    /*!
-     * \brief begins operation
-     * \param operation
-     */
     void begin(const operation::DocumentOperation_SPtr& operation) override;
 
-    /*!
-     * \brief commits operation
-     * \param operation
-     */
     void commit(const operation::DocumentOperation_SPtr& operation) override;
 
 public:

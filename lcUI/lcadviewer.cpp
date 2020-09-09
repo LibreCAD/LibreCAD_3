@@ -161,6 +161,7 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    _docCanvas->selectionChanged().connect<LCADViewer, &LCADViewer::_selectionChanged>(this);
 
     if(_docCanvas != nullptr)
         _docCanvas->setPainter(_documentPainter);  //passing pointer to painter to doc canvas
@@ -181,6 +182,11 @@ void LCADViewer::updateHelper() {
 void LCADViewer::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
     updateDocument();
     update();
+}
+
+void LCADViewer::_selectionChanged() {
+    _dragManager->onSelectionChanged();
+    emit selectionChangeEvent();
 }
 
 /**

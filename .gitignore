@@ -14,7 +14,7 @@ CMakeLists.txt.user
 playground
 xcode
 debug
-doc
+doxygen/doc
 lcviewernoqt/painters/opengl/resources/res.cpp
 lckernel/version.cpp
 cmake-build-debug

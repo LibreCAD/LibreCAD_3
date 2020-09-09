@@ -18,7 +18,6 @@ const std::string MetaLineWidthByBlock::metaTypeID() const {
     return MetaLineWidthByBlock::LCMETANAME();
 }
 
-
 MetaLineWidthByValue::MetaLineWidthByValue() :
     MetaLineWidth(),
     DocumentMetaType(),

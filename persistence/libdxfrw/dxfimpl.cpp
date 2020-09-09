@@ -503,29 +503,29 @@ void DXFimpl::addMText(const DRW_MText& data) {
     //lc::TextConst::LineSpacingStyle lineSpacingStyle;
 
     switch (data.textgen % 3) {
-        default:
-        case 1:
-            halign = lc::TextConst::HAlign::HALeft;
-            break;
-        case 2:
-            halign = lc::TextConst::HAlign::HACenter;
-            break;
-        case 0:
-            halign = lc::TextConst::HAlign::HARight;
-            break;
+    default:
+    case 1:
+        halign = lc::TextConst::HAlign::HALeft;
+        break;
+    case 2:
+        halign = lc::TextConst::HAlign::HACenter;
+        break;
+    case 0:
+        halign = lc::TextConst::HAlign::HARight;
+        break;
     }
 
     switch ((int)(std::ceil(data.textgen / 3.0))) {
-        default:
-        case 1:
-            valign = lc::TextConst::VAlign::VATop;
-            break;
-        case 2:
-            valign = lc::TextConst::VAlign::VAMiddle;
-            break;
-        case 3:
-            valign = lc::TextConst::VAlign::VABottom;
-            break;
+    default:
+    case 1:
+        valign = lc::TextConst::VAlign::VATop;
+        break;
+    case 2:
+        valign = lc::TextConst::VAlign::VAMiddle;
+        break;
+    case 3:
+        valign = lc::TextConst::VAlign::VABottom;
+        break;
     }
 
     if (data.alignH == 1) {
@@ -547,19 +547,19 @@ void DXFimpl::addMText(const DRW_MText& data) {
     }*/
 
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
-        data.text, data.height,
-        data.angle * M_PI / 180, data.style,
-        lc::TextConst::DrawingDirection(drawingDir),
-        lc::TextConst::HAlign(halign),
-        lc::TextConst::VAlign(valign),
-        false,
-        false,
-        false,
-        false,
-        layer,
-        mf,
-        getBlock(data)
-        );
+                  data.text, data.height,
+                  data.angle * M_PI / 180, data.style,
+                  lc::TextConst::DrawingDirection(drawingDir),
+                  lc::TextConst::HAlign(halign),
+                  lc::TextConst::VAlign(valign),
+                  false,
+                  false,
+                  false,
+                  false,
+                  layer,
+                  mf,
+                  getBlock(data)
+                                                    );
 
     _entityBuilder->appendEntity(lcText);
 }
@@ -754,7 +754,6 @@ lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
         mf->add(linePattern);
     }
-
 
     return mf;
 }
@@ -1469,7 +1468,6 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
  * EXTRA Utilities
  *****************************************/
 lc::AngleFormat DXFimpl::numberToAngleFormat(int num) {
-
     lc::AngleFormat af;
 
     switch (num) {
@@ -1494,12 +1492,10 @@ lc::AngleFormat DXFimpl::numberToAngleFormat(int num) {
     return af;
 }
 
-
 /**
  * Converts AngleFormat enum to DXF number.
  */
 int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
-
     int num;
 
     switch (af) {
@@ -1524,8 +1520,6 @@ int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
     return num;
 }
 
-
-
 /**
  * converts a DXF units setting (e.g. INSUNITSs) to a units enum.
  */
@@ -1537,8 +1531,6 @@ lc::Units DXFimpl::numberToUnit(int num) {
         return lc::Units::None;
     }
 }
-
-
 
 /**
  * Converst a units enum into a DXF units number e.g. for INSUNITSs.

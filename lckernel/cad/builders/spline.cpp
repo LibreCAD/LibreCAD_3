@@ -144,6 +144,5 @@ void lc::builder::SplineBuilder::copy(entity::Spline_CSPtr entity) {
     setKnotPoints(entity->knotPoints());
     setFitPoints(entity->fitPoints());
     setFlags(entity->flags());
-
     CADEntityBuilder::copy(entity);
 }

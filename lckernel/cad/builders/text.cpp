@@ -3,7 +3,7 @@
 
 using namespace lc::builder;
 
-TextBuilder::TextBuilder() 
+TextBuilder::TextBuilder()
     :
     _height(100),
     _angle(0),

@@ -13,7 +13,6 @@ Ellipse::Ellipse(Coordinate center, Coordinate majorP, double minorRadius, doubl
     _startAngle(startAngle),
     _endAngle(endAngle),
     _isReversed(reversed) {
-
 }
 
 const Coordinate Ellipse::center() const {
@@ -129,7 +128,6 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         std::cerr<<"lcmath::geoellipse::findPotentialNearestPoints() finds no root from quartic, this should not happen\n";
         return pnp;
     }
-
 
     for(double root : roots) {
         double const s=twoby*root/(twoax-twoa2b2*root); //sine

@@ -6,7 +6,6 @@ using namespace builder;
 
 PointBuilder::PointBuilder() :
     _coordinate() {
-
 }
 
 const geo::Coordinate& PointBuilder::coordinate() const {
@@ -15,12 +14,10 @@ const geo::Coordinate& PointBuilder::coordinate() const {
 
 PointBuilder* PointBuilder::setCoordinate(const geo::Coordinate& coordinate) {
     _coordinate = coordinate;
-
     return this;
 }
 
 entity::Point_CSPtr PointBuilder::build() {
     checkValues(true);
-
     return entity::Point_CSPtr(new entity::Point(*this));
 }

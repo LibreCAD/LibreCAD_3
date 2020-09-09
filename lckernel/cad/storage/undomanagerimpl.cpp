@@ -9,9 +9,7 @@ using namespace lc::storage;
 
 UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) :
     _maximumUndoLevels(maximumUndoLevels) {
-
 }
-
 
 void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& event) {
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());

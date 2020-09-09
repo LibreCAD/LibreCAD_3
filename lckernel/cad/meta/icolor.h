@@ -2,12 +2,12 @@
 #include "color.h"
 #include "metacolor.h"
 
-//TODO: move this to persistence
+/// @todo move this to persistence
 namespace lc {
 
 /**
 * Helper class that convert's between indexed color's to Colors
-* TODO create a list of MetaColors instead of colors, this might save
+* @todo create a list of MetaColors instead of colors, this might save
 * memory when loading files that have a lot'f of indexed color values
 * then we only have to create a set of MetaColor shared pointer's
 * instead of a new SharedPtr for each entity

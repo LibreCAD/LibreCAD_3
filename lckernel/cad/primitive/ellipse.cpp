@@ -39,7 +39,6 @@ Ellipse::Ellipse(const lc::builder::EllipseBuilder& builder) :
                  builder.endAngle(),
                  builder.isReversed()
                 ) {
-
 }
 
 CADEntity_CSPtr Ellipse::move(const geo::Coordinate &offset) const {

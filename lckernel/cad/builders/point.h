@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Builder for point
+*/
+
 #pragma once
 
 #include "cadentity.h"

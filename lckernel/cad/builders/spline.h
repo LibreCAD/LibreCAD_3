@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Builder for spline
+*/
+
 #pragma once
 
 #include "cadentity.h"

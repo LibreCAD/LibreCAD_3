@@ -26,7 +26,7 @@
 #include "cad/geometry/geovector.h"
 #include <vector>
 
-//TODO: operator() parameters should be inverted automatically
+/// @todo operator() parameters should be inverted automatically
 
 //SFINAE test to check nearestPointOnEntity
 template <typename T>

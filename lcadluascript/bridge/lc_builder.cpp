@@ -281,16 +281,16 @@ void import_lc_builder_namespace(kaguya::State& state) {
                                                     );
 
     state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::CADEntityBuilder>()
-        .setConstructors<lc::builder::TextBuilder()>()
-        .addFunction("build", &lc::builder::TextBuilder::build)
-        .addFunction("insertionPoint", &lc::builder::TextBuilder::insertionPoint)
-        .addFunction("setInsertionPoint", &lc::builder::TextBuilder::setInsertionPoint)
-        .addFunction("textValue", &lc::builder::TextBuilder::textValue)
-        .addFunction("setTextValue", &lc::builder::TextBuilder::setTextValue)
-        .addFunction("height", &lc::builder::TextBuilder::height)
-        .addFunction("setHeight", &lc::builder::TextBuilder::setHeight)
-        .addFunction("angle", &lc::builder::TextBuilder::angle)
-        .addFunction("setAngle", &lc::builder::TextBuilder::setAngle)
-        .addFunction("copy", &lc::builder::TextBuilder::copy)
-    );
+            .setConstructors<lc::builder::TextBuilder()>()
+            .addFunction("build", &lc::builder::TextBuilder::build)
+            .addFunction("insertionPoint", &lc::builder::TextBuilder::insertionPoint)
+            .addFunction("setInsertionPoint", &lc::builder::TextBuilder::setInsertionPoint)
+            .addFunction("textValue", &lc::builder::TextBuilder::textValue)
+            .addFunction("setTextValue", &lc::builder::TextBuilder::setTextValue)
+            .addFunction("height", &lc::builder::TextBuilder::height)
+            .addFunction("setHeight", &lc::builder::TextBuilder::setHeight)
+            .addFunction("angle", &lc::builder::TextBuilder::angle)
+            .addFunction("setAngle", &lc::builder::TextBuilder::setAngle)
+            .addFunction("copy", &lc::builder::TextBuilder::copy)
+                                                  );
 }
