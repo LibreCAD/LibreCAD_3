@@ -221,6 +221,11 @@ namespace lc
             */
             void selectionChanged();
 
+            /**
+            * \brief Add other additional menus
+            */
+            void addOtherMenus();
+
         public slots:
             // CadMdiChild slots
             void triggerMousePressed();
