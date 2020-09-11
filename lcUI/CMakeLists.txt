@@ -72,7 +72,7 @@ widgets/guiAPI/numbergui.h
 widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
 widgets/guiAPI/listgui.h
-widgets/guiAPI/entitypickervisitor.h
+widgets/guiAPI/entitynamevisitor.h
 widgets/guiAPI/lineselectgui.h
 widgets/customizeToolbar/operationdragmodel.h
 widgets/customizeToolbar/operationdropmodel.h
@@ -88,8 +88,9 @@ dialogs/linepatternmanager.h
 dialogs/aboutdialog.h
 dialogs/textdialog.h
 managers/uisettings.h
-managers/contextmenumanager.h
 managers/hookmanager.h
+managers/contextmenumanager.h
+managers/copymanager.h
 managers/metainfomanager.cpp
 managers/metainfomanager.h)
 
@@ -143,7 +144,7 @@ widgets/guiAPI/numbergui.cpp
 widgets/guiAPI/colorgui.cpp
 widgets/guiAPI/entitygui.cpp
 widgets/guiAPI/listgui.cpp
-widgets/guiAPI/entitypickervisitor.cpp
+widgets/guiAPI/entitynamevisitor.cpp
 widgets/customizeToolbar/operationdragmodel.cpp
 widgets/customizeToolbar/operationdropmodel.cpp
 widgets/customizeToolbar/iconlist.cpp
@@ -157,9 +158,10 @@ dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
 dialogs/textdialog.cpp
+managers/hookmanager.cpp
 managers/uisettings.cpp
 managers/contextmenumanager.cpp
-managers/hookmanager.cpp
+managers/copymanager.cpp
 managers/metainfomanager.cpp
 managers/metainfomanager.h)
 

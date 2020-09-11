@@ -4,6 +4,7 @@
 #include <kaguya/kaguya.hpp>
 
 #include <QMainWindow>
+#include <QShortcut>
 #include "widgets/clicommand.h"
 #include "widgets/layers.h"
 #include "widgets/linepatternselect.h"
@@ -12,267 +13,284 @@
 #include "widgets/toolbar.h"
 #include "widgets/customizeToolbar/customizetoolbar.h"
 #include "managers/uisettings.h"
+#include "managers/copymanager.h"
 #include "cadmdichild.h"
 
 #include "widgets/guiAPI/menu.h"
 
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 
 namespace lc
 {
-namespace ui
-{
-/*
-    MainWindow GUI Initialization and Menu GUI API functions
-*/
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-public:
-    /**
-    * \brief Constructor for MainWindow
-    */
-    explicit MainWindow();
+    namespace ui
+    {
+        /*
+            MainWindow GUI Initialization and Menu GUI API functions
+        */
+        class MainWindow : public QMainWindow
+        {
+            Q_OBJECT
+        public:
+            /**
+            * \brief Constructor for MainWindow
+            */
+            explicit MainWindow();
 
-    ~MainWindow();
+            ~MainWindow();
 
-    /**
-    * \brief Trigger appropriate signals for input events
-    */
-    void ConnectInputEvents();
+            /**
+            * \brief Trigger appropriate signals for input events
+            */
+            void ConnectInputEvents();
 
-    /**
-    * \brief Getter for clicommand
-    */
-    lc::ui::widgets::CliCommand* cliCommand();
+            /**
+            * \brief Getter for clicommand
+            */
+            lc::ui::widgets::CliCommand* cliCommand();
 
-    /**
-    * \brief Getter for cadmdichild
-    */
-    lc::ui::CadMdiChild* cadMdiChild();
+            /**
+            * \brief Getter for cadmdichild
+            */
+            lc::ui::CadMdiChild* cadMdiChild();
 
-    /**
-    * \brief Getter for toolbar
-    */
-    lc::ui::widgets::Toolbar* toolbar();
+            /**
+            * \brief Getter for toolbar
+            */
+            lc::ui::widgets::Toolbar* toolbar();
 
-    /**
-    * \brief Getter for layers
-    */
-    lc::ui::widgets::Layers* layers();
+            /**
+            * \brief Getter for layers
+            */
+            lc::ui::widgets::Layers* layers();
 
-    /**
-    * \brief Getter for lua interface
-    */
-    lc::ui::LuaInterface* luaInterface();
+            /**
+            * \brief Getter for lua interface
+            */
+            lc::ui::LuaInterface* luaInterface();
 
-    /**
-    * \brief Get context menu manager id for mainwindow
-    */
-    int contextMenuManagerId();
+            /**
+            * \brief Get context menu manager id for mainwindow
+            */
+            int contextMenuManagerId();
 
-    /**
-    * \brief Connect existing menu item to lua callback function
-    * \param itemName item name , callback - function callback
-    */
-    void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
+            /**
+            * \brief Connect existing menu item to lua callback function
+            * \param itemName item name , callback - function callback
+            */
+            void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
 
-    /**
-    * \brief Run tool operation
-    * \param operation Operation class , init_method - which init_method to run
-    */
-    void runOperation(kaguya::LuaRef operation, const std::string& init_method = "");
+            /**
+            * \brief Run tool operation
+            * \param operation Operation class , init_method - which init_method to run
+            */
+            void runOperation(kaguya::LuaRef operation, const std::string& init_method = "");
 
-    /**
-    * \brief Called on operation finish
-    */
-    void operationFinished();
+            /**
+            * \brief Called on operation finish
+            */
+            void operationFinished();
 
-    /**
-    * \brief These will be called by runOperation for respective operation if extra icons
-    *        are to be added during the operation
-    * \param operation string to identify for which operation , options - list of functions to be run
-    */
-    void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
+            /**
+            * \brief These will be called by runOperation for respective operation if extra icons
+            *        are to be added during the operation
+            * \param operation string to identify for which operation , options - list of functions to be run
+            */
+            void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
 
-    /**
-    * \brief Read UI settings on program start up
-    */
-    void readUiSettings();
+            /**
+            * \brief Read UI settings on program start up
+            */
+            void readUiSettings();
 
-    /**
-    * \brief Run the last operation
-    */
-    void runLastOperation();
+            /**
+            * \brief Run the last operation
+            */
+            void runLastOperation();
 
-    /**
-    * \brief Return the last operation
-    */
-    std::string lastOperationName();
+            /**
+            * \brief Return the last operation
+            */
+            std::string lastOperationName();
 
-    /**
-    * \brief Return the current operation
-    */
-    kaguya::LuaRef currentOperation();
+            /**
+            * \brief Return the current operation
+            */
+            kaguya::LuaRef currentOperation();
 
-    /* ------------ MENU GUI FUNCTIONS ---------------- */
+            /**
+            * \brief Copy selected entities to the clipboard
+            */
+            void copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
+            
+            /**
+            * \brief Paste entites from the clipboard
+            */
+            void pasteEvent();
 
-    /**
-    * \brief Find and return menu item, FIND BY LABEL
-    */
-    lc::ui::api::MenuItem* findMenuItem(std::string label);
+            /* ------------ MENU GUI FUNCTIONS ---------------- */
 
-    /**
-    * \brief Find and return menu item, FIND BY OBJECT NAME
-    */
-    lc::ui::api::MenuItem* findMenuItemByObjectName(std::string objectName);
+            /**
+            * \brief Find and return menu item, FIND BY LABEL
+            */
+            lc::ui::api::MenuItem* findMenuItem(std::string label);
 
-    /**
-    * \brief Add menu to the menu bar
-    */
-    lc::ui::api::Menu* addMenu(const std::string& menuName);
+            /**
+            * \brief Find and return menu item, FIND BY OBJECT NAME
+            */
+            lc::ui::api::MenuItem* findMenuItemByObjectName(std::string objectName);
 
-    void addMenu(lc::ui::api::Menu* menu);
+            /**
+            * \brief Add menu to the menu bar
+            */
+            lc::ui::api::Menu* addMenu(const std::string& menuName);
 
-    /**
-    * \brief Get menu from the menu bar
-    */
-    lc::ui::api::Menu* menuByName(const std::string& menuName);
+            void addMenu(lc::ui::api::Menu* menu);
 
-    /**
-    * \brief Get menu by position
-    */
-    lc::ui::api::Menu* menuByPosition(int pos);
+            /**
+            * \brief Get menu from the menu bar
+            */
+            lc::ui::api::Menu* menuByName(const std::string& menuName);
 
-    /**
-    * \brief Remove menu from menu bar
-    */
-    void removeMenu(const char* menuLabel);
+            /**
+            * \brief Get menu by position
+            */
+            lc::ui::api::Menu* menuByPosition(int pos);
 
-    void removeMenu(int position);
+            /**
+            * \brief Remove menu from menu bar
+            */
+            void removeMenu(const char* menuLabel);
 
-    /* --- OTHER FUNCTIONS --- */
-    void removeFromMenuMap(std::string menuName);
+            void removeMenu(int position);
 
-    /**
-    * \brief Change the dock layout
-    */
-    void changeDockLayout(int i);
+            /* --- OTHER FUNCTIONS --- */
+            void removeFromMenuMap(std::string menuName);
 
-    /**
-    * \brief Save the dock layout
-    */
-    void saveDockLayout();
+            /**
+            * \brief Change the dock layout
+            */
+            void changeDockLayout(int i);
 
-    /**
-    * \brief Load dock layout
-    */
-    void loadDockLayout();
+            /**
+            * \brief Save the dock layout
+            */
+            void saveDockLayout();
 
-private:
-    /**
-    * \brief Add Menu items as actions, replace QAction with MenuItem
-    */
-    void initMenuAPI();
+            /**
+            * \brief Load dock layout
+            */
+            void loadDockLayout();
 
-    /**
-    * \brief Readd actions as menu items
-    */
-    void addActionsAsMenuItem(lc::ui::api::Menu* menu);
 
-    /**
-    * \brief Helper function for updating position variables of readded menu items
-    */
-    void fixMenuPositioning(lc::ui::api::Menu* menu);
+        private:
+            /**
+            * \brief Add Menu items as actions, replace QAction with MenuItem
+            */
+            void initMenuAPI();
 
-    /**
-    * \brief Helper function for finding menu item
-    *        uses recursive helper function findMenuItemRecur
-    */
-    lc::ui::api::MenuItem* findMenuItemBy(std::string objectName, bool searchByLabel);
+            /**
+            * \brief Readd actions as menu items
+            */
+            void addActionsAsMenuItem(lc::ui::api::Menu* menu);
 
-    /**
-    * \brief Recursive function to search for menu item
-    */
-    lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel);
+            /**
+            * \brief Helper function for updating position variables of readded menu items
+            */
+            void fixMenuPositioning(lc::ui::api::Menu* menu);
 
-    /**
-    * \brief Check if menu of same label already exists
-    */
-    bool checkForMenuOfSameLabel(const std::string& label);
+            /**
+            * \brief Helper function for finding menu item
+            *        uses recursive helper function findMenuItemRecur
+            */
+            lc::ui::api::MenuItem* findMenuItemBy(std::string objectName, bool searchByLabel);
 
-    /**
-    * \brief Pass the selected entities to the property editor
-    */
-    void selectionChanged();
+            /**
+            * \brief Recursive function to search for menu item
+            */
+            lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel);
 
-public slots:
-    // CadMdiChild slots
-    void triggerMousePressed();
-    void triggerMouseReleased();
-    void triggerMouseMoved();
-    void triggerSelectionChanged();
-    void triggerKeyPressed(int key);
+            /**
+            * \brief Check if menu of same label already exists
+            */
+            bool checkForMenuOfSameLabel(const std::string& label);
 
-    // CliCommand slots
-    void triggerCoordinateEntered(lc::geo::Coordinate coordinate);
-    void triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate);
-    void triggerNumberEntered(double number);
-    void triggerTextEntered(QString text);
-    void triggerFinishOperation();
-    void triggerCommandEntered(QString command);
+            /**
+            * \brief Pass the selected entities to the property editor
+            */
+            void selectionChanged();
 
-    // Slot to deal with things to do in C++ after a point is triggered
-    void triggerPoint(lc::geo::Coordinate coordinate);
+        public slots:
+            // CadMdiChild slots
+            void triggerMousePressed();
+            void triggerMouseReleased();
+            void triggerMouseMoved();
+            void triggerSelectionChanged();
+            void triggerKeyPressed(int key);
 
-    // File related slots
-    void newFile();
-    void openFile();
+            // CliCommand slots
+            void triggerCoordinateEntered(lc::geo::Coordinate coordinate);
+            void triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate);
+            void triggerNumberEntered(double number);
+            void triggerTextEntered(QString text);
+            void triggerFinishOperation();
+            void triggerCommandEntered(QString command);
 
-    // Edit slots
-    void undo();
-    void redo();
-    void selectAll();
-    void selectNone();
-    void invertSelection();
-    void clearUndoableStack();
-    void autoScale();
+            // Slot to deal with things to do in C++ after a point is triggered
+            void triggerPoint(lc::geo::Coordinate coordinate);
 
-    // Customize toolbar slots
-    void runCustomizeToolbar();
-    void writeSettings();
-    void loadDefaultSettings();
+            // File related slots
+            void newFile();
+            void openFile();
 
-signals:
-    void point(lc::geo::Coordinate coordinate);
+            // Edit slots
+            void undo();
+            void redo();
+            void selectAll();
+            void selectNone();
+            void invertSelection();
+            void clearUndoableStack();
+            void autoScale();
 
-protected:
-    Ui::MainWindow* ui;
-    lc::ui::LuaInterface _luaInterface;
+            // Customize toolbar slots
+            void runCustomizeToolbar();
+            void writeSettings();
+            void loadDefaultSettings();
 
-    lc::ui::CadMdiChild _cadMdiChild;
-    lc::ui::widgets::Layers _layers;
-    lc::ui::widgets::CliCommand _cliCommand;
-    lc::ui::widgets::Toolbar _toolbar;
+        signals:
+            void point(lc::geo::Coordinate coordinate);
 
-    // Select tools
-    lc::ui::widgets::LinePatternSelect linePatternSelect;
-    lc::ui::widgets::LineWidthSelect lineWidthSelect;
-    lc::ui::widgets::ColorSelect colorSelect;
+        protected:
+            Ui::MainWindow* ui;
+            lc::ui::LuaInterface _luaInterface;
 
-    lc::ui::widgets::CustomizeToolbar* _customizeToolbar;
-    lc::ui::UiSettings _uiSettings;
+            lc::ui::CadMdiChild _cadMdiChild;
+            lc::ui::widgets::Layers _layers;
+            lc::ui::widgets::CliCommand _cliCommand;
+            lc::ui::widgets::Toolbar _toolbar;
 
-    lc::geo::Coordinate lastPoint;
-    std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
+            // Select tools
+            lc::ui::widgets::LinePatternSelect linePatternSelect;
+            lc::ui::widgets::LineWidthSelect lineWidthSelect;
+            lc::ui::widgets::ColorSelect colorSelect;
 
-    QMap<QString, api::Menu*> menuMap;
-    int _contextMenuManagerId;
+            lc::ui::widgets::CustomizeToolbar* _customizeToolbar;
+            lc::ui::UiSettings _uiSettings;
+            lc::ui::CopyManager _copyManager;
 
-    kaguya::LuaRef _oldOperation;
-    std::string _oldOpInitMethod;
-};
-}
+            lc::geo::Coordinate lastPoint;
+            std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
+
+            QMap<QString, api::Menu*> menuMap;
+            int _contextMenuManagerId;
+
+            kaguya::LuaRef _oldOperation;
+            std::string _oldOpInitMethod;
+
+            // Shortcuts
+            QShortcut* copyShortcut;
+            QShortcut* pasteShortcut;
+        };
+    }
 }

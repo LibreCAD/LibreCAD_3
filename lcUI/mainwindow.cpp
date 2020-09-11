@@ -22,7 +22,8 @@ MainWindow::MainWindow()
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _cliCommand(this),
     _toolbar(&_luaInterface, this),
-    _layers(nullptr, this)
+    _layers(nullptr, this),
+    _copyManager(&_cadMdiChild)
 {
     ContextMenuManager::GetContextMenuManager(this);
     _contextMenuManagerId = ContextMenuManager::GetInstanceId(this);
@@ -99,6 +100,13 @@ MainWindow::MainWindow()
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 
+    /* Shortcuts */
+    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+
+    connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
+    connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);
+
     this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
 
     /*QStringList fontPaths = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
@@ -111,6 +119,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+    WindowManager::removeWindow(this);
     delete ui;
 }
 
@@ -732,6 +741,14 @@ void MainWindow::changeDockLayout(int i) {
         PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
         addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
     }
+}
+
+void MainWindow::copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities) {
+    _copyManager.copyEntitiesToClipboard(cadEntities);
+}
+
+void MainWindow::pasteEvent() {
+    _copyManager.pasteEvent();
 }
 
 void MainWindow::saveDockLayout() {
