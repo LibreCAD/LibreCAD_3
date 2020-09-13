@@ -55,6 +55,33 @@ MainWindow::MainWindow()
 
     _toolbar.addSnapOptions();
 
+    addOtherMenus();
+
+    _toolbar.generateButtonsMap();
+    readUiSettings();
+
+    _cadMdiChild.viewer()->setContextMenuManagerId(_contextMenuManagerId);
+
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
+
+    /* Shortcuts */
+    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+
+    connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
+    connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);
+
+    this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
+}
+
+MainWindow::~MainWindow()
+{
+    WindowManager::removeWindow(this);
+    delete ui;
+}
+
+void MainWindow::addOtherMenus() {
     // add lua script
     kaguya::State state(_luaInterface.luaState());
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
@@ -62,11 +89,11 @@ MainWindow::MainWindow()
     state["run_aboutdialog"] = kaguya::function([&] {
         auto aboutDialog = new dialog::AboutDialog(this);
         aboutDialog->show();
-    });
+        });
     state["run_textdialog"] = kaguya::function([&] {
         auto textDialog = new dialog::TextDialog(this, this);
         textDialog->show();
-    });
+        });
 
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
@@ -91,36 +118,6 @@ MainWindow::MainWindow()
     if (textMenu != nullptr) {
         textMenu->addItem("Text Dialog", state["run_textdialog"]);
     }
-
-    _toolbar.generateButtonsMap();
-    readUiSettings();
-
-    _cadMdiChild.viewer()->setContextMenuManagerId(_contextMenuManagerId);
-
-    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
-    this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
-
-    /* Shortcuts */
-    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
-    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
-
-    connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
-    connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);
-
-    this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
-
-    /*QStringList fontPaths = QStandardPaths::standardLocations(QStandardPaths::FontsLocation);
-    std::vector<std::string> fontPathList;
-    for (QString font : fontPaths) {
-        fontPathList.push_back(font.toStdString());
-    }
-    _cadMdiChild.viewer()->documentCanvas()->addFontsFromPath(fontPathList);*/
-}
-
-MainWindow::~MainWindow()
-{
-    WindowManager::removeWindow(this);
-    delete ui;
 }
 
 void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method) {
