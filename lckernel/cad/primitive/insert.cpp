@@ -55,17 +55,17 @@ CADEntity_CSPtr Insert::copy(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Insert::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
-    //TODO
+    /// @todo
     return shared_from_this();
 }
 
 CADEntity_CSPtr Insert::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    //TODO
+    /// @todo
     return shared_from_this();
 }
 
 CADEntity_CSPtr Insert::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    //TODO
+    /// @todo
     return shared_from_this();
 }
 
@@ -76,7 +76,7 @@ const geo::Area Insert::boundingBox() const {
 CADEntity_CSPtr Insert::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto builder = builder::InsertBuilder();
 
-    //TODO: a copy should be made, instead of setting every attribute manually
+    /// @todo a copy should be made, instead of setting every attribute manually
     builder.setCoordinate(_position);
     builder.setDisplayBlock(_displayBlock);
     builder.setDocument(_document);
@@ -88,7 +88,7 @@ CADEntity_CSPtr Insert::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr met
 }
 
 void Insert::dispatch(EntityDispatch& dispatch) const {
-    //TODO
+    /// @todo
 }
 
 std::map<unsigned int, geo::Coordinate> entity::Insert::dragPoints() const {
@@ -112,9 +112,9 @@ entity::CADEntity_CSPtr entity::Insert::setDragPoints(std::map<unsigned int, lc:
 }
 
 std::vector<lc::EntityCoordinate> entity::Insert::snapPoints(const geo::Coordinate& coord,
-                                                             const SimpleSnapConstrain& simpleSnapConstrain,
-                                                             double minDistanceToSnap,
-                                                             int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain& simpleSnapConstrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
     if ((bool) (simpleSnapConstrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
@@ -126,6 +126,10 @@ std::vector<lc::EntityCoordinate> entity::Insert::snapPoints(const geo::Coordina
 }
 
 geo::Coordinate Insert::nearestPointOnPath(const geo::Coordinate& coord) const {
+    return _position;
+}
+
+geo::Coordinate Insert::nearestPointOnEntity(const geo::Coordinate& coord) const {
     return _position;
 }
 

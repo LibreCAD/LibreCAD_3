@@ -1,4 +1,8 @@
-MoveOperation = {}
+MoveOperation = {
+    name = "MoveOperation",
+    command_line = "MOVE",
+    icon = "modifymove.png"
+}
 MoveOperation.__index = MoveOperation
 
 setmetatable(MoveOperation, {
@@ -11,11 +15,11 @@ setmetatable(MoveOperation, {
 })
 
 function MoveOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
-    self.selection = getWindow(id):selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
-    message(tostring(#self.selection) .. " items selected", id)
+    message(tostring(#self.selection) .. " items selected")
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -24,18 +28,14 @@ function MoveOperation:_init(id)
         luaInterface:registerEvent('point', self)
         luaInterface:registerEvent('mouseMove', self)
 
-        message("Give origin point", id)
+        message("Give origin point")
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 
 function MoveOperation:onEvent(eventName, event)
-    if(Operations.forMe(self, event) == false) then
-        return
-    end
-
     if(eventName == "point" or eventName == "number") then
         self:newData(event["position"])
     elseif(eventName == "mouseMove") then
@@ -47,10 +47,10 @@ function MoveOperation:newData(point)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(point)
 
-        message("Give destination point", id)
+        message("Give destination point")
     elseif(Operations:getCoordinate(point) ~= nil) then
         local offset = point:sub(self.origin)
-        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+        local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
         for k, entity in pairs(self.selection) do
             b:appendEntity(entity)
@@ -66,7 +66,7 @@ end
 
 function MoveOperation:tempMove(point)
     if(self.origin ~= nil) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:cadMdiChild()
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
         end
@@ -84,7 +84,7 @@ end
 
 function MoveOperation:close()
     if(not self.finished) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:cadMdiChild()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
@@ -94,6 +94,6 @@ function MoveOperation:close()
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

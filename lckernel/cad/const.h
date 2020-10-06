@@ -21,10 +21,14 @@
     using type##_CSPtr = std::shared_ptr<const type>;
 
 template<typename T>
-T * ptr(T & obj) { return &obj; } //turn reference into pointer!
+T * ptr(T & obj) {
+    return &obj;    //turn reference into pointer!
+}
 
 template<typename T>
-T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
+T * ptr(T * obj) {
+    return obj;    //obj is already pointer, return it!
+}
 
 
 namespace lc {

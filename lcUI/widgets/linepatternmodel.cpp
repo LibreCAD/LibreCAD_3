@@ -52,14 +52,14 @@ QVariant LinePatternModel::data(const QModelIndex &index, int role) const {
 
     if(role == Qt::DisplayRole) {
         switch (index.column()) {
-            case NAME:
-                return linePattern->name().c_str();
+        case NAME:
+            return linePattern->name().c_str();
 
-            case DESCRIPTION:
-                return linePattern->description().c_str();
+        case DESCRIPTION:
+            return linePattern->description().c_str();
 
-            default:
-                break;
+        default:
+            break;
         }
     }
 
@@ -70,17 +70,17 @@ QVariant LinePatternModel::headerData(int section, Qt::Orientation orientation, 
     if (orientation == Qt::Horizontal) {
         if(role == Qt::DisplayRole) {
             switch(section) {
-                case PREVIEW:
-                    return "Preview";
+            case PREVIEW:
+                return "Preview";
 
-                case NAME:
-                    return "Name";
+            case NAME:
+                return "Name";
 
-                case DESCRIPTION:
-                    return "Description";
+            case DESCRIPTION:
+                return "Description";
 
-                default:
-                    break;
+            default:
+                break;
             }
         }
     }

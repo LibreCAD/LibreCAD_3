@@ -33,10 +33,14 @@ lcadmodelviewerimpl.h
 lcadpaperviewerimpl.h
 lcadmodelviewer.h
 lcadpaperviewer.h
+mainwindow.h
+windowmanager.h
+operationloader.h
+propertyeditor.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
-widgets/toolbartab.h
+widgets/guiAPI/toolbartab.h
 widgets/layers.h
 widgets/layermodel.h
 widgets/linepatternselect.h
@@ -46,12 +50,49 @@ widgets/linepatternmodel.h
 widgets/linewidthselect.h
 widgets/colorselect.h
 widgets/widgettitlebar.h
-lua/qtbridge.h
-lua/luaqobject.h
+widgets/guiAPI/menu.h
+widgets/guiAPI/menuitem.h
+widgets/guiAPI/toolbarbutton.h
+widgets/guiAPI/toolbargroup.h
+widgets/guiAPI/inputguicontainer.h
+widgets/guiAPI/dialogwidget.h
+widgets/guiAPI/inputgui.h
+widgets/guiAPI/textgui.h
+widgets/guiAPI/buttongui.h
+widgets/guiAPI/checkboxgui.h
+widgets/guiAPI/horizontalgroupgui.h
+widgets/guiAPI/lwvertexgroup.h
+widgets/guiAPI/radiobuttongui.h
+widgets/guiAPI/radiogroupgui.h
+widgets/guiAPI/coordinategui.h
+widgets/guiAPI/anglegui.h
+widgets/guiAPI/slidergui.h
+widgets/guiAPI/comboboxgui.h
+widgets/guiAPI/numbergui.h
+widgets/guiAPI/colorgui.h
+widgets/guiAPI/entitygui.h
+widgets/guiAPI/listgui.h
+widgets/guiAPI/entitynamevisitor.h
+widgets/guiAPI/lineselectgui.h
+widgets/customizeToolbar/operationdragmodel.h
+widgets/customizeToolbar/operationdropmodel.h
+widgets/customizeToolbar/iconlist.h
+widgets/customizeToolbar/deleteiconarea.h
+widgets/customizeToolbar/customizetoolbar.h
+widgets/customizeToolbar/customizeparenttab.h
+widgets/customizeToolbar/customizegrouptab.h
+lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
-        managers/metainfomanager.cpp managers/metainfomanager.h)
+dialogs/aboutdialog.h
+dialogs/textdialog.h
+managers/uisettings.h
+managers/hookmanager.h
+managers/contextmenumanager.h
+managers/copymanager.h
+managers/metainfomanager.cpp
+managers/metainfomanager.h)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -63,10 +104,14 @@ lcadmodelviewerimpl.cpp
 lcadpaperviewerimpl.cpp
 lcadmodelviewer.cpp
 lcadpaperviewer.cpp
+mainwindow.cpp
+windowmanager.cpp
+operationloader.cpp
+propertyeditor.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
-widgets/toolbartab.cpp
+widgets/guiAPI/toolbartab.cpp
 widgets/layers.cpp
 widgets/layermodel.cpp
 widgets/linepatternselect.cpp
@@ -76,20 +121,70 @@ widgets/linepatternmodel.cpp
 widgets/linewidthselect.cpp
 widgets/colorselect.cpp
 widgets/widgettitlebar.cpp
-lua/qtbridge.cpp
-lua/luaqobject.cpp
+widgets/guiAPI/lineselectgui.cpp
+widgets/guiAPI/menu.cpp
+widgets/guiAPI/menuitem.cpp
+widgets/guiAPI/toolbarbutton.cpp
+widgets/guiAPI/toolbargroup.cpp
+widgets/guiAPI/inputguicontainer.cpp
+widgets/guiAPI/dialogwidget.cpp
+widgets/guiAPI/inputgui.cpp
+widgets/guiAPI/textgui.cpp
+widgets/guiAPI/buttongui.cpp
+widgets/guiAPI/checkboxgui.cpp
+widgets/guiAPI/horizontalgroupgui.cpp
+widgets/guiAPI/lwvertexgroup.cpp
+widgets/guiAPI/radiobuttongui.cpp
+widgets/guiAPI/radiogroupgui.cpp
+widgets/guiAPI/coordinategui.cpp
+widgets/guiAPI/anglegui.cpp
+widgets/guiAPI/slidergui.cpp
+widgets/guiAPI/comboboxgui.cpp
+widgets/guiAPI/numbergui.cpp
+widgets/guiAPI/colorgui.cpp
+widgets/guiAPI/entitygui.cpp
+widgets/guiAPI/listgui.cpp
+widgets/guiAPI/entitynamevisitor.cpp
+widgets/customizeToolbar/operationdragmodel.cpp
+widgets/customizeToolbar/operationdropmodel.cpp
+widgets/customizeToolbar/iconlist.cpp
+widgets/customizeToolbar/deleteiconarea.cpp
+widgets/customizeToolbar/customizetoolbar.cpp
+widgets/customizeToolbar/customizeparenttab.cpp
+widgets/customizeToolbar/customizegrouptab.cpp
+lua/guibridge.cpp
+dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-        managers/metainfomanager.cpp managers/metainfomanager.h)
+dialogs/textdialog.cpp
+managers/hookmanager.cpp
+managers/uisettings.cpp
+managers/contextmenumanager.cpp
+managers/copymanager.cpp
+managers/metainfomanager.cpp
+managers/metainfomanager.h)
 
 QT5_WRAP_UI(UI_HEADERS
+mainwindow.ui
 widgets/clicommand.ui
 widgets/luascript.ui
 widgets/toolbar.ui
-widgets/toolbartab.ui
+widgets/guiAPI/toolbartab.ui
+widgets/guiAPI/dialogwidget.ui
+widgets/guiAPI/textgui.ui
+widgets/guiAPI/coordinategui.ui
+widgets/guiAPI/anglegui.ui
+widgets/guiAPI/slidergui.ui
+widgets/guiAPI/comboboxgui.ui
+widgets/guiAPI/numbergui.ui
+widgets/guiAPI/colorgui.ui
+widgets/guiAPI/entitygui.ui
+widgets/guiAPI/listgui.ui
+widgets/customizeToolbar/customizetoolbar.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
+dialogs/textdialog.ui
 dialogs/addlayerdialog.ui
 dialogs/addlinepatterndialog.ui
 dialogs/linepatternmanager.ui)
@@ -115,6 +210,10 @@ link_directories(${Boost_LIBRARY_DIRS})
 find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
+
+#RapidJSON
+find_package(RapidJSON)
+include_directories(${RAPIDJSON_INCLUDE_DIRS})
 
 # BUILDING CONFIG
 # SEPARATE BUILDING FLAG
@@ -184,3 +283,5 @@ ${GLEW_LIBRARY})
 # INSTALLATION
 install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${SETTINGS_PATH}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${SETTINGS_PATH}")

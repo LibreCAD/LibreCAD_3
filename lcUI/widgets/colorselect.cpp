@@ -23,7 +23,7 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
 
     insertSeparator(count());
 
-    for(const auto& color : QColor::colorNames()){
+    for(const auto& color : QColor::colorNames()) {
         QPixmap pixmap(qIconSize);
         pixmap.fill(color);
         addItem(QIcon(pixmap), color);
@@ -83,6 +83,11 @@ void ColorSelect::setColor(const lc::Color& color) {
     updateMetaInfoManager();
 }
 
+void ColorSelect::setByLayer() {
+    setCurrentText(BY_LAYER);
+    updateMetaInfoManager();
+}
+
 void ColorSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager) {
     _metaInfoManager = std::move(metaInfoManager);
 
@@ -108,6 +113,7 @@ void ColorSelect::updateMetaInfoManager() {
     }
 
     _metaInfoManager->setColor(metaColor());
+    emit colorChanged();
 }
 
 lc::meta::MetaColor_CSPtr ColorSelect::metaColor() {

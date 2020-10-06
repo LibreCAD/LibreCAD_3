@@ -5,8 +5,8 @@ using namespace entity;
 
 Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, bool isCCW,
          meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Arc(center, radius, startAngle, endAngle, isCCW) {
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Arc(center, radius, startAngle, endAngle, isCCW) {
 }
 
 Arc::Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
@@ -15,8 +15,8 @@ Arc::Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaIn
 }
 
 Arc::Arc(const Arc_CSPtr& other, bool sameID) : CADEntity(other, sameID),
-                                                geo::Arc(other->center(), other->radius(), other->startAngle(),
-                                                         other->endAngle(), other->CCW()) {
+    geo::Arc(other->center(), other->radius(), other->startAngle(),
+             other->endAngle(), other->CCW()) {
 }
 
 Arc::Arc(const builder::ArcBuilder& builder) :
@@ -25,7 +25,7 @@ Arc::Arc(const builder::ArcBuilder& builder) :
 }
 
 std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain &constrain,
-                                              double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+        double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         // Add center
@@ -77,7 +77,7 @@ std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate& coord, cons
     return points;
 }
 
-// TODO: Decide if a point like center should be returned by a function nearestPointOnPath
+/// @todo Decide if a point like center should be returned by a function nearestPointOnPath
 geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate &coord) const {
     const geo::Coordinate pointOnPath = geo::Arc::nearestPointOnPath(coord);
     /*
@@ -90,23 +90,61 @@ geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate &coord) const {
     return pointOnPath;
 }
 
+geo::Coordinate Arc::nearestPointOnEntity(const geo::Coordinate &coord) const {
+    const geo::Coordinate pointOnEntity = geo::Arc::nearestPointOnEntity(coord);
+    /*
+    double vl1 = (center() - coord).magnitude();
+    double vl2 = (pointOnPath - coord).magnitude();
+    if (vl1 < vl2) {
+        return center();
+    } */
+
+    return pointOnEntity;
+}
+
+std::vector<CADEntity_CSPtr> Arc::splitEntity(const geo::Coordinate& coord) const {
+    std::vector<CADEntity_CSPtr> out;
+    auto angle = (coord-center()).angle();
+    if(angle<this->startAngle())
+        angle+=2*M_PI;
+    // check if angle is between start and end
+    if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE)
+        if (isAngleBetween(angle)) {
+            auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), angle,
+                                                this->CCW(), layer(), metaInfo(), block());
+            out.push_back(newArc);
+            newArc = std::make_shared<Arc>(this->center(), this->radius(), angle, this->endAngle(),
+                                           this->CCW(), layer(), metaInfo(), block());
+            out.push_back(newArc);
+        }
+    return out;
+}
+
+lc::geo::Coordinate Arc::representingPoint() const {
+    if(this->CCW())
+        return this->center() + lc::geo::Coordinate((this->startAngle()+this->endAngle())/2.+M_PI) * this->radius();
+    else
+        return this->center() + lc::geo::Coordinate((this->startAngle()+this->endAngle())/2.) * this->radius();
+}
+
+
 CADEntity_CSPtr Arc::move(const geo::Coordinate &offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(),
-                                        this->CCW(), layer());
+                                        this->CCW(), layer(), metaInfo(), block());
     newArc->setID(this->id());
     return newArc;
 }
 
 CADEntity_CSPtr Arc::copy(const geo::Coordinate &offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(),
-                                        this->CCW(), layer());
+                                        this->CCW(), layer(), metaInfo(), block());
     return newArc;
 }
 
 CADEntity_CSPtr Arc::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     auto newArc = std::make_shared<Arc>(this->center().rotate(rotation_center, rotation_angle),
                                         this->radius(), this->startAngle() + rotation_angle,
-                                        this->endAngle() + rotation_angle, this->CCW(), layer());
+                                        this->endAngle() + rotation_angle, this->CCW(), layer(), metaInfo(), block());
     newArc->setID(this->id());
     return newArc;
 }
@@ -114,7 +152,7 @@ CADEntity_CSPtr Arc::rotate(const geo::Coordinate &rotation_center, const double
 CADEntity_CSPtr Arc::scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) const {
     auto newArc = std::make_shared<Arc>(this->center().scale(scale_center, scale_factor),
                                         this->radius() * fabs(scale_factor.x()),
-                                        this->startAngle(), this->endAngle(), this->CCW(), layer());
+                                        this->startAngle(), this->endAngle(), this->CCW(), layer(), metaInfo(), block());
     newArc->setID(this->id());
     return newArc;
 
@@ -127,7 +165,7 @@ CADEntity_CSPtr Arc::mirror(const geo::Coordinate &axis1, const geo::Coordinate 
                                         this->radius(),
                                         lc::maths::Math::correctAngle(a - this->startAngle()),
                                         lc::maths::Math::correctAngle(a - this->endAngle()),
-                                        !this->CCW(), layer());
+                                        !this->CCW(), layer(), metaInfo(), block());
     newArc->setID(this->id());
     return newArc;
 
@@ -155,7 +193,7 @@ std::map<unsigned int, lc::geo::Coordinate> Arc::dragPoints() const {
 }
 
 
-CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {//bulge expenced down
     try {
         auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), metaInfo());
         newEntity->setID(id());
@@ -164,4 +202,50 @@ CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> d
     catch(std::out_of_range& e) {
         return shared_from_this();
     }
+}
+
+PropertiesMap Arc::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["center"] = this->center();
+    propertyValues["radius"] = this->radius();
+    propertyValues["startAngle"] = AngleProperty(this->startAngle());
+    propertyValues["endAngle"] = AngleProperty(this->endAngle());
+    propertyValues["isCCW"] = this->CCW();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr Arc::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate centerp = this->center();
+    double radiusp = this->radius();
+    double startAnglep = this->startAngle();
+    double endAnglep = this->endAngle();
+    bool isCCWp = this->CCW();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
+        if (iter->first == "center") {
+            centerp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "radius") {
+            radiusp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "startAngle") {
+            startAnglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+
+        if (iter->first == "endAngle") {
+            endAnglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+
+        if (iter->first == "isCCW") {
+            isCCWp = boost::get<bool>(iter->second);
+        }
+    }
+
+    auto arcEntity = std::make_shared<Arc>(centerp, radiusp, startAnglep, endAnglep, isCCWp, layer(), metaInfo(), block());
+    arcEntity->setID(this->id());
+    return arcEntity;
 }

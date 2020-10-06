@@ -2,56 +2,83 @@
 
 #include <QApplication>
 
+#include <mainwindow.h>
 #include <widgets/toolbar.h>
-#include <widgets/toolbartab.h>
+#include <widgets/guiAPI/toolbartab.h>
+#include <widgets/guiAPI/toolbargroup.h>
+#include <widgets/guiAPI/toolbarbutton.h>
 #include "uitests.h"
 
 using namespace lc::ui::widgets;
+using namespace lc::ui::api;
 
 TEST(ToolbarTest, TabOperations) {
-	QApplication app(argc, argv);
-	Toolbar toolbar;
+    QApplication app(argc, argv);
+    Toolbar toolbar(nullptr);
 
-	toolbar.addTab("Test", new ToolbarTab());
-	auto tab = toolbar.tabByName("Test");
+    toolbar.addTab("TestTab1");
+    toolbar.addTab("TestTab2");
+    auto tab = toolbar.tabByName("TestTab1");
 
-	EXPECT_NE(nullptr, tab);
+    EXPECT_NE(nullptr, tab);
+    EXPECT_NE(nullptr, toolbar.tabByName("TestTab2"));
+    EXPECT_EQ("TestTab1", tab->label());
 
-	toolbar.removeTab(tab);
-	tab = toolbar.tabByName("Test");
+    toolbar.removeTab(tab);
+    tab = toolbar.tabByName("TestTab1");
 
-	EXPECT_EQ(nullptr, tab);
+    EXPECT_EQ(nullptr, tab);
+    EXPECT_NE(nullptr, toolbar.tabByName("TestTab2"));
+
+    toolbar.removeTab("TestTab2");
+    EXPECT_EQ(nullptr, toolbar.tabByName("TestTab2"));
 }
 
 TEST(ToolbarTest, GroupOperations) {
-	QApplication app(argc, argv);
-	ToolbarTab toolbarTab;
+    QApplication app(argc, argv);
+    Toolbar toolbar(nullptr);
 
-	toolbarTab.addGroup("Test");
-	auto group = toolbarTab.groupByName("Test");
+    auto tab1 = toolbar.addTab("TestTab1");
+    tab1->addGroup("TestGroup1");
+    auto quickaccess = toolbar.addTab("Quick Access");
+    quickaccess->addGroup("TestGroup2");
 
-	EXPECT_NE(nullptr, group);
+    EXPECT_NE(nullptr, tab1->groupByName("TestGroup1"));
+    EXPECT_NE(nullptr, quickaccess->groupByName("TestGroup2"));
 
-	toolbarTab.removeGroup(group);
-	group = toolbarTab.groupByName("Test");
+    toolbar.removeGroupByName("TestGroup2");
 
-	EXPECT_EQ(nullptr, group);
+    EXPECT_NE(nullptr, tab1->groupByName("TestGroup1"));
+    EXPECT_EQ(nullptr, quickaccess->groupByName("TestGroup2"));
+
+    toolbar.removeGroupByName("TestGroup1", "TestTab1");
+
+    EXPECT_EQ(nullptr, tab1->groupByName("TestGroup1"));
 }
 
-TEST(ToolbarTest, ButtonOperations) {
-	QApplication app(argc, argv);
-	ToolbarTab toolbarTab;
+TEST(ToolbarTest, SlotTest) {
+    QApplication app(argc, argv);
+    MainWindow* mainWindow = new MainWindow();
 
-	toolbarTab.addGroup("Test");
-	auto group = toolbarTab.groupByName("Test");
+    lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
+    kaguya::State state(luaInterface->luaState());
 
-	toolbarTab.addButton(group, "TestButton");
-	auto button = toolbarTab.buttonByText(group, "TestButton");
+    state.dostring("testtoolbar = function() doesThisExist=true end");
+    kaguya::LuaRef cb = state["testtoolbar"];
 
-	EXPECT_NE(nullptr, button);
+    Toolbar* toolbar = mainWindow->toolbar();
+    ToolbarTab* testtab = toolbar->addTab("TestTab");
 
-	toolbarTab.removeButton(button);
-	button = toolbarTab.buttonByText(group, "TestButton");
+    EXPECT_EQ(testtab, toolbar->tabByName("TestTab"));
+    testtab->setLabel("NewTab");
+    EXPECT_EQ(testtab, toolbar->tabByName("NewTab"));
 
-	EXPECT_EQ(nullptr, button);
+    ToolbarButton button("TestButton", "");
+    button.addCallback(cb);
+
+    EXPECT_FALSE(state["doesThisExist"].get<bool>());
+    button.clicked();
+    EXPECT_TRUE(state["doesThisExist"].get<bool>());
+
+    mainWindow->close();
 }

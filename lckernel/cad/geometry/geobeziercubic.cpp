@@ -4,10 +4,10 @@ using namespace lc;
 using namespace geo;
 
 CubicBezier::CubicBezier(Coordinate point_a, Coordinate point_b, Coordinate point_c, Coordinate point_d) :
-        _pointA(std::move(point_a)),
-        _pointB(std::move(point_b)),
-        _pointC(std::move(point_c)),
-        _pointD(std::move(point_d)) {
+    _pointA(std::move(point_a)),
+    _pointB(std::move(point_b)),
+    _pointC(std::move(point_c)),
+    _pointD(std::move(point_d)) {
 }
 
 CubicBezier::CubicBezier(const CubicBezier &bez) :
@@ -51,7 +51,7 @@ const Area CubicBezier::boundingBox() const {
     std::sort(x_.begin(), x_.end());
     std::sort(y_.begin(), y_.end());
 
-    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
+    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back(),y_.back()));
 }
 
 Coordinate CubicBezier::nearestPointOnPath(const Coordinate& coord) const {
@@ -122,7 +122,7 @@ std::vector<double> CubicBezier::nearestPointTValue(const lc::geo::Coordinate &c
 
     //    return lc::Math::cubicSolver({b, c, d});
     std::vector<double> empty(0, 0.);
-    return empty; // TODO: no return statement
+    return empty; /// @todo no return statement
 }
 
 const std::vector<geo::Coordinate> CubicBezier::getCP() const {
@@ -140,8 +140,8 @@ const std::vector<geo::Coordinate> CubicBezier::getCP() const {
  * @return nearest point
  */
 const lc::geo::Coordinate CubicBezier::returnCasesForNearestPoint(
-        double min_distance, const lc::geo::Coordinate &coord,
-        const lc::geo::Coordinate &ret) const {
+    double min_distance, const lc::geo::Coordinate &coord,
+    const lc::geo::Coordinate &ret) const {
     //    auto distance_to_A = coord.distanceTo(_pointA);
     //    auto distance_to_C = coord.distanceTo(_pointC);
 
@@ -155,7 +155,7 @@ const lc::geo::Coordinate CubicBezier::returnCasesForNearestPoint(
     //    }
     //    // Point is end of curve
     //    return _pointC;
-    return ret; // TODO: no return statement
+    return ret; /// @todo no return statement
 }
 
 Coordinate CubicBezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
@@ -192,51 +192,51 @@ const std::vector<Coordinate> CubicBezier::Curve(double precession) {
 }
 
 const double CubicBezier::length() const {
-    return 0; // TODO: no return statement
+    return 0; /// @todo no return statement
 }
 
 BB_CSPtr CubicBezier::rotate(const geo::Coordinate& center, double angle) const {
     auto z = std::make_shared<const lc::geo::CubicBezier>(_pointA.rotate(center, angle),
-                                                          _pointB.rotate(center, angle),
-                                                          _pointC.rotate(center, angle),
-                                                          _pointD.rotate(center, angle));
+             _pointB.rotate(center, angle),
+             _pointC.rotate(center, angle),
+             _pointD.rotate(center, angle));
     return z;
 }
 
 BB_CSPtr CubicBezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
     auto z = std::make_shared<const lc::geo::CubicBezier>(  _pointA.scale(center, factor),
-                                                            _pointB.scale(center, factor),
-                                                            _pointC.scale(center, factor),
-                                                            _pointD.scale(center, factor)
-                                                            );
+             _pointB.scale(center, factor),
+             _pointC.scale(center, factor),
+             _pointD.scale(center, factor)
+                                                         );
     return z;
 }
 
 BB_CSPtr CubicBezier::move(const geo::Coordinate& offset) const {
     auto z = std::make_shared<const lc::geo::CubicBezier>(_pointA + offset,
-                                                          _pointB + offset,
-                                                          _pointC + offset,
-                                                          _pointD + offset
-                                                          );
+             _pointB + offset,
+             _pointC + offset,
+             _pointD + offset
+                                                         );
     return z;
 }
 
 const Coordinate CubicBezier::tangent(double t) const {
     const Coordinate empty;
-    return empty; // TODO: no return statement
+    return empty; /// @todo no return statement
 }
 
 const Coordinate CubicBezier::normal(double t) const {
     const Coordinate empty;
-    return empty; // TODO: no return statement
+    return empty; /// @todo no return statement
 }
 
 BB_CSPtr  CubicBezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
     auto z = std::make_shared<const lc::geo::CubicBezier>(_pointA.mirror(axis1, axis2),
-                                                          _pointB.mirror(axis1, axis2),
-                                                          _pointC.mirror(axis1, axis2),
-                                                          _pointD.mirror(axis1, axis2)
-                                                          );
+             _pointB.mirror(axis1, axis2),
+             _pointC.mirror(axis1, axis2),
+             _pointD.mirror(axis1, axis2)
+                                                         );
     return z;
 }
 
@@ -255,39 +255,39 @@ std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
 }
 
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {
-    return nullptr; // TODO: no return statement
+    return nullptr; /// @todo no return statement
 }
 
 BB_CSPtr CubicBezier::splitAtT(double t) const {
-        auto x1 = _pointA.x();
-        auto y1 = _pointA.y();
+    auto x1 = _pointA.x();
+    auto y1 = _pointA.y();
 
-        auto x2 = _pointB.x();
-        auto y2 = _pointB.y();
+    auto x2 = _pointB.x();
+    auto y2 = _pointB.y();
 
-        auto x3 = _pointC.x();
-        auto y3 = _pointC.y();
+    auto x3 = _pointC.x();
+    auto y3 = _pointC.y();
 
-        auto x4 = _pointD.x();
-        auto y4 = _pointD.y();
+    auto x4 = _pointD.x();
+    auto y4 = _pointD.y();
 
-        auto x12 = (x2-x1)*t+x1;
-        auto y12 = (y2-y1)*t+y1;
+    auto x12 = (x2-x1)*t+x1;
+    auto y12 = (y2-y1)*t+y1;
 
-        auto x23 = (x3-x2)*t+x2;
-        auto y23 = (y3-y2)*t+y2;
+    auto x23 = (x3-x2)*t+x2;
+    auto y23 = (y3-y2)*t+y2;
 
-        auto x34 = (x4-x3)*t+x3;
-        auto y34 = (y4-y3)*t+y3;
+    auto x34 = (x4-x3)*t+x3;
+    auto y34 = (y4-y3)*t+y3;
 
-        auto x123 = (x23-x12)*t+x12;
-        auto y123 = (y23-y12)*t+y12;
+    auto x123 = (x23-x12)*t+x12;
+    auto y123 = (y23-y12)*t+y12;
 
-        auto x234 = (x34-x23)*t+x23;
-        auto y234 = (y34-y23)*t+y23;
+    auto x234 = (x34-x23)*t+x23;
+    auto y234 = (y34-y23)*t+y23;
 
-        auto x1234 = (x234-x123)*t+x123;
-        auto y1234 = (y234-y123)*t+y123;
+    auto x1234 = (x234-x123)*t+x123;
+    auto y1234 = (y234-y123)*t+y123;
 
-        return std::make_shared<CubicBezier>(CubicBezier({x1, y1}, {x12, y12}, {x123, y123}, {x1234, y1234}));
+    return std::make_shared<CubicBezier>(CubicBezier({x1, y1}, {x12, y12}, {x123, y123}, {x1234, y1234}));
 }

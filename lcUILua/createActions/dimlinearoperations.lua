@@ -1,4 +1,12 @@
-DimLinearOperations = {}
+DimLinearOperations = {
+    name = "DimLinearOperations",
+    command_line = "DIMLINEAR",
+    icon = "dim_linear.svg",
+    description = "Linear Dimension",
+    menu_actions = {
+        default = "actionLinear"
+    }
+}
 DimLinearOperations.__index = DimLinearOperations
 
 setmetatable(DimLinearOperations, {
@@ -10,10 +18,10 @@ setmetatable(DimLinearOperations, {
     end,
 })
 
-function DimLinearOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimLinearBuilder, "enterStartPoint")
+function DimLinearOperations:_init()
+    CreateOperations._init(self, lc.builder.DimLinearBuilder, "enterStartPoint")
 
-    message("Click on start point", id)
+    message("Click on start point")
 end
 
 function DimLinearOperations:enterStartPoint(eventName, data)
@@ -24,7 +32,7 @@ function DimLinearOperations:enterStartPoint(eventName, data)
     if(eventName == "point") then
         self.step = "enterEndPoint"
 
-        message("Click on end point", self.target_widget)
+        message("Click on end point")
     end
 end
 
@@ -36,7 +44,7 @@ function DimLinearOperations:enterEndPoint(eventName, data)
     if(eventName == "point") then
         self.step = "enterMiddleOfText"
 
-        message("Click on text position", self.target_widget)
+        message("Click on text position")
     end
 end
 
@@ -49,15 +57,15 @@ function DimLinearOperations:enterMiddleOfText(eventName, data)
     if(eventName == "point") then
         self.step = "enterText"
 
-        cli_get_text(self.target_widget, true)
+        mainWindow:cliCommand():returnText( true)
 
-        message("Enter dimension text (<> for value)", self.target_widget)
+        message("Enter dimension text (<> for value)")
     end
 end
 
 function DimLinearOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

@@ -1,4 +1,0 @@
-#include "version.h"
-
-const char* BUILD_DATE = "${BUILD_DATE}";
-const char* BUILD_INFO = "${BUILD_INFO}";

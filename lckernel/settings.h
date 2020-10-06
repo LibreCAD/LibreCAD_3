@@ -4,7 +4,7 @@
 #define SETTINGS_LCTOLERANCE "Tolerance"
 
 namespace lc {
-    namespace kernel {
-        const lc::storage::settings::ModuleSettings& getSettings();
-    }
+namespace kernel {
+const lc::storage::settings::ModuleSettings& getSettings();
+}
 }

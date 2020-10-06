@@ -1,4 +1,11 @@
-SplineOperations = {}
+SplineOperations = {
+    name = "SplineOperations",
+    command_line = "SPLINE",
+    icon = "spline.svg",
+    menu_actions = {
+        default = "actionSpline"
+    }
+}
 SplineOperations.__index = SplineOperations
 
 setmetatable(SplineOperations, {
@@ -10,10 +17,10 @@ setmetatable(SplineOperations, {
     end,
 })
 
-function SplineOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.SplineBuilder, "enterPoint")
+function SplineOperations:_init()
+    CreateOperations._init(self, lc.builder.SplineBuilder, "enterPoint")
     self.tempPoint = false
-    message("Add a new points or enter degree", id)
+    message("Add a new points or enter degree")
 end
 
 function SplineOperations:enterPoint(eventName, data)

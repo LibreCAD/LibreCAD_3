@@ -27,6 +27,14 @@ find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
+include_directories(${GTest_INCLUDE_DIRS})
+link_directories(${GTest_LIBRARY_DIRS})
+include_directories(${GLEW_INCLUDE_DIR})
+
+#RapidJSON
+find_package(RapidJSON)
+include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
 # Coverage
 if(WITH_COVERAGE)
 	include(CodeCoverage)
@@ -48,6 +56,7 @@ lckernel/math/testmath.cpp
 lckernel/operations/entitybuildertest.cpp
 lckernel/geometry/testgeoarc.cpp
 lckernel/geometry/testgeocircle.cpp
+lckernel/geometry/testgeoregion.cpp
 lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
@@ -88,6 +97,7 @@ if(WITH_QT_UI)
     set(hdrs
             ${hdrs}
             ui/clicommandtest.h
+            ui/mainwindowtest.h
             ui/uitests.h
             ui/widgets/layers.h
             ui/dialogs/addlinepatterndialog.h
@@ -104,6 +114,15 @@ if(WITH_QT_UI)
             ui/testcommandline.cpp
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp
+            ui/testmainwindow.cpp
+            ui/testwindowmanager.cpp
+            ui/gui/testmenuitem.cpp
+            ui/gui/testmenu.cpp
+            ui/gui/testtoolbartab.cpp
+            ui/gui/testtoolbargroup.cpp
+            ui/gui/testtoolbarbutton.cpp
+            ui/gui/testinputguiwidgets.cpp
+            ui/gui/testdialogwidget.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")

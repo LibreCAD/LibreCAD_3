@@ -14,60 +14,60 @@
 #include <cad/meta/metalinewidth.h>
 
 namespace Ui {
-    class AddLayerDialog;
+class AddLayerDialog;
 }
 
 namespace lc {
-    namespace ui {
-        namespace dialog {
+namespace ui {
+namespace dialog {
 /**
  * \brief Create a dialog with all required fields to create a new layer
  */
-            class AddLayerDialog : public QDialog {
-                Q_OBJECT
+class AddLayerDialog : public QDialog {
+    Q_OBJECT
 
-                public:
-                    /**
-                     * \brief Create empty dialog
-                     * \param document Document which contains the DXFLinePatterns
-                     * \param parent Parent widget
-                     */
-                    AddLayerDialog(lc::storage::Document_SPtr document, QWidget* parent = 0);
+public:
+    /**
+     * \brief Create empty dialog
+     * \param document Document which contains the DXFLinePatterns
+     * \param parent Parent widget
+     */
+    AddLayerDialog(lc::storage::Document_SPtr document, QWidget* parent = 0);
 
-                    /**
-                     * \brief Create dialog pre-filled with existing Layer information
-                     * \param oldLayer Layer to edit
-                     * \param document Document which contains the DXFLinePatterns
-                     * \param parent Parent widget
-                     */
-                    AddLayerDialog(lc::meta::Layer_CSPtr oldLayer, lc::storage::Document_SPtr document,
-                                   QWidget* parent = 0);
+    /**
+     * \brief Create dialog pre-filled with existing Layer information
+     * \param oldLayer Layer to edit
+     * \param document Document which contains the DXFLinePatterns
+     * \param parent Parent widget
+     */
+    AddLayerDialog(lc::meta::Layer_CSPtr oldLayer, lc::storage::Document_SPtr document,
+                   QWidget* parent = 0);
 
-                    ~AddLayerDialog();
+    ~AddLayerDialog();
 
-                signals:
-                    void newLayer(lc::meta::Layer_CSPtr);
+signals:
+    void newLayer(lc::meta::Layer_CSPtr);
 
-                    void editLayer(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
+    void editLayer(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
 
-                private slots:
+private slots:
 
-                    /**
-                     * \brief Create layer
-                     * This function is called when "Ok" button is pressed.
-                     * It creates the layer according to the entered information and send it back to Layers widget.
-                     */
-                    void accept();
+    /**
+     * \brief Create layer
+     * This function is called when "Ok" button is pressed.
+     * It creates the layer according to the entered information and send it back to Layers widget.
+     */
+    void accept();
 
-                protected:
-                    Ui::AddLayerDialog* ui;
-                    lc::ui::widgets::LinePatternSelect* linePatternSelect;
-                    lc::ui::widgets::LineWidthSelect* lineWidthSelect;
-                    lc::ui::widgets::ColorSelect* colorSelect;
+protected:
+    Ui::AddLayerDialog* ui;
+    lc::ui::widgets::LinePatternSelect* linePatternSelect;
+    lc::ui::widgets::LineWidthSelect* lineWidthSelect;
+    lc::ui::widgets::ColorSelect* colorSelect;
 
-                private:
-                    lc::meta::Layer_CSPtr _oldLayer;
-            };
-        }
-    }
+private:
+    lc::meta::Layer_CSPtr _oldLayer;
+};
+}
+}
 }

@@ -12,7 +12,6 @@
 using namespace lc;
 using namespace entity;
 
-
 LWPolyline::LWPolyline(std::vector<LWVertex2D> vertex,
                        double width,
                        double elevation,
@@ -22,52 +21,50 @@ LWPolyline::LWPolyline(std::vector<LWVertex2D> vertex,
                        meta::Layer_CSPtr layer,
                        meta::MetaInfo_CSPtr metaInfo,
                        meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        _vertex(std::move(vertex)),
-        _width(width),
-        _elevation(elevation),
-        _tickness(thickness),
-        _closed(closed),
-        _extrusionDirection(std::move(extrusionDirection)) {
-
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    _vertex(std::move(vertex)),
+    _width(width),
+    _elevation(elevation),
+    _tickness(thickness),
+    _closed(closed),
+    _extrusionDirection(std::move(extrusionDirection)) {
     generateEntities();
-
 }
 
 LWPolyline::LWPolyline(const LWPolyline_CSPtr& other, bool sameID) :
-        CADEntity(other, sameID),
-        _vertex(other->_vertex),
-        _width(other->_width),
-        _elevation(other->_elevation),
-        _tickness(other->_tickness),
-        _closed(other->_closed),
-        _extrusionDirection(other->_extrusionDirection) {
+    CADEntity(other, sameID),
+    _vertex(other->_vertex),
+    _width(other->_width),
+    _elevation(other->_elevation),
+    _tickness(other->_tickness),
+    _closed(other->_closed),
+    _extrusionDirection(other->_extrusionDirection) {
     generateEntities();
 }
 
 LWPolyline::LWPolyline(lc::builder::LWPolylineBuilder& builder)
-	:
-	CADEntity(builder),
-	_vertex(generateVertexFromBuilderVertex(builder.getVertices())),
-	_width(1),
-	_elevation(1),
-	_tickness(1),
-	_closed(false),
-	_extrusionDirection(lc::geo::Coordinate(0, 0))
+    :
+    CADEntity(builder),
+    _vertex(generateVertexFromBuilderVertex(builder.getVertices())),
+    _width(builder.width()),
+    _elevation(builder.elevation()),
+    _tickness(builder.thickness()),
+    _closed(builder.closed()),
+    _extrusionDirection(builder.extrusionDirection())
 {
-	generateEntities();
+    generateEntities();
 }
 
 std::vector<LWVertex2D> LWPolyline::generateVertexFromBuilderVertex(const std::vector<lc::builder::LWBuilderVertex>& builderVerts) const
 {
-	std::vector<LWVertex2D> verts;
+    std::vector<LWVertex2D> verts;
 
-	for (const lc::builder::LWBuilderVertex& vert : builderVerts)
-	{
-		verts.emplace_back(LWVertex2D(vert.location, vert.bulge, vert.startWidth, vert.endWidth));
-	}
+    for (const lc::builder::LWBuilderVertex& vert : builderVerts)
+    {
+        verts.emplace_back(LWVertex2D(vert.location, vert.bulge, vert.startWidth, vert.endWidth));
+    }
 
-	return verts;
+    return verts;
 }
 
 CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
@@ -76,13 +73,13 @@ CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
         newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.endWidth());
     }
     auto newEntity = std::make_shared<LWPolyline>(newVertex,
-                                                  width(),
-                                                  elevation(),
-                                                  tickness(),
-                                                  closed(),
-                                                  extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo());
+                     width(),
+                     elevation(),
+                     tickness(),
+                     closed(),
+                     extrusionDirection(),
+                     layer()
+                     , metaInfo(), block());
     newEntity->setID(this->id());
     return newEntity;
 }
@@ -93,14 +90,14 @@ CADEntity_CSPtr LWPolyline::copy(const geo::Coordinate& offset) const {
         newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.endWidth());
     }
     auto newEntity = std::make_shared<LWPolyline>(newVertex,
-                                                  width(),
-                                                  elevation(),
-                                                  tickness(),
-                                                  closed(),
-                                                  extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo()
-    );
+                     width(),
+                     elevation(),
+                     tickness(),
+                     closed(),
+                     extrusionDirection(),
+                     layer()
+                     , metaInfo(), block()
+                                                 );
     return newEntity;
 }
 
@@ -113,37 +110,37 @@ CADEntity_CSPtr LWPolyline::rotate(const geo::Coordinate& rotation_center, doubl
                                vertex.endWidth());
     }
     auto newEntity = std::make_shared<LWPolyline>(newVertex,
-                                                  width(),
-                                                  elevation(),
-                                                  tickness(),
-                                                  closed(),
-                                                  extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo());
+                     width(),
+                     elevation(),
+                     tickness(),
+                     closed(),
+                     extrusionDirection(),
+                     layer()
+                     , metaInfo(), block());
     return newEntity;
 }
 
 CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     std::vector<LWVertex2D> newVertex;
     if (scale_factor.x() != scale_factor.y()) {
-        // TODO decide what to do with non-uniform scale factors
+        /// @todo decide what to do with non-uniform scale factors
     }
     for (auto& vertex : _vertex) {
         newVertex.emplace_back(vertex.location().scale(scale_center, scale_factor),
                                vertex.bulge() * scale_factor.x(),
                                vertex.startWidth(),
                                vertex.endWidth()
-        );
+                              );
     }
     auto newEntity = std::make_shared<LWPolyline>(newVertex,
-                                                  width(),
-                                                  elevation(),
-                                                  tickness(),
-                                                  closed(),
-                                                  extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo()
-    );
+                     width(),
+                     elevation(),
+                     tickness(),
+                     closed(),
+                     extrusionDirection(),
+                     layer()
+                     , metaInfo(), block()
+                                                 );
     return newEntity;
 }
 
@@ -166,16 +163,16 @@ const geo::Area LWPolyline::boundingBox() const {
 
 CADEntity_CSPtr LWPolyline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<LWPolyline>(
-            _vertex,
-            _width,
-            _elevation,
-            _tickness,
-            _closed,
-            _extrusionDirection,
-            std::move(layer),
-            std::move(metaInfo),
-            std::move(block)
-    );
+                         _vertex,
+                         _width,
+                         _elevation,
+                         _tickness,
+                         _closed,
+                         _extrusionDirection,
+                         std::move(layer),
+                         std::move(metaInfo),
+                         std::move(block)
+                     );
     newEntity->setID(this->id());
 
     return newEntity;
@@ -188,11 +185,11 @@ void LWPolyline::generateEntities() {
     while (itr != vertex().end()) {
         if (lastPoint->bulge() != 0.) {
             _entities.push_back(std::make_shared<const Arc>(
-                    geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge()),
-                    layer(),
-                    metaInfo(),
-                    block()
-            ));
+                                    geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge()),
+                                    layer(),
+                                    metaInfo(),
+                                    block()
+                                ));
         }
         else {
             _entities.push_back(std::make_shared<const Line>(lastPoint->location(), itr->location(), layer(), metaInfo(), block()));
@@ -205,11 +202,11 @@ void LWPolyline::generateEntities() {
         auto firstP = _vertex.begin();
         if (lastPoint->bulge() != 0.) {
             _entities.push_back(std::make_shared<const Arc>(
-                    geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge()),
-                    layer(),
-                    metaInfo(),
-                    block()
-            ));
+                                    geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge()),
+                                    layer(),
+                                    metaInfo(),
+                                    block()
+                                ));
         }
         else {
             _entities.push_back(std::make_shared<const Line>(lastPoint->location(), firstP->location(), layer(), metaInfo(), block()));
@@ -218,9 +215,9 @@ void LWPolyline::generateEntities() {
 }
 
 std::vector<EntityCoordinate> LWPolyline::snapPoints(const geo::Coordinate& coord,
-                                                     const SimpleSnapConstrain &constrain,
-                                                     double minDistanceToSnap,
-                                                     int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain &constrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         const auto &&entities = asEntities();
@@ -290,15 +287,22 @@ geo::Coordinate LWPolyline::nearestPointOnPath(const geo::Coordinate& coord) con
     return std::get<0>(info);
 }
 
-std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>
+geo::Coordinate LWPolyline::nearestPointOnEntity(const geo::Coordinate& coord) const {
+    /// @todo check and modify it
+    return this->nearestPointOnPath(coord);
+}
+
+std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
 LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
     const auto &&entities = asEntities();
 
     double minimumDistance = std::numeric_limits<double>::max();
     std::shared_ptr<const geo::Vector> nearestVector = nullptr;
     std::shared_ptr<const geo::Arc> nearestArc = nullptr;
+    unsigned int index=0;
     geo::Coordinate nearestCoordinate;
-    for (auto &geoItem : entities) {
+    for (unsigned int i=0; i<entities.size(); i++) {
+        auto geoItem = entities[i];
         if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
             auto npoe = vector->nearestPointOnPath(coord);
             auto thisDistance = npoe.distanceTo(coord);
@@ -306,6 +310,7 @@ LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
                 minimumDistance = thisDistance;
                 nearestCoordinate = npoe;
                 nearestVector = vector;
+                index=i;
             }
         } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
             auto npoe = arc->nearestPointOnPath(coord);
@@ -314,12 +319,13 @@ LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
                 minimumDistance = thisDistance;
                 nearestCoordinate = npoe;
                 nearestArc = arc;
+                index=i;
             }
         } else {
             std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
         }
     }
-    return std::make_tuple(nearestCoordinate, nearestVector, nearestArc);
+    return std::make_tuple(nearestCoordinate, nearestVector, nearestArc, index);
 }
 
 
@@ -347,14 +353,14 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
         }
 
         auto newEntity = std::make_shared<LWPolyline>(newVertex,
-                                                      width(),
-                                                      elevation(),
-                                                      tickness(),
-                                                      closed(),
-                                                      extrusionDirection(),
-                                                      layer(),
-                                                      metaInfo()
-        );
+                         width(),
+                         elevation(),
+                         tickness(),
+                         closed(),
+                         extrusionDirection(),
+                         layer()
+                         , metaInfo(), block()
+                                                     );
         newEntity->setID(id());
         return newEntity;
     }
@@ -365,4 +371,151 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
 
 std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
     return _entities;
+}
+
+std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coord) const {
+    std::vector<CADEntity_CSPtr> out;
+    std::vector<LWVertex2D> newVertex;
+    std::vector<LWVertex2D> newVertex2;
+    unsigned int i;
+    if (_vertex.size()<2)return out;
+    //Copy from nearestPointOnPath2
+    auto &&info = nearestPointOnPath2(coord);
+    auto nearestCoordinate = std::get<0>(info);
+    auto nearestArc = std::get<2>(info);
+    auto index = std::get<3>(info);
+    auto minimumDistance=coord.distanceTo(nearestCoordinate);
+    if (minimumDistance>LCTOLERANCE) return out;
+    for(i=0; i<_vertex.size(); i++) {
+        if(i==index) { //divide here
+            //interpolated values
+            double dist1, dist2;
+            if (_vertex[i].bulge()==0) {
+                dist1 = _vertex[i].location().distanceTo(nearestCoordinate);
+                dist2 = _vertex[i+1].location().distanceTo(nearestCoordinate);
+            } else {
+                auto angle=nearestArc->center().angleTo(nearestCoordinate);
+                dist1=abs(angle-nearestArc->startAngle())*nearestArc->radius();
+                dist2=abs(nearestArc->endAngle()-angle)*nearestArc->radius();
+            }
+            double dist=dist1+dist2;
+            double width=_vertex[i].startWidth()
+                         +(_vertex[i].endWidth()-_vertex[i].startWidth())
+                         *dist1
+                         /dist;
+            double bulge1 = 0;
+            double bulge2 = 0;
+            if (_vertex[i].bulge()!=0) {
+                //determine bulge for arc
+                bulge1 = (
+                             nearestArc->radius()
+                             - sqrt((nearestArc->radius()*nearestArc->radius() - pow(dist1/2,2.)))
+                         )*2/dist1;
+                if (bulge1*_vertex[i].bulge()<0)bulge1=-bulge1;
+                bulge2 = (
+                             nearestArc->radius()
+                             - sqrt((nearestArc->radius()*nearestArc->radius() - pow(dist2/2,2.)))
+                         )*2/dist2;
+                if (bulge2*_vertex[i].bulge()<0)bulge2=-bulge2;
+            };
+            newVertex.push_back(LWVertex2D(
+                                    _vertex[i].location(),
+                                    bulge1,
+                                    _vertex[i].startWidth(),
+                                    width
+                                ));
+            newVertex.push_back(LWVertex2D(
+                                    nearestCoordinate,
+                                    bulge2,
+                                    width,
+                                    _vertex[i].endWidth()
+                                ));//This is end point for 1
+            newVertex2.push_back(LWVertex2D(
+                                     nearestCoordinate,
+                                     bulge2,
+                                     width,
+                                     _vertex[i].endWidth()
+                                 ));
+        } else {
+            if(i<index)
+                newVertex.push_back(_vertex[i]);
+            else
+                newVertex2.push_back(_vertex[i]);
+        }
+    }
+    //Create new entity from vertices
+    auto newEntity = std::make_shared<LWPolyline>(newVertex,
+                     width(),
+                     elevation(),
+                     tickness(),
+                     closed(),
+                     extrusionDirection(),
+                     layer()
+                     , metaInfo(), block()
+                                                 );
+    out.push_back(newEntity);
+    newEntity = std::make_shared<LWPolyline>(newVertex2,
+                width(),
+                elevation(),
+                tickness(),
+                closed(),
+                extrusionDirection(),
+                layer()
+                , metaInfo(), block()
+                                            );
+    out.push_back(newEntity);
+    return out;
+}
+
+lc::geo::Coordinate LWPolyline::representingPoint() const {
+    const auto &&entities = asEntities();
+    auto first = std::dynamic_pointer_cast<const lc::entity::Splitable>(entities[0]);
+    return first->representingPoint();
+}
+
+PropertiesMap LWPolyline::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["width"] = this->width();
+    propertyValues["elevation"] = this->elevation();
+    propertyValues["thickness"] = this->tickness();
+    propertyValues["closed"] = this->closed();
+    propertyValues["extrusionDirection"] = this->extrusionDirection();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr LWPolyline::setProperties(const PropertiesMap& propertiesMap) const {
+    double widthp = this->width();
+    double elevationp = this->elevation();
+    double ticknessp = this->tickness();
+    bool closedp = this->closed();
+    lc::geo::Coordinate extrusionDirectionp = this->extrusionDirection();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "width") {
+            widthp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "elevation") {
+            elevationp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "thickness") {
+            ticknessp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "closed") {
+            closedp = boost::get<bool>(iter->second);
+        }
+
+        if (iter->first == "extrusionDirection") {
+            extrusionDirectionp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto newLWPolyline = std::make_shared<LWPolyline>(vertex(), widthp, elevationp, ticknessp, closedp, extrusionDirectionp, layer(), metaInfo(), block());
+    newLWPolyline->setID(this->id());
+    return newLWPolyline;
 }

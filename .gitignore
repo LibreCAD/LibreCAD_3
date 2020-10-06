@@ -14,7 +14,7 @@ CMakeLists.txt.user
 playground
 xcode
 debug
-doc
+doxygen/doc
 lcviewernoqt/painters/opengl/resources/res.cpp
 lckernel/version.cpp
 cmake-build-debug
@@ -30,3 +30,6 @@ unittest/rendering/res/*.out
 
 # Conan
 conan/
+
+# Auto generated build constants
+/lckernel/build_constants.cpp

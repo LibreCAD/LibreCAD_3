@@ -1,0 +1,51 @@
+{
+    "toolbar": {
+        "tabs": [
+            {
+                "label": "Quick Access",
+                "groups": [
+                    {
+                        "label": "Creation",
+                        "width": 3,
+                        "buttons": [ "LineOperations", "PointOperations", "EllipseOperations", "SplineOperations", "LWPolylineOperations", "CircleOperations", "ArcOperations", "TextOperations" ]
+                    },
+                    {
+                        "label": "Modify",
+                        "width": 3,
+                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "SplitOperation", "RotateOperation", "TrimOperation", "AreaOperation"]
+                    },
+                    {
+                        "label": "Dimensions",
+                        "width": 3,
+                        "buttons": [ "DimAngularOperations", "DimAlignedOperations", "DimLinearOperations", "DimRadialOperations", "DimDiametricOperations" ]
+                    },
+                    {
+                        "label": "Snap Options",
+                        "width": 2,
+                        "buttons": [ "SnapGrid", "SnapIntersection", "SnapMiddle", "SnapEntity" ]
+                    }
+                ]
+            }
+        ]
+    },
+    "dockPositions": [
+        {
+            "widget": "CliCommand",
+            "position": 8,
+            "proportion": 65
+        },
+        {
+            "widget": "Layers",
+            "position": 2
+        },
+        {
+            "widget": "PropertyEditor",
+            "position": 8,
+            "proportion": 35
+        },
+        {
+            "widget": "Toolbar",
+            "position": 4
+        }
+    ]
+}

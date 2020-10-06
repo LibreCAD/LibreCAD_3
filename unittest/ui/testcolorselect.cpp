@@ -25,14 +25,14 @@ TEST(ColorSelectTest, Selection) {
     auto colorByValue = std::dynamic_pointer_cast<const lc::meta::MetaColorByValue>(colorSelect.metaColor());
 
     EXPECT_TRUE(
-            lcColor.red() == colorSelect.color().red() &&
-            lcColor.green() == colorSelect.color().green() &&
-            lcColor.blue() == colorSelect.color().blue()
+        lcColor.red() == colorSelect.color().red() &&
+        lcColor.green() == colorSelect.color().green() &&
+        lcColor.blue() == colorSelect.color().blue()
     );
     EXPECT_TRUE(
-            lcMetaColor.red() == colorByValue->red() &&
-            lcMetaColor.green() == colorByValue->green() &&
-            lcMetaColor.blue() == colorByValue->blue()
+        lcMetaColor.red() == colorByValue->red() &&
+        lcMetaColor.green() == colorByValue->green() &&
+        lcMetaColor.blue() == colorByValue->blue()
     );
 }
 
@@ -47,13 +47,13 @@ TEST(ColorSelectTest, CustomColor) {
     auto colorByValue = std::dynamic_pointer_cast<const lc::meta::MetaColorByValue>(colorSelect.metaColor());
 
     EXPECT_TRUE(
-            lcColor.red() == colorSelect.color().red() &&
-            lcColor.green() == colorSelect.color().green() &&
-            lcColor.blue() == colorSelect.color().blue()
+        lcColor.red() == colorSelect.color().red() &&
+        lcColor.green() == colorSelect.color().green() &&
+        lcColor.blue() == colorSelect.color().blue()
     );
     EXPECT_TRUE(
-            lcMetaColor.red() == colorByValue->red() &&
-            lcMetaColor.green() == colorByValue->green() &&
-            lcMetaColor.blue() == colorByValue->blue()
+        lcMetaColor.red() == colorByValue->red() &&
+        lcMetaColor.green() == colorByValue->green() &&
+        lcMetaColor.blue() == colorByValue->blue()
     );
 }

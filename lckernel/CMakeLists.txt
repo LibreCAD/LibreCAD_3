@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(LCKERNEL)
 
+#TODO: Fix this
+set(PATTERN_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/res/hatch)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/res/hatch"
+		DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad"
+)
+
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
@@ -14,7 +20,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # SOURCE FILES
 set(lckernel_srcs
-version.cpp
+build_constants.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -35,6 +41,7 @@ cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/geometry/geobeziercubic.cpp
+cad/geometry/georegion.cpp
 cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
@@ -82,6 +89,7 @@ cad/builders/layer.cpp
 cad/builders/linepattern.cpp
 cad/builders/spline.cpp
 cad/builders/lwpolyline.cpp
+cad/builders/text.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
 cad/operations/builder.cpp
@@ -95,7 +103,7 @@ cad/objects/layout.cpp
 
 # HEADER FILES
 set(lckernel_hdrs
-version.h
+build_constants.h
 cad/const.h
 cad/base/id.h
 cad/base/cadentity.h
@@ -141,6 +149,7 @@ cad/geometry/geobeziercubic.h
 cad/interface/entitydispatch.h
 cad/interface/metatype.h
 cad/interface/snapable.h
+cad/interface/splitable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
 cad/math/equation.h
@@ -178,7 +187,6 @@ cad/primitive/textconst.h
 cad/tools/string_helper.h
 cad/primitive/image.h
 cad/math/helpermethods.h
-version.h
 cad/meta/block.h
 cad/builders/cadentity.h
 cad/builders/line.h
@@ -193,6 +201,7 @@ cad/builders/dimradial.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/builders/spline.h
+cad/builders/text.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
@@ -211,6 +220,7 @@ cad/base/cadobject.h
 cad/objects/layout.h
 settings.h
 cad/tools/maphelper.h
+cad/objects/pattern.h
 )
 
 # Boost logging
@@ -244,8 +254,8 @@ endif()
 #Create version.cpp
 add_custom_command(
         PRE_BUILD
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
-        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp
+        COMMAND ${CMAKE_COMMAND} -DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -DSETTINGS_PATH=${SETTINGS_PATH} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
         DEPENDS always_rebuild
 )
 

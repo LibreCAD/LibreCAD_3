@@ -7,116 +7,160 @@
 #include <QStringListModel>
 
 #include <memory>
+#include <QMap>
 #include <cad/geometry/geocoordinate.h>
 
 #include "widgettitlebar.h"
 
+#include <kaguya/kaguya.hpp>
+
 namespace Ui {
-    class CliCommand;
+class CliCommand;
 }
 
 namespace lc {
-    namespace ui {
-        namespace widgets {
-            /**
-             * \brief Command line widget
-             */
-            class CliCommand : public QDockWidget {
-                Q_OBJECT
+namespace ui {
+namespace widgets {
+/**
+ * \brief Command line widget
+ */
+class CliCommand : public QDockWidget {
+    Q_OBJECT
 
-                public:
-                    /**
-                     * \brief Create widget
-                     * \param parent Pointer to parent widget
-                     */
-                    explicit CliCommand(QWidget* parent = 0);
+public:
+    /**
+     * \brief Create widget
+     * \param parent Pointer to parent widget
+     */
+    explicit CliCommand(QWidget* parent = 0);
 
-                    ~CliCommand();
+    ~CliCommand();
 
-                    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event);
 
-                    /**
-                     * \brief Add a new command
-                     */
-                    bool addCommand(const std::string& name);
+    /**
+     * \brief Add a new command
+     */
+    bool addCommand(const char* name, kaguya::LuaRef cb);
 
-                    /**
-                     * \brief Write a message in the logs
-                     * \param message QString
-                     */
-                    void write(const QString& message);
+    /**
+     * \brief Write a message in the logs
+     * \param message QString
+     */
+    void write(std::string message);
 
-                    /**
-                     * \brief Write text in input.
-                     * \param text QString
-                     * It's only used in unit tests for the moment. Maybe that can be moved to a new test class.
-                     */
-                    void setText(const QString& text);
+    /**
+     * \brief Write text in input.
+     * \param text QString
+     * It's only used in unit tests for the moment. Maybe that can be moved to a new test class.
+     */
+    void setText(const QString& text);
 
-                    /**
-                     * \brief Return raw text to Lua.
-                     * \param returnText true to return raw text, false to parse text
-                     * Disables text parsing.
-                     */
-                    void returnText(bool returnText);
+    /**
+     * \brief Return raw text to Lua.
+     * \param returnText true to return raw text, false to parse text
+     * Disables text parsing.
+     */
+    void returnText(bool returnText);
 
-                    /**
-                     * \brief Command is on or off.
-                     * \param commandActive true when command is on, false when command is over
-                     */
-                    void commandActive(bool commandActive);
+    /**
+     * \brief Command is on or off.
+     * \param commandActive true when command is on, false when command is over
+     */
+    void commandActive(bool commandActive);
 
-                public slots:
+    /**
+     * \brief run the command
+     * \param command string
+     */
+    void runCommand(const char* command);
 
-                    /**
-                     * \brief Parse entered text.
-                     * Check if the text is a number, a coordinate or a command and emit the right signal.
-                     * This is a slot to allow getting key press events from other widgets.
-                     */
-                    void onReturnPressed();
+    /**
+     * \brief Enable/Disable the command
+     * \param command string
+     * \param enable bool
+     */
+    void enableCommand(const char* command, bool enable);
 
-                    /**
-                     * \brief Process key events.
-                     * Browse history if up or down key is pressed.
-                     * This is a slot to allow getting key press events from other widgets.
-                     */
-                    void onKeyPressed(QKeyEvent* event);
+    /**
+     * \brief Is the command enabled
+     * \param command string
+     * \return enable bool
+     */
+    bool isCommandEnabled(const char* command) const;
 
-                signals:
+    /**
+     * \brief Get all available commands
+     * \return vector of command strings
+     */
+    std::vector<std::string> availableCommands() const;
 
-                    void commandEntered(QString command);
+    /**
+     * \brief Get the history of commands run
+     * \return vector of command strings
+     */
+    std::vector<std::string> commandsHistory() const;
 
-                    void coordinateEntered(lc::geo::Coordinate coordinate);
+    /**
+     * \brief Clear the clicommand output in the widget
+     */
+    void clear();
 
-                    void relativeCoordinateEntered(lc::geo::Coordinate coordinate);
+public slots:
 
-                    void numberEntered(double number);
+    /**
+     * \brief Parse entered text.
+     * Check if the text is a number, a coordinate or a command and emit the right signal.
+     * This is a slot to allow getting key press events from other widgets.
+     */
+    void onReturnPressed();
 
-                    void textEntered(QString text);
+    /**
+     * \brief Process key events.
+     * Browse history if up or down key is pressed.
+     * This is a slot to allow getting key press events from other widgets.
+     */
+    void onKeyPressed(QKeyEvent* event);
 
-                    void finishOperation();
+signals:
 
-                private:
-                    bool checkParam(const QString& command);
+    void commandEntered(QString command);
 
-                    void enterCommand(const QString& command);
+    void coordinateEntered(lc::geo::Coordinate coordinate);
 
-                    void enterCoordinate(QString coordinate);
+    void relativeCoordinateEntered(lc::geo::Coordinate coordinate);
 
-                    void enterNumber(double number);
+    void numberEntered(double number);
 
-					void closeEvent(QCloseEvent* event);
+    void textEntered(QString text);
 
-                    Ui::CliCommand* ui;
-                    std::shared_ptr<QCompleter> _completer;
-                    std::shared_ptr<QStringListModel> _commands;
-                    bool _returnText;
-                    bool _commandActive;
+    void finishOperation();
 
-                    QStringList _history;
-                    int _historySize;
-                    int _historyIndex;
-            };
-        }
-    }
+private:
+    bool checkParam(const QString& command);
+
+    void enterCommand(const QString& command);
+
+    void enterCoordinate(QString coordinate);
+
+    void enterNumber(double number);
+
+    void closeEvent(QCloseEvent* event);
+
+    Ui::CliCommand* ui;
+    std::shared_ptr<QCompleter> _completer;
+    std::shared_ptr<QStringListModel> _commands;
+    bool _returnText;
+    bool _commandActive;
+
+    QStringList _history;
+    int _historySize;
+    int _historyIndex;
+
+    QMap<QString, kaguya::LuaRef> _commands_cb;
+    QMap<QString, bool> _commands_enabled;
+    std::vector<std::string> _commands_entered;
+};
+}
+}
 }

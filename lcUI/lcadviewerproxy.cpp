@@ -6,7 +6,7 @@ using namespace lc::ui;
 
 using namespace lc::ui;
 
-LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
+LCADViewerProxy::LCADViewerProxy(QWidget* parent=0) {
     auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);
@@ -25,8 +25,11 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     gridLayout->addWidget(_tabWidget, 0, 0, 1, 1);
 
     _tabWidget->addTab(_modelViewerImpl, tr("Model"));
+    _tabWidget->addTab(_modelViewerImpl, tr("Model"));//Just for init, removed later
+    _tabWidget->addTab(_modelViewerImpl, tr("Model"));
+
     _paperViewers = new LCADPaperViewerImpl(this);
-    
+
     //Connections to receive active View
     connect(_modelViewerImpl, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
     connect(_paperViewers, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
@@ -37,37 +40,43 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     connect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
     connect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
     connect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
+    connect(_activeView, SIGNAL(selectionChangeEvent()), this, SIGNAL(selectionChangeEvent()));
     connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 }
 
-void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document){
+void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document) {
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
+
+    _tabWidget->removeTab(1);
+    _tabWidget->removeTab(1);
 
     //For each block create viewport
     auto view = document->blockByName("*Paper_Space");
     auto x = _paperViewers->getViewer();
     x->setDocument(document,view);
-    _tabWidget->addTab(x,"Paper 1");
+    _tabWidget->addTab(x,tr("Paper 1"));
 
     view = document->blockByName("*Paper_Space0");
     x = _paperViewers->getViewer();
     x->setDocument(document,view);
-    _tabWidget->addTab(x,"Paper 2");
+    _tabWidget->addTab(x,tr("Paper 2"));
 }
 
-void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){
-    if(view!=_activeView){
+void LCADViewerProxy::setActive(LCADViewer* view,bool isModel) {
+    if(view!=_activeView) {
         _isModel = isModel;
         disconnect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
         disconnect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
         disconnect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
+        disconnect(_activeView, SIGNAL(selectionChangeEvent()), this, SIGNAL(selectionChangeEvent()));
         disconnect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 
         _activeView = view;
         connect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
         connect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
         connect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
+        connect(_activeView, SIGNAL(selectionChangeEvent()), this, SIGNAL(selectionChangeEvent()));
         connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
     }
 }

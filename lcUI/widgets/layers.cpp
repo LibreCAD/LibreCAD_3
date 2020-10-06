@@ -25,9 +25,9 @@ Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
     connect(ui->layerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
-	WidgetTitleBar* titleBar = new WidgetTitleBar( "Layers", this,
-													WidgetTitleBar::TitleBarOptions::VerticalOnHidden);
-	this->setTitleBarWidget(titleBar);
+    WidgetTitleBar* titleBar = new WidgetTitleBar( "Layers", this,
+            WidgetTitleBar::TitleBarOptions::VerticalOnHidden);
+    this->setTitleBarWidget(titleBar);
 }
 
 Layers::~Layers() {
@@ -81,25 +81,25 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
         auto locked = layer->isFrozen();
 
         switch (index.column()) {
-            case LayerModel::LOCKED:
-                locked = !locked;
-                break;
+        case LayerModel::LOCKED:
+            locked = !locked;
+            break;
 
-            case LayerModel::EDIT:
-                auto dialog = new dialog::AddLayerDialog(layer, _mdiChild->document(), this);
-                dialog->show();
+        case LayerModel::EDIT:
+            auto dialog = new dialog::AddLayerDialog(layer, _mdiChild->document(), this);
+            dialog->show();
 
-                connect(dialog, &dialog::AddLayerDialog::editLayer, this, &Layers::replaceLayer);
-                return;
+            connect(dialog, &dialog::AddLayerDialog::editLayer, this, &Layers::replaceLayer);
+            return;
         }
 
         auto newLayer = std::make_shared<const lc::meta::Layer>(
-                layer->name(),
-                layer->lineWidth(),
-                layer->color(),
-                layer->linePattern(),
-                locked
-        );
+                            layer->name(),
+                            layer->lineWidth(),
+                            layer->color(),
+                            layer->linePattern(),
+                            locked
+                        );
 
         replaceLayer(layer, newLayer);
     }
@@ -111,12 +111,12 @@ void Layers::changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& na
     }
 
     auto newLayer = std::make_shared<const lc::meta::Layer>(
-        name,
-        layer->lineWidth(),
-        layer->color(),
-        layer->linePattern(),
-        layer->isFrozen()
-    );
+                        name,
+                        layer->lineWidth(),
+                        layer->color(),
+                        layer->linePattern(),
+                        layer->isFrozen()
+                    );
 
     replaceLayer(layer, newLayer);
 }
@@ -213,6 +213,114 @@ void Layers::onSelectionChanged(const QItemSelection& selected, const QItemSelec
 
 void Layers::closeEvent(QCloseEvent* event)
 {
-	this->widget()->hide();
-	event->ignore();
+    this->widget()->hide();
+    event->ignore();
+}
+
+/* Lua GUI API Functions */
+void Layers::addLayer(lc::meta::Layer_CSPtr layer) {
+    if (layer != nullptr) {
+        createLayer(layer);
+    }
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+                                      std::string(layerName),
+                                      1.00,
+                                      lc::Color(255, 255, 255)
+                                  );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, double lineWidth) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+                                      std::string(layerName),
+                                      lineWidth,
+                                      lc::Color(255, 255, 255)
+                                  );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, int r, int g, int b) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+                                      std::string(layerName),
+                                      1.00,
+                                      lc::Color(r, g, b)
+                                  );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, double lineWidth, int r, int g, int b) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+                                      std::string(layerName),
+                                      lineWidth,
+                                      lc::Color(r,g,b)
+                                  );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, lc::Color color) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+                                      std::string(layerName),
+                                      1.00,
+                                      color
+                                  );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, double lineWidth, lc::Color color) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+                                      std::string(layerName),
+                                      lineWidth,
+                                      color
+                                  );
+    addLayer(layer);
+    return layer;
+}
+
+void Layers::removeLayer(lc::meta::Layer_CSPtr layer) {
+    if (layer != nullptr) {
+        deleteLayer(layer);
+    }
+}
+
+void Layers::removeLayer(const char* layerName) {
+    lc::meta::Layer_CSPtr layer = model->layerByName(layerName);
+    removeLayer(layer);
+}
+
+lc::meta::Layer_CSPtr Layers::layerByName(const char* layerName) {
+    return model->layerByName(layerName);
+}
+
+void Layers::renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName) {
+    if (layer != nullptr) {
+        changeLayerName(layer, newLayerName);
+    }
+}
+
+void Layers::renameLayer(const char* layerName, const char* newLayerName) {
+    lc::meta::Layer_CSPtr layer = model->layerByName(layerName);
+    renameLayer(layer, newLayerName);
+}
+
+void Layers::replaceLayerAPI(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer) {
+    if (oldLayer != nullptr && newLayer != nullptr) {
+        replaceLayer(oldLayer, newLayer);
+    }
+}
+
+void Layers::replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer) {
+    lc::meta::Layer_CSPtr oldLayer = model->layerByName(oldLayerName);
+    replaceLayer(oldLayer, newLayer);
+}
+
+std::vector<lc::meta::Layer_CSPtr> Layers::layers() const {
+    return model->layers();
 }

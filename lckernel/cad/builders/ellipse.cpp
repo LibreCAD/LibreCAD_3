@@ -5,7 +5,6 @@ using namespace lc::builder;
 
 lc::entity::Ellipse_CSPtr EllipseBuilder::build() {
     checkValues(true);
-
     return lc::entity::Ellipse_CSPtr(new lc::entity::Ellipse(*this));
 }
 
@@ -57,3 +56,12 @@ void EllipseBuilder::setIsReversed(bool isReversed) {
     _isReversed = isReversed;
 }
 
+void EllipseBuilder::copy(entity::Ellipse_CSPtr entity) {
+    setCenter(entity->center());
+    setMajorPoint(entity->majorP());
+    setMinorRadius(entity->minorRadius());
+    setStartAngle(entity->startAngle());
+    setEndAngle(entity->endAngle());
+    setIsReversed(entity->isReversed());
+    CADEntityBuilder::copy(entity);
+}

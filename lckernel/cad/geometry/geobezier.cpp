@@ -4,9 +4,9 @@ using namespace lc;
 using namespace geo;
 
 Bezier::Bezier(Coordinate point_a, Coordinate point_b, Coordinate point_c) :
-        _pointA(std::move(point_a)),
-        _pointB(std::move(point_b)),
-        _pointC(std::move(point_c)) {
+    _pointA(std::move(point_a)),
+    _pointB(std::move(point_b)),
+    _pointC(std::move(point_c)) {
 }
 
 Bezier::Bezier(const Bezier &bez) :
@@ -21,7 +21,6 @@ const std::vector<geo::Coordinate> Bezier::getCP() const {
 
 
 const Area Bezier::boundingBox() const {
-
     /*
      * T = A-B/(A - 2B + C)
      */
@@ -45,11 +44,10 @@ const Area Bezier::boundingBox() const {
     std::sort(x_.begin(), x_.end());
     std::sort(y_.begin(), y_.end());
 
-    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
+    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back(),y_.back()));
 }
 
 Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {
-
     /*
      * Difference between nearest point on path and
      * nearest point on entity for a bezier curve is that
@@ -127,8 +125,8 @@ std::vector<double> Bezier::nearestPointTValue(const lc::geo::Coordinate &coord)
  * @return nearest point
  */
 const lc::geo::Coordinate Bezier::returnCasesForNearestPoint(
-        double min_distance, const lc::geo::Coordinate &coord,
-        const lc::geo::Coordinate &ret) const {
+    double min_distance, const lc::geo::Coordinate &coord,
+    const lc::geo::Coordinate &ret) const {
     auto distance_to_A = coord.distanceTo(_pointA);
     auto distance_to_C = coord.distanceTo(_pointC);
 
@@ -176,29 +174,28 @@ const std::vector<Coordinate> Bezier::Curve(double precession) {
 }
 
 const double Bezier::length() const {
+    auto  Bx = 2*(_pointB.x() - _pointA.x());
+    auto  By = 2*(_pointB.y() - _pointA.y());
+    auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
 
-     auto  Bx = 2*(_pointB.x() - _pointA.x());
-     auto  By = 2*(_pointB.y() - _pointA.y());
-     auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
-     auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+    auto A = 4*(Ax*Ax + Ay*Ay);
+    auto B = 4*(Ax*Bx + Ay*By);
+    auto C = Bx*Bx + By*By;
 
-     auto A = 4*(Ax*Ax + Ay*Ay);
-     auto B = 4*(Ax*Bx + Ay*By);
-     auto C = Bx*Bx + By*By;
+    auto Sabc = 2*std::sqrt(A+B+C);
+    auto A_2 = std::sqrt(A);
+    auto A_32 = 2*A*A_2;
+    auto C_2 = 2*std::sqrt(C);
+    auto BA = B/A_2;
 
-     auto Sabc = 2*std::sqrt(A+B+C);
-     auto A_2 = std::sqrt(A);
-     auto A_32 = 2*A*A_2;
-     auto C_2 = 2*std::sqrt(C);
-     auto BA = B/A_2;
-
-     return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
+    return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
 }
 
 BB_CSPtr Bezier::rotate(const geo::Coordinate& center, double angle) const {
     auto z = std::make_shared<const Bezier>(_pointA.rotate(center, angle),
-                  _pointB.rotate(center, angle),
-                  _pointC.rotate(center, angle));
+                                            _pointB.rotate(center, angle),
+                                            _pointC.rotate(center, angle));
     return z;
 }
 
@@ -206,15 +203,15 @@ BB_CSPtr Bezier::scale(const geo::Coordinate& center, const geo::Coordinate& fac
     auto z = std::make_shared<const Bezier>(_pointA.scale(center, factor),
                                             _pointB.scale(center, factor),
                                             _pointC.scale(center, factor)
-                                            );
+                                           );
     return z;
 }
 
 BB_CSPtr Bezier::move(const geo::Coordinate& offset) const {
     auto z = std::make_shared<const Bezier>(_pointA + offset,
-                  _pointB + offset,
-                  _pointC + offset
-                  );
+                                            _pointB + offset,
+                                            _pointC + offset
+                                           );
     return z;
 }
 
@@ -249,9 +246,9 @@ const Coordinate Bezier::normal(double t) const {
 
 BB_CSPtr Bezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
     auto z = std::make_shared<const Bezier>(_pointA.mirror(axis1, axis2),
-                  _pointB.mirror(axis1, axis2),
-                  _pointC.mirror(axis1, axis2)
-                  );
+                                            _pointB.mirror(axis1, axis2),
+                                            _pointC.mirror(axis1, axis2)
+                                           );
     return z;
 }
 
@@ -282,28 +279,28 @@ BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
 //        y_.push_back(bez2.y());
 //    }
 
-    return nullptr; // TODO: no return statement
+    return nullptr; /// @todo no return statement
 }
 
 BB_CSPtr Bezier::splitAtT(double t) const {
-        auto x1 = _pointA.x();
-        auto y1 = _pointA.y();
+    auto x1 = _pointA.x();
+    auto y1 = _pointA.y();
 
-        auto x2 = _pointB.x();
-        auto y2 = _pointB.y();
+    auto x2 = _pointB.x();
+    auto y2 = _pointB.y();
 
-        auto x3 = _pointC.x();
-        auto y3 = _pointC.y();
+    auto x3 = _pointC.x();
+    auto y3 = _pointC.y();
 
-        auto x12 = (x2-x1)*t+x1;
-        auto y12 = (y2-y1)*t+y1;
+    auto x12 = (x2-x1)*t+x1;
+    auto y12 = (y2-y1)*t+y1;
 
-        auto x23 = (x3-x2)*t+x2;
-        auto y23 = (y3-y2)*t+y2;
+    auto x23 = (x3-x2)*t+x2;
+    auto y23 = (y3-y2)*t+y2;
 
-        auto x123 = (x23-x12)*t+x12;
-        auto y123 = (y23-y12)*t+y12;
+    auto x123 = (x23-x12)*t+x12;
+    auto y123 = (y23-y12)*t+y12;
 
-        return std::make_shared<Bezier>(Bezier({x1, y1}, {x12, y12}, {x123, y123}));
+    return std::make_shared<Bezier>(Bezier({x1, y1}, {x12, y12}, {x123, y123}));
 }
 

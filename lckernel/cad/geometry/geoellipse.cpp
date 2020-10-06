@@ -13,7 +13,6 @@ Ellipse::Ellipse(Coordinate center, Coordinate majorP, double minorRadius, doubl
     _startAngle(startAngle),
     _endAngle(endAngle),
     _isReversed(reversed) {
-
 }
 
 const Coordinate Ellipse::center() const {
@@ -73,15 +72,15 @@ Ellipse Ellipse::geoscale(const Coordinate& center, const Coordinate &factor) co
     double minor_ = vp6.magnitude() * ratio;
 
     return Ellipse(this->center().scale(center, factor), vp6,
-                                                    minor_,
-                                                    isArc() ? this->getEllipseAngle(startPoint) : 0.,
-                                                    isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
+                   minor_,
+                   isArc() ? this->getEllipseAngle(startPoint) : 0.,
+                   isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
 }
 
 Ellipse Ellipse::georotate(const geo::Coordinate& center, const double rotation_angle) const {
     return Ellipse(_center.rotate(center, rotation_angle),
-                    majorP().rotate(center, rotation_angle),
-                    minorRadius(), startAngle(), endAngle());
+                   majorP().rotate(center, rotation_angle),
+                   minorRadius(), startAngle(), endAngle());
 }
 
 std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &coord) const {
@@ -130,7 +129,6 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         return pnp;
     }
 
-
     for(double root : roots) {
         double const s=twoby*root/(twoax-twoa2b2*root); //sine
         double const d2=twoa2b2+(twoax-2.*root*twoa2b2)*root+twoby*s;
@@ -172,7 +170,7 @@ Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
     std::vector<Coordinate> potentialPoints = this->findPotentialNearestPoints(coord);
 
     for (const auto& verifiedPoint: potentialPoints) {
-        if (this->isAngleBetween(verifiedPoint.angle())) {
+        if (this->isAngleBetween(this->center().angleTo(verifiedPoint))) {
             double d = verifiedPoint.distanceTo(coord);
             if (d < minDist) {
                 minDist = verifiedPoint.distanceTo(coord);

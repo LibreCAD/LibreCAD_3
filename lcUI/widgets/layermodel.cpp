@@ -38,16 +38,16 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
     }
     else if(role == Qt::DecorationRole) {
         switch (index.column()) {
-            case EDIT:
-                return _editIcon;
+        case EDIT:
+            return _editIcon;
 
-            case LOCKED:
-                if (layer->isFrozen()) {
-                    return _lockedIcon;
-                }
-                return _unlockedIcon;
-            default:
-                break;
+        case LOCKED:
+            if (layer->isFrozen()) {
+                return _lockedIcon;
+            }
+            return _unlockedIcon;
+        default:
+            break;
         }
     }
 
@@ -89,4 +89,18 @@ unsigned int LayerModel::indexOf(const lc::meta::Layer_CSPtr& layer) {
     }
 
     return 0;
+}
+
+lc::meta::Layer_CSPtr LayerModel::layerByName(const std::string& layerName) {
+    for (unsigned int i = 0; i < _layers.size(); i++) {
+        if (_layers[i]->name() == layerName) {
+            return _layers[i];
+        }
+    }
+
+    return nullptr;
+}
+
+std::vector<lc::meta::Layer_CSPtr> LayerModel::layers() const {
+    return _layers;
 }

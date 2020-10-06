@@ -127,7 +127,6 @@ std::vector<double> Math::cubicSolver(const std::vector<double>& ce) {
 **/
 std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
     //    std::cout<<"x^4+("<<ce[0]<<")*x^3+("<<ce[1]<<")*x^2+("<<ce[2]<<")*x+("<<ce[3]<<")==0"<<std::endl;
-
     std::vector<double> ans(0, 0.);
     Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
     Eigen::VectorXd coeff(5);
@@ -150,7 +149,6 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
 }
 
 std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
-
     std::vector<double> ans(0, 0.);
     Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
     Eigen::VectorXd coeff(7);
@@ -179,11 +177,10 @@ std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
 * ce[4] x^4 + ce[3] x^3 + ce[2] x^2 + ce[1] x + ce[0] = 0
 @ce, a vector of size 5 contains the coefficient in order
 @return, a vector contains real roots
-*ToDo, need a robust algorithm to locate zero terms, better handling of tolerances
+* @todo, need a robust algorithm to locate zero terms, better handling of tolerances
 **/
 std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
-   //  std::cout<<ce[4]<<"*y^4+("<<ce[3]<<")*y^3+("<<ce[2]<<"*y^2+("<<ce[1]<<")*y+("<<ce[0]<<")==0"<<std::endl;
-
+    //  std::cout<<ce[4]<<"*y^4+("<<ce[3]<<")*y^3+("<<ce[2]<<"*y^2+("<<ce[1]<<")*y+("<<ce[0]<<")==0"<<std::endl;
     std::vector<double> roots(0, 0.);
 
     if (ce.size() != 5) {
@@ -426,7 +423,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
         Eigen::Matrix2d M;
         Eigen::Vector2d V;
         M << m[0][0], m[0][1],
-             m[1][0], m[1][1];
+        m[1][0], m[1][1];
         V << -m[0][2], -m[1][2];
         Eigen::Vector2d sn = M.colPivHouseholderQr().solve(V);
         ret.emplace_back(geo::Coordinate(sn[0], sn[1]));

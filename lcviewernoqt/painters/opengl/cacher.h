@@ -8,58 +8,58 @@
 #include "manager.h"
 namespace lc
 {
-  namespace viewer
-  {
-    namespace opengl
-    {
-      #define PI 3.14159265
-      class Cacher: public Manager
-      {
-      private:   
-        glm::mat4 _model;                     //model matrix
-   
-        GL_Pack* _current_gl_pack;
+namespace viewer
+{
+namespace opengl
+{
+#define PI 3.14159265
+class Cacher: public Manager
+{
+private:
+    glm::mat4 _model;                     //model matrix
 
-        Shaders_book _shaders;
-        Font_Book _fonts;
+    GL_Pack* _current_gl_pack;
 
-        std::map < unsigned long, GL_Pack* > _gl_pack_map;
+    Shaders_book _shaders;
+    Font_Book _fonts;
 
-      public:
-        Cacher();
-        ~Cacher();
+    std::map < unsigned long, GL_Pack* > _gl_pack_map;
 
-        void setShaderBook(struct Shaders_book& book);
-        void setFontBook(Font_Book& book);
-  
-        //---------------------------For Matrix/ Vectors/ Coordinate-----------
-        void updateScale(float scale);
-        void updateTranslate(float x,float y);
-        void updateRotate(float angle);
-        void resetTransformations();
-        double getScale();
-        double getTranslateX();
-        double getTranslateY();    
+public:
+    Cacher();
+    ~Cacher();
 
-        //------------------------------------for properties ( painter calls)------------------------------------
-        void readyCurrentEntity();                      
-        void selectColor(float R,float G,float B,float A);
+    void setShaderBook(struct Shaders_book& book);
+    void setFontBook(Font_Book& book);
 
-        GL_Text_Extend getTextExtend(const char* text_val);
+    //---------------------------For Matrix/ Vectors/ Coordinate-----------
+    void updateScale(float scale);
+    void updateTranslate(float x,float y);
+    void updateRotate(float angle);
+    void resetTransformations();
+    double getScale();
+    double getTranslateX();
+    double getTranslateY();
 
-        //--------------------------gl_entity / gl_pack / reset manipulations------------
-        void setNewPack();
-        void pushEntityInPack();
-        void readyForNextEntity();
-        void readyFreshPack();
+    //------------------------------------for properties ( painter calls)------------------------------------
+    void readyCurrentEntity();
+    void selectColor(float R,float G,float B,float A);
 
-        //--------------------------------caching query/insert/delete------------
-        void savePack(unsigned long id);
-        bool isPackCached(unsigned long id);
-        GL_Pack* getCachedPack(unsigned long id);
-        void erasePack(unsigned long id);
-      };
-    }
-  }
+    GL_Text_Extend getTextExtend(const char* text_val);
+
+    //--------------------------gl_entity / gl_pack / reset manipulations------------
+    void setNewPack();
+    void pushEntityInPack();
+    void readyForNextEntity();
+    void readyFreshPack();
+
+    //--------------------------------caching query/insert/delete------------
+    void savePack(unsigned long id);
+    bool isPackCached(unsigned long id);
+    GL_Pack* getCachedPack(unsigned long id);
+    void erasePack(unsigned long id);
+};
+}
+}
 }
 #endif // CACHER_H

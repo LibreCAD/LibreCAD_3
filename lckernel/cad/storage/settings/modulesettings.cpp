@@ -1,8 +1,14 @@
 #include "modulesettings.h"
 #include "unknownsettingexception.h"
+#include <build_constants.h>
 #include <iostream>
 
 using namespace lc::storage::settings;
+
+ModuleSettings::ModuleSettings() {
+    _filePaths["settings_load"] = SETTINGS_PATH;
+    _filePaths["settings_load"] = _filePaths["settings_load"] + "/";
+}
 
 ModuleSettings::ModuleSettings(std::initializer_list<std::pair<std::string, ISettingValue*>> settings) : ModuleSettings() {
     for(const auto& setting : settings) {

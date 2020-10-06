@@ -10,9 +10,12 @@ using namespace lc;
 using namespace lc::storage;
 
 DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
-        Document() ,
-        _storageManager(std::move(storageManager)) {
+    Document(),
+    _storageManager(std::move(storageManager)) {
     _storageManager->addDocumentMetaType(std::make_shared<meta::Layer>("0", meta::MetaLineWidthByValue(1.0), Color(255, 255, 255)));
+    //Add papers too
+    _storageManager->addDocumentMetaType(std::make_shared<lc::meta::Block>("*Paper_Space", geo::Coordinate()));
+    _storageManager->addDocumentMetaType(std::make_shared<lc::meta::Block>("*Paper_Space0", geo::Coordinate()));
 }
 
 void DocumentImpl::execute(const operation::DocumentOperation_SPtr& operation) {
@@ -90,12 +93,12 @@ void DocumentImpl::addDocumentMetaType(const lc::meta::DocumentMetaType_CSPtr& d
         addLayerEvent()(event);
     }
 
-/*	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
-    if (viewport != nullptr) {
-        event::AddViewportEvent event(viewport);
-        addViewportEvent()(event);
-    }
-*/
+    /*	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
+        if (viewport != nullptr) {
+            event::AddViewportEvent event(viewport);
+            addViewportEvent()(event);
+        }
+    */
 
     auto linePattern = std::dynamic_pointer_cast<const meta::DxfLinePatternByValue>(dmt);
     if (linePattern != nullptr) {
@@ -160,24 +163,14 @@ std::map<std::string, lc::meta::Layer_CSPtr> DocumentImpl::allLayers() const {
 
 lc::meta::Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
     auto x =  _storageManager->layerByName(layerName);
-    if (x==nullptr){
-    	//If layer not found create one
-    	x=std::make_shared<meta::Layer>(layerName, meta::MetaLineWidthByValue(1.0), Color(255, 255, 255));
-        _storageManager->addDocumentMetaType(x);
-    }
     return x;
 }
 
 lc::meta::Block_CSPtr DocumentImpl::blockByName(const std::string& blockName) const {
-    if(blockName=="*Model_Space"){
+    if(blockName=="*Model_Space") {
         return nullptr;
     }
     auto x =  _storageManager->blockByName(blockName);
-    if (x==nullptr){
-        //If block not found create one
-        x=std::make_shared<meta::Block>(blockName);
-        _storageManager->addDocumentMetaType(x);
-    }
     return x;
 }
 
@@ -203,4 +196,8 @@ std::vector<lc::meta::Block_CSPtr> DocumentImpl::blocks() const {
 
 std::unordered_set<lc::entity::Insert_CSPtr> DocumentImpl::waitingCustomEntities(const std::string& pluginName) {
     return _waitingCustomEntities[pluginName];
+}
+
+entity::CADEntity_CSPtr DocumentImpl::entityByID(ID_DATATYPE id) const {
+    return _storageManager->entityByID(id);
 }

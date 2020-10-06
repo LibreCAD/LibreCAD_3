@@ -6,7 +6,6 @@ using namespace operation;
 AddBlock::AddBlock(const storage::Document_SPtr& document, meta::Block_CSPtr block) :
     DocumentOperation(document, "AddBlock"),
     _block(std::move(block)) {
-
 }
 
 void AddBlock::undo() const {
@@ -64,14 +63,14 @@ void ReplaceBlock::processInternal() {
     for(const auto& entity : entities) {
         document()->removeEntity(entity);
         document()->insertEntity(entity->modify(
-                entity->layer(),
-                entity->metaInfo(),
-                _newBlock
-        ));
+                                     entity->layer(),
+                                     entity->metaInfo(),
+                                     _newBlock
+                                 ));
     }
 
     document()->removeDocumentMetaType(_oldBlock);
     document()->addDocumentMetaType(_newBlock);
 
-    //TODO: should we modify the inserts ?
+    /// @todo should we modify the inserts ?
 }

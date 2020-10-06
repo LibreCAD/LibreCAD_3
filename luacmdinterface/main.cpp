@@ -86,12 +86,12 @@ int main(int argc, char** argv) {
     // Read CMD options
     po::options_description desc("Allowed options");
     desc.add_options()
-            ("help", "produce help message")
-            ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
-            ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
-            ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
-            ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png")
-            ("otype,t", po::value<std::string>(&fType), "(optional) output file type, example -t tga");
+    ("help", "produce help message")
+    ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
+    ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
+    ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
+    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png")
+    ("otype,t", po::value<std::string>(&fType), "(optional) output file type, example -t tga");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 
     // Add background
     auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(lc::Color(0x90, 0x90, 0x90),
-                                                                    lc::Color(0x00, 0x00, 0x00));
+                               lc::Color(0x00, 0x00, 0x00));
     _canvas->background().connect<lc::viewer::drawable::GradientBackground, &lc::viewer::drawable::GradientBackground::draw>(_gradientBackground.get());
 
     /* try to guess from file extension the output type */

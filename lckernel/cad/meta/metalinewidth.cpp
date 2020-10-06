@@ -18,19 +18,18 @@ const std::string MetaLineWidthByBlock::metaTypeID() const {
     return MetaLineWidthByBlock::LCMETANAME();
 }
 
-
 MetaLineWidthByValue::MetaLineWidthByValue() :
-        MetaLineWidth(),
-        DocumentMetaType(),
-        _width(0.) {
+    MetaLineWidth(),
+    DocumentMetaType(),
+    _width(0.) {
 
     assert(_width >= 0. && "Line width must be >= 0.");
 }
 
 MetaLineWidthByValue::MetaLineWidthByValue(const double width):
-        MetaLineWidth(),
-        DocumentMetaType(),
-        _width(width) {
+    MetaLineWidth(),
+    DocumentMetaType(),
+    _width(width) {
 
     assert(_width>=0. && "Line width must be >= 0.");
 }

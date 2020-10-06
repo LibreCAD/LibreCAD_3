@@ -1,4 +1,8 @@
-RemoveOperation = {}
+RemoveOperation = {
+    name = "RemoveOperation",
+    command_line = "REMOVE",
+    icon = "delete.svg"
+}
 RemoveOperation.__index = RemoveOperation
 
 setmetatable(RemoveOperation, {
@@ -11,15 +15,15 @@ setmetatable(RemoveOperation, {
 })
 
 function RemoveOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
-    self.selection = getWindow(id):selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
     self:remove()
 end
 
 function RemoveOperation:remove()
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -29,7 +33,7 @@ function RemoveOperation:remove()
     b:appendOperation(lc.operation.Remove())
     b:execute()
 
-    message(tostring(#self.selection) .. " items removed", self.target_widget)
+    message(tostring(#self.selection) .. " items removed")
 
     self:close()
 end
@@ -37,6 +41,6 @@ end
 function RemoveOperation:close()
     if(not self.finished) then
         self.finished = true
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

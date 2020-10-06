@@ -1,4 +1,22 @@
-LWPolylineOperations = {}
+LWPolylineOperations = {
+    name = "LWPolylineOperations",
+    command_line = "POLYLINE",
+    icon = "polylines.svg",
+    description = "Polyline",
+    menu_actions = {
+        default = "actionPolyline"
+    },
+    operation_options = {
+        Line = {
+            icon = "linesnormal.png",
+            action = "createLine"
+        },
+        Arc = {
+            icon = "arc.svg",
+            action = "createArc"
+        }
+    }
+}
 LWPolylineOperations.__index = LWPolylineOperations
 
 setmetatable(LWPolylineOperations, {
@@ -10,10 +28,16 @@ setmetatable(LWPolylineOperations, {
     end,
 })
 
-function LWPolylineOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.LWPolylineBuilder, "enterPoint")
+function LWPolylineOperations:_init()
+    CreateOperations._init(self, lc.builder.LWPolylineBuilder, "enterPoint")
 	self.currentVertex = "line"
 	self.tempPoint = false
+end
+
+function LWPolylineOperations:_init_default()
+    message("<b>Polyline</b>")
+    message("Click on first point or enter coordinates:")
+    message("Enter number for width")
 end
 
 function LWPolylineOperations:enterPoint(eventName, data)
@@ -26,8 +50,11 @@ function LWPolylineOperations:enterPoint(eventName, data)
 	if(eventName == "mouseMove") then
         self:newData(data["position"])
 		self.tempPoint = true
-	elseif(eventName == "point" or eventName == "number") then
+	elseif(eventName == "point") then
         self:newData(data["position"])
+	elseif(eventName == "number") then
+	self.builder:setWidth(data["number"])
+	print(data["number"])
     end
 end
 
@@ -76,7 +103,7 @@ function LWPolylineOperations:createArc()
 		self.builder:modifyLastVertexArc()
     end
 
-    message("Give arc angle and coordinates", self.target_widget)
+    message("Give arc angle and coordinates")
 end
 
 function LWPolylineOperations:createLine()
@@ -91,5 +118,15 @@ function LWPolylineOperations:createLine()
 		self.builder:modifyLastVertexLine()
     end
 
-    message("Give line coordinates", self.target_widget)
+    message("Give line coordinates")
+end
+
+function LWPolylineOperations:contextMenuOptions(menu)
+    if(self.currentVertex == "line") then
+        local item = gui.MenuItem("Arc", function() mainWindow:currentOperation():createArc() end)
+        menu:addItem(item)
+    elseif(self.currentVertex == "arc") then
+        local item1 = gui.MenuItem("Line", function() mainWindow:currentOperation():createLine() end)
+        menu:addItem(item1)
+    end
 end

@@ -5,8 +5,8 @@
 using namespace lc::viewer;
 
 LCVSpline::LCVSpline(const lc::entity::Spline_CSPtr& spline) :
-        LCVDrawItem(spline, true),
-        _spline(spline) {
+    LCVDrawItem(spline, true),
+    _spline(spline) {
 }
 
 void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
@@ -26,7 +26,8 @@ void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc:
             painter.line_to(bez[1].x(), bez[1].y());
         }
     }
-    painter.stroke();
+    if(autostroke())
+        painter.stroke();
 }
 
 lc::entity::CADEntity_CSPtr LCVSpline::entity() const {

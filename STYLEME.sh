@@ -1,8 +1,8 @@
 #find libraries/cadkernel -type f -name *.cpp -o -name *.h -exec astyle 
 
-astyle --exclude=nano-signal-slot  --exclude=lua-intf --options=./librecad.astylerc --recursive  "*.cpp" "*.h"
+astyle --exclude=doxygen --exclude=build --exclude=lckernel/nano-signal-slot --exclude=lckernel/tinyspline --exclude=persistence/libopencad --exclude=third_party/kaguya --recursive  "*.cpp" "*.h"
 
-find . -name "*.orig" -exec rm {} \;
+find . -type d \( -path build -o -path doxygen \) -prune -false -o -name "*.orig" -exec rm {} \;
 
 #libraries/cadkernel/*.h
 

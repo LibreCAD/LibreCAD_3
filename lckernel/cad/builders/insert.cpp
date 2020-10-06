@@ -5,14 +5,14 @@ using namespace lc;
 using namespace builder;
 
 InsertBuilder::InsertBuilder() :
-        _displayBlock(nullptr) {
+    _displayBlock(nullptr) {
 }
 
-bool InsertBuilder::checkValues(bool throwExceptions) const{
+bool InsertBuilder::checkValues(bool throwExceptions) const {
     if (!throwExceptions) {
         return CADEntityBuilder::checkValues(throwExceptions) &&
-            _displayBlock != nullptr &&
-            _document != nullptr;
+               _displayBlock != nullptr &&
+               _document != nullptr;
     }
     else {
         if (_displayBlock == nullptr) {
@@ -21,7 +21,6 @@ bool InsertBuilder::checkValues(bool throwExceptions) const{
         if (_document == nullptr) {
             throw std::runtime_error("Document cannot be NULL");
         }
-
         return CADEntityBuilder::checkValues(throwExceptions);
     }
 }
@@ -32,7 +31,6 @@ const meta::Block_CSPtr& InsertBuilder::displayBlock() const {
 
 InsertBuilder* InsertBuilder::setDisplayBlock(const meta::Block_CSPtr& displayBlock) {
     _displayBlock = displayBlock;
-
     return this;
 }
 
@@ -40,7 +38,6 @@ entity::Insert_CSPtr InsertBuilder::build() {
     if(!checkValues()) {
         throw std::runtime_error("Missing values");
     }
-
     return entity::Insert_CSPtr(new entity::Insert(*this));
 }
 
@@ -50,7 +47,6 @@ const geo::Coordinate& InsertBuilder::coordinate() const {
 
 InsertBuilder* InsertBuilder::setCoordinate(const geo::Coordinate& coordinate) {
     _coordinate = coordinate;
-
     return this;
 }
 
@@ -60,6 +56,5 @@ const storage::Document_SPtr& InsertBuilder::document() const {
 
 InsertBuilder* InsertBuilder::setDocument(const storage::Document_SPtr& document) {
     _document = document;
-
     return this;
 }

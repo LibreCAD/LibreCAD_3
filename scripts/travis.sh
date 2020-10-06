@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 mkdir -p third_party
 cd third_party
 mkdir -p gtest_build

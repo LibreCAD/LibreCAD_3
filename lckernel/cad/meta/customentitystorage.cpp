@@ -3,17 +3,16 @@
 using namespace lc;
 using namespace lc::meta;
 
-//TODO: get a real ID
+/// @todo get a real ID
 
 CustomEntityStorage::CustomEntityStorage(std::string pluginName,
-                                         std::string entityName,
-                                         geo::Coordinate base,
-                                         std::map<std::string, std::string> params) :
+        std::string entityName,
+        geo::Coordinate base,
+        std::map<std::string, std::string> params) :
     Block("LC_" + std::to_string(rand()), std::move(base)), // NOLINT
     _pluginName(std::move(pluginName)),
     _entityName(std::move(entityName)),
     _params(std::move(params)) {
-
 }
 
 const std::string& CustomEntityStorage::pluginName() const {

@@ -1,4 +1,11 @@
-DimRadialOperations = {}
+DimRadialOperations = {
+    name = "DimRadialOperations",
+    command_line = "DIMRADIAL",
+    icon = "dim_radial.svg",
+    menu_actions = {
+        default = "actionRadius"
+    }
+}
 DimRadialOperations.__index = DimRadialOperations
 
 setmetatable(DimRadialOperations, {
@@ -10,10 +17,10 @@ setmetatable(DimRadialOperations, {
     end,
 })
 
-function DimRadialOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimRadialBuilder, "enterStartPoint")
+function DimRadialOperations:_init()
+    CreateOperations._init(self, lc.builder.DimRadialBuilder, "enterStartPoint")
 
-    message("Click on first definition point", id)
+    message("Click on first definition point")
 end
 
 function DimRadialOperations:enterStartPoint(eventName, data)
@@ -24,7 +31,7 @@ function DimRadialOperations:enterStartPoint(eventName, data)
     if(eventName == "point") then
         self.step = "enterEndPoint"
 
-        message("Click on end point", self.target_widget)
+        message("Click on end point")
     end
 end
 
@@ -36,7 +43,7 @@ function DimRadialOperations:enterEndPoint(eventName, data)
     if(eventName == "point") then
         self.step = "enterMiddleOfText"
 
-        message("Click on text position", self.target_widget)
+        message("Click on text position")
     end
 end
 
@@ -48,15 +55,15 @@ function DimRadialOperations:enterMiddleOfText(eventName, data)
     if(eventName == "point") then
         self.step = "enterText"
 
-        cli_get_text(self.target_widget, true)
+        mainWindow:cliCommand():returnText( true)
 
-        message("Enter dimension text (<> for value)", self.target_widget)
+        message("Enter dimension text (<> for value)")
     end
 end
 
 function DimRadialOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

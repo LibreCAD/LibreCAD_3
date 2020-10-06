@@ -9,7 +9,6 @@ lc::builder::CircleBuilder::CircleBuilder() {
     lp_builder.setName("tempEntity");
     lp_builder.addElement(1);
     lp_builder.addElement(-10);
-
     linePattern = lp_builder.build();
 }
 
@@ -245,4 +244,11 @@ lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
     {
         return entity::Circle_CSPtr(new entity::Circle(*this));;
     }
+}
+
+void lc::builder::CircleBuilder::copy(entity::Circle_CSPtr entity) {
+    setCenter(entity->center());
+    setRadius(entity->radius());
+
+    lc::builder::CADEntityBuilder::copy(entity);
 }

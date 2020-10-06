@@ -1,22 +1,29 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Builder for point
+*/
+
 #pragma once
 
 #include "cadentity.h"
 
 namespace lc {
-    namespace builder {
-        class PointBuilder : public CADEntityBuilder {
-            public:
-                PointBuilder();
+namespace builder {
+class PointBuilder : public CADEntityBuilder {
+public:
+    PointBuilder();
 
-                virtual ~PointBuilder() = default;
+    virtual ~PointBuilder() = default;
 
-                const geo::Coordinate& coordinate() const;
-                PointBuilder* setCoordinate(const geo::Coordinate& coordinate);
+    const geo::Coordinate& coordinate() const;
+    PointBuilder* setCoordinate(const geo::Coordinate& coordinate);
 
-                entity::Point_CSPtr build();
+    entity::Point_CSPtr build();
 
-            private:
-                lc::geo::Coordinate _coordinate;
-        };
-    }
+private:
+    lc::geo::Coordinate _coordinate;
+};
+}
 }

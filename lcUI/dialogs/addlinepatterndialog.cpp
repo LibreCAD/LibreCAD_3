@@ -57,27 +57,27 @@ void AddLinePatternDialog::generatePreview() {
         auto value = part->value();
 
         switch(type) {
-            case widgets::LinePatternPathPart::PATH_DOT:
-                path.push_back(0);
-                break;
+        case widgets::LinePatternPathPart::PATH_DOT:
+            path.push_back(0);
+            break;
 
-            case widgets::LinePatternPathPart::PATH_PLAIN:
-                path.push_back(value);
-                length += value;
-                break;
+        case widgets::LinePatternPathPart::PATH_PLAIN:
+            path.push_back(value);
+            length += value;
+            break;
 
-            case widgets::LinePatternPathPart::PATH_SPACE:
-                path.push_back(-value);
-                length += value;
-                break;
+        case widgets::LinePatternPathPart::PATH_SPACE:
+            path.push_back(-value);
+            length += value;
+            break;
         }
     }
 
     _linePattern = std::make_shared<lc::meta::DxfLinePatternByValue>(
-            name,
-            ui->description->text().toStdString(),
-            path,
-            length);
+                       name,
+                       ui->description->text().toStdString(),
+                       path,
+                       length);
 
     QPixmap previewPixmap(ui->preview->frameSize());
 

@@ -44,7 +44,7 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
     std::vector<entity::CADEntity_CSPtr> _start;
 
     for (const auto& base : operationStack) {
-        //TODO can we get rid of dynamic_cast??
+        /// @todo can we get rid of dynamic_cast??
         auto begin = dynamic_cast<const lc::operation::Begin*>(base.get());
 
         if (begin != nullptr) {
@@ -52,7 +52,6 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
             _start.insert(_start.end(), entities.begin(), entities.end());
         }
     }
-
 
     // run the operation queue
     std::vector<entity::CADEntity_CSPtr> entitySet2(entities);
@@ -70,8 +69,8 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
 /** Move                                                                                              ***/
 /********************************************************************************************************/
 Move::Move(geo::Coordinate offset) :
-        Base(),
-        _offset(std::move(offset)) {
+    Base(),
+    _offset(std::move(offset)) {
 }
 
 std::vector<entity::CADEntity_CSPtr>  Move::process(
@@ -94,8 +93,8 @@ std::vector<entity::CADEntity_CSPtr>  Move::process(
 /** Copy                                                                                              ***/
 /********************************************************************************************************/
 Copy::Copy(geo::Coordinate offset) :
-        Base(),
-        _offset(std::move(offset)) {
+    Base(),
+    _offset(std::move(offset)) {
 }
 
 std::vector<entity::CADEntity_CSPtr> Copy::process(
@@ -119,9 +118,9 @@ std::vector<entity::CADEntity_CSPtr> Copy::process(
 /** Scale                                                                                             ***/
 /********************************************************************************************************/
 Scale::Scale(geo::Coordinate scale_center, geo::Coordinate scale_factor) :
-        Base(),
-        _scale_center(std::move(scale_center)),
-        _scale_factor(std::move(scale_factor)) {
+    Base(),
+    _scale_center(std::move(scale_center)),
+    _scale_factor(std::move(scale_factor)) {
 }
 
 std::vector<entity::CADEntity_CSPtr> Scale::process(
@@ -144,9 +143,9 @@ std::vector<entity::CADEntity_CSPtr> Scale::process(
 /** Rotate                                                                                            ***/
 /********************************************************************************************************/
 Rotate::Rotate(geo::Coordinate rotation_center, const double rotation_angle) :
-        Base(),
-        _rotation_center(std::move(rotation_center)),
-        _rotation_angle(rotation_angle) {
+    Base(),
+    _rotation_center(std::move(rotation_center)),
+    _rotation_angle(rotation_angle) {
 }
 
 std::vector<entity::CADEntity_CSPtr> Rotate::process(
@@ -187,8 +186,8 @@ std::vector<entity::CADEntity_CSPtr> Push::process(
 /** SelectByLayer                                                                                     ***/
 /********************************************************************************************************/
 SelectByLayer::SelectByLayer(meta::Layer_CSPtr layer) :
-        Base(),
-        _layer(std::move(layer)) {
+    Base(),
+    _layer(std::move(layer)) {
 }
 
 std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(

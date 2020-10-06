@@ -7,8 +7,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <iostream>
-
+#include <set>
 #include <QMetaObject>
 #include <QMetaMethod>
 #include <QObject>
@@ -18,103 +17,79 @@ extern "C"
 #include <QtUiTools/QUiLoader>
 #include <QCoreApplication>
 #include <managers/pluginmanager.h>
-#include "lua/luaqobject.h"
 
 #include <kaguya/kaguya.hpp>
-#include "lua/qtbridge.h"
+#include "lua/guibridge.h"
 
 namespace lc {
-	namespace ui {
-		/**
-		 * \brief Lua initializer
-		 */
-		class LuaInterface {
-			public:
-				/**
-                 * \brief Create Lua instance
-                 */
-				LuaInterface();
+namespace ui {
+/**
+ * \brief Lua initializer
+ */
+class LuaInterface {
+public:
+    /**
+     * \brief Create Lua instance
+     */
+    LuaInterface();
 
-				~LuaInterface();
+    ~LuaInterface();
 
-				/**
-                 * \brief Read and execute Lua files
-                 */
-				void initLua();
+    /**
+     * \brief Read and execute Lua files
+     */
+    void initLua(QMainWindow* mainWindow);
 
-				/**
-                 * \brief Connect Qt signal with Lua function
-                 * \param sender Pointer to sender object
-                 * \param signalName Name of the signal with parameters
-                 * \param slot Lua function
-                 * \return true if connected, false if an error happened
-                 */
-				bool luaConnect(
-						QObject* sender,
-						const std::string& signalName,
-						const kaguya::LuaRef& slot
-				);
+    /**
+     * \brief Load Qt widget from .ui file
+     * \param fileName full path to .ui file
+     */
+    static QWidget* loadUiFile(const char* fileName);
 
-				/**
-                 * \brief Connect Qt signal with Qt slot
-                 * \param sender Pointer to sender object
-                 * \param signalName Name of the signal with parameters
-                 * \param receiver Pointer to receiver object
-                 * \param slotName Name of the slot with parameters
-                 */
-				bool qtConnect(QObject* sender,
-							   const std::string& signalName,
-							   QObject* receiver,
-							   const std::string& slotName);
+    /**
+     * \brief Return a list of plugins
+     * \param path Path of plugins
+     * \return List of strings containing the name of plugins
+     */
+    std::vector<std::string> pluginList(const char* path);
 
-				/**
-                 * \brief Remove all connections that aren't valid anymore.
-                 */
-				void cleanInvalidQObject();
+    /**
+     * \brief Hide the window.
+     * It needs to be used before initLua(), this is used in unit tests.
+     */
+    void hideUI(bool hidden);
 
-				/**
-                 * \brief Load Qt widget from .ui file
-                 * \param fileName full path to .ui file
-                 */
-				static std::shared_ptr<QWidget> loadUiFile(const char* fileName);
+    /**
+     * \brief Returns current Lua state.
+     * This is used for unit tests.
+     */
+    lua_State* luaState();
 
-				/**
-                 * \brief Return a list of plugins
-                 * \param path Path of plugins
-                 * \return List of strings containing the name of plugins
-                 */
-				std::vector<std::string> pluginList(const char* path);
+    static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
-				/**
-                 * \brief Hide the window.
-                 * It needs to be used before initLua(), this is used in unit tests.
-                 */
-				void hideUI(bool hidden);
+    kaguya::LuaRef operation();
 
-				/**
-                 * \brief Returns current Lua state.
-                 * This is used for unit tests.
-                 */
-				lua_State* luaState();
+    void setOperation(kaguya::LuaRef);
 
-				static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
+    void finishOperation();
 
-				kaguya::LuaRef operation(unsigned int windowID);
+    void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
 
-				void setOperation(unsigned int windowID, kaguya::LuaRef);
+    void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
 
-				void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
+    void triggerEvent(const std::string& event, kaguya::LuaRef args);
 
-				void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
+private:
+    /**
+     * \brief make common functions available globally and register finish events
+     */
+    void registerGlobalFunctions(QMainWindow* mainWindow);
 
-				void triggerEvent(const std::string& event, kaguya::LuaRef args);
-
-			private:
-				kaguya::State _L;
-				std::vector<LuaQObject_SPtr> _luaQObjects;
-				lc::lua::PluginManager _pluginManager;
-				std::map<unsigned int, kaguya::LuaRef> _operations;
-				std::map<std::string, std::vector<kaguya::LuaRef>> _events;
-		};
-	}
+private:
+    kaguya::State _L;
+    lc::lua::PluginManager _pluginManager;
+    kaguya::LuaRef _operation;
+    std::map<std::string, std::vector<kaguya::LuaRef>> _events;
+};
+}
 }

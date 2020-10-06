@@ -14,71 +14,138 @@
 #include "widgettitlebar.h"
 
 namespace Ui {
-    class Layers;
+class Layers;
 }
 
 namespace lc {
-    namespace ui {
-        namespace widgets {
-            /**
-             * \brief Widget which shows a list of layers
-             */
-            class Layers : public QDockWidget {
-                Q_OBJECT
+namespace ui {
+namespace widgets {
+/**
+ * \brief Widget which shows a list of layers
+ */
+class Layers : public QDockWidget {
+    Q_OBJECT
 
-                public:
-                    /**
-                     * \brief Create widget
-                     */
-                    Layers(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0);
+public:
+    /**
+     * \brief Create widget
+     */
+    Layers(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0);
 
-                    ~Layers();
+    ~Layers();
 
-                    /**
-                     * \brief Set new document.
-                     * \param document New document
-                     * Update the layer list.
-                     */
-                    void setMdiChild(CadMdiChild* mdiChild = nullptr);
-                signals:
+    /**
+     * \brief Set new document.
+     * \param document New document
+     * Update the layer list.
+     */
+    void setMdiChild(CadMdiChild* mdiChild = nullptr);
 
-                    void layerChanged(lc::meta::Layer_CSPtr layer);
+    /* --------- Lua GUI API Functions --------- */
 
-                private slots:
+    /**
+     * \brief API function for adding a layer
+     */
+    void addLayer(lc::meta::Layer_CSPtr layer);
+    lc::meta::Layer_CSPtr addLayer(const char* layerName);
+    lc::meta::Layer_CSPtr addLayer(const char* layerName, double lineWidth);
+    lc::meta::Layer_CSPtr addLayer(const char* layerName, int r, int g, int b);
+    lc::meta::Layer_CSPtr addLayer(const char* layerName, lc::Color color);
+    lc::meta::Layer_CSPtr addLayer(const char* layerName, double lineWidth, int r, int g, int b);
+    lc::meta::Layer_CSPtr addLayer(const char* layerName, double lineWidth, lc::Color color);
 
-                    void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    /**
+     * \brief API function for removing a layer
+     * \param shared ptr to layer
+     */
+    void removeLayer(lc::meta::Layer_CSPtr layer);
 
-                    void on_newButton_clicked();
+    /**
+    * \brief API function for removing a layer
+    * \param string layer name
+    */
+    void removeLayer(const char* layerName);
 
-                    void on_deleteButton_clicked();
+    /**
+     * \brief API function for getting a layer
+     * \param string layer name
+     * \return shared ptr to layer
+     */
+    lc::meta::Layer_CSPtr layerByName(const char* layerName);
 
-                    void on_layerList_clicked(const QModelIndex& index);
+    /**
+     * \brief API functions for renaming a layer
+     * \param shared ptr to layer
+     * \param string new layer name
+     */
+    void renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName);
 
-                    void changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& name);
+    /**
+     * \brief API functions for renaming a layer
+     * \param string old layer name
+     * \param string new layer name
+     */
+    void renameLayer(const char* layerName, const char* newLayerName);
 
-                protected:
-                    Ui::Layers* ui;
-                    LayerModel* model;
+    /**
+     * \brief API functions for replacing a layer
+     * \param shared ptr to old layer
+     * \param string shared ptr to newlayer
+     */
+    void replaceLayerAPI(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
 
-                    void createLayer(lc::meta::Layer_CSPtr layer);
+    /**
+     * \brief API functions for replacing a layer
+     * \param string old layer name
+     * \param string shared ptr to newlayer
+     */
+    void replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer);
 
-                    void deleteLayer(lc::meta::Layer_CSPtr layer);
+    /**
+     * \brief Get list of all layers
+     * \return vector of layers
+     */
+    std::vector<lc::meta::Layer_CSPtr> layers() const;
 
-                    void replaceLayer(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
+signals:
 
-                private:
-                    CadMdiChild* _mdiChild;
+    void layerChanged(lc::meta::Layer_CSPtr layer);
 
-                    void updateLayerList();
+private slots:
 
-                    void on_addLayerEvent(const lc::event::AddLayerEvent&);
+    void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
-                    void on_removeLayerEvent(const lc::event::RemoveLayerEvent&);
+    void on_newButton_clicked();
 
-                    void on_replaceLayerEvent(const lc::event::ReplaceLayerEvent&);
+    void on_deleteButton_clicked();
 
-					void closeEvent(QCloseEvent* event);
-            };
-        }
-    }
+    void on_layerList_clicked(const QModelIndex& index);
+
+    void changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& name);
+
+protected:
+    Ui::Layers* ui;
+    LayerModel* model;
+
+    void createLayer(lc::meta::Layer_CSPtr layer);
+
+    void deleteLayer(lc::meta::Layer_CSPtr layer);
+
+    void replaceLayer(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
+
+private:
+    CadMdiChild* _mdiChild;
+
+    void updateLayerList();
+
+    void on_addLayerEvent(const lc::event::AddLayerEvent&);
+
+    void on_removeLayerEvent(const lc::event::RemoveLayerEvent&);
+
+    void on_replaceLayerEvent(const lc::event::ReplaceLayerEvent&);
+
+    void closeEvent(QCloseEvent* event);
+};
+}
+}
 }

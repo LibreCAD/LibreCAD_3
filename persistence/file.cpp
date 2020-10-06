@@ -6,18 +6,18 @@
 
 using namespace lc::persistence;
 
-std::string File::getExtensionForFileType(Type type){
+std::string File::getExtensionForFileType(Type type) {
     std::string x;
     if(type >= LIBDXFRW_DXF_R12 && type <= LIBDXFRW_DXB_R2013) {
-        x = "dxf"; 
+        x = "dxf";
     }
     return x;
 }
 
-std::map<std::string, std::string> File::getSupportedFileExtensions(){
+std::map<std::string, std::string> File::getSupportedFileExtensions() {
     std::map<std::string, std::string> types;
-    types.insert(std::pair<std::string, std::string>("dxf" ,"DXF files"));
-    types.insert(std::pair<std::string, std::string>("dwg" ,"DWG files"));
+    types.insert(std::pair<std::string, std::string>("dxf","DXF files"));
+    types.insert(std::pair<std::string, std::string>("dwg","DWG files"));
     return types;
 }
 
@@ -26,54 +26,54 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
     File::Type version;
 
     switch(library) {
-        case LIBDXFRW: {
-            DXFimpl F(document, builder);
-            dxfRW R(path.c_str());
-            R.read(&F, true);
+    case LIBDXFRW: {
+        DXFimpl F(document, builder);
+        dxfRW R(path.c_str());
+        R.read(&F, true);
 
-            //TODO: create better mapping
-            switch(R.getVersion()) {
-                case DRW::UNKNOWNV: //TODO: handle this
-                    version = Type::LIBDXFRW_DXF_R12; //TODO: not supported ?
-                    break;
-                case DRW::AC1006:
-                    version = Type::LIBDXFRW_DXF_R12;
-                    break;
-                case DRW::AC1009:
-                    version = Type::LIBDXFRW_DXB_R12; //This one is correct
-                    break;
-                case DRW::AC1012:
-                    version = Type::LIBDXFRW_DXF_R12;
-                    break;
-                case DRW::AC1014:
-                    version = Type::LIBDXFRW_DXB_R14;
-                    break;
-                case DRW::AC1015:
-                    version = Type::LIBDXFRW_DXF_R2000;
-                    break;
-                case DRW::AC1018:
-                    version = Type::LIBDXFRW_DXF_R2004;
-                    break;
-                case DRW::AC1021:
-                    version = Type::LIBDXFRW_DXF_R2007;
-                    break;
-                case DRW::AC1024:
-                    version = Type::LIBDXFRW_DXF_R2010;
-                    break;
-                case DRW::AC1027:
-                    version = Type::LIBDXFRW_DXF_R2013;
-                    break;
-            }
+        /// @todo create better mapping
+        switch(R.getVersion()) {
+        case DRW::UNKNOWNV: /// @todo handle this
+            version = Type::LIBDXFRW_DXF_R12; /// @todo not supported ?
+            break;
+        case DRW::AC1006:
+            version = Type::LIBDXFRW_DXF_R12;
+            break;
+        case DRW::AC1009:
+            version = Type::LIBDXFRW_DXB_R12; //This one is correct
+            break;
+        case DRW::AC1012:
+            version = Type::LIBDXFRW_DXF_R12;
+            break;
+        case DRW::AC1014:
+            version = Type::LIBDXFRW_DXB_R14;
+            break;
+        case DRW::AC1015:
+            version = Type::LIBDXFRW_DXF_R2000;
+            break;
+        case DRW::AC1018:
+            version = Type::LIBDXFRW_DXF_R2004;
+            break;
+        case DRW::AC1021:
+            version = Type::LIBDXFRW_DXF_R2007;
+            break;
+        case DRW::AC1024:
+            version = Type::LIBDXFRW_DXF_R2010;
+            break;
+        case DRW::AC1027:
+            version = Type::LIBDXFRW_DXF_R2013;
             break;
         }
+        break;
+    }
 
 #ifdef LIBOPENCAD_ENABLED
-        case LIBOPENCAD: {
-            lc::persistence::LibOpenCad opencad(document, builder);
-            opencad.open(path);
-            version = Type::LIBOPENCAD_DWG;
-            break;
-        }
+    case LIBOPENCAD: {
+        lc::persistence::LibOpenCad opencad(document, builder);
+        opencad.open(path);
+        version = Type::LIBOPENCAD_DWG;
+        break;
+    }
 #endif
     }
 

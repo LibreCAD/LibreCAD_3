@@ -4,8 +4,8 @@
 using namespace lc::builder;
 
 LineBuilder::LineBuilder() :
-        _start(),
-        _end() {
+    _start(),
+    _end() {
 }
 
 const lc::geo::Coordinate& LineBuilder::start() const {
@@ -28,16 +28,19 @@ LineBuilder* LineBuilder::setEnd(const lc::geo::Coordinate& end) {
 
 double LineBuilder::getLineAngle(lc::entity::CADEntity_CSPtr entity) const {
     lc::entity::Line_CSPtr line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
-
     if (line == nullptr) {
         return -1;
     }
-
     return line->Angle1();
 }
 
 lc::entity::Line_CSPtr LineBuilder::build() {
     checkValues(true);
-
     return entity::Line_CSPtr(new entity::Line(*this));
+}
+
+void LineBuilder::copy(entity::Line_CSPtr entity) {
+    setStart(entity->start());
+    setEnd(entity->end());
+    CADEntityBuilder::copy(entity);
 }

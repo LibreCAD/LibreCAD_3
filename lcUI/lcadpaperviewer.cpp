@@ -5,17 +5,17 @@ using namespace lc::ui;
 using namespace lc::viewer;
 
 #define PAPER_WIDTH 300
-#define PAPER_HEIGHT 200
+#define PAPER_HEIGHT -200
 
-LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id){
+LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id) {
     _gradientBackground = std::make_shared<drawable::PaperBackground>(PAPER_WIDTH, PAPER_HEIGHT);
     _grid = std::make_shared<drawable::Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     _cursor = std::make_shared<drawable::Cursor>(40, this->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    connect(this, SIGNAL(mouseMoveEvent()) , this, SLOT(onMouseMoveEvent()));
+    connect(this, SIGNAL(mouseMoveEvent()), this, SLOT(onMouseMoveEvent()));
 }
 
-void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport){
-	LCADViewer::setDocument(document, viewport);
+void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport) {
+    LCADViewer::setDocument(document, viewport);
     _viewport = viewport;
     this->documentCanvas()->background().connect<drawable::PaperBackground, &drawable::PaperBackground::draw>(_gradientBackground.get());
 //    this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get()); don't draw grid
@@ -45,6 +45,6 @@ void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> documen
     document->commitProcessEvent().connect<lc::storage::UndoManagerImpl, &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
 }
 
-void LCADPaperViewer::onMouseMoveEvent(){
+void LCADPaperViewer::onMouseMoveEvent() {
     emit setActive(_id);
 };

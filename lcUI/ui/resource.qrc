@@ -31,5 +31,17 @@
         <file alias="snap_grid.svg">icons/snap_grid.svg</file>
         <file alias="snap_intersection.svg">icons/snap_intersection.svg</file>
         <file alias="snap_middle.svg">icons/snap_middle.svg</file>
+        <file alias="point.svg">icons/point.svg</file>
+        <file alias="infoarea.png">icons/infoarea.png</file>
+        <file alias="text.svg">icons/text.svg</file>
+        <file alias="mtext_align_bottomcenter.svg">icons/mtext_align_bottomcenter.svg</file>
+        <file alias="mtext_align_bottomleft.svg">icons/mtext_align_bottomleft.svg</file>
+        <file alias="mtext_align_bottomright.svg">icons/mtext_align_bottomright.svg</file>
+        <file alias="mtext_align_middlecenter.svg">icons/mtext_align_middlecenter.svg</file>
+        <file alias="mtext_align_middleleft.svg">icons/mtext_align_middleleft.svg</file>
+        <file alias="mtext_align_middleright.svg">icons/mtext_align_middleright.svg</file>
+        <file alias="mtext_align_topcenter.svg">icons/mtext_align_topcenter.svg</file>
+        <file alias="mtext_align_topleft.svg">icons/mtext_align_topleft.svg</file>
+        <file alias="mtext_align_topright.svg">icons/mtext_align_topright.svg</file>
     </qresource>
 </RCC>

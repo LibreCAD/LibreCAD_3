@@ -8,7 +8,7 @@
 using namespace lc::viewer::manager;
 
 void EventManager::location(const lc::geo::Coordinate &coordinate) {
-   event::LocationEvent event(coordinate);
+    event::LocationEvent event(coordinate);
     _locationEvents(event);
 }
 

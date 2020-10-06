@@ -19,78 +19,78 @@
 #define EDIT_TEXT "Edit"
 
 namespace Ui {
-    class AddLinePatternDialog;
+class AddLinePatternDialog;
 }
 
 namespace lc {
-    namespace ui {
-        namespace dialog {
-            /**
-             * \brief Create a dialog with all required fields to create a new line pattern
-             */
-            class AddLinePatternDialog : public QDialog {
-                Q_OBJECT
+namespace ui {
+namespace dialog {
+/**
+ * \brief Create a dialog with all required fields to create a new line pattern
+ */
+class AddLinePatternDialog : public QDialog {
+    Q_OBJECT
 
-                public:
-                    /**
-                     * \brief Create empty dialog
-                     * \param document Document which contains the DXFLinePatterns
-                     * \param parent Parent widget
-                     */
-                    AddLinePatternDialog(lc::storage::Document_SPtr document, QWidget* parent = 0);
+public:
+    /**
+     * \brief Create empty dialog
+     * \param document Document which contains the DXFLinePatterns
+     * \param parent Parent widget
+     */
+    AddLinePatternDialog(lc::storage::Document_SPtr document, QWidget* parent = 0);
 
-                    /**
-                     * \brief Create dialog pre-filled with existing line pattern information.
-                     * \param document Document which contains the DXFLinePatterns.
-                     * \param linePattern Line pattern to edit
-                     * \param parent Parent widget
-                     */
-                    AddLinePatternDialog(lc::storage::Document_SPtr document,
-                                         lc::meta::DxfLinePatternByValue_CSPtr linePattern, QWidget* parent = 0);
+    /**
+     * \brief Create dialog pre-filled with existing line pattern information.
+     * \param document Document which contains the DXFLinePatterns.
+     * \param linePattern Line pattern to edit
+     * \param parent Parent widget
+     */
+    AddLinePatternDialog(lc::storage::Document_SPtr document,
+                         lc::meta::DxfLinePatternByValue_CSPtr linePattern, QWidget* parent = 0);
 
-                private slots:
+private slots:
 
-                    /**
-                     * \brief Create a new entry for the pattern path.
-                     */
-                    void on_newValueButton_pressed();
+    /**
+     * \brief Create a new entry for the pattern path.
+     */
+    void on_newValueButton_pressed();
 
-                    /**
-                     * \brief Cancel
-                     * Close the dialog.
-                     */
-                    void on_cancelButton_pressed();
+    /**
+     * \brief Cancel
+     * Close the dialog.
+     */
+    void on_cancelButton_pressed();
 
-                    /**
-                     * \brief Save
-                     * Save the line pattern in the document and close the dialog.
-                     */
-                    void on_saveButton_pressed();
+    /**
+     * \brief Save
+     * Save the line pattern in the document and close the dialog.
+     */
+    void on_saveButton_pressed();
 
-                    /**
-                     * \brief Edit
-                     * Replace the original line pattern with the new one and close the dialog.
-                     */
-                    void onEditButtonPressed();
+    /**
+     * \brief Edit
+     * Replace the original line pattern with the new one and close the dialog.
+     */
+    void onEditButtonPressed();
 
-                    /**
-                     * \brief Generate line pattern preview
-                     * Create a new QPixmap with a preview of the line pattern and add it in the dialog.
-                     */
-                    void generatePreview();
+    /**
+     * \brief Generate line pattern preview
+     * Create a new QPixmap with a preview of the line pattern and add it in the dialog.
+     */
+    void generatePreview();
 
-                protected:
-                    Ui::AddLinePatternDialog* ui;
-                    QPushButton* editButton;
-                    QVBoxLayout* _layout;
+protected:
+    Ui::AddLinePatternDialog* ui;
+    QPushButton* editButton;
+    QVBoxLayout* _layout;
 
-                private:
-                    lc::storage::Document_SPtr _document;
+private:
+    lc::storage::Document_SPtr _document;
 
-                    lc::meta::DxfLinePatternByValue_CSPtr _linePattern;
-                    lc::meta::DxfLinePatternByValue_CSPtr _oldLinePattern;
-            };
+    lc::meta::DxfLinePatternByValue_CSPtr _linePattern;
+    lc::meta::DxfLinePatternByValue_CSPtr _oldLinePattern;
+};
 
-        }
-    }
+}
+}
 }

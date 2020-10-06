@@ -4,28 +4,30 @@
 #include "cad/primitive/hatch.h"
 
 namespace lc {
-    namespace viewer {
-        class LcDrawOptions;
-        class LcPainter;
+namespace viewer {
+class LcDrawOptions;
+class LcPainter;
 
-        class LCVHatch : public LCVDrawItem {
-            public:
-                LCVHatch(const lc::entity::Hatch_CSPtr& circle);
+class LCVHatch : public LCVDrawItem {
+public:
+    LCVHatch(const lc::entity::Hatch_CSPtr& circle);
 
-                virtual ~LCVHatch() = default;
+    virtual ~LCVHatch() = default;
 
-                /**
-                 * @brief draw, Draws the circle
-                 * @param LcPainter painter, surface to be painted
-                 * @param LcDrawOptions options
-                 * @param geo::Area rect
-                 */
-                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
+    /**
+     * @brief draw, Draws the circle
+     * @param LcPainter painter, surface to be painted
+     * @param LcDrawOptions options
+     * @param geo::Area rect
+     */
+    void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+    void drawSolid(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+    void drawPattern(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
 
-                lc::entity::CADEntity_CSPtr entity() const override;
+    lc::entity::CADEntity_CSPtr entity() const override;
 
-            private:
-                lc::entity::Hatch_CSPtr _hatch;
-        };
-    }
+private:
+    lc::entity::Hatch_CSPtr _hatch;
+};
+}
 }

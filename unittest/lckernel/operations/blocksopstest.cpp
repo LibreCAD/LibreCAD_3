@@ -13,6 +13,11 @@ TEST(BlockOps, AddBlock) {
     auto block = std::make_shared<lc::meta::Block>("Name", geo::Coordinate());
     auto op = std::make_shared<operation::AddBlock>(document, block);
 
+    //Remove existing blocks
+    for(auto& block : document->blocks()) {
+        document->removeDocumentMetaType(block);
+    }
+
     auto blocks = document->blocks();
     EXPECT_EQ(0, blocks.size());
 
@@ -33,6 +38,13 @@ TEST(BlockOps, AddBlock) {
 
 TEST(BlockOps, RemoveBlock) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+
+    //Remove existing blocks
+    for(auto& block : document->blocks()) {
+        document->removeDocumentMetaType(block);
+    }
+
+
     auto block = std::make_shared<lc::meta::Block>("Name", geo::Coordinate());
 
     auto addOp = std::make_shared<operation::AddBlock>(document, block);
@@ -57,6 +69,13 @@ TEST(BlockOps, RemoveBlock) {
 
 TEST(BlockOps, ReplaceBlock) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+
+    //Remove existing blocks
+    for(auto& block : document->blocks()) {
+        document->removeDocumentMetaType(block);
+    }
+
+
     auto block = std::make_shared<lc::meta::Block>("Name", geo::Coordinate());
     auto block2 = std::make_shared<lc::meta::Block>("Name 2", geo::Coordinate());
 

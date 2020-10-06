@@ -4,7 +4,7 @@
 #include <dirent.h>
 
 #ifndef WIN32
-    #include <sys/types.h>
+#include <sys/types.h>
 #endif
 
 #include <cad/storage/documentimpl.h>
@@ -43,13 +43,13 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
             int x, int y, int w, int h) {
     auto _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
     auto _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
-    auto _canvas = std::make_shared<lc::viewer::DocumentCanvas>(_document, [](double* x, double* y){});//MODEL viewer
+    auto _canvas = std::make_shared<lc::viewer::DocumentCanvas>(_document, [](double* x, double* y) {}); //MODEL viewer
 
     // Add background
     auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(
-            lc::Color(0x00, 0x00, 0x00),
-            lc::Color(0x00, 0x00, 0x00)
-    );
+                                   lc::Color(0x00, 0x00, 0x00),
+                                   lc::Color(0x00, 0x00, 0x00)
+                               );
     _canvas->background().connect<lc::viewer::drawable::GradientBackground, &lc::viewer::drawable::GradientBackground::draw>(_gradientBackground.get());
 
     lc::viewer::LcPainter* lcPainter;
@@ -167,19 +167,19 @@ TEST(RenderingTest, Test) {
     po::variables_map vm;
     po::options_description desc("Allowed options");
     desc.add_options()
-            ("imageW", po::value<int>(&imageW), "Image width (in pixels)")
-            ("imageH", po::value<int>(&imageH), "Image height (in pixels)")
-            ("x", po::value<int>(&x), "Canvas base")
-            ("y", po::value<int>(&y), "Canvas base")
-            ("w", po::value<int>(&w), "Canvas width")
-            ("h", po::value<int>(&h), "Canvas height")
-            ("tolerance", po::value<int>(&tolerance), "Tolerance (between 0 and 100)");
+    ("imageW", po::value<int>(&imageW), "Image width (in pixels)")
+    ("imageH", po::value<int>(&imageH), "Image height (in pixels)")
+    ("x", po::value<int>(&x), "Canvas base")
+    ("y", po::value<int>(&y), "Canvas base")
+    ("w", po::value<int>(&w), "Canvas width")
+    ("h", po::value<int>(&h), "Canvas height")
+    ("tolerance", po::value<int>(&tolerance), "Tolerance (between 0 and 100)");
 
     dirent** files = NULL;
 
     const char* resDir = SOURCE_DIR "/rendering/res/";
     std::cout << "Opening resources from " << resDir << std::endl;
-    int nbFiles = scandir(resDir, &files, NULL, alphasort); 
+    int nbFiles = scandir(resDir, &files, NULL, alphasort);
     if(nbFiles < 0) {
         perror("Error");
         FAIL() << "Cannot open rendering resources dir.";

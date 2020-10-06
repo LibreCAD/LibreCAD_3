@@ -7,19 +7,19 @@
 using namespace lc::viewer;
 
 LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned) :
-        LCVDrawItem(dimAligned, true),
-        _dimAligned(dimAligned) {
+    LCVDrawItem(dimAligned, true),
+    _dimAligned(dimAligned) {
 }
 
 void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
     const double capSize = 10.;
- 
+
     // Decide to show the explicit value or the measured value
     std::string value = lc::tools::StringHelper::dim_value(
-            _dimAligned->explicitValue(),
-            options.alignedFormat(),
-            _dimAligned->definitionPoint3().distanceTo(_dimAligned->definitionPoint2())
-    );
+                            _dimAligned->explicitValue(),
+                            options.alignedFormat(),
+                            _dimAligned->definitionPoint3().distanceTo(_dimAligned->definitionPoint2())
+                        );
 
     // get text size
     painter.save();
@@ -41,26 +41,26 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
         auto d0ext = _dimAligned->definitionPoint().move(_dimAligned->definitionPoint() - p2, capSize * 2);
         painter.move_to(d0ext.x(), d0ext.y());
         painter.line_to(_dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y());
-        
+
         auto p2ext = p2.move(_dimAligned->definitionPoint() - p2, -(capSize * 2));
         painter.move_to(p2ext.x(), p2ext.y());
         painter.line_to(p2.x(), p2.y());
         painter.line_to(_dimAligned->definitionPoint2().x(), _dimAligned->definitionPoint2().y());
-        
-       /* draw a nice line for text
-         */
+
+        /* draw a nice line for text
+          */
         if (std::abs(d0ext.angleTo(p2ext)) >= 90. / 180.*M_PI) {
             painter.move_to(d0ext.x() + te.width, d0ext.y());
             painter.line_to(d0ext.x(), d0ext.y());
             painter.stroke();
             this->drawText(
-                    value,
-                    _dimAligned->textAngle(),
-                    _dimAligned->attachmentPoint(),
-                    {d0ext.x() + te.width / 2, d0ext.y()},
-                    painter,
-                    options,
-                    rect
+                value,
+                _dimAligned->textAngle(),
+                _dimAligned->attachmentPoint(),
+            {d0ext.x() + te.width / 2, d0ext.y()},
+            painter,
+            options,
+            rect
             );
         }
         else {
@@ -68,32 +68,32 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
             painter.line_to(p2ext.x(), p2ext.y());
             painter.stroke();
             this->drawText(
-                    value,
-                    _dimAligned->textAngle(),
-                    _dimAligned->attachmentPoint(),
-                    {p2ext.x() + te.width / 2, p2ext.y()},
-                    painter,
-                    options,
-                    rect
+                value,
+                _dimAligned->textAngle(),
+                _dimAligned->attachmentPoint(),
+            {p2ext.x() + te.width / 2, p2ext.y()},
+            painter,
+            options,
+            rect
             );
         }
 
-       // painter.stroke();
+        // painter.stroke();
 
         // Draw arrows
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                d0ext.x(), d0ext.y(),
-                _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            d0ext.x(), d0ext.y(),
+            _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
+            capSize
         ) ;
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                p2ext.x(), p2ext.y(),
-                p2.x(), p2.y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            p2ext.x(), p2ext.y(),
+            p2.x(), p2.y(),
+            capSize
         ) ;
     }
     else {
@@ -105,27 +105,27 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
 
         // Draw arrows
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
-                p2.x(), p2.y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
+            p2.x(), p2.y(),
+            capSize
         );
         endCaps.render(
-                painter,
-                EndCaps::CLOSEDARROW,
-                p2.x(), p2.y(),
-                _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
-                capSize
+            painter,
+            EndCaps::CLOSEDARROW,
+            p2.x(), p2.y(),
+            _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
+            capSize
         );
         this->drawText(
-                value,
-                _dimAligned->definitionPoint2().angleTo(_dimAligned->definitionPoint3()) + _dimAligned->textAngle(),
-                _dimAligned->attachmentPoint(),
-                _dimAligned->middleOfText(),
-                painter,
-                options,
-                rect
+            value,
+            _dimAligned->definitionPoint2().angleTo(_dimAligned->definitionPoint3()) + _dimAligned->textAngle(),
+            _dimAligned->attachmentPoint(),
+            _dimAligned->middleOfText(),
+            painter,
+            options,
+            rect
         );
     }
 }
