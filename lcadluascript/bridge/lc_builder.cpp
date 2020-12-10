@@ -12,6 +12,7 @@
 #include <cad/builders/line.h>
 #include <cad/builders/spline.h>
 #include <cad/builders/text.h>
+#include <cad/builders/textbase.h>
 #include <cad/builders/insert.h>
 #include <cad/primitive/insert.h>
 #include "lc_builder.h"
@@ -280,17 +281,22 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("setDocument", &lc::builder::InsertBuilder::setDocument)
                                                     );
 
-    state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::CADEntityBuilder>()
+    state["lc"]["builder"]["TextBaseBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBaseBuilder, lc::builder::CADEntityBuilder>()
+            .setConstructors<lc::builder::TextBaseBuilder()>()
+            .addFunction("insertionPoint", &lc::builder::TextBaseBuilder::insertionPoint)
+            .addFunction("setInsertionPoint", &lc::builder::TextBaseBuilder::setInsertionPoint)
+            .addFunction("textValue", &lc::builder::TextBaseBuilder::textValue)
+            .addFunction("setTextValue", &lc::builder::TextBaseBuilder::setTextValue)
+            .addFunction("height", &lc::builder::TextBaseBuilder::height)
+            .addFunction("setHeight", &lc::builder::TextBaseBuilder::setHeight)
+            .addFunction("angle", &lc::builder::TextBaseBuilder::angle)
+            .addFunction("setAngle", &lc::builder::TextBaseBuilder::setAngle)
+            .addFunction("copy", &lc::builder::TextBaseBuilder::copy)
+                                                  );
+
+    state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::TextBaseBuilder>()
             .setConstructors<lc::builder::TextBuilder()>()
             .addFunction("build", &lc::builder::TextBuilder::build)
-            .addFunction("insertionPoint", &lc::builder::TextBuilder::insertionPoint)
-            .addFunction("setInsertionPoint", &lc::builder::TextBuilder::setInsertionPoint)
-            .addFunction("textValue", &lc::builder::TextBuilder::textValue)
-            .addFunction("setTextValue", &lc::builder::TextBuilder::setTextValue)
-            .addFunction("height", &lc::builder::TextBuilder::height)
-            .addFunction("setHeight", &lc::builder::TextBuilder::setHeight)
-            .addFunction("angle", &lc::builder::TextBuilder::angle)
-            .addFunction("setAngle", &lc::builder::TextBuilder::setAngle)
-            .addFunction("copy", &lc::builder::TextBuilder::copy)
+            .addFunction("copy", &lc::builder::TextBaseBuilder::copy)
                                                   );
 }

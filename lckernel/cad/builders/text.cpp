@@ -5,8 +5,6 @@ using namespace lc::builder;
 
 TextBuilder::TextBuilder()
     :
-    _height(100),
-    _angle(0),
     _drawingDirection(lc::TextConst::DrawingDirection::None),
     _hAlign(lc::TextConst::HAlign::HACenter),
     _vAlign(lc::TextConst::VAlign::VAMiddle),
@@ -15,42 +13,6 @@ TextBuilder::TextBuilder()
     _bold(false),
     _italic(false)
 {
-}
-
-const lc::geo::Coordinate& TextBuilder::insertionPoint() const {
-    return _insertionPoint;
-}
-
-TextBuilder* TextBuilder::setInsertionPoint(const lc::geo::Coordinate& coord) {
-    _insertionPoint = coord;
-    return this;
-}
-
-const std::string& TextBuilder::textValue() const {
-    return _textValue;
-}
-
-TextBuilder* TextBuilder::setTextValue(const std::string& text) {
-    _textValue = text;
-    return this;
-}
-
-double TextBuilder::height() const {
-    return _height;
-}
-
-TextBuilder* TextBuilder::setHeight(double heightIn) {
-    _height = heightIn;
-    return this;
-}
-
-double TextBuilder::angle() const {
-    return _angle;
-}
-
-TextBuilder* TextBuilder::setAngle(double angleIn) {
-    _angle = angleIn;
-    return this;
 }
 
 TextBuilder* TextBuilder::setDrawingDirection(lc::TextConst::DrawingDirection drawingDirectionIn) {
@@ -78,15 +40,6 @@ TextBuilder* TextBuilder::setVerticalAlign(lc::TextConst::VAlign valignin) {
 
 lc::TextConst::VAlign TextBuilder::verticalAlign() const {
     return _vAlign;
-}
-
-TextBuilder* TextBuilder::setTextFont(std::string font) {
-    _textStyle = font;
-    return this;
-}
-
-std::string TextBuilder::textStyle() const {
-    return _textStyle;
 }
 
 TextBuilder* TextBuilder::setUnderlined(bool underline) {
@@ -131,13 +84,8 @@ lc::entity::Text_CSPtr TextBuilder::build() {
 }
 
 void TextBuilder::copy(lc::entity::Text_CSPtr entity) {
-    CADEntityBuilder::copy(entity);
+    TextBaseBuilder::copy(entity);
 
-    setInsertionPoint(entity->insertion_point());
-    setTextValue(entity->text_value());
-    setTextFont(entity->style());
-    setHeight(entity->height());
-    setAngle(entity->angle());
     setDrawingDirection(entity->textgeneration());
     setHorizontalAlign(entity->halign());
     setVerticalAlign(entity->valign());

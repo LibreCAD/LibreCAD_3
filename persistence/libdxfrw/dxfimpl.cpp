@@ -2,6 +2,7 @@
 #include "../generic/helpers.h"
 
 #include "../patternLoader/patternProvider.h"
+#include <algorithm>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
@@ -1348,9 +1349,12 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     DRW_Text tex;
     getEntityAttributes(&tex, t);
 
+    std::string correctedText = t->text_value();
+    std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
+
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
-    tex.text = t->text_value();
+    tex.text = correctedText;
     tex.textgen = t->textgeneration();
     tex.height = t->height();
     tex.angle = t->angle() * 180 / M_PI;

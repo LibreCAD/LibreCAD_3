@@ -1,4 +1,5 @@
 #include "text.h"
+#include "textbase.h"
 
 
 using namespace lc;
@@ -20,11 +21,7 @@ Text::Text(geo::Coordinate insertion_point,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-    _insertion_point(std::move(insertion_point)),
-    _text_value(std::move(text_value)),
-    _height(height),
-    _angle(angle),
-    _style(std::move(style)),
+    TextBase(insertion_point, text_value, height, angle, style),
     _textgeneration(textgeneration),
     _valign(valign),
     _halign(halign),
@@ -38,11 +35,7 @@ Text::Text(geo::Coordinate insertion_point,
 Text::Text(const builder::TextBuilder& builder)
     :
     CADEntity(builder),
-    _insertion_point(builder.insertionPoint()),
-    _text_value(builder.textValue()),
-    _height(builder.height()),
-    _angle(builder.angle()),
-    _style(builder.textStyle()),
+    TextBase(builder),
     _textgeneration(builder.drawingDirection()),
     _halign(builder.horizontalAlign()),
     _valign(builder.verticalAlign()),
@@ -55,11 +48,7 @@ Text::Text(const builder::TextBuilder& builder)
 
 Text::Text(const Text_CSPtr& other, bool sameID) :
     CADEntity(other, sameID),
-    _insertion_point(other->_insertion_point),
-    _text_value(other->_text_value),
-    _height(other->_height),
-    _angle(other->_angle),
-    _style(other->_style),
+    TextBase(*other),
     _textgeneration(other->_textgeneration),
     _valign(other->_valign),
     _halign(other->_halign),
@@ -217,10 +206,7 @@ CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> 
 PropertiesMap Text::availableProperties() const {
     PropertiesMap propertyValues;
 
-    propertyValues["insertionPoint"] = this->insertion_point();
-    propertyValues["textValue"] = this->text_value();
-    propertyValues["height"] = this->height();
-    propertyValues["angle"] = AngleProperty(this->angle());
+    getTextProperties(propertyValues);
     propertyValues["bold"] = this->bold();
     propertyValues["italic"] = this->italic();
     propertyValues["underlined"] = this->underlined();
@@ -230,32 +216,17 @@ PropertiesMap Text::availableProperties() const {
 }
 
 CADEntity_CSPtr Text::setProperties(const PropertiesMap& propertiesMap) const {
-    lc::geo::Coordinate insertionPointp = this->insertion_point();
-    std::string textValuep = this->text_value();
-    double heightp = this->height();
-    double anglep = this->angle();
+    lc::geo::Coordinate insertionPointp;
+    std::string textValuep;
+    double heightp;
+    double anglep;
     bool boldp = this->bold();
     bool italicp = this->italic();
     bool underlinedp = this->underlined();
     bool strikethroughp = this->strikethrough();
 
+    setTextProperties(propertiesMap, insertionPointp, textValuep, heightp, anglep);
     for(auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
-        if (iter->first == "insertionPoint") {
-            insertionPointp = boost::get<lc::geo::Coordinate>(iter->second);
-        }
-
-        if (iter->first == "textValue") {
-            textValuep = boost::get<std::string>(iter->second);
-        }
-
-        if (iter->first == "height") {
-            heightp = boost::get<double>(iter->second);
-        }
-
-        if (iter->first == "angle") {
-            anglep = boost::get<AngleProperty>(iter->second).Get();
-        }
-
         if (iter->first == "bold") {
             boldp = boost::get<bool>(iter->second);
         }
