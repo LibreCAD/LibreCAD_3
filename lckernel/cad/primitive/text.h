@@ -55,25 +55,10 @@ private:
     Text(const builder::TextBuilder& builder);
 
 public:
-    const TextConst::DrawingDirection _textgeneration;
-    const TextConst::VAlign _valign;
-    const TextConst::HAlign _halign;
     const bool _underlined;
     const bool _strikethrough;
     const bool _bold;
     const bool _italic;
-
-    TextConst::DrawingDirection const &textgeneration() const {
-        return _textgeneration;
-    }
-
-    TextConst::VAlign const &valign() const {
-        return _valign;
-    }
-
-    TextConst::HAlign const &halign() const {
-        return _halign;
-    }
 
     bool underlined() const {
         return _underlined;

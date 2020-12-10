@@ -4,6 +4,9 @@ using namespace lc::builder;
 
 TextBaseBuilder::TextBaseBuilder()
     :
+    _drawingDirection(lc::TextConst::DrawingDirection::None),
+    _hAlign(lc::TextConst::HAlign::HACenter),
+    _vAlign(lc::TextConst::VAlign::VAMiddle),
     _height(100),
     _angle(0)
 {
@@ -54,12 +57,29 @@ std::string TextBaseBuilder::textStyle() const {
     return _textStyle;
 }
 
-/*void TextBaseBuilder::copy(lc::entity::TextBase_CSPtr entity) {
-    CADEntityBuilder::copy(entity);
+TextBaseBuilder* TextBaseBuilder::setDrawingDirection(lc::TextConst::DrawingDirection drawingDirectionIn) {
+    _drawingDirection = drawingDirectionIn;
+    return this;
+}
 
-    setInsertionPoint(entity->insertion_point());
-    setTextValue(entity->text_value());
-    setTextFont(entity->style());
-    setHeight(entity->height());
-    setRotation(entity->rotation());
-}*/
+lc::TextConst::DrawingDirection TextBaseBuilder::drawingDirection() const {
+    return _drawingDirection;
+}
+
+TextBaseBuilder* TextBaseBuilder::setHorizontalAlign(lc::TextConst::HAlign halignin) {
+    _hAlign = halignin;
+    return this;
+}
+
+lc::TextConst::HAlign TextBaseBuilder::horizontalAlign() const {
+    return _hAlign;
+}
+
+TextBaseBuilder* TextBaseBuilder::setVerticalAlign(lc::TextConst::VAlign valignin) {
+    _vAlign = valignin;
+    return this;
+}
+
+lc::TextConst::VAlign TextBaseBuilder::verticalAlign() const {
+    return _vAlign;
+}

@@ -62,6 +62,7 @@ cad/primitive/ellipse.cpp
 cad/primitive/line.cpp
 cad/primitive/spline.cpp
 cad/primitive/text.cpp
+cad/primitive/mtext.cpp
 cad/primitive/textbase.cpp
 cad/primitive/dimension.cpp
 cad/primitive/dimradial.cpp
@@ -91,6 +92,7 @@ cad/builders/linepattern.cpp
 cad/builders/spline.cpp
 cad/builders/lwpolyline.cpp
 cad/builders/text.cpp
+cad/builders/mtext.cpp
 cad/builders/textbase.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
@@ -178,6 +180,7 @@ cad/primitive/ellipse.h
 cad/primitive/line.h
 cad/primitive/spline.h
 cad/primitive/text.h
+cad/primitive/mtext.h
 cad/primitive/textbase.h
 cad/primitive/lwpolyline.h
 cad/primitive/dimension.h
@@ -205,6 +208,7 @@ cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/builders/spline.h
 cad/builders/text.h
+cad/builders/mtext.h
 cad/builders/textbase.h
 cad/primitive/insert.h
 cad/builders/insert.h

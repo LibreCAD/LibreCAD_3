@@ -12,6 +12,7 @@
 #include <cad/builders/line.h>
 #include <cad/builders/spline.h>
 #include <cad/builders/text.h>
+#include <cad/builders/mtext.h>
 #include <cad/builders/textbase.h>
 #include <cad/builders/insert.h>
 #include <cad/primitive/insert.h>
@@ -291,12 +292,17 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("setHeight", &lc::builder::TextBaseBuilder::setHeight)
             .addFunction("angle", &lc::builder::TextBaseBuilder::angle)
             .addFunction("setAngle", &lc::builder::TextBaseBuilder::setAngle)
-            .addFunction("copy", &lc::builder::TextBaseBuilder::copy)
                                                   );
 
     state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::TextBaseBuilder>()
             .setConstructors<lc::builder::TextBuilder()>()
             .addFunction("build", &lc::builder::TextBuilder::build)
-            .addFunction("copy", &lc::builder::TextBaseBuilder::copy)
+            .addFunction("copy", &lc::builder::TextBuilder::copy)
                                                   );
+
+    /*state["lc"]["builder"]["MTextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::MTextBuilder, lc::builder::TextBaseBuilder>()
+        .setConstructors<lc::builder::MTextBuilder()>()
+        .addFunction("build", &lc::builder::MTextBuilder::build)
+        .addFunction("copy", &lc::builder::MTextBuilder::copy)
+    );*/
 }

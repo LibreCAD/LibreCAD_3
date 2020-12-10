@@ -17,6 +17,7 @@
 #include <cad/primitive/lwpolyline.h>
 #include <cad/primitive/spline.h>
 #include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
 #include <cad/primitive/image.h>
 #include <cad/primitive/insert.h>
 #include <cad/interface/unmanageddraggable.h>
@@ -320,6 +321,23 @@ void import_lc_entity_namespace(kaguya::State& state) {
                                            .addFunction("textgeneration", &lc::entity::Text::textgeneration)
                                            .addFunction("valign", &lc::entity::Text::valign)
                                           );
+
+    state["lc"]["entity"]["MText"].setClass(kaguya::UserdataMetatable<lc::entity::MText, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>>()
+        .addFunction("accept", &lc::entity::MText::accept)
+        .addFunction("boundingBox", &lc::entity::MText::boundingBox)
+        .addFunction("copy", &lc::entity::MText::copy)
+        .addFunction("dispatch", &lc::entity::MText::dispatch)
+        .addFunction("dragPoints", &lc::entity::MText::dragPoints)
+        .addFunction("halign", &lc::entity::MText::halign)
+        .addFunction("mirror", &lc::entity::MText::mirror)
+        .addFunction("modify", &lc::entity::MText::modify)
+        .addFunction("move", &lc::entity::MText::move)
+        .addFunction("rotate", &lc::entity::MText::rotate)
+        .addFunction("scale", &lc::entity::MText::scale)
+        .addFunction("setDragPoints", &lc::entity::MText::setDragPoints)
+        .addFunction("textgeneration", &lc::entity::MText::textgeneration)
+        .addFunction("valign", &lc::entity::MText::valign)
+    );
 
     state["lc"]["entity"]["Image"].setClass(kaguya::UserdataMetatable<lc::entity::Image, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>>()
                                             .addFunction("accept", &lc::entity::Image::accept)

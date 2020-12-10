@@ -26,6 +26,10 @@ void EntityNameVisitor::visit(entity::Text_CSPtr){
     entityInfo = "Text";
 }
 
+void EntityNameVisitor::visit(entity::MText_CSPtr) {
+    entityInfo = "MText";
+}
+
 void EntityNameVisitor::visit(entity::Spline_CSPtr){
     entityInfo = "Spline";
 }

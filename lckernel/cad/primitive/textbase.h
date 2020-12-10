@@ -29,7 +29,10 @@ namespace lc {
                 std::string text_value,
                 double height,
                 double angle,
-                std::string style
+                std::string style,
+                const TextConst::DrawingDirection textgeneration,
+                const TextConst::HAlign halign,
+                const TextConst::VAlign valign
             );
 
             TextBase(const TextBase& other);
@@ -43,6 +46,9 @@ namespace lc {
             const double _height;
             const double _angle;
             const std::string _style;
+            const TextConst::DrawingDirection _textgeneration;
+            const TextConst::VAlign _valign;
+            const TextConst::HAlign _halign;
 
             geo::Coordinate insertion_point() const {
                 return _insertion_point;
@@ -62,6 +68,18 @@ namespace lc {
 
             double height() const {
                 return _height;
+            }
+
+            TextConst::DrawingDirection const& textgeneration() const {
+                return _textgeneration;
+            }
+
+            TextConst::VAlign const& valign() const {
+                return _valign;
+            }
+
+            TextConst::HAlign const& halign() const {
+                return _halign;
             }
 
         public:

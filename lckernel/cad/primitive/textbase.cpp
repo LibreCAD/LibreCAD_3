@@ -8,12 +8,19 @@ TextBase::TextBase(geo::Coordinate insertion_point,
     std::string text_value,
     double height,
     double angle,
-    std::string style) :
+    std::string style,
+    const TextConst::DrawingDirection textgeneration,
+    const TextConst::HAlign halign,
+    const TextConst::VAlign valign) 
+    :
     _insertion_point(std::move(insertion_point)),
     _text_value(std::move(text_value)),
     _height(height),
     _angle(angle),
-    _style(std::move(style))
+    _style(std::move(style)),
+    _textgeneration(textgeneration),
+    _halign(halign),
+    _valign(valign)
 {
 }
 
@@ -23,7 +30,10 @@ TextBase::TextBase(const builder::TextBaseBuilder& builder)
     _text_value(builder.textValue()),
     _height(builder.height()),
     _angle(builder.angle()),
-    _style(builder.textStyle())
+    _style(builder.textStyle()),
+    _textgeneration(builder.drawingDirection()),
+    _halign(builder.horizontalAlign()),
+    _valign(builder.verticalAlign())
 {
 }
 
@@ -32,7 +42,10 @@ TextBase::TextBase(const TextBase& other) :
     _text_value(other._text_value),
     _height(other._height),
     _angle(other._angle),
-    _style(other._style)
+    _style(other._style),
+    _textgeneration(other._textgeneration),
+    _valign(other._valign),
+    _halign(other._halign)
 {
 }
 

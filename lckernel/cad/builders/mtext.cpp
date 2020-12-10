@@ -1,9 +1,9 @@
-#include "text.h"
-#include <cad/primitive/text.h>
+#include "mtext.h"
+#include <cad/primitive/mtext.h>
 
 using namespace lc::builder;
 
-TextBuilder::TextBuilder()
+MTextBuilder::MTextBuilder()
     :
     _underlined(false),
     _strikethrough(false),
@@ -12,48 +12,48 @@ TextBuilder::TextBuilder()
 {
 }
 
-TextBuilder* TextBuilder::setUnderlined(bool underline) {
+MTextBuilder* MTextBuilder::setUnderlined(bool underline) {
     _underlined = underline;
     return this;
 }
 
-bool TextBuilder::underlined() const {
+bool MTextBuilder::underlined() const {
     return _underlined;
 }
 
-TextBuilder* TextBuilder::setStrikethrough(bool strikethrough) {
+MTextBuilder* MTextBuilder::setStrikethrough(bool strikethrough) {
     _strikethrough = strikethrough;
     return this;
 }
 
-bool TextBuilder::strikethrough() const {
+bool MTextBuilder::strikethrough() const {
     return _strikethrough;
 }
 
-TextBuilder* TextBuilder::setBold(bool bold) {
+MTextBuilder* MTextBuilder::setBold(bool bold) {
     _bold = bold;
     return this;
 }
 
-bool TextBuilder::bold() const {
+bool MTextBuilder::bold() const {
     return _bold;
 }
 
-TextBuilder* TextBuilder::setItalic(bool italic) {
+MTextBuilder* MTextBuilder::setItalic(bool italic) {
     _italic = italic;
     return this;
 }
 
-bool TextBuilder::italic() const {
+bool MTextBuilder::italic() const {
     return _italic;
 }
 
-lc::entity::Text_CSPtr TextBuilder::build() {
+lc::entity::MText_CSPtr MTextBuilder::build() {
     checkValues(true);
-    return entity::Text_CSPtr(new entity::Text(*this));
+    return entity::MText_CSPtr(new entity::MText(*this));
 }
 
-void TextBuilder::copy(lc::entity::Text_CSPtr entity) {
+void MTextBuilder::copy(lc::entity::MText_CSPtr entity) {
     CADEntityBuilder::copy(entity);
 
     setInsertionPoint(entity->insertion_point());

@@ -13,18 +13,6 @@ public:
 
     entity::Text_CSPtr build();
 
-    TextBuilder* setDrawingDirection(lc::TextConst::DrawingDirection drawingDirectionIn);
-
-    lc::TextConst::DrawingDirection drawingDirection() const;
-
-    TextBuilder* setHorizontalAlign(lc::TextConst::HAlign halignin);
-
-    lc::TextConst::HAlign horizontalAlign() const;
-
-    TextBuilder* setVerticalAlign(lc::TextConst::VAlign valignin);
-
-    lc::TextConst::VAlign verticalAlign() const;
-
     TextBuilder* setUnderlined(bool underline);
 
     bool underlined() const;
@@ -44,9 +32,6 @@ public:
     void copy(lc::entity::Text_CSPtr entity);
 
 private:
-    lc::TextConst::DrawingDirection _drawingDirection;
-    lc::TextConst::HAlign _hAlign;
-    lc::TextConst::VAlign _vAlign;
     bool _underlined;
     bool _strikethrough;
     bool _bold;
