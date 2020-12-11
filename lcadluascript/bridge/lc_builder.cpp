@@ -16,6 +16,7 @@
 #include <cad/builders/textbase.h>
 #include <cad/builders/insert.h>
 #include <cad/primitive/insert.h>
+#include <cad/primitive/mtext.h>
 #include "lc_builder.h"
 
 void import_lc_builder_namespace(kaguya::State& state) {
@@ -300,9 +301,9 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("copy", &lc::builder::TextBuilder::copy)
                                                   );
 
-    /*state["lc"]["builder"]["MTextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::MTextBuilder, lc::builder::TextBaseBuilder>()
+    state["lc"]["builder"]["MTextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::MTextBuilder, lc::builder::TextBaseBuilder>()
         .setConstructors<lc::builder::MTextBuilder()>()
         .addFunction("build", &lc::builder::MTextBuilder::build)
         .addFunction("copy", &lc::builder::MTextBuilder::copy)
-    );*/
+    );
 }

@@ -90,9 +90,9 @@ TextDialog::~TextDialog()
 
 void TextDialog::okButtonClicked() {
     kaguya::State state(_mainWindow->luaInterface()->luaState());
-    _mainWindow->runOperation(state["TextOperations"]);
+    _mainWindow->runOperation(state["MTextOperations"]);
     state.dostring("updateTextOp = function(textEntity) mainWindow:currentOperation():copyEntity(textEntity) end");
-    lc::builder::TextBuilder textBuilder;
+    lc::builder::MTextBuilder textBuilder;
     textBuilder.setLayer(_mainWindow->cadMdiChild()->activeLayer());
     textBuilder.setMetaInfo(_mainWindow->cadMdiChild()->metaInfoManager()->metaInfo());
     textBuilder.setBlock(_mainWindow->cadMdiChild()->activeViewport());
