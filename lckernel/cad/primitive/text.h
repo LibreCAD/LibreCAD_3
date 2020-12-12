@@ -40,10 +40,6 @@ public:
          const TextConst::DrawingDirection textgeneration,
          const TextConst::HAlign halign,
          const TextConst::VAlign valign,
-         bool underlined,
-         bool strikethrough,
-         bool bold,
-         bool italic,
          meta::Layer_CSPtr layer,
          meta::MetaInfo_CSPtr metaInfo = nullptr,
          meta::Block_CSPtr block = nullptr
@@ -53,28 +49,6 @@ public:
 
 private:
     Text(const builder::TextBuilder& builder);
-
-public:
-    const bool _underlined;
-    const bool _strikethrough;
-    const bool _bold;
-    const bool _italic;
-
-    bool underlined() const {
-        return _underlined;
-    }
-
-    bool strikethrough() const {
-        return _strikethrough;
-    }
-
-    bool bold() const {
-        return _bold;
-    }
-
-    bool italic() const {
-        return _italic;
-    }
 
     /**
     * @brief move, moves by an offset
