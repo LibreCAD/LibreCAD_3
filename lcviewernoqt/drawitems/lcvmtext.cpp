@@ -22,7 +22,6 @@ LCVMText::LCVMText(const lc::entity::MText_CSPtr& mtext) :
 * also we shouldn't draw text smaller then XX pixels when rendered on screen.
 */
 void LCVMText::draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const {
-    painter.font_size(_mtext->height(), false);
     if (_mtext->style() != "" && _mtext->style() != "STANDARD") {
         if (_mtext->bold() && _mtext->italic()) {
             painter.select_font_face(_mtext->style().c_str(), "BOLD_ITALIC");
@@ -96,35 +95,54 @@ void LCVMText::draw(LcPainter& painter, const LcDrawOptions& options, const lc::
         break;
     }
 
-    painter.save();
-    painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y());
-    painter.rotate(-_mtext->angle());
-    painter.translate(alignX, -alignY);
-    painter.move_to(0., 0.);
-    painter.text(_mtext->text_value().c_str());
-    painter.stroke();
-    painter.restore();
-
-    if (_mtext->strikethrough()) {
-        painter.save();
-        painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() - (te.height / 6.0));
-        painter.rotate(-_mtext->angle());
-        painter.translate(alignX, -alignY);
-        painter.move_to(0., 0);
-        painter.line_to(te.width, 0);
-        painter.stroke();
-        painter.restore();
+    std::string textval = _mtext->text_value();
+    std::vector<std::string> lines;
+    std::string::size_type pos = 0;
+    std::string::size_type prev = 0;
+    while ((pos = textval.find('\n', prev)) != std::string::npos)
+    {
+        lines.push_back(textval.substr(prev, pos - prev));
+        prev = pos + 1;
     }
 
-    if (_mtext->underlined()) {
+    // To get the last substring (or only, if delimiter is not found)
+    lines.push_back(textval.substr(prev));
+
+    double heightOffset = 0;
+    for (const std::string& line : lines) {
+        painter.font_size(_mtext->height(), false);
         painter.save();
-        painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() + 8.0);
+        painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() + heightOffset);
         painter.rotate(-_mtext->angle());
         painter.translate(alignX, -alignY);
-        painter.move_to(0., 0);
-        painter.line_to(te.width, 0);
+        painter.move_to(0., 0.);
+        painter.text(line.c_str());
         painter.stroke();
         painter.restore();
+
+        if (_mtext->strikethrough()) {
+            painter.save();
+            painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() - (te.height / 6.0));
+            painter.rotate(-_mtext->angle());
+            painter.translate(alignX, -alignY);
+            painter.move_to(0., 0);
+            painter.line_to(te.width, 0);
+            painter.stroke();
+            painter.restore();
+        }
+
+        if (_mtext->underlined()) {
+            painter.save();
+            painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() + 8.0);
+            painter.rotate(-_mtext->angle());
+            painter.translate(alignX, -alignY);
+            painter.move_to(0., 0);
+            painter.line_to(te.width, 0);
+            painter.stroke();
+            painter.restore();
+        }
+
+        heightOffset += _mtext->height();
     }
 }
 

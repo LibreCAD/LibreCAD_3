@@ -1366,7 +1366,11 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     getEntityAttributes(&tex, t);
 
     std::string correctedText = t->text_value();
-    std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
+    size_t index = 0;
+    while (correctedText.find('\n', index) != std::string::npos) {
+        index = correctedText.find('\n');
+        correctedText.replace(index, 1, "\\P");
+    }
 
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
