@@ -12,7 +12,6 @@
 namespace lc {
     namespace entity {
         class TextBase {
-
         public:
             /**
             * @brief TextBase, default constructor

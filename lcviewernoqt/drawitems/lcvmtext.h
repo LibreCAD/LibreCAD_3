@@ -26,6 +26,11 @@ namespace lc {
             lc::entity::CADEntity_CSPtr entity() const override;
 
         private:
+            void setAlignment(double& alignX, double& alignY, const double textExtendsWidth) const;
+
+            void setFontFace(LcPainter& painter) const;
+
+        private:
             lc::entity::MText_CSPtr _mtext;
         };
     }

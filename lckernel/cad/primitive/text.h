@@ -17,7 +17,6 @@ namespace lc {
 namespace entity {
 class Text : public std::enable_shared_from_this<Text>, public CADEntity, public TextBase, virtual public Visitable, public Draggable {
     friend class builder::TextBuilder;
-
 public:
     /**
     * @brief Text, default constructor
