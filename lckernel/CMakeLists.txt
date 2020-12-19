@@ -266,7 +266,7 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx_shared)
+target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx)
 
 # INSTALLATION
 install(TARGETS lckernel 
