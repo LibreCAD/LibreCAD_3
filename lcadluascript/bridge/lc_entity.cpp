@@ -17,6 +17,7 @@
 #include <cad/primitive/lwpolyline.h>
 #include <cad/primitive/spline.h>
 #include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
 #include <cad/primitive/image.h>
 #include <cad/primitive/insert.h>
 #include <cad/interface/unmanageddraggable.h>
@@ -296,27 +297,44 @@ void import_lc_entity_namespace(kaguya::State& state) {
             .addFunction("snapPoints", &lc::entity::Spline::snapPoints)
                                             );
 
-    state["lc"]["entity"]["Text"].setClass(kaguya::UserdataMetatable<lc::entity::Text, kaguya::MultipleBase<lc::entity::CADEntity, lc::Visitable, lc::entity::Draggable>>()
+    state["lc"]["entity"]["TextBase"].setClass(kaguya::UserdataMetatable<lc::entity::TextBase>()
+            .addFunction("angle", &lc::entity::TextBase::angle)
+            .addFunction("height", &lc::entity::TextBase::height)
+            .addFunction("insertion_point", &lc::entity::TextBase::insertion_point)
+            .addFunction("style", &lc::entity::TextBase::style)
+            .addFunction("text_value", &lc::entity::TextBase::text_value)
+            .addFunction("textgeneration", &lc::entity::Text::textgeneration)
+            .addFunction("halign", &lc::entity::Text::halign)
+            .addFunction("valign", &lc::entity::Text::valign)
+    );
+
+    state["lc"]["entity"]["Text"].setClass(kaguya::UserdataMetatable<lc::entity::Text, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>>()
                                            .addFunction("accept", &lc::entity::Text::accept)
-                                           .addFunction("angle", &lc::entity::Text::angle)
                                            .addFunction("boundingBox", &lc::entity::Text::boundingBox)
                                            .addFunction("copy", &lc::entity::Text::copy)
                                            .addFunction("dispatch", &lc::entity::Text::dispatch)
                                            .addFunction("dragPoints", &lc::entity::Text::dragPoints)
-                                           .addFunction("halign", &lc::entity::Text::halign)
-                                           .addFunction("height", &lc::entity::Text::height)
-                                           .addFunction("insertion_point", &lc::entity::Text::insertion_point)
                                            .addFunction("mirror", &lc::entity::Text::mirror)
                                            .addFunction("modify", &lc::entity::Text::modify)
                                            .addFunction("move", &lc::entity::Text::move)
                                            .addFunction("rotate", &lc::entity::Text::rotate)
                                            .addFunction("scale", &lc::entity::Text::scale)
                                            .addFunction("setDragPoints", &lc::entity::Text::setDragPoints)
-                                           .addFunction("style", &lc::entity::Text::style)
-                                           .addFunction("text_value", &lc::entity::Text::text_value)
-                                           .addFunction("textgeneration", &lc::entity::Text::textgeneration)
-                                           .addFunction("valign", &lc::entity::Text::valign)
                                           );
+
+    state["lc"]["entity"]["MText"].setClass(kaguya::UserdataMetatable<lc::entity::MText, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>>()
+        .addFunction("accept", &lc::entity::MText::accept)
+        .addFunction("boundingBox", &lc::entity::MText::boundingBox)
+        .addFunction("copy", &lc::entity::MText::copy)
+        .addFunction("dispatch", &lc::entity::MText::dispatch)
+        .addFunction("dragPoints", &lc::entity::MText::dragPoints)
+        .addFunction("mirror", &lc::entity::MText::mirror)
+        .addFunction("modify", &lc::entity::MText::modify)
+        .addFunction("move", &lc::entity::MText::move)
+        .addFunction("rotate", &lc::entity::MText::rotate)
+        .addFunction("scale", &lc::entity::MText::scale)
+        .addFunction("setDragPoints", &lc::entity::MText::setDragPoints)
+    );
 
     state["lc"]["entity"]["Image"].setClass(kaguya::UserdataMetatable<lc::entity::Image, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>>()
                                             .addFunction("accept", &lc::entity::Image::accept)

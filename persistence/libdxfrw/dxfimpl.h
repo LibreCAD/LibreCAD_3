@@ -88,6 +88,8 @@ public:
 
     void addText(const DRW_Text& data) override;
 
+    void addMText(const DRW_MText& data) override;
+
     void addDimAlign(const DRW_DimAligned* data) override;
 
     void addDimLinear(const DRW_DimLinear* data) override;
@@ -109,8 +111,6 @@ public:
     void addSpline(const DRW_Spline* data) override;
 
     void addPoint(const DRW_Point& data) override;
-
-    void addMText(const DRW_MText& data) override;
 
     void addHatch(const DRW_Hatch* data) override;
 
@@ -171,6 +171,8 @@ public:
     void writeImage(const lc::entity::Image_CSPtr& i);
 
     void writeText(const lc::entity::Text_CSPtr& t);
+
+    void writeMText(const lc::entity::MText_CSPtr& t);
 
     void writeInsert(const lc::entity::Insert_CSPtr& i);
 

@@ -16,6 +16,7 @@ namespace lc
                 void visit(entity::Arc_CSPtr) override;
                 void visit(entity::Ellipse_CSPtr) override;
                 void visit(entity::Text_CSPtr) override;
+                void visit(entity::MText_CSPtr) override;
                 void visit(entity::Spline_CSPtr) override;
                 void visit(entity::DimAligned_CSPtr) override;
                 void visit(entity::DimAngular_CSPtr) override;
