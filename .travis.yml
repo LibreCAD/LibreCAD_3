@@ -30,6 +30,11 @@ matrix:
             - libglfw3-dev
             - lcov
             - rapidjson-dev
+            - libgl1-mesa-dev
+            - libgl1-mesa-dri
+            - libgl1-mesa-glx
+            - libglapi-mesa
+            - libgles2-mesa
 
       services:
       - xvfb
@@ -45,3 +50,4 @@ cache: ccache
 
 before_script:
   - "export DISPLAY=:99.0"
+  - "export LIBGL_ALWAYS_SOFTWARE=true"
