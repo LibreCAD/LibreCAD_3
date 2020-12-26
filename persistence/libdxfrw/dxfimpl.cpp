@@ -2,12 +2,14 @@
 #include "../generic/helpers.h"
 
 #include "../patternLoader/patternProvider.h"
+#include <algorithm>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/arc.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
@@ -291,10 +293,6 @@ void DXFimpl::addText(const DRW_Text& data) {
                   lc::TextConst::DrawingDirection(data.textgen),
                   lc::TextConst::HAlign(data.alignH),
                   lc::TextConst::VAlign(data.alignV),
-                  false,
-                  false,
-                  false,
-                  false,
                   layer,
                   mf,
                   getBlock(data)
@@ -546,7 +544,7 @@ void DXFimpl::addMText(const DRW_MText& data) {
         lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
     }*/
 
-    auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
+    auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
                   data.text, data.height,
                   data.angle * M_PI / 180, data.style,
                   lc::TextConst::DrawingDirection(drawingDir),
@@ -561,7 +559,7 @@ void DXFimpl::addMText(const DRW_MText& data) {
                   getBlock(data)
                                                     );
 
-    _entityBuilder->appendEntity(lcText);
+    _entityBuilder->appendEntity(lcMText);
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
@@ -1348,9 +1346,12 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     DRW_Text tex;
     getEntityAttributes(&tex, t);
 
+    std::string correctedText = t->text_value();
+    std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
+
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
-    tex.text = t->text_value();
+    tex.text = correctedText;
     tex.textgen = t->textgeneration();
     tex.height = t->height();
     tex.angle = t->angle() * 180 / M_PI;
@@ -1358,6 +1359,29 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     tex.alignV = DRW_Text::VAlign(t->valign());
 
     dxfW->writeText(&tex);
+}
+
+void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
+    DRW_MText tex;
+    getEntityAttributes(&tex, t);
+
+    std::string correctedText = t->text_value();
+    size_t index = 0;
+    while (correctedText.find('\n', index) != std::string::npos) {
+        index = correctedText.find('\n');
+        correctedText.replace(index, 1, "\\P");
+    }
+
+    tex.basePoint.x = t->insertion_point().x();
+    tex.basePoint.y = t->insertion_point().y();
+    tex.text = correctedText;
+    tex.textgen = t->textgeneration();
+    tex.height = t->height();
+    tex.angle = t->angle() * 180 / M_PI;
+    tex.alignH = DRW_Text::HAlign(t->halign());
+    tex.alignV = DRW_Text::VAlign(t->valign());
+
+    dxfW->writeMText(&tex);
 }
 
 void DXFimpl::writeEntities() {
@@ -1404,6 +1428,12 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
     if (text != nullptr) {
         writeText(text);
+        return;
+    }
+
+    auto mtext = std::dynamic_pointer_cast<const lc::entity::MText>(entity);
+    if (mtext != nullptr) {
+        writeMText(mtext);
         return;
     }
 

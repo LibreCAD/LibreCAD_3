@@ -7,6 +7,7 @@
 #include <cad/primitive/circle.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
 #include <cad/primitive/image.h>
 #include <cad/primitive/insert.h>
 #include "lcdrawoptions.h"
@@ -17,6 +18,7 @@
 #include "drawitems/lcvline.h"
 #include "drawitems/lcvellipse.h"
 #include "drawitems/lcvtext.h"
+#include "drawitems/lcvmtext.h"
 #include "drawitems/lcvpoint.h"
 #include "drawitems/lcdimradial.h"
 #include "drawitems/lcdimdiametric.h"
@@ -697,6 +699,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
 
     if (text != nullptr) {
         return std::make_shared<LCVText>(text);
+    }
+
+    // Add MText
+    auto mtext = std::dynamic_pointer_cast<const lc::entity::MText>(entity);
+
+    if (mtext != nullptr) {
+        return std::make_shared<LCVMText>(mtext);
     }
 
     // Add 'Point' or 'Coordinate'

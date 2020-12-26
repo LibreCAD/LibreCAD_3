@@ -5,7 +5,8 @@
 #include <QCheckBox>
 
 #include <mainwindow.h>
-#include <cad/builders/text.h>
+#include <cad/primitive/mtext.h>
+#include <cad/builders/mtext.h>
 
 namespace Ui {
 class TextDialog;

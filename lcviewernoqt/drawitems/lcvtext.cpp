@@ -24,18 +24,7 @@ LCVText::LCVText(const lc::entity::Text_CSPtr& text) :
 void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     painter.font_size(_text->height(), false);
     if (_text->style() != "" && _text->style() != "STANDARD") {
-        if (_text->bold() && _text->italic()) {
-            painter.select_font_face(_text->style().c_str(), "BOLD_ITALIC");
-        }
-        else if (_text->bold()) {
-            painter.select_font_face(_text->style().c_str(), "BOLD");
-        }
-        else if (_text->italic()) {
-            painter.select_font_face(_text->style().c_str(), "ITALIC");
-        }
-        else {
-            painter.select_font_face(_text->style().c_str(), "REGULAR");
-        }
+        painter.select_font_face(_text->style().c_str(), "REGULAR");
     }
 
     TextExtends te = painter.text_extends(_text->text_value().c_str());
@@ -104,28 +93,6 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.text(_text->text_value().c_str());
     painter.stroke();
     painter.restore();
-
-    if (_text->strikethrough()) {
-        painter.save();
-        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() - (te.height / 6.0));
-        painter.rotate(-_text->angle());
-        painter.translate(alignX, -alignY);
-        painter.move_to(0., 0);
-        painter.line_to(te.width, 0);
-        painter.stroke();
-        painter.restore();
-    }
-
-    if (_text->underlined()) {
-        painter.save();
-        painter.translate(_text->insertion_point().x(), -_text->insertion_point().y() + 8.0);
-        painter.rotate(-_text->angle());
-        painter.translate(alignX, -alignY);
-        painter.move_to(0., 0);
-        painter.line_to(te.width, 0);
-        painter.stroke();
-        painter.restore();
-    }
 }
 
 lc::entity::CADEntity_CSPtr LCVText::entity() const {

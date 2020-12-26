@@ -12,6 +12,7 @@ public:
     virtual void visit(entity::Arc_CSPtr) = 0;
     virtual void visit(entity::Ellipse_CSPtr) = 0;
     virtual void visit(entity::Text_CSPtr) = 0;
+    virtual void visit(entity::MText_CSPtr) = 0;
     virtual void visit(entity::Spline_CSPtr) = 0;
     virtual void visit(entity::DimAligned_CSPtr) = 0;
     virtual void visit(entity::DimAngular_CSPtr) = 0;
