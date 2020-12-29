@@ -1,21 +1,23 @@
-#include <gtest/gtest.h>
+#include <GL/glew.h>
 
+#include <gtest/gtest.h>
 #include <dirent.h>
+
 #ifndef WIN32
 #include <sys/types.h>
 #endif
 
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
 #include <documentcanvas.h>
-#include <painters/lccairopainter.tcc>
 #include <file.h>
 #include <drawables/gradientbackground.h>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options.hpp>
 #include <fstream>
+#include <GLFW/glfw3.h>
+#include <painters/createpainter.h>
 
 #define DEFAULT_IMAGE_WIDTH 100
 #define DEFAULT_IMAGE_HEIGHT 100
@@ -50,60 +52,101 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
                                );
     _canvas->background().connect<lc::viewer::drawable::GradientBackground, &lc::viewer::drawable::GradientBackground::draw>(_gradientBackground.get());
 
-    LcPainter* lcPainter = new LcCairoPainter<CairoPainter::backend::SVG>(imageWidth, imageHeight, nullptr);;
+    lc::viewer::LcPainter* lcPainter;
+    if(!glfwInit()) {
+        LOG_ERROR << "Failed to initialize GLFW";
+        return;
+    }
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+
+    GLFWwindow* window;
+    window = glfwCreateWindow(imageWidth, imageHeight, "LibreCAD", nullptr, nullptr);
+    if(window == nullptr) {
+        glfwTerminate();
+        FAIL() << "Failed opening GLFW: " << std::endl;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+
+    if (err != GLEW_OK) {
+        FAIL() << "GLEW Error: " << glewGetErrorString(err) << std::endl;
+    }
+
+    LOG_INFO << (char*) glGetString(GL_VERSION) << std::endl;
+
+    lcPainter = lc::viewer::createOpenGLPainter(nullptr, imageWidth, imageHeight);
+
+    lcPainter->create_resources();
+    _canvas->setPainter(lcPainter);
+
+    // Set device width/height
     _canvas->newDeviceSize(imageWidth, imageHeight);
+    lcPainter->new_device_size(imageWidth, imageHeight);
+
 
     lc::persistence::File::open(_document, dxf, lc::persistence::File::LIBDXFRW);
 
     _canvas->setDisplayArea(*lcPainter, lc::geo::Area(lc::geo::Coordinate(x, y), w, h));
-    _canvas->render(*lcPainter, VIEWER_BACKGROUND);
-    _canvas->render(*lcPainter, VIEWER_DOCUMENT);
-    _canvas->render(*lcPainter, VIEWER_FOREGROUND);
+    _canvas->render(*lcPainter, lc::viewer::VIEWER_BACKGROUND);
+    _canvas->render(*lcPainter, lc::viewer::VIEWER_DOCUMENT);
+    _canvas->render(*lcPainter, lc::viewer::VIEWER_FOREGROUND);
 
-    static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(output);
+    glFinish();
 
+    FILE* out = fopen(output.c_str(), "wb");
+    GLubyte pixel_data[3*imageWidth*imageHeight];
+    short TGAhead[] = { 0, 2, 0, 0, 0, 0, static_cast<short>(imageWidth), static_cast<short>(imageHeight), 24 };
+
+    glReadPixels(0, 0, imageWidth, imageHeight, GL_RGB, GL_UNSIGNED_BYTE, pixel_data);
+
+    fwrite(&TGAhead,sizeof(TGAhead),1,out);
+    fwrite(pixel_data, 3*imageWidth*imageHeight, 1, out);
+    fclose(out);
+
+    glfwDestroyWindow(window);
     delete lcPainter;
 }
 
 bool checkRender(const std::string& image1, const std::string& image2, float tolerance) {
-    GError* error1 = NULL;
-    GError* error2 = NULL;
-
-    auto pixbuf1 = gdk_pixbuf_new_from_file(image1.c_str(), &error1);
-    auto pixbuf2 = gdk_pixbuf_new_from_file(image2.c_str(), &error2);
-
-    if(error1) {
-        std::cerr << error1->message << std::endl;
-        g_error_free(error1);
-        return false;
-    }
-    if(error2) {
-        std::cerr << error2->message << std::endl;
-        g_error_free(error2);
+    std::fstream f1;
+    f1.open(image1, std::ios::in);
+    if(f1.fail()) {
+        std::cerr << "File " << image1 << " can't be opened" << std::endl;
         return false;
     }
 
-    if(gdk_pixbuf_get_width(pixbuf1) != gdk_pixbuf_get_width(pixbuf2) ||
-            gdk_pixbuf_get_height(pixbuf1) != gdk_pixbuf_get_height(pixbuf2) ||
-            gdk_pixbuf_get_n_channels(pixbuf1) != gdk_pixbuf_get_n_channels(pixbuf2)) {
+    std::fstream f2;
+    f2.open(image2, std::ios::in);
+    if(f2.fail()) {
+        std::cerr << "File " << image2 << " can't be opened" << std::endl;
         return false;
     }
 
     auto channelTolerance = 256.0 * (tolerance / 100.0);
-    auto nbPixels = gdk_pixbuf_get_height(pixbuf1) * gdk_pixbuf_get_rowstride(pixbuf1);
+    char c1 = '0';
+    char c2 = '0';
+    while((c1 != EOF) && (c2 != EOF)){
+        c1 = f1.get();
+        c2 = f2.get();
 
-    auto pixels1 = gdk_pixbuf_get_pixels(pixbuf1);
-    auto pixels2 = gdk_pixbuf_get_pixels(pixbuf2);
+        if(c1 < c2 - channelTolerance || c1 > c2 + channelTolerance){
+            return false;
+        }
 
-    for(auto i = 0; i < nbPixels; i++) {
-        auto pixel1 = pixels1[i];
-        auto pixel2 = pixels2[i];
-        if(pixel1 < pixel2 - channelTolerance || pixel1 > pixel2 + channelTolerance) {
-            std::cerr << "Pixel " << i << " failed: " << (int) pixel1 << " - " << (int) pixel2 << " with tolerance " << channelTolerance << std::endl;
+        if((c1 == EOF) ^ (c2 == EOF)) {
             return false;
         }
     }
+    f1.close();
+    f2.close();
 
     return true;
 }
@@ -142,7 +185,7 @@ TEST(RenderingTest, Test) {
 
     unsigned int testNumber = 0;
     bool dxfFound = false;
-    bool pngFound = false;
+    bool tgaFound = false;
     bool configFound = false;
 
     for(auto i = 0; i < nbFiles; i++) {
@@ -156,23 +199,23 @@ TEST(RenderingTest, Test) {
         if(newNumber != testNumber) {
             testNumber = newNumber;
             dxfFound = false;
-            pngFound = false;
+            tgaFound = false;
             configFound = false;
         }
 
         if(strcmp(extension, "dxf") == 0) {
             dxfFound = true;
         }
-        else if(strcmp(extension, "png") == 0) {
-            pngFound = true;
+        else if(strcmp(extension, "tga") == 0) {
+            tgaFound = true;
         }
         else if(strcmp(extension, "cfg") == 0) {
             configFound = true;
         }
 
-        if(dxfFound && pngFound && configFound) {
+        if(dxfFound && tgaFound && configFound) {
             auto base = std::string(resDir) + std::to_string(newNumber);
-            auto expectedFile = base + ".png";
+            auto expectedFile = base + ".tga";
             auto dxfFile = base + ".dxf";
             auto resultFile = base + ".out";
             auto configFile = base + ".cfg";
@@ -193,7 +236,7 @@ TEST(RenderingTest, Test) {
             ASSERT_TRUE(checkRender(expectedFile, resultFile, tolerance)) << "Failed with " << expectedFile;
 
             dxfFound = false; //Prevent running the test more than once
-            pngFound = false;
+            tgaFound = false;
             configFound = false;
         }
     }

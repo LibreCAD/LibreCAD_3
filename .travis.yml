@@ -27,8 +27,15 @@ matrix:
             - libglew1.5-dev
             - libglm-dev
             - libglew-dev
+            - libglfw3-dev
             - lcov
             - rapidjson-dev
+            - libgl1-mesa-dev
+            - libgl1-mesa-dri
+            - libgl1-mesa-glx
+            - libglapi-mesa
+            - libgles2-mesa
+            - s3cmd
 
       services:
       - xvfb
@@ -40,7 +47,19 @@ matrix:
       - cmake --version
       - ./scripts/travis.sh
 
+      after_failure:
+      - |
+        bash -c 'echo "[default]
+        host_base=${S3_HOST_BASE}
+        host_bucket=${S3_HOST_BUCKET}
+        bucket_location=${S3_BUCKET_LOCATION}
+        use_https=True
+        access_key=${S3_ACCESS_KEY}
+        secret_key=${S3_SECRET_KEY}" > .s3cfg'
+      - s3cmd --recursive --config=.s3cfg put /home/travis/build/LibreCAD/LibreCAD_3/unittest/rendering/res s3://librecad-s3-artifacts
+
 cache: ccache
 
 before_script:
   - "export DISPLAY=:99.0"
+  - "export LIBGL_ALWAYS_SOFTWARE=true"
