@@ -62,6 +62,7 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 
     GLFWwindow* window;
     window = glfwCreateWindow(imageWidth, imageHeight, "LibreCAD", nullptr, nullptr);
@@ -98,20 +99,17 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
     _canvas->render(*lcPainter, lc::viewer::VIEWER_DOCUMENT);
     _canvas->render(*lcPainter, lc::viewer::VIEWER_FOREGROUND);
 
-    glfwSwapBuffers(window);
+    glFinish();
 
     FILE* out = fopen(output.c_str(), "wb");
-    char* pixel_data = new char[3*imageWidth*imageHeight];
+    GLubyte pixel_data[3*imageWidth*imageHeight];
     short TGAhead[] = { 0, 2, 0, 0, 0, 0, static_cast<short>(imageWidth), static_cast<short>(imageHeight), 24 };
 
-    glReadBuffer(GL_FRONT);
-    glReadPixels(0, 0, imageWidth, imageHeight, GL_BGR, GL_UNSIGNED_BYTE, pixel_data);
+    glReadPixels(0, 0, imageWidth, imageHeight, GL_RGB, GL_UNSIGNED_BYTE, pixel_data);
 
     fwrite(&TGAhead,sizeof(TGAhead),1,out);
     fwrite(pixel_data, 3*imageWidth*imageHeight, 1, out);
     fclose(out);
-
-    delete[] pixel_data;
 
     glfwDestroyWindow(window);
     delete lcPainter;
