@@ -23,7 +23,7 @@ function DimAlignedOperations:_init()
 
     self.firstPoint = nil
     self.secondPoint = nil
-
+    message("<b>Dimension Aligned</b>")
     message("Click on start point", id)
 end
 
