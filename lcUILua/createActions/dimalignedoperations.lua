@@ -23,17 +23,12 @@ function DimAlignedOperations:_init()
 
     self.firstPoint = nil
     self.secondPoint = nil
-
+    message("<b>Dimension Aligned</b>")
     message("Click on start point", id)
 end
 
 function DimAlignedOperations:enterFirstPoint(eventName, data)
-    if(eventName == "mouseMove") then
-        self.builder:dimAuto(data["position"],
-                             data["position"]:add(lc.geo.Coordinate(10, 0)),
-                             data["position"]:add(lc.geo.Coordinate(0, 10))
-        )
-    elseif(eventName == "point") then
+    if(eventName == "point") then
         self.firstPoint = data["position"]
         self.step = "enterSecondPoint"
 
@@ -50,12 +45,21 @@ function DimAlignedOperations:enterSecondPoint(eventName, data)
     elseif(eventName == "point") then
         self.secondPoint = data["position"]
         self.step = "enterMiddleOfText"
-
-        message("Click on text position")
+        message("Options:<u>T</u>ext or Click on text position")
+        mainWindow:cliCommand():returnText( true)
     end
 end
 
 function DimAlignedOperations:enterMiddleOfText(eventName, data)
+    if(eventName == "text") then
+        if (string.lower(data["text"]) == "t" or data["text"] == "text") then
+            self.step = "enterText"
+            message("Enter text override")
+        else
+            message("Invalid Option")
+        end
+    end
+    
     if(eventName == "mouseMove") then
         self.builder:dimAuto(self.firstPoint,
                              self.secondPoint,
@@ -66,16 +70,22 @@ function DimAlignedOperations:enterMiddleOfText(eventName, data)
                              self.secondPoint,
                              data["position"]
         )
-        self.step = "enterText"
-        message("Enter text (<> for value)")
-        mainWindow:cliCommand():returnText( true)
+        mainWindow:cliCommand():returnText( false)
+        self:createEntity()
     end
 end
 
 function DimAlignedOperations:enterText(eventName, data)
+    if(eventName == "mouseMove") then
+        self.builder:dimAuto(self.firstPoint,
+                             self.secondPoint,
+                             data["position"]
+        )
+    end
     if(eventName == "text") then
         mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
-        self:createEntity()
+        self.step = "enterMiddleOfText"
+        message("Click on text position")
     end
 end
