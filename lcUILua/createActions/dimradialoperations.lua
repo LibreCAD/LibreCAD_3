@@ -19,52 +19,59 @@ setmetatable(DimRadialOperations, {
 
 function DimRadialOperations:_init()
     CreateOperations._init(self, lc.builder.DimRadialBuilder, "enterStartPoint")
-
-    message("Click on first definition point")
+    self.FirstPoint = nil
+    message("<b>Dimension Radial</b>")
+    message("Click on the center of curve or enter coordinates")
 end
 
 function DimRadialOperations:enterStartPoint(eventName, data)
-    if(eventName == "mouseMove" or eventName == "point") then
-        self.builder:setDefinitionPoint(data["position"])
-    end
-
     if(eventName == "point") then
+        self.FirstPoint=data["position"]
         self.step = "enterEndPoint"
-
-        message("Click on end point")
+        message("Click point the curve or enter coordinates")
     end
 end
 
 function DimRadialOperations:enterEndPoint(eventName, data)
-    if(eventName == "mouseMove" or eventName == "point") then
-        self.builder:setDefinitionPoint2(data["position"])
-    end
-
     if(eventName == "point") then
+        self.builder:setMiddleOfText(data["position"])
+        self.builder:setDefinitionPoint(self.FirstPoint)
+        self.builder:setDefinitionPoint2(data["position"])
         self.step = "enterMiddleOfText"
-
-        message("Click on text position")
+        message("Options:<u>T</u>ext or Click on text position or enter coordinates")
+        mainWindow:cliCommand():returnText( true)
     end
 end
 
 function DimRadialOperations:enterMiddleOfText(eventName, data)
+    if(eventName == "text") then
+        if (string.lower(data["text"]) == "t" or data["text"] == "text") then
+            self.step = "enterText"
+            message("Enter text override")
+        else
+            message("Invalid Option")
+        end
+    end
+
     if(eventName == "mouseMove" or eventName == "point") then
         self.builder:setMiddleOfText(data["position"])
     end
 
     if(eventName == "point") then
-        self.step = "enterText"
-
+        self.ThirdPoint = data["position"]
         mainWindow:cliCommand():returnText( true)
-
-        message("Enter dimension text (<> for value)")
+        self:createEntity()
     end
 end
 
 function DimRadialOperations:enterText(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setMiddleOfText(data["position"])
+    end
     if(eventName == "text") then
         mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
-        self:createEntity()
+        self.step = "enterMiddleOfText"
+        message("Click on text position")
     end
 end

@@ -20,7 +20,9 @@ setmetatable(DimDiametricOperations, {
 
 function DimDiametricOperations:_init()
     CreateOperations._init(self, lc.builder.DimDiametricBuilder, "enterStartPoint")
-    message("Click on start point", id)
+    self.FirstPoint = nil
+    message("<b>Dimension Diametric</b>")
+    message("Click on the point on the curve or enter coordinates")
 end
 
 function DimDiametricOperations:enterStartPoint(eventName, data)
@@ -32,29 +34,38 @@ function DimDiametricOperations:enterStartPoint(eventName, data)
         self.builder:setDefinitionPoint2(data["position"]:add(lc.geo.Coordinate(10,0)))
     elseif(eventName == "point") then
         self.step = "enterEndPoint"
-
-        message("Click on end point")
+        message("Options:<u>T</u>ext or Click on opposite point on curve or enter coordinate")
+        mainWindow:cliCommand():returnText( true)
     end
 end
 
 function DimDiametricOperations:enterEndPoint(eventName, data)
+    if(eventName == "text") then
+        if (string.lower(data["text"]) == "t" or data["text"] == "text") then
+            self.step = "enterText"
+            message("Enter text override")
+        else
+            message("Invalid Option")
+        end
+    end
     if(eventName == "mouseMove" or eventName == "point") then
         self.builder:setDefinitionPoint2(data["position"])
     end
 
     if(eventName == "point") then
-        self.step = "enterText"
-
-        mainWindow:cliCommand():returnText( true)
-
-        message("Enter dimension text (<> for value)")
+        self.builder:setDefinitionPoint2(data["position"])
+        self:createEntity()
     end
 end
 
 function DimDiametricOperations:enterText(eventName, data)
+    if(eventName == "mouseMove") then
+        self.builder:setDefinitionPoint2(data["position"])
+    end
     if(eventName == "text") then
         mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
-        self:createEntity()
+        self.step = "enterEndPoint"
+        message("Click on opposite point on curve or enter coordinate")
     end
 end
