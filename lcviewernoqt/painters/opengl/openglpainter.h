@@ -8,6 +8,7 @@
 #include <cad/geometry/geoarea.h>
 #include <map>
 #include <cmath>
+#include <cstring>
 #include <cad/meta/color.h>
 
 using namespace lc::viewer;
