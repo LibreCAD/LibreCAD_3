@@ -100,7 +100,7 @@ void Spline::populateCurve() {
 
     auto beziers = splineCurve.toBeziers();
 
-    int nbBeziers = ts_bspline_num_control_points(beziers.data()) / splineCurve.order();
+    int nbBeziers = beziers.numControlPoints() / splineCurve.order();
     int nbCoordinate = splineCurve.order() * splineCurve.dimension();
 
     auto controlPoints = beziers.controlPoints();
