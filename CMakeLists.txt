@@ -58,6 +58,8 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     
  
     set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
+
+    set(LIBDXFRW_PATH "${CONAN_LIBDXFRW_ROOT}")
 else()
     set(Boost_USE_STATIC_LIBS OFF)
     add_definitions(-DBOOST_ALL_DYN_LINK)
