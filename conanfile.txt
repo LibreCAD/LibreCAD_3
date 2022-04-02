@@ -6,6 +6,7 @@ glew/2.1.0
 glm/0.9.9.7
 freetype/2.10.1
 rapidjson/1.1.0
+libdxfrw/1.0.1
 
 [generators]
 cmake
