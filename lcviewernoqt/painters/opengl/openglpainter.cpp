@@ -214,13 +214,13 @@ void OpenglPainter::font_size(double size, bool deviceCoords)
 
 void OpenglPainter::select_font_face(const char* text_val, const char* font_type)
 {
-    if (font_type == "BOLD") {
+    if ( !strcmp(font_type, "BOLD")) {
         _manager->selectFontFace(text_val, Font_Book::FontType::BOLD);
     }
-    else if (font_type == "ITALIC") {
+    else if ( !strcmp(font_type, "ITALIC")) {
         _manager->selectFontFace(text_val, Font_Book::FontType::ITALIC);
     }
-    else if (font_type == "BOLD_ITALIC") {
+    else if ( !strcmp(font_type,"BOLD_ITALIC")) {
         _manager->selectFontFace(text_val, Font_Book::FontType::BOLD_ITALIC);
     }
     else {
