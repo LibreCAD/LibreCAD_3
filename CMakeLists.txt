@@ -36,6 +36,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
 
     set(BOOST_ROOT "${CONAN_BOOST_ROOT}")
     set(Boost_USE_STATIC_LIBS ON)
+    add_definitions( -DBOOST_ALL_NO_LIB )
     add_definitions("${CONAN_DEFINES_BOOST}")
 
     set(EIGEN3_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_EIGEN}")
@@ -60,6 +61,8 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
 
     set(LIBDXFRW_PATH "${CONAN_LIBDXFRW_ROOT}")
+    
+    set(RAPIDJSON_INCLUDE_DIRS "${CONAN_INCLUDE_DIRS_RAPIDJSON}")
 else()
     set(Boost_USE_STATIC_LIBS OFF)
     add_definitions(-DBOOST_ALL_DYN_LINK)
