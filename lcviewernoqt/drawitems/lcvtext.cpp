@@ -32,7 +32,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     double alignY = 0.0;
 
     //    double alignX, alignY;
-    // The idea of height() * .2 is just a average basline offset. Don't this value to seriously,
+    // The idea of height() * .2 is just a average baseline offset. Don't this value to seriously,
     // we could get it from font exists but that sounds over exaggerating for the moment.
     switch (_text->valign()) {
     case lc::TextConst::VAMiddle:

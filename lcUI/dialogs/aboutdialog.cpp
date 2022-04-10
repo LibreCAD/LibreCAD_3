@@ -174,7 +174,7 @@ QString getExtInfo(outputConfig& oc) {
         ;
 }
 
-// Get formated text
+// Get formatted text
 QString getInfoTextFromConfig(outputConfig& oc) { //Info is generated here
     QString out =
         oc.bodyFormat.arg("LibreCAD 3").arg(getLCADInfo(oc))+

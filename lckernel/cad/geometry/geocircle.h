@@ -52,7 +52,7 @@ private:
         return os;
     }
 private:
-    const Coordinate _center; /*!< center of cirlce */
+    const Coordinate _center; /*!< center of circle */
     const double _radius; /*!< Radius of circle. */
 };
 }

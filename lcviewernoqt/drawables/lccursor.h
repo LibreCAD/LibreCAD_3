@@ -12,8 +12,8 @@ namespace drawable {
 class Cursor {
 public:
     /**
-     * Cursor needs a DocumentCanavs to beable to translate between device and user coordinates and to beable to allow itself to subscribe
-     * to draw events.+
+     * Cursor needs a DocumentCanavs to be able to translate between device and user
+     * coordinates and to be able to allow itself to subscribe to draw events.+
      *
      */
     Cursor(int cursorSize,

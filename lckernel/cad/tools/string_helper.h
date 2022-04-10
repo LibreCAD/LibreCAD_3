@@ -10,7 +10,7 @@ class StringHelper {
 
 public:
     /**
-     * @briefstd::string formater for dim values
+     * @briefstd::string formatter for dim values
      *
      * @param explicitValue "coord: <>" would be coord: 10.3
      * @param format passed to sprintf

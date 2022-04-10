@@ -8,7 +8,7 @@
 #include "cad/base/visitor.h"
 #include "cad/geometry/geoarea.h"
 
-// The diffrent primitive type it supports
+// The different primitive type it supports
 #include "cad/primitive/lwpolyline.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/arc.h"

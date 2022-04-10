@@ -21,13 +21,13 @@ void LCDimension::drawText(std::string const& value,
     painter.font_size(height, false);
 
     //    double alignX, alignY;
-    // The idea of height * .2 is just a average basline offset. Don't this value to seriously,
+    // The idea of height * .2 is just a average baseline offset. Don't this value to seriously,
     // we could get it from font exists but that sounds over exaggerating for the moment.
 
     lc::TextConst::AttachmentPoint aPoint = attachmentPoint;
     double newAngle = angle;
 
-    // THis code 'fixes' the Atatchment point if the text is behind some rotation
+    // This code 'fixes' the Attachment point if the text is behind some rotation
     if (angle > 0.5 * M_PI || angle < -0.5 * M_PI) {
         newAngle = angle - M_PI;
 

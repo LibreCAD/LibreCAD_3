@@ -45,7 +45,7 @@ public:
     void generateMenu(api::Menu* menu, std::vector<lc::entity::CADEntity_CSPtr> selectedEntities);
 
     /**
-     * \brief Add operation to the list (callled by operation loader)
+     * \brief Add operation to the list (called by operation loader)
      * \param string Operation Name (key)
      * \param string group name the operation belongs to
      */

@@ -125,7 +125,7 @@ namespace lc
             void copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
             
             /**
-            * \brief Paste entites from the clipboard
+            * \brief Paste entities from the clipboard
             */
             void pasteEvent();
 

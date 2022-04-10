@@ -44,7 +44,7 @@ public:
     void addCallback(kaguya::LuaRef cb);
 
     /**
-    * \brief Overriden set SLider GUI widget label
+    * \brief Overridden set SLider GUI widget label
     * \param string gui label
     */
     void setLabel(const std::string& newLabel) override;

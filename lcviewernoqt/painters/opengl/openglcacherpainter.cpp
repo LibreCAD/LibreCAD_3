@@ -195,7 +195,7 @@ bool OpenglCacherPainter::isEntityCached(unsigned long id)
 
 void OpenglCacherPainter::renderEntityCached(unsigned long id)
 {
-    // No Need ( cant do rendering here)
+    // No Need ( can't do rendering here)
 }
 
 void OpenglCacherPainter::deleteEntityCached(unsigned long id)

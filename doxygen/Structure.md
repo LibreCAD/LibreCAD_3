@@ -5,12 +5,12 @@ LibreCAD consists of various modules, which are as follows:
 
 <div>
 <h2> <a href="../../lckernel/html/index.html">lckernel</a> </h2>
-It is the core module as it has no dependency and many other modules depend on it, it provides the CADEntities, Storage , Operations and similar other things that are required.
+It is the core module as it has no dependency and many other modules depend on it, it provides the CADEntities, Storage, Operations and similar other things that are required.
 </div>
 
 <div>
 <h2> <a href="../../persistence/html/index.html">persistence</a> </h2>
-This module containes file related operation like reading, writing dxf files, loading patterns for hatch, etc.
+This module contains file related operations like reading, writing dxf files, loading patterns for hatch, etc.
 </div>
 
 <div>
@@ -47,7 +47,7 @@ Files to build this documentation
 
 <div>
 ## res
-Resources , currently only contains hatch patterns.
+Resources, currently only contains hatch patterns.
 </div>
 
 <div>
