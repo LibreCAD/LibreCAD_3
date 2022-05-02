@@ -281,7 +281,7 @@ public:
     /**
      * @brief entitiesWithinAndCrossingAreaFast
      * Find all entities within a selected area.
-     * Unlike entitiesWithinAndCrossingArea it this will return entities based on it's bounding box.
+     * Unlike entitiesWithinAndCrossingArea it this will return entities based on its bounding box.
      * That means that the resulting EntityContainer may or may not have entities which are visible.
      *
      * @return
