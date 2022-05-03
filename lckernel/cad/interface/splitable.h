@@ -6,7 +6,7 @@
 namespace lc {
 namespace entity {
 /**
-  * Any entity that we can be split into multiple entities
+  * Any entity which can be split into multiple entities
   *
   */
 class Splitable {
