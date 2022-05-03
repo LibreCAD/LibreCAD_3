@@ -60,7 +60,7 @@ public:
 
     /**
     * \brief add named callback for item
-    * \param string callback name to identiy callback
+    * \param string callback name to identify callback
     * \param LuaRef callback
     */
     void addCallback(const char* cb_name, kaguya::LuaRef callback);

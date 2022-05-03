@@ -66,7 +66,7 @@ public:
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
     /**
-    * \brief set dropped data in the approriate location
+    * \brief set dropped data in the appropriate location
     */
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
@@ -86,7 +86,7 @@ public:
 
     /**
     * \brief Check if element is already in the model
-    * \param QPair<QString, QIcon> element data recieved on drop
+    * \param QPair<QString, QIcon> element data received on drop
     */
     bool checkIfAlreadyInModel(QPair<QString, QIcon>& element);
 

@@ -77,7 +77,7 @@ public:
     void setListType(ListGUI::ListType listType);
 
     /**
-    * \brief Set list type to a given type throught string (for lua)
+    * \brief Set list type to a given type through string (for lua)
     * \param string list type
     */
     void setListType(const std::string& listTypeStr);

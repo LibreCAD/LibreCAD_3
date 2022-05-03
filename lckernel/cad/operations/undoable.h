@@ -12,7 +12,7 @@ namespace operation {
 
 /**
  * @brief: Abstract class for a Undoable operations
- * All operations you wnt to beable to get place in the undo stack should inherit from Undoable
+ * All operations you want to be able to get placed in the undo stack should inherit from Undoable
  * and implement undo and redo.
  * A provided text can be used to show within the undo stack what operation will be re-done or un-done.
  *

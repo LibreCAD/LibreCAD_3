@@ -46,7 +46,7 @@ void CustomizeToolbar::initializeGroupList() {
     IconList* iconList = new IconList(this);
     verticalLayout->insertWidget(0, iconList);
 
-    // initliaze icon list
+    // initialize icon list
     iconList->initialize(_toolbar);
 
     QSizePolicy sizePolicy1 = iconList->sizePolicy();

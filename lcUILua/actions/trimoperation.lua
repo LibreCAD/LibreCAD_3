@@ -89,7 +89,7 @@ function TrimOperation:trimPoint(point)
 	for k, entity in pairs(self.toTrim) do
 		local entities = lc.entity.Splitable.splitHelper(entity, point)
 		    if(#entities > 0) then
-		    	--split sucessful
+		    	--split successful
 		    	print('split on main entity')
 			for k2, entity2 in pairs(entities) do
 				table.insert(nextNewEntities, entity2)
@@ -105,7 +105,7 @@ function TrimOperation:trimPoint(point)
 	for k, entity in pairs(self.newEntities) do
 		local entities = lc.entity.Splitable.splitHelper(entity, point)
 		    if(#entities > 0) then
-		    	--split sucessful
+		    	--split successful
 		    	print('split on new entity')
 			for k2, entity2 in pairs(entities) do
 				table.insert(nextNewEntities, entity2)

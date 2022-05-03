@@ -1,7 +1,7 @@
 #pragma once
 
-// Defination for hatch pattern
-// May be this must be in diffrent namespace
+// Definition for hatch pattern
+// May be this must be in different namespace
 namespace lc {
 namespace objects {
 struct Pattern {

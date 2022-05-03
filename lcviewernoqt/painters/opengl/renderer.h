@@ -51,7 +51,7 @@ public:
     void updateProjection(float l,float r,float b,float t);
     void updateView();
 
-    //-----------For Updaing Matrix
+    //-----------For Updating Matrix
     void updateScale(float scale);
     void updateTranslate(float x,float y);
     void updateRotate(float angle);

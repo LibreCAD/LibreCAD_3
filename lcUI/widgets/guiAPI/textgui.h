@@ -48,7 +48,7 @@ public:
     void addOnChangeCallback(kaguya::LuaRef cb);
 
     /**
-    * \brief Overriden Set Text GUI widget label
+    * \brief Overridden Set Text GUI widget label
     * \param string gui label
     */
     void setLabel(const std::string& newLabel) override;

@@ -63,7 +63,7 @@ public:
     ~CustomizeToolbar();
 
     /**
-    * \brief Overriden close event, to update toolbar on close
+    * \brief Overridden close event, to update toolbar on close
     */
     void closeEvent(QCloseEvent* event) override;
 

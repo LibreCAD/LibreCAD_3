@@ -18,7 +18,7 @@ namespace entity {
 /*!
  * \brief A ellipse that can be put in a drawing
  *
- * A Ellipse is a graphics elipse item that can be put on a drawing using a CreateEntity operation.
+ * A Ellipse is a graphics ellipse item that can be put on a drawing using a CreateEntity operation.
  *
  * \sa CreateEntities::append
  *
