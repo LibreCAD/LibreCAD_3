@@ -11,7 +11,7 @@ class HookEvent;
 
 typedef std::function<bool(HookEvent&)> hookCallback;
 /**
- * @brief This class is send as paramater at dispatch
+ * @brief This class is send as parameter at dispatch
  *
  */
 class HookEvent {
@@ -46,7 +46,7 @@ private:
 
     /**
      * @brief bool so something like e.preventDefault
-     * Pointer to function where it should be dispached
+     * Pointer to function where it should be dispatched
      * nullptr means all
      * no _, since used in HookManager
      */
@@ -56,7 +56,7 @@ private:
 /**
  * @brief Manager to dispach events
  * This should be provided with event from lcadviewer
- * This should be memeber of lcadviewer for now
+ * This should be member of lcadviewer for now
  */
 class HookManager {
 public:
