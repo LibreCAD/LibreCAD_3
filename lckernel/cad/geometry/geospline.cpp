@@ -83,7 +83,7 @@ void Spline::populateCurve() {
 
     try {
         auto nbControlPoints = _controlPoints.size();
-        splineCurve = tinyspline::BSpline(nbControlPoints, 3, degree(), TS_CLAMPED);
+        splineCurve = tinyspline::BSpline(nbControlPoints, 3, degree(), tinyspline::BSpline::Type::Clamped);
         //Set control points
         std::vector<tinyspline::real> ts_controlPoints;
         for (const auto& cp : _controlPoints) {
