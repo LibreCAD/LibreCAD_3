@@ -7,6 +7,7 @@
 [submodule "third_party/kaguya"]
 	path = third_party/kaguya
 	url = https://github.com/satoren/kaguya.git
+	branch = main
 [submodule "lckernel/tinyspline"]
 	path = lckernel/tinyspline
 	url = https://github.com/msteinbeck/tinyspline.git
