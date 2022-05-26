@@ -19,11 +19,11 @@ public:
     StringSettingValue() = default;
     StringSettingValue(std::string value);
 
-    double getDouble() const noexcept override;
+    double getDouble() const override;
 
-    float getFloat() const noexcept override;
+    float getFloat() const override;
 
-    int getInt() const noexcept override;
+    int getInt() const override;
 
     std::string getString() const noexcept override;
 

@@ -11,7 +11,7 @@ TextBase::TextBase(geo::Coordinate insertion_point,
     std::string style,
     const TextConst::DrawingDirection textgeneration,
     const TextConst::HAlign halign,
-    const TextConst::VAlign valign) 
+    const TextConst::VAlign valign)
     :
     _insertion_point(std::move(insertion_point)),
     _text_value(std::move(text_value)),
@@ -44,8 +44,8 @@ TextBase::TextBase(const TextBase& other) :
     _angle(other._angle),
     _style(other._style),
     _textgeneration(other._textgeneration),
-    _valign(other._valign),
-    _halign(other._halign)
+    _halign(other._halign),
+    _valign(other._valign)
 {
 }
 

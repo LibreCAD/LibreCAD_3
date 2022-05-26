@@ -4,11 +4,11 @@ using namespace lc::builder;
 
 TextBaseBuilder::TextBaseBuilder()
     :
+    _height(100),
+    _angle(0),
     _drawingDirection(lc::TextConst::DrawingDirection::None),
     _hAlign(lc::TextConst::HAlign::HACenter),
-    _vAlign(lc::TextConst::VAlign::VAMiddle),
-    _height(100),
-    _angle(0)
+    _vAlign(lc::TextConst::VAlign::VAMiddle)
 {
 }
 
