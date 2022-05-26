@@ -6,15 +6,15 @@ StringSettingValue::StringSettingValue(std::string value) {
     _value = std::move(value);
 }
 
-double StringSettingValue::getDouble() const noexcept {
+double StringSettingValue::getDouble() const {
     throw SettingTypeException("String can't be converted to double");
 }
 
-float StringSettingValue::getFloat() const noexcept {
+float StringSettingValue::getFloat() const {
     throw SettingTypeException("String can't be converted to float");
 }
 
-int StringSettingValue::getInt() const noexcept {
+int StringSettingValue::getInt() const {
     throw SettingTypeException("String can't be converted to int");
 }
 

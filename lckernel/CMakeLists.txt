@@ -9,10 +9,12 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/res/hatch"
 
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
+remove_definitions("-Wall")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
 include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_definitions("-Wall")
 
 message("***** LibreCAD kernel *****")
 

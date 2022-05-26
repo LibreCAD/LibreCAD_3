@@ -46,8 +46,8 @@ namespace lc {
             const double _angle;
             const std::string _style;
             const TextConst::DrawingDirection _textgeneration;
-            const TextConst::VAlign _valign;
             const TextConst::HAlign _halign;
+            const TextConst::VAlign _valign;
 
             geo::Coordinate insertion_point() const {
                 return _insertion_point;
