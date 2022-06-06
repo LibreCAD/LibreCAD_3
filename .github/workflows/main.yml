@@ -1,0 +1,11 @@
+name: GitHub Actions Demo
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+          ls ${{ github.workspace }}
+      - run: echo "This job's status is ${{ job.status }}."
+    runs-on: windows-latest
+    steps:
+          dir
