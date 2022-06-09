@@ -1,0 +1,21 @@
+name: GitHub Actions Demo
+on:
+  push:
+    branches:
+    - main
+jobs:
+  Windows install:
+    name: Building LibreCAD3 on windows runner
+    runs-on: windows-latest
+    
+    steps:
+      - name: Disable Chocolatey confirmations
+        run: choco feature enable -n=allowGlobalConfirmation &
+      - name: Install Visual Studio 2019 with tools
+        run: choco install visualstudio2019community --package-parameters='"--add Microsoft.VisualStudio.Component.VC.CMake.Project Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.Windows10SDK.19041"'
+      - name: Clone Repo
+        run: |
+            git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
+            cd LibreCAD_3
+      
+
