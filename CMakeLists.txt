@@ -155,6 +155,28 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+#Cpack -> NSIS
+#General Vars
+set(CPACK_PACKAGE_NAME "LibreCad 3")
+set(CPACK_PACKAGE_VENDOR "LibreCAD")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_DESCRIPTION "LibreCAD is a free Open Source CAD application for Windows, Apple and Linux. Support and documentation are free from our large, dedicated community of users, contributors and developers.")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Source 2D-CAD")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://librecad.org/")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+#NSIS Vars
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL "ON")
+set(CPACK_NSIS_MODIFY_PATH "ON")
+set(CPACK_NSIS_DISPLAY_NAME ${CPACK_PACKAGE_NAME})
+set(CPACK_NSIS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+set(CPACK_NSIS_HELP_LINK "https://github.com/LibreCAD/LibreCAD_3")
+set(CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL})
+set(CPACK_NSIS_CONTACT "https://librecad.zulipchat.com/login/")
+set(CPACK_NSIS_FINISH_TITLE "Thanks for installing Librecad 3")
+include(CPack)
+
 
 # copy built bin to the installer
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo" DESTINATION ${CMAKE_INSTALL_BINDIR})
