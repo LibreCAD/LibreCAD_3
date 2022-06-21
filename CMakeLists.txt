@@ -22,7 +22,7 @@ if (NOT MSVC) # Too much warnings on MSVC
 endif()
 
 include(GNUInstallDirs)
-set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+set(FINAL_INSTALL_DIR "app")
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
@@ -155,3 +155,12 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+
+# copy built bin to the installer
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo" DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lckernel.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lcluascript.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lcui.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lcviewernoqt.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/persistence.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/path.lua" DESTINATION ${CMAKE_INSTALL_BINDIR})
