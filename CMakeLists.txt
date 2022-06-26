@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.6)
 project(LC)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#https://stackoverflow.com/questions/7229571/cmake-visual-studio-debug-folder
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)  #This for each is needed to avoid binary builds in bin/relDebWithInfo folder
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
@@ -22,7 +28,7 @@ if (NOT MSVC) # Too much warnings on MSVC
 endif()
 
 include(GNUInstallDirs)
-set(FINAL_INSTALL_DIR "app")
+set(FINAL_INSTALL_DIR "finalInstallDir")
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
@@ -157,7 +163,7 @@ find_file(
 )
 #Cpack -> NSIS
 #General Vars
-set(CPACK_PACKAGE_NAME "LibreCad 3")
+set(CPACK_PACKAGE_NAME "LibreCAD 3")
 set(CPACK_PACKAGE_VENDOR "LibreCAD")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
@@ -174,15 +180,32 @@ set(CPACK_NSIS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
 set(CPACK_NSIS_HELP_LINK "https://github.com/LibreCAD/LibreCAD_3")
 set(CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL})
 set(CPACK_NSIS_CONTACT "https://librecad.zulipchat.com/login/")
-set(CPACK_NSIS_FINISH_TITLE "Thanks for installing Librecad 3")
+set(CPACK_NSIS_FINISH_TITLE "Thanks for installing LibreCAD 3")
 include(CPack)
 
-
 # copy built bin to the installer
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo" DESTINATION ${CMAKE_INSTALL_BINDIR})
-#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lckernel.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
-#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lcluascript.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
-#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lcui.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
-#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/lcviewernoqt.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
-#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/persistence.dll" DESTINATION ${CMAKE_INSTALL_BINDIR})
-#install(FILES "${PROJECT_SOURCE_DIR}/out/build/windows-default/bin/RelWithDebInfo/path.lua" DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(
+    DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} 
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/..  # Since we get the folder(bin) instead of the files, we must "paste" to the root install folder
+    PATTERN "*.pdb" EXCLUDE
+    PATTERN "*.exe" EXCLUDE
+    PATTERN "path.lua" EXCLUDE
+)
+install(
+    FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/librecad.exe
+    DESTINATION ${CMAKE_INSTALL_BINDIR}  # install librecad in the bin folder of the installer 
+)
+
+
+
+# create path.lua in the folder of the installer. This is here and not in lcUILua because ${CMAKE_INSTALL_BINDIR} doasn't work there.
+##TODO
+#Make lua be created in Librecad folder instead of C:\Program Files\FID\bin
+
+##create correct lua paths for the installer(Right now installs at C:\bin)
+install(CODE "file(WRITE \"${CMAKE_INSTALL_BINDIR}/path.lua\" 
+	\"package.path = package.path .. ';${CMAKE_INSTALL_BINDIR}/../${FINAL_INSTALL_DIR}/usr/share/librecad/lcUILua/?.lua' \n\"
+	\"ui_path='${CMAKE_INSTALL_BINDIR}/../${FINAL_INSTALL_DIR}/usr/share/librecad/lcUI/ui' \n\"
+	\"plugin_path='${CMAKE_INSTALL_BINDIR}/../${FINAL_INSTALL_DIR}/usr/share/librecad/lcUILua/' \n\"
+	\"lua_path='${PROJECT_SOURCE_DIR}/lcUILua'\"  
+)")#\"lua_path='${PROJECT_SOURCE_DIR}/lcUILua'\"  originally, but it doesn't have sense for it to point towards the source dir if it has to be exported
