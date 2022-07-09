@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(LCKERNEL)
 
-#TODO: Fix this                 || CRiSTiK trying to fix.
+#TODO: Fix this                
 set(PATTERN_RESOURCE_PATH ${FINAL_INSTALL_DIR}/usr/share/librecad/res/hatch)
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/res/hatch"
 		DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad"

@@ -183,7 +183,8 @@ set(CPACK_NSIS_CONTACT "https://librecad.zulipchat.com/login/")
 set(CPACK_NSIS_FINISH_TITLE "Thanks for installing LibreCAD 3")
 include(CPack)
 
-# copy built bin to the installer
+# copy built bin to the installer in Windows
+IF (WIN32)
 install(
     DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} 
     DESTINATION ${CMAKE_INSTALL_BINDIR}/..  # Since we get the folder(bin) instead of the files, we must "paste" to the root install folder
@@ -206,6 +207,7 @@ install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/fonts
     DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
 )
+ENDIF()
 
 
 
