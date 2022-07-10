@@ -161,30 +161,52 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+#================================================
+#Copy path.lua. It will have the following contents:
+#package.path = package.path .. ';../finalInstallDir/usr/share/librecad/lcUILua/?.lua'
+#ui_path='../finalInstallDir/usr/share/librecad/lcUI/ui'
+#plugin_path='../finalInstallDir/usr/share/librecad/lcUILua/plugins'
+#lua_path='../finalInstallDir/usr/share/librecad/lcUILua'
+#If any path is changed, it'll will have to be changed too
+#================================================
+install(FILES ${CMAKE_SOURCE_DIR}/path.lua
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+# Install all needed files in windows and set up some cpack variables
+IF (WIN32)
+
 #Cpack -> NSIS
 #General Vars
-set(CPACK_PACKAGE_NAME "LibreCAD 3")
+set(CPACK_PACKAGE_NAME "LibreCAD3")
 set(CPACK_PACKAGE_VENDOR "LibreCAD")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}) #name of the install folder
 set(CPACK_PACKAGE_DESCRIPTION "LibreCAD is a free Open Source CAD application for Windows, Apple and Linux. Support and documentation are free from our large, dedicated community of users, contributors and developers.")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Source 2D-CAD")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://librecad.org/")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE") 
 #NSIS Vars
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL "ON")
 set(CPACK_NSIS_MODIFY_PATH "ON")
+set(CPACK_CREATE_DESKTOP_LINKS "ON")
 set(CPACK_NSIS_DISPLAY_NAME ${CPACK_PACKAGE_NAME})
 set(CPACK_NSIS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
 set(CPACK_NSIS_HELP_LINK "https://github.com/LibreCAD/LibreCAD_3")
 set(CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL})
 set(CPACK_NSIS_CONTACT "https://librecad.zulipchat.com/login/")
 set(CPACK_NSIS_FINISH_TITLE "Thanks for installing LibreCAD 3")
+#For the shortcut
+set(CPACK_PACKAGE_EXECUTABLES
+    "librecad" "Librecad shortcut"
+)
+set(CPACK_CREATE_DESKTOP_LINKS 
+    "librecad"
+)
 include(CPack)
 
-# copy built bin to the installer in Windows
-IF (WIN32)
+
 install(
     DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} 
     DESTINATION ${CMAKE_INSTALL_BINDIR}/..  # Since we get the folder(bin) instead of the files, we must "paste" to the root install folder
@@ -207,19 +229,6 @@ install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/fonts
     DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
 )
+#Install Microsoft Visual C++ Redistributable
+include(InstallRequiredSystemLibraries)
 ENDIF()
-
-
-
-
-# create path.lua in the folder of the installer. This is here and not in lcUILua because ${CMAKE_INSTALL_BINDIR} doasn't work there.
-##TODO
-#Make lua be created in Librecad folder instead of C:\Program Files\FID\bin
-
-##create correct lua paths for the installer(Right now installs at C:\bin)
-install(CODE "file(WRITE \"${CMAKE_INSTALL_BINDIR}/path.lua\" 
-	\"package.path = package.path .. ';${CMAKE_INSTALL_BINDIR}/../${FINAL_INSTALL_DIR}/usr/share/librecad/lcUILua/?.lua' \n\"
-	\"ui_path='${CMAKE_INSTALL_BINDIR}/../${FINAL_INSTALL_DIR}/usr/share/librecad/lcUI/ui' \n\"
-	\"plugin_path='${CMAKE_INSTALL_BINDIR}/../${FINAL_INSTALL_DIR}/usr/share/librecad/lcUILua/' \n\"
-	\"lua_path='${PROJECT_SOURCE_DIR}/lcUILua'\"  
-)")#\"lua_path='${PROJECT_SOURCE_DIR}/lcUILua'\"  originally, but it doesn't have sense for it to point towards the source dir if it has to be exported

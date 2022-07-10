@@ -273,7 +273,7 @@ if(WITH_UNITTESTS)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
-add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES}) 
 
 qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
