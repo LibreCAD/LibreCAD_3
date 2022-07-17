@@ -89,7 +89,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_USE_MULTITHREADED ON)
 
 # settings path
-set(SETTINGS_PATH "${PROJECT_BINARY_DIR}/bin")
+set(SETTINGS_PATH "${CMAKE_INSTALL_BINDIR}") #The settings will be at bin
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
@@ -231,13 +231,13 @@ install(
 )
 #Install Microsoft Visual C++ Redistributable
 ELSEIF(UNIX) #if it's linux. 
-install(
-	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_ui_settings.json
-	DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-install(
-	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/settings_schema.json
-	DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+#install(
+#	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_ui_settings.json
+#	DESTINATION ${CMAKE_INSTALL_BINDIR}
+#)
+#install(
+#	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/settings_schema.json
+#	DESTINATION ${CMAKE_INSTALL_BINDIR}
+#)
 ENDIF()
 include(InstallRequiredSystemLibraries)
