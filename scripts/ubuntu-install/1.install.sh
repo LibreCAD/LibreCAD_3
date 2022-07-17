@@ -1,10 +1,22 @@
 sudo apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-log-dev libboost-program-options-dev libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev libbz2-dev libglfw3-dev libglm-dev cmake
 
+sudo apt remove --purge --auto-remove cmake
+sudo apt update && \
+sudo apt install -y software-properties-common lsb-release && \
+sudo apt clean all
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
+sudo apt update
+sudo apt install kitware-archive-keyring
+sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
+sudo apt update
+sudo apt install cmake
+
 cd /usr/src/gtest
 sudo cmake CMakeLists.txt
 sudo make
 
-cd lib
+cd lib #potser no fa falta.
 sudo cp *.a /usr/lib
 
 cd
@@ -21,9 +33,9 @@ git clone --recursive https://github.com/CRiSTiK24/AddCI-CDLibreCAD_3
 #git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
 cd AddCI-CDLibreCAD_3
 #cd LibreCAD_3
-git submodule init
+git submodule init #TURNING OFF AN OPTION
 git submodule update --recursive --remote
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
 make -j 4
