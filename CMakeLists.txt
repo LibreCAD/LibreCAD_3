@@ -10,7 +10,7 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
-option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
+option(WITH_LUACMDINTERFACE "Build Lua command line interface" OFF) #TODO fails in Ubuntu 18.04, this is why OFF
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_LIBOPENCAD "Use libopencad" OFF)
@@ -230,5 +230,14 @@ install(
     DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
 )
 #Install Microsoft Visual C++ Redistributable
-include(InstallRequiredSystemLibraries)
+ELSEIF(UNIX) #if it's linux. 
+install(
+	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_ui_settings.json
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+install(
+	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/settings_schema.json
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 ENDIF()
+include(InstallRequiredSystemLibraries)
