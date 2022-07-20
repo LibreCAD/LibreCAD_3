@@ -89,7 +89,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_USE_MULTITHREADED ON)
 
 # settings path
-set(SETTINGS_PATH "${CMAKE_INSTALL_BINDIR}") #The settings will be at bin
+set(SETTINGS_PATH "../bin") #The settings will be at bin
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
