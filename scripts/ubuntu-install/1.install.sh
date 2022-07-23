@@ -35,7 +35,3 @@ cd AddCI-CDLibreCAD_3
 #cd LibreCAD_3
 git submodule init #TURNING OFF AN OPTION
 git submodule update --recursive --remote
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
-make -j 4

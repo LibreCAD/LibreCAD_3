@@ -35,6 +35,7 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     bool s = _L.dofile(luaFile.toStdString().c_str());
 
     std::string luaPath = _L["lua_path"];
+    luaPath = QCoreApplication::applicationDirPath().toStdString() + "/" + luaPath;
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
     if (s) {

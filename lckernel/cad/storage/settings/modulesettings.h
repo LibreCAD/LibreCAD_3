@@ -4,6 +4,7 @@
 #include <map>
 #include "doublesettingvalue.h"
 #include "stringsettingvalue.h"
+#include <QCoreApplication>
 
 namespace lc {
 namespace storage {

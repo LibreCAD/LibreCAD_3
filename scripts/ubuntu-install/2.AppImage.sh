@@ -1,3 +1,8 @@
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
+make -j 4
+
 sudo make install DESTDIR=AppDir
 
 sudo cp ../AppImage/librecad.* AppDir/

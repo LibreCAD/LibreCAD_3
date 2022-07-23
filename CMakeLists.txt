@@ -89,7 +89,15 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_USE_MULTITHREADED ON)
 
 # settings path
-set(SETTINGS_PATH "../bin") #The settings will be at bin
+IF (WIN32)
+
+set(SETTINGS_PATH ".") #The settings will be at the same place as executable.
+
+ELSEIF (UNIX)
+
+set(SETTINGS_PATH ".") #In AppImages, it has to be relative to the AppRun, not librecad
+
+ENDIF()
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
@@ -161,17 +169,7 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
-#================================================
-#Copy path.lua. It will have the following contents:
-#package.path = package.path .. ';../finalInstallDir/usr/share/librecad/lcUILua/?.lua'
-#ui_path='../finalInstallDir/usr/share/librecad/lcUI/ui'
-#plugin_path='../finalInstallDir/usr/share/librecad/lcUILua/plugins'
-#lua_path='../finalInstallDir/usr/share/librecad/lcUILua'
-#If any path is changed, it'll will have to be changed too
-#================================================
-install(FILES ${CMAKE_SOURCE_DIR}/path.lua
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+
 # Install all needed files in windows and set up some cpack variables
 IF (WIN32)
 
@@ -229,15 +227,16 @@ install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/fonts
     DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
 )
-#Install Microsoft Visual C++ Redistributable
-ELSEIF(UNIX) #if it's linux. 
-#install(
-#	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_ui_settings.json
-#	DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
-#install(
-#	FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/settings_schema.json
-#	DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
+
+install(FILES "${CMAKE_SOURCE_DIR}/luaPath/win/path.lua"
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+ELSEIF(UNIX) #else if it's linux.
+
+install(FILES "${CMAKE_SOURCE_DIR}/luaPath/unix/path.lua"
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
 ENDIF()
 include(InstallRequiredSystemLibraries)
