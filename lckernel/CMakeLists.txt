@@ -22,7 +22,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #Add QT Library for cad/storage/settings/modulesettings
 find_package(Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 
 
@@ -282,7 +281,7 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core Qt5::Widgets ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx	)
+target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx	)
 
 # INSTALLATION
 install(TARGETS lckernel 

@@ -3,13 +3,11 @@
 #include <build_constants.h>
 #include <iostream>
 
-#include <QApplication>
 #include <QCoreApplication>
 
 using namespace lc::storage::settings;
 
 ModuleSettings::ModuleSettings() {
-    QApplication app(); //Else applicationDirPath fails. It doasn't work!
     _filePaths["settings_load"] = SETTINGS_PATH;
     std::string pathToExe = QCoreApplication::applicationDirPath().toStdString();
     _filePaths["settings_load"] = pathToExe + _filePaths["settings_load"] + "/";
