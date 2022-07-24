@@ -4,7 +4,7 @@ PROJECT (LC)
 message("***** LibreCAD Qt user interface *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-set (SETTINGS_PATH "${CMAKE_INSTALL_BINDIR}") #
+set (SETTINGS_PATH "${CMAKE_INSTALL_BINDIR}")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

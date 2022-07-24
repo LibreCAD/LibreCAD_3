@@ -3,13 +3,15 @@
 #include <build_constants.h>
 #include <iostream>
 
+#include "luainterface.h"
+
 #include <QCoreApplication>
 
 using namespace lc::storage::settings;
 
 ModuleSettings::ModuleSettings() {
     _filePaths["settings_load"] = SETTINGS_PATH;
-    std::string pathToExe = QCoreApplication::applicationDirPath().toStdString();
+    std::string pathToExe = LuaInterface::getPathExecutable()+"/";
     _filePaths["settings_load"] = pathToExe + _filePaths["settings_load"] + "/";
 }
 

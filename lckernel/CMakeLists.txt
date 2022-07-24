@@ -23,8 +23,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 #Add QT Library for cad/storage/settings/modulesettings
 find_package(Qt5 REQUIRED COMPONENTS Core)
 
-
-
 # SOURCE FILES
 set(lckernel_srcs
 build_constants.cpp
@@ -261,9 +259,11 @@ set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcUI")
 else()
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
+    include_directories("${CMAKE_SOURCE_DIR}/lcUI")
 endif()
 
 #Create version.cpp
@@ -280,8 +280,12 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E echo
 )
 
+
+
+
+
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx	)
+target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx lcui)
 
 # INSTALLATION
 install(TARGETS lckernel 

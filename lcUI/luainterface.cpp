@@ -20,6 +20,10 @@ LuaInterface::~LuaInterface() {
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 }
 
+std::string LuaInterface::getPathExecutable(){
+    return QCoreApplication::applicationDirPath().toStdString();
+}
+
 void LuaInterface::initLua(QMainWindow* mainWindow) {
     auto lcLua = lc::lua::LCLua(_L.state());
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
