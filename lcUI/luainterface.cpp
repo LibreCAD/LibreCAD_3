@@ -7,7 +7,6 @@
 
 #include "mainwindow.h"
 #include "operationloader.h"
-#include "../lckernel/cad/storage/settings/modulesettings.h"
 
 using namespace lc::ui;
 
