@@ -4,7 +4,6 @@
 #include <map>
 #include "doublesettingvalue.h"
 #include "stringsettingvalue.h"
-#include <QCoreApplication>
 
 namespace lc {
 namespace storage {
@@ -23,6 +22,15 @@ public:
     ModuleSettings(std::initializer_list<std::pair<std::string, ISettingValue*>> settings);
 
     virtual ~ModuleSettings();
+
+
+    /**
+     * @brief Set the atribute pathToExe and recalculate path to json settings
+     * 
+     * @param pathToExe String towards the exe
+     */
+    //void setExePath(std::string pathToExe);
+
 
     /**
      * @brief Return setting value

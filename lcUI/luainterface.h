@@ -36,12 +36,6 @@ public:
     ~LuaInterface();
 
     /**
-     * \brief Returns a string with Path to Execuable
-     * 
-     */
-    std::string getPathExecutable();
-
-    /**
      * \brief Read and execute Lua files
      */
     void initLua(QMainWindow* mainWindow);

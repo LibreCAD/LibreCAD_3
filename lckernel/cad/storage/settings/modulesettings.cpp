@@ -3,16 +3,11 @@
 #include <build_constants.h>
 #include <iostream>
 
-#include "luainterface.h"
-
-#include <QCoreApplication>
-
 using namespace lc::storage::settings;
 
 ModuleSettings::ModuleSettings() {
     _filePaths["settings_load"] = SETTINGS_PATH;
-    std::string pathToExe = LuaInterface::getPathExecutable()+"/";
-    _filePaths["settings_load"] = pathToExe + _filePaths["settings_load"] + "/";
+    _filePaths["settings_load"] = _filePaths["settings_load"] + "/";
 }
 
 ModuleSettings::ModuleSettings(std::initializer_list<std::pair<std::string, ISettingValue*>> settings) : ModuleSettings() {
@@ -28,6 +23,9 @@ ModuleSettings::~ModuleSettings() {
 
     _settings.clear();
 }
+//void ModuleSettings::setExePath(std::string pathToExe){
+//    _filePaths["settings_load"] = pathToExe + "/" + SETTINGS_PATH + "/"; //Update it
+//}
 
 const ISettingValue* ModuleSettings::get(const std::string& name) const {
     try {

@@ -259,11 +259,9 @@ set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
-    include_directories("${CMAKE_SOURCE_DIR}/../lcUI")
 else()
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
-    include_directories("${CMAKE_SOURCE_DIR}/lcUI")
 endif()
 
 #Create version.cpp
@@ -280,12 +278,8 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E echo
 )
 
-
-
-
-
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx lcui)
+target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx)
 
 # INSTALLATION
 install(TARGETS lckernel 

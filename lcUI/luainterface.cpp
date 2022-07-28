@@ -7,21 +7,19 @@
 
 #include "mainwindow.h"
 #include "operationloader.h"
+#include "../lckernel/cad/storage/settings/modulesettings.h"
 
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
     _pluginManager(_L.state(), "gui") {
+        
 }
 
 LuaInterface::~LuaInterface() {
     _events.clear();
 
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
-}
-
-std::string LuaInterface::getPathExecutable(){
-    return QCoreApplication::applicationDirPath().toStdString();
 }
 
 void LuaInterface::initLua(QMainWindow* mainWindow) {
@@ -34,7 +32,6 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
 
     _L["luaInterface"] = this;
     registerGlobalFunctions(mainWindow);
-
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());
 
