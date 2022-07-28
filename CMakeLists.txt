@@ -91,11 +91,11 @@ set(Boost_USE_MULTITHREADED ON)
 # settings path
 IF (WIN32)
 
-set(SETTINGS_PATH ".") #The settings will be at the same place as executable.
+set(SETTINGS_PATH "") #The settings will be at the same place as executable.
 
 ELSEIF (UNIX)
 
-set(SETTINGS_PATH ".") #In AppImages, it has to be relative to the AppRun, not librecad
+set(SETTINGS_PATH "") #In AppImages, it has to be relative to the AppRun, not librecad
 
 ENDIF()
 
