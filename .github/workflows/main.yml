@@ -22,8 +22,7 @@ jobs:
           cd /usr/src/gtest
           sudo cmake CMakeLists.txt
           sudo make
-          ls
-          cd lib
+          cd /usr/src/gtest/lib
           sudo cp *.a /usr/lib
       - name: libdxfrw installation
         run: |
