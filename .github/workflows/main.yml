@@ -139,7 +139,7 @@ jobs:
           $env:Path +
           ';%cd%\Qt\5.15.2\msvc2019_64;%cd%\LibreCAD_3\out\build\x64-Debug\lib;%cd%\Qt\5.15.2\msvc2019_64\bin',
           'User')"
-      - name: Librecad AppImage
+      - name: build and package the project
         run: >
           mkdir build
 
@@ -162,8 +162,6 @@ jobs:
           cd ..
 
           cpack -C RelWithDebInfo 
-      - name: build and package the project
-        run: ''
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:
