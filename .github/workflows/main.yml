@@ -1,6 +1,6 @@
 name: Librecad3 Builders
 'on':
-  workflow_dispatch:
+  workflow_dispatch: null
   push:
     branches:
       - main
@@ -17,32 +17,6 @@ jobs:
           libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev
           libgtk-3-dev libglew-dev rapidjson-dev libbz2-dev libglfw3-dev
           libglm-dev cmake
-      - name: Getting a newer cmake
-        run: >
-          sudo apt remove --purge --auto-remove cmake
-
-          sudo apt update && \
-
-          sudo apt install -y software-properties-common lsb-release && \
-
-          sudo apt clean all
-
-          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc
-          2>/dev/null | gpg --dearmor - | sudo tee
-          /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-
-          sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/
-          $(lsb_release -cs) main"
-
-          sudo apt update
-
-          sudo apt install kitware-archive-keyring
-
-          sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
-
-          sudo apt update
-
-          sudo apt install cmake
       - name: gtest installation
         run: |
           cd /usr/src/gtest
@@ -106,20 +80,16 @@ jobs:
           snapcraft
           #sudo snap install librecad_0.0.9_amd64.snap --devmode --dangerous
           #snap run librecad
-					
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3.1.0
         with:
           path: ~/AddCI-CDLibreCAD_3/build/LibreCAD*AppImage
           name: LibreCAD3.AppImage
-							
       - name: Uploading snap
         uses: actions/upload-artifact@v3.1.0
         with:
           path: ~/AddCI-CDLibreCAD_3/LibreCAD*snap
           name: LibreCAD3.snap
-
-			
   windows:
     name: Building LibreCAD3 on windows runner
     runs-on: windows-latest
@@ -169,29 +139,33 @@ jobs:
           $env:Path +
           ';%cd%\Qt\5.15.2\msvc2019_64;%cd%\LibreCAD_3\out\build\x64-Debug\lib;%cd%\Qt\5.15.2\msvc2019_64\bin',
           'User')"
-      - name: Building the project
-        run: |
-					cd LibreCAD_3
+      - name: Librecad AppImage
+        run: >
+          mkdir build
 
-					cmake -S C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3 -B C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\installprefix
+          cd LibreCAD_3
 
-					cmake -S C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3 -B C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\installprefix
+          cmake -S %cd% -B %cd%\out\build\windows-default
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix %cd%\installprefix
 
-					cd out\build\windows-default
+          cmake -S %cd% -B %cd%\out\build\windows-default
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix %cd%\installprefix
 
-					cmake --build . --config RelWithDebInfo
+          cd  out\build\windows-default
 
-					cd bin
+          cmake --build . --config RelWithDebInfo
 
-					WinDeployQt librecad.exe
+          cd bin
 
-					cd ..
+          WinDeployQt librecad.exe
 
-					cpack -C RelWithDebInfo
+          cd ..
 
-		 - name: Uploading exe
+          cpack -C RelWithDebInfo 
+      - name: build and package the project
+        run: ''
+      - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:
           path: LibreCAD3*exe
           name: LibreCAD3.exe
-					
