@@ -116,8 +116,8 @@ void LCADViewer::initializeGL()
     const char* cPathToFonts = sPathToFonts.toLocal8Bit().constData();
 
 
-    *lc::viewer::opengl::SHADER_PATH = *cPathToShaders;
-    *lc::viewer::opengl::FONT_PATH = *cPathToFonts;
+    lc::viewer::opengl::SHADER_PATH = cPathToShaders;
+    lc::viewer::opengl::FONT_PATH = cPathToFonts;
 
 
     QOpenGLWidget::makeCurrent();
