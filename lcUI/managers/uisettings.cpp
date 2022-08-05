@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+
 using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
