@@ -22,7 +22,6 @@ jobs:
           cd /usr/src/gtest
           sudo cmake CMakeLists.txt
           sudo make
-          cd /usr/src/gtest/lib
           sudo cp *.a /usr/lib
       - name: libdxfrw installation
         run: |
@@ -111,7 +110,6 @@ jobs:
           profile compiler version and try again
         run: |
           pip install conan
-          conan profile update settings.compiler.version=16  default
           mkdir conan
           cd conan
           conan install ..
