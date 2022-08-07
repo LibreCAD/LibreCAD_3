@@ -23,9 +23,7 @@ ModuleSettings::~ModuleSettings() {
 
     _settings.clear();
 }
-//void ModuleSettings::setExePath(std::string pathToExe){
-//    _filePaths["settings_load"] = pathToExe + "/" + SETTINGS_PATH + "/"; //Update it
-//}
+
 
 const ISettingValue* ModuleSettings::get(const std::string& name) const {
     try {
