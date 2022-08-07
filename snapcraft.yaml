@@ -46,7 +46,17 @@ parts:
                         - libglfw3-dev
                         - libglm-dev
                         - cmake
+                stage-packages:
+                        - libboost-dev
+                        - libboost-log-dev
+                        - libboost-program-options-dev
+                        - libglew2.0
                 configflags:
                         - "-DCMAKE_INSTALL_PREFIX=/usr"
+                        - "-DBUILD_SHARED_LIBS=On"
+        libdxfrw:
+                plugin: cmake
+                source: ../libdxfrw
+                configflags:
                         - "-DBUILD_SHARED_LIBS=On"
 
