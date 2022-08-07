@@ -7,11 +7,11 @@ summary: "librecad: is a cad"
 description: |
         it really is.
 environment:
-        LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64
+        LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64:$LD_LIBRARY_PATH
 
 apps:
         librecad:
-                command: usr/bin/librecad
+                command: usr/bin/librecad 
                 extensions:
                         - kde-neon
 parts:

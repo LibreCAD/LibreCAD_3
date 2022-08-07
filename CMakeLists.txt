@@ -216,17 +216,6 @@ install(
     FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/librecad.exe
     DESTINATION ${CMAKE_INSTALL_BINDIR}  # install librecad in the bin folder of the installer 
 )
-#Get shaders and fonts
-
-install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/shaders
-    DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources
-)
-
-install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/fonts
-    DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
-)
 
 install(FILES "${CMAKE_SOURCE_DIR}/luaPath/win/path.lua"
         DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -239,4 +228,16 @@ install(FILES "${CMAKE_SOURCE_DIR}/luaPath/unix/path.lua"
 )
 
 ENDIF()
+
+#Get shaders and fonts
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/shaders
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources
+)
+
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/fonts
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
+)
+
 include(InstallRequiredSystemLibraries)
