@@ -11,7 +11,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.2
-        with: ${{ github.repository }}
 
       - run: ${{ github.workspace }}/scripts/ubuntu-install/1.install.sh
 
@@ -36,7 +35,6 @@ jobs:
  
       - name: Checkout
         uses: actions/checkout@v2.4.2
-        with: ${{ github.repository }}
       
       - name: Install Visual Studio 2019 with tools
         run: ${{ github.workspace }}/scripts/windows-install/1.2.installVisual2019.bat
