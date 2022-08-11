@@ -13,4 +13,8 @@ wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/cont
 chmod a+x linuxdeploy-x86_64.AppImage
 chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
 
+cp ../AppImage/librecad.* AppDir/
+
+sudo cp ../../libdxfrw/release/libdxfrw.so.1 AppDir/usr/lib/ #can't find this library in the Runner
+
 sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64 ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable AppDir/usr/bin/librecad --desktop-file AppDir/librecad.desktop --icon-file AppDir/librecad.svg --plugin qt
