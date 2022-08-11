@@ -11,23 +11,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.2
-        with: $GITHUB_REPOSITORY
+        with: ${{ github.repository }}
 
-      - run: $GITHUB_WORKSPACE/scripts/ubuntu-install/1.install.sh
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/1.install.sh
 
-      - run: $GITHUB_WORKSPACE/scripts/ubuntu-install/2.AppImage.sh
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/2.AppImage.sh
 
-      - run: $GITHUB_WORKSPACE/scripts/ubuntu-install/3.Snap.sh
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/3.Snap.sh
 
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: $GITHUB_WORKSPACE/build/LibreCAD*AppImage
+          path: ${{ github.workspace }}/build/LibreCAD*AppImage
           name: LibreCAD3.AppImage
       - name: Uploading snap
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: $GITHUB_WORKSPACE/LibreCAD*snap
+          path: ${{ github.workspace }}/LibreCAD*snap
           name: LibreCAD3.snap
   windows:
     name: Building LibreCAD3 on windows runner
@@ -36,18 +36,18 @@ jobs:
  
       - name: Checkout
         uses: actions/checkout@v2.4.2
-        with: $GITHUB_REPOSITORY
+        with: ${{ github.repository }}
       
       - name: Install Visual Studio 2019 with tools
-        run: $GITHUB_WORKSPACE/scripts/windows-install/1.2.installVisual2019.bat
+        run: ${{ github.workspace }}/scripts/windows-install/1.2.installVisual2019.bat
 
-      - run: cd $GITHUB_WORKSPACE
+      - run: cd ${{ github.workspace }}
 
-      - run: $GITHUB_WORKSPACE/scripts/windows-install/2.installconan.bat
+      - run: ${{ github.workspace }}/scripts/windows-install/2.installconan.bat
 
-      - run: $GITHUB_WORKSPACE/scripts/windows-install/2.2.createConanDirAndInstallDependencies.bat
+      - run: ${{ github.workspace }}/scripts/windows-install/2.2.createConanDirAndInstallDependencies.bat
 
-      - run: cd $GITHUB_WORKSPACE/..
+      - run: cd ${{ github.workspace }}/..
 
       - run: mkdir Qt5
 
@@ -57,17 +57,17 @@ jobs:
           version: 5.12.2
           host: windows
           arch: win64_msvc2017_64
-          dir: '$GITHUB_WORKSPACE/../Qt'
+          dir: '${{ github.workspace }}/../Qt'
 
-      - run: setx QTDIR "$GITHUB_WORKSPACE\..\Qt\5.15.2\msvc2019_64"
+      - run: setx QTDIR "${{ github.workspace }}\..\Qt\5.15.2\msvc2019_64"
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "%QTDIR%\plugins\platforms\"
 
       - run: Powershell.exe -Command "[Environment]::SetEnvironmentVariable('Path', $env:Path + ';%cd%\Qt\5.15.2\msvc2019_64;%cd%\LibreCAD_3\out\build\x64-Debug\lib;%cd%\Qt\5.15.2\msvc2019_64\bin', 'User')"
       
-      - run: cd $GITHUB_WORKSPACE
+      - run: cd ${{ github.workspace }}
 
-      - run: $GITHUB_WORKSPACE/scripts/windows-install/4.buildLibrecadAndGetInstaller.bat
+      - run: ${{ github.workspace }}/scripts/windows-install/4.buildLibrecadAndGetInstaller.bat
           
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
