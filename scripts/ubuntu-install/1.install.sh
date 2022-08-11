@@ -27,11 +27,3 @@ cd release
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
 make
 sudo make install
-
-cd
-git clone --recursive https://github.com/CRiSTiK24/AddCI-CDLibreCAD_3
-#git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
-cd AddCI-CDLibreCAD_3
-#cd LibreCAD_3
-git submodule init #TURNING OFF AN OPTION
-git submodule update --recursive --remote
