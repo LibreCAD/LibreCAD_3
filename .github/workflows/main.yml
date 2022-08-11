@@ -12,6 +12,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.4.2
 
+      - run: cd ${{ github.workspace }}
+
+      - run: git submodule init
+
+      - run: git submodule update --recursive --remote
+
       - run: ${{ github.workspace }}/scripts/ubuntu-install/1.install.sh
 
       - run: cd ${{ github.workspace }}
@@ -58,8 +64,8 @@ jobs:
         with:
           version: 5.12.2
           host: windows
-          arch: win64_msvc2017_64
-          dir: '${{ github.workspace }}/../Qt'
+          arch: win64_msvc2019_64
+          dir: '${{ github.workspace }}/..'
 
       - run: setx QTDIR "${{ github.workspace }}\..\Qt\5.15.2\msvc2019_64"
 
