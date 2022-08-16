@@ -1,8 +1,8 @@
 cd ${{ github.workspace }} 
 
-cmake -S ${{ github.workspace }} -B ${{ github.workspace }}\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix ${{ github.workspace }}\installprefix
+cmake -S %cd% -B %cd%\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix %cd%\installprefix
 
-cmake -S ${{ github.workspace }} -B ${{ github.workspace }}\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix ${{ github.workspace }}\installprefix
+cmake -S %cd% -B %cd%\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix %cd%\installprefix
 
 cd out\build\windows-default
 

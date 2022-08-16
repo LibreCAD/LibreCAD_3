@@ -68,7 +68,7 @@ jobs:
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
-      - run: ${{ github.workspace }}/scripts/windows-install/3.1.PathVariables.ps1 
+      - run: ${{ github.workspace }}/scripts/windows-install/3.1.PathVariables.ps1
       
       - run: cd ${{ github.workspace }}
 
