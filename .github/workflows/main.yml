@@ -49,6 +49,8 @@ jobs:
       - name: Install Visual Studio 2019 with tools
         run: ${{ github.workspace }}/scripts/windows-install/1.2.installVisual2019.bat
 
+      - name: 
+
       - run: cd ${{ github.workspace }}
 
       - run: ${{ github.workspace }}/scripts/windows-install/2.installconan.bat
@@ -68,7 +70,7 @@ jobs:
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
-      - run: Powershell.exe -Command "[Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.2\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.2\msvc2019_64\bin', 'User')"
+      - run: [Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.2\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.2\msvc2019_64\bin', 'User')
       
       - run: cd ${{ github.workspace }}
 
