@@ -70,7 +70,7 @@ jobs:
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
-      - run: \[Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.2\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.2\msvc2019_64\bin', 'User')
+      - run: ${{ github.workspace }}/scripts/windows-install/3.1.PathVariables.ps1
       
       - run: cd ${{ github.workspace }}
 
