@@ -1,8 +1,8 @@
-cd LibreCAD_3
+cd ${{ github.workspace }} 
 
-cmake -S C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3 -B C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\installprefix
+cmake -S ${{ github.workspace }} -B ${{ github.workspace }}\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix ${{ github.workspace }}\installprefix
 
-cmake -S C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3 -B C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix C:\Users\CRiSTiK\Desktop\git\scriptsLibrecad3\LibreCAD_3\installprefix
+cmake -S ${{ github.workspace }} -B ${{ github.workspace }}\out\build\windows-default -DCMAKE_BUILD_TYPE=RelWithDebInfo --install-prefix ${{ github.workspace }}\installprefix
 
 cd out\build\windows-default
 
@@ -15,7 +15,4 @@ WinDeployQt librecad.exe
 cd ..\..
 
 cpack -C RelWithDebInfo
-
-
-_____________________________________
 
