@@ -57,14 +57,11 @@ jobs:
 
       - run: cd ${{ github.workspace }}/..
 
-      - run: mkdir Qt5
-
       - name: Install Qt5
         uses: jurplel/install-qt-action@v2
         with:
-          #version: 5.12.2
+          version: 5.12.2
           #arch: win64_msvc2019_64
-          dir: '${{ github.workspace }}/..'
           setup-python: 'false'
 
       - run: setx QTDIR "${{ github.workspace }}\..\Qt\5.15.2\msvc2019_64"
