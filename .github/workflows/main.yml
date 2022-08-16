@@ -64,11 +64,11 @@ jobs:
           #arch: win64_msvc2019_64
           #setup-python: 'false'
 
-      - run: setx QTDIR "env.Qt5_DIR\5.15.2\msvc2019_64"
+      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
 
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "env.Qt5_DIR\plugins\platforms\"
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
-      - run: Powershell.exe -Command "[Environment]::SetEnvironmentVariable('Path', $env:Path + ';env.Qt5_DIR\5.15.2\msvc2019_64;%cd%\LibreCAD_3\out\build\x64-Debug\lib;%cd%\Qt\5.15.2\msvc2019_64\bin', 'User')"
+      - run: Powershell.exe -Command "[Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.2\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.2\msvc2019_64\bin', 'User')"
       
       - run: cd ${{ github.workspace }}
 
