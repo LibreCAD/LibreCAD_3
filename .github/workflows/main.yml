@@ -51,6 +51,10 @@ jobs:
 
       - run: cd ${{ github.workspace }}
 
+      - run: git submodule init
+
+      - run: git submodule update --recursive --remote
+
       - run: ${{ github.workspace }}/scripts/windows-install/2.installconan.bat
 
       - run: ${{ github.workspace }}/scripts/windows-install/2.2.createConanDirAndInstallDependencies.bat
