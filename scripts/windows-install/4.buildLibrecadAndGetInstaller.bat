@@ -8,11 +8,11 @@ cd out\build\windows-default
 
 cmake --build . --config RelWithDebInfo
 
-cd bin\RelWithDebInfo
+cd bin
 
 WinDeployQt librecad.exe
 
-cd ..\..
+cd ..
 
 cpack -C RelWithDebInfo
 
