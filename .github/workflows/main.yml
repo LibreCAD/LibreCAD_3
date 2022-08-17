@@ -81,5 +81,5 @@ jobs:
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: LibreCAD3*exe
+          path: LibreCAD3-0.1.1-win64.exe
           name: LibreCAD3.exe
