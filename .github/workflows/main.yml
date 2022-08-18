@@ -81,5 +81,5 @@ jobs:
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: 'LibreCAD3**exe' #this should capture LibreCAD3-0.1.1-win64.exe or any future modifications
+          path: '${{ github.workspace }}/out/build/windows-default/LibreCAD3**.exe'
           name: LibreCAD3.exe
