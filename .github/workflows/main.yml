@@ -31,12 +31,12 @@ jobs:
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: ${{ github.workspace }}/build/LibreCAD*AppImage
+          path: ${{ github.workspace }}/build/LibreCAD**AppImage
           name: LibreCAD3.AppImage
       - name: Uploading snap
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: ${{ github.workspace }}/LibreCAD*snap
+          path: ${{ github.workspace }}/librecad**snap
           name: LibreCAD3.snap
   windows:
     name: Building LibreCAD3 on windows runner
