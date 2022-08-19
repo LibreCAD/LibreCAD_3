@@ -16,6 +16,7 @@ cd /usr/src/gtest
 sudo cmake CMakeLists.txt
 sudo make
 
+cd lib #meeded in ubuntu 20.04+
 sudo cp *.a /usr/lib
 
 cd
