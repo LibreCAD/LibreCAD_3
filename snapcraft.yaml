@@ -1,7 +1,7 @@
 name: librecad
 version: '0.0.9'
 grade: stable
-base: core18
+base: core20
 confinement: devmode
 summary: "librecad: is a cad"
 description: |
