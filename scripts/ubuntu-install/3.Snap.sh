@@ -1,3 +1,5 @@
+sudo snap remove snapcraft
+
 sudo snap install snapcraft
 
 snap run snapcraft --destructive-mode
