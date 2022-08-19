@@ -27,6 +27,3 @@ cd release
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
 make
 sudo make install
-
-export libdxfrwPath=`pwd` #we need to export the path to the libdxfrw folder for linuxdeploy to get libdxfrw sistem libraries
-
