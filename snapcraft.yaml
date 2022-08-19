@@ -56,7 +56,7 @@ parts:
                         - "-DBUILD_SHARED_LIBS=On"
         libdxfrw:
                 plugin: cmake
-                source: ~/libdxfrw
+                source: /home/runner/libdxfrw
                 configflags:
                         - "-DBUILD_SHARED_LIBS=On"
 

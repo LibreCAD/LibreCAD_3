@@ -16,7 +16,6 @@ cd /usr/src/gtest
 sudo cmake CMakeLists.txt
 sudo make
 
-cd lib #potser no fa falta.
 sudo cp *.a /usr/lib
 
 cd
