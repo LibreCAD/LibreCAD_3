@@ -51,12 +51,21 @@ parts:
                         - libboost-log-dev
                         - libboost-program-options-dev
                         - libglew2.1
-                configflags:
+                cmake-parameters:
                         - "-DCMAKE_INSTALL_PREFIX=/usr"
-                        - "-DBUILD_SHARED_LIBS=On"
+                        - "-DBUILD_SHARED_LIBS=ON"
+                #For 18.04
+                #configflags:
+                #        - "-DCMAKE_INSTALL_PREFIX=/usr"
+                #        - "-DBUILD_SHARED_LIBS=On"
         libdxfrw:
                 plugin: cmake
                 source: /home/runner/libdxfrw
-                configflags:
-                        - "-DBUILD_SHARED_LIBS=On"
+                cmake-parameters:
+                        - "-DBUILD_SHARED_LIBS=ON"
+
+
+                #For 18.04
+                #configflags:
+                #        - "-DBUILD_SHARED_LIBS=On"
 
