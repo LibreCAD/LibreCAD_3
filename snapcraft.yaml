@@ -1,4 +1,4 @@
-name: librecad
+name: LibreCAD
 version: '0.0.9'
 grade: stable
 base: core18
