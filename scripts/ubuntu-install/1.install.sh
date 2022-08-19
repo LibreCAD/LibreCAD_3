@@ -1,4 +1,4 @@
-sudo apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-log-dev libboost-program-options-dev libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev libbz2-dev libglfw3-dev libglm-dev cmake
+sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-log-dev libboost-program-options-dev libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev libbz2-dev libglfw3-dev libglm-dev cmake
 
 sudo apt remove --purge --auto-remove cmake
 sudo apt update && \
