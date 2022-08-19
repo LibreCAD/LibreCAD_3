@@ -16,4 +16,4 @@ chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
 sudo cp ../AppImage/librecad.* AppDir/
 sudo cp $libdxfrwPath/libdxfrw.so.1 AppDir/usr/lib
 
-sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64 ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable AppDir/usr/bin/librecad --desktop-file AppDir/librecad.desktop --icon-file AppDir/librecad.svg --plugin qt
+sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable AppDir/usr/bin/librecad --desktop-file AppDir/librecad.desktop --icon-file AppDir/librecad.svg --plugin qt
