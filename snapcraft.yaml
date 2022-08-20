@@ -7,7 +7,7 @@ summary: "librecad: is a cad"
 description: |
         it really is.
 environment:
-        LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64:$LD_LIBRARY_PATH
+        LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
 
 apps:
         librecad:
@@ -20,7 +20,6 @@ parts:
                 build-snaps:
                         - kde-frameworks-5-core18-sdk
                         - kde-frameworks-5-core18
-                          #I don't know if i need more packages
                 source: .
                 build-packages:
                         - qttools5-dev 
