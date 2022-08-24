@@ -109,8 +109,6 @@ LCADViewer::~LCADViewer()
 
 void LCADViewer::initializeGL()
 {
-        
-    
     QString sPathToShaders = QCoreApplication::applicationDirPath() + "/../resources/shaders/";
     QString sPathToFonts = QCoreApplication::applicationDirPath() + "/../resources/fonts/";
 
@@ -157,7 +155,6 @@ void LCADViewer::initializeGL()
         createPainters(width, height);
     }
 
-    
 }
 
 

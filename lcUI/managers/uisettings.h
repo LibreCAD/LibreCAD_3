@@ -11,8 +11,6 @@ namespace ui
 class UiSettings : public lc::storage::settings::ModuleSettings
 {
 public:
-
-
     /**
     * \brief Write the ui settings to settings file
     * \param pointer to CustomizeToolbar widget

@@ -12,7 +12,6 @@ using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
     _pluginManager(_L.state(), "gui") {
-        
 }
 
 LuaInterface::~LuaInterface() {

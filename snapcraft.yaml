@@ -11,7 +11,7 @@ environment:
 
 apps:
         librecad:
-                command: usr/bin/librecad 
+                command: usr/bin/librecad
                 extensions:
                         - kde-neon
 parts:
@@ -23,7 +23,7 @@ parts:
                 source: .
                 build-packages:
                         - qttools5-dev 
-                        - qttools5-dev-tools 
+                        - qttools5-dev-tools
                         - libqt5opengl5-dev
                         - liblua5.2-dev
                         - git

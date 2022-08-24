@@ -42,10 +42,10 @@ jobs:
     name: Building LibreCAD3 on windows runner
     runs-on: windows-latest
     steps:
- 
+
       - name: Checkout
         uses: actions/checkout@v2.4.2
-      
+
       - name: Install Visual Studio 2019 with tools
         run: ${{ github.workspace }}/scripts/windows-install/1.2.installVisual2019.bat
 
@@ -73,11 +73,11 @@ jobs:
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
       - run: ${{ github.workspace }}/scripts/windows-install/3.1.PathVariables.ps1
-      
+
       - run: cd ${{ github.workspace }}
 
       - run: ${{ github.workspace }}/scripts/windows-install/4.buildLibrecadAndGetInstaller.bat
-          
+
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:

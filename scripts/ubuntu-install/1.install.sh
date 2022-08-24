@@ -21,7 +21,7 @@ sudo cmake CMakeLists.txt
 sudo make
 
 cd lib #meeded in ubuntu 20.04+
-sudo cp *.a /usr/lib
+sudo cp ./*.a /usr/lib
 
 cd
 git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
