@@ -11,16 +11,17 @@ See https://github.com/LibreCAD/LibreCAD_3/wiki/Building
 Reading materials for feature usage
 =========
 
-If we want to support associative drawings, this is a good introduction to get started
-[Understanding how dimensions are associated with objects](https://web.archive.org/web/20170318040619/http://www.ellenfinkelstein.com/acadblog/understanding-how-dimensions-are-associated-with-objects/)
+If we want to support associative drawings, this is a good introduction to get started:
+
+[_Understanding how dimensions are associated with objects_](https://web.archive.org/web/20170318040619/http://www.ellenfinkelstein.com/acadblog/understanding-how-dimensions-are-associated-with-objects/)
 
 
 List of apparently awesome frameworks
 =========
-https://github.com/fffaraz/awesome-cpp
-https://github.com/retuxx/tinyspline
-https://github.com/ebassi/graphene
-http://discourse.mcneel.com/c/opennurbs
+* https://github.com/fffaraz/awesome-cpp
+* https://github.com/retuxx/tinyspline
+* https://github.com/ebassi/graphene
+* http://discourse.mcneel.com/c/opennurbs
 
 If we are short of sample DXF files to test
 =========
