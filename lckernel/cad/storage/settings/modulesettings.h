@@ -23,15 +23,6 @@ public:
 
     virtual ~ModuleSettings();
 
-
-    /**
-     * @brief Set the atribute pathToExe and recalculate path to json settings
-     * 
-     * @param pathToExe String towards the exe
-     */
-    //void setExePath(std::string pathToExe);
-
-
     /**
      * @brief Return setting value
      * @param name Name of the setting

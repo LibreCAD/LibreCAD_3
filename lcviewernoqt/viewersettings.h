@@ -1,7 +1,3 @@
-//#pragma once
-
-
-
 #pragma once
 
 #include <cad/storage/settings/modulesettings.h>
@@ -20,12 +16,3 @@ namespace lc {
         #endif //VIEWERSETTINGS_SETTERS
     }
 }
-
-/*
-ModuleSettings viewerSettings({
-    {SETTINGS_GL_SHADER_PATH, &StringSettingValue("pathNotSet")},
-    {SETTINGS_GL_FONT_PATH, &StringSettingValue("pathNotSet")}
-    });
-
-*/
-//#endif //VIEWERSETTINGS_H

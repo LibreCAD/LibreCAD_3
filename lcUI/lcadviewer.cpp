@@ -114,18 +114,11 @@ void LCADViewer::initializeGL()
     QString sPathToShaders = QCoreApplication::applicationDirPath() + "/../resources/shaders/";
     QString sPathToFonts = QCoreApplication::applicationDirPath() + "/../resources/fonts/";
 
-    //const char* cPathToShaders = sPathToShaders.toLocal8Bit().constData();
-    //const char* cPathToFonts = sPathToFonts.toLocal8Bit().constData();
-
     auto pathToShaders = lc::storage::settings::StringSettingValue(sPathToShaders.toStdString());
     auto pathToFonts = lc::storage::settings::StringSettingValue(sPathToFonts.toStdString());
 
     (lc::viewer::setShader(pathToShaders));
     (lc::viewer::setFont(pathToFonts));
-
-    //lc::viewer::opengl::SHADER_PATH = cPathToShaders;
-    //lc::viewer::opengl::FONT_PATH = cPathToFonts;
-
 
     QOpenGLWidget::makeCurrent();
     QOpenGLContext *CC= QOpenGLContext::currentContext();

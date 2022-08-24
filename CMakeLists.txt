@@ -88,16 +88,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(Boost_USE_MULTITHREADED ON)
 
-# settings path
-IF (WIN32)
-
 set(SETTINGS_PATH "") #The settings will be at the same place as executable.
 
-ELSEIF (UNIX)
-
-set(SETTINGS_PATH "") #In AppImages, it has to be relative to the AppRun, not librecad
-
-ENDIF()
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
@@ -217,17 +209,11 @@ install(
     DESTINATION ${CMAKE_INSTALL_BINDIR}  # install librecad in the bin folder of the installer 
 )
 
-install(FILES "${CMAKE_SOURCE_DIR}/luaPath/win/path.lua"
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-ELSEIF(UNIX) #else if it's linux.
-
-install(FILES "${CMAKE_SOURCE_DIR}/luaPath/unix/path.lua"
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
 ENDIF()
+
+install(FILES "${CMAKE_SOURCE_DIR}/path.lua"
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 #Get shaders and fonts
 install(

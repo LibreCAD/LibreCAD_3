@@ -57,7 +57,6 @@ painters/opengl/manager.cpp
 painters/opengl/cacher.cpp
 painters/opengl/renderer.cpp
 painters/opengl/shader.cpp
-#painters/opengl/resources/res.cpp
 
 )
 
@@ -142,13 +141,6 @@ include_directories(
 
 message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
 
-# creating res.cpp for path of opengl resources
-
-#add_custom_command(
-#       PRE_BUILD
-#       OUTPUT ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
-#       COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
-#)
 
 # Boost logging
 find_package(Boost REQUIRED COMPONENTS log)
