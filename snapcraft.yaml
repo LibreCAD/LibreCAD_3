@@ -22,7 +22,7 @@ parts:
                         - kde-frameworks-5-core18
                 source: .
                 build-packages:
-                        - qttools5-dev 
+                        - qttools5-dev
                         - qttools5-dev-tools
                         - libqt5opengl5-dev
                         - liblua5.2-dev

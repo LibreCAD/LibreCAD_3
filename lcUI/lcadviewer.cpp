@@ -154,7 +154,6 @@ void LCADViewer::initializeGL()
         deletePainters();
         createPainters(width, height);
     }
-
 }
 
 
