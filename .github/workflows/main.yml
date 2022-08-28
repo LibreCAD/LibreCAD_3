@@ -11,22 +11,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.2
+        with:
+          submodules: 'recursive'
+
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
 
       - run: cd ${{ github.workspace }}
 
-      - run: git submodule init
-
-      - run: git submodule update --recursive --remote
-
-      - run: ${{ github.workspace }}/scripts/ubuntu-install/1.install.sh
+      - run: sudo ${{ github.workspace }}/scripts/ubuntu-install/createAppImage.sh
 
       - run: cd ${{ github.workspace }}
 
-      - run: sudo ${{ github.workspace }}/scripts/ubuntu-install/2.AppImage.sh
-
-      - run: cd ${{ github.workspace }}
-
-      - run: ${{ github.workspace }}/scripts/ubuntu-install/3.Snap.sh
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3.1.0
@@ -45,19 +41,17 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2.4.2
+        with:
+          submodules: 'recursive'
 
       - name: Install Visual Studio 2019 with tools
-        run: ${{ github.workspace }}/scripts/windows-install/1.2.installVisual2019.bat
+        run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
 
       - run: cd ${{ github.workspace }}
 
-      - run: git submodule init
+      - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
 
-      - run: git submodule update --recursive --remote
-
-      - run: ${{ github.workspace }}/scripts/windows-install/2.installconan.bat
-
-      - run: ${{ github.workspace }}/scripts/windows-install/2.2.createConanDirAndInstallDependencies.bat
+      - run: ${{ github.workspace }}/scripts/windows-install/createConanDirAndInstallDependencies.bat
 
       - run: cd ${{ github.workspace }}/..
 
@@ -65,18 +59,16 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           version: 5.12.2
-          #arch: win64_msvc2019_64
-          #setup-python: 'false'
 
       - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
-      - run: ${{ github.workspace }}/scripts/windows-install/3.1.PathVariables.ps1
+      - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
 
       - run: cd ${{ github.workspace }}
 
-      - run: ${{ github.workspace }}/scripts/windows-install/4.buildLibrecadAndGetInstaller.bat
+      - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
 
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
