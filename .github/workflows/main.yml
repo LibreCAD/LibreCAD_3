@@ -68,8 +68,7 @@ jobs:
 
       - run: cd ${{ github.workspace }}
 
-      - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
-
+      - run: ${{ github.workspace }}scripts/windows-install/buildLibrecadAndCreatePackage.bat
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:
