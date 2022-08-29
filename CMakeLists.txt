@@ -10,7 +10,7 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
-option(WITH_LUACMDINTERFACE "Build Lua command line interface" OFF) #TODO fails in Ubuntu 18.04, this is why OFF
+option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON) #TODO fails in Ubuntu 18.04, this is why OFF #Trying out it on ON again, since now we are using 20.04
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_LIBOPENCAD "Use libopencad" OFF)
