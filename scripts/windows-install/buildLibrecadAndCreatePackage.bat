@@ -14,5 +14,5 @@ WinDeployQt librecad.exe
 
 cd ..
 
-cpack -C Release
+cpack -C RelWithDebInfo
 
