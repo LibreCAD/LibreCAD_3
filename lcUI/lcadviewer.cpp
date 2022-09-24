@@ -251,7 +251,7 @@ void LCADViewer::resizeGL(int width, int height)
 
 void LCADViewer::wheelEvent(QWheelEvent *event) {
     // Make 10% for 15deg turn, enable slow zoom for mouse with more precision
-    // May be use accumulation if very sensetive
+    // May be use accumulation if very sensitive
     QOpenGLWidget::makeCurrent();
     QPoint numDegrees = event->angleDelta()/8;
     double zoom;

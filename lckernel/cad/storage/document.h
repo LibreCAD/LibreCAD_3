@@ -180,7 +180,7 @@ public:
 
     /*!
      * \brief findEntitiesByLayer
-     * rturn a entities container with all entities on the given layer
+     * return an entities container with all entities on the given layer
      * \param layer
      * \return
      */
@@ -206,7 +206,7 @@ public:
      */
     virtual std::map<std::string, meta::Layer_CSPtr> allLayers() const = 0;
 
-    virtual std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive> allMetaTypes() = 0;
+    virtual std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensitive> allMetaTypes() = 0;
 
     /**
      * @brief return a layer by it's name

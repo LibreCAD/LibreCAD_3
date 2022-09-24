@@ -10,7 +10,7 @@ void HookEvent::clear() {
 }
 
 void HookEvent::grab() {
-    nextDispatch=dispachedTo;
+    nextDispatch=dispatchedTo;
 }
 
 void HookEvent::free() {
@@ -38,7 +38,7 @@ void HookManager::dispatch() {
             // hookEvent.nextDispatch()=> check if grab is called
             if (lastResult || hookEvent.nextDispatch)
                 return;
-            hookEvent.dispachedTo = i.second;//to enable grab
+            hookEvent.dispatchedTo = i.second;//to enable grab
             lastResult = i.second(hookEvent);
         }
     } else {

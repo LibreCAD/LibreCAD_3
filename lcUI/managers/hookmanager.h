@@ -42,7 +42,7 @@ private:
      * @brief pointer to function of current handler
      *
      */
-    hookCallback dispachedTo = nullptr;
+    hookCallback dispatchedTo = nullptr;
 
     /**
      * @brief bool so something like e.preventDefault
@@ -54,7 +54,7 @@ private:
 };
 
 /**
- * @brief Manager to dispach events
+ * @brief Manager to dispatch events
  * This should be provided with event from lcadviewer
  * This should be member of lcadviewer for now
  */

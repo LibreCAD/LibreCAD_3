@@ -741,7 +741,7 @@ lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     if(data.lineType == LTYPE_BYBLOCK) {
         linePattern = std::make_shared<lc::meta::DxfLinePatternByBlock>();
     }
-    else if (!(lc::tools::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::tools::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+    else if (!(lc::tools::StringHelper::cmpCaseInsensitive()(data.lineType, SKIP_BYLAYER) || lc::tools::StringHelper::cmpCaseInsensitive()(data.lineType, SKIP_CONTINUOUS))) {
         linePattern = _document->linePatternByName(data.lineType);
     }
 
@@ -1563,7 +1563,7 @@ lc::Units DXFimpl::numberToUnit(int num) {
 }
 
 /**
- * Converst a units enum into a DXF units number e.g. for INSUNITSs.
+ * Converts a units enum into a DXF units number e.g. for INSUNITSs.
  */
 int DXFimpl::unitToNumber(lc::Units unit) {
     try {

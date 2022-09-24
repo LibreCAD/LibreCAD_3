@@ -31,7 +31,7 @@ public:
     void
     replaceDocumentMetaType(const meta::DocumentMetaType_CSPtr& oldDmt, meta::DocumentMetaType_CSPtr newDmt) override;
 
-    std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive>
+    std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensitive>
     allMetaTypes() override;
 
     EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const meta::Layer_CSPtr& layer) override;

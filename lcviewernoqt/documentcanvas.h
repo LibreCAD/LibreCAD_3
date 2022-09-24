@@ -264,7 +264,7 @@ private:
     std::map<unsigned long, lc::viewer::LCVDrawItem_SPtr> _entityDrawItem;
 
     // map with key=id
-    std::map< unsigned long, std::pair <lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > _cachedEntites;
+    std::map< unsigned long, std::pair <lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > _cachedEntities;
 
     // Painter
     lc::viewer::LcPainter* _painterPtr;
