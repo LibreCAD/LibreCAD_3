@@ -148,6 +148,10 @@ public:
 
     void writeAppId() override;
 
+    void writeObjects() override {}
+
+    void addPlotSettings(const DRW_PlotSettings *data) override {}
+
     void getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_CSPtr& entity);
 
     void writeEntity(const lc::entity::CADEntity_CSPtr& entity);
