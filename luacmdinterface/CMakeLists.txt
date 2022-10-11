@@ -26,7 +26,7 @@ FIND_PACKAGE ( Threads REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
 
 #Lua
-find_package(Lua 5.2 REQUIRED)
+find_package(Lua 5.3 EXACT REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 
