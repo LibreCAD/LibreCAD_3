@@ -53,7 +53,7 @@ else ()
 endif ()
 
 #Lua
-find_package(Lua 5.2 REQUIRED)
+find_package(Lua 5.3 EXACT REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 
 # Logging
