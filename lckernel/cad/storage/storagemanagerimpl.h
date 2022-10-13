@@ -22,7 +22,7 @@ namespace lc {
 namespace storage {
 /**
  * A default storage manager for document's.
- * The data will be cerated in memory and will be lost when the application terminates
+ * The data will be created in memory and will be lost when the application terminates
  *
  * @param document
  */
@@ -49,7 +49,7 @@ public:
     void addDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) override;
     void removeDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) override;
     void replaceDocumentMetaType(meta::DocumentMetaType_CSPtr oldDmt, meta::DocumentMetaType_CSPtr newDmt) override;
-    std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive> allMetaTypes() const override;
+    std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensitive> allMetaTypes() const override;
     EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(meta::Block_CSPtr block) const override;
     void optimise() override;
 
@@ -57,7 +57,7 @@ private:
     meta::DocumentMetaType_CSPtr _metaDataTypeByName(const std::string& id) const override;
 
     EntityContainer <entity::CADEntity_CSPtr> _entities;
-    std::map<std::string, meta::DocumentMetaType_CSPtr, tools::StringHelper::cmpCaseInsensetive> _documentMetaData;
+    std::map<std::string, meta::DocumentMetaType_CSPtr, tools::StringHelper::cmpCaseInsensitive> _documentMetaData;
     std::map<std::string, EntityContainer<entity::CADEntity_CSPtr> > _blocksEntities;
 };
 }

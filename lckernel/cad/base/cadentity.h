@@ -173,7 +173,7 @@ public:
      */
     meta::Block_CSPtr block() const;
 
-    /* Entity Propperties Related Code*/
+    /* Entity Properties Related Code*/
 
     virtual PropertiesMap availableProperties() const;
 

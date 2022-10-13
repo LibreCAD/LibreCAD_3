@@ -97,7 +97,7 @@ public:
     */
     virtual void replaceDocumentMetaType(meta::DocumentMetaType_CSPtr oldDmt, meta::DocumentMetaType_CSPtr newDmt) = 0;
 
-    virtual std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive>
+    virtual std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensitive>
     allMetaTypes() const = 0;
 
     /**

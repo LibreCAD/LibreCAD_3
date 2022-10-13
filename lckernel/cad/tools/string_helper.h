@@ -57,7 +57,7 @@ public:
     /**
      * Comparator for map to setup case Insensitive comparison ofstd::strings, useful in std::map
      */
-    struct cmpCaseInsensetive : std::binary_function<std::string, std::string, bool> {
+    struct cmpCaseInsensitive : std::binary_function<std::string, std::string, bool> {
         // case-independent (ci) compare_less binary function
         struct nocase_compare : public std::binary_function<unsigned char, unsigned char, bool> {
             bool operator()(unsigned char c1, unsigned char c2) const {

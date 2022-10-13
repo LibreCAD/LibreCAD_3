@@ -143,7 +143,7 @@ void DocumentImpl::replaceDocumentMetaType(const meta::DocumentMetaType_CSPtr& o
     }
 }
 
-std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive> DocumentImpl::allMetaTypes() {
+std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensitive> DocumentImpl::allMetaTypes() {
     return _storageManager->allMetaTypes();
 }
 
