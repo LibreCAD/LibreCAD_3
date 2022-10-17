@@ -20,8 +20,8 @@ OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainW
 
 void OperationLoader::loadLuaOperations(const std::string& luaPath) {
     // call operations and createoperations first
-    _L.dofile(luaPath + "/actions/operations.lua");
-    _L.dofile(luaPath + "/createActions/createOperations.lua");
+    _L.dofile( luaPath + "/actions/operations.lua");
+    _L.dofile( luaPath + "/createActions/createOperations.lua");
     loadLuaFolder("createActions", "createOperations", luaPath);
 
     // create list of all operations in creationGroup and dimensionsGroup

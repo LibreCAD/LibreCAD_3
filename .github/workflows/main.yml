@@ -1,0 +1,76 @@
+name: Librecad3 Builders
+'on':
+  workflow_dispatch: null
+  push:
+    branches:
+      - main
+jobs:
+  linux:
+    name: Building LibreCAD3 on ubuntu runner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.2
+        with:
+          submodules: 'recursive'
+
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
+
+      - run: cd ${{ github.workspace }}
+
+      - run: sudo ${{ github.workspace }}/scripts/ubuntu-install/createAppImage.sh
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
+
+      - name: Uploading AppImage
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          path: ${{ github.workspace }}/build/LibreCAD**AppImage
+          name: LibreCAD3.AppImage
+      - name: Uploading snap
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          path: ${{ github.workspace }}/librecad**snap
+          name: LibreCAD3.snap
+  windows:
+    name: Building LibreCAD3 on windows runner
+    runs-on: windows-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2.4.2
+        with:
+          submodules: 'recursive'
+
+      - name: Install Visual Studio 2019 with tools
+        run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
+
+      - run: ${{ github.workspace }}/scripts/windows-install/createConanDirAndInstallDependencies.bat
+
+      - run: cd ${{ github.workspace }}/..
+
+      - name: Install Qt5
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: 5.12.2
+
+      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
+
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+
+      - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
+      - name: Uploading exe
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          path: '${{ github.workspace }}/out/build/windows-default/LibreCAD3**.exe'
+          name: LibreCAD3.exe

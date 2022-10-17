@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(LCKERNEL)
-
-#TODO: Fix this
-set(PATTERN_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/res/hatch)
+           
+set(PATTERN_RESOURCE_PATH ${FINAL_INSTALL_DIR}/usr/share/librecad/res/hatch)
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/res/hatch"
 		DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad"
 )
@@ -19,6 +18,9 @@ add_definitions("-Wall")
 message("***** LibreCAD kernel *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+#Add QT Library for cad/storage/settings/modulesettings
+find_package(Qt5 REQUIRED COMPONENTS Core)
 
 # SOURCE FILES
 set(lckernel_srcs
@@ -276,7 +278,7 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx)
+target_link_libraries(lckernel ${Boost_LIBRARIES} Qt5::Core ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx)
 
 # INSTALLATION
 install(TARGETS lckernel 

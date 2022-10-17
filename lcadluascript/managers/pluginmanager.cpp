@@ -12,7 +12,7 @@ PluginManager::PluginManager(lua_State* l, const char* interface) :
 }
 
 void PluginManager::loadPlugins() {
-    const char* path = "../lcUILua/plugins/"; //TODO: get path
+    const char* path = "../finalInstallDir/usr/share/librecad/lcUILua/plugins/";
 
     DIR* dir;
     struct dirent* ent;

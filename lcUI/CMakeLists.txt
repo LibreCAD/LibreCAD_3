@@ -4,6 +4,7 @@ PROJECT (LC)
 message("***** LibreCAD Qt user interface *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set (SETTINGS_PATH "${CMAKE_INSTALL_BINDIR}")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -273,7 +274,7 @@ if(WITH_UNITTESTS)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
-add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES}) 
 
 qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
@@ -282,6 +283,6 @@ ${GLEW_LIBRARY})
 
 # INSTALLATION
 install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${SETTINGS_PATH}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${SETTINGS_PATH}")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad/lcUI")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAKE_INSTALL_BINDIR}")

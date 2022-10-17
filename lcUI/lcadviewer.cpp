@@ -7,6 +7,7 @@
 #include <cad/logger/logger.h>
 #include "widgets/guiAPI/menu.h"
 #include "managers/contextmenumanager.h"
+#include "viewersettings.h"
 
 using namespace lc;
 using namespace lc::ui;
@@ -108,6 +109,15 @@ LCADViewer::~LCADViewer()
 
 void LCADViewer::initializeGL()
 {
+    QString sPathToShaders = QCoreApplication::applicationDirPath() + "/../resources/shaders/";
+    QString sPathToFonts = QCoreApplication::applicationDirPath() + "/../resources/fonts/";
+
+    auto pathToShaders = lc::storage::settings::StringSettingValue(sPathToShaders.toStdString());
+    auto pathToFonts = lc::storage::settings::StringSettingValue(sPathToFonts.toStdString());
+
+    (lc::viewer::setShader(pathToShaders));
+    (lc::viewer::setFont(pathToFonts));
+
     QOpenGLWidget::makeCurrent();
     QOpenGLContext *CC= QOpenGLContext::currentContext();
 

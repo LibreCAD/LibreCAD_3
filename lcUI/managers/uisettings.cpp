@@ -5,8 +5,10 @@
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/istreamwrapper.h>
 #include <fstream>
+#include <QCoreApplication>
 
 #include <iostream>
+
 
 using namespace lc::ui;
 
@@ -28,7 +30,7 @@ void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool 
 }
 
 bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
-    std::ifstream schemaFile(_filePaths["settings_load"] + schemaFileName);
+    std::ifstream schemaFile(QCoreApplication::applicationDirPath().toStdString() + _filePaths["settings_load"] + schemaFileName);
 
     if (schemaFile.fail()) {
         std::cout << "Schema file not found" << std::endl;
@@ -112,13 +114,13 @@ std::map<std::string, int> UiSettings::readDockSettings(std::map<std::string, in
 }
 
 rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
-    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
+    std::ifstream settingsFile(QCoreApplication::applicationDirPath().toStdString()  + _filePaths["settings_load"] + fileName);
 
     while (settingsFile.fail()) {
         if (fileName == settingsFileName) {
             std::cout << "No settings file found, loading default settings." << std::endl;
             fileName = defaultSettingsFileName;
-            settingsFile.open(_filePaths["settings_load"] + fileName);
+            settingsFile.open(QCoreApplication::applicationDirPath().toStdString() + _filePaths["settings_load"] + fileName);
         }
         else {
             std::cout << "Default settings not found" << std::endl;
@@ -144,7 +146,7 @@ rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
 }
 
 void UiSettings::writeSettingsFile(rapidjson::Document& document) {
-    std::ofstream outFile(_filePaths["settings_load"] + settingsFileName);
+    std::ofstream outFile(QCoreApplication::applicationDirPath().toStdString() + _filePaths["settings_load"] + settingsFileName);
 
     if (outFile.fail()) {
         std::cout << "File could not be opened" << std::endl;

@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.6)
 project(LC)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#https://stackoverflow.com/questions/7229571/cmake-visual-studio-debug-folder
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)  #This for each is needed to avoid binary builds in bin/relDebWithInfo folder
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
-option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
+option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON) #TODO fails in Ubuntu 18.04, this is why OFF #Trying out it on ON again, since now we are using 20.04
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_LIBOPENCAD "Use libopencad" OFF)
@@ -22,7 +28,7 @@ if (NOT MSVC) # Too much warnings on MSVC
 endif()
 
 include(GNUInstallDirs)
-set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+set(FINAL_INSTALL_DIR "finalInstallDir")
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
@@ -82,8 +88,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(Boost_USE_MULTITHREADED ON)
 
-# settings path
-set(SETTINGS_PATH "${PROJECT_BINARY_DIR}/bin")
+set(SETTINGS_PATH "") #The settings will be at the same place as executable.
+
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
@@ -155,3 +161,69 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+
+# Install all needed files in windows and set up some cpack variables
+IF (WIN32)
+
+#Cpack -> NSIS
+#General Vars
+set(CPACK_PACKAGE_NAME "LibreCAD3")
+set(CPACK_PACKAGE_VENDOR "LibreCAD")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}) #name of the install folder
+set(CPACK_PACKAGE_DESCRIPTION "LibreCAD is a free Open Source CAD application for Windows, Apple and Linux. Support and documentation are free from our large, dedicated community of users, contributors and developers.")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Source 2D-CAD")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://librecad.org/")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE") 
+#NSIS Vars
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL "ON")
+set(CPACK_NSIS_MODIFY_PATH "ON")
+set(CPACK_CREATE_DESKTOP_LINKS "ON")
+set(CPACK_NSIS_DISPLAY_NAME ${CPACK_PACKAGE_NAME})
+set(CPACK_NSIS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+set(CPACK_NSIS_HELP_LINK "https://github.com/LibreCAD/LibreCAD_3")
+set(CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL})
+set(CPACK_NSIS_CONTACT "https://librecad.zulipchat.com/login/")
+set(CPACK_NSIS_FINISH_TITLE "Thanks for installing LibreCAD 3")
+#For the shortcut
+set(CPACK_PACKAGE_EXECUTABLES
+    "librecad" "Librecad shortcut"
+)
+set(CPACK_CREATE_DESKTOP_LINKS 
+    "librecad"
+)
+include(CPack)
+
+
+install(
+    DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} 
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/..  # Since we get the folder(bin) instead of the files, we must "paste" to the root install folder
+    PATTERN "*.pdb" EXCLUDE
+    PATTERN "*.exe" EXCLUDE
+    PATTERN "path.lua" EXCLUDE
+)
+install(
+    FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/librecad.exe
+    DESTINATION ${CMAKE_INSTALL_BINDIR}  # install librecad in the bin folder of the installer 
+)
+
+ENDIF()
+
+install(FILES "${CMAKE_SOURCE_DIR}/path.lua"
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+#Get shaders and fonts
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/shaders
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources
+)
+
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/lcviewernoqt/painters/opengl/resources/fonts
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/../resources        
+)
+
+include(InstallRequiredSystemLibraries)

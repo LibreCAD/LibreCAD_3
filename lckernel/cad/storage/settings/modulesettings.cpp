@@ -24,6 +24,7 @@ ModuleSettings::~ModuleSettings() {
     _settings.clear();
 }
 
+
 const ISettingValue* ModuleSettings::get(const std::string& name) const {
     try {
         return _settings.at(name);
