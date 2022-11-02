@@ -30,8 +30,8 @@ const Area CubicBezier::boundingBox() const {
     std::vector<double> x_roots = lc::maths::Math::quadraticSolver({b.x()/a.x(), c.x()/a.x()});
     std::vector<double> y_roots = lc::maths::Math::quadraticSolver({b.y()/a.y(), b.y()/a.y()});
 
-    std::vector<double> x_{_pointA.x(), _pointB.x(),_pointC.x(), _pointD.x() };
-    std::vector<double> y_{_pointA.y(), _pointB.y(),_pointC.y(), _pointD.y() };
+    std::vector<double> x_{_pointA.x(), _pointD.x() };
+    std::vector<double> y_{_pointA.y(), _pointD.y() };
 
 
     for(const double tx_ : x_roots) {
