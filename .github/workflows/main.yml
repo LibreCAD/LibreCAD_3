@@ -66,6 +66,15 @@ jobs:
         with:
           version: 5.15.2
 
+      - name: Install boost
+        shell: bash
+        run:
+          version: 5.15.2
+          curl -# -L -o boost.7z https://boostorg.jfrog.io/artifactory/main/release/1.75.0/source/boost_1_75_0.7z
+          7z x -o. -y boost.7z
+          mv boost_1_75_0 ../boost
+          rm boost.7z
+
       - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\\"
