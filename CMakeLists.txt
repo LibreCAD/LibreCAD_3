@@ -112,9 +112,9 @@ message("  - Use Cairo: ${WITH_CAIRO}")
 
 message("\n")
 
-if(WITH_CAIRO)
+if (WITH_CAIRO)
     add_definitions(-DWITH_CAIRO)
-endif(WITH_QT_UI)
+endif(WITH_CAIRO)
 
 #Add each LibreCAD component
 add_subdirectory("lckernel")

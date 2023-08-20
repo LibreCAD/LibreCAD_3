@@ -1,1 +1,1 @@
-[Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.14\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.14\msvc2019_64\bin', 'User')
+[Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.2\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.2\msvc2019_64\bin', 'User')
