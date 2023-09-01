@@ -39,3 +39,45 @@ jobs:
       #    path: ${{ github.workspace }}/librecad**snap
       #    name: LibreCAD3.snap
       #    retention-days: 2
+
+  windows:
+    name: Building LibreCAD3 on windows runner
+    runs-on: windows-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install Visual Studio 2019 with tools
+        run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
+
+      - run: ${{ github.workspace }}/scripts/windows-install/createConanDirAndInstallDependencies.bat
+
+      - run: cd ${{ github.workspace }}/..
+
+      - name: Install Qt5
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 5.12.2
+
+      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
+
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+
+      - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
+
+      - name: Uploading exe
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          path: '${{ github.workspace }}/out/build/windows-default/LibreCAD3**.exe'
+          name: LibreCAD3.exe

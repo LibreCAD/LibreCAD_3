@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (LCLUASCRIPT)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -49,7 +49,7 @@ find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
     include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
+    include_directories( ${Eigen3_INCLUDE_DIR})
 endif ()
 
 #Lua
@@ -60,6 +60,7 @@ include_directories(${LUA_INCLUDE_DIR})
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
+message(boost_dirs="${Boost_LIBRARY_DIRS}")
 
 
 set(SEPARATE_BUILD OFF)
@@ -80,6 +81,11 @@ endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
 target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel)
+
+if (MSVC)
+    find_package(glew REQUIRED)
+    target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel Eigen3::Eigen GLEW::GLEW)
+endif()
 
 # INSTALLATION
 install(TARGETS lcluascript 

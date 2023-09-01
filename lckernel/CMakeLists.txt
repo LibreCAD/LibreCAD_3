@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.6...3.27)
 project(LCKERNEL)
 
 #TODO: Fix this
@@ -9,6 +9,7 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/res/hatch"
 
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
+add_definitions("-DBOOST_ALL_NO_LIB")
 remove_definitions("-Wall")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
@@ -228,15 +229,17 @@ cad/interface/tangentable.h
 cad/logger/logger.h
 cad/base/cadobject.h
 cad/objects/layout.h
-settings.h
 cad/tools/maphelper.h
 cad/objects/pattern.h
+settings.h
 )
 
 # Boost logging
-find_package(Boost REQUIRED COMPONENTS log)
-include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
+#find_package(Boost REQUIRED COMPONENTS log)
+FIND_PACKAGE (Threads)
+if (NOT MSVC)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
@@ -246,7 +249,7 @@ find_package(Eigen3 REQUIRED)
 if(CMAKE_COMPILER_IS_GNUCXX)
     include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 else()
-    include_directories(${EIGEN3_INCLUDE_DIR})
+    include_directories(${Eigen3_INCLUDE_DIR})
 endif()
 
 # BUILDING CONFIG
@@ -276,7 +279,18 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
+if (MSVC)
+    set_target_properties(lckernel PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    )
+    message(lib_dir_Boost="${Boost_INCLUDE_DIRS}")
+    target_link_libraries(lckernel Boost::log)
+endif()
+
 target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx)
+if (MSVC)
+	target_link_libraries(lckernel Boost::log ${RapidJSON_LIBRARIES})
+endif()
 
 # INSTALLATION
 install(TARGETS lckernel 

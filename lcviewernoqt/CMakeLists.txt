@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (LCVIEWERNOQT)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -128,7 +128,7 @@ painters/opengl/shader.h
 painters/opengl/resources/res.h
 )
 
-cmake_policy(SET CMP0074 OLD)
+#cmake_policy(SET CMP0074 OLD)
 
 # OpenGL & GLEW library-------------------------
 find_package(OpenGL REQUIRED)
@@ -151,10 +151,15 @@ add_custom_command(
 )
 
 # Boost logging
-find_package(Boost REQUIRED COMPONENTS log)
-include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
+#find_package(Boost REQUIRED COMPONENTS log)
+FIND_PACKAGE (Threads)
+if (NOT MSVC)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+    message(boost_dirs="${Boost_LIBRARY_DIRS}")
+endif()
 
+find_package(Freetype)
 find_package(PkgConfig)
 
 if(WITH_CAIRO)
@@ -178,7 +183,7 @@ if(WITH_CAIRO)
 endif()
 
 # FreeType
-find_package(Freetype REQUIRED)
+# find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # libpng and bzip2, required as Freetype dependency on Windows
@@ -190,7 +195,7 @@ find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
     include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
+    include_directories( ${Eigen3_INCLUDE_DIR})
 endif ()
 
 # BUILDING CONFIG
@@ -201,11 +206,11 @@ if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
     include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
-else ()
+else()
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
     include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
-endif ()
+endif()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
@@ -215,6 +220,10 @@ ${Boost_LIBRARIES}
 ${FREETYPE_LIBRARIES}
 ${PNG_LIBRARIES}
 ${BZIP2_LIBRARIES})
+
+if (MSVC)
+    target_link_libraries(lcviewernoqt GLEW::GLEW Freetype::Freetype Boost::log)
+endif()
 
 # INSTALLATION
 install(TARGETS lcviewernoqt

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (LC)
 
 message("***** LibreCAD Qt user interface *****")
@@ -7,6 +7,8 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# to allow Qt qrc files
+set(CMAKE_AUTORCC ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
@@ -91,7 +93,6 @@ managers/uisettings.h
 managers/hookmanager.h
 managers/contextmenumanager.h
 managers/copymanager.h
-managers/metainfomanager.cpp
 managers/metainfomanager.h)
 
 set(UI_srcs
@@ -108,6 +109,7 @@ mainwindow.cpp
 windowmanager.cpp
 operationloader.cpp
 propertyeditor.cpp
+ui/resource.qrc
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
@@ -163,7 +165,7 @@ managers/uisettings.cpp
 managers/contextmenumanager.cpp
 managers/copymanager.cpp
 managers/metainfomanager.cpp
-managers/metainfomanager.h)
+)
 
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui
@@ -201,10 +203,12 @@ else()
 endif()
 
 # Boost logging
-find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
-FIND_PACKAGE ( Threads )
+#find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
+FIND_PACKAGE (Threads)
+if (NOT MSVC)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
+endif()
 
 #Lua
 find_package(Lua 5.3 EXACT REQUIRED)
@@ -221,7 +225,7 @@ set(SEPARATE_BUILD OFF)
 
 # GLEW library-------------------------
 
-cmake_policy(SET CMP0074 OLD)
+#cmake_policy(SET CMP0074 OLD)
 find_package(GLEW REQUIRED)
 
 include_directories(
@@ -267,9 +271,16 @@ set(EXTRA_LIBS
 		Qt5::Svg
         ${APR_LIBRARIES})
 
+if (MSVC)
+    set(EXTRA_LIBS "${EXTRA_LIBS}" Boost::log)
+    find_package(RapidJSON REQUIRED)
+    include_directories("${RapidJSON_INCLUDE_DIR}")
+endif()
+
 #Create library for unit tests
 if(WITH_UNITTESTS)
     add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+    set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
@@ -279,6 +290,10 @@ qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
 ${GLEW_LIBRARY})
+
+if (MSVC)
+    target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
+endif()
 
 # INSTALLATION
 install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")

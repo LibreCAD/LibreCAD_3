@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.8...3.27)
 project(LC)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -24,26 +24,48 @@ endif()
 include(GNUInstallDirs)
 set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
-    include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
+if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
+    #include(${CMAKE_SOURCE_DIR}/conan_toolchain.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
     
     set(WITH_LIBOPENCAD OFF)
     set(WITH_LUACMDINTERFACE FALSE)
     set(WITH_RENDERING_UNITTESTS OFF)
     set(WITH_CAIRO OFF)
-    set(WITH_UNITTESTS ON)
+    #set(WITH_UNITTESTS ON)
 
-    set(BOOST_ROOT "${CONAN_BOOST_ROOT}")
-    set(Boost_USE_STATIC_LIBS ON)
-    add_definitions( -DBOOST_ALL_NO_LIB )
-    add_definitions("${CONAN_DEFINES_BOOST}")
+    #set(Boost_NO_SYSTEM_PATHS true)
+    #set (Boost_USE_STATIC_LIBS OFF CACHE BOOL "use static libraries from Boost")
+    #set (Boost_USE_MULTITHREADED ON)
+    find_package(Boost REQUIRED COMPONENTS boost log)
+#    find_package(Boost REQUIRED
+#      COMPONENTSBoost_USE_MULTITHREADED
+#      system program_options thread filesystem
+#      date_time chrono timer regex serialization log log_setup
+#      )
+    include_directories(${Boost_INCLUDE_DIRS})
+#    link_libraries(${Boost_LIBRARIES})
 
-    set(EIGEN3_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_EIGEN}")
+      # disable autolinking in boost
+      #add_definitions( -DBOOST_ALL_NO_LIB )
+
+      # force all boost libraries to dynamic link (we already disabled
+      # autolinking, so I don't know why we need this, but we do!)
+      #add_definitions( -DBOOST_ALL_DYN_LINK )
+    #find_package(boost COMPONENTS log log_setup REQUIRED)
+    #set(BOOST_ROOT "${CONAN_BOOST_ROOT}")
+    #add_definitions("${CONAN_DEFINES_BOOST}")
+    #link_directories(${Boost_LIBRARY_DIRS})
+
+    find_package(Eigen3 REQUIRED)
+
+    find_package(GLEW REQUIRED)
 
     set(ENV{LUA_DIR} "${CONAN_LUA_ROOT}")
 
     set(GLEW_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLEW}")
+    message("GLEW:glew")
+    message("${GLEW_INCLUDE_DIR}")
     set(ENV{GLEW_ROOT} "${CONAN_GLEW_ROOT}")
     add_definitions("${CONAN_DEFINES_GLEW}")
     
@@ -62,16 +84,27 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
 
     set(LIBDXFRW_PATH "${CONAN_LIBDXFRW_ROOT}")
     
-    set(RAPIDJSON_INCLUDE_DIRS "${CONAN_INCLUDE_DIRS_RAPIDJSON}")
 else()
     set(Boost_USE_STATIC_LIBS OFF)
     add_definitions(-DBOOST_ALL_DYN_LINK)
 endif()
 
 if(MSVC)
-	add_definitions("/bigobj")
+    find_package(Eigen3 REQUIRED)
+    include_directories(${EIGEN3_INCLUDE_DIR})
+    find_package(libdxfrw REQUIRED)
+    include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
+    find_package(freetype REQUIRED)
+    include_directories(${freetype_INCLUDE_DIR})
+    find_package(glew REQUIRED)
+    include_directories(${glew_INCLUDE_DIR})
+    find_package(glm REQUIRED)
+    include_directories(${glm_INCLUDE_DIR})
+    add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-	# Kaguya uses a pointer to a local variable (in object.hpp file) to store class conversions.
+    SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " /w /wd4710 /wd4711 /wd4668 /wd5045 /wd9002 /wd4365 /wd4242")
+    SET(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} " /w /wd4710 /wd4711")
+    # Kaguya uses a pointer to a local variable (in object.hpp file) to store class conversions.
 	# When used in different modules, the variable doesn't have the same address, preventing to mix kernel and UI bindings
 	add_definitions("-DKAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1")
 endif()
@@ -80,13 +113,21 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
 
-set(Boost_USE_MULTITHREADED ON)
+if (NOT MSVC)
+    set(Boost_USE_MULTITHREADED ON)
+endif()
 
 # settings path
 set(SETTINGS_PATH "${PROJECT_BINARY_DIR}/bin")
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
+    #SET(Boost_USE_STATIC_LIBS ON)
+    FIND_PACKAGE(Boost COMPONENTS log log_setup REQUIRED)
+    find_package(Eigen3 REQUIRED)
+    message(eigen3:="${Eigen3_INCLUDE_DIR}")
+    include_directories("${Eigen3_INCLUDE_DIR}")
+    message("${CMAKE_SOURCE_DIR}/include")
     include_directories("third_party/msvc_dirent")
 endif()
 

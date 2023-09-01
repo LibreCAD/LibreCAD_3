@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (UnitTest)
 
 message("***** LibreCAD unit tests *****")
@@ -6,13 +6,15 @@ message("***** LibreCAD unit tests *****")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTORCC ON)
+
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
     include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
+    include_directories( ${Eigen3_INCLUDE_DIR})
 endif ()
 
 # LibbDXFRW
@@ -34,6 +36,14 @@ include_directories(${GLEW_INCLUDE_DIR})
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
+if (MSVC)
+	#gtest
+	find_package(GTest REQUIRED)
+	include_directories(${GTest_INCLUDE_DIRS})
+	include_directories(${RapidJSON_INCLUDE_DIRS})
+endif()
+
 
 # Coverage
 if(WITH_COVERAGE)
@@ -141,6 +151,7 @@ if(WITH_RENDERING_UNITTESTS)
     set(Boost_USE_MULTITHREADED ON)
     find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
 
     find_package(glfw3 3.2 REQUIRED)
 
@@ -156,6 +167,17 @@ if(WITH_RENDERING_UNITTESTS)
     )
 endif()
 
+if (MSVC)
+	message(gtestLib="${GTest-LIBRARY-DIR}")
+	message(gtestLib="${GTest-LIBRARIES}")
+	set(EXTRA_LIBS ${EXTRA_LIBS}
+		${GTest-LIBRARIES}
+		GTest::gtest
+		GTest::gtest_main
+		GTest::gmock
+		GTest::gmock_main)
+endif()
+
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
@@ -164,3 +186,4 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 add_executable(lcunittest ${src} ${hdrs})
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+

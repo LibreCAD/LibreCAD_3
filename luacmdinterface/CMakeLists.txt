@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (LuaCmdInterface)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -17,13 +17,15 @@ find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
     include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
+    include_directories( ${Eigen3_INCLUDE_DIR})
 endif ()
 
 # Boost
 find_package(Boost COMPONENTS program_options filesystem system log date_time thread log_setup REQUIRED)
-FIND_PACKAGE ( Threads REQUIRED )
+FIND_PACKAGE(Threads REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+message(boost_dirs="${Boost_LIBRARY_DIRS}")
 
 #Lua
 find_package(Lua 5.3 EXACT REQUIRED)
