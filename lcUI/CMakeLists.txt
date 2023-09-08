@@ -12,6 +12,7 @@ set(CMAKE_AUTORCC ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+
 set(QT_USE_QTOPENGL TRUE)
 
 find_package(Qt5Widgets)
@@ -295,8 +296,19 @@ if (MSVC)
     target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
 endif()
 
+if (MSVC)
+    target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
+    message(CMAKE_INSTALL_BINDIR="${CMAKE_INSTALL_BINDIR}")
+endif()
+
 # INSTALLATION
 install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+if (NOT MSVC)
+	install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+else()
+	install(TARGETS librecad DESTINATION "${FINAL_INSTALL_DIR}")
+	install(DIRECTORY "${CMAKE_SOURCE_DIR}/build/bin/lcUI/ui" DESTINATION "lcUI")
+endif()
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${SETTINGS_PATH}")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${SETTINGS_PATH}")
+

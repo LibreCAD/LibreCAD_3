@@ -1,4 +1,5 @@
 echo "conan"
+pwd
 mkdir conan
 pushd conan
 conan profile detect --force

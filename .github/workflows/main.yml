@@ -70,6 +70,11 @@ jobs:
 
       - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
 
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
+
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+
       - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
 
       - run: cd ${{ github.workspace }}
@@ -79,5 +84,5 @@ jobs:
       - name: Uploading exe
         uses: actions/upload-artifact@v3.1.0
         with:
-          path: '${{ github.workspace }}/out/build/windows-default/LibreCAD3**.exe'
+          path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
           name: LibreCAD3.exe
