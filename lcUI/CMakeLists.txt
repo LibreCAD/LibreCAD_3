@@ -285,7 +285,12 @@ if(WITH_UNITTESTS)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
-add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+if (MSVC)
+    add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+else()
+    set(UI_icon "${CMAKE_SOURCE_DIR}/res/librecad.rc")
+    add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+endif()
 
 qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
