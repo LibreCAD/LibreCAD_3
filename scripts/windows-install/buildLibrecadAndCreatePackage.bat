@@ -22,7 +22,8 @@ dir
 
 WinDeployQt librecad.exe
 dir ..
-copy ..\*.lua ..\*.json .
+copy ..\*.lua
+copy ..\*.json
 where makensis.exe
 dir ..\..\CPack*.cmake
 

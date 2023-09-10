@@ -4,11 +4,9 @@ project(LCKERNEL)
 #TODO: Fix this
 set(PATTERN_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/res/hatch)
 if (MSVC)
-install(DIRECTORY "${PATTERN_RESOURCE_PATH}"
-    DESTINATION "${FINAL_INSTALL_DIR}/res" )
+    install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "res")
 else()
-install(DIRECTORY "${PATTERN_RESOURCE_PATH}"
-    DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad" )
+    install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad")
 endif()
 
 #Include TinySpline

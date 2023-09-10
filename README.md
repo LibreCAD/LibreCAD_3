@@ -7,6 +7,10 @@ Compilation Instructions
 ==========
 See https://github.com/LibreCAD/LibreCAD_3/wiki/Building
 
+Releases and Releases and Continuous Building 
+----------
+See https://github.com/LibreCAD/LibreCAD_3/releases
+
 
 Reading materials for feature usage
 =========

@@ -41,9 +41,9 @@ jobs:
       run: |
         sudo apt-get -y update
         sudo apt-get -qq install -y -qq cmake qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev git gcc \
-libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-all-dev libboost-program-options-dev \
-libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev \
-libbz2-dev libglfw3-dev libglm-dev libfltk1.3-dev doxygen mkdocs qtchooser freeglut3-dev fuse
+        libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-all-dev libboost-program-options-dev \
+        libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev \
+        libbz2-dev libglfw3-dev libglm-dev libfltk1.3-dev doxygen mkdocs qtchooser freeglut3-dev fuse
         sudo ln -snf /usr/lib/x86_64-linux-gnu/qtchooser/qt5.conf /usr/lib/x86_64-linux-gnu/qtchooser/default.conf
         sudo rm -rf /usr/local/lib/android
 

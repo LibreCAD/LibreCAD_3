@@ -8,7 +8,7 @@ name: Librecad3 Builders
 
 jobs:
   linux:
-    name: Building LibreCAD3 on ubuntu runner
+    name: BuildLinux
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,8 +29,8 @@ jobs:
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3
         with:
+          name: assets
           path: ${{ github.workspace }}/build/LibreCAD**AppImage
-          name: LibreCAD3.AppImage
           retention-days: 2
 
       #- name: Uploading snap
@@ -41,7 +41,7 @@ jobs:
       #    retention-days: 2
 
   windows:
-    name: Building LibreCAD3 on windows runner
+    name: BuildWindows
     runs-on: windows-latest
     steps:
 
@@ -85,4 +85,27 @@ jobs:
         uses: actions/upload-artifact@v3.1.0
         with:
           path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
-          name: LibreCAD3.exe
+          name: assets
+
+  UpdateAssets:
+    if: github.repository_owner == 'LibreCAD'
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Upload latest pre-release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Continuous Build"
+          files: |
+            assets/LibreCAD*.*
+            LICENSE
