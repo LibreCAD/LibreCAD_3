@@ -39,18 +39,5 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
 make -j 4
 echo "installing LibreCAD"
 sudo make install DESTDIR=AppDir
+sudo cp bin/*.lua bin/*.json AppDir/usr/bin
 popd
-pwd
-ls
-find . -type d
-
-#cd /usr/src/gtest
-#sudo cmake CMakeLists.txt
-#sudo make
-
-
-#cd lib #meeded in ubuntu 20.04+
-#sudo cp ./*.a /usr/lib
-
-
-
