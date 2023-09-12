@@ -81,8 +81,15 @@ jobs:
 
       - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
 
+      - run: cd ${{ github.workspace }}
+
+      - name: Rename installer
+        run: |
+          mv build/bin/LibreCAD3*.exe build/bin/LibreCAD3-`git describe --always`.exe
+        shell: bash
+
       - name: Uploading exe
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3
         with:
           path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
           name: assets

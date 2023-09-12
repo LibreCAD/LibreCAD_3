@@ -6,16 +6,73 @@
 #include "managers/contextmenumanager.h"
 
 #include <QDir>
+#include <QDirIterator>
+#include <QFileInfo>
 #include <QString>
 #include <QStringList>
 
 using namespace lc::ui;
 
+namespace
+{
+const char* operationsLua = "/actions/operations.lua";
+
+class FolderFinder
+{
+public:
+    std::string operator () (std::string inputFolder) const
+    {
+        std::string ret = searchSubFolders(inputFolder);
+        if (!ret.empty())
+            return ret;
+
+        std::string binFolder = QDir{QCoreApplication::applicationDirPath()}.canonicalPath().toStdString();
+        std::cout<<"binFolder: "<<binFolder<<std::endl;
+        ret = searchSubFolders(binFolder);
+        if (!ret.empty())
+            return ret;
+        return {};
+    }
+private:
+    std::string searchSubFolders(std::string folder) const
+    {
+        for (const char* subFolder: {"/lcUILua", "/../share/librecad/lcUILua"})
+            if (isValid(folder + subFolder))
+                return folder + subFolder;
+
+        QDirIterator it(QString{folder.c_str()}, QDirIterator::Subdirectories);
+
+          // Iterate through the directory using the QDirIterator
+          while (it.hasNext())
+          {
+              QString child = it.next();
+              QFileInfo file(child);
+              if (!file.isDir())
+                  continue;
+
+              if (isValid(child.toStdString()))
+                  return child.toStdString();
+          }
+          return {};
+    }
+
+    bool isValid(const std::string& path) const
+    {
+        std::cout<<"Test "<<path + operationsLua<<": "<<QFileInfo{QString{path.c_str()} + operationsLua}.exists()<<std::endl;
+        return QFileInfo{QString{path.c_str()} + operationsLua}.exists();
+    }
+};
+}
+
+
 OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState)
     :
     qmainWindow(qmainWindow),
-    _L(luaState) {
-    loadLuaOperations(luaPath);
+    _L(luaState)
+{
+    std::string path = FolderFinder{}(luaPath);
+    std::cout<<"updated path:: "<<path<<std::endl;
+    loadLuaOperations(path);
 }
 
 void OperationLoader::loadLuaOperations(const std::string& luaPath) {

@@ -14,9 +14,10 @@ cp -v ../desktop/librecad.desktop AppDir/
 #sudo cp ../AppImage/librecad.* AppDir/
 #sudo cp /usr/local/lib/libdxfrw.so.1 AppDir/usr/lib
 
-sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib ./$QTDEPLOY --appdir AppDir \
+sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib \
+VERSION=`git describe ` ./$QTDEPLOY --appdir AppDir \
 --output appimage \
 --executable AppDir/usr/bin/librecad \
 --desktop-file AppDir/librecad.desktop \
 --icon-file AppDir/librecad.svg --plugin qt
-
+mv LibreCAD*.AppImage LibreCAD3-$(git describe --always).AppImage

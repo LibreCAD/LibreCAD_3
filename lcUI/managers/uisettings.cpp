@@ -4,9 +4,133 @@
 #include <rapidjson/schema.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/istreamwrapper.h>
-#include <fstream>
 
+#include <memory>
+#include <fstream>
 #include <iostream>
+#include <sstream>
+
+namespace
+{
+const char* defaultUiSettings = R"(
+{
+    "toolbar": {
+        "tabs": [
+            {
+                "label": "Quick Access",
+                "groups": [
+                    {
+                        "label": "Creation",
+                        "width": 3,
+                        "buttons": [ "LineOperations", "PointOperations", "EllipseOperations", "SplineOperations", "LWPolylineOperations", "CircleOperations", "ArcOperations", "TextOperations" ]
+                    },
+                    {
+                        "label": "Modify",
+                        "width": 3,
+                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "SplitOperation", "RotateOperation", "TrimOperation", "AreaOperation"]
+                    },
+                    {
+                        "label": "Dimensions",
+                        "width": 3,
+                        "buttons": [ "DimAngularOperations", "DimAlignedOperations", "DimLinearOperations", "DimRadialOperations", "DimDiametricOperations" ]
+                    },
+                    {
+                        "label": "Snap Options",
+                        "width": 2,
+                        "buttons": [ "SnapGrid", "SnapIntersection", "SnapMiddle", "SnapEntity" ]
+                    }
+                ]
+            }
+        ]
+    },
+    "dockPositions": [
+        {
+            "widget": "CliCommand",
+            "position": 8,
+            "proportion": 65
+        },
+        {
+            "widget": "Layers",
+            "position": 2
+        },
+        {
+            "widget": "PropertyEditor",
+            "position": 8,
+            "proportion": 35
+        },
+        {
+            "widget": "Toolbar",
+            "position": 4
+        }
+    ]
+}
+)";
+
+const char* settingSchema = R"(
+{
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+     "toolbar"
+   ],
+   "title": "Toolbar Data Schema",
+   "properties": {
+     "toolbar": {
+       "type": "object",
+       "properties": {
+         "tabs": {
+           "type": "array",
+           "items": {
+             "$ref": "#/definitions/tab"
+           }
+         }
+       }
+     }
+   },
+   "definitions": {
+     "tab": {
+       "type": "object",
+       "required": [
+         "label"
+       ],
+       "properties": {
+         "label": {
+           "type": "string"
+         },
+         "groups": {
+           "type": "array",
+           "items": {
+             "$ref": "#/definitions/group"
+           }
+         }
+       }
+     },
+     "group": {
+       "type": "object",
+       "required": [
+         "label"
+       ],
+       "properties": {
+         "label": {
+           "type": "string"
+         },
+         "width": {
+           "type": "number",
+           "minimum": 0,
+           "maximum": 10
+         },
+         "buttons": {
+           "type": "array",
+           "items": {
+             "type": "string"
+           }
+         }
+       }
+     }
+   }
+}
+)";
+}
 
 using namespace lc::ui;
 
@@ -28,14 +152,16 @@ void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool 
 }
 
 bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
-    std::ifstream schemaFile(_filePaths["settings_load"] + schemaFileName);
+    std::unique_ptr<std::istream> schemaFile=std::make_unique<std::ifstream>(_filePaths["settings_load"] + schemaFileName);
+    if (schemaFile->fail())
+        schemaFile = std::make_unique<std::istringstream>(settingSchema);
 
-    if (schemaFile.fail()) {
+    if (schemaFile->fail()) {
         std::cout << "Schema file not found" << std::endl;
         return true;
     }
 
-    rapidjson::IStreamWrapper isw(schemaFile);
+    rapidjson::IStreamWrapper isw(*schemaFile);
     rapidjson::Document schemaDocument;
 
     if (schemaDocument.ParseStream(isw).HasParseError()) {
@@ -112,13 +238,18 @@ std::map<std::string, int> UiSettings::readDockSettings(std::map<std::string, in
 }
 
 rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
-    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
+    std::unique_ptr<std::istream> settingsFile = std::make_unique<std::ifstream>(_filePaths["settings_load"] + fileName);
 
-    while (settingsFile.fail()) {
+    while (settingsFile->fail()) {
         if (fileName == settingsFileName) {
-            std::cout << "No settings file found, loading default settings." << std::endl;
+            std::cout <<__func__<<"("<<settingsFileName<<"): No settings file found, loading default settings." << std::endl;
             fileName = defaultSettingsFileName;
-            settingsFile.open(_filePaths["settings_load"] + fileName);
+            std::cout << "Loading default settings: "<<_filePaths["settings_load"] + fileName<<std::endl;
+            static_cast<std::ifstream*>(settingsFile.get())->open(_filePaths["settings_load"] + fileName);
+            if (settingsFile->fail())
+                settingsFile = std::make_unique<std::istringstream>(defaultUiSettings);
+            if (settingsFile->fail())
+                return {};
         }
         else {
             std::cout << "Default settings not found" << std::endl;
@@ -126,7 +257,7 @@ rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
         }
     }
 
-    rapidjson::IStreamWrapper isw(settingsFile);
+    rapidjson::IStreamWrapper isw(*settingsFile);
     rapidjson::Document settingsDocument;
 
     if (settingsDocument.ParseStream(isw).HasParseError()) {
@@ -135,11 +266,9 @@ rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
     }
 
     if (!validateSettingsDocument(settingsDocument)) {
-        settingsFile.close();
         return rapidjson::Document();
     }
 
-    settingsFile.close();
     return std::move(settingsDocument);
 }
 
