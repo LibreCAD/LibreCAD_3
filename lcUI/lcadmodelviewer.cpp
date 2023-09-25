@@ -4,7 +4,7 @@ using namespace lc::ui;
 using namespace lc::viewer;
 
 LCADModelViewer::LCADModelViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id) {
-    _gradientBackground = std::make_shared<drawable::GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
+    _gradientBackground = std::make_shared<drawable::GradientBackground>(lc::Color(0x07, 0x15, 0xe1), lc::Color(0x06, 0x35, 0x06));
     _grid = std::make_shared<drawable::Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     _cursor = std::make_shared<drawable::Cursor>(40, this->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
     connect(this, SIGNAL(mouseMoveEvent()), this, SLOT(onMouseMoveEvent()));

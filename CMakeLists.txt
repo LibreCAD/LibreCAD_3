@@ -28,7 +28,7 @@ endif()
 
 set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
+if(MSVC AND EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
     set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
     set(CMAKE_INSTALL_BINDIR "bin")
     

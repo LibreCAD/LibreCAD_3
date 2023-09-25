@@ -416,6 +416,7 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
     painter.save();
     // Decide what color to render the entity into
     auto color = drawColor(ce, insert, drawable->selected());
+    std::cout<<"color="<<std::hex<<colr<<std::endl<<std::dec;
     painter.source_rgba(
         color.red(),
         color.green(),

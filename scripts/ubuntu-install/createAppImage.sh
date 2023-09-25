@@ -20,4 +20,5 @@ VERSION=`git describe ` ./$QTDEPLOY --appdir AppDir \
 --executable AppDir/usr/bin/librecad \
 --desktop-file AppDir/librecad.desktop \
 --icon-file AppDir/librecad.svg --plugin qt
+sudo mv AppDir/usr/translation
 mv LibreCAD*.AppImage LibreCAD3-$(git describe --always).AppImage
