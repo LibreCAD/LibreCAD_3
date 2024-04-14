@@ -24,7 +24,7 @@ jobs:
 
       - run: cd ${{ github.workspace }}
 
-      - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
+      #- run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3
@@ -33,12 +33,12 @@ jobs:
           path: ${{ github.workspace }}/build/LibreCAD**AppImage
           retention-days: 2
 
-      - name: Uploading snap
-        uses: actions/upload-artifact@v3
-        with:
-          path: ${{ github.workspace }}/librecad**snap
-          name: LibreCAD3.snap
-          retention-days: 2
+#      - name: Uploading snap
+#        uses: actions/upload-artifact@v3
+#        with:
+#          path: ${{ github.workspace }}/librecad**snap
+#          name: LibreCAD3.snap
+#          retention-days: 2
 
   windows:
     name: BuildWindows
