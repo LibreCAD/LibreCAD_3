@@ -22,9 +22,9 @@ jobs:
 
       - run: sudo ${{ github.workspace }}/scripts/ubuntu-install/createAppImage.sh
 
-      #- run: cd ${{ github.workspace }}
+      - run: cd ${{ github.workspace }}
 
-      #- run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
       - name: Uploading AppImage
         uses: actions/upload-artifact@v3
@@ -33,12 +33,12 @@ jobs:
           path: ${{ github.workspace }}/build/LibreCAD**AppImage
           retention-days: 2
 
-      #- name: Uploading snap
-      #  uses: actions/upload-artifact@v3
-      #  with:
-      #    path: ${{ github.workspace }}/librecad**snap
-      #    name: LibreCAD3.snap
-      #    retention-days: 2
+      - name: Uploading snap
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/librecad**snap
+          name: LibreCAD3.snap
+          retention-days: 2
 
   windows:
     name: BuildWindows
@@ -64,7 +64,7 @@ jobs:
       - name: Install Qt5
         uses: jurplel/install-qt-action@v3
         with:
-          version: 5.12.2
+          version: 5.15.2
 
       - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
 
