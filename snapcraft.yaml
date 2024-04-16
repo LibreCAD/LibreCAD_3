@@ -9,7 +9,6 @@ description: |
 source-code: https://github.com/LibreCAD/LibreCAD_3
 contact:
   - https://forum.librecad.org/
-donations: https://opencollective.com/librecad/donate?interval=oneTime&amount=20&name=&legalName=&email=
 issues: https://github.com/LibreCAD/LibreCAD_3/issues
 environment:
   LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
