@@ -3,68 +3,73 @@ version: '0.0.9'
 grade: stable
 base: core20
 confinement: devmode
-summary: "librecad: is a cad"
+summary: "librecad: is a 2D CAD"
 description: |
-        it really is.
+  LibreCAD 3 is a next generation 2D CAD application written to be modular, with a core independent from GUI toolkits. Scripting is possible with Lua.
+source-code: https://github.com/LibreCAD/LibreCAD_3
+contact:
+  - https://forum.librecad.org/
+donations: https://opencollective.com/librecad/donate?interval=oneTime&amount=20&name=&legalName=&email=
+issues: https://github.com/LibreCAD/LibreCAD_3/issues
 environment:
-        LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
+  LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
 
 apps:
-        librecad:
-                command: usr/bin/librecad
-                extensions:
-                        - kde-neon
+  librecad:
+    command: usr/bin/librecad
+    extensions:
+      - kde-neon
 parts:
-        librecad:
-                plugin: cmake
-                build-snaps:
-                        - kde-frameworks-5-core18-sdk
-                        - kde-frameworks-5-core18
-                source: .
-                build-packages:
-                        - qttools5-dev
-                        - qttools5-dev-tools
-                        - libqt5opengl5-dev
-                        - liblua5.2-dev
-                        - git
-                        - g++
-                        - libcairo2-dev
-                        - libpango-1.0-0
-                        - libpango1.0-dev
-                        - libboost-dev
-                        - libboost-log-dev
-                        - libboost-program-options-dev
-                        - libqt5svg5-dev
-                        - libgtest-dev
-                        - libeigen3-dev
-                        - libcurl4-gnutls-dev
-                        - libgtk-3-dev
-                        - libglew-dev
-                        - rapidjson-dev
-                        - libbz2-dev
-                        - libglfw3-dev
-                        - libglm-dev
-                        - cmake
-                stage-packages:
-                        - libboost-dev
-                        - libboost-log-dev
-                        - libboost-program-options-dev
-                        - libglew2.1
-                cmake-parameters:
-                        - "-DCMAKE_INSTALL_PREFIX=/usr"
-                        - "-DBUILD_SHARED_LIBS=ON"
-                #For 18.04
-                #configflags:
-                #        - "-DCMAKE_INSTALL_PREFIX=/usr"
-                #        - "-DBUILD_SHARED_LIBS=On"
-        libdxfrw:
-                plugin: cmake
-                source: /home/runner/libdxfrw
-                cmake-parameters:
-                        - "-DBUILD_SHARED_LIBS=ON"
+  librecad:
+    plugin: cmake
+    build-snaps:
+      - kde-frameworks-5-core18-sdk
+      - kde-frameworks-5-core18
+    source: .
+    build-packages:
+      - qttools5-dev
+      - qttools5-dev-tools
+      - libqt5opengl5-dev
+      - liblua5.2-dev
+      - git
+      - g++
+      - libcairo2-dev
+      - libpango-1.0-0
+      - libpango1.0-dev
+      - libboost-dev
+      - libboost-log-dev
+      - libboost-program-options-dev
+      - libqt5svg5-dev
+      - libgtest-dev
+      - libeigen3-dev
+      - libcurl4-gnutls-dev
+      - libgtk-3-dev
+      - libglew-dev
+      - rapidjson-dev
+      - libbz2-dev
+      - libglfw3-dev
+      - libglm-dev
+      - cmake
+    stage-packages:
+      - libboost-dev
+      - libboost-log-dev
+      - libboost-program-options-dev
+      - libglew2.1
+    cmake-parameters:
+      - "-DCMAKE_INSTALL_PREFIX=/usr"
+      - "-DBUILD_SHARED_LIBS=ON"
+    #For 18.04
+    #configflags:
+    #  - "-DCMAKE_INSTALL_PREFIX=/usr"
+    #  - "-DBUILD_SHARED_LIBS=On"
+  libdxfrw:
+    plugin: cmake
+    source: persistence/libdxfrw
+    cmake-parameters:
+      - "-DBUILD_SHARED_LIBS=ON"
 
 
-                #For 18.04
-                #configflags:
-                #        - "-DBUILD_SHARED_LIBS=On"
+    #For 18.04
+    #configflags:
+    #  - "-DBUILD_SHARED_LIBS=On"
 
