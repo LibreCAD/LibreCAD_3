@@ -53,7 +53,7 @@ parts:
       - libboost-dev
       - libboost-log-dev
       - libboost-program-options-dev
-      - libglew2.1
+      - libglew2.2
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
