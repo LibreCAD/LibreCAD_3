@@ -106,6 +106,23 @@ public:
 
     static std::vector<lc::geo::Coordinate>
     simultaneousQuadraticSolverMixed(const std::vector<std::vector<double>>& m);
+
+
+    /**
+     * @brief ellint2E(k) complete elliptic integral of the second kind
+     *        E(k) = \int_0^{\pi/2}\sqrt{1 - k^2 \sin^2\theta}d\theta
+     * @return E(k)
+     * @param double k
+     */ 
+    static double ellint2E(double k);
+    /**
+     * @brief ellint2E(phi, k) incomplete elliptic integral of the second kind
+     *        E(\phi, k) = \int_0^{\phi}\sqrt{1 - k^2 \sin^2\theta}d\theta
+     * @return E(\phi, k)
+     * @param double phi
+     * @param double k
+     */ 
+    static double ellint2E(double phi, double k);
 };
 }
 }

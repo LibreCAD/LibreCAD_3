@@ -1,10 +1,13 @@
 #include <cmath>
+#include <iostream>
+
+#include <boost/math/special_functions/ellint_2.hpp>
+
+#include <Eigen/Dense>
+#include <unsupported/Eigen/Polynomials>
 
 #include "lcmath.h"
 #include "cad/const.h"
-#include <Eigen/Dense>
-#include <unsupported/Eigen/Polynomials>
-#include <iostream>
 
 using namespace lc;
 using namespace lc::maths;
@@ -525,4 +528,13 @@ bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& 
 
     return (amax0 <= tols || std::abs(sum0) / amax0 < tols) && (amax1 <= tols || std::abs(sum1) / amax1 < tols);
 }
+
+double Math::ellint2E(double k) {
+	return boost::math::ellint_2<double>(k);
+}
+
+double Math::ellint2E(double phi, double k) {
+	return boost::math::ellint_2<double, double>(k, phi);
+}
+
 ////EOF

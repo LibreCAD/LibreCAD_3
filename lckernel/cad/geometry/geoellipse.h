@@ -70,6 +70,11 @@ public:
      */
     Coordinate endPoint() const;
     /**
+     * @brief getLength, the perimeter or arc length of ellipse or elliptic arc
+     * @return the total curve length
+     */
+    double getLength() const;
+    /**
      * @brief findPotentialNearestPoints
      * @param coord, the point of which we search
      * @return
