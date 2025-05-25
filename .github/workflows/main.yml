@@ -30,14 +30,14 @@ jobs:
       - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
       - name: Uploading AppImage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: assets
           path: ${{ github.workspace }}/build/LibreCAD**AppImage
           retention-days: 2
 
       - name: Uploading snap
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/librecad**snap
           name: LibreCAD3.snap
@@ -92,7 +92,7 @@ jobs:
         shell: bash
 
       - name: Uploading exe
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
           name: assets
@@ -108,7 +108,7 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Upload latest pre-release
         uses: "marvinpinto/action-automatic-releases@latest"
