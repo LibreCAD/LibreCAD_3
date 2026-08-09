@@ -48,8 +48,8 @@ TEST_F(PythonFixture, CoordinateArithmeticEqualsCpp) {
     const double a_mag = a.magnitude();       // 5
     const double a_ang = a.angle();           // atan2(4, 3)
 
-    ns.dict()["a_mag_cpp"] = a_mag;
-    ns.dict()["a_ang_cpp"] = a_ang;
+    ns.set("a_mag_cpp", a_mag);
+    ns.set("a_ang_cpp", a_ang);
 
     const std::string err = lcpy.runString(
         "import math\n"

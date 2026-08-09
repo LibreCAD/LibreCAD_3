@@ -90,6 +90,17 @@ public:
     pybind11::dict& dict();
     const pybind11::dict& dict() const;
 
+    /// Inject a named value into the namespace under the GIL. Generic
+    /// counterpart to LCPython::setDocument() for callers (tests, future
+    /// GUI/CLI contexts) that need to seed a namespace with a C++ value
+    /// before runString() — GIL handling stays encapsulated here per plan
+    /// decision 7; callers must never touch dict() directly outside the GIL.
+    template <typename T>
+    void set(const char* key, T&& value) {
+        pybind11::gil_scoped_acquire gil;
+        dict()[key] = std::forward<T>(value);
+    }
+
 private:
     struct Impl;
     std::unique_ptr<Impl> _impl;
