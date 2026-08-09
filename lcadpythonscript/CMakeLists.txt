@@ -35,11 +35,15 @@ if(SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
     include_directories("${CMAKE_SOURCE_DIR}/../lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
+    # Phase 4 PR-1 — for #include <lcscripting/…>
+    include_directories("${CMAKE_SOURCE_DIR}/..")
 else()
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
+    # Phase 4 PR-1 — for #include <lcscripting/…>
+    include_directories("${CMAKE_SOURCE_DIR}")
 endif()
 
 # ---- Source layout (per phase-1 sub-plan) ----------------------------------
@@ -56,6 +60,9 @@ set(lcpythonscript_srcs
     bridge/py_lc_operation.cpp
     bridge/py_lc_maths.cpp
     bridge/py_lc_event.cpp
+    # Phase 4 PR-1 Python adapter — GIL-safe ScriptCallback pImpl + ScriptValue
+    # <-> py::object conversions.
+    scriptadapter/pythoncallback.cpp
 )
 
 set(lcpythonscript_hdrs
@@ -69,6 +76,7 @@ set(lcpythonscript_hdrs
     bridge/py_lc_operation.h
     bridge/py_lc_maths.h
     bridge/py_lc_event.h
+    scriptadapter/pythoncallback.h
 )
 
 # Phase 2 slice 2.6 — persistence bindings (REQUIRED, feeds phase-6 custom-
@@ -87,7 +95,12 @@ endif()
 # Keep this as SHARED — never make it STATIC: static-lib embedded modules are
 # silently dropped by the linker (pybind11 discussion #4619).
 add_library(lcpythonscript SHARED ${lcpythonscript_srcs} ${lcpythonscript_hdrs})
-target_link_libraries(lcpythonscript pybind11::embed lckernel)
+target_link_libraries(lcpythonscript pybind11::embed lckernel lcscripting)
+# Explicit include dir for #include <lcscripting/...> — resolves whether
+# lcscripting/ lives under CMAKE_SOURCE_DIR (in-tree build) or under a
+# standalone LIBRECAD_ROOT (verification build).
+get_filename_component(_LIBRECAD_TREE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+target_include_directories(lcpythonscript PUBLIC "${_LIBRECAD_TREE_ROOT}")
 if(WITH_PERSISTENCE)
     target_link_libraries(lcpythonscript persistence)
 endif()

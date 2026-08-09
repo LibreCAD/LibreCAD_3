@@ -94,9 +94,11 @@ if(WITH_PYTHONSCRIPT)
     list(APPEND src
         python/pythonbindings_test.cpp
         python/demoscript_test.cpp
-        python/parity_test.cpp)  # Phase 2 slice 2.4 parity dump
+        python/parity_test.cpp          # Phase 2 slice 2.4 parity dump
+        scripting/scriptcallback_test.cpp)  # Phase 4 slice 4.1
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
-    set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript)
+    include_directories("${CMAKE_SOURCE_DIR}")   # for <lcscripting/...>
+    set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting)
     # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
     # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
     if(WITH_PERSISTENCE)

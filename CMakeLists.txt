@@ -196,6 +196,12 @@ endif(WITH_CAIRO)
 
 #Add each LibreCAD component
 add_subdirectory("lckernel")
+
+# Phase 4 PR-1 — neutral callback/event layer (lcscripting).  Sits below
+# every scripting library; depends only on lckernel.  Always built (Lua
+# and Python both link it).
+add_subdirectory("lcscripting")
+
 add_subdirectory("lcUILua")
 add_subdirectory("lcadluascript")
 
