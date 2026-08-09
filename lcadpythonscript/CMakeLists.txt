@@ -54,6 +54,8 @@ set(lcpythonscript_srcs
     bridge/py_lc_builder.cpp
     bridge/py_lc_storage.cpp
     bridge/py_lc_operation.cpp
+    bridge/py_lc_maths.cpp
+    bridge/py_lc_event.cpp
 )
 
 set(lcpythonscript_hdrs
@@ -65,6 +67,8 @@ set(lcpythonscript_hdrs
     bridge/py_lc_builder.h
     bridge/py_lc_storage.h
     bridge/py_lc_operation.h
+    bridge/py_lc_maths.h
+    bridge/py_lc_event.h
 )
 
 # NOTE: kernel bindings are bound in lcpythonscript ONLY.  lcgui (phase 3+)

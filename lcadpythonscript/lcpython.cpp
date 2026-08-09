@@ -15,6 +15,8 @@
 #include "bridge/py_lc_builder.h"
 #include "bridge/py_lc_storage.h"
 #include "bridge/py_lc_operation.h"
+#include "bridge/py_lc_maths.h"
+#include "bridge/py_lc_event.h"
 
 #include <pybind11/embed.h>
 
@@ -61,8 +63,8 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
     auto m_builder = m.def_submodule("builder",   "Builders (mirrors lc.builder)");
     auto m_storage = m.def_submodule("storage",   "Storage / Document (mirrors lc.storage)");
     auto m_operation = m.def_submodule("operation", "Operations (mirrors lc.operation)");
-    m.def_submodule("maths",     "Math helpers (mirrors lc.maths)");
-    m.def_submodule("event",     "Events (mirrors lc.event)");
+    auto m_maths = m.def_submodule("maths",     "Math helpers (mirrors lc.maths)");
+    auto m_event = m.def_submodule("event",     "Events (mirrors lc.event)");
 
     // Populate top-level names (Visitable/Color/EntityCoordinate/
     // SimpleSnapConstrain/EntityDistance) — slice 1.3.
@@ -85,6 +87,12 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
 
     // Populate lc.operation — slice 1.9.
     lc::python::import_py_lc_operation_namespace(m_operation);
+
+    // Populate lc.maths — slice 1.10.
+    lc::python::import_py_lc_maths_namespace(m_maths);
+
+    // Populate lc.event — slice 1.11.
+    lc::python::import_py_lc_event_namespace(m_event);
 }
 
 namespace lc {
