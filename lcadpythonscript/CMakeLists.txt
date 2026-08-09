@@ -71,12 +71,26 @@ set(lcpythonscript_hdrs
     bridge/py_lc_event.h
 )
 
+# Phase 2 slice 2.6 — persistence bindings (REQUIRED, feeds phase-6 custom-
+# entity DXF round-trip).  Gated on WITH_PERSISTENCE (the root option) so an
+# OFF build has zero libdxfrw / persistence references.  The `lcpython.cpp`
+# TU uses `#if USE_PERSISTENCE` to conditionally register the submodule; the
+# root CMakeLists adds `-DUSE_PERSISTENCE=1` when WITH_PERSISTENCE is ON.
+if(WITH_PERSISTENCE)
+    list(APPEND lcpythonscript_srcs bridge/py_lc_persistence.cpp)
+    list(APPEND lcpythonscript_hdrs bridge/py_lc_persistence.h)
+    include_directories("${CMAKE_SOURCE_DIR}")  # for #include <persistence/file.h>
+endif()
+
 # NOTE: kernel bindings are bound in lcpythonscript ONLY.  lcgui (phase 3+)
 # must not re-bind any of them (pybind11 throws on duplicate registration).
 # Keep this as SHARED — never make it STATIC: static-lib embedded modules are
 # silently dropped by the linker (pybind11 discussion #4619).
 add_library(lcpythonscript SHARED ${lcpythonscript_srcs} ${lcpythonscript_hdrs})
 target_link_libraries(lcpythonscript pybind11::embed lckernel)
+if(WITH_PERSISTENCE)
+    target_link_libraries(lcpythonscript persistence)
+endif()
 
 install(TARGETS lcpythonscript
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"

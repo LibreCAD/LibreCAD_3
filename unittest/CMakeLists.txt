@@ -97,6 +97,11 @@ if(WITH_PYTHONSCRIPT)
         python/parity_test.cpp)  # Phase 2 slice 2.4 parity dump
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript)
+    # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
+    # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
+    if(WITH_PERSISTENCE)
+        list(APPEND src python/persistence_test.cpp)
+    endif()
 endif()
 
 set(hdrs

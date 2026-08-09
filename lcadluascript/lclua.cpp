@@ -12,6 +12,9 @@
 #include <bridge/lc_maths.h>
 #include <bridge/lc_operation.h>
 #include <bridge/lc_event.h>
+#if USE_PERSISTENCE
+#include <bridge/lc_persistence.h>
+#endif
 
 using namespace lc::lua;
 
@@ -121,4 +124,9 @@ void LCLua::importLCKernel() {
     import_lc_maths_namespace(state);
     import_lc_event_namespace(state);
     import_lc_operation_namespace(state);
+#if USE_PERSISTENCE
+    // Phase 2 slice 2.6 — persistence bindings, in parity with the Python
+    // side.  Gated on USE_PERSISTENCE so an OFF build keeps working.
+    import_lc_persistence_namespace(state);
+#endif
 }

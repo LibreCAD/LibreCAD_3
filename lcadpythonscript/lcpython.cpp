@@ -17,6 +17,9 @@
 #include "bridge/py_lc_operation.h"
 #include "bridge/py_lc_maths.h"
 #include "bridge/py_lc_event.h"
+#if USE_PERSISTENCE
+#include "bridge/py_lc_persistence.h"
+#endif
 
 #include <pybind11/embed.h>
 
@@ -65,6 +68,10 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
     auto m_operation = m.def_submodule("operation", "Operations (mirrors lc.operation)");
     auto m_maths = m.def_submodule("maths",     "Math helpers (mirrors lc.maths)");
     auto m_event = m.def_submodule("event",     "Events (mirrors lc.event)");
+#if USE_PERSISTENCE
+    auto m_persistence = m.def_submodule("persistence",
+        "Persistence: DXF/DWG open+save (mirrors lc.persistence)");
+#endif
 
     // Populate top-level names (Visitable/Color/EntityCoordinate/
     // SimpleSnapConstrain/EntityDistance) — slice 1.3.
@@ -93,6 +100,12 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
 
     // Populate lc.event — slice 1.11.
     lc::python::import_py_lc_event_namespace(m_event);
+
+#if USE_PERSISTENCE
+    // Populate lc.persistence — phase 2 slice 2.6 (required, per plan:
+    // feeds the phase-6 custom-entity DXF round-trip regression test).
+    lc::python::import_py_lc_persistence_namespace(m_persistence);
+#endif
 }
 
 namespace lc {

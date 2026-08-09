@@ -24,7 +24,7 @@ set(lcluascript_srcs
 )
 
 # HEADER FILES
-set(lcluascript_hdrs 
+set(lcluascript_hdrs
         const.h
         utils/timer.h
         managers/pluginmanager.h
@@ -42,6 +42,15 @@ set(lcluascript_hdrs
         bridge/lc_event.h
         bridge/lc_operation.h
 )
+
+# Phase 2 slice 2.6 — persistence bindings (mirror of the Python side).
+# Same gating as lcadpythonscript: WITH_PERSISTENCE at the root defines
+# USE_PERSISTENCE=1 which the TU checks with `#if`.
+if(WITH_PERSISTENCE)
+    list(APPEND lcluascript_srcs bridge/lc_persistence.cpp)
+    list(APPEND lcluascript_hdrs bridge/lc_persistence.h)
+    include_directories("${CMAKE_SOURCE_DIR}")  # for #include <persistence/file.h>
+endif()
 
 
 # Eigen 3
@@ -81,6 +90,10 @@ endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
 target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel)
+
+if(WITH_PERSISTENCE)
+    target_link_libraries(lcluascript persistence)
+endif()
 
 if (MSVC)
     find_package(glew REQUIRED)
