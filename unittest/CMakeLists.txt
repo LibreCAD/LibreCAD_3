@@ -93,7 +93,8 @@ luacmdinterface/dispatch_test.cpp
 if(WITH_PYTHONSCRIPT)
     list(APPEND src
         python/pythonbindings_test.cpp
-        python/demoscript_test.cpp)
+        python/demoscript_test.cpp
+        python/parity_test.cpp)  # Phase 2 slice 2.4 parity dump
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript)
 endif()
