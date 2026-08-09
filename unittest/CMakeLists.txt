@@ -94,8 +94,11 @@ if(WITH_PYTHONSCRIPT)
     list(APPEND src
         python/pythonbindings_test.cpp
         python/demoscript_test.cpp
-        python/parity_test.cpp          # Phase 2 slice 2.4 parity dump
-        scripting/scriptcallback_test.cpp)  # Phase 4 slice 4.1
+        python/parity_test.cpp             # Phase 2 slice 2.4 parity dump
+        scripting/scriptcallback_test.cpp  # Phase 4 slice 4.1
+        scripting/scriptobject_test.cpp    # Phase 4 slice 4.1 follow-on
+        scripting/eventbus_test.cpp        # Phase 4 slice 4.1 follow-on
+        )
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}")   # for <lcscripting/...>
     set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting)

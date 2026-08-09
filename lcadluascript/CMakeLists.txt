@@ -21,6 +21,8 @@ set(lcluascript_srcs
         bridge/lc_maths.cpp
         bridge/lc_event.cpp
         bridge/lc_operation.cpp
+        # Phase 4 PR-1 follow-on — Lua adapter for the neutral callback layer.
+        scriptadapter/luacallback.cpp
 )
 
 # HEADER FILES
@@ -51,6 +53,13 @@ if(WITH_PERSISTENCE)
     list(APPEND lcluascript_hdrs bridge/lc_persistence.h)
     include_directories("${CMAKE_SOURCE_DIR}")  # for #include <persistence/file.h>
 endif()
+
+# Phase 4 PR-1 follow-on — Lua adapter header + explicit include for
+# #include <lcscripting/…>.  Always built (the neutral layer's Lua side
+# links whenever lcadluascript builds).
+list(APPEND lcluascript_hdrs scriptadapter/luacallback.h)
+include_directories("${CMAKE_SOURCE_DIR}")  # for <lcscripting/…>
+include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 
 
 # Eigen 3
@@ -89,7 +98,7 @@ else()
 endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
-target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel)
+target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel lcscripting)
 
 if(WITH_PERSISTENCE)
     target_link_libraries(lcluascript persistence)

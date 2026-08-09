@@ -21,13 +21,14 @@ public:
     bool equals(const ScriptCallbackImpl& other) const override {
         return this == &other;
     }
-    // Base does nothing for invokeEvent — event-shape callbacks always go
-    // through the language adapters (Lua/Python).  Return Nil so a caller
-    // that mis-uses a native callback for an event gets a graceful nil,
-    // not a crash.
-    ScriptValue invokeEvent(const std::string& /*event*/,
-                            const ScriptValue& /*args*/) override {
-        return ScriptValue{};
+    // Native "onEvent" shape: forward as `invoke({event_name, args})` so
+    // the underlying std::function sees a 2-element vector [event, args].
+    // This matches the "Lua function → f(event, args)" shape and lets
+    // EventBus fire native callbacks the same way as language callbacks.
+    // Subclasses implement invoke().
+    ScriptValue invokeEvent(const std::string& event,
+                            const ScriptValue& args) override {
+        return invoke({ScriptValue(event), args});
     }
 };
 

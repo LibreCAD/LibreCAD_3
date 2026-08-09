@@ -39,11 +39,14 @@ endif()
 set(lcscripting_srcs
     scriptvalue.cpp
     scriptcallback_native.cpp
+    eventbus.cpp
 )
 
 set(lcscripting_hdrs
     scriptvalue.h
     scriptcallback.h
+    scriptobject.h
+    eventbus.h
 )
 
 # SHARED for the same reason as lcpythonscript: consumers link it (lcUI,

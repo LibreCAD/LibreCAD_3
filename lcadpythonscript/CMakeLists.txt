@@ -63,6 +63,8 @@ set(lcpythonscript_srcs
     # Phase 4 PR-1 Python adapter — GIL-safe ScriptCallback pImpl + ScriptValue
     # <-> py::object conversions.
     scriptadapter/pythoncallback.cpp
+    # Phase 4 PR-1 follow-on — GIL-safe ScriptObject pImpl.
+    scriptadapter/pythonobject.cpp
 )
 
 set(lcpythonscript_hdrs
@@ -77,6 +79,7 @@ set(lcpythonscript_hdrs
     bridge/py_lc_maths.h
     bridge/py_lc_event.h
     scriptadapter/pythoncallback.h
+    scriptadapter/pythonobject.h
 )
 
 # Phase 2 slice 2.6 — persistence bindings (REQUIRED, feeds phase-6 custom-
