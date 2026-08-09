@@ -15,6 +15,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "dispatch.h"
+
+#ifdef LC_WITH_PYTHONSCRIPT
+#include <lcpython.h>
+#endif
+
 
 namespace po = boost::program_options;
 
@@ -180,32 +186,70 @@ int main(int argc, char** argv) {
     _canvas->newDeviceSize(width, height);
     lcPainter->new_device_size(width, height);
 
-    // Render Lua Code
-    kaguya::State luaState;
+    // ---- Runtime dispatch by URL path suffix (phase 2 slice 2.1) -----------
+    // .lua → existing LCLua path (verbatim; Lua behavior is a hard plan
+    //        constraint — preserve exactly).
+    // .py  → new LCPython path, gated on LC_WITH_PYTHONSCRIPT so
+    //        WITH_PYTHONSCRIPT=OFF builds still work.
+    // Query/fragment are stripped before matching (dispatch.h) so
+    // `file:test.py?flavor=old` picks Python rather than Unknown.
+    const auto runtime = lc::cli::chooseScriptRuntime(fIn);
+    if (runtime == lc::cli::ScriptRuntime::Unknown) {
+        std::cerr << "Unrecognized script suffix (expected .lua or .py) in: "
+                  << fIn << std::endl;
+        return 1;
+    }
 
-    lc::lua::PluginManager pluginManager(luaState.state(), "cli");
-    pluginManager.loadPlugins();
+    std::string code = loadFile(fIn);
+    if (code.empty()) {
+        std::cerr << "No script code was loaded" << std::endl;
+        return 1;
+    }
 
-    auto lcLua = lc::lua::LCLua(luaState.state());
-    lcLua.setF_openFileDialog(&openFileDialog);
-    lcLua.addLuaLibs();
-    lcLua.importLCKernel();
-    lcLua.setDocument(_document);
+    if (runtime == lc::cli::ScriptRuntime::Lua) {
+        // Verbatim from the pre-slice-2.1 path — Lua behavior unchanged.
+        kaguya::State luaState;
 
-    std::string luaCode = loadFile(fIn);
+        lc::lua::PluginManager pluginManager(luaState.state(), "cli");
+        pluginManager.loadPlugins();
 
-    if (!luaCode.empty()) {
-        std::string out = lcLua.runString(luaCode.c_str());
+        auto lcLua = lc::lua::LCLua(luaState.state());
+        lcLua.setF_openFileDialog(&openFileDialog);
+        lcLua.addLuaLibs();
+        lcLua.importLCKernel();
+        lcLua.setDocument(_document);
 
+        std::string out = lcLua.runString(code.c_str());
         if (!out.empty()) {
             std::cerr << out << std::endl;
             return 2;
         }
     }
-    else {
-        std::cerr << "No lua code was loaded" << std::endl;
+#ifdef LC_WITH_PYTHONSCRIPT
+    else if (runtime == lc::cli::ScriptRuntime::Python) {
+        // Parity with the Lua path: PythonInit + fresh namespace +
+        // setDocument. `document` is the ONLY name injected, matching
+        // LCLua::setDocument's single-binding contract (plan sub-plan 2.2).
+        // No plugins / no path.py in phase 2 — those land in phase 5.
+        lc::python::LCPython lcpy;
+        auto ns = lcpy.makeNamespace();
+        lcpy.setDocument(ns, _document);
+
+        const std::string out = lcpy.runString(code.c_str(), ns);
+        if (!out.empty()) {
+            // Same exit code contract as the Lua path (:199-203): script
+            // error → stderr + exit 2.
+            std::cerr << out << std::endl;
+            return 2;
+        }
+    }
+#else
+    else if (runtime == lc::cli::ScriptRuntime::Python) {
+        std::cerr << "Python scripting was not compiled in (rebuild with "
+                     "WITH_PYTHONSCRIPT=ON): " << fIn << std::endl;
         return 1;
     }
+#endif
 
     _canvas->autoScale(*lcPainter);
     lcPainter->clear(0,0,0);

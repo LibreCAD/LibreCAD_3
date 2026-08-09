@@ -81,6 +81,7 @@ lckernel/geometry/testgeoellipse.cpp
 lckernel/primitive/testellipse.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
+luacmdinterface/dispatch_test.cpp
 )
 
 # Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.
@@ -193,6 +194,8 @@ include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
 include_directories("${CMAKE_SOURCE_DIR}/persistence")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
+# Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
+include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 

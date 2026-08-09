@@ -54,7 +54,7 @@ set(src
     main.cpp
 )
 set(hdrs
-
+    dispatch.h
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
@@ -67,3 +67,15 @@ target_link_libraries(luacmdinterface
         lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES} glfw
 
 )
+
+# Phase 2 slice 2.1 — link + include the Python facade so `.py` inputs
+# dispatch through LCPython. The WITH_PYTHONSCRIPT option lives at the
+# root; -DLC_WITH_PYTHONSCRIPT is applied there as a global add_definitions,
+# but we need the include dir + link here too. Conditional so a
+# WITH_PYTHONSCRIPT=OFF build still compiles this target (the #ifdef in
+# main.cpp then compiles the Python arm out entirely).
+if(WITH_PYTHONSCRIPT)
+    target_include_directories(luacmdinterface PRIVATE
+        "${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    target_link_libraries(luacmdinterface lcpythonscript)
+endif()
