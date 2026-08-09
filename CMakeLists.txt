@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.8...3.27)
+# Bumped from 3.8 to 3.15 for pybind11 v3.x's CMake floor (phase 1 slice 1.2).
+cmake_minimum_required(VERSION 3.15...3.27)
 if (MSVC)
     project(LibreCAD3)
 else()
@@ -14,6 +15,10 @@ option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_LIBOPENCAD "Use libopencad" OFF)
 option(WITH_CAIRO "Compile with Cairo painter" OFF)
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
+
+# Python scripting support (phase 1 slice 1.2).  Off in Conan branch until
+# phase 6 lands the embeddable-CPython bundling.
+option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
@@ -59,6 +64,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
     set(WITH_LUACMDINTERFACE FALSE)
     set(WITH_RENDERING_UNITTESTS OFF)
     set(WITH_CAIRO OFF)
+    # Python scripting stays OFF in the Conan branch until phase 6 bundles an
+    # embeddable CPython (Windows) — the plan's WITH_PYTHONSCRIPT default is
+    # forced OFF here so the Windows/Conan CI keeps building.
+    set(WITH_PYTHONSCRIPT OFF)
     #set(WITH_UNITTESTS ON)
 
     #set(Boost_NO_SYSTEM_PATHS true)
@@ -171,6 +180,7 @@ message("Version: ${VERSION_MAJOR}.${VERSION_MINOR}\n")
 message("Options:")
 message("  - Qt user interface: ${WITH_QT_UI}")
 message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
+message("  - Python scripting support: ${WITH_PYTHONSCRIPT}")
 message("  - Unit tests: ${WITH_UNITTESTS}")
 message("  - Rendering unit tests: ${WITH_RENDERING_UNITTESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
@@ -188,6 +198,11 @@ endif(WITH_CAIRO)
 add_subdirectory("lckernel")
 add_subdirectory("lcUILua")
 add_subdirectory("lcadluascript")
+
+if(WITH_PYTHONSCRIPT)
+    add_definitions(-DLC_WITH_PYTHONSCRIPT)
+    add_subdirectory("lcadpythonscript")
+endif()
 
 if(WITH_PERSISTENCE)
     add_subdirectory("persistence")
