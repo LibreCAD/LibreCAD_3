@@ -47,10 +47,12 @@ endif()
 # updated in each slice's commit to add the new py_lc_<ns>.cpp.
 set(lcpythonscript_srcs
     lcpython.cpp
+    bridge/py_lc.cpp
 )
 
 set(lcpythonscript_hdrs
     lcpython.h
+    bridge/py_lc.h
 )
 
 # NOTE: kernel bindings are bound in lcpythonscript ONLY.  lcgui (phase 3+)

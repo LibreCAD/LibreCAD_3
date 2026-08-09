@@ -8,6 +8,8 @@
 
 #include "lcpython.h"
 
+#include "bridge/py_lc.h"
+
 #include <pybind11/embed.h>
 
 #include <cassert>
@@ -55,6 +57,10 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
     m.def_submodule("operation", "Operations (mirrors lc.operation)");
     m.def_submodule("maths",     "Math helpers (mirrors lc.maths)");
     m.def_submodule("event",     "Events (mirrors lc.event)");
+
+    // Populate top-level names (Visitable/Color/EntityCoordinate/
+    // SimpleSnapConstrain/EntityDistance) — slice 1.3.
+    lc::python::import_py_lc_namespace(m);
 }
 
 namespace lc {
