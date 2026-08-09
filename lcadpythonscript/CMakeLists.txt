@@ -48,11 +48,13 @@ endif()
 set(lcpythonscript_srcs
     lcpython.cpp
     bridge/py_lc.cpp
+    bridge/py_lc_geo.cpp
 )
 
 set(lcpythonscript_hdrs
     lcpython.h
     bridge/py_lc.h
+    bridge/py_lc_geo.h
 )
 
 # NOTE: kernel bindings are bound in lcpythonscript ONLY.  lcgui (phase 3+)

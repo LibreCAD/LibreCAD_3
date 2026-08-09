@@ -9,6 +9,7 @@
 #include "lcpython.h"
 
 #include "bridge/py_lc.h"
+#include "bridge/py_lc_geo.h"
 
 #include <pybind11/embed.h>
 
@@ -49,7 +50,7 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
 
     // Sub-modules — kept in strict parity with the Lua-side namespaces.
     // Bridge exports (`import_py_lc_<ns>(py::module_&)`) added slice-by-slice.
-    m.def_submodule("geo",       "Geometry primitives (mirrors lc.geo)");
+    auto m_geo = m.def_submodule("geo",       "Geometry primitives (mirrors lc.geo)");
     m.def_submodule("meta",      "Meta types (mirrors lc.meta)");
     m.def_submodule("entity",    "Entities (mirrors lc.entity)");
     m.def_submodule("builder",   "Builders (mirrors lc.builder)");
@@ -61,6 +62,9 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
     // Populate top-level names (Visitable/Color/EntityCoordinate/
     // SimpleSnapConstrain/EntityDistance) — slice 1.3.
     lc::python::import_py_lc_namespace(m);
+
+    // Populate lc.geo — slice 1.4.
+    lc::python::import_py_lc_geo_namespace(m_geo);
 }
 
 namespace lc {
