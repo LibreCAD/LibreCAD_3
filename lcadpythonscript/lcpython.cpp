@@ -13,6 +13,7 @@
 #include "bridge/py_lc_meta.h"
 #include "bridge/py_lc_entity.h"
 #include "bridge/py_lc_builder.h"
+#include "bridge/py_lc_storage.h"
 
 #include <pybind11/embed.h>
 
@@ -57,7 +58,7 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
     auto m_meta = m.def_submodule("meta",      "Meta types (mirrors lc.meta)");
     auto m_entity = m.def_submodule("entity",    "Entities (mirrors lc.entity)");
     auto m_builder = m.def_submodule("builder",   "Builders (mirrors lc.builder)");
-    m.def_submodule("storage",   "Storage / Document (mirrors lc.storage)");
+    auto m_storage = m.def_submodule("storage",   "Storage / Document (mirrors lc.storage)");
     m.def_submodule("operation", "Operations (mirrors lc.operation)");
     m.def_submodule("maths",     "Math helpers (mirrors lc.maths)");
     m.def_submodule("event",     "Events (mirrors lc.event)");
@@ -77,6 +78,9 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
 
     // Populate lc.builder — slice 1.7.
     lc::python::import_py_lc_builder_namespace(m_builder);
+
+    // Populate lc.storage — slice 1.8.
+    lc::python::import_py_lc_storage_namespace(m_storage);
 }
 
 namespace lc {
