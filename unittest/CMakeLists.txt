@@ -85,10 +85,15 @@ luacmdinterface/dispatch_test.cpp
 )
 
 # Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.
-# Only included when WITH_PYTHONSCRIPT is ON; the test file starts with
+# Phase 2 slice 2.3 — demoscript_test.cpp: verifies luacmdinterface/test.py
+# runs end-to-end against a real DocumentImpl (the plan's "primary exit
+# criterion" for phase 2 = entity-count diff of .lua vs .py).
+# Only included when WITH_PYTHONSCRIPT is ON; the test files start with
 # `#include <lcpython.h>` which needs pybind11.
 if(WITH_PYTHONSCRIPT)
-    list(APPEND src python/pythonbindings_test.cpp)
+    list(APPEND src
+        python/pythonbindings_test.cpp
+        python/demoscript_test.cpp)
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript)
 endif()
