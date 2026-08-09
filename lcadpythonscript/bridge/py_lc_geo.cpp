@@ -41,7 +41,18 @@ void import_py_lc_geo_namespace(py::module_& m_geo) {
     using lc::geo::Coordinate;
 
     // ------------------------------------------------------------------------
-    // lc.geo.Coordinate — plain value type + operator overloads.
+    // lc.geo.Coordinate — value type, but bound as py::classh (smart_holder)
+    // because lc::entity::Point *inherits* Coordinate (point.h:20:
+    // `class Point : public enable_shared_from_this<Point>, public CADEntity,
+    //   public geo::Coordinate, public Snapable, public Draggable,
+    //   virtual public Visitable`) — pybind11's "one holder per hierarchy"
+    // rule forces the base to match its derived holder.  The plan's
+    // "value types can stay py::class_" caveat did not anticipate this
+    // Point/Coordinate MI corner case; slice 1.6 uncovered it.  Downgrading
+    // to classh has no API cost (py::classh accepts BOTH value passing and
+    // shared_ptr) — this is the cheaper resolution than either removing the
+    // base from Point (breaking isinstance()) or copying the x/y/z methods
+    // onto every entity that inherits Coordinate.
     //
     // Kaguya bound `multiply/add/sub` as static functions because Lua lacks
     // operator overloading in userdata form; Python HAS operator overloading,
@@ -50,7 +61,7 @@ void import_py_lc_geo_namespace(py::module_& m_geo) {
     // Lua side so any parity script or docstring reads the same — this is
     // NOT a Pythonic property rewrite (plan says: no pythonic properties).
     // ------------------------------------------------------------------------
-    py::class_<Coordinate>(m_geo, "Coordinate")
+    py::classh<Coordinate>(m_geo, "Coordinate")
         .def(py::init<>())
         .def(py::init<double, double, double>(),
              py::arg("x"), py::arg("y"), py::arg("z"))
