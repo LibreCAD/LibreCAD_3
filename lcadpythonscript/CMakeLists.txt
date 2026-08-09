@@ -51,6 +51,7 @@ set(lcpythonscript_srcs
     bridge/py_lc_geo.cpp
     bridge/py_lc_meta.cpp
     bridge/py_lc_entity.cpp
+    bridge/py_lc_builder.cpp
 )
 
 set(lcpythonscript_hdrs
@@ -59,6 +60,7 @@ set(lcpythonscript_hdrs
     bridge/py_lc_geo.h
     bridge/py_lc_meta.h
     bridge/py_lc_entity.h
+    bridge/py_lc_builder.h
 )
 
 # NOTE: kernel bindings are bound in lcpythonscript ONLY.  lcgui (phase 3+)

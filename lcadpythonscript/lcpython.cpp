@@ -12,6 +12,7 @@
 #include "bridge/py_lc_geo.h"
 #include "bridge/py_lc_meta.h"
 #include "bridge/py_lc_entity.h"
+#include "bridge/py_lc_builder.h"
 
 #include <pybind11/embed.h>
 
@@ -55,7 +56,7 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
     auto m_geo = m.def_submodule("geo",       "Geometry primitives (mirrors lc.geo)");
     auto m_meta = m.def_submodule("meta",      "Meta types (mirrors lc.meta)");
     auto m_entity = m.def_submodule("entity",    "Entities (mirrors lc.entity)");
-    m.def_submodule("builder",   "Builders (mirrors lc.builder)");
+    auto m_builder = m.def_submodule("builder",   "Builders (mirrors lc.builder)");
     m.def_submodule("storage",   "Storage / Document (mirrors lc.storage)");
     m.def_submodule("operation", "Operations (mirrors lc.operation)");
     m.def_submodule("maths",     "Math helpers (mirrors lc.maths)");
@@ -73,6 +74,9 @@ PYBIND11_EMBEDDED_MODULE(lc, m) {
 
     // Populate lc.entity + lc.EntityDispatch — slice 1.6.
     lc::python::import_py_lc_entity_namespace(m, m_entity);
+
+    // Populate lc.builder — slice 1.7.
+    lc::python::import_py_lc_builder_namespace(m_builder);
 }
 
 namespace lc {
