@@ -11,3 +11,9 @@
 [submodule "lckernel/tinyspline"]
 	path = lckernel/tinyspline
 	url = https://github.com/msteinbeck/tinyspline.git
+[submodule "third_party/pybind11"]
+	path = third_party/pybind11
+	url = https://github.com/pybind/pybind11.git
+	# Pinned to v3.1.0 (2026-08 latest v3.x). v3 keeps C++14 support; pybind11's Python
+	# floor is 3.8, LibreCAD requires 3.9 as a project choice. See docs in
+	# librecad3-python-scripting-2026-08-09.md.
