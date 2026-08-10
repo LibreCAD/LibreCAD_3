@@ -12,9 +12,12 @@
 #include "widgets/guiAPI/entitygui.h"
 #include "widgets/guiAPI/buttongui.h"
 
-// Phase 4 PR-4 — native lambda replacements for the run_luascript /
-// run_customizetoolbar / changeLayout dostrings need the LuaScript widget.
-#include "widgets/luascript.h"
+// Phase 4 PR-4 — native lambda replacements for the run_script /
+// run_customizetoolbar / changeLayout dostrings need the ScriptDock widget.
+// Phase 3 PR-3.1 — LuaScript widget renamed to ScriptDock (generalized
+// for both Lua and Python).  The Lua-visible name `lc.LuaScript` is
+// aliased in guibridge for backward compat.
+#include "widgets/scriptdock.h"
 
 // Phase 4 PR-7 — Lua-globals resolver in registerOperationResolvers()
 // wraps kaguya::LuaRef via makeLuaObject.
@@ -127,14 +130,17 @@ void MainWindow::addOtherMenus() {
 
     MainWindow* self = this;
 
-    // add lua script menu
-    api::Menu* luaMenu = addMenu("Lua");
-    luaMenu->addItem("Run script",
+    // Phase 3 PR-3.3 — menu renamed "Lua" → "Script" now that the dock
+    // supports both languages.  ScriptDock (phase 3 PR-3.1) replaces
+    // the old LuaScript widget; the Lua-visible name `lc.LuaScript`
+    // remains bound as an alias in guibridge for backward compat.
+    api::Menu* scriptMenu = addMenu("Script");
+    scriptMenu->addItem("Run script",
         lc::scripting::nativeCallback([self]() {
-            auto ls = new lc::ui::widgets::LuaScript(self);
+            auto ls = new lc::ui::widgets::ScriptDock(self);
             ls->show();
         }));
-    luaMenu->addItem("Customize Toolbar",
+    scriptMenu->addItem("Customize Toolbar",
         lc::scripting::nativeCallback([self]() {
             self->runCustomizeToolbar();
         }));

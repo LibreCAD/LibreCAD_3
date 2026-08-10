@@ -41,7 +41,7 @@ windowmanager.h
 operationloader.h
 propertyeditor.h
 widgets/clicommand.h
-widgets/luascript.h
+widgets/scriptdock.h
 widgets/toolbar.h
 widgets/guiAPI/toolbartab.h
 widgets/layers.h
@@ -112,7 +112,7 @@ operationloader.cpp
 propertyeditor.cpp
 ui/resource.qrc
 widgets/clicommand.cpp
-widgets/luascript.cpp
+widgets/scriptdock.cpp
 widgets/toolbar.cpp
 widgets/guiAPI/toolbartab.cpp
 widgets/layers.cpp
@@ -171,7 +171,7 @@ managers/metainfomanager.cpp
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui
 widgets/clicommand.ui
-widgets/luascript.ui
+widgets/scriptdock.ui
 widgets/toolbar.ui
 widgets/guiAPI/toolbartab.ui
 widgets/guiAPI/dialogwidget.ui
@@ -271,6 +271,21 @@ set(EXTRA_LIBS
         Qt5::OpenGL
 		Qt5::Svg
         ${APR_LIBRARIES})
+
+# Phase 3 PR-3.1 — ScriptDock's Python leg needs lcpythonscript +
+# pybind11::embed on WITH_PYTHONSCRIPT=ON builds.  The root
+# CMakeLists.txt already adds -DLC_WITH_PYTHONSCRIPT globally so the
+# #ifdef in scriptdock.{h,cpp} fires; here we just link the required
+# libraries.  When WITH_PYTHONSCRIPT=OFF (Windows/embed CPython), the
+# Python code paths compile out and no link is needed.
+if(WITH_PYTHONSCRIPT)
+    set(EXTRA_LIBS "${EXTRA_LIBS}" lcpythonscript pybind11::embed)
+    if(APPLE)
+        include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    else()
+        include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    endif()
+endif()
 
 if (MSVC)
     set(EXTRA_LIBS "${EXTRA_LIBS}" Boost::log)

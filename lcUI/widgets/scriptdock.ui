@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LuaScript</class>
- <widget class="QWidget" name="LuaScript">
+ <class>ScriptDock</class>
+ <widget class="QWidget" name="ScriptDock">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Lua Script</string>
+   <string>Script Dock</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -33,6 +33,19 @@
       <widget class="QPushButton" name="save">
        <property name="text">
         <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="language">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Script language</string>
        </property>
       </widget>
      </item>

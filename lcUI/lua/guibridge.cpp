@@ -14,7 +14,7 @@
 #include "documentcanvas.h"
 #include "lcadviewer.h"
 #include "propertyeditor.h"
-#include "widgets/luascript.h"
+#include "widgets/scriptdock.h"
 #include "widgets/customizeToolbar/customizetoolbar.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
@@ -154,12 +154,18 @@ void addLCBindings(lua_State *L) {
                                          .addFunction("finishOperation", &LuaInterface::finishOperation)
                                         );
 
-    state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript>()
-                                      .setConstructors<widgets::LuaScript(lc::ui::MainWindow*)>()
-    .addOverloadedFunctions("show", [](widgets::LuaScript& self) {
+    // Phase 3 PR-3.1 — LuaScript widget was renamed to ScriptDock;
+    // bind under the new name AND alias the old name so existing Lua
+    // scripts that call `lc.LuaScript(mainWindow):show()` keep working.
+    // The alias is a Lua-side table copy, not a fresh class binding —
+    // both names resolve to the same metatable.
+    state["lc"]["ScriptDock"].setClass(kaguya::UserdataMetatable<widgets::ScriptDock>()
+                                      .setConstructors<widgets::ScriptDock(lc::ui::MainWindow*)>()
+    .addOverloadedFunctions("show", [](widgets::ScriptDock& self) {
         self.show();
     })
                                      );
+    state["lc"]["LuaScript"] = state["lc"]["ScriptDock"];
 
     state["lc"]["CustomizeToolbar"].setClass(kaguya::UserdataMetatable<widgets::CustomizeToolbar>()
             .setConstructors<widgets::CustomizeToolbar(widgets::Toolbar*)>()
