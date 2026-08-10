@@ -172,4 +172,71 @@ TEST_F(PythonFixture, EmbeddedModuleHasAllSubmodules) {
     ASSERT_EQ(err, "") << err;
 }
 
+// -----------------------------------------------------------------------------
+// Test 7 — Phase 5 PR-5.1: lc.operation_registry + lc.register_operation.
+// -----------------------------------------------------------------------------
+TEST_F(PythonFixture, RegisterOperationDecoratorAddsToRegistry) {
+    // Register an operation class, verify it lives in
+    // lc.operation_registry under its `name` attribute, and that
+    // duplicate registration is rejected (first wins).
+    const std::string err = lcpy.runString(R"py(
+# Sanity: registry starts (mostly) empty.  Other tests in this suite
+# don't register operations, so this test can assume a clean slate.
+initial_count = len(lc.operation_registry)
+
+@lc.register_operation
+class DemoOp:
+    name = "DemoOp"
+    command_line = "DEMO"
+    def _init_default(self):
+        pass
+
+assert "DemoOp" in lc.operation_registry, \
+    "register_operation must add to lc.operation_registry"
+assert lc.operation_registry["DemoOp"] is DemoOp, \
+    "registry must hold the class itself, not a wrapper"
+
+# Duplicate rejection: registering another class under the same name
+# should NOT overwrite DemoOp.
+@lc.register_operation
+class DemoOpDup:
+    name = "DemoOp"
+    command_line = "DUP"
+
+assert lc.operation_registry["DemoOp"] is DemoOp, \
+    "duplicate name must be rejected; first-registered wins"
+
+# Fallback: name attribute missing → __name__ used.
+@lc.register_operation
+class NoNameAttr:
+    pass
+
+assert "NoNameAttr" in lc.operation_registry, \
+    "missing `name` must fall back to __name__"
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// -----------------------------------------------------------------------------
+// Test 8 — Phase 5 PR-5.1: lc.event.register / lc.event.deregister
+// silent-no-op when no hook is installed (headless / CLI mode).
+// -----------------------------------------------------------------------------
+TEST_F(PythonFixture, EventRegisterSilentWhenNoHook) {
+    // No lcUI hook has been installed in this test process (we're a
+    // headless pythonbindings_test binary — no MainWindow, no
+    // ScriptDock).  register/deregister must not raise.
+    const std::string err = lcpy.runString(R"py(
+class Listener:
+    def onEvent(self, event, args):
+        self.hits = getattr(self, 'hits', 0) + 1
+listener = Listener()
+lc.event.register("point", listener)
+lc.event.deregister("point", listener)
+lc.event.register("point", lambda ev, args: None)
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
 } // namespace

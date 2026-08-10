@@ -147,7 +147,12 @@ void addLCBindings(lua_State *L) {
                                          .addFunction("registerEvent",
                                              static_cast<void(LuaInterface::*)(const std::string&, const kaguya::LuaRef&)>(
                                                  &LuaInterface::registerEvent))
-                                         .addFunction("deleteEvent", &LuaInterface::deleteEvent)
+                                         // Phase 5 PR-5.1 — deleteEvent overloaded to accept
+                                         // ScriptCallback for `lc.event.deregister`; Lua callers
+                                         // continue to see the LuaRef overload.
+                                         .addFunction("deleteEvent",
+                                             static_cast<void(LuaInterface::*)(const std::string&, const kaguya::LuaRef&)>(
+                                                 &LuaInterface::deleteEvent))
                                          .addFunction("triggerEvent",
                                              static_cast<void(LuaInterface::*)(const std::string&, kaguya::LuaRef)>(
                                                  &LuaInterface::triggerEvent))

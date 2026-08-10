@@ -26,7 +26,65 @@ namespace py = pybind11;
 namespace lc {
 namespace python {
 
+// -----------------------------------------------------------------------------
+// Phase 5 PR-5.1 — event register/deregister hook storage.
+// -----------------------------------------------------------------------------
+// A single process-global hook per direction.  lcUI installs both at
+// MainWindow construction (see lcUI/python/pyeventhooks.cpp) so
+// `lc.event.register("point", self)` reaches the LuaInterface's
+// EventBus.  Unset hook = silent no-op (headless CLI mode).
+
+namespace {
+
+EventHook& registerHookSlot() {
+    static EventHook h;
+    return h;
+}
+
+EventHook& deregisterHookSlot() {
+    static EventHook h;
+    return h;
+}
+
+} // namespace
+
+void setEventRegisterHook(EventHook hook) {
+    registerHookSlot() = std::move(hook);
+}
+
+void setEventDeregisterHook(EventHook hook) {
+    deregisterHookSlot() = std::move(hook);
+}
+
 void import_py_lc_event_namespace(py::module_& m_event) {
+    // Phase 5 PR-5.1 — `lc.event.register(name, obj)` /
+    // `lc.event.deregister(name, obj)` bindings.  Route through the
+    // hook slots (installed by lcUI); silent no-op if unset.
+    m_event.def("register",
+        [](const std::string& name, py::object obj) {
+            auto& hook = registerHookSlot();
+            if (hook) hook(name, std::move(obj));
+        },
+        py::arg("name"), py::arg("callback"),
+        "Register a Python callback for the named event.  The callback "
+        "may be a plain callable (`fn(event, args)`) or an object with "
+        "an `onEvent(self, event, args)` method — the underlying "
+        "PythonCallbackImpl chooses the shape per call.  Multiple "
+        "registrations of the same object stack (matches Lua's "
+        "std::vector<LuaRef> behavior).");
+
+    m_event.def("deregister",
+        [](const std::string& name, py::object obj) {
+            auto& hook = deregisterHookSlot();
+            if (hook) hook(name, std::move(obj));
+        },
+        py::arg("name"), py::arg("callback"),
+        "Remove the first matching registration for the named event.  "
+        "Equality follows PythonCallbackImpl's is-or-equal rule: "
+        "identical py::object (same instance) OR __eq__ True.  Silent "
+        "no-op on miss.");
+
+
     py::class_<lc::event::AddLayerEvent>(m_event, "AddLayerEvent")
         .def(py::init<const lc::meta::Layer_CSPtr>())
         .def("layer", &lc::event::AddLayerEvent::layer);

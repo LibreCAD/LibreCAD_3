@@ -98,6 +98,56 @@ void import_py_lc_namespace(py::module_& m) {
              py::arg("cadEntity"), py::arg("coordinate"))
         .def("coordinate", &lc::EntityDistance::coordinate)
         .def("entity",     &lc::EntityDistance::entity);
+
+    // ------------------------------------------------------------------------
+    // Phase 5 PR-5.1 — operation registry.
+    //
+    // `lc.operation_registry` is a plain dict mapping the operation
+    // name (as read by OperationLoader's C++ side — that name is the
+    // toolbar/menu/CLI/context-menu key, so it IS API — public name,
+    // not underscore-prefixed).
+    // `lc.register_operation(cls)` is a class decorator that adds the
+    // class to the registry under its `name` attribute (falling back
+    // to `cls.__name__`).  Returning `cls` makes it usable as a
+    // decorator: `@lc.register_operation` above a class body.
+    //
+    // Duplicate names are logged AND rejected — matches the sub-plan's
+    // "Reject duplicate names with a logged warning" rule.  A collision
+    // with Lua vkeys is silent from the Python side; the loader's
+    // second-source integration (PR-5.2) does the cross-registry
+    // duplicate check.
+    // ------------------------------------------------------------------------
+    m.attr("operation_registry") = py::dict();
+    m.def("register_operation",
+        [](py::object cls) -> py::object {
+            py::dict reg = py::reinterpret_borrow<py::dict>(
+                py::module_::import("lc").attr("operation_registry"));
+            // Prefer `cls.name` (class attribute); fall back to __name__.
+            std::string name;
+            if (py::hasattr(cls, "name")) {
+                py::object n = cls.attr("name");
+                if (!n.is_none()) {
+                    name = py::str(n);
+                }
+            }
+            if (name.empty()) {
+                name = py::str(cls.attr("__name__"));
+            }
+            if (reg.contains(name)) {
+                // Log AND reject — matches sub-plan.
+                py::print("[lc] register_operation: duplicate name '"
+                          + name + "' — keeping first, rejecting second.");
+            } else {
+                reg[py::cast(name)] = cls;
+            }
+            return cls;   // decorator semantics: return the class unchanged.
+        },
+        py::arg("cls"),
+        "Decorator that registers an operation class under `cls.name` "
+        "(falling back to `cls.__name__`) in `lc.operation_registry`.  "
+        "Reads by the C++ OperationLoader second source (phase 5 PR-5.2) "
+        "iterate the dict sorted by name.  Duplicate names are logged "
+        "and REJECTED (first wins).");
 }
 
 } // namespace python

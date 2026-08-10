@@ -147,6 +147,14 @@ void LuaInterface::deleteEvent(const std::string& event, const kaguya::LuaRef& c
     _eventBus.deleteEvent(event, lc::lua::makeLuaCallback(callback));
 }
 
+bool LuaInterface::deleteEvent(const std::string& event,
+                               const lc::scripting::ScriptCallback& callback) {
+    // Phase 5 PR-5.1 — native ScriptCallback overload.  Used by the
+    // `lc.event.deregister` hook path so Python operations can uninstall
+    // their own listeners on close().
+    return _eventBus.deleteEvent(event, callback);
+}
+
 void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
     // Phase 4 PR-9a + post-review fix — the LuaRef-taking overload's
     // whole point is Lua-to-Lua dispatch where NO conversion is needed.

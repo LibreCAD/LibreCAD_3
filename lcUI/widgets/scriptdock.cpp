@@ -10,6 +10,7 @@
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #include <lcpython.h>   // PythonInit
+#include "../python/pyeventhooks.h"   // Phase 5 PR-5.1
 #endif
 
 using namespace lc::ui::widgets;
@@ -79,6 +80,10 @@ ScriptDock::ScriptDock(lc::ui::MainWindow* mainWindow) :
 
 #ifdef LC_WITH_PYTHONSCRIPT
     _pyNamespace = std::make_unique<PyNamespace>();
+    // Phase 5 PR-5.1 — install lc.event.register / lc.event.deregister
+    // hooks that route to the active MainWindow's LuaInterface EventBus.
+    // Idempotent — safe to call from every ScriptDock ctor.
+    lc::ui::python::installEventHooks();
 #endif
 }
 

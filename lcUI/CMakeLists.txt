@@ -176,6 +176,9 @@ managers/metainfomanager.cpp
 if(WITH_PYTHONSCRIPT)
     list(APPEND UI_srcs python/pyguibridge.cpp)
     list(APPEND UI_hdrs python/pyguibridge.h)
+    # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
+    list(APPEND UI_srcs python/pyeventhooks.cpp)
+    list(APPEND UI_hdrs python/pyeventhooks.h)
 endif()
 
 QT5_WRAP_UI(UI_HEADERS

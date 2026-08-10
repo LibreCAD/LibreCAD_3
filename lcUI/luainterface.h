@@ -112,6 +112,14 @@ public:
     void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
 
     /**
+     * \brief Native ScriptCallback overload of deleteEvent — sibling of
+     * `registerEvent(std::string, ScriptCallback)` (phase 4 PR-9a).
+     * Added phase 5 PR-5.1 for the `lc.event.deregister` hook path.
+     */
+    bool deleteEvent(const std::string& event,
+                     const lc::scripting::ScriptCallback& callback);
+
+    /**
      * \brief Trigger @p event with a LuaRef payload.  Phase 4 PR-9a:
      * converts the LuaRef payload to ScriptValue via fromLua and
      * delegates to EventBus, which materializes back to Lua per-callback.
