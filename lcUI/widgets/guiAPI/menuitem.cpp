@@ -2,15 +2,16 @@
 
 #include "menu.h"
 #include <stack>
+#include <utility>
 
 using namespace lc::ui;
 using namespace lc::ui::api;
 
-MenuItem::MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* parent)
+MenuItem::MenuItem(const char* menuItemName, lc::scripting::ScriptCallback callback, QWidget* parent)
     :
     MenuItem(menuItemName, parent)
 {
-    callbacks.push_back(callback);
+    callbacks.push_back(std::move(callback));
 }
 
 MenuItem::MenuItem(const char* menuItemName, QWidget* parent)
@@ -39,24 +40,24 @@ void MenuItem::show() {
     setVisible(true);
 }
 
-void MenuItem::addCallback(kaguya::LuaRef callback) {
-    callbacks.push_back(callback);
+void MenuItem::addCallback(lc::scripting::ScriptCallback callback) {
+    callbacks.push_back(std::move(callback));
 }
 
-void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
+void MenuItem::addCallback(const char* cb_name, lc::scripting::ScriptCallback callback) {
     if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
         return;
     }
 
-    addCallback(callback);
+    addCallback(std::move(callback));
     namedCallbacks[cb_name] = callbacks.size() - 1;
 }
 
-void MenuItem::addCheckedCallback(kaguya::LuaRef callback) {
+void MenuItem::addCheckedCallback(lc::scripting::ScriptCallback callback) {
     if (!isCheckable()) {
         this->setCheckable(true);
     }
-    _checkedCallbacks.push_back(callback);
+    _checkedCallbacks.push_back(std::move(callback));
 }
 
 void MenuItem::removeCallback(const char* cb_name) {
@@ -177,14 +178,15 @@ void MenuItem::updateOtherPositionsAfterRemove() {
 }
 
 void MenuItem::itemTriggered() {
+    // Phase 4 PR-4 — invoke neutral callbacks (nil-safe: nil returns Nil).
     for (int i = 0; i < callbacks.size(); i++) {
-        callbacks[i]();
+        callbacks[i].invoke();
     }
 }
 
 void MenuItem::itemToggled(bool toggle) {
     for (int i = 0; i < _checkedCallbacks.size(); i++) {
-        _checkedCallbacks[i](toggle);
+        _checkedCallbacks[i].call(toggle);
     }
 }
 

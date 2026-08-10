@@ -208,7 +208,11 @@ void addLCBindings(lua_State *L) {
                                        );
 
     state["lc"]["MainWindow"].setClass(kaguya::UserdataMetatable<lc::ui::MainWindow>()
-                                       .addFunction("connectMenuItem", &lc::ui::MainWindow::connectMenuItem)
+    // Phase 4 PR-4 — connectMenuItem takes ScriptCallback; wrap LuaRef.
+    .addStaticFunction("connectMenuItem",
+        [](lc::ui::MainWindow* self, const std::string& itemName, kaguya::LuaRef cb) {
+            self->connectMenuItem(itemName, lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                        .addFunction("cliCommand", &lc::ui::MainWindow::cliCommand)
                                        .addFunction("cadMdiChild", &lc::ui::MainWindow::cadMdiChild)
                                        .addFunction("toolbar", &lc::ui::MainWindow::toolbar)
@@ -270,14 +274,28 @@ void addLuaGUIAPIBindings(lua_State* L) {
     .addOverloadedFunctions("setEnabled", [](lc::ui::api::Menu& self, bool enable) {
         self.setEnabled(enable);
     })
-    .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::Menu::addItem))
+    // Phase 4 PR-4 — the 2-arg addItem(name, cb) takes ScriptCallback;
+    // wrap LuaRef.  The other 2 overloads are unchanged.
+    .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem),
+                            static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem),
+        [](lc::ui::api::Menu& self, const char* label, kaguya::LuaRef cb) {
+            return self.addItem(label, lc::lua::makeLuaCallback(std::move(cb)));
+        })
     .addOverloadedFunctions("removeItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::removeItem), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeItem))
     .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::Menu*)>(&lc::ui::api::Menu::removeMenu), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeMenu))
     .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addMenu), static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::Menu*)>(&lc::ui::api::Menu::addMenu))
                                  );
 
+    // Phase 4 PR-4 — MenuItem's callback-taking constructor is exposed
+    // as a static factory `gui.MenuItem.new(label, cb)`, same idiom as
+    // ToolbarButton in PR-3.  Non-callback constructor stays direct.
+    // addCallback + addCheckedCallback take ScriptCallback; wrap LuaRef.
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
-                                      .setConstructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, kaguya::LuaRef)>()
+                                      .setConstructors<lc::ui::api::MenuItem(const char*)>()
+    .addStaticFunction("new",
+        [](const char* label, kaguya::LuaRef cb) {
+            return new lc::ui::api::MenuItem(label, lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                       .addFunction("label", &lc::ui::api::MenuItem::label)
                                       .addFunction("setLabel", &lc::ui::api::MenuItem::setLabel)
                                       .addFunction("position", &lc::ui::api::MenuItem::position)
@@ -286,7 +304,10 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                       .addFunction("removeCallback", &lc::ui::api::MenuItem::removeCallback)
                                       .addFunction("setCheckable", &lc::ui::api::MenuItem::setCheckable)
                                       .addFunction("setChecked", &lc::ui::api::MenuItem::setChecked)
-                                      .addFunction("addCheckedCallback", &lc::ui::api::MenuItem::addCheckedCallback)
+    .addStaticFunction("addCheckedCallback",
+        [](lc::ui::api::MenuItem& self, kaguya::LuaRef cb) {
+            self.addCheckedCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
     .addOverloadedFunctions("hide", [](lc::ui::api::MenuItem& self) {
         self.hide();
     })
@@ -299,7 +320,13 @@ void addLuaGUIAPIBindings(lua_State* L) {
     .addOverloadedFunctions("setEnabled", [](lc::ui::api::MenuItem& self, bool enable) {
         self.setEnabled(enable);
     })
-    .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::MenuItem::*)(kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback), static_cast<void(lc::ui::api::MenuItem::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback))
+    .addOverloadedFunctions("addCallback",
+        [](lc::ui::api::MenuItem& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        },
+        [](lc::ui::api::MenuItem& self, const char* name, kaguya::LuaRef cb) {
+            self.addCallback(name, lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                      );
 
     state["gui"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<api::ToolbarTab>()

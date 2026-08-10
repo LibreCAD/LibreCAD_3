@@ -3,6 +3,11 @@
 
 #include <mainwindow.h>
 
+// Phase 4 PR-4 — MenuItem takes ScriptCallback; tests wrap LuaRefs via
+// the Lua adapter.  Also need kaguya include for state.dostring etc.
+#include <kaguya/kaguya.hpp>
+#include <scriptadapter/luacallback.h>
+
 #include "../uitests.h"
 
 TEST(MenuItemTest, ItemAddTest) {
@@ -19,12 +24,13 @@ TEST(MenuItemTest, ItemAddTest) {
 
     EXPECT_EQ(testItem2, testMenu->itemByName("TESTITEM2"));
 
-    lc::ui::api::MenuItem* testItem3 = new lc::ui::api::MenuItem("TESTITEM3", kaguya::LuaRef());
+    lc::ui::api::MenuItem* testItem3 =
+        new lc::ui::api::MenuItem("TESTITEM3", lc::scripting::ScriptCallback{});
     testMenu->addItem(testItem3);
 
     EXPECT_EQ(testItem3, testMenu->itemByName("TESTITEM3"));
 
-    testMenu->addItem("TESTITEM4", kaguya::LuaRef());
+    testMenu->addItem("TESTITEM4", lc::scripting::ScriptCallback{});
     lc::ui::api::MenuItem* testItem4 = testMenu->itemByName("TESTITEM4");
 
     EXPECT_EQ("TESTITEM4", testItem4->label());
@@ -54,7 +60,10 @@ TEST(MenuItemTest, ItemCallbackTest) {
     kaguya::LuaRef cb = state["testitemcb"];
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("testmenu");
-    lc::ui::api::MenuItem* testitem1 = new lc::ui::api::MenuItem("TestItem1", cb);
+    // Phase 4 PR-4 — wrap the LuaRef callback via the adapter.  Behavior
+    // identical: the Lua function fires when the item is triggered.
+    lc::ui::api::MenuItem* testitem1 =
+        new lc::ui::api::MenuItem("TestItem1", lc::lua::makeLuaCallback(cb));
     testmenu->addItem(testitem1);
 
     testitem1->trigger();
@@ -67,8 +76,9 @@ TEST(MenuItemTest, ItemCallbackTest) {
     kaguya::LuaRef cb2 = state["testitemcb2"];
     kaguya::LuaRef cb3 = state["testitemcb3"];
 
-    lc::ui::api::MenuItem* testitem2 = testmenu->addItem("TestItem2", cb2);
-    testitem2->addCallback(cb3);
+    lc::ui::api::MenuItem* testitem2 =
+        testmenu->addItem("TestItem2", lc::lua::makeLuaCallback(cb2));
+    testitem2->addCallback(lc::lua::makeLuaCallback(cb3));
 
     EXPECT_FALSE(state["doesThisExist2"].get<bool>());
     EXPECT_FALSE(state["doesThisExist3"].get<bool>());

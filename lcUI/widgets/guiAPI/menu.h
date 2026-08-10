@@ -3,7 +3,8 @@
 #include <QMenu>
 #include <QMenuBar>
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-4 — kaguya replaced by neutral ScriptCallback (transitively
+// available from menuitem.h).
 #include "menuitem.h"
 
 namespace lc
@@ -56,10 +57,10 @@ public:
     /**
     * \brief Add menu item
     * \param string menu item name
-    * \param LuaRef callback
+    * \param ScriptCallback callback (Lua adapter wraps at the guibridge)
     * \return pointer to menu item
     */
-    MenuItem* addItem(const char* menuItemLabel, kaguya::LuaRef callback);
+    MenuItem* addItem(const char* menuItemLabel, lc::scripting::ScriptCallback callback);
 
     /**
     * \brief Add men

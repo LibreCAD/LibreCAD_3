@@ -12,6 +12,10 @@
 #include "widgets/guiAPI/entitygui.h"
 #include "widgets/guiAPI/buttongui.h"
 
+// Phase 4 PR-4 — native lambda replacements for the run_luascript /
+// run_customizetoolbar / changeLayout dostrings need the LuaScript widget.
+#include "widgets/luascript.h"
+
 using namespace lc::ui;
 
 MainWindow::MainWindow()
@@ -82,41 +86,60 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::addOtherMenus() {
-    // add lua script
-    kaguya::State state(_luaInterface.luaState());
-    state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
-    state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
-    state["run_aboutdialog"] = kaguya::function([&] {
-        auto aboutDialog = new dialog::AboutDialog(this);
-        aboutDialog->show();
-        });
-    state["run_textdialog"] = kaguya::function([&] {
-        auto textDialog = new dialog::TextDialog(this, this);
-        textDialog->show();
-        });
+    // Phase 4 PR-4 — replaces the phase-4 sub-plan's "Kind C" dostring
+    // codegen sites for menu callbacks with native ScriptCallback
+    // lambdas.  Kill list (verbatim from the sub-plan / mainwindow.cpp:
+    // pre-refactor line 87-88 + 103-111):
+    //   * `run_luascript = function() lc.LuaScript(mainWindow):show() end`
+    //   * `run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end`
+    //   * 5 `changeLayout = function() mainWindow:...() end` sites
+    //   * the scratch-global cleanup pattern
+    // The precedent for the native lambda replacement is the two Lua-
+    // native binding sites already present here at pre-refactor lines
+    // 89-96 (`run_aboutdialog`, `run_textdialog`) — the exact same
+    // idiom just moved into native callbacks bound directly to menu
+    // items via `nativeCallback([]{...})`.
 
+    MainWindow* self = this;
+
+    // add lua script menu
     api::Menu* luaMenu = addMenu("Lua");
-    luaMenu->addItem("Run script", state["run_luascript"]);
-    luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
+    luaMenu->addItem("Run script",
+        lc::scripting::nativeCallback([self]() {
+            auto ls = new lc::ui::widgets::LuaScript(self);
+            ls->show();
+        }));
+    luaMenu->addItem("Customize Toolbar",
+        lc::scripting::nativeCallback([self]() {
+            self->runCustomizeToolbar();
+        }));
 
     api::Menu* viewMenu = addMenu("View");
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(1) end");
-    viewMenu->addItem("Default Layout 1", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(2) end");
-    viewMenu->addItem("Default Layout 2", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(3) end");
-    viewMenu->addItem("Default Layout 3", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:loadDockLayout() end");
-    viewMenu->addItem("Load Dock Layout", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:saveDockLayout() end");
-    viewMenu->addItem("Save Dock Layout", state["changeLayout"]);
+    viewMenu->addItem("Default Layout 1",
+        lc::scripting::nativeCallback([self]() { self->changeDockLayout(1); }));
+    viewMenu->addItem("Default Layout 2",
+        lc::scripting::nativeCallback([self]() { self->changeDockLayout(2); }));
+    viewMenu->addItem("Default Layout 3",
+        lc::scripting::nativeCallback([self]() { self->changeDockLayout(3); }));
+    viewMenu->addItem("Load Dock Layout",
+        lc::scripting::nativeCallback([self]() { self->loadDockLayout(); }));
+    viewMenu->addItem("Save Dock Layout",
+        lc::scripting::nativeCallback([self]() { self->saveDockLayout(); }));
 
     api::Menu* aboutMenu = addMenu("About");
-    aboutMenu->addItem("About", state["run_aboutdialog"]);
+    aboutMenu->addItem("About",
+        lc::scripting::nativeCallback([self]() {
+            auto aboutDialog = new dialog::AboutDialog(self);
+            aboutDialog->show();
+        }));
 
     api::Menu* textMenu = menuByName("Create")->menuByName("Text");
     if (textMenu != nullptr) {
-        textMenu->addItem("Text Dialog", state["run_textdialog"]);
+        textMenu->addItem("Text Dialog",
+            lc::scripting::nativeCallback([self]() {
+                auto textDialog = new dialog::TextDialog(self, self);
+                textDialog->show();
+            }));
     }
 }
 
@@ -253,10 +276,11 @@ void MainWindow::runLastOperation() {
 
 /* Menu functions */
 
-void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
+void MainWindow::connectMenuItem(const std::string& itemName,
+                                 lc::scripting::ScriptCallback callback)
 {
     lc::ui::api::MenuItem* menuItem = findMenuItemByObjectName(itemName.c_str());
-    menuItem->addCallback(callback);
+    menuItem->addCallback(std::move(callback));
 }
 
 void MainWindow::initMenuAPI() {

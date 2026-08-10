@@ -5,6 +5,10 @@
 
 #include <QSignalSpy>
 
+// Phase 4 PR-4 — connectMenuItem takes ScriptCallback; tests wrap
+// LuaRefs via the Lua adapter.
+#include <scriptadapter/luacallback.h>
+
 using namespace lc::ui;
 
 class MainWindowTest : public MainWindow {
@@ -111,7 +115,11 @@ public:
 
         kaguya::State state(_luaInterface.luaState());
         state.dostring("test_menu = function() testMenuItem=5 end");
-        connectMenuItem("action2_Point_Line", state["test_menu"]);
+        // Phase 4 PR-4 — connectMenuItem takes ScriptCallback; wrap
+        // the Lua callable via the adapter.  Behavior unchanged: the
+        // Lua function still fires when the menu item is triggered.
+        connectMenuItem("action2_Point_Line",
+                        lc::lua::makeLuaCallback(state["test_menu"]));
 
         testAction->trigger();
 

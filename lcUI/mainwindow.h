@@ -76,10 +76,15 @@ namespace lc
             int contextMenuManagerId();
 
             /**
-            * \brief Connect existing menu item to lua callback function
-            * \param itemName item name , callback - function callback
+            * \brief Connect existing menu item to a script callback
+            * \param itemName item name , callback - ScriptCallback (Lua
+            *        adapter wraps LuaRef at the guibridge)
+            *
+            * Phase 4 PR-4 refactor: was `kaguya::LuaRef`; guibridge.cpp
+            * now wraps Lua-side LuaRefs via lc::lua::makeLuaCallback().
             */
-            void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
+            void connectMenuItem(const std::string& itemName,
+                                 lc::scripting::ScriptCallback callback);
 
             /**
             * \brief Run tool operation
