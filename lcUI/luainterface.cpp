@@ -12,6 +12,14 @@
 // The Lua-facing overloads wrap kaguya::LuaRef via the Lua adapter.
 #include <scriptadapter/luacallback.h>
 
+// Phase 5 PR-5.3 — path.py execution + lcUIPy autoregister.
+#ifdef LC_WITH_PYTHONSCRIPT
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#include <pybind11/eval.h>
+#include <lcpython.h>   // PythonInit
+#endif
+
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
@@ -42,15 +50,73 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     std::string luaPath = _L["lua_path"];
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
+    // Phase 5 PR-5.3 — path bootstrap.  Execute path.py (auto-generated
+    // by lcUIPy/CMakeLists.txt at build time; installed next to
+    // path.lua in bin/) to insert lcUIPy's parent dir onto sys.path.
+    // After this runs, `import lcUIPy.operations` and friends work —
+    // OperationLoader::loadPythonOperations (called below) can then
+    // discover any modules that autoregister via @lc.register_operation
+    // during their own top-level import.
+    //
+    // Failing gracefully: if path.py doesn't exist (unittest binary
+    // in a weird runtime dir, or WITH_PYTHONSCRIPT=OFF) the error text
+    // is logged and the Python second source proceeds with whatever
+    // registry state exists — matches the "empty registry is OK for
+    // PR-5.2" contract.
+#ifdef LC_WITH_PYTHONSCRIPT
+    {
+        QString pyFile =
+            QCoreApplication::applicationDirPath() + "/path.py";
+        lc::python::PythonInit::initialize();
+        pybind11::gil_scoped_acquire gil;
+        try {
+            pybind11::eval_file(pyFile.toStdString(),
+                pybind11::module_::import("__main__").attr("__dict__"));
+        } catch (const pybind11::error_already_set& e) {
+            // Missing/malformed path.py isn't fatal — log and continue.
+            LOG_WARNING << "path.py load failed: " << e.what()
+                        << std::endl;
+        }
+
+        // Best-effort autoregister: import every module under lcUIPy/
+        // that begins with `create_` or `action_` (matches Lua's
+        // createActions/actions folder scan).  If import raises, log
+        // and continue — a broken module shouldn't prevent the rest.
+        try {
+            pybind11::exec(R"py(
+import importlib, os, sys
+try:
+    import lcUIPy   # lets sys.path lookup validate first
+    _lcuipy_root = os.path.dirname(lcUIPy.__file__)
+    for _fname in sorted(os.listdir(_lcuipy_root)):
+        if not _fname.endswith('.py'):
+            continue
+        if not (_fname.startswith('create_') or _fname.startswith('action_')):
+            continue
+        _mod = 'lcUIPy.' + _fname[:-3]
+        try:
+            importlib.import_module(_mod)
+        except Exception as _e:
+            # Log and move on — one broken op shouldn't kill startup.
+            print('lcUIPy load: skipping', _mod, ':', _e)
+    del _lcuipy_root
+except Exception as _e:
+    print('lcUIPy autoregister skipped:', _e)
+)py",
+                pybind11::module_::import("__main__").attr("__dict__"));
+        } catch (const pybind11::error_already_set& e) {
+            LOG_WARNING << "lcUIPy autoregister failed: "
+                        << e.what() << std::endl;
+        }
+    }
+#endif
+
     // Phase 5 PR-5.2 — Python second source.  After Lua ops load
-    // (populating foundProperties which the collision check reads),
-    // walk lc.operation_registry and wire each Python operation
-    // through the same CliCommand/Toolbar/Menu/ContextMenu paths.
-    // Registers a Python resolver on MainWindow so runOperationByName
-    // reaches Python-registered classes.  The registry itself is
-    // populated by `@lc.register_operation` — path bootstrap for
-    // auto-importing lcUIPy modules is PR-5.3's job; PR-5.2 is happy
-    // with an empty registry.
+    // (populating foundProperties which the collision check reads)
+    // AND path.py + autoregister ran (populating lc.operation_registry
+    // with any @lc.register_operation classes found in lcUIPy/), walk
+    // the registry and wire each Python operation through the same
+    // CliCommand/Toolbar/Menu/ContextMenu paths.
 #ifdef LC_WITH_PYTHONSCRIPT
     opLoader.loadPythonOperations();
 #endif

@@ -24,6 +24,9 @@ WinDeployQt librecad.exe
 dir ..
 copy ..\*.lua
 copy ..\*.json
+REM Phase 5 PR-5.3 — copy path.py + lcUIPy alongside path.lua so the
+REM Windows NSIS installer includes them.
+copy ..\*.py 2>NUL
 where makensis.exe
 dir ..\..\CPack*.cmake
 

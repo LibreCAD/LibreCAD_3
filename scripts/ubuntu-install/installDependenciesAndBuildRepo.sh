@@ -59,5 +59,10 @@ fi
 
 echo "installing LibreCAD"
 sudo make install DESTDIR=AppDir
+# Phase 5 PR-5.3 — copy path.py alongside path.lua so ScriptDock's
+# Python leg finds lcUIPy modules in AppImage builds.  The `|| true`
+# guards a Lua-only build where WITH_PYTHONSCRIPT=OFF and no bin/*.py
+# was generated.
 sudo cp bin/*.lua bin/*.json AppDir/usr/bin
+sudo cp bin/*.py AppDir/usr/bin 2>/dev/null || true
 popd

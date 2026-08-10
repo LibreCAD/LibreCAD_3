@@ -208,6 +208,9 @@ add_subdirectory("lcadluascript")
 if(WITH_PYTHONSCRIPT)
     add_definitions(-DLC_WITH_PYTHONSCRIPT)
     add_subdirectory("lcadpythonscript")
+    # Phase 5 PR-5.3 — path bootstrap sibling to lcUILua.  Generates
+    # path.py at build time and stages the lcUIPy package for install.
+    add_subdirectory("lcUIPy")
 endif()
 
 if(WITH_PERSISTENCE)
