@@ -12,7 +12,11 @@
 
 #include "widgettitlebar.h"
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-2 — CliCommand refactored to store neutral ScriptCallbacks
+// instead of raw kaguya::LuaRef.  guibridge.cpp wraps the Lua-side call
+// site (which still receives a LuaRef from Lua) via
+// lc::lua::makeLuaCallback().  Kaguya include no longer required here.
+#include <lcscripting/scriptcallback.h>
 
 namespace Ui {
 class CliCommand;
@@ -40,8 +44,14 @@ public:
 
     /**
      * \brief Add a new command
+     * \param name  command name (uppercase by convention)
+     * \param cb    callback to invoke when the command is run
+     *
+     * The callback is stored as a language-neutral `ScriptCallback`
+     * (phase 4 PR-2 refactor).  Lua-side call sites are wrapped in
+     * guibridge.cpp via `lc::lua::makeLuaCallback(luaRef)`.
      */
-    bool addCommand(const char* name, kaguya::LuaRef cb);
+    bool addCommand(const char* name, lc::scripting::ScriptCallback cb);
 
     /**
      * \brief Write a message in the logs
@@ -157,7 +167,7 @@ private:
     int _historySize;
     int _historyIndex;
 
-    QMap<QString, kaguya::LuaRef> _commands_cb;
+    QMap<QString, lc::scripting::ScriptCallback> _commands_cb;
     QMap<QString, bool> _commands_enabled;
     std::vector<std::string> _commands_entered;
 };

@@ -1,6 +1,12 @@
 #include "lua/guibridge.h"
 #include "luainterface.h"
 
+// Phase 4 PR-2 — Lua adapter for the neutral callback layer.  guibridge
+// wraps kaguya::LuaRef → ScriptCallback at every callback-taking API
+// site (starting with CliCommand::addCommand; the toolbar/menu/widget
+// wraps land in PR-3/PR-4/PR-5).
+#include <scriptadapter/luacallback.h>
+
 #include "cadmdichild.h"
 #include "documentcanvas.h"
 #include "lcadviewer.h"
@@ -121,8 +127,14 @@ void addLCBindings(lua_State *L) {
                                            .addFunction("selectAll", &DocumentCanvas::selectAll)
                                           );
 
+    // Phase 4 PR-2 — CliCommand::addCommand now takes lc::scripting::ScriptCallback,
+    // not kaguya::LuaRef.  Wrap the Lua-side LuaRef into a neutral callback
+    // via makeLuaCallback before forwarding.  Lua callers see zero API change.
     state["lc"]["CliCommand"].setClass(kaguya::UserdataMetatable<widgets::CliCommand>()
-                                       .addFunction("addCommand", &widgets::CliCommand::addCommand)
+    .addStaticFunction("addCommand", [](widgets::CliCommand* cliCommand,
+                                        const char* name, kaguya::LuaRef cb) {
+        return cliCommand->addCommand(name, lc::lua::makeLuaCallback(std::move(cb)));
+    })
     .addStaticFunction("write", [](widgets::CliCommand* cliCommand, const char* message) {
         cliCommand->write(message);
     })

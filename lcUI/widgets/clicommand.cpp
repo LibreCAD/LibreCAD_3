@@ -41,12 +41,12 @@ CliCommand::~CliCommand() {
     delete ui;
 }
 
-bool CliCommand::addCommand(const char* name, kaguya::LuaRef cb) {
+bool CliCommand::addCommand(const char* name, lc::scripting::ScriptCallback cb) {
     if(_commands->stringList().indexOf(name) == -1) {
         auto newList = _commands->stringList();
         newList << QString(name);
         _commands->setStringList(newList);
-        _commands_cb[QString(name)] = cb;
+        _commands_cb[QString(name)] = std::move(cb);
         _commands_enabled[QString(name)] = true;
         return true;
     }
@@ -238,8 +238,11 @@ void CliCommand::runCommand(const char* command)
         return;
     }
     _commands_entered.push_back(command);
-    kaguya::LuaRef& cb = _commands_cb[command];
-    cb();
+    // Phase 4 PR-2 — invoke the neutral callback (nil-safe: nil returns Nil).
+    // The invocation runs on the Qt main thread; GIL discipline (for Python
+    // callbacks) is fully inside the ScriptCallback::invoke → pImpl path.
+    lc::scripting::ScriptCallback& cb = _commands_cb[command];
+    cb.invoke();
 }
 
 void CliCommand::enableCommand(const char* command, bool enable) {
