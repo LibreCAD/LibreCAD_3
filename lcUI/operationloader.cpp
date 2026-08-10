@@ -10,6 +10,20 @@
 #include <lcscripting/scriptcallback.h>
 #include <lcscripting/scriptobject.h>
 
+// Phase 5 PR-5.2 — Python second source: iterates lc.operation_registry
+// and wires each entry into the same CliCommand/Toolbar/Menu paths the
+// Lua loader uses.  Uses the Python adapter to wrap operation classes
+// as ScriptObject for the ordered resolver list.
+#ifdef LC_WITH_PYTHONSCRIPT
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#include <pybind11/stl.h>
+#include <scriptadapter/pythonobject.h>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#endif
+
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
@@ -408,3 +422,258 @@ void OperationLoader::addContextTransitions(const std::string& vkey, const std::
         contextMenuManager->addTransition(_L[vkey]["name"], fName.first, transList);
     }
 }
+
+#ifdef LC_WITH_PYTHONSCRIPT
+
+namespace {
+
+namespace py = pybind11;
+
+// Helper: read a string attribute (Python-side).  Returns empty
+// string if attribute is missing or non-string.  Used for icon /
+// description / etc. which the Lua path reads from the class table
+// with a similar "missing = skip" pattern.
+std::string pyAttrString(const py::object& cls, const char* name) {
+    if (!py::hasattr(cls, name)) return {};
+    try {
+        py::object attr = cls.attr(name);
+        if (attr.is_none()) return {};
+        return py::str(attr);
+    } catch (const py::error_already_set&) {
+        return {};
+    }
+}
+
+// Helper: determine the group ("Creation" | "Dimensions" | "Modify")
+// for a Python operation.  Explicit `group = "..."` attribute wins;
+// falls back to the same name-based rule Lua uses ("Dim" in the name
+// → Dimensions), else "Creation" as the default.  Matches the
+// sub-plan's "defaulting by the same name rules as Lua for
+// familiarity" clause.
+std::string pyOperationGroup(const py::object& cls, const std::string& name) {
+    std::string explicitGroup = pyAttrString(cls, "group");
+    if (!explicitGroup.empty()) {
+        return explicitGroup;
+    }
+    if (name.find("Dim") != std::string::npos) {
+        return "Dimensions";
+    }
+    return "Creation";
+}
+
+} // namespace
+
+void OperationLoader::loadPythonOperations() {
+    // Phase 5 PR-5.2 — the Python second source.  Walk
+    // lc.operation_registry (populated by @lc.register_operation),
+    // sort by name (matches Lua's std::set alphabetical wiring
+    // order), and wire each entry into the same C++ paths the Lua
+    // loader uses.  Push a Python-registry resolver onto MainWindow's
+    // ordered resolver list so runOperationByName reaches Python ops.
+    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
+    if (mWindow == nullptr) return;
+
+    py::gil_scoped_acquire gil;
+
+    // 1) Register the Python-registry resolver.  It's pushed AFTER the
+    //    Lua-globals resolver (registered in MainWindow ctor), so the
+    //    reverse-walking dispatch in runOperationByName finds Python
+    //    first — matches the phase-4 PR-7 "later wins" design.
+    mWindow->registerOperationResolver(
+        [](const std::string& name) -> lc::scripting::ScriptObject {
+            py::gil_scoped_acquire innerGil;
+            try {
+                py::dict reg = py::reinterpret_borrow<py::dict>(
+                    py::module_::import("lc").attr("operation_registry"));
+                py::str pyName = py::cast(name);
+                if (!reg.contains(pyName)) {
+                    return lc::scripting::ScriptObject{};
+                }
+                py::object cls = reg[pyName];
+                return lc::python::makePythonObject(cls);
+            } catch (const py::error_already_set&) {
+                return lc::scripting::ScriptObject{};
+            }
+        });
+
+    // 2) Iterate the registry sorted by name.
+    py::dict reg;
+    try {
+        reg = py::reinterpret_borrow<py::dict>(
+            py::module_::import("lc").attr("operation_registry"));
+    } catch (const py::error_already_set& e) {
+        std::cerr << "[OperationLoader] failed to import lc.operation_registry: "
+                  << e.what() << std::endl;
+        return;
+    }
+
+    std::vector<std::string> names;
+    for (auto item : reg) {
+        try {
+            names.emplace_back(py::str(item.first));
+        } catch (const py::error_already_set&) {
+            // Non-string key — skip; can't happen from the decorator,
+            // but tolerate user manipulation of the dict.
+        }
+    }
+    std::sort(names.begin(), names.end());
+
+    // 3) Wire each operation.
+    lc::ui::ContextMenuManager* contextMenuManager =
+        ContextMenuManager::GetContextMenuManager(
+            mWindow->contextMenuManagerId());
+    widgets::CliCommand* cliCommand = mWindow->cliCommand();
+    widgets::Toolbar* toolbar = mWindow->toolbar();
+
+    for (const std::string& name : names) {
+        // Name collision policy: registry key shares namespace with
+        // Lua vkeys (toolbar labels, ui_settings, ContextMenuManager
+        // _operationMap).  Reject duplicate with a logged warning.
+        // `foundProperties` is populated by loadLuaOperations so its
+        // key set IS the Lua vkey set.
+        if (foundProperties.find(name) != foundProperties.end()) {
+            std::cerr << "[OperationLoader] Python operation '" << name
+                      << "' collides with a Lua operation of the same "
+                         "name — Python registration skipped."
+                      << std::endl;
+            continue;
+        }
+
+        py::object cls;
+        try {
+            cls = reg[py::cast(name)];
+        } catch (const py::error_already_set&) {
+            continue;
+        }
+
+        const std::string group = pyOperationGroup(cls, name);
+        // Record the group so ContextMenuManager iteration finds it
+        // (mirrors the Lua path's groupNames map).
+        groupNames[name] = group;
+
+        // Optional `init` callable — run at load time (matches Lua).
+        if (py::hasattr(cls, "init")) {
+            try {
+                py::object initFn = cls.attr("init");
+                if (!initFn.is_none()) {
+                    initFn();
+                }
+            } catch (const py::error_already_set& e) {
+                std::cerr << "[OperationLoader] Python operation '"
+                          << name << "' init() raised: " << e.what()
+                          << std::endl;
+            }
+        }
+
+        // ---- CliCommand (command_line) ----
+        if (py::hasattr(cls, "command_line")) {
+            py::object cmd = cls.attr("command_line");
+            if (py::isinstance<py::str>(cmd)) {
+                const std::string cmdStr = py::str(cmd);
+                cliCommand->addCommand(cmdStr,
+                    lc::scripting::nativeCallback([mWindow, name]() {
+                        mWindow->runOperationByName(name);
+                    }));
+            } else if (py::isinstance<py::dict>(cmd)) {
+                // Dict form: key = command string, value = init suffix
+                // (matches Lua's TYPE_TABLE branch at
+                // operationloader.cpp:242).
+                for (auto item : py::reinterpret_borrow<py::dict>(cmd)) {
+                    const std::string cmdStr = py::str(item.second);
+                    std::string key = py::str(item.first);
+                    // Digit-only key = default init; else use init suffix.
+                    bool digitsOnly = !key.empty()
+                        && std::all_of(key.begin(), key.end(),
+                            [](unsigned char c) { return std::isdigit(c); });
+                    if (digitsOnly) {
+                        cliCommand->addCommand(cmdStr,
+                            lc::scripting::nativeCallback([mWindow, name]() {
+                                mWindow->runOperationByName(name);
+                            }));
+                    } else {
+                        std::string initMethod = "_init_" + key;
+                        cliCommand->addCommand(cmdStr,
+                            lc::scripting::nativeCallback(
+                                [mWindow, name, initMethod]() {
+                                    mWindow->runOperationByName(name, initMethod);
+                                }));
+                    }
+                }
+            }
+        }
+
+        // ---- Menu actions ----
+        if (py::hasattr(cls, "menu_actions")) {
+            py::object menuActions = cls.attr("menu_actions");
+            if (py::isinstance<py::dict>(menuActions)) {
+                for (auto item : py::reinterpret_borrow<py::dict>(menuActions)) {
+                    std::string key = py::str(item.first);
+                    std::string objectName = py::str(item.second);
+                    if (key == "default") {
+                        mWindow->connectMenuItem(objectName,
+                            lc::scripting::nativeCallback([mWindow, name]() {
+                                mWindow->runOperationByName(name);
+                            }));
+                    } else {
+                        std::string initMethod = "_init_" + key;
+                        mWindow->connectMenuItem(objectName,
+                            lc::scripting::nativeCallback(
+                                [mWindow, name, initMethod]() {
+                                    mWindow->runOperationByName(name, initMethod);
+                                }));
+                    }
+                }
+            }
+        }
+
+        // ---- Toolbar icon ----
+        if (py::hasattr(cls, "icon")) {
+            const std::string icon = pyAttrString(cls, "icon");
+            if (!icon.empty()) {
+                const std::string tooltip =
+                    !pyAttrString(cls, "description").empty()
+                        ? pyAttrString(cls, "description")
+                        : name.substr(0, name.find("Operation"));
+                const std::string iconPath = ":/icons/" + icon;
+                toolbar->addButton(name.c_str(), iconPath.c_str(),
+                                   group.c_str(),
+                                   lc::scripting::nativeCallback(
+                                       [mWindow, name]() {
+                                           mWindow->runOperationByName(name);
+                                       }),
+                                   tooltip.c_str());
+            }
+        }
+
+        // ---- Context menu operation ----
+        contextMenuManager->addOperation(name, group);
+
+        // ---- Context transitions ----
+        if (py::hasattr(cls, "context_transitions")) {
+            py::object transitions = cls.attr("context_transitions");
+            if (py::isinstance<py::dict>(transitions)) {
+                for (auto item : py::reinterpret_borrow<py::dict>(transitions)) {
+                    std::string step = py::str(item.first);
+                    std::vector<std::string> transList;
+                    if (py::isinstance<py::list>(item.second)) {
+                        for (auto t : py::reinterpret_borrow<py::list>(item.second)) {
+                            transList.emplace_back(py::str(t));
+                        }
+                    }
+                    contextMenuManager->addTransition(name, step, transList);
+                }
+            }
+        }
+
+        // (`operation_options` toolbar-option-icon binding is deferred
+        // to a future slice — matches the Lua wiring shape but needs
+        // more surface than PR-5.2's minimum viable delivery.  The
+        // scaffolding above is what the sub-plan's "Reuse the SAME
+        // wiring calls" clause requires; option icons are covered by
+        // the Lua path today and the phase-5 sub-plan flags them for
+        // the wiring-completeness pass alongside PR-5.6's gui.*
+        // bindings.)
+    }
+}
+
+#endif  // LC_WITH_PYTHONSCRIPT

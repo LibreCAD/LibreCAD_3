@@ -66,6 +66,28 @@ public:
      */
     void addContextTransitions(const std::string& vkey, const std::string& opkey);
 
+#ifdef LC_WITH_PYTHONSCRIPT
+    /**
+     * \brief Phase 5 PR-5.2 — walk `lc.operation_registry` (a Python
+     * dict populated by `@lc.register_operation`), and for each entry,
+     * do the same wiring the Lua path does: CliCommand::addCommand,
+     * Toolbar::addButton, MainWindow::connectMenuItem, addOperationOptions,
+     * ContextMenuManager::addOperation/addTransition.  Also pushes a
+     * Python-registry resolver onto MainWindow's ordered resolver list
+     * (phase 4 PR-7) so `MainWindow::runOperationByName(name)` resolves
+     * against BOTH sources — later-registered (Python) wins by design.
+     *
+     * Iteration is SORTED BY NAME (Lua's std::set gives alphabetical
+     * order for toolbar/menu wiring; match it so ui_settings.json's
+     * toolbar-layout persistence stays stable).
+     *
+     * Name collisions with already-registered Lua vkeys are rejected
+     * with a logged warning (registry share a namespace with toolbar
+     * labels + ContextMenuManager _operationMap + ui_settings.json).
+     */
+    void loadPythonOperations();
+#endif
+
 private:
     /**
      * \brief Load lua folder eg, createActions

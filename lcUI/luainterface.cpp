@@ -42,6 +42,19 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     std::string luaPath = _L["lua_path"];
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
+    // Phase 5 PR-5.2 — Python second source.  After Lua ops load
+    // (populating foundProperties which the collision check reads),
+    // walk lc.operation_registry and wire each Python operation
+    // through the same CliCommand/Toolbar/Menu/ContextMenu paths.
+    // Registers a Python resolver on MainWindow so runOperationByName
+    // reaches Python-registered classes.  The registry itself is
+    // populated by `@lc.register_operation` — path bootstrap for
+    // auto-importing lcUIPy modules is PR-5.3's job; PR-5.2 is happy
+    // with an empty registry.
+#ifdef LC_WITH_PYTHONSCRIPT
+    opLoader.loadPythonOperations();
+#endif
+
     if (s) {
         const char* out = lua_tostring(_L.state(), -1);
         if (out == nullptr) {
