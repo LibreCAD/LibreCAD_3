@@ -1,10 +1,11 @@
 #include "propertyeditor.h"
 
-// Phase 4 PR-5a — scalar widgets take ScriptCallback.  PropertyEditor's
-// dostring-codegen callbacks are wrapped through the Lua adapter here as
-// a transitional shim; PR-6 replaces the whole dostring chain with
-// native lambdas capturing `key`.
-#include <scriptadapter/luacallback.h>
+// Phase 4 PR-6 — every property-widget callback is a native lambda
+// capturing `key`.  The 9 kaguya-dostring codegen closures + 7 PR-5a
+// scalar-widget shims + 2 PR-5c list-widget shims are gone; the Lua
+// adapter is not touched here at all anymore.  This kills the last
+// scratch-global codegen sites in the panel path.
+#include <lcscripting/scriptcallback.h>
 
 #include "widgets/guiAPI/entitynamevisitor.h"
 #include <QVBoxLayout>
@@ -290,60 +291,61 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
 
 void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties) {
     _currentEntity = entityID;
-    kaguya::State state(mainWindow->luaInterface()->luaState());
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
         std::string key = generatePropertyKey(entityID, iter->first, iter->second.which());
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
+            // Phase 4 PR-6 — every widget's callback is a native lambda
+            // capturing `key` by value; `this` is captured too because
+            // the singleton `GetPropertyEditor(mainWindow)` the old
+            // dostring called was just `this`.  Replaces the old
+            // `anglePropertyCalled`/`numberPropertyCalled`/... scratch
+            // globals + Lua-side codegen closures.
+            auto makeCb = [this, key]() {
+                return lc::scripting::nativeCallback([this, key]() {
+                    this->propertyChanged(key);
+                });
+            };
+
             // angleproperty
             if (iter->second.which() == 0) {
                 lc::ui::api::AngleGUI* anglegui = new lc::ui::api::AngleGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 anglegui->setValue(boost::get<lc::entity::AngleProperty>(iter->second).Get());
-                state.dostring("anglePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                anglegui->addFinishCallback(lc::lua::makeLuaCallback(state["anglePropertyCalled"]));
+                anglegui->addFinishCallback(makeCb());
                 addWidget(key, anglegui);
-                state["anglePropertyCalled"] = nullptr;
             }
 
             // double
             if (iter->second.which() == 1) {
                 lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(std::string(1,std::toupper(iter->first[0])) + iter->first.substr(1));
                 numbergui->setValue(boost::get<double>(iter->second));
-                state.dostring("numberPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                numbergui->addCallback(lc::lua::makeLuaCallback(state["numberPropertyCalled"]));
+                numbergui->addCallback(makeCb());
                 addWidget(key, numbergui);
-                state["numberPropertyCalled"] = nullptr;
             }
 
             // bool
             if (iter->second.which() == 2) {
                 lc::ui::api::CheckBoxGUI* checkboxgui = new lc::ui::api::CheckBoxGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 checkboxgui->setValue(boost::get<bool>(iter->second));
-                state.dostring("boolPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                checkboxgui->addCallback(lc::lua::makeLuaCallback(state["boolPropertyCalled"]));
+                checkboxgui->addCallback(makeCb());
                 addWidget(key, checkboxgui);
-                state["boolPropertyCalled"] = nullptr;
             }
 
             // coordinate
             if (iter->second.which() == 3) {
                 lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
-                state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                coordinategui->addFinishCallback(lc::lua::makeLuaCallback(state["coordinatePropertyCalled"]));
+                coordinategui->addFinishCallback(makeCb());
                 addWidget(key, coordinategui);
-                state["coordinatePropertyCalled"] = nullptr;
             }
 
             // text (string)
             if (iter->second.which() == 4) {
                 lc::ui::api::TextGUI* textgui = new lc::ui::api::TextGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 textgui->setValue(boost::get<std::string>(iter->second));
-                state.dostring("textPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                textgui->addFinishCallback(lc::lua::makeLuaCallback(state["textPropertyCalled"]));
+                textgui->addFinishCallback(makeCb());
                 addWidget(key, textgui);
-                state["textPropertyCalled"] = nullptr;
             }
 
             // vector
@@ -354,12 +356,8 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 std::vector<lc::geo::Coordinate> coords = boost::get<std::vector<lc::geo::Coordinate>>(iter->second);
                 listgui->setValue(coords);
 
-                state.dostring("vectorPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                // Phase 4 PR-5c — ListGUI::addCallbackToAll takes ScriptCallback.
-                // The dostring codegen + shim wrap is killed in PR-6.
-                listgui->addCallbackToAll(lc::lua::makeLuaCallback(state["vectorPropertyCalled"]));
+                listgui->addCallbackToAll(makeCb());
                 addWidget(key, listgui);
-                state["vectorPropertyCalled"] = nullptr;
             }
 
             _entityProperties[entityID].push_back(key);
@@ -370,7 +368,6 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
 void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
     _currentEntity = entity->id();
-    kaguya::State state(mainWindow->luaInterface()->luaState());
 
     api::EntityNameVisitor entityVisitor;
     entity->dispatch(entityVisitor);
@@ -384,12 +381,11 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         lwPolylineBuilder.copy(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity));
         listgui->setValue(lwPolylineBuilder.getVertices());
 
-        state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-        // Phase 4 PR-5c — ListGUI::addCallbackToAll takes ScriptCallback.
-        // The dostring codegen + shim wrap is killed in PR-6.
-        listgui->addCallbackToAll(lc::lua::makeLuaCallback(state["customPropertyCalled"]));
+        // Phase 4 PR-6 — native lambda replaces `customPropertyCalled`
+        // dostring codegen.
+        listgui->addCallbackToAll(lc::scripting::nativeCallback(
+            [this, key]() { this->propertyChanged(key); }));
         addWidget(key, listgui);
-        state["customPropertyCalled"] = nullptr;
 
         _entityProperties[entity->id()].push_back(key);
         _widgetKeyToEntity[key] = entity->id();
@@ -398,20 +394,20 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
 
 void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr entity) {
     unsigned long entityID = entity->id();
-    kaguya::State state(mainWindow->luaInterface()->luaState());
 
     lc::ui::api::LineSelectGUI* lineSelectGUI = new lc::ui::api::LineSelectGUI(mainWindow->cadMdiChild(), _metaInfoManager, "Meta Info");
     lineSelectGUI->setEntityMetaInfo(entity);
     std::string key = "entity" + std::to_string(entityID) + "_" + "lineSelect";
-    state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-
-    lineSelectGUI->addCallback(lc::lua::makeLuaCallback(state["customPropertyCalled"]));
+    // Phase 4 PR-6 — native lambda captures `key` by value (per-call).
+    // Replaces the reused `customPropertyCalled` scratch global that the
+    // old Lua-side codegen overwrote on every call.
+    lineSelectGUI->addCallback(lc::scripting::nativeCallback(
+        [this, key]() { this->propertyChanged(key); }));
     addWidget(key, lineSelectGUI);
     _entityProperties[entityID].push_back(key);
     _widgetKeyToEntity[key] = entityID;
 
     std::string key2 = "entity" + std::to_string(entityID) + "_" + "layer";
-    state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key2 + "') end");
 
     std::vector<lc::meta::Layer_CSPtr> layersList = mainWindow->layers()->layers();
     lc::ui::api::ComboBoxGUI* layerGUI = new lc::ui::api::ComboBoxGUI("Layer");
@@ -422,7 +418,8 @@ void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr e
     }
 
     layerGUI->setValue(entity->layer()->name());
-    layerGUI->addCallback(lc::lua::makeLuaCallback(state["customPropertyCalled"]));
+    layerGUI->addCallback(lc::scripting::nativeCallback(
+        [this, key2]() { this->propertyChanged(key2); }));
     addWidget(key2, layerGUI);
     _entityProperties[entityID].push_back(key2);
     _widgetKeyToEntity[key2] = entityID;
