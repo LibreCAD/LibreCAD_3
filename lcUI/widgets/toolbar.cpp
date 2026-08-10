@@ -169,14 +169,21 @@ void Toolbar::addSnapOptions() {
 
 void Toolbar::addButton(const char* name, const char* icon, const char* groupBox,
                         lc::scripting::ScriptCallback cb,
-                        const char* tooltip, bool checkable, const char* tabName)
+                        const char* tooltip, bool checkable, const char* tabName,
+                        const char* iconFallbackDir)
 {
     if (_tabs.find(tabName) == _tabs.end()) {
         addTab(tabName);
     }
 
+    // Phase 5 PR-5.4 — iconFallbackDir forwarded to ToolbarButton so
+    // plugin-supplied icons resolve without recompiling resource.qrc.
+    // Existing callers pass nullptr (default) which preserves the
+    // qrc-only lookup behavior.
     lc::ui::api::ToolbarButton* button =
-        new lc::ui::api::ToolbarButton(name, icon, std::move(cb), tooltip, checkable);
+        new lc::ui::api::ToolbarButton(name, icon, std::move(cb), tooltip,
+                                       checkable, /*parent=*/nullptr,
+                                       iconFallbackDir);
     _tabs[tabName]->addButton(button, groupBox);
 }
 

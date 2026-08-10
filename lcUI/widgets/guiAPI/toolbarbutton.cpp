@@ -8,14 +8,17 @@ using namespace lc::ui::api;
 
 ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon,
                              lc::scripting::ScriptCallback callback,
-                             const char* tooltip, bool _checkable, QWidget* parent)
+                             const char* tooltip, bool _checkable,
+                             QWidget* parent, const char* fallbackDir)
     :
-    ToolbarButton(buttonLabel, icon, tooltip, _checkable, parent)
+    ToolbarButton(buttonLabel, icon, tooltip, _checkable, parent, fallbackDir)
 {
     callbacks.push_back(std::move(callback));
 }
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, bool _checkable, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon,
+                             const char* tooltip, bool _checkable,
+                             QWidget* parent, const char* fallbackDir)
     :
     _label(buttonLabel),
     QPushButton("", parent),
@@ -34,7 +37,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
         this->setCheckable(true);
     }
 
-    changeIcon(icon);
+    changeIcon(icon, fallbackDir);
 
     if (_checkable) {
         connect(this, &ToolbarButton::toggled, this, &ToolbarButton::callbackCalledToggle);
@@ -60,11 +63,30 @@ void ToolbarButton::addCallback(lc::scripting::ScriptCallback callback) {
     callbacks.push_back(std::move(callback));
 }
 
-void ToolbarButton::changeIcon(const char* icon) {
-    if (icon != nullptr) {
-        this->setIcon(QIcon(icon));
-        this->setIconSize(QSize(24, 24));
+void ToolbarButton::changeIcon(const char* icon, const char* fallbackDir) {
+    if (icon == nullptr) return;
+
+    QIcon resolved(icon);
+    // Phase 5 PR-5.4 — icon file-path fallback.  When the qrc lookup
+    // misses (QIcon silently constructs an empty icon), try
+    // `<fallbackDir>/icons/<basename>`.  Strip a leading `:/icons/` if
+    // present so callers can pass the same string they'd pass in the
+    // qrc-only world.  Benefits both Python operations (fallbackDir =
+    // registering module's directory) and Lua plugins (fallbackDir =
+    // plugin directory).
+    if (resolved.isNull() && fallbackDir != nullptr && *fallbackDir != '\0') {
+        QString base = QString::fromUtf8(icon);
+        const QString qrcPrefix = QStringLiteral(":/icons/");
+        if (base.startsWith(qrcPrefix)) {
+            base = base.mid(qrcPrefix.length());
+        }
+        QString fallbackPath =
+            QString::fromUtf8(fallbackDir) + QStringLiteral("/icons/") + base;
+        resolved = QIcon(fallbackPath);
     }
+
+    this->setIcon(resolved);
+    this->setIconSize(QSize(24, 24));
 }
 
 void ToolbarButton::remove() {

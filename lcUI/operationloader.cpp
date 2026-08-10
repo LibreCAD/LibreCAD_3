@@ -635,13 +635,50 @@ void OperationLoader::loadPythonOperations() {
                         ? pyAttrString(cls, "description")
                         : name.substr(0, name.find("Operation"));
                 const std::string iconPath = ":/icons/" + icon;
+
+                // Phase 5 PR-5.4 — capture the registering module's
+                // directory as the icon fallback path.  If the qrc
+                // lookup misses (icon isn't baked into resource.qrc,
+                // e.g. plugin-supplied), ToolbarButton::changeIcon
+                // tries `<fallbackDir>/icons/<name>` as an absolute
+                // filesystem path.  For a Python class defined in
+                // `lcUIPy/plugins/myop/myop.py`, __module__ resolves
+                // to `lcUIPy.plugins.myop.myop` and `__file__` is that
+                // .py; the fallback dir is the parent directory.
+                std::string fallbackDir;
+                try {
+                    if (py::hasattr(cls, "__module__")) {
+                        std::string modName =
+                            py::str(cls.attr("__module__"));
+                        py::object mod =
+                            py::module_::import(modName.c_str());
+                        if (py::hasattr(mod, "__file__")) {
+                            std::string modFile =
+                                py::str(mod.attr("__file__"));
+                            std::size_t slash = modFile.find_last_of("/\\");
+                            if (slash != std::string::npos) {
+                                fallbackDir = modFile.substr(0, slash);
+                            }
+                        }
+                    }
+                } catch (const py::error_already_set&) {
+                    // Best-effort — leave fallbackDir empty on any
+                    // resolution failure.  qrc lookup + empty fallback
+                    // = same behavior as pre-PR-5.4.
+                }
+
                 toolbar->addButton(name.c_str(), iconPath.c_str(),
                                    group.c_str(),
                                    lc::scripting::nativeCallback(
                                        [mWindow, name]() {
                                            mWindow->runOperationByName(name);
                                        }),
-                                   tooltip.c_str());
+                                   tooltip.c_str(),
+                                   /*checkable=*/false,
+                                   /*tabName=*/"Quick Access",
+                                   fallbackDir.empty()
+                                       ? nullptr
+                                       : fallbackDir.c_str());
             }
         }
 

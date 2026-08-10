@@ -31,14 +31,19 @@ public:
     ToolbarButton(const char* buttonLabel, const char* icon,
                   lc::scripting::ScriptCallback callback,
                   const char* tooltip = "", bool _checkable=false,
-                  QWidget* parent = nullptr);
+                  QWidget* parent = nullptr,
+                  const char* fallbackDir = nullptr);
 
     /**
     * \brief ToolbarButton Constructor
     * \param string button label
     * \param string icon path
+    * \param fallbackDir see changeIcon() — phase 5 PR-5.4.
     */
-    ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip = "", bool _checkable = false, QWidget* parent = nullptr);
+    ToolbarButton(const char* buttonLabel, const char* icon,
+                  const char* tooltip = "", bool _checkable = false,
+                  QWidget* parent = nullptr,
+                  const char* fallbackDir = nullptr);
 
     /**
     * \brief get label
@@ -75,9 +80,18 @@ public:
 
     /**
     * \brief Change the button icon
-    * \param string new icon path
+    * \param string new icon path (typically `:/icons/foo.svg` — Qt
+    *        resource system)
+    * \param fallbackDir optional filesystem directory to try if the
+    *        qrc path yields an empty QIcon.  If non-null, the loader
+    *        strips any leading `:/icons/` from newIconPath, appends
+    *        the remainder to `<fallbackDir>/icons/`, and tries QIcon
+    *        against the absolute path.  Introduced by phase 5 PR-5.4
+    *        so plugin-supplied icons resolve without recompiling
+    *        resource.qrc; benefits Lua plugins too.
     */
-    void changeIcon(const char* newIconPath);
+    void changeIcon(const char* newIconPath,
+                    const char* fallbackDir = nullptr);
 
     /**
     * \brief Remove this button
