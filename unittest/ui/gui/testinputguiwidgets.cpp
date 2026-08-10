@@ -18,6 +18,7 @@
 #include <widgets/guiAPI/radiogroupgui.h>
 #include <widgets/guiAPI/radiobuttongui.h>
 #include <kaguya/kaguya.hpp>
+#include <scriptadapter/luacallback.h>
 #include <lcscripting/scriptvalue.h>
 
 // Phase 4 PR-5b — every InputGUI::getValue writes into a neutral
@@ -89,7 +90,7 @@ TEST(InputGUIWidgetsTest, AngleGUITest) {
     EXPECT_TRUE(diff < 0.01 || diff < -0.01);
 
     state.dostring("cb1 = function(ang) testValue=ang end");
-    angleGUI.addOnChangeCallback(state["cb1"]);
+    angleGUI.addOnChangeCallback(lc::lua::makeLuaCallback(state["cb1"]));
     angleGUI.setValue(5);
 
     double diff1 = state["testValue"].get<double>() - 5;
@@ -104,8 +105,8 @@ TEST(InputGUIWidgetsTest, TextAndNumberGUITest) {
 
     state.dostring("cb1 = function(tex) testValue=tex end");
     state.dostring("cb2 = function(num) testValue2=num end");
-    textGUI.addOnChangeCallback(state["cb1"]);
-    numberGUI.addCallback(state["cb2"]);
+    textGUI.addOnChangeCallback(lc::lua::makeLuaCallback(state["cb1"]));
+    numberGUI.addCallback(lc::lua::makeLuaCallback(state["cb2"]));
 
     textGUI.setValue("NewValue");
     EXPECT_EQ("NewValue", textGUI.value());
