@@ -57,6 +57,18 @@ void registerOpaqueEncoder(const char* tag, OpaqueEncoder encoder);
 /// tag is "lua".
 lc::scripting::ScriptCallback makeLuaCallback(kaguya::LuaRef ref);
 
+/// If @p cb was produced by `makeLuaCallback` (runtime tag == "lua"),
+/// return the underlying `kaguya::LuaRef`.  Otherwise return a nil
+/// LuaRef.  This is the escape-hatch that lets
+/// `LuaInterface::triggerEvent(event, kaguya::LuaRef args)` dispatch
+/// Lua-to-Lua **verbatim** (no ScriptValue round-trip) — necessary
+/// because the round-trip lossily coerces array-table integer keys to
+/// strings and drops any type ScriptValue can't represent
+/// (function/userdata/thread) to Nil.  The escape hatch never returns a
+/// LuaRef for non-Lua callbacks, so cross-language dispatch still
+/// routes through ScriptValue.
+kaguya::LuaRef unwrapLuaCallback(const lc::scripting::ScriptCallback& cb);
+
 /// Wrap a kaguya::LuaRef (typically a table representing an operation
 /// instance) in a ScriptObject.
 lc::scripting::ScriptObject makeLuaObject(kaguya::LuaRef ref);

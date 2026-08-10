@@ -148,13 +148,48 @@ void LuaInterface::deleteEvent(const std::string& event, const kaguya::LuaRef& c
 }
 
 void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
-    // Phase 4 PR-9a — convert LuaRef payload to ScriptValue via fromLua
-    // then dispatch.  Each callback's invokeEvent materializes back per
-    // language (Lua adapter re-encodes to LuaRef; Python adapter to
-    // py::object).  Preserves the double-fire order for
-    // operationFinished→finishOperation because EventBus dispatches in
-    // insertion order.
-    _eventBus.triggerEvent(event, lc::lua::fromLua(args));
+    // Phase 4 PR-9a + post-review fix — the LuaRef-taking overload's
+    // whole point is Lua-to-Lua dispatch where NO conversion is needed.
+    // The naive `_eventBus.triggerEvent(event, fromLua(args))` path is
+    // LOSSY:
+    //   * fromLua's table case coerces integer keys to strings (kaguya's
+    //     lua_tolstring path), so an array table `{10,20,30}` becomes
+    //     string-keyed `"1"/"2"/"3"` and `args[1]` / `ipairs` break on
+    //     the far side;
+    //   * any type ScriptValue can't represent (function, generic
+    //     userdata, thread) silently drops to Nil.
+    // Fix: iterate the EventBus snapshot ourselves, dispatch Lua
+    // listeners with the RAW LuaRef payload (matches the pre-refactor
+    // behavior at luainterface.cpp:139-143 verbatim), and fall back to
+    // ScriptValue for non-Lua listeners (Python et al) — those need
+    // the conversion anyway.  Preserves the double-fire order for
+    // operationFinished→finishOperation because EventBus's snapshot
+    // returns callbacks in insertion order.
+    auto snap = _eventBus.snapshot(event);
+    // Lazy fromLua conversion — only pay it if a non-Lua listener
+    // actually needs it.
+    bool convertedArgs = false;
+    lc::scripting::ScriptValue convertedValue;
+    for (auto& cb : snap) {
+        kaguya::LuaRef luaRef = lc::lua::unwrapLuaCallback(cb);
+        if (!luaRef.isNilref()) {
+            // Native Lua-side dispatch — no ScriptValue round-trip.
+            if (luaRef.type() == LUA_TFUNCTION) {
+                luaRef(event, args);
+            } else if (luaRef.type() == LUA_TTABLE) {
+                luaRef["onEvent"](luaRef, event, args);
+            }
+        } else {
+            // Cross-language listener — fromLua once, invoke via the
+            // adapter's own shape-dispatch (Python's hasattr("onEvent")
+            // check, native adapter, ...).
+            if (!convertedArgs) {
+                convertedValue = lc::lua::fromLua(args);
+                convertedArgs = true;
+            }
+            (void) cb.invokeEvent(event, convertedValue);
+        }
+    }
 }
 
 void LuaInterface::triggerEvent(const std::string& event,

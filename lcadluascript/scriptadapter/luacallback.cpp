@@ -374,6 +374,28 @@ lc::scripting::ScriptCallback makeLuaCallback(kaguya::LuaRef ref) {
         std::make_shared<LuaCallbackImpl>(std::move(ref)));
 }
 
+kaguya::LuaRef unwrapLuaCallback(const lc::scripting::ScriptCallback& cb) {
+    // Phase 4 post-review fix — used by
+    // LuaInterface::triggerEvent(event, kaguya::LuaRef args) to
+    // dispatch Lua-to-Lua listeners with the raw LuaRef payload,
+    // preserving array-table integer keys and userdata/function/thread
+    // types that would otherwise round-trip lossily through fromLua.
+    // Returns nil for non-Lua callbacks so the caller can fall back to
+    // the ScriptValue path for cross-language listeners.
+    const auto& impl = cb.impl();
+    if (!impl) return kaguya::LuaRef{};
+    if (std::strcmp(impl->runtime(), "lua") != 0) {
+        // Cheap runtime-tag check first — avoids the dynamic_cast for
+        // non-Lua callbacks.  The runtime tag is a compile-time literal
+        // so pointer comparison would also work; strcmp is future-proof
+        // against different-TU literals.
+        return kaguya::LuaRef{};
+    }
+    // Safe dcast — the runtime tag guarantees the concrete type.
+    auto* lua_impl = dynamic_cast<LuaCallbackImpl*>(impl.get());
+    return lua_impl ? lua_impl->ref() : kaguya::LuaRef{};
+}
+
 lc::scripting::ScriptObject makeLuaObject(kaguya::LuaRef ref) {
     return lc::scripting::ScriptObject(
         std::make_shared<LuaObjectImpl>(std::move(ref)));

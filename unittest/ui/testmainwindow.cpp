@@ -28,6 +28,18 @@ TEST(MWindowTest, OperationFinishedTest) {
     EXPECT_TRUE(mainWindow->testOperationFinished());
 }
 
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, TriggerEventArrayPayloadPreserved) {
+    // Phase 4 post-review regression test — verify
+    // LuaInterface::triggerEvent(LuaRef) passes array-table + function
+    // payloads through to Lua listeners without the lossy
+    // fromLua/toLua round-trip.
+    QApplication app(argc, argv);
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    EXPECT_TRUE(mainWindow->testTriggerEventArrayPayloadPreserved());
+}
+
 TEST(MWindowTest, RunOperationTest) {
     QApplication app(argc, argv);
     MainWindowTest* mainWindow = new MainWindowTest();

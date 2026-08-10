@@ -64,6 +64,16 @@ std::size_t EventBus::eventCount() const {
     return n;
 }
 
+std::vector<ScriptCallback> EventBus::snapshot(const std::string& name) const {
+    // Copy-before-return: matches the internal triggerEvent discipline
+    // (grab the vector under the mutex, then hand it out so the caller
+    // can iterate without holding the lock).
+    std::lock_guard<std::mutex> lk(_mu);
+    auto it = _events.find(name);
+    if (it == _events.end()) return {};
+    return it->second;
+}
+
 void EventBus::clear() {
     std::lock_guard<std::mutex> lk(_mu);
     _events.clear();

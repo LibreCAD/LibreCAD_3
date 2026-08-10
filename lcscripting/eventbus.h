@@ -68,6 +68,16 @@ public:
     /// deregister-on-shutdown left an empty bus.
     std::size_t eventCount() const;
 
+    /// Return a snapshot copy of the callbacks registered for @p name.
+    /// Empty vector for unregistered events.  This is the low-level hook
+    /// that LuaInterface's LuaRef-taking triggerEvent overload uses to
+    /// PASS-THROUGH a raw LuaRef payload to Lua-side listeners without
+    /// the lossy fromLua/toLua round-trip.  Same copy-before-dispatch
+    /// discipline as triggerEvent (fetch under the mutex, iterate after
+    /// release).  Callers are responsible for firing the callbacks
+    /// themselves.
+    std::vector<ScriptCallback> snapshot(const std::string& name) const;
+
     /// Remove all registrations.  Used at MainWindow teardown.
     void clear();
 

@@ -222,6 +222,39 @@ TEST(EventBus, PythonCallbackReceivesEventArgs) {
     py::module_::import("builtins").attr("_lc_test_hits") = py::list();
 }
 
+TEST(EventBus, SnapshotReturnsCallbackList) {
+    // Phase 4 post-review fix — snapshot() is the low-level hook that
+    // LuaInterface::triggerEvent(LuaRef) uses to pass the raw LuaRef
+    // payload through to Lua listeners without a lossy ScriptValue
+    // round-trip.  Verify:
+    //   * empty vector for unregistered events (safe to iterate);
+    //   * insertion order preserved (matters for the double-fire
+    //     operationFinished → finishOperation contract);
+    //   * returned vector is a COPY — mutating it doesn't affect the bus.
+    lcs::EventBus bus;
+    EXPECT_TRUE(bus.snapshot("nope").empty());
+
+    auto cb_a = lcs::nativeCallback([]() {});
+    auto cb_b = lcs::nativeCallback([]() {});
+    auto cb_c = lcs::nativeCallback([]() {});
+
+    bus.registerEvent("point", cb_a);
+    bus.registerEvent("point", cb_b);
+    bus.registerEvent("point", cb_c);
+
+    auto snap = bus.snapshot("point");
+    ASSERT_EQ(snap.size(), 3u);
+    EXPECT_TRUE(snap[0] == cb_a);
+    EXPECT_TRUE(snap[1] == cb_b);
+    EXPECT_TRUE(snap[2] == cb_c)
+        << "insertion order must be preserved for the double-fire "
+           "operationFinished→finishOperation contract";
+
+    // Mutate snapshot; bus must be unchanged.
+    snap.clear();
+    EXPECT_EQ(bus.listenerCount("point"), 3u);
+}
+
 TEST(EventBus, ClearRemovesAll) {
     lcs::EventBus bus;
     auto cb = lcs::nativeCallback([]() {});
