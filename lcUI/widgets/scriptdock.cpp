@@ -10,7 +10,8 @@
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #include <lcpython.h>   // PythonInit
-#include "../python/pyeventhooks.h"   // Phase 5 PR-5.1
+// Phase 5 PR-5.1 fixup: pyeventhooks.h include no longer needed here —
+// installEventHooks() moved to MainWindow ctor.
 #endif
 
 using namespace lc::ui::widgets;
@@ -80,10 +81,13 @@ ScriptDock::ScriptDock(lc::ui::MainWindow* mainWindow) :
 
 #ifdef LC_WITH_PYTHONSCRIPT
     _pyNamespace = std::make_unique<PyNamespace>();
-    // Phase 5 PR-5.1 — install lc.event.register / lc.event.deregister
-    // hooks that route to the active MainWindow's LuaInterface EventBus.
-    // Idempotent — safe to call from every ScriptDock ctor.
-    lc::ui::python::installEventHooks();
+    // Phase 5 PR-5.1 fixup — the lc.event.register/deregister hook
+    // install moved OUT of here and into MainWindow's ctor.  Rationale:
+    // Python operations registering listeners at startup fire before
+    // ScriptDock has ever been opened, so gating the install on
+    // "user clicked Run script" silently no-op'd every early
+    // registration.  MainWindow's install is unconditional AND
+    // idempotent (setEventRegisterHook overwrites).
 #endif
 }
 

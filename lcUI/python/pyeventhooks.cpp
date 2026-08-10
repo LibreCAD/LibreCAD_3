@@ -20,17 +20,15 @@ namespace lc {
 namespace ui {
 namespace python {
 
-namespace {
-
-// Pick the currently-active MainWindow (most-recently-added).  Returns
-// nullptr when no window exists (headless CLI mode — hooks silently
-// no-op in that case).
 lc::ui::MainWindow* currentMainWindow() {
+    // Phase 5 PR-5.1 fixup — promoted from anonymous-namespace static
+    // to public API so Python (via a binding in pyguibridge.cpp) can
+    // reach the same "active MainWindow" the hooks use.  This is what
+    // CreateOperations's `_get_main_window()` calls INSTEAD of the
+    // broken frame-walk.
     auto& wins = lc::ui::WindowManager::mainWindows;
     return wins.empty() ? nullptr : wins.back();
 }
-
-} // namespace
 
 void installEventHooks() {
     // Register hook: `lc.event.register("point", self)` → wrap self as

@@ -16,6 +16,10 @@
 #include "cadmdichild.h"
 #include "widgets/clicommand.h"
 #include "lcadviewer.h"
+#include "luainterface.h"
+#include "pyeventhooks.h"   // Phase 5 PR-5.1 fixup: currentMainWindow()
+
+#include <drawables/tempentities.h>
 
 namespace py = pybind11;
 
@@ -58,7 +62,53 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("undo",  &lc::ui::MainWindow::undo,
              "Undo the last kernel operation.")
         .def("redo",  &lc::ui::MainWindow::redo,
-             "Redo the last undone kernel operation.");
+             "Redo the last undone kernel operation.")
+        // Phase 5 PR-5.1 fixup — Python operations need luaInterface()
+        // for triggerEvent (double-fire operationFinished→finishOperation
+        // order in CreateOperations.close) and cliCommand() for the
+        // CLI-state reset there.  Both were missing in the phase-3
+        // minimum surface; the fixup review flagged them as blockers.
+        .def("luaInterface",
+             &lc::ui::MainWindow::luaInterface,
+             py::return_value_policy::reference,
+             "Return the MainWindow's LuaInterface (Qt-owned).")
+        .def("cliCommand",
+             &lc::ui::MainWindow::cliCommand,
+             py::return_value_policy::reference,
+             "Return the MainWindow's CLI command widget (Qt-owned).");
+
+    // -----------------------------------------------------------------
+    // LuaInterface — the minimal surface CreateOperations.close() needs
+    // to fire operationFinished before its own event-teardown.  We only
+    // expose triggerEvent(name) because that's all the base uses today;
+    // future phases can extend.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::LuaInterface>(m, "LuaInterface")
+        .def("triggerEvent",
+             [](lc::ui::LuaInterface& self, const std::string& event) {
+                 self.triggerEvent(event, lc::scripting::ScriptValue{});
+             },
+             py::arg("event"),
+             "Fire the named event with an empty payload.  Used by "
+             "CreateOperations.close() to run the "
+             "`operationFinished` double-fire ordering.");
+
+    // -----------------------------------------------------------------
+    // CliCommand — surface CreateOperations.close() reaches into for the
+    // CLI-state reset (`returnText(False)` + `commandActive(False)`).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::widgets::CliCommand>(m, "CliCommand")
+        .def("write",
+             &lc::ui::widgets::CliCommand::write,
+             "Write a message to the CLI output.")
+        .def("returnText",
+             &lc::ui::widgets::CliCommand::returnText,
+             "Toggle the returnText mode.")
+        .def("commandActive",
+             &lc::ui::widgets::CliCommand::commandActive,
+             py::arg("active"),
+             "Set whether a command is currently active (drives the "
+             "prompt state).");
 
     // -----------------------------------------------------------------
     // CadMdiChild (holder-less; Qt owns it via the MainWindow tree).
@@ -100,6 +150,47 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                  self.viewer()->autoScale();
              },
              "Re-fit the viewport to the current document extents.");
+
+    // -----------------------------------------------------------------
+    // TempEntities — the drawables::TempEntities container.  Phase 5
+    // PR-5.1 fixup: CreateOperations.refreshTempEntity /
+    // removeTempEntity call `.addEntity()`/`.removeEntity()` unguarded;
+    // without this binding those would raise AttributeError which the
+    // adapter's blanket `catch (py::error_already_set&)` swallows,
+    // silently breaking every temp-entity refresh.
+    // -----------------------------------------------------------------
+    py::class_<lc::viewer::drawable::TempEntities,
+               std::shared_ptr<lc::viewer::drawable::TempEntities>>(
+        m, "TempEntities")
+        .def("addEntity",
+             &lc::viewer::drawable::TempEntities::addEntity,
+             py::arg("entity"),
+             "Add a temporary preview entity (removed on operation "
+             "close or overwritten by the next refresh).")
+        .def("removeEntity",
+             &lc::viewer::drawable::TempEntities::removeEntity,
+             py::arg("entity"),
+             "Remove a temporary preview entity added earlier.");
+
+    // -----------------------------------------------------------------
+    // Module-level currentMainWindow() — Phase 5 PR-5.1 fixup: what
+    // Python operation base classes call INSTEAD of frame-walking to
+    // reach the active MainWindow.  Delegates to the C++ helper in
+    // pyeventhooks.cpp which reads WindowManager::mainWindows.back().
+    // Returns None (Python) when there is no window (headless CLI).
+    // -----------------------------------------------------------------
+    m.def("currentMainWindow",
+          []() -> py::object {
+              lc::ui::MainWindow* mw =
+                  lc::ui::python::currentMainWindow();
+              if (mw == nullptr) {
+                  return py::none();
+              }
+              return py::cast(mw,
+                              py::return_value_policy::reference);
+          },
+          "Return the currently-active MainWindow (raw pointer, Qt-"
+          "owned).  Returns None in headless mode.");
 }
 
 #endif  // LC_WITH_PYTHONSCRIPT

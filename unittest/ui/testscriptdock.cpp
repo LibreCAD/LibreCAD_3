@@ -20,6 +20,13 @@
 #include <widgets/scriptdock.h>
 #include <cad/storage/document.h>
 
+#ifdef LC_WITH_PYTHONSCRIPT
+#include <pybind11/embed.h>
+#include <lcpython.h>
+#include <lcscripting/scriptvalue.h>
+#include <luainterface.h>
+#endif
+
 #include "uitests.h"
 
 using namespace lc::ui::widgets;
@@ -101,6 +108,100 @@ builder.execute()
         << "Python leg of ScriptDock must create exactly one Line entity "
            "— proves the mainWindow/document injection + lcgui bindings "
            "reach the kernel correctly";
+}
+
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptDockTest, PythonEventDrivenOnEventReachesMainWindow) {
+    // Phase 5 PR-5.1 fixup — the coordinator's review flagged that the
+    // ORIGINAL PR-5.1 tests only exercised the top-level `exec()` path
+    // (which does have `mainWindow` in scope via the ScriptDock
+    // injection).  Nothing verified the ACTUAL event-driven path:
+    // Qt slot → EventBus → PythonCallbackImpl::invokeEvent → onEvent →
+    // `_get_main_window()`.  Under the old frame-walking
+    // implementation, `_get_main_window()` returned None in this
+    // path — every CreateOperations subclass silently no-op'd on
+    // real events.  This test exercises that exact path with a
+    // stand-in listener class that records what onEvent saw.
+    //
+    // Setup: construct a MainWindow (which installs the event hooks),
+    // register a Python listener via `lc.event.register("point",
+    // self)`, trigger the event through `LuaInterface::triggerEvent`
+    // (mirroring what MainWindow's `triggerCoordinateEntered` slot
+    // does), and verify:
+    //   1. The Python listener's onEvent fired at all.
+    //   2. Inside onEvent, `_get_main_window()`'s underlying call
+    //      (`lcgui.currentMainWindow()`) returned a non-None
+    //      MainWindow (proves the C++-side lookup works from a
+    //      C++-invoked callback path with no Python caller frame).
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    lc::ui::MainWindow mainWindow;
+
+    // Set up the Python-side listener + record buffer.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::module_::import("builtins").attr("_lc_event_test_state") =
+            pybind11::dict();
+        pybind11::dict ns;
+        ns["__builtins__"] = pybind11::module_::import("builtins");
+        pybind11::exec(R"py(
+import builtins
+import lc
+import lcgui
+
+class Listener:
+    def __init__(self):
+        self.saw_event = False
+        self.mw_from_onEvent = None
+    def onEvent(self, event_name, args):
+        # THIS is the failure mode the fixup addresses.  Under the
+        # broken frame-walking implementation, lcgui.currentMainWindow()
+        # would work but a manual sys._getframe walk would NOT find
+        # `mainWindow`.  We call the same function CreateOperations
+        # now calls internally.
+        self.saw_event = True
+        self.mw_from_onEvent = lcgui.currentMainWindow()
+
+_listener = Listener()
+builtins._lc_event_test_state["listener"] = _listener
+lc.event.register("point", _listener)
+)py",
+            ns);
+    }
+
+    // Fire the event through the same path MainWindow's trigger* slots
+    // use: LuaInterface::triggerEvent(string, ScriptValue).  The
+    // event bus routes to the Python listener's PythonCallbackImpl,
+    // whose invokeEvent shape-checks for onEvent and fires it fresh
+    // from C++ — exactly the path _get_main_window() has to work in.
+    mainWindow.luaInterface()->triggerEvent(
+        "point", lc::scripting::ScriptValue{});
+
+    // Verify: onEvent fired AND saw a non-None MainWindow.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::object listener =
+            pybind11::module_::import("builtins")
+                .attr("_lc_event_test_state")["listener"];
+        EXPECT_TRUE(listener.attr("saw_event").cast<bool>())
+            << "onEvent must fire when the event is triggered — proves "
+               "lc.event.register wired the callback to the EventBus";
+        pybind11::object mw = listener.attr("mw_from_onEvent");
+        EXPECT_FALSE(mw.is_none())
+            << "lcgui.currentMainWindow() called from onEvent must "
+               "return the active MainWindow — the frame-walking "
+               "implementation returned None here, breaking every "
+               "CreateOperations subclass on every real event";
+
+        // Cleanup: deregister so the listener doesn't outlive this test.
+        pybind11::exec(R"py(
+import builtins, lc
+lc.event.deregister("point", builtins._lc_event_test_state["listener"])
+builtins._lc_event_test_state = {}
+)py");
+    }
 }
 
 #endif  // LC_WITH_PYTHONSCRIPT

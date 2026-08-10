@@ -20,11 +20,32 @@
 
 namespace lc {
 namespace ui {
+
+class MainWindow;
+
 namespace python {
 
 /// Install both hooks.  Idempotent — later calls overwrite.  Safe to
 /// call at MainWindow construction or from ScriptDock's Python init.
+/// Phase 5 PR-5.1 fixup: MUST be called unconditionally at MainWindow
+/// startup — the ScriptDock-only install site was broken because
+/// Python operations registering via `lc.event.register` at startup
+/// arrived BEFORE the ScriptDock had ever been opened, so the hook
+/// slots were still default-constructed (falsy) and every registration
+/// silently no-op'd.
 void installEventHooks();
+
+/// Return the currently-active MainWindow (most-recently-added in
+/// WindowManager::mainWindows).  Returns nullptr when no window
+/// exists (headless CLI mode).
+///
+/// Phase 5 PR-5.1 fixup: this is what CreateOperations's
+/// `_get_main_window()` calls INSTEAD of frame-walking.  The frame
+/// walk failed for event-driven dispatch — PythonCallbackImpl::invokeEvent
+/// calls onEvent fresh from C++ (Qt slot → EventBus → invoke), so
+/// there's no Python frame containing `mainWindow` to find.  The
+/// direct C++-side lookup works from any calling context.
+lc::ui::MainWindow* currentMainWindow();
 
 } // namespace python
 } // namespace ui

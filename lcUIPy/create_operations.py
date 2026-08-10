@@ -22,6 +22,22 @@ import lc
 
 from .operations import Operations
 
+# `lcgui` is the lcUI-side embedded Python module (see
+# lcUI/python/pyguibridge.cpp).  It exposes `currentMainWindow()` which
+# is the ONLY reliable way to reach the active MainWindow from an
+# event-driven callback path: PythonCallbackImpl::invokeEvent fires
+# our `onEvent` fresh from C++ (Qt slot → EventBus → invoke), so
+# `sys._getframe()` walking finds no Python caller with `mainWindow`
+# in scope.  The C++-side lookup works from any calling context.
+try:
+    import lcgui as _gui
+except ImportError:
+    # Headless CLI mode may not have lcgui loaded (built without
+    # WITH_PYTHONSCRIPT for the lcUI library, or a script running
+    # via lcpythonscript alone).  CreateOperations is still
+    # importable; the mw-dependent methods just no-op.
+    _gui = None
+
 
 class CreateOperations(Operations):
     """Interactive create-op base.
@@ -82,24 +98,19 @@ class CreateOperations(Operations):
             self.refreshTempEntity()
 
     # -----------------------------------------------------------------
-    # Entity builder machinery.  Reads the active MainWindow lazily via
-    # the module-level `mainWindow` injected by OperationLoader.
+    # Entity builder machinery.  Phase 5 PR-5.1 fixup: reach the
+    # MainWindow via lcgui.currentMainWindow() rather than by walking
+    # the Python call stack.  The frame walk failed for event-driven
+    # dispatch — PythonCallbackImpl::invokeEvent calls onEvent fresh
+    # from C++ (Qt slot → EventBus → invoke), so no Python caller
+    # frame contains `mainWindow`.  currentMainWindow() reads
+    # WindowManager::mainWindows.back() directly and works from any
+    # calling context.
     # -----------------------------------------------------------------
     def _get_main_window(self):
-        # `mainWindow` lives in the caller's global namespace (injected
-        # by ScriptDock / OperationLoader).  Use the module globals to
-        # find it — same shape as Lua's `mainWindow` global lookup.
-        import sys
-        # ScriptDock injects `mainWindow` into the exec namespace, not
-        # this module's own namespace.  Walk back to find it.
-        frame = sys._getframe(1)
-        while frame is not None:
-            if 'mainWindow' in frame.f_globals:
-                return frame.f_globals['mainWindow']
-            if 'mainWindow' in frame.f_locals:
-                return frame.f_locals['mainWindow']
-            frame = frame.f_back
-        return None
+        if _gui is None:
+            return None
+        return _gui.currentMainWindow()
 
     def createEntity(self):
         mw = self._get_main_window()
@@ -150,22 +161,27 @@ class CreateOperations(Operations):
     def close(self):
         if self.finished:
             return
-        # Fire `operationFinished` before we tear down our own
+        # Phase 5 PR-5.1 fixup — luaInterface() and cliCommand() are
+        # bound on the Python MainWindow class now, so the double-fire
+        # `operationFinished` + CLI reset actually runs.  Previously
+        # the AttributeError was swallowed by PythonObjectImpl's
+        # blanket catch, silently skipping removeTempEntity() /
+        # cleanUp() / unregisterEvents() and leaking listeners on
+        # every operation completion.
+        mw = self._get_main_window()
+        # Fire `operationFinished` BEFORE tearing down our own
         # listeners — matches the Lua double-fire ordering (verified
         # in phase 4's PRESERVE list).
-        mw = self._get_main_window()
         if mw is not None:
             mw.luaInterface().triggerEvent('operationFinished')
         self.removeTempEntity()
         if hasattr(self, 'cleanUp'):
             self.cleanUp()
         self.unregisterEvents()
-        if mw is not None and hasattr(mw, 'cliCommand'):
+        if mw is not None:
             cli = mw.cliCommand()
-            if hasattr(cli, 'returnText'):
-                cli.returnText(False)
-            if hasattr(cli, 'commandActive'):
-                cli.commandActive(False)
+            cli.returnText(False)
+            cli.commandActive(False)
         self.finished = True
 
     def manualClose(self):
