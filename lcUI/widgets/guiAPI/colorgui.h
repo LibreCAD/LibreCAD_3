@@ -41,7 +41,7 @@ public:
     * \brief Add lua value to return table
     * \param LuaRef table
     */
-    void getLuaValue(kaguya::LuaRef& table);
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Return color value

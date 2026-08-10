@@ -89,24 +89,18 @@ std::vector<InputGUI*> InputGUIContainer::inputWidgets() {
     return inputGUIList;
 }
 
-void InputGUIContainer::addFinishCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void InputGUIContainer::addFinishCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
-kaguya::LuaRef InputGUIContainer::generateInfo(lua_State* luastate) {
-    kaguya::State state(luastate);
-    std::string refName = _label + "_table";
-    state[refName] = kaguya::NewTable();
-    kaguya::LuaRef table = state[refName];
-    std::vector<InputGUI*> inputGUIs = inputWidgets();
-
-    for (InputGUI* inputgui : inputGUIs) {
+lc::scripting::Map InputGUIContainer::generateInfo() {
+    auto info = lc::scripting::makeMap();
+    for (InputGUI* inputgui : inputWidgets()) {
         if (inputgui != nullptr) {
-            inputgui->getLuaValue(table);
+            inputgui->getValue(info);
         }
     }
-
-    return table;
+    return info;
 }
 
 std::vector<std::string> InputGUIContainer::keys() const {

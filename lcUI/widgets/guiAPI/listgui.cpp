@@ -47,13 +47,19 @@ ListGUI::~ListGUI()
     delete ui;
 }
 
-void ListGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = kaguya::NewTable();
+void ListGUI::getValue(lc::scripting::Map& map) {
+    // Phase 4 PR-5b — build a nested Map under _key.  Each child writes
+    // its value at the top level (top-level access still works — legacy
+    // PropertyEditor read path) AND we alias the same ScriptValue into
+    // the nested Map (list traversal path).  For nested Map ScriptValues
+    // this preserves the aliasing invariant documented in scriptvalue.h.
+    auto nested = lc::scripting::makeMap();
+    (*map)[_key] = lc::scripting::ScriptValue(nested);
 
     for (InputGUI* inputWidget : itemList) {
         if (inputWidget != nullptr) {
-            inputWidget->getLuaValue(table);
-            table[_key][inputWidget->key()] = table[inputWidget->key()];
+            inputWidget->getValue(map);
+            (*nested)[inputWidget->key()] = (*map)[inputWidget->key()];
         }
     }
 }

@@ -33,7 +33,7 @@ public:
     /**
     * \brief Do nothing since button does not have a value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Add button callback

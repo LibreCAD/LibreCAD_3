@@ -444,7 +444,12 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["InputGUIContainer"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUIContainer>()
             .addFunction("inputWidgets", &lc::ui::api::InputGUIContainer::inputWidgets)
-            .addFunction("addFinishCallback", &lc::ui::api::InputGUIContainer::addFinishCallback)
+            // Phase 4 PR-5b — InputGUIContainer::addFinishCallback now
+            // takes a neutral ScriptCallback; wrap Lua callers' LuaRef.
+            .addStaticFunction("addFinishCallback",
+                [](lc::ui::api::InputGUIContainer& self, kaguya::LuaRef cb) {
+                    self.addFinishCallback(lc::lua::makeLuaCallback(std::move(cb)));
+                })
             .addFunction("keys", &lc::ui::api::InputGUIContainer::keys)
             .addFunction("addWidget", &lc::ui::api::InputGUIContainer::addWidget)
                                               );

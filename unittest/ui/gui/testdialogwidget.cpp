@@ -12,6 +12,11 @@
 #include "../uitests.h"
 #include <iostream>
 
+// Phase 4 PR-5b — Lua-side finish callback flows through the neutral
+// ScriptCallback (adapter materializes Map → Lua table on entry).
+#include <scriptadapter/luacallback.h>
+#include <lcscripting/scriptvalue.h>
+
 TEST(DialogWidgetTest, AddTest) {
     QApplication app(argc, argv);
     lc::ui::api::DialogWidget dialogWidget("DialogTitle", nullptr);
@@ -67,7 +72,11 @@ TEST(DialogWidgetTest, CallbackTest) {
     kaguya::State state(mainWindow.luaInterface()->luaState());
     state.dostring("cb1 = function(tab) valuetable=tab end");
 
-    dialogWidget.addFinishCallback(state["cb1"]);
+    // Phase 4 PR-5b — addFinishCallback now takes ScriptCallback; wrap
+    // the LuaRef through the Lua adapter.  The adapter materializes the
+    // ScriptValue::Map argument into a Lua table on entry, so the
+    // Lua-side callback still sees `tab.testtext` etc.
+    dialogWidget.addFinishCallback(lc::lua::makeLuaCallback(state["cb1"]));
     button1.click();
 
     EXPECT_EQ("TEST", state["valuetable"]["testtext"].get<std::string>());

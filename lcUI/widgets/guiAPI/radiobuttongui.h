@@ -3,12 +3,12 @@
 #include <QObject>
 #include <QRadioButton>
 
-#include <kaguya/kaguya.hpp>
-
-// Phase 4 PR-5a — RadioButtonGUI does NOT inherit InputGUI, so we
-// include the neutral callback header directly.  kaguya is retained
-// only for the getLuaValue(LuaRef&) base override (retired in PR-5b).
+// Phase 4 PR-5b — RadioButtonGUI does NOT inherit InputGUI, so we
+// include the neutral callback + value headers directly.  kaguya
+// finally leaves this header now that getValue(Map&) replaces
+// getLuaValue(LuaRef&).
 #include <lcscripting/scriptcallback.h>
+#include <lcscripting/scriptvalue.h>
 
 namespace lc {
 namespace ui {
@@ -47,10 +47,12 @@ public:
     void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
-    * \brief Return lua value
-    * \param LuaRef value
+    * \brief Write the checked-state into the neutral Map (PR-5b).
+    * Not an override — RadioButtonGUI does not derive from InputGUI;
+    * this method is called directly by HorizontalGroupGUI::getValue
+    * and RadioGroupGUI::getValue.
     */
-    void getLuaValue(kaguya::LuaRef& table);
+    void getValue(lc::scripting::Map& map);
 
     /**
     * \brief Set gui key for the lua table

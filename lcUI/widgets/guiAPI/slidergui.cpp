@@ -56,8 +56,8 @@ void SliderGUI::setValue(int val) {
     _slider->setValue(val);
 }
 
-void SliderGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void SliderGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void SliderGUI::copyValue(QDataStream& stream) {

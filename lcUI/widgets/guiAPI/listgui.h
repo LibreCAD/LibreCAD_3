@@ -46,10 +46,12 @@ public:
     ~ListGUI();
 
     /**
-    * \brief Get lua value
-    * \param LuaRef table
+    * \brief Write list contents as a nested Map under _key.  See the
+    * scriptvalue.h aliasing note — each child's ScriptValue is stored
+    * BOTH at the top level (for legacy PropertyEditor read paths) and
+    * inside the nested Map (for the list traversal path).
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Add list item to list

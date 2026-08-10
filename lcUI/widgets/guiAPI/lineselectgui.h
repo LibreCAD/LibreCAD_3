@@ -28,7 +28,7 @@ public:
     * \brief Add lua value to table (not used)
     * \param LuaRef value table
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Hide label for the widget (not used)

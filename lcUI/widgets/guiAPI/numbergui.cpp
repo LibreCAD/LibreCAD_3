@@ -52,8 +52,8 @@ void NumberGUI::setValue(double val) {
     _spinBox->setValue(val);
 }
 
-void NumberGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void NumberGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void NumberGUI::copyValue(QDataStream& stream) {

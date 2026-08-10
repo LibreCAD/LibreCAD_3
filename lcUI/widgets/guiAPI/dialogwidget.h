@@ -5,7 +5,8 @@
 #include <QVBoxLayout>
 #include <set>
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-5b — kaguya removed from DialogWidget header; finishCallbacks
+// dispatches through neutral ScriptCallback with a ScriptValue::Map payload.
 #include "inputguicontainer.h"
 #include "inputgui.h"
 #include "buttongui.h"

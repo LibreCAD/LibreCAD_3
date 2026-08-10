@@ -52,7 +52,7 @@ void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
     _linePatternSelect.setLinePattern(linePatternInfo);
 }
 
-void LineSelectGUI::getLuaValue(kaguya::LuaRef& table) {
+void LineSelectGUI::getValue(lc::scripting::Map& map) {
 }
 
 void LineSelectGUI::hideLabel() {

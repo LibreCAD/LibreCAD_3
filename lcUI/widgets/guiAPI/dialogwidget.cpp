@@ -55,8 +55,13 @@ void DialogWidget::setFinishButton(ButtonGUI* buttonWidget) {
 }
 
 void DialogWidget::finishCallbacks() {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        kaguya::LuaRef result = generateInfo(cb.state());
-        cb(result);
+    // Phase 4 PR-5b — build the Map once; each ScriptCallback's adapter
+    // materializes it into a Lua table (LuaCallback::invoke translates
+    // MapKind → kaguya::NewTable) or a Python dict (PythonCallback does
+    // the same via pybind11).  Sharing the Map across callbacks preserves
+    // the aliasing invariant from the legacy `generateInfo(state)` path.
+    auto info = generateInfo();
+    for (auto& cb : _callbacks) {
+        cb.call(info);
     }
 }

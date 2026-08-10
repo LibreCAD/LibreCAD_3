@@ -71,8 +71,8 @@ void ComboBoxGUI::setValue(int index) {
     _comboBox->setCurrentIndex(index);
 }
 
-void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void ComboBoxGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void ComboBoxGUI::copyValue(QDataStream& stream) {

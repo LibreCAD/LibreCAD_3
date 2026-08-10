@@ -138,7 +138,11 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
 }
 
 void PropertyEditor::propertyChanged(const std::string& key) {
-    kaguya::LuaRef propertiesTable = generateInfo(mainWindow->luaInterface()->luaState());
+    // Phase 4 PR-5b — generateInfo returns a language-neutral Map; read
+    // typed values via ScriptValue accessors.  The vector case reads back
+    // the nested Map that ListGUI writes under `key` (aliasing preserved
+    // — see listgui.cpp) and pulls out its Coordinate children.
+    auto propertiesTable = generateInfo();
     lc::entity::CADEntity_CSPtr entity = mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]);
 
     std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
@@ -156,29 +160,41 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     std::string propertyName = key.substr(secondLastUnderscore + 1, lastUnderscore - secondLastUnderscore - 1);
 
     lc::entity::PropertiesMap propertiesList;
+    const auto& tableRef = *propertiesTable;
 
     if (entityType == "angle") {
-        propertiesList[propertyName] = lc::entity::AngleProperty(propertiesTable[key].get<double>());
+        propertiesList[propertyName] = lc::entity::AngleProperty(tableRef.at(key).asDouble());
     }
 
     if (entityType == "double") {
-        propertiesList[propertyName] = propertiesTable[key].get<double>();
+        propertiesList[propertyName] = tableRef.at(key).asDouble();
     }
 
     if (entityType == "bool") {
-        propertiesList[propertyName] = propertiesTable[key].get<bool>();
+        propertiesList[propertyName] = tableRef.at(key).asBool();
     }
 
     if (entityType == "coordinate") {
-        propertiesList[propertyName] = propertiesTable[key].get<lc::geo::Coordinate>();
+        propertiesList[propertyName] = tableRef.at(key).asCoordinate();
     }
 
     if (entityType == "text") {
-        propertiesList[propertyName] = propertiesTable[key].get<std::string>();
+        propertiesList[propertyName] = tableRef.at(key).asString();
     }
 
     if (entityType == "vector") {
-        propertiesList[propertyName] = propertiesTable[key].get<std::vector<lc::geo::Coordinate>>();
+        // ListGUI's nested Map holds CoordinateGUI children whose keys are
+        // arbitrary suffixes of `key`.  Flatten them into a plain vector.
+        std::vector<lc::geo::Coordinate> coords;
+        auto it = tableRef.find(key);
+        if (it != tableRef.end() && it->second.asMap()) {
+            for (const auto& kv : *it->second.asMap()) {
+                if (kv.second.kind() == lc::scripting::ScriptValue::Kind::Coordinate) {
+                    coords.push_back(kv.second.asCoordinate());
+                }
+            }
+        }
+        propertiesList[propertyName] = coords;
     }
 
     // returns nullptr if not custom property
@@ -193,7 +209,7 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     }
 
     if (entityType == "layer") {
-        std::string layerName = propertiesTable[key].get<std::string>();
+        std::string layerName = tableRef.at(key).asString();
         lc::meta::Layer_CSPtr layer = mainWindow->layers()->layerByName(layerName.c_str());
         if (layer != nullptr) {
             changedEntity = entity->modify(layer, entity->metaInfo(), entity->block());
@@ -213,43 +229,49 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     mainWindow->cadMdiChild()->viewer()->docCanvas()->updateSelection();
 }
 
-lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity) {
+lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::string& key, const std::string& entityType, lc::scripting::Map propertiesTable, lc::entity::CADEntity_CSPtr oldEntity) {
+    // Phase 4 PR-5b — walk the neutral Map instead of a LuaRef table.
+    // Layout: propertiesTable[key] holds a nested Map of vertex groups
+    // (as built by ListGUI::getValue); each vertex group's value is
+    // itself a Map (as built by LWVertexGroup::getValue) with the four
+    // property entries `<vertKey>_Location`, `_StartWidth`, `_EndWidth`,
+    // `_Bulge` (all aliased to top-level entries — see propertyeditor.cpp
+    // aliasing note in listgui.cpp).
     if (entityType == "customLWPolyline") {
-        kaguya::LuaTable entTable = propertiesTable[key];
-        std::vector<kaguya::LuaRef> vertexKeys = entTable.keys();
+        auto entIt = propertiesTable->find(key);
+        if (entIt == propertiesTable->end() || !entIt->second.asMap()) {
+            return nullptr;
+        }
+        const auto& entTable = *entIt->second.asMap();
 
         std::vector<lc::builder::LWBuilderVertex> builderVertices;
-        for (kaguya::LuaRef vertexKey : vertexKeys)
-        {
-            std::string vertKey = vertexKey.get<std::string>();
-            kaguya::LuaTable vertexTable = propertiesTable[vertexKey];
-            std::vector<kaguya::LuaRef> vertexPropertiesKeys = vertexTable.keys();
+        for (const auto& vertexEntry : entTable) {
+            if (!vertexEntry.second.asMap()) {
+                continue;
+            }
+            const auto& vertexTable = *vertexEntry.second.asMap();
 
             lc::geo::Coordinate loc;
-            double sWidth;
-            double eWidth;
-            double bulge;
+            double sWidth = 0.0;
+            double eWidth = 0.0;
+            double bulge  = 0.0;
 
-            for (kaguya::LuaRef vertexPropKey : vertexPropertiesKeys)
-            {
-                std::string propKey = vertexPropKey.get<std::string>();
+            for (const auto& propEntry : vertexTable) {
+                const std::string& propKey = propEntry.first;
                 auto lastUnderscore = propKey.find_last_of("_");
                 std::string propType = propKey.substr(lastUnderscore + 1);
 
                 if (propType == "Location") {
-                    loc = vertexTable[vertexPropKey].get<lc::geo::Coordinate>();
+                    loc = propEntry.second.asCoordinate();
                 }
-
                 if (propType == "StartWidth") {
-                    sWidth = vertexTable[vertexPropKey].get<double>();
+                    sWidth = propEntry.second.asDouble();
                 }
-
                 if (propType == "EndWidth") {
-                    eWidth = vertexTable[vertexPropKey].get<double>();
+                    eWidth = propEntry.second.asDouble();
                 }
-
                 if (propType == "Bulge") {
-                    bulge = vertexTable[vertexPropKey].get<double>();
+                    bulge = propEntry.second.asDouble();
                 }
             }
 

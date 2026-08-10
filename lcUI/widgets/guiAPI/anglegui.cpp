@@ -143,8 +143,8 @@ void AngleGUI::setValue(double val) {
     _lineEdit->setText(QString::number(angle));
 }
 
-void AngleGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void AngleGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void AngleGUI::copyValue(QDataStream& stream) {

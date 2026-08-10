@@ -18,8 +18,12 @@
 #include <widgets/guiAPI/radiogroupgui.h>
 #include <widgets/guiAPI/radiobuttongui.h>
 #include <kaguya/kaguya.hpp>
+#include <lcscripting/scriptvalue.h>
 
-TEST(InputGUIWidgetsTest, TestGetLuaValue) {
+// Phase 4 PR-5b — every InputGUI::getValue writes into a neutral
+// ScriptValue::Map; verify each widget's typed entry via ScriptValue
+// accessors.  The old kaguya-based readback was TestGetLuaValue.
+TEST(InputGUIWidgetsTest, TestGetValueMap) {
     QApplication app(argc, argv);
     lc::ui::api::AngleGUI angleGUI("TestAngle");
     angleGUI.setKey("testangle");
@@ -47,34 +51,26 @@ TEST(InputGUIWidgetsTest, TestGetLuaValue) {
     comboboxGUI.addItem("Item2");
     comboboxGUI.setValue("Item1");
 
-    std::vector<lc::ui::api::InputGUI*> inputgui_list;
+    std::vector<lc::ui::api::InputGUI*> inputgui_list = {
+        &angleGUI, &textGUI, &sliderGUI, &numberGUI,
+        &coordinateGUI, &colorGUI, &comboboxGUI,
+    };
 
-    inputgui_list.push_back(&angleGUI);
-    inputgui_list.push_back(&textGUI);
-    inputgui_list.push_back(&sliderGUI);
-    inputgui_list.push_back(&numberGUI);
-    inputgui_list.push_back(&coordinateGUI);
-    inputgui_list.push_back(&colorGUI);
-    inputgui_list.push_back(&comboboxGUI);
-
-    kaguya::State state;
-    state["testtable"] = kaguya::NewTable();
-    kaguya::LuaRef table = state["testtable"];
-
+    auto map = lc::scripting::makeMap();
     for (lc::ui::api::InputGUI* inputgui : inputgui_list) {
-        inputgui->getLuaValue(table);
+        inputgui->getValue(map);
     }
 
-    double diff = state["testtable"]["testangle"].get<double>() - 10;
+    double diff = (*map)["testangle"].asDouble() - 10;
     EXPECT_TRUE(diff < 0.01 || diff < -0.01);
-    EXPECT_EQ("TEST_TEXT", state["testtable"]["testtext"].get<std::string>());
-    EXPECT_EQ(10, state["testtable"]["testslider"].get<int>());
-    double diff1 = state["testtable"]["testnumber"].get<double>() - 10;
+    EXPECT_EQ("TEST_TEXT", (*map)["testtext"].asString());
+    EXPECT_EQ(10, (*map)["testslider"].asInt());
+    double diff1 = (*map)["testnumber"].asDouble() - 10;
     EXPECT_TRUE(diff1 < 0.001 || diff1 < -0.001);
-    EXPECT_EQ(lc::geo::Coordinate(5, 5), state["testtable"]["testcoordinate"].get<lc::geo::Coordinate>());
-    lc::Color testcol = state["testtable"]["testcolor"].get<lc::Color>();
+    EXPECT_EQ(lc::geo::Coordinate(5, 5), (*map)["testcoordinate"].asCoordinate());
+    lc::Color testcol = (*map)["testcolor"].asColor();
     EXPECT_TRUE(testcol.red() == actualcolor.red() && testcol.green() == actualcolor.green() && testcol.blue() == actualcolor.blue());
-    EXPECT_EQ("Item1", state["testtable"]["testcombobox"].get<std::string>());
+    EXPECT_EQ("Item1", (*map)["testcombobox"].asString());
 }
 
 TEST(InputGUIWidgetsTest, AngleGUITest) {
@@ -142,13 +138,11 @@ TEST(InputGUIWidgetsTest, HorizontalGroupTest) {
     EXPECT_TRUE(keysSet.find("testnumber") != keysSet.end());
     EXPECT_FALSE(keysSet.find("testbutton") != keysSet.end());
 
-    kaguya::State state;
-    state["testtable"] = kaguya::NewTable();
-    kaguya::LuaRef table = state["testtable"];
-
-    horizGroupGUI.getLuaValue(table);
-    EXPECT_EQ("TEST", state["testtable"]["testtext"].get<std::string>());
-    double diff1 = state["testtable"]["testnumber"].get<double>() - 5;
+    // Phase 4 PR-5b — HorizontalGroupGUI writes into a Map.
+    auto map = lc::scripting::makeMap();
+    horizGroupGUI.getValue(map);
+    EXPECT_EQ("TEST", (*map)["testtext"].asString());
+    double diff1 = (*map)["testnumber"].asDouble() - 5;
     EXPECT_TRUE(diff1 < 0.01 || diff1 < 0.01);
 }
 
@@ -169,11 +163,9 @@ TEST(InputGUIWidgetsTest, RadioGroupTest) {
     radioButton1.setValue(true);
     radioButton2.setValue(true);
 
-    kaguya::State state;
-    state["testtable"] = kaguya::NewTable();
-    kaguya::LuaRef table = state["testtable"];
-
-    radioGroupGUI.getLuaValue(table);
-    EXPECT_FALSE(state["testtable"]["button1"].get<bool>());
-    EXPECT_TRUE(state["testtable"]["button2"].get<bool>());
+    // Phase 4 PR-5b — RadioGroupGUI writes into a Map.
+    auto map = lc::scripting::makeMap();
+    radioGroupGUI.getValue(map);
+    EXPECT_FALSE((*map)["button1"].asBool());
+    EXPECT_TRUE((*map)["button2"].asBool());
 }

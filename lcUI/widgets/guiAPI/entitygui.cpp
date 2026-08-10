@@ -33,12 +33,12 @@ EntityGUI::~EntityGUI()
     delete ui;
 }
 
-void EntityGUI::getLuaValue(kaguya::LuaRef& table) {
+void EntityGUI::getValue(lc::scripting::Map& map) {
     if (_selectedEntitiesList.size() == 1) {
-        table[_key] = _selectedEntitiesList[0];
+        (*map)[_key] = lc::scripting::ScriptValue(_selectedEntitiesList[0]);
     }
     else {
-        table[_key] = value();
+        (*map)[_key] = lc::scripting::ScriptValue(value());
     }
 }
 

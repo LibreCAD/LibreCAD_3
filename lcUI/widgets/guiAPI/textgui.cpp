@@ -66,8 +66,8 @@ void TextGUI::textChangedCallbacks(const QString& changedText) {
     }
 }
 
-void TextGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void TextGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void TextGUI::copyValue(QDataStream& stream) {

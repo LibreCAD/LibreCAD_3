@@ -115,8 +115,8 @@ void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
     _xcoordEdit->blockSignals(false);
 }
 
-void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void CoordinateGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void CoordinateGUI::enableCoordinateSelection(lc::ui::MainWindow* mainWindow) {

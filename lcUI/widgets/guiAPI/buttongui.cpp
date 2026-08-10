@@ -31,7 +31,7 @@ void ButtonGUI::callbackCalled() {
     }
 }
 
-void ButtonGUI::getLuaValue(kaguya::LuaRef& table) {
+void ButtonGUI::getValue(lc::scripting::Map& map) {
 }
 
 void ButtonGUI::click() {

@@ -30,8 +30,8 @@ ColorGUI::~ColorGUI() {
     delete ui;
 }
 
-void ColorGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void ColorGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void ColorGUI::changeColor() {

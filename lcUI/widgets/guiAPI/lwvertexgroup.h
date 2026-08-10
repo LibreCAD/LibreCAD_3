@@ -42,7 +42,7 @@ public:
     * \brief Store the value in the lua table
     * \param LuaRef to table
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Set the vertex group key

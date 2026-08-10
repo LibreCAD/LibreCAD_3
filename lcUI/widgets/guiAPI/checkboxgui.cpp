@@ -34,8 +34,8 @@ void CheckBoxGUI::callbackCalled(int state) {
     }
 }
 
-void CheckBoxGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = _checkBox->isChecked();
+void CheckBoxGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(_checkBox->isChecked());
 }
 
 bool CheckBoxGUI::value() const {
