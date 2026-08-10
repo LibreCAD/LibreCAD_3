@@ -18,6 +18,7 @@
 
 #include <mainwindow.h>
 #include <widgets/scriptdock.h>
+#include <windowmanager.h>
 #include <cad/storage/document.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
@@ -134,10 +135,20 @@ TEST(ScriptDockTest, PythonEventDrivenOnEventReachesMainWindow) {
     //      (`lcgui.currentMainWindow()`) returned a non-None
     //      MainWindow (proves the C++-side lookup works from a
     //      C++-invoked callback path with no Python caller frame).
+    //
+    // `lcgui.currentMainWindow()` reads `WindowManager::mainWindows`,
+    // which only `WindowManager::init/newFile/openFile` populate —
+    // MainWindow's own constructor does not self-register.  A
+    // directly-constructed MainWindow (as below) is therefore
+    // invisible to it unless we push it in ourselves; without this,
+    // the register hook no-ops on a null current window and the
+    // assertions below fail regardless of whether `_get_main_window()`
+    // is fixed or still frame-walking, giving zero signal either way.
     QApplication app(argc, argv);
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mainWindow;
+    lc::ui::WindowManager::mainWindows.push_back(&mainWindow);
 
     // Set up the Python-side listener + record buffer.
     {
@@ -202,6 +213,11 @@ lc.event.deregister("point", builtins._lc_event_test_state["listener"])
 builtins._lc_event_test_state = {}
 )py");
     }
+
+    // Cleanup: this MainWindow is stack-local and about to be
+    // destroyed — remove it from the shared static registry so it
+    // doesn't dangle for whichever test runs next in this binary.
+    lc::ui::WindowManager::removeWindow(&mainWindow);
 }
 
 #endif  // LC_WITH_PYTHONSCRIPT
