@@ -168,6 +168,16 @@ managers/copymanager.cpp
 managers/metainfomanager.cpp
 )
 
+# Phase 3 PR-3.2 — lcgui embedded Python module.  Compiled into lcui
+# only when WITH_PYTHONSCRIPT=ON (the file itself is #ifdef-guarded, so
+# an unconditional add here would still build cleanly on OFF, but
+# adding conditionally avoids any pybind11 include-path requirement
+# leaking into the OFF-build).
+if(WITH_PYTHONSCRIPT)
+    list(APPEND UI_srcs python/pyguibridge.cpp)
+    list(APPEND UI_hdrs python/pyguibridge.h)
+endif()
+
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui
 widgets/clicommand.ui

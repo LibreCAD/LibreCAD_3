@@ -37,12 +37,9 @@ ScriptDock::PyNamespace::PyNamespace() {
     ns["__builtins__"] = py::module_::import("builtins");
     // Pre-import lc so `lc.entity.Line(...)` etc are directly available
     // — same as the Lua path where `lc.*` is exposed via LCLua.
-    py::exec("import lc\n", ns);
-    // `gui = lcgui` pre-import + mainWindow/document injection land in
-    // phase 3 PR-3.2 when the lcgui embedded module exists.  For now
-    // Python scripts can exercise the kernel (lc.entity, lc.operation,
-    // lc.geo) but not the GUI-side widget API — matches the sub-plan's
-    // "phase-3.2 fills lcgui" split.
+    // Phase 3 PR-3.2 — lcgui also pre-imported, exposed as `gui` in
+    // the namespace for Lua parity (Lua scripts also write `gui.*`).
+    py::exec("import lc\nimport lcgui as gui\n", ns);
 }
 
 ScriptDock::PyNamespace::~PyNamespace() {
@@ -108,11 +105,17 @@ void ScriptDock::runLua(const std::string& code) {
 void ScriptDock::runPython(const std::string& code) {
     py::gil_scoped_acquire gil;
     try {
-        // Phase 3 PR-3.1 — mainWindow / document injection defers to
-        // 3.2 (lcgui pybind11 bindings for MainWindow, CadMdiChild,
-        // Document).  For 3.1 the Python leg runs against `lc.*` only
-        // — enough to smoke-test the interpreter path and combo
-        // switching.
+        // Phase 3 PR-3.2 — inject mainWindow + document freshly on
+        // every Run click.  `mainWindow` is a raw pointer to the same
+        // MainWindow instance Qt owns (lcgui's binding is HOLDER-LESS
+        // so pybind11 doesn't try to delete it).  `document` is
+        // refreshed from `_mdiChild->document()` mirroring the Lua
+        // path at luascript.cpp:29-31 — a fresh newDocument()/openFile
+        // between Run clicks changes the document instance, so we
+        // re-inject to avoid holding a stale reference.
+        _pyNamespace->ns["mainWindow"] =
+            py::cast(_mainWindow, py::return_value_policy::reference);
+        _pyNamespace->ns["document"] = _mdiChild->document();
         py::exec(code, _pyNamespace->ns);
     } catch (const py::error_already_set& e) {
         _cliCommand->write(std::string(e.what()));
