@@ -38,18 +38,58 @@ import sys
 # Primary source root (build-tree).
 _primary_root = '${CMAKE_CURRENT_LIST_DIR}'
 
-# Fallback for unittest binaries whose runtime dir isn't the librecad
-# bin dir — walk up looking for a sibling lcUIPy/.  Mirrors what
-# FolderFinder does for the Lua side in operationloader.cpp.
+# Phase 5 PR-5.3 fixup — resolve lcUIPy across all deployment layouts.
+#
+# 1. Build-tree: the configure-time CMAKE_CURRENT_LIST_DIR path exists.
+# 2. Ubuntu AppImage install: bin/path.py lives in .../AppDir/usr/bin/
+#    and the source tree is at .../AppDir/usr/share/librecad/lcUIPy/ —
+#    walking straight up from bin/ never reaches share/, so we need the
+#    sibling-path check.  Mirrors Lua's FolderFinder::searchSubFolders
+#    which explicitly checks `<dir>/../share/librecad/lcUILua`.
+# 3. Windows NSIS install: bin/path.py + bin/lcUIPy/ (share isn't in
+#    the standard install layout on Windows).  Direct-child check
+#    covers this.
+# 4. Unittest binary: lcunittest lands in the SAME
+#    CMAKE_RUNTIME_OUTPUT_DIRECTORY as librecad, so path (1) resolves
+#    without fallback.  Confirmed by the review noting this isn't the
+#    real fallback trigger.
+#
+# The recursive scan at the end is a last-resort defense-in-depth for
+# unforeseen packaging layouts (matches FolderFinder's `_find_lcuipy`
+# recursive branch).
 def _find_lcuipy():
     if os.path.isdir(_primary_root):
         return _primary_root
     here = os.path.dirname(os.path.abspath(__file__))
     for _ in range(6):
+        # (a) Direct sibling — Windows NSIS-style layout.
         candidate = os.path.join(here, 'lcUIPy')
         if os.path.isdir(candidate):
             return candidate
+        # (b) Share-sibling path — Ubuntu AppImage / Linux distro
+        #     layout: <prefix>/bin/../share/librecad/lcUIPy.
+        share_candidate = os.path.join(
+            os.path.dirname(here), 'share', 'librecad', 'lcUIPy')
+        if os.path.isdir(share_candidate):
+            return share_candidate
         here = os.path.dirname(here)
+
+    # (c) Recursive fallback — walk the anchor tree looking for any
+    #     'lcUIPy' subdir with an __init__.py.  Matches Lua's
+    #     FolderFinder's recursive scan.  Bounded depth to avoid
+    #     pathological search on pathological layouts.
+    anchor = os.path.dirname(os.path.abspath(__file__))
+    for root, dirs, _files in os.walk(anchor):
+        # Depth bound: don't descend more than 4 levels.
+        depth = root[len(anchor):].count(os.sep)
+        if depth > 4:
+            dirs[:] = []
+            continue
+        if 'lcUIPy' in dirs:
+            cand = os.path.join(root, 'lcUIPy')
+            if os.path.exists(os.path.join(cand, '__init__.py')):
+                return cand
+
     return _primary_root  # last resort — import will fail loudly
 
 python_path = _find_lcuipy()

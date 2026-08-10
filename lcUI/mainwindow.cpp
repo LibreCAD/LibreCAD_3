@@ -72,15 +72,20 @@ MainWindow::MainWindow()
     // connect required signals and slots
     ConnectInputEvents();
 
-    // open qt bridge and run lua scripts
-    _luaInterface.initLua(this);
-
     // Phase 4 PR-7 — register the default Lua-globals resolver so
     // runOperationByName can find operation classes exposed as Lua
     // globals (this is exactly what the killed `run_basic_operation`
-    // dostring resolved via `_G[name]`).  Phase 5 will PUSH the Python
-    // operation-registry resolver AFTER this — the runOperationByName
-    // loop walks the list in reverse so Python takes precedence.
+    // dostring resolved via `_G[name]`).  Phase 5 PR-5.2 fixup —
+    // MOVED to BEFORE `_luaInterface.initLua(this)`.  Rationale: the
+    // reverse-walking dispatch in runOperationByName means later-
+    // registered resolvers win; initLua runs OperationLoader (which
+    // registers the Python resolver).  If we register Lua's resolver
+    // AFTER initLua, Lua's resolver ends up LAST in the list, so
+    // reverse-walk hits Lua first — the OPPOSITE of PR-7's stated
+    // "later wins → Python wins" design intent.  Fix: register Lua
+    // FIRST (before initLua), Python SECOND (during initLua's
+    // loadPythonOperations), so reverse-walk correctly finds
+    // Python-defined ops before Lua-global ones.
     registerOperationResolver([this](const std::string& name)
                               -> lc::scripting::ScriptObject {
         kaguya::State state(_luaInterface.luaState());
@@ -98,10 +103,19 @@ MainWindow::MainWindow()
     // Python operation's `__init__` which registers listeners) fire
     // BEFORE the ScriptDock has ever been opened, so the hook slots
     // were previously still default-constructed (falsy) and every
-    // early registration silently no-op'd.
+    // early registration silently no-op'd.  MUST be installed BEFORE
+    // initLua so Python ops that register listeners at load time see
+    // live hook slots.
 #ifdef LC_WITH_PYTHONSCRIPT
     lc::ui::python::installEventHooks();
 #endif
+
+    // open qt bridge and run lua scripts — this triggers OperationLoader
+    // which pushes the Python-registry resolver ONTO the resolver list
+    // AFTER the Lua-globals resolver above, so the reverse-walking
+    // dispatch in runOperationByName correctly resolves Python-defined
+    // operations first when both languages define the same name.
+    _luaInterface.initLua(this);
 
     _toolbar.addSnapOptions();
 

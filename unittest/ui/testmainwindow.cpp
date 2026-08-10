@@ -99,6 +99,86 @@ TEST(MWindowTest, MenuAPITest) {
 #ifdef LC_WITH_PYTHONSCRIPT
 
 // NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationDictCommandLineWiresCliCommand) {
+    // Phase 5 PR-5.2 fixup — exercise the wiring loop with a
+    // dict-form command_line to guard against the key/value swap
+    // bug the review found in the original PR-5.2 code.  Registers
+    // an op with `command_line = { "1": "SIMPLECMD", "NAMEDCMD":
+    // "second" }` (str keys because Python dicts can't have int
+    // literals as keys the same way Lua tables can — the "1" str
+    // matches the digit-only-key branch).  After MainWindow
+    // construction runs loadPythonOperations, verify:
+    //   * Typing "SIMPLECMD" resolves + runs the default init.
+    //   * Typing "NAMEDCMD" resolves + runs `_init_second`.
+    // This test would FAIL against the original PR-5.2 code because
+    // the swap meant the "NAMEDCMD" CLI entry was never registered
+    // (it registered "second" against `_init_NAMEDCMD` instead).
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::dict ns;
+        ns["__builtins__"] = pybind11::module_::import("builtins");
+        pybind11::exec(R"py(
+import lc
+@lc.register_operation
+class PyDictCmdOp:
+    name = "PyDictCmdOp"
+    command_line = {"1": "SIMPLECMD", "NAMEDCMD": "second"}
+    def _init_default(self):
+        self.step = "DEFAULT_INIT_RAN"
+    def _init_second(self):
+        self.step = "SECOND_INIT_RAN"
+)py",
+            ns);
+    }
+
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    // Both CLI-command entries should route to the SAME class, but
+    // via different init methods.  Drive them via CliCommand::runCommand
+    // — same path as user-typed input.
+    mainWindow->cliCommand()->runCommand("SIMPLECMD");
+    {
+        lc::scripting::ScriptObject op = mainWindow->currentOperation();
+        ASSERT_FALSE(op.isNil())
+            << "SIMPLECMD must route to PyDictCmdOp via the digit-key "
+               "branch (default init).  Failure indicates the wiring "
+               "loop's str form isn't attaching the CLI entry.";
+        lc::scripting::ScriptValue step = op.getAttr("step");
+        EXPECT_EQ(step.asString(), "DEFAULT_INIT_RAN");
+    }
+
+    mainWindow->cliCommand()->runCommand("NAMEDCMD");
+    {
+        lc::scripting::ScriptObject op = mainWindow->currentOperation();
+        ASSERT_FALSE(op.isNil())
+            << "NAMEDCMD must route to PyDictCmdOp via the non-digit "
+               "key branch (CLI text = key, init suffix = value).  "
+               "Failure indicates the key/value swap bug: the CLI "
+               "entry `NAMEDCMD` was never registered because the "
+               "old code used `value` as CLI text and `key` as init.";
+        lc::scripting::ScriptValue step = op.getAttr("step");
+        EXPECT_EQ(step.asString(), "SECOND_INIT_RAN")
+            << "The non-digit branch's init routing was inverted in "
+               "the original PR-5.2 code — `_init_NAMEDCMD` would "
+               "have been the (nonexistent) target instead of "
+               "`_init_second`.";
+    }
+
+    // Cleanup.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+if "PyDictCmdOp" in lc.operation_registry:
+    del lc.operation_registry["PyDictCmdOp"]
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MWindowTest, PythonOperationResolverWiresIntoRunOperationByName) {
     // Phase 5 PR-5.2 — verify OperationLoader::loadPythonOperations
     // (a) pushed the Python-registry resolver onto MainWindow's ordered

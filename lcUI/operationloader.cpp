@@ -570,29 +570,47 @@ void OperationLoader::loadPythonOperations() {
             py::object cmd = cls.attr("command_line");
             if (py::isinstance<py::str>(cmd)) {
                 const std::string cmdStr = py::str(cmd);
-                cliCommand->addCommand(cmdStr,
+                // PR-5.2 fixup — cmdStr is std::string but
+                // CliCommand::addCommand takes `const char*`; needed
+                // .c_str() (missing in the original PR-5.2 code was a
+                // real compile error).
+                cliCommand->addCommand(cmdStr.c_str(),
                     lc::scripting::nativeCallback([mWindow, name]() {
                         mWindow->runOperationByName(name);
                     }));
             } else if (py::isinstance<py::dict>(cmd)) {
-                // Dict form: key = command string, value = init suffix
-                // (matches Lua's TYPE_TABLE branch at
-                // operationloader.cpp:242).
+                // PR-5.2 fixup — the ORIGINAL PR-5.2 code got this
+                // mapping BACKWARDS.  Lua's convention (verified
+                // against lcUILua/createActions/ellipseoperations.lua):
+                //   `command_line = { "ELLIPSE", ARCELLIPSE = "arc" }`
+                //   → iterated as:
+                //     digit-only key 1  → value "ELLIPSE" is CLI text,
+                //                         default init.
+                //     non-digit key "ARCELLIPSE" → the KEY is the CLI
+                //                                  text, VALUE is the
+                //                                  init-suffix.
+                // So typing "ARCELLIPSE" runs `_init_arc`.  Python's
+                // dict has the same key/value shape as Lua's table;
+                // preserve the mapping verbatim so a mixed-language
+                // author's muscle memory carries over.
                 for (auto item : py::reinterpret_borrow<py::dict>(cmd)) {
-                    const std::string cmdStr = py::str(item.second);
                     std::string key = py::str(item.first);
-                    // Digit-only key = default init; else use init suffix.
+                    const std::string value = py::str(item.second);
+                    // Digit-only key = default init; CLI text = value.
                     bool digitsOnly = !key.empty()
                         && std::all_of(key.begin(), key.end(),
                             [](unsigned char c) { return std::isdigit(c); });
                     if (digitsOnly) {
-                        cliCommand->addCommand(cmdStr,
+                        cliCommand->addCommand(value.c_str(),
                             lc::scripting::nativeCallback([mWindow, name]() {
                                 mWindow->runOperationByName(name);
                             }));
                     } else {
-                        std::string initMethod = "_init_" + key;
-                        cliCommand->addCommand(cmdStr,
+                        // Non-digit key: CLI text = KEY, init suffix
+                        // = VALUE.  Matches Lua at
+                        // operationloader.cpp:280-281.
+                        std::string initMethod = "_init_" + value;
+                        cliCommand->addCommand(key.c_str(),
                             lc::scripting::nativeCallback(
                                 [mWindow, name, initMethod]() {
                                     mWindow->runOperationByName(name, initMethod);
