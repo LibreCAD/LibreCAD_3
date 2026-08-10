@@ -147,14 +147,12 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
 
 void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
     _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
-    // Phase 4 PR-7 — the `run_basic_operation` dostring is kept as a
-    // thin bridge: it forwards to `mainWindow:runOperation(cls, init)`
-    // (which the guibridge overload wraps LuaRef→ScriptObject via
-    // `makeLuaObject`).  The former codegen callers in operationloader.cpp
-    // are killed in this PR; ContextMenuManager's 19 contextmenu_op
-    // dostrings still route through this shim until PR-8 replaces them
-    // with native lambdas calling `runOperationByName`.
-    _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    // Phase 4 PR-8 — `run_basic_operation` bridge finally removed.  Its
+    // last Lua-side callers (ContextMenuManager's 19 dostrings) are gone;
+    // ContextMenuManager's Creation/Dimensions/Modify loops now hit the
+    // native `MainWindow::runOperationByName` entry point (added PR-7)
+    // directly.  External Lua scripts that need to spawn operations
+    // should use `mainWindow:runOperationByName(name, initMethod)` too.
     _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
     _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
 

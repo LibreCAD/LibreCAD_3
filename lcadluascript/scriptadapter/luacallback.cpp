@@ -13,12 +13,33 @@
 #include <cad/geometry/geocoordinate.h>
 #include <cad/meta/color.h>
 
+#include <cstring>
 #include <string>
 #include <vector>
 
 namespace lcs = lc::scripting;
 
 namespace {
+
+// -----------------------------------------------------------------------------
+// OpaquePtr encoder registry.
+// -----------------------------------------------------------------------------
+// Phase 4 PR-8: per-tag encoders registered by lcUI so the Lua adapter
+// can materialize OpaquePtr values (e.g. api::Menu*) into Lua-side
+// userdata without lcadluascript knowing about lcUI types.
+
+struct OpaqueEncoderEntry {
+    const char* tag;   // caller-owned string literal
+    lc::lua::OpaqueEncoder encoder;
+};
+
+std::vector<OpaqueEncoderEntry>& opaqueRegistry() {
+    // Function-local static — construct-on-first-use for the Meyer's
+    // singleton pattern.  Registration happens during static-init /
+    // lcUI's initLua path; lookup happens per toLuaLocked invocation.
+    static std::vector<OpaqueEncoderEntry> reg;
+    return reg;
+}
 
 // -----------------------------------------------------------------------------
 // Type conversions.
@@ -47,12 +68,26 @@ kaguya::LuaRef toLuaLocked(kaguya::State& state, const lcs::ScriptValue& v) {
         return kaguya::LuaRef(state.state(), v.asCoordinateList());
     case K::EntityList:
         return kaguya::LuaRef(state.state(), v.asEntityList());
-    case K::Opaque:
-        // No adapter-side materializer for arbitrary UI types yet.  The
-        // per-tag encoder registration lives in the lcUI-side adapter
-        // extension (later phase-4 PR).  Return nil to keep behavior
-        // graceful.
+    case K::Opaque: {
+        // Phase 4 PR-8: per-tag encoder lookup.  The registry is
+        // populated by lcUI at initialize time (see guibridge.cpp).
+        // Walk in REVERSE so a later registration (per the "last-in
+        // wins" pattern shared with runOperationByName's resolver list)
+        // takes precedence over an earlier one for the same tag.
+        lcs::OpaquePtr op = v.asOpaque();
+        if (op.tag == nullptr || op.ptr == nullptr) {
+            return kaguya::LuaRef(state.state());
+        }
+        auto& reg = opaqueRegistry();
+        for (auto it = reg.rbegin(); it != reg.rend(); ++it) {
+            if (it->tag == op.tag || std::strcmp(it->tag, op.tag) == 0) {
+                return it->encoder(state, op.ptr);
+            }
+        }
+        // No encoder registered for this tag — degrade to nil (matches
+        // the pre-PR-8 fallback so unknown tags don't crash Lua callers).
         return kaguya::LuaRef(state.state());
+    }
     case K::MapKind: {
         kaguya::LuaTable tbl = state.newTable();
         if (v.asMap()) {
@@ -346,6 +381,12 @@ lc::scripting::ScriptObject makeLuaObject(kaguya::LuaRef ref) {
 
 kaguya::LuaRef toLua(kaguya::State& state, const lc::scripting::ScriptValue& v) {
     return toLuaLocked(state, v);
+}
+
+void registerOpaqueEncoder(const char* tag, OpaqueEncoder encoder) {
+    // Phase 4 PR-8 — public entry point; opaqueRegistry is namespace-
+    // local so lcUI can't reach past this API to poke at the vector.
+    opaqueRegistry().push_back({tag, std::move(encoder)});
 }
 
 lc::scripting::ScriptValue fromLua(const kaguya::LuaRef& ref) {

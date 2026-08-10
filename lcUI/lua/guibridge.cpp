@@ -7,6 +7,9 @@
 // wraps land in PR-3/PR-4/PR-5).
 #include <scriptadapter/luacallback.h>
 
+// Phase 4 PR-8 — OpaquePtr tag identifiers shared with ContextMenuManager.
+#include "lua/opaquetags.h"
+
 #include "cadmdichild.h"
 #include "documentcanvas.h"
 #include "lcadviewer.h"
@@ -51,6 +54,18 @@ using namespace drawable;
 void luaOpenGUIBridge(lua_State *L) {
     kaguya::State state(L);
     state["gui"] = kaguya::NewTable();
+
+    // Phase 4 PR-8 — register the api::Menu* OpaquePtr encoder so the
+    // Lua adapter can materialize the `menu` argument to
+    // `operation:contextMenuOptions(menu)`.  kaguya wraps the raw
+    // pointer in the userdata metatable installed by
+    // `state["gui"]["Menu"]` in addLuaGUIAPIBindings — which runs below
+    // — so Lua-side operations see a normal Menu userdata.
+    lc::lua::registerOpaqueEncoder(lc::ui::opaquetag::Menu,
+        [](kaguya::State& st, void* ptr) {
+            return kaguya::LuaRef(st.state(),
+                static_cast<lc::ui::api::Menu*>(ptr));
+        });
 
     addLCBindings(L);
     addLuaGUIAPIBindings(L);
