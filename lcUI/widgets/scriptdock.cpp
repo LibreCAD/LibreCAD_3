@@ -123,7 +123,7 @@ void ScriptDock::runPython(const std::string& code) {
 }
 #endif
 
-void ScriptDock::on_luaRun_clicked() {
+void ScriptDock::run() {
     const std::string code = ui->luaInput->toPlainText().toStdString();
 #ifdef LC_WITH_PYTHONSCRIPT
     if (isPythonSelected()) {
@@ -132,6 +132,17 @@ void ScriptDock::on_luaRun_clicked() {
     }
 #endif
     runLua(code);
+}
+
+void ScriptDock::setInputText(const QString& text) {
+    ui->luaInput->setPlainText(text);
+}
+
+void ScriptDock::on_luaRun_clicked() {
+    // Phase 3 PR-3.4 — the slot is now a thin wrapper over the public
+    // `run()` entry point so tests can drive the widget without
+    // depending on Qt's signal delivery.
+    run();
 }
 
 void ScriptDock::on_open_clicked() {

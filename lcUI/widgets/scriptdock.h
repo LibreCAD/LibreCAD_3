@@ -51,6 +51,21 @@ public:
 
     virtual ~ScriptDock();
 
+    /**
+     * \brief Run the current text of the input pane in the selected
+     * language.  Public entry point that dispatches to `runLua` /
+     * `runPython`.  Tests use this directly (avoids depending on the
+     * Qt event loop to deliver a button click); the "Run" button's
+     * slot is a thin wrapper.
+     */
+    void run();
+
+    /**
+     * \brief Set the input text programmatically.  Used by the dual-
+     * language ScriptDock test (PR-3.4).
+     */
+    void setInputText(const QString& text);
+
 private slots:
 
     /**

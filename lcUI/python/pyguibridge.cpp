@@ -83,6 +83,15 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("tempEntities",
              &lc::ui::CadMdiChild::tempEntities,
              "Return the temporary-entities container.")
+        // `activeLayer()` returns a shared_ptr<const Layer>.  Same
+        // shape as document() — kernel manages the lifetime.  Not
+        // strictly in the sub-plan's phase-3 scope list but included
+        // here because the dual-language ScriptDock test (PR-3.4) needs
+        // it as parity with Lua's `mainWindow:cadMdiChild():activeLayer()`
+        // pattern; adding one more accessor is trivially in-scope.
+        .def("activeLayer",
+             &lc::ui::CadMdiChild::activeLayer,
+             "Return the currently active layer.")
         // Convenience: `cadmdi.autoScale()` reaches through
         // `viewer()->autoScale()`.  Avoids exposing the LCADViewer
         // class in phase 3 (out of scope per the sub-plan).
