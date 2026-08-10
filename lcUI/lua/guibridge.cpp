@@ -127,9 +127,17 @@ void addLCBindings(lua_State *L) {
                                              [](LuaInterface& self, kaguya::LuaRef op) {
                                                  self.setOperation(lc::lua::makeLuaObject(std::move(op)));
                                              })
-                                         .addFunction("registerEvent", &LuaInterface::registerEvent)
+                                         // Phase 4 PR-9a — registerEvent / triggerEvent are
+                                         // overloaded (LuaRef-taking + ScriptValue/ScriptCallback-taking).
+                                         // Lua-facing bindings pick the LuaRef overloads
+                                         // explicitly.
+                                         .addFunction("registerEvent",
+                                             static_cast<void(LuaInterface::*)(const std::string&, const kaguya::LuaRef&)>(
+                                                 &LuaInterface::registerEvent))
                                          .addFunction("deleteEvent", &LuaInterface::deleteEvent)
-                                         .addFunction("triggerEvent", &LuaInterface::triggerEvent)
+                                         .addFunction("triggerEvent",
+                                             static_cast<void(LuaInterface::*)(const std::string&, kaguya::LuaRef)>(
+                                                 &LuaInterface::triggerEvent))
                                          .addFunction("finishOperation", &LuaInterface::finishOperation)
                                         );
 

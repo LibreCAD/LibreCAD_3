@@ -8,6 +8,10 @@
 #include "mainwindow.h"
 #include "operationloader.h"
 
+// Phase 4 PR-9a — LuaInterface's event registry delegates to EventBus.
+// The Lua-facing overloads wrap kaguya::LuaRef via the Lua adapter.
+#include <scriptadapter/luacallback.h>
+
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
@@ -15,7 +19,8 @@ LuaInterface::LuaInterface() :
 }
 
 LuaInterface::~LuaInterface() {
-    _events.clear();
+    // Phase 4 PR-9a — was `_events.clear()`; EventBus has its own clear.
+    _eventBus.clear();
 
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 }
@@ -118,31 +123,51 @@ void LuaInterface::finishOperation() {
 }
 
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
-    if(callback.type() == LUA_TTABLE && callback["onEvent"].isNilref()) {
+    // Phase 4 PR-9a — reject-object-without-onEvent guard preserved
+    // verbatim (was inline in this function; still enforced at the Lua
+    // adapter boundary here so behavior is identical to the pre-refactor
+    // path).  Then wrap in a ScriptCallback and delegate.
+    if (callback.type() == LUA_TTABLE && callback["onEvent"].isNilref()) {
         return;
     }
+    _eventBus.registerEvent(event, lc::lua::makeLuaCallback(callback));
+}
 
-    _events[event].push_back(callback);
+void LuaInterface::registerEvent(const std::string& event, lc::scripting::ScriptCallback callback) {
+    // Native-side entry point.  No LuaRef inspection — the ScriptCallback
+    // adapter's own invokeEvent handles the shape decision (Python's
+    // hasattr("onEvent") check, Lua's LuaRef type check).
+    _eventBus.registerEvent(event, std::move(callback));
 }
 
 void LuaInterface::deleteEvent(const std::string& event, const kaguya::LuaRef& callback) {
-    auto it = std::find(_events[event].begin(), _events[event].end(), callback);
-
-    if(it != _events[event].end()) {
-        _events[event].erase(it);
-    }
+    // Phase 4 PR-9a — wrap and delegate.  LuaCallbackImpl::equals
+    // delegates to LuaRef ==, so wrapping the SAME LuaRef produces
+    // equal ScriptCallbacks — matches the pre-refactor find-by-== path.
+    _eventBus.deleteEvent(event, lc::lua::makeLuaCallback(callback));
 }
 
 void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
-    auto events = _events[event];
-    for(auto eventCallback : events) {
-        if(eventCallback.type() == LUA_TFUNCTION) {
-            eventCallback(event, args);
-        }
-        else if(eventCallback.type() == LUA_TTABLE) {
-            eventCallback["onEvent"](eventCallback, event, args);
-        }
-    }
+    // Phase 4 PR-9a — convert LuaRef payload to ScriptValue via fromLua
+    // then dispatch.  Each callback's invokeEvent materializes back per
+    // language (Lua adapter re-encodes to LuaRef; Python adapter to
+    // py::object).  Preserves the double-fire order for
+    // operationFinished→finishOperation because EventBus dispatches in
+    // insertion order.
+    _eventBus.triggerEvent(event, lc::lua::fromLua(args));
+}
+
+void LuaInterface::triggerEvent(const std::string& event,
+                                const lc::scripting::ScriptValue& args) {
+    // Phase 4 PR-9a — native-side entry point.  Used by MainWindow's
+    // trigger* slots after PR-9b's payload switch: they build
+    // ScriptValue payloads directly (Coordinate / Int / Map) and skip
+    // the LuaRef round-trip.
+    _eventBus.triggerEvent(event, args);
+}
+
+std::size_t LuaInterface::listenerCount(const std::string& event) const {
+    return _eventBus.listenerCount(event);
 }
 
 void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {

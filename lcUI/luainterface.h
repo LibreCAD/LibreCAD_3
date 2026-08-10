@@ -25,6 +25,13 @@ extern "C"
 // materialize into the runtime instance (Lua LuaRef or Python object).
 #include <lcscripting/scriptobject.h>
 
+// Phase 4 PR-9a — event registry delegated to lcscripting::EventBus.
+// LuaInterface keeps its public LuaRef-taking API for backward compat
+// with Lua-facing callers (guibridge + tests); a native ScriptValue
+// overload of triggerEvent is added for MainWindow's trigger* slots
+// (PR-9b) which now build ScriptValue payloads directly.
+#include <lcscripting/eventbus.h>
+
 namespace lc {
 namespace ui {
 /**
@@ -87,11 +94,45 @@ public:
 
     void finishOperation();
 
+    /**
+     * \brief Register a Lua-side callback for @p event.  Phase 4 PR-9a:
+     * wraps the LuaRef via makeLuaCallback and delegates to EventBus.
+     * The `object-without-onEvent` guard is preserved verbatim
+     * (luainterface.cpp:118 pre-refactor).
+     */
     void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
+
+    /**
+     * \brief Register a native/neutral ScriptCallback for @p event.
+     * Phase 4 PR-9a — the native side into EventBus for phase 5 Python
+     * scripts and for C++ code that already has a ScriptCallback.
+     */
+    void registerEvent(const std::string& event, lc::scripting::ScriptCallback callback);
 
     void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
 
+    /**
+     * \brief Trigger @p event with a LuaRef payload.  Phase 4 PR-9a:
+     * converts the LuaRef payload to ScriptValue via fromLua and
+     * delegates to EventBus, which materializes back to Lua per-callback.
+     * Matches the pre-refactor behavior exactly.
+     */
     void triggerEvent(const std::string& event, kaguya::LuaRef args);
+
+    /**
+     * \brief Trigger @p event with a native ScriptValue payload.
+     * Phase 4 PR-9a — used by PR-9b's trigger* slots in MainWindow to
+     * skip the Lua round-trip when payloads are already ScriptValues.
+     */
+    void triggerEvent(const std::string& event,
+                      const lc::scripting::ScriptValue& args = lc::scripting::ScriptValue{});
+
+    /**
+     * \brief Number of listeners for @p event.  Phase 4 PR-9a — callers
+     * building expensive payloads (mouseMove per pixel) query this and
+     * skip payload materialization when zero.
+     */
+    std::size_t listenerCount(const std::string& event) const;
 
 private:
     /**
@@ -103,7 +144,11 @@ private:
     kaguya::State _L;
     lc::lua::PluginManager _pluginManager;
     lc::scripting::ScriptObject _operation;
-    std::map<std::string, std::vector<kaguya::LuaRef>> _events;
+    // Phase 4 PR-9a — EventBus replaces the old
+    // `std::map<std::string, std::vector<kaguya::LuaRef>> _events` and
+    // its per-callback shape dispatch.  The ScriptCallback adapter
+    // handles function-vs-table-with-onEvent per language.
+    lc::scripting::EventBus _eventBus;
 };
 }
 }
