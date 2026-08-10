@@ -67,6 +67,15 @@ void luaOpenGUIBridge(lua_State *L) {
                 static_cast<lc::ui::api::Menu*>(ptr));
         });
 
+    // Phase 4 PR-9b — register the CadMdiChild* encoder used by
+    // MainWindow's trigger* event slots.  Every payload Map's `widget`
+    // entry gets materialized here for Lua listeners.
+    lc::lua::registerOpaqueEncoder(lc::ui::opaquetag::CadMdiChild,
+        [](kaguya::State& st, void* ptr) {
+            return kaguya::LuaRef(st.state(),
+                static_cast<lc::ui::CadMdiChild*>(ptr));
+        });
+
     addLCBindings(L);
     addLuaGUIAPIBindings(L);
 }

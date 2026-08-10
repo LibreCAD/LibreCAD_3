@@ -20,6 +20,11 @@
 // wraps kaguya::LuaRef via makeLuaObject.
 #include <scriptadapter/luacallback.h>
 
+// Phase 4 PR-9b — trigger* slots build ScriptValue::Map payloads
+// natively; CadMdiChild* travels as an OpaquePtr with the tag from
+// opaquetags.h.
+#include "lua/opaquetags.h"
+
 using namespace lc::ui;
 
 MainWindow::MainWindow()
@@ -573,107 +578,146 @@ void MainWindow::removeMenu(int position) {
 
 /* Trigger slots */
 
+// Phase 4 PR-9b — every trigger* slot now builds a ScriptValue::Map
+// payload natively and hits `LuaInterface::triggerEvent(string,
+// ScriptValue)` (PR-9a's native overload) — no more Lua scratch globals
+// (`mousePressed`, `keyEvent`, `numberEntered`, ...) manufactured on
+// every event.  The `widget` entry (previously `state[...]["widget"] =
+// &_cadMdiChild`) becomes an OpaquePtr with the `CadMdiChild*` tag; the
+// adapter's registered encoder materializes it back into userdata on
+// entry to each Lua listener.
+//
+// Lazy materialization: check `listenerCount(name) > 0` before building
+// expensive payloads — mouseMove fires per pixel, and manufacturing a
+// per-event Map only to have zero listeners see it is measurable waste.
+//
+// The parallel Qt `emit point(...)` signal calls in triggerMousePressed
+// / triggerCoordinateEntered / triggerRelativeCoordinateEntered are
+// untouched — they feed the C++-side `triggerPoint` slot that updates
+// `lastPoint`.  Preserving them verbatim is part of PR-9b's contract.
+
+namespace {
+    // Build a ScriptValue holding an OpaquePtr(CadMdiChild*).  Named
+    // helper so every trigger slot's `widget` entry reads the same.
+    inline lc::scripting::ScriptValue widgetOpaque(lc::ui::CadMdiChild* w) {
+        return lc::scripting::ScriptValue(
+            lc::scripting::OpaquePtr{w, lc::ui::opaquetag::CadMdiChild});
+    }
+}
+
 void MainWindow::triggerMousePressed()
 {
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
-    kaguya::State state(_luaInterface.luaState());
-    state["mousePressed"] = kaguya::NewTable();
-    state["mousePressed"]["position"] = cursorPos;
-    state["mousePressed"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["mousePressed"]);
+    if (_luaInterface.listenerCount("point") > 0) {
+        auto payload = lc::scripting::makeMap();
+        (*payload)["position"] = lc::scripting::ScriptValue(cursorPos);
+        (*payload)["widget"]   = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("point", lc::scripting::ScriptValue(payload));
+    }
 
     emit point(cursorPos);
 }
 
 void MainWindow::triggerMouseReleased()
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["mouseRelease"] = kaguya::NewTable();
-    state["mouseRelease"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("mouseRelease", state["mouseRelease"]);
+    if (_luaInterface.listenerCount("mouseRelease") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("mouseRelease", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerSelectionChanged()
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["selectionChanged"] = kaguya::NewTable();
-    state["selectionChanged"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("selectionChanged", state["selectionChanged"]);
+    if (_luaInterface.listenerCount("selectionChanged") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("selectionChanged", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerMouseMoved()
 {
+    // mouseMove is the hottest per-pixel event; the listenerCount guard
+    // is not a micro-optimization here, it's the observable difference
+    // between "adds ~1 payload construction per pixel of movement" and
+    // "adds nothing when no script is listening".
+    if (_luaInterface.listenerCount("mouseMove") == 0) return;
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
-    kaguya::State state(_luaInterface.luaState());
-    state["mouseMove"] = kaguya::NewTable();
-    state["mouseMove"]["position"] = cursorPos;
-    state["mouseMove"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("mouseMove", state["mouseMove"]);
+    auto payload = lc::scripting::makeMap();
+    (*payload)["position"] = lc::scripting::ScriptValue(cursorPos);
+    (*payload)["widget"]   = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("mouseMove", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerKeyPressed(int key)
 {
     if (key == Qt::Key_Escape)
     {
-        // run finish operation
-        auto state = _luaInterface.luaState();
-        _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+        // Escape triggers the finishOperation event with an empty
+        // payload (was `kaguya::LuaRef(state)` — a nil LuaRef; the
+        // neutral form uses default-constructed ScriptValue).
+        _luaInterface.triggerEvent("finishOperation");
     }
     else
     {
-        kaguya::State state(_luaInterface.luaState());
-        state["keyEvent"] = kaguya::NewTable();
-        state["keyEvent"]["key"] = key;
-        state["keyEvent"]["widget"] = &_cadMdiChild;
-        _luaInterface.triggerEvent("keyPressed", state["keyEvent"]);
+        if (_luaInterface.listenerCount("keyPressed") == 0) return;
+        auto payload = lc::scripting::makeMap();
+        (*payload)["key"]    = lc::scripting::ScriptValue(key);
+        (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("keyPressed", lc::scripting::ScriptValue(payload));
     }
 }
 
 void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["coordinateEntered"] = kaguya::NewTable();
-    state["coordinateEntered"]["position"] = coordinate;
-    state["coordinateEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["coordinateEntered"]);
+    if (_luaInterface.listenerCount("point") > 0) {
+        auto payload = lc::scripting::makeMap();
+        (*payload)["position"] = lc::scripting::ScriptValue(coordinate);
+        (*payload)["widget"]   = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("point", lc::scripting::ScriptValue(payload));
+    }
 
     emit point(coordinate);
 }
 
 void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["relCoordinateEntered"] = kaguya::NewTable();
-    state["relCoordinateEntered"]["position"] = lastPoint + coordinate;
-    state["relCoordinateEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["relCoordinateEntered"]);
+    if (_luaInterface.listenerCount("point") > 0) {
+        auto payload = lc::scripting::makeMap();
+        (*payload)["position"] =
+            lc::scripting::ScriptValue(lastPoint + coordinate);
+        (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("point", lc::scripting::ScriptValue(payload));
+    }
 
     emit point(lastPoint + coordinate);
 }
 
 void MainWindow::triggerNumberEntered(double number)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["numberEntered"] = kaguya::NewTable();
-    state["numberEntered"]["number"] = number;
-    state["numberEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("number", state["numberEntered"]);
+    if (_luaInterface.listenerCount("number") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["number"] = lc::scripting::ScriptValue(number);
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("number", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerTextEntered(QString text)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["textEntered"] = kaguya::NewTable();
-    state["textEntered"]["text"] = text.toStdString();
-    state["textEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("text", state["textEntered"]);
+    if (_luaInterface.listenerCount("text") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["text"]   = lc::scripting::ScriptValue(text.toStdString());
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("text", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerFinishOperation()
 {
-    auto state = _luaInterface.luaState();
-    _luaInterface.triggerEvent("operationFinished", kaguya::LuaRef(state));
-    _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+    // Double-fire order preserved verbatim: operationFinished THEN
+    // finishOperation (mainwindow.cpp:598-599 pre-refactor, per the
+    // phase-4 sub-plan's PRESERVE list).  Both use empty payloads
+    // (was `kaguya::LuaRef(state)` — a nil LuaRef).
+    _luaInterface.triggerEvent("operationFinished");
+    _luaInterface.triggerEvent("finishOperation");
 }
 
 void MainWindow::triggerCommandEntered(QString command)
