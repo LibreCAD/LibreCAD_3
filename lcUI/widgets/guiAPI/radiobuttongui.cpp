@@ -19,13 +19,14 @@ void RadioButtonGUI::setLabel(const std::string& newLabel) {
     this->setText(QString(newLabel.c_str()));
 }
 
-void RadioButtonGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void RadioButtonGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void RadioButtonGUI::callbackCalled(bool toggled) {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(toggled);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks) {
+        cb.call(toggled);
     }
 }
 

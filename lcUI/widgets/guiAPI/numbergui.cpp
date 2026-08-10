@@ -28,13 +28,14 @@ NumberGUI::~NumberGUI()
     delete ui;
 }
 
-void NumberGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void NumberGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void NumberGUI::valueChangedCallbacks(double val) {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(val);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks) {
+        cb.call(val);
     }
 }
 

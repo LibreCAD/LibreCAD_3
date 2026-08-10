@@ -5,6 +5,11 @@
 
 #include <kaguya/kaguya.hpp>
 
+// Phase 4 PR-5a — RadioButtonGUI does NOT inherit InputGUI, so we
+// include the neutral callback header directly.  kaguya is retained
+// only for the getLuaValue(LuaRef&) base override (retired in PR-5b).
+#include <lcscripting/scriptcallback.h>
+
 namespace lc {
 namespace ui {
 namespace api {
@@ -37,10 +42,9 @@ public:
     void setLabel(const std::string& newLabel);
 
     /**
-    * \brief Add callback on state changed
-    * \param LuaRef lua callback
+    * \brief Add callback on state changed (phase 4 PR-5a: neutral)
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Return lua value
@@ -74,7 +78,7 @@ public slots:
 
 private:
     std::string _label;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
     std::string _key;
 };
 }

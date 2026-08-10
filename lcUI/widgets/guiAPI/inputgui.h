@@ -7,6 +7,11 @@
 
 #include <kaguya/kaguya.hpp>
 
+// Phase 4 PR-5a — scalar-widget subclasses store callbacks as neutral
+// ScriptCallback; kaguya remains needed here for the base
+// getLuaValue(LuaRef&) virtual (retired in PR-5b's getValue(Map&) port).
+#include <lcscripting/scriptcallback.h>
+
 #include <string>
 #include <vector>
 

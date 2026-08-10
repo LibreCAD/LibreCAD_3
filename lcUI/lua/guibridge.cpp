@@ -477,20 +477,35 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                   .setConstructors<lc::ui::api::TextGUI(std::string)>()
                                   .addFunction("value", &lc::ui::api::TextGUI::value)
                                   .addFunction("setValue", &lc::ui::api::TextGUI::setValue)
-                                  .addFunction("addFinishCallback", &lc::ui::api::TextGUI::addFinishCallback)
-                                  .addFunction("addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback)
+    // Phase 4 PR-5a — scalar widget callbacks take ScriptCallback; wrap LuaRef.
+    .addStaticFunction("addFinishCallback",
+        [](lc::ui::api::TextGUI& self, kaguya::LuaRef cb) {
+            self.addFinishCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
+    .addStaticFunction("addOnChangeCallback",
+        [](lc::ui::api::TextGUI& self, kaguya::LuaRef cb) {
+            self.addOnChangeCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                  );
 
     state["gui"]["Button"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGUI, lc::ui::api::InputGUI>()
                                     .setConstructors<lc::ui::api::ButtonGUI(std::string)>()
                                     .addFunction("setLabel", &lc::ui::api::ButtonGUI::setLabel)
-                                    .addFunction("addCallback", &lc::ui::api::ButtonGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::ButtonGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                    );
 
     state["gui"]["CheckBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::CheckBoxGUI, lc::ui::api::InputGUI>()
                                       .setConstructors<lc::ui::api::CheckBoxGUI(std::string), lc::ui::api::CheckBoxGUI(std::string, bool)>()
                                       .addFunction("setLabel", &lc::ui::api::CheckBoxGUI::setLabel)
-                                      .addFunction("addCallback", &lc::ui::api::CheckBoxGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::CheckBoxGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                       .addFunction("value", &lc::ui::api::CheckBoxGUI::value)
                                       .addFunction("setValue", &lc::ui::api::CheckBoxGUI::setValue)
                                      );
@@ -499,7 +514,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                          .setConstructors<lc::ui::api::RadioButtonGUI(std::string)>()
                                          .addFunction("label", &lc::ui::api::RadioButtonGUI::label)
                                          .addFunction("setLabel", &lc::ui::api::RadioButtonGUI::setLabel)
-                                         .addFunction("addCallback", &lc::ui::api::RadioButtonGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::RadioButtonGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
     .addOverloadedFunctions("checked", [](lc::ui::api::RadioButtonGUI& self) {
         self.isChecked();
     })
@@ -528,8 +547,15 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["Coordinate"].setClass(kaguya::UserdataMetatable<lc::ui::api::CoordinateGUI, lc::ui::api::InputGUI>()
                                         .setConstructors<lc::ui::api::CoordinateGUI(std::string)>()
-                                        .addFunction("addFinishCallback", &lc::ui::api::CoordinateGUI::addFinishCallback)
-                                        .addFunction("addOnChangeCallback", &lc::ui::api::CoordinateGUI::addOnChangeCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addFinishCallback",
+        [](lc::ui::api::CoordinateGUI& self, kaguya::LuaRef cb) {
+            self.addFinishCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
+    .addStaticFunction("addOnChangeCallback",
+        [](lc::ui::api::CoordinateGUI& self, kaguya::LuaRef cb) {
+            self.addOnChangeCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                         .addFunction("value", &lc::ui::api::CoordinateGUI::value)
                                         .addFunction("setValue", &lc::ui::api::CoordinateGUI::setValue)
                                        );
@@ -538,15 +564,26 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                    .setConstructors<lc::ui::api::AngleGUI(std::string)>()
                                    .addFunction("toDegrees", &lc::ui::api::AngleGUI::toDegrees)
                                    .addFunction("toRadians", &lc::ui::api::AngleGUI::toRadians)
-                                   .addFunction("addFinishCallback", &lc::ui::api::AngleGUI::addFinishCallback)
-                                   .addFunction("addOnChangeCallback", &lc::ui::api::AngleGUI::addOnChangeCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addFinishCallback",
+        [](lc::ui::api::AngleGUI& self, kaguya::LuaRef cb) {
+            self.addFinishCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
+    .addStaticFunction("addOnChangeCallback",
+        [](lc::ui::api::AngleGUI& self, kaguya::LuaRef cb) {
+            self.addOnChangeCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                    .addFunction("value", &lc::ui::api::AngleGUI::value)
                                    .addFunction("setValue", &lc::ui::api::AngleGUI::setValue)
                                   );
 
     state["gui"]["Slider"].setClass(kaguya::UserdataMetatable<lc::ui::api::SliderGUI, lc::ui::api::InputGUI>()
                                     .setConstructors<lc::ui::api::SliderGUI(std::string), lc::ui::api::SliderGUI(std::string, int minVal, int maxVal)>()
-                                    .addFunction("addCallback", &lc::ui::api::SliderGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::SliderGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                     .addFunction("setLabel", &lc::ui::api::SliderGUI::setLabel)
                                     .addFunction("value", &lc::ui::api::SliderGUI::value)
                                     .addFunction("setValue", &lc::ui::api::SliderGUI::setValue)
@@ -554,7 +591,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["ComboBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::ComboBoxGUI, lc::ui::api::InputGUI>()
                                       .setConstructors<lc::ui::api::ComboBoxGUI(std::string)>()
-                                      .addFunction("addCallback", &lc::ui::api::ComboBoxGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::ComboBoxGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                       .addFunction("setLabel", &lc::ui::api::ComboBoxGUI::setLabel)
                                       .addFunction("value", &lc::ui::api::ComboBoxGUI::value)
     .addOverloadedFunctions("addItem", [](lc::ui::api::ComboBoxGUI& self, const std::string& item) {
@@ -569,7 +610,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["Number"].setClass(kaguya::UserdataMetatable<lc::ui::api::NumberGUI, lc::ui::api::InputGUI>()
                                     .setConstructors<lc::ui::api::NumberGUI(std::string)>()
-                                    .addFunction("addCallback", &lc::ui::api::NumberGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::NumberGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                     .addFunction("setLabel", &lc::ui::api::NumberGUI::setLabel)
                                     .addFunction("value", &lc::ui::api::NumberGUI::value)
                                     .addFunction("setValue", &lc::ui::api::NumberGUI::setValue)
@@ -579,7 +624,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                          .setConstructors<lc::ui::api::ColorGUI(std::string)>()
                                          .addFunction("value", &lc::ui::api::ColorGUI::value)
                                          .addFunction("setValue", &lc::ui::api::ColorGUI::setValue)
-                                         .addFunction("addCallback", &lc::ui::api::ColorGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::ColorGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                         );
 
     state["gui"]["EntityPicker"].setClass(kaguya::UserdataMetatable<lc::ui::api::EntityGUI, lc::ui::api::InputGUI>()
@@ -587,7 +636,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
                                           .addFunction("value", &lc::ui::api::EntityGUI::value)
                                           .addFunction("setValue", &lc::ui::api::EntityGUI::setValue)
                                           .addFunction("addEntity", &lc::ui::api::EntityGUI::addEntity)
-                                          .addFunction("addCallback", &lc::ui::api::EntityGUI::addCallback)
+    // Phase 4 PR-5a — wrap LuaRef -> ScriptCallback.
+    .addStaticFunction("addCallback",
+        [](lc::ui::api::EntityGUI& self, kaguya::LuaRef cb) {
+            self.addCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
                                          );
 
     state["gui"]["List"].setClass(kaguya::UserdataMetatable<lc::ui::api::ListGUI, lc::ui::api::InputGUI>()

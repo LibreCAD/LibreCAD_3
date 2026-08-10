@@ -71,7 +71,7 @@ public:
     * \brief Add callback for entity selected
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Hide widget label
@@ -124,7 +124,7 @@ private:
 
     std::vector<lc::entity::CADEntity_CSPtr> _selectedEntitiesList;
     std::set<unsigned int> _addedEntities;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
 };
 }
 }

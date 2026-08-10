@@ -23,13 +23,14 @@ void CheckBoxGUI::setLabel(const std::string& newLabel) {
     _checkBox->setText(QString(newLabel.c_str()));
 }
 
-void CheckBoxGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void CheckBoxGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void CheckBoxGUI::callbackCalled(int state) {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(state == Qt::Checked);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks) {
+        cb.call(state == Qt::Checked);
     }
 }
 

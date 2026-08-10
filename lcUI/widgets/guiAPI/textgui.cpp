@@ -43,23 +43,26 @@ void TextGUI::setValue (const std::string& newText) {
     _lineEdit->setText(QString(newText.c_str()));
 }
 
-void TextGUI::addFinishCallback(kaguya::LuaRef cb) {
-    _callbacks_finished.push_back(cb);
+void TextGUI::addFinishCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks_finished.push_back(std::move(cb));
 }
 
-void TextGUI::addOnChangeCallback(kaguya::LuaRef cb) {
-    _callbacks_onchange.push_back(cb);
+void TextGUI::addOnChangeCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks_onchange.push_back(std::move(cb));
 }
 
 void TextGUI::editingFinishedCallbacks() {
-    for (kaguya::LuaRef& cb : _callbacks_finished) {
-        cb();
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks_finished) {
+        cb.invoke();
     }
 }
 
 void TextGUI::textChangedCallbacks(const QString& changedText) {
-    for (kaguya::LuaRef& cb : _callbacks_onchange) {
-        cb(changedText.toStdString());
+    // Phase 4 PR-5a — neutral callback invocation.
+    std::string s = changedText.toStdString();
+    for (auto& cb : _callbacks_onchange) {
+        cb.call(s);
     }
 }
 

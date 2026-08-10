@@ -1,5 +1,11 @@
 #include "propertyeditor.h"
 
+// Phase 4 PR-5a — scalar widgets take ScriptCallback.  PropertyEditor's
+// dostring-codegen callbacks are wrapped through the Lua adapter here as
+// a transitional shim; PR-6 replaces the whole dostring chain with
+// native lambdas capturing `key`.
+#include <scriptadapter/luacallback.h>
+
 #include "widgets/guiAPI/entitynamevisitor.h"
 #include <QVBoxLayout>
 #include <QScrollArea>
@@ -273,7 +279,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 lc::ui::api::AngleGUI* anglegui = new lc::ui::api::AngleGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 anglegui->setValue(boost::get<lc::entity::AngleProperty>(iter->second).Get());
                 state.dostring("anglePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                anglegui->addFinishCallback(state["anglePropertyCalled"]);
+                anglegui->addFinishCallback(lc::lua::makeLuaCallback(state["anglePropertyCalled"]));
                 addWidget(key, anglegui);
                 state["anglePropertyCalled"] = nullptr;
             }
@@ -283,7 +289,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(std::string(1,std::toupper(iter->first[0])) + iter->first.substr(1));
                 numbergui->setValue(boost::get<double>(iter->second));
                 state.dostring("numberPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                numbergui->addCallback(state["numberPropertyCalled"]);
+                numbergui->addCallback(lc::lua::makeLuaCallback(state["numberPropertyCalled"]));
                 addWidget(key, numbergui);
                 state["numberPropertyCalled"] = nullptr;
             }
@@ -293,7 +299,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 lc::ui::api::CheckBoxGUI* checkboxgui = new lc::ui::api::CheckBoxGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 checkboxgui->setValue(boost::get<bool>(iter->second));
                 state.dostring("boolPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                checkboxgui->addCallback(state["boolPropertyCalled"]);
+                checkboxgui->addCallback(lc::lua::makeLuaCallback(state["boolPropertyCalled"]));
                 addWidget(key, checkboxgui);
                 state["boolPropertyCalled"] = nullptr;
             }
@@ -303,7 +309,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
                 state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                coordinategui->addFinishCallback(state["coordinatePropertyCalled"]);
+                coordinategui->addFinishCallback(lc::lua::makeLuaCallback(state["coordinatePropertyCalled"]));
                 addWidget(key, coordinategui);
                 state["coordinatePropertyCalled"] = nullptr;
             }
@@ -313,7 +319,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 lc::ui::api::TextGUI* textgui = new lc::ui::api::TextGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 textgui->setValue(boost::get<std::string>(iter->second));
                 state.dostring("textPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                textgui->addFinishCallback(state["textPropertyCalled"]);
+                textgui->addFinishCallback(lc::lua::makeLuaCallback(state["textPropertyCalled"]));
                 addWidget(key, textgui);
                 state["textPropertyCalled"] = nullptr;
             }
@@ -373,7 +379,7 @@ void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr e
     std::string key = "entity" + std::to_string(entityID) + "_" + "lineSelect";
     state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
 
-    lineSelectGUI->addCallback(state["customPropertyCalled"]);
+    lineSelectGUI->addCallback(lc::lua::makeLuaCallback(state["customPropertyCalled"]));
     addWidget(key, lineSelectGUI);
     _entityProperties[entityID].push_back(key);
     _widgetKeyToEntity[key] = entityID;
@@ -390,7 +396,7 @@ void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr e
     }
 
     layerGUI->setValue(entity->layer()->name());
-    layerGUI->addCallback(state["customPropertyCalled"]);
+    layerGUI->addCallback(lc::lua::makeLuaCallback(state["customPropertyCalled"]));
     addWidget(key2, layerGUI);
     _entityProperties[entityID].push_back(key2);
     _widgetKeyToEntity[key2] = entityID;

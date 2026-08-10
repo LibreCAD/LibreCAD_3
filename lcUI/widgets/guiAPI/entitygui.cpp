@@ -117,16 +117,18 @@ void EntityGUI::setValue(std::vector<lc::entity::CADEntity_CSPtr> newSelectedEnt
     }
 }
 
-void EntityGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void EntityGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void EntityGUI::itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* previous) {
     int index = current->data(Qt::UserRole).toInt();
     entityItemSelected(_selectedEntitiesList[index]);
 
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(_selectedEntitiesList[index]);
+    // Phase 4 PR-5a — neutral callback invocation.
+    lc::entity::CADEntity_CSPtr selected = _selectedEntitiesList[index];
+    for (auto& cb : _callbacks) {
+        cb.call(selected);
     }
 }
 

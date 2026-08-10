@@ -71,13 +71,14 @@ void ColorGUI::setValue(lc::Color col) {
     colorSelectedCallbacks();
 }
 
-void ColorGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void ColorGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void ColorGUI::colorSelectedCallbacks() {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(value());
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks) {
+        cb.call(value());
     }
 }
 

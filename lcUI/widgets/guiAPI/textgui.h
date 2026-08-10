@@ -39,13 +39,13 @@ public:
     * \brief Add callback for editingFinished
     * \param LuaRef lua callback
     */
-    void addFinishCallback(kaguya::LuaRef cb);
+    void addFinishCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Add callback for textChanged
     * \param LuaRef lua callback
     */
-    void addOnChangeCallback(kaguya::LuaRef cb);
+    void addOnChangeCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Overridden Set Text GUI widget label
@@ -102,8 +102,8 @@ private:
     Ui::TextGUI* ui;
     QLabel* _textLabel;
     QLineEdit* _lineEdit;
-    std::vector<kaguya::LuaRef> _callbacks_finished;
-    std::vector<kaguya::LuaRef> _callbacks_onchange;
+    std::vector<lc::scripting::ScriptCallback> _callbacks_finished;
+    std::vector<lc::scripting::ScriptCallback> _callbacks_onchange;
 };
 }
 }

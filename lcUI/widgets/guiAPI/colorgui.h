@@ -59,7 +59,7 @@ public:
     * \brief Add callback for color selected
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Run callbacks for color selected
@@ -97,7 +97,7 @@ private:
     QPushButton* _colorButton;
     QColor _color;
 
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
 };
 
 }

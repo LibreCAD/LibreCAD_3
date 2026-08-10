@@ -36,7 +36,7 @@ public:
     * \brief Add callback on state changed
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Return lua value
@@ -77,7 +77,7 @@ protected:
     void pasteValue(QDataStream& stream) override;
 
 private:
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
     QCheckBox* _checkBox;
 };
 }
