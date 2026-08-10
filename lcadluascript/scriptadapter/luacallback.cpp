@@ -384,9 +384,25 @@ kaguya::LuaRef toLua(kaguya::State& state, const lc::scripting::ScriptValue& v) 
 }
 
 void registerOpaqueEncoder(const char* tag, OpaqueEncoder encoder) {
-    // Phase 4 PR-8 — public entry point; opaqueRegistry is namespace-
-    // local so lcUI can't reach past this API to poke at the vector.
-    opaqueRegistry().push_back({tag, std::move(encoder)});
+    // Phase 4 PR-8 + PR-10 followup — public entry point.  Dedup by
+    // tag: if an entry with the same tag already exists (pointer
+    // equality OR strcmp match — same rule as `toLuaLocked`'s lookup),
+    // overwrite its encoder in place.  This preserves the header's
+    // documented "later registrations OVERRIDE earlier ones" semantic
+    // WITHOUT unbounded growth on repeated calls — a bug in the
+    // original PR-8 code that caused every ScriptDock reinit / test
+    // fixture setup to leak an encoder slot per tag.  Verified by the
+    // 4-second grep for `registerOpaqueEncoder` — only lcUI calls it,
+    // and all callers are OK with overwrite semantics.
+    auto& reg = opaqueRegistry();
+    for (auto& entry : reg) {
+        if (entry.tag == tag || std::strcmp(entry.tag, tag) == 0) {
+            entry.encoder = std::move(encoder);
+            entry.tag     = tag;  // adopt the canonical tag pointer
+            return;
+        }
+    }
+    reg.push_back({tag, std::move(encoder)});
 }
 
 lc::scripting::ScriptValue fromLua(const kaguya::LuaRef& ref) {

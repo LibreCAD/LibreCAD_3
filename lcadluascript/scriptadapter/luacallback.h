@@ -43,10 +43,14 @@ using OpaqueEncoder =
 
 /// Register an encoder for the given tag.  Later registrations OVERRIDE
 /// earlier ones for the same tag (matches the resolver-list "later wins"
-/// pattern used in MainWindow::runOperationByName).  Tags are compared
-/// by string equality (strcmp), so multiple TUs can define the same tag
-/// as a bespoke `static const char*` literal without pointer-identity
-/// caveats.
+/// pattern used in MainWindow::runOperationByName).  The registry
+/// dedups on tag: a second call with the same tag overwrites the
+/// encoder IN PLACE rather than appending — preserves "later wins"
+/// while bounding memory to one entry per tag (see luacallback.cpp for
+/// the PR-10-followup rationale — the original PR-8 code appended
+/// unconditionally, leaking a slot per re-registration).  Tags are
+/// compared by pointer identity first, then strcmp, so multiple TUs
+/// can define the same tag as a bespoke `static const char*` literal.
 void registerOpaqueEncoder(const char* tag, OpaqueEncoder encoder);
 
 /// Wrap a kaguya::LuaRef in a ScriptCallback.  The callback's runtime()

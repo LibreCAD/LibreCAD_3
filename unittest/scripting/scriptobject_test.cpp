@@ -125,6 +125,88 @@ TEST(ScriptObject, CallMethodPropagatesArgs) {
     EXPECT_EQ(result.asInt(), 7);
 }
 
+TEST(ScriptObject, InstantiateInvokesConstructor) {
+    // Phase 4 PR-7 primitive: instantiate() must return a fresh,
+    // identity-preserved ScriptObject (unlike .call() which lossy-
+    // converts to ScriptValue).  Verify:
+    //   * The returned instance carries the __init__-set field
+    //     (instance-specific, not class-level — matches the reviewer's
+    //     "something set inside _init, e.g. step" guidance so a stale
+    //     class-attribute readback can't spoof the assertion).
+    //   * TWO separate instantiate() calls produce INDEPENDENT
+    //     instances — mutating one does NOT affect the other.  This is
+    //     the property that actually distinguishes "fresh instance"
+    //     from "same object returned twice" and is what
+    //     MainWindow::runOperation depends on when it holds a
+    //     per-window _operation ScriptObject.
+    auto factory = makePyObj(
+        "class Op:\n"
+        "    def __init__(self):\n"
+        "        self.step = 'idle'\n"
+        "    def advance(self):\n"
+        "        self.step = 'next'\n",
+        "Op");   // the CLASS itself, not an instance
+
+    lcs::ScriptObject inst_a = factory.instantiate();
+    lcs::ScriptObject inst_b = factory.instantiate();
+
+    ASSERT_FALSE(inst_a.isNil());
+    ASSERT_FALSE(inst_b.isNil());
+    EXPECT_EQ(inst_a.getAttr("step").asString(), "idle");
+    EXPECT_EQ(inst_b.getAttr("step").asString(), "idle");
+
+    // Mutate inst_a via its own method; inst_b must NOT observe the
+    // change.  If instantiate() returned the SAME underlying object
+    // twice (the failure mode we're guarding against), both sides
+    // would flip together.
+    inst_a.callMethod("advance");
+    EXPECT_EQ(inst_a.getAttr("step").asString(), "next");
+    EXPECT_EQ(inst_b.getAttr("step").asString(), "idle");
+
+    // Mutate inst_b via setAttr; inst_a must NOT roll back.
+    inst_b.setAttr("step", lcs::ScriptValue(std::string("halted")));
+    EXPECT_EQ(inst_a.getAttr("step").asString(), "next");
+    EXPECT_EQ(inst_b.getAttr("step").asString(), "halted");
+
+    // Two different Python objects — Python `is` returns False, and
+    // the fallback __eq__ (identity for arbitrary user classes)
+    // returns False too.  ScriptObject's equals routes through
+    // PythonObjectImpl::equals which tries `is` then `==`.
+    EXPECT_FALSE(inst_a == inst_b);
+}
+
+TEST(ScriptObject, InstantiateOnNonCallableReturnsNil) {
+    // instantiate() on a plain instance (not a class/factory) fires
+    // Python's __call__ which raises TypeError for objects without
+    // one.  The Python adapter catches py::error_already_set and
+    // returns nullptr, which surfaces here as a nil ScriptObject.
+    auto plain_inst = makePyObj(
+        "class Op:\n"
+        "    def __init__(self):\n"
+        "        self.step = 'idle'\n",
+        "Op()");   // an INSTANCE (not callable by default)
+
+    lcs::ScriptObject result = plain_inst.instantiate();
+    EXPECT_TRUE(result.isNil());
+}
+
+TEST(ScriptObject, InstantiatePropagatesArgs) {
+    // Mirror CallMethodPropagatesArgs but through instantiate() so we
+    // know constructor-arg passing works for phase 5's Python
+    // operation registration path.
+    auto factory = makePyObj(
+        "class Op:\n"
+        "    def __init__(self, tag, count):\n"
+        "        self.tag = tag\n"
+        "        self.count = count\n",
+        "Op");
+    lcs::ScriptObject inst = factory.instantiate(
+        {lcs::ScriptValue(std::string("draw-line")), lcs::ScriptValue(3)});
+    ASSERT_FALSE(inst.isNil());
+    EXPECT_EQ(inst.getAttr("tag").asString(), "draw-line");
+    EXPECT_EQ(inst.getAttr("count").asInt(), 3);
+}
+
 TEST(ScriptObject, CallInvokesConstructor) {
     // The wrapped object is a callable (e.g., a class or a factory).
     // Calling it produces a new instance.
