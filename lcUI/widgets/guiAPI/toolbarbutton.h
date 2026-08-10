@@ -3,7 +3,10 @@
 #include <QPushButton>
 #include <unordered_map>
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-3 — ToolbarButton stores neutral ScriptCallbacks instead of
+// raw kaguya::LuaRef.  Lua callers still see LuaRef; guibridge.cpp wraps
+// via lc::lua::makeLuaCallback().  kaguya include removed here.
+#include <lcscripting/scriptcallback.h>
 
 namespace lc
 {
@@ -23,9 +26,12 @@ public:
     * \brief ToolbarButton Constructor
     * \param string button label
     * \param string icon path
-    * \param LuaRef callback
+    * \param ScriptCallback callback (Lua adapter wraps at the guibridge)
     */
-    ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip = "", bool _checkable=false, QWidget* parent = nullptr);
+    ToolbarButton(const char* buttonLabel, const char* icon,
+                  lc::scripting::ScriptCallback callback,
+                  const char* tooltip = "", bool _checkable=false,
+                  QWidget* parent = nullptr);
 
     /**
     * \brief ToolbarButton Constructor
@@ -53,20 +59,17 @@ public:
     void setTooltip(const char* newToolTip);
 
     /**
-    * \brief Add another lua callback
-    * \param LuaRef callback
+    * \brief Add another callback
     */
-    void addCallback(kaguya::LuaRef callback);
+    void addCallback(lc::scripting::ScriptCallback callback);
 
     /**
-    * \brief Add another lua callback
-    * \param LuaRef callback
+    * \brief Add another callback under a given name
     */
-    void addCallback(const char* cb_name, kaguya::LuaRef callback);
+    void addCallback(const char* cb_name, lc::scripting::ScriptCallback callback);
 
     /**
-    * \brief remove
-    * \param LuaRef callback
+    * \brief remove named callback
     */
     void removeCallback(const char* cb_name);
 
@@ -88,10 +91,9 @@ public:
 
     /**
     * \brief Get callback at index of callbacks list
-    * \param int index
-    * \return LuaRef& callback
+    * \return ScriptCallback&
     */
-    kaguya::LuaRef& getCallback(int index);
+    lc::scripting::ScriptCallback& getCallback(int index);
 
     ToolbarButton* clone();
 
@@ -110,7 +112,7 @@ public slots:
 
 private:
     std::string _label;
-    std::vector<kaguya::LuaRef> callbacks;
+    std::vector<lc::scripting::ScriptCallback> callbacks;
     std::unordered_map<std::string, int> namedCallbacks;
     bool _checkable;
 };

@@ -2,7 +2,8 @@
 
 #include <QGroupBox>
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-3 — kaguya replaced by neutral ScriptCallback (transitively
+// available from toolbarbutton.h).
 #include "toolbarbutton.h"
 
 namespace lc
@@ -44,10 +45,11 @@ public:
     * \brief Add toolbar button to group
     * \param string button name
     * \param string button icon
-    * \param LuaRef button callback
+    * \param ScriptCallback button callback
     * \return pointer to toolbar button
     */
-    ToolbarButton* addButton(const char* buttonName, const char* buttonIcon, kaguya::LuaRef callback);
+    ToolbarButton* addButton(const char* buttonName, const char* buttonIcon,
+                             lc::scripting::ScriptCallback callback);
 
     /**
     * \brief Add non button widget to group

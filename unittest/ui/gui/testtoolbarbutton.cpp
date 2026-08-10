@@ -9,6 +9,10 @@
 #include <widgets/guiAPI/toolbargroup.h>
 #include <widgets/guiAPI/toolbarbutton.h>
 
+// Phase 4 PR-3 — ToolbarButton takes ScriptCallback; tests wrap the
+// LuaRef via the adapter.
+#include <scriptadapter/luacallback.h>
+
 #include "../uitests.h"
 
 using namespace lc::ui::widgets;
@@ -76,8 +80,12 @@ TEST(ToolbarButtonTest, CallbackTest) {
     Toolbar* toolbar = mainWindow->toolbar();
     ToolbarTab* testtab = toolbar->addTab("TestTab");
     ToolbarGroup* testgroup = testtab->addGroup("TestGroup");
-    ToolbarButton* testbutton = new ToolbarButton("TestButton", "", cb1);
-    testbutton->addCallback(cb2);
+    // Phase 4 PR-3 — wrap the LuaRef callbacks in ScriptCallback via
+    // the Lua adapter.  Behavior identical: the Lua function still gets
+    // invoked when the button is clicked.
+    ToolbarButton* testbutton = new ToolbarButton("TestButton", "",
+                                                   lc::lua::makeLuaCallback(cb1));
+    testbutton->addCallback(lc::lua::makeLuaCallback(cb2));
 
     EXPECT_FALSE(state["doesThisExist1"].get<bool>());
     EXPECT_FALSE(state["doesThisExist2"].get<bool>());
@@ -88,12 +96,15 @@ TEST(ToolbarButtonTest, CallbackTest) {
     EXPECT_TRUE(state["doesThisExist1"].get<bool>());
     EXPECT_TRUE(state["doesThisExist2"].get<bool>());
 
-    EXPECT_EQ(cb2, testbutton->getCallback(1));
+    // Phase 4 PR-3 — getCallback now returns ScriptCallback&, which we
+    // compare via operator== (LuaCallbackImpl::equals delegates to
+    // kaguya::LuaRef::operator==; same equality as before the refactor).
+    EXPECT_EQ(lc::lua::makeLuaCallback(cb2), testbutton->getCallback(1));
 
     ToolbarButton* testbutton2 = new ToolbarButton("TestButton2", "");
     testgroup->addButton(testbutton2);
-    testbutton2->addCallback("Callback1", cb3);
-    testbutton2->addCallback("Callback2", cb4);
+    testbutton2->addCallback("Callback1", lc::lua::makeLuaCallback(cb3));
+    testbutton2->addCallback("Callback2", lc::lua::makeLuaCallback(cb4));
 
     EXPECT_FALSE(state["doesThisExist3"].get<bool>());
     EXPECT_FALSE(state["doesThisExist4"].get<bool>());

@@ -2,13 +2,17 @@
 
 #include "toolbargroup.h"
 
+#include <utility>
+
 using namespace lc::ui::api;
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, bool _checkable, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon,
+                             lc::scripting::ScriptCallback callback,
+                             const char* tooltip, bool _checkable, QWidget* parent)
     :
     ToolbarButton(buttonLabel, icon, tooltip, _checkable, parent)
 {
-    callbacks.push_back(callback);
+    callbacks.push_back(std::move(callback));
 }
 
 ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, bool _checkable, QWidget* parent)
@@ -52,8 +56,8 @@ void ToolbarButton::setTooltip(const char* newToolTip) {
     this->setToolTip(newToolTip);
 }
 
-void ToolbarButton::addCallback(kaguya::LuaRef callback) {
-    callbacks.push_back(callback);
+void ToolbarButton::addCallback(lc::scripting::ScriptCallback callback) {
+    callbacks.push_back(std::move(callback));
 }
 
 void ToolbarButton::changeIcon(const char* icon) {
@@ -71,13 +75,13 @@ bool ToolbarButton::checkable() const {
     return _checkable;
 }
 
-kaguya::LuaRef& ToolbarButton::getCallback(int index) {
+lc::scripting::ScriptCallback& ToolbarButton::getCallback(int index) {
     return callbacks[index];
 }
 
-void ToolbarButton::addCallback(const char* cb_name, kaguya::LuaRef callback) {
+void ToolbarButton::addCallback(const char* cb_name, lc::scripting::ScriptCallback callback) {
     namedCallbacks[cb_name] = callbacks.size();
-    addCallback(callback);
+    addCallback(std::move(callback));
 }
 
 void ToolbarButton::removeCallback(const char* cb_name) {
@@ -87,13 +91,14 @@ void ToolbarButton::removeCallback(const char* cb_name) {
 
 void ToolbarButton::callbackCalled() {
     for (int i = 0; i < callbacks.size(); i++) {
-        callbacks[i]();
+        // Nil-safe: nil callback's invoke() is a graceful no-op returning Nil.
+        callbacks[i].invoke();
     }
 }
 
 void ToolbarButton::callbackCalledToggle(bool enabled) {
     for (int i = 0; i < callbacks.size(); i++) {
-        callbacks[i](enabled);
+        callbacks[i].call(enabled);
     }
 }
 
@@ -101,8 +106,11 @@ ToolbarButton* ToolbarButton::clone() {
     ToolbarButton* clonedButton = new ToolbarButton(_label.c_str(), "", this->toolTip().toStdString().c_str(), _checkable);
     clonedButton->setIcon(this->icon());
 
-    for (kaguya::LuaRef luaRef : callbacks) {
-        clonedButton->addCallback(luaRef);
+    // Copy callbacks by value — ScriptCallback holds a shared_ptr pImpl,
+    // so this is a refcount bump not a deep copy.  CustomizeToolbar
+    // drag/drop retest applies (retested manually per PR-3 sub-plan).
+    for (const auto& cb : callbacks) {
+        clonedButton->addCallback(cb);
     }
 
     for (auto namedCb : namedCallbacks) {

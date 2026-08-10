@@ -52,8 +52,10 @@ ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* butto
     return button;
 }
 
-ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* buttonIcon, kaguya::LuaRef callback) {
-    ToolbarButton* button = new ToolbarButton(buttonName, buttonIcon, callback);
+ToolbarButton* ToolbarGroup::addButton(const char* buttonName,
+                                       const char* buttonIcon,
+                                       lc::scripting::ScriptCallback callback) {
+    ToolbarButton* button = new ToolbarButton(buttonName, buttonIcon, std::move(callback));
     addButton(button);
     return button;
 }
