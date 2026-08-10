@@ -16,6 +16,10 @@
 // run_customizetoolbar / changeLayout dostrings need the LuaScript widget.
 #include "widgets/luascript.h"
 
+// Phase 4 PR-7 — Lua-globals resolver in registerOperationResolvers()
+// wraps kaguya::LuaRef via makeLuaObject.
+#include <scriptadapter/luacallback.h>
+
 using namespace lc::ui;
 
 MainWindow::MainWindow()
@@ -56,6 +60,22 @@ MainWindow::MainWindow()
 
     // open qt bridge and run lua scripts
     _luaInterface.initLua(this);
+
+    // Phase 4 PR-7 — register the default Lua-globals resolver so
+    // runOperationByName can find operation classes exposed as Lua
+    // globals (this is exactly what the killed `run_basic_operation`
+    // dostring resolved via `_G[name]`).  Phase 5 will PUSH the Python
+    // operation-registry resolver AFTER this — the runOperationByName
+    // loop walks the list in reverse so Python takes precedence.
+    registerOperationResolver([this](const std::string& name)
+                              -> lc::scripting::ScriptObject {
+        kaguya::State state(_luaInterface.luaState());
+        kaguya::LuaRef ref = state[name];
+        if (ref.isNilref() || ref.type() != LUA_TTABLE) {
+            return lc::scripting::ScriptObject{};
+        }
+        return lc::lua::makeLuaObject(std::move(ref));
+    });
 
     _toolbar.addSnapOptions();
 
@@ -143,55 +163,87 @@ void MainWindow::addOtherMenus() {
     }
 }
 
-void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method) {
+void MainWindow::runOperation(lc::scripting::ScriptObject operation,
+                              const std::string& init_method) {
+    // Phase 4 PR-7 — routed through ScriptObject / ScriptCallback.
+    //   * `finish_op` dostring gone → native Cancel-button lambda calling
+    //     `_luaInterface.finishOperation()` directly.
+    //   * `operation.call<LuaRef>()` → `operation.instantiate()`, which
+    //     preserves the instance's method-callable identity (unlike the
+    //     lossy Value round-trip that `call()` does).
+    //   * `op["_init_default"](op)` → `instance.callMethod("_init_default")`
+    //     (the Lua adapter prepends `self` implicitly — see luacallback.cpp).
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
     _cadMdiChild.viewer()->setOperationActive(true);
-    kaguya::State state(_luaInterface.luaState());
 
-    // if current operation had extra operation _toolbar icons, add them
-    if (!operation["operation_options"].isNilref())
-    {
-        if (operation_options.find(operation["command_line"].get<std::string>() + init_method) != operation_options.end()) {
-            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"].get<std::string>() + init_method];
-
-            for (auto op : options) {
-                // run operation which adds option icon to _toolbar
-                op();
-            }
-        } else if (operation_options.find(operation["command_line"]) != operation_options.end()) {
-            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
-
-            for (auto op : options) {
-                // run operation which adds option icon to _toolbar
-                op();
+    // Extra option toolbar icons.  Two-tier key: first "cmdLine+init",
+    // then plain "cmdLine".  Matches the legacy two-branch lookup.
+    if (operation.hasAttr("operation_options")) {
+        std::string cmdLine = operation.getAttr("command_line").asString();
+        auto it = operation_options.find(cmdLine + init_method);
+        if (it == operation_options.end()) {
+            it = operation_options.find(cmdLine);
+        }
+        if (it != operation_options.end()) {
+            for (auto& opt : it->second) {
+                // Fire the option: it adds an icon button to the toolbar.
+                opt.invoke();
             }
         }
     }
 
-    // add _toolbar cancel button
-    state.dostring("finish_op = function() finish_operation() end");
-    _toolbar.addButton("", ":/icons/quit.svg", "Current operation", state["finish_op"], "Cancel");
-    state["finish_op"] = nullptr;
+    // Cancel button — was `finish_op = function() finish_operation() end`
+    // dostring (killed in PR-7).  Native lambda calls
+    // `luaInterface.finishOperation()` directly.
+    _toolbar.addButton("", ":/icons/quit.svg", "Current operation",
+        lc::scripting::nativeCallback([this]() {
+            _luaInterface.finishOperation();
+        }),
+        "Cancel");
 
-    // call operation to run CreateOperations init method etc
-    _luaInterface.setOperation(operation.call<kaguya::LuaRef>());
-    kaguya::LuaRef op = _luaInterface.operation();
-    if (init_method == "") {
-        if (!op["_init_default"].isNilref()) {
-            op["_init_default"](op);
+    // Instantiate the operation class + run its init method.
+    lc::scripting::ScriptObject instance = operation.instantiate();
+    _luaInterface.setOperation(instance);
+    if (init_method.empty()) {
+        if (instance.hasAttr("_init_default")) {
+            instance.callMethod("_init_default");
         }
-    }
-    else {
-        op[init_method.c_str()](op);
+    } else {
+        instance.callMethod(init_method);
     }
 
-    _oldOperation = operation;
+    _oldOperation = std::move(operation);
     _oldOpInitMethod = init_method;
 }
 
-void MainWindow::addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options) {
-    operation_options[operation] = options;
+void MainWindow::runOperationByName(const std::string& name,
+                                    const std::string& init_method) {
+    // Phase 4 PR-7 — native replacement for the Lua-side
+    // `run_basic_operation(name, init_method)` dostring family (killed
+    // in operationloader.cpp).  Ordered resolver list: latest-registered
+    // wins so Python registry (phase 5) supersedes the Lua-globals
+    // resolver.
+    for (auto it = _operationResolvers.rbegin();
+         it != _operationResolvers.rend(); ++it) {
+        auto op = (*it)(name);
+        if (!op.isNil()) {
+            runOperation(std::move(op), init_method);
+            return;
+        }
+    }
+    // Unresolved name: silently no-op, matching Lua's dostring behavior
+    // where `run_basic_operation(nil)` produced no-op via LuaObjectImpl's
+    // nil-guard.  A future PR may surface a diagnostic through the CLI.
+}
+
+void MainWindow::registerOperationResolver(OperationResolver resolver) {
+    _operationResolvers.push_back(std::move(resolver));
+}
+
+void MainWindow::addOperationOptions(std::string operation,
+                                     std::vector<lc::scripting::ScriptCallback> options) {
+    operation_options[std::move(operation)] = std::move(options);
 }
 
 void MainWindow::operationFinished() {
@@ -269,7 +321,8 @@ void MainWindow::ConnectInputEvents()
 }
 
 void MainWindow::runLastOperation() {
-    if (!_oldOperation.isNilref()) {
+    // Phase 4 PR-7 — ScriptObject nil check.
+    if (!_oldOperation.isNil()) {
         runOperation(_oldOperation, _oldOpInitMethod);
     }
 }
@@ -730,10 +783,11 @@ void MainWindow::selectionChanged() {
 }
 
 std::string MainWindow::lastOperationName() {
-    return _oldOperation["name"].get<std::string>();
+    // Phase 4 PR-7 — was `_oldOperation["name"].get<std::string>()`.
+    return _oldOperation.getAttr("name").asString();
 }
 
-kaguya::LuaRef MainWindow::currentOperation() {
+lc::scripting::ScriptObject MainWindow::currentOperation() {
     return _luaInterface.operation();
 }
 

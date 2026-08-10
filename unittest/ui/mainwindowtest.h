@@ -88,21 +88,39 @@ public:
 
     bool testRunOperation()
     {
+        // Phase 4 PR-7 — exercise the two entrypoints separately:
+        //   * The Lua-side `mainWindow:runOperation(cls, init)` path
+        //     (guibridge wraps LuaRef→ScriptObject via makeLuaObject).
+        //   * The native `runOperationByName(name, init)` path added
+        //     in this PR.  Both must produce the same operation-instance
+        //     command_line, since they route through the same C++
+        //     runOperation body.
         kaguya::State state(_luaInterface.luaState());
         state.dostring("mainWindow:runOperation(LineOperations, '_init_p2')");
 
-        kaguya::LuaRef curOperation = _luaInterface.operation();
+        lc::scripting::ScriptObject curOperation = _luaInterface.operation();
+        bool checkCorrectOperation =
+            curOperation.getAttr("command_line").asString() == "LINE";
+        bool checkCurrentOperationGroupAdded =
+            (_toolbar.tabByName("Quick Access")->groupByName("Current operation") != nullptr);
 
-        bool checkCorrectOperation = curOperation["command_line"] == "LINE";
-        bool checkCurrentOperationGroupAdded = (_toolbar.tabByName("Quick Access")->groupByName("Current operation") != nullptr);
+        // Native entrypoint round-trip: resolve by name via the ordered
+        // resolver list.  Same expectation.
+        runOperationByName("LineOperations", "_init_p2");
+        lc::scripting::ScriptObject reResolved = _luaInterface.operation();
+        bool nativeEntryMatches =
+            reResolved.getAttr("command_line").asString() == "LINE";
 
-        return checkCorrectOperation && checkCurrentOperationGroupAdded;
+        return checkCorrectOperation
+            && checkCurrentOperationGroupAdded
+            && nativeEntryMatches;
     }
 
     bool testAddOperationOptions()
     {
-        std::vector<kaguya::LuaRef> ops;
-        ops.push_back(kaguya::LuaRef());
+        // Phase 4 PR-7 — options are neutral ScriptCallbacks.
+        std::vector<lc::scripting::ScriptCallback> ops;
+        ops.push_back(lc::scripting::ScriptCallback{});
 
         addOperationOptions("TEST", ops);
 

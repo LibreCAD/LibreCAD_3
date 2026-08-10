@@ -41,10 +41,23 @@ class ScriptObjectImpl {
 public:
     virtual ~ScriptObjectImpl() = default;
 
-    /// Invoke as a constructor / callable.  Returns whatever the underlying
-    /// callable produced (typically another ScriptObject; the Lua side
-    /// wraps in LuaRef).
+    /// Invoke as a callable and return the value the underlying callable
+    /// produced.  For a Lua table this is `_ref(args)` yielding a LuaRef
+    /// that the adapter reads back into ScriptValue via `fromLua`
+    /// (best-effort table→Map conversion).  Callers that need the OBJECT
+    /// identity of the returned instance (methods, `self` binding, etc.)
+    /// should use `instantiate` instead — it wraps the constructor's
+    /// return in another ScriptObjectImpl so runtime method dispatch
+    /// keeps working.
     virtual ScriptValue call(const std::vector<ScriptValue>& args) = 0;
+
+    /// Invoke as a constructor and return a fresh ScriptObject wrapping
+    /// the returned instance.  This is what MainWindow::runOperation uses
+    /// to create an operation instance from an operation-class object —
+    /// the instance still has method-callable identity (unlike `call`,
+    /// which lossy-converts a table to a Map).  Phase 4 PR-7 add.
+    virtual std::shared_ptr<ScriptObjectImpl>
+    instantiate(const std::vector<ScriptValue>& args) = 0;
 
     /// Read a named attribute.  Returns Nil for absent (matches Lua's
     /// `t[k]` on a missing key — no distinction between nil and absent).
@@ -94,6 +107,12 @@ public:
 
     ScriptValue call(const std::vector<ScriptValue>& args = {}) const {
         return _impl ? _impl->call(args) : ScriptValue{};
+    }
+
+    /// Constructor-invocation returning a fresh, identity-preserved
+    /// ScriptObject.  Nil-on-nil.  Phase 4 PR-7 add.
+    ScriptObject instantiate(const std::vector<ScriptValue>& args = {}) const {
+        return _impl ? ScriptObject(_impl->instantiate(args)) : ScriptObject{};
     }
 
     ScriptValue getAttr(const std::string& name) const {

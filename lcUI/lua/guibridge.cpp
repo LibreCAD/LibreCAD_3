@@ -97,8 +97,21 @@ void addLCBindings(lua_State *L) {
 
     state["lc"]["LuaInterface"].setClass(kaguya::UserdataMetatable<LuaInterface>()
                                          .addFunction("pluginList", &LuaInterface::pluginList)
+                                         // Phase 4 PR-7 — operation() / setOperation now
+                                         // take/return lc::scripting::ScriptObject.  No
+                                         // active Lua-side caller reads or writes these
+                                         // (only the killed operationloader dostrings did
+                                         // — verified by grep against lcUILua/actions and
+                                         // lcUILua/plugins*).  The bindings are retained
+                                         // for future Lua scripts that want to introspect
+                                         // the current operation from Lua; kaguya passes
+                                         // the ScriptObject as opaque userdata that Lua
+                                         // scripts can only forward, not call methods on.
                                          .addFunction("operation", &LuaInterface::operation)
-                                         .addFunction("setOperation", &LuaInterface::setOperation)
+                                         .addStaticFunction("setOperation",
+                                             [](LuaInterface& self, kaguya::LuaRef op) {
+                                                 self.setOperation(lc::lua::makeLuaObject(std::move(op)));
+                                             })
                                          .addFunction("registerEvent", &LuaInterface::registerEvent)
                                          .addFunction("deleteEvent", &LuaInterface::deleteEvent)
                                          .addFunction("triggerEvent", &LuaInterface::triggerEvent)
@@ -237,9 +250,20 @@ void addLCBindings(lua_State *L) {
                                        .addFunction("pasteEvent", &lc::ui::MainWindow::pasteEvent)
                                        .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
                                        .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
-    .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) {
-        self.runOperation(operation);
-    })
+    // Phase 4 PR-7 — runOperation now takes lc::scripting::ScriptObject.
+    // Lua-side callers still send a LuaRef (the operation class table);
+    // wrap via makeLuaObject.  Kaguya's overload resolution handles 1-arg
+    // and 2-arg call shapes.
+    .addOverloadedFunctions("runOperation",
+        [](lc::ui::MainWindow& self, kaguya::LuaRef operation, const std::string& init_method) {
+            self.runOperation(lc::lua::makeLuaObject(std::move(operation)), init_method);
+        },
+        [](lc::ui::MainWindow& self, kaguya::LuaRef operation) {
+            self.runOperation(lc::lua::makeLuaObject(std::move(operation)));
+        })
+    // Phase 4 PR-7 — native `runOperationByName` entrypoint the killed
+    // dostring codegen used to synthesize.
+    .addFunction("runOperationByName", &lc::ui::MainWindow::runOperationByName)
                                       );
 
     state["lc"]["PropertyEditor"].setClass(kaguya::UserdataMetatable<lc::ui::PropertyEditor>()

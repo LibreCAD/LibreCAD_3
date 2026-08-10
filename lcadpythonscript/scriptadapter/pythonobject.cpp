@@ -93,13 +93,26 @@ public:
     lcs::ScriptValue call(const std::vector<lcs::ScriptValue>& args) override {
         py::gil_scoped_acquire gil;
         try {
-            py::tuple pyArgs(args.size());
-            for (std::size_t i = 0; i < args.size(); ++i) {
-                pyArgs[i] = toPyLocked(args[i]);
-            }
-            return fromPyLocked(_obj(*pyArgs));
+            return fromPyLocked(callRawLocked(args));
         } catch (py::error_already_set& /*e*/) {
             return lcs::ScriptValue{};
+        }
+    }
+
+    std::shared_ptr<lcs::ScriptObjectImpl>
+    instantiate(const std::vector<lcs::ScriptValue>& args) override {
+        // Phase 4 PR-7: constructor-invocation returning a fresh
+        // PythonObjectImpl.  Phase 5's Python operation classes will use
+        // this to hand MainWindow::runOperation a real Python instance
+        // whose methods stay callable — the Value round-trip that
+        // `call` does would drop the Python identity.
+        py::gil_scoped_acquire gil;
+        try {
+            py::object result = callRawLocked(args);
+            if (result.is_none()) return nullptr;
+            return std::make_shared<PythonObjectImpl>(std::move(result));
+        } catch (py::error_already_set& /*e*/) {
+            return nullptr;
         }
     }
 
@@ -162,6 +175,17 @@ public:
     }
 
 private:
+    // Requires the GIL held by the caller.  Packs args into a py::tuple
+    // and invokes `_obj(*args)`.  Both `call` and `instantiate` route
+    // through this so the packing / call site lives in one place.
+    py::object callRawLocked(const std::vector<lcs::ScriptValue>& args) {
+        py::tuple pyArgs(args.size());
+        for (std::size_t i = 0; i < args.size(); ++i) {
+            pyArgs[i] = toPyLocked(args[i]);
+        }
+        return _obj(*pyArgs);
+    }
+
     py::object _obj;
 };
 

@@ -100,17 +100,20 @@ FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, cons
     return fopen(path.toStdString().c_str(), mode);
 }
 
-kaguya::LuaRef LuaInterface::operation() {
+lc::scripting::ScriptObject LuaInterface::operation() {
     return _operation;
 }
 
-void LuaInterface::setOperation(kaguya::LuaRef operation) {
+void LuaInterface::setOperation(lc::scripting::ScriptObject operation) {
     _operation = std::move(operation);
 }
 
 void LuaInterface::finishOperation() {
-    if(!_operation.isNilref() && !_operation["close"].isNilref()) {
-        _operation["close"](_operation);
+    // Phase 4 PR-7: was `_operation["close"](_operation)`.  ScriptObject's
+    // callMethod prepends `self` automatically for the Lua adapter, so
+    // this matches the Lua `op:close()` call shape exactly.
+    if (!_operation.isNil() && _operation.hasAttr("close")) {
+        _operation.callMethod("close");
     }
 }
 
@@ -143,8 +146,14 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
 }
 
 void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
-    // register common functions i.e. run_basic_operation and message
     _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
+    // Phase 4 PR-7 — the `run_basic_operation` dostring is kept as a
+    // thin bridge: it forwards to `mainWindow:runOperation(cls, init)`
+    // (which the guibridge overload wraps LuaRef→ScriptObject via
+    // `makeLuaObject`).  The former codegen callers in operationloader.cpp
+    // are killed in this PR; ContextMenuManager's 19 contextmenu_op
+    // dostrings still route through this shim until PR-8 replaces them
+    // with native lambdas calling `runOperationByName`.
     _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
     _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
     _L.dostring("operationFinished = function() mainWindow:operationFinished() end");

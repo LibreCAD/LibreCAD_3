@@ -21,6 +21,10 @@ extern "C"
 #include <kaguya/kaguya.hpp>
 #include "lua/guibridge.h"
 
+// Phase 4 PR-7 — _operation stored as neutral ScriptObject.  Adapters
+// materialize into the runtime instance (Lua LuaRef or Python object).
+#include <lcscripting/scriptobject.h>
+
 namespace lc {
 namespace ui {
 /**
@@ -67,9 +71,19 @@ public:
 
     static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
-    kaguya::LuaRef operation();
+    /**
+     * \brief Return the current operation instance (as a neutral
+     * ScriptObject).  Phase 4 PR-7: was `kaguya::LuaRef`; adapters wrap
+     * the underlying runtime object so the type stays language-neutral.
+     */
+    lc::scripting::ScriptObject operation();
 
-    void setOperation(kaguya::LuaRef);
+    /**
+     * \brief Set the current operation instance.  Phase 4 PR-7: takes
+     * ScriptObject (was `kaguya::LuaRef`).  Lua-side callers still send
+     * LuaRef and get wrapped at the guibridge.
+     */
+    void setOperation(lc::scripting::ScriptObject);
 
     void finishOperation();
 
@@ -88,7 +102,7 @@ private:
 private:
     kaguya::State _L;
     lc::lua::PluginManager _pluginManager;
-    kaguya::LuaRef _operation;
+    lc::scripting::ScriptObject _operation;
     std::map<std::string, std::vector<kaguya::LuaRef>> _events;
 };
 }

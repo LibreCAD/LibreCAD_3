@@ -1,4 +1,10 @@
 #include "contextmenumanager.h"
+
+// Phase 4 PR-7 — currentOperation() now returns lc::scripting::ScriptObject;
+// operationContextCommands accesses it via getAttr/setAttr.  Rest of the
+// ContextMenuManager remains in kaguya::LuaRef land until PR-8 lands.
+#include <lcscripting/scriptcallback.h>
+#include <lcscripting/scriptobject.h>
 #include "widgets/guiAPI/menuitem.h"
 
 using namespace lc::ui;
@@ -242,33 +248,55 @@ void ContextMenuManager::addSnapCommands(api::Menu* menu) {
 }
 
 void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
+    // Phase 4 PR-7 — currentOperation() now returns ScriptObject.  This
+    // function is the minimum C++-side site my type migration must fix
+    // to keep the build compiling; the surrounding dostring-heavy
+    // ContextMenuManager cleanup remains PR-8 territory (matches the
+    // phase-4 sub-plan's PR-8 scope description exactly).
     std::string entityName = _mainWindow->lastOperationName();
-    kaguya::LuaRef currentOp = _mainWindow->currentOperation();
+    lc::scripting::ScriptObject currentOp = _mainWindow->currentOperation();
 
     if (_transitionMap.find(entityName) != _transitionMap.end()) {
-        kaguya::LuaRef stepName = currentOp["step"];
+        lc::scripting::ScriptValue stepName = currentOp.getAttr("step");
 
-        if (!stepName.isNilref()) {
-            std::string step = stepName.get<std::string>();
+        if (!stepName.isNil()) {
+            std::string step = stepName.asString();
 
             if (_transitionMap[entityName].find(step) != _transitionMap[entityName].end()) {
                 std::vector<std::string> transitions = _transitionMap[entityName][step];
 
                 for (std::string transition : transitions) {
                     api::MenuItem* menuItem = new api::MenuItem(cleanTransitionName(transition).c_str());
-                    _L.dostring("contextmenu_op = function() mainWindow:currentOperation().step = '" + transition + "' end");
-                    menuItem->addCallback(_L["contextmenu_op"]);
+                    // Phase 4 PR-7 — replaces `contextmenu_op = function()
+                    // mainWindow:currentOperation().step = '<transition>' end`
+                    // dostring codegen.  Native lambda captures the
+                    // transition name and sets step via ScriptObject's
+                    // setAttr on the CURRENT operation at click time.
+                    MainWindow* self = _mainWindow;
+                    menuItem->addCallback(
+                        lc::scripting::nativeCallback([self, transition]() {
+                            lc::scripting::ScriptObject op = self->currentOperation();
+                            if (!op.isNil()) {
+                                op.setAttr("step", lc::scripting::ScriptValue(transition));
+                            }
+                        }));
                     menu->addItem(menuItem);
                 }
             }
         }
     }
 
-    if (!currentOp.isNilref()) {
-        kaguya::LuaRef otherOptions = currentOp["contextMenuOptions"];
-        if (!otherOptions.isNilref()) {
-            otherOptions(currentOp, menu);
-        }
+    // Phase 4 PR-7 — `contextMenuOptions(op, menu)` was called with the
+    // Lua-side menu table (LuaRef).  The neutral form uses ScriptObject's
+    // callMethod which prepends `self` (op) automatically; but passing
+    // the menu as OpaquePtr requires a per-tag encoder that PR-8 adds
+    // together with the rest of ContextMenuManager's neutral rewrite.
+    // For now, this method is a no-op on the "otherOptions" branch —
+    // matches the sub-plan's PR-8 blocker note and preserves the read
+    // guard.  TODO: PR-8 wires OpaquePtr(menu) through toLuaLocked's
+    // registered materializer.
+    if (!currentOp.isNil()) {
+        (void) currentOp;
     }
 }
 

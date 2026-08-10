@@ -230,22 +230,24 @@ public:
     const char* runtime() const override { return "lua"; }
 
     lcs::ScriptValue call(const std::vector<lcs::ScriptValue>& args) override {
-        if (_ref.isNilref()) return lcs::ScriptValue{};
-        kaguya::State state(_ref.state());
-        std::vector<kaguya::LuaRef> lua_args;
-        for (const auto& a : args) lua_args.push_back(toLuaLocked(state, a));
-        try {
-            kaguya::LuaRef result;
-            switch (lua_args.size()) {
-            case 0: result = _ref(); break;
-            case 1: result = _ref(lua_args[0]); break;
-            case 2: result = _ref(lua_args[0], lua_args[1]); break;
-            default: result = _ref(lua_args); break;
-            }
-            return fromLuaLocked(result);
-        } catch (const std::exception& /*e*/) {
-            return lcs::ScriptValue{};
-        }
+        // Fires the callable and returns a *Value* view of the result.
+        // For identity-preserved constructor invocation use `instantiate`
+        // instead.
+        kaguya::LuaRef result = callRaw(args);
+        return result.isNilref() ? lcs::ScriptValue{} : fromLuaLocked(result);
+    }
+
+    std::shared_ptr<lcs::ScriptObjectImpl>
+    instantiate(const std::vector<lcs::ScriptValue>& args) override {
+        // Phase 4 PR-7: constructor invocation that keeps the OBJECT
+        // identity of the returned LuaRef.  Used by
+        // MainWindow::runOperation to create the operation instance from
+        // the operation-class object.  The returned impl still supports
+        // callMethod / getAttr / setAttr the way the LuaRef instance does
+        // — the Value round-trip that `call` does would drop that.
+        kaguya::LuaRef result = callRaw(args);
+        if (result.isNilref()) return nullptr;
+        return std::make_shared<LuaObjectImpl>(std::move(result));
     }
 
     lcs::ScriptValue getAttr(const std::string& name) override {
@@ -304,6 +306,26 @@ public:
     }
 
 private:
+    // Common Lua-side callable invocation; returns the raw LuaRef result
+    // (may be nil).  Both `call` and `instantiate` route through here so
+    // the argument packing / exception handling stays in one place.
+    kaguya::LuaRef callRaw(const std::vector<lcs::ScriptValue>& args) {
+        if (_ref.isNilref()) return kaguya::LuaRef{};
+        kaguya::State state(_ref.state());
+        std::vector<kaguya::LuaRef> lua_args;
+        for (const auto& a : args) lua_args.push_back(toLuaLocked(state, a));
+        try {
+            switch (lua_args.size()) {
+            case 0: return _ref();
+            case 1: return _ref(lua_args[0]);
+            case 2: return _ref(lua_args[0], lua_args[1]);
+            default: return _ref(lua_args);
+            }
+        } catch (const std::exception& /*e*/) {
+            return kaguya::LuaRef{};
+        }
+    }
+
     kaguya::LuaRef _ref;
 };
 

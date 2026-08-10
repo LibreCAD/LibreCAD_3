@@ -5,6 +5,11 @@
 #include "widgets/toolbar.h"
 #include "managers/contextmenumanager.h"
 
+// Phase 4 PR-7 — 8 dostring codegen sites killed; native lambdas call
+// MainWindow::runOperationByName + currentOperation.
+#include <lcscripting/scriptcallback.h>
+#include <lcscripting/scriptobject.h>
+
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
@@ -223,11 +228,17 @@ void OperationLoader::initializeOperation(const std::string& vkey)
 
 
 void OperationLoader::addOperationCommandLine(const std::string& vkey, const std::string& opkey) {
+    // Phase 4 PR-7 — 3 `run_op = function() run_basic_operation(...) end`
+    // dostrings killed; native lambdas capture `vkey` and (optionally) a
+    // computed init-method string.
     widgets::CliCommand* cliCommand = static_cast<MainWindow*>(qmainWindow)->cliCommand();
+    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
 
     if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_STRING) {
-        _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-        cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+        cliCommand->addCommand(_L[vkey][opkey],
+            lc::scripting::nativeCallback([mWindow, vkey]() {
+                mWindow->runOperationByName(vkey);
+            }));
     }
 
     if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_TABLE) {
@@ -242,36 +253,52 @@ void OperationLoader::addOperationCommandLine(const std::string& vkey, const std
             }) == key.end())
             {
                 // connect to default init function
-                _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>().c_str(), _L["run_op"]);
+                cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>().c_str(),
+                    lc::scripting::nativeCallback([mWindow, vkey]() {
+                        mWindow->runOperationByName(vkey);
+                    }));
             }
             else {
-                // connect to provided init function
-                _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + _L[vkey][opkey][commandKey].get<std::string>() + "') end");
-                cliCommand->addCommand(key.c_str(), _L["run_op"]);
+                // connect to provided init function.  Suffix comes from
+                // the Lua-side operation-class table entry — precompute
+                // "_init_<suffix>" so the lambda holds a plain string.
+                std::string initMethod = "_init_" + _L[vkey][opkey][commandKey].get<std::string>();
+                cliCommand->addCommand(key.c_str(),
+                    lc::scripting::nativeCallback([mWindow, vkey, initMethod]() {
+                        mWindow->runOperationByName(vkey, initMethod);
+                    }));
             }
         }
     }
 }
 
 void OperationLoader::addOperationMenuAction(const std::string& vkey, const std::string& opkey) {
+    // Phase 4 PR-7 — 2 `run_op` dostrings killed.
     MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
     std::map<std::string, std::string> map = _L[vkey][opkey];
 
     for (auto element : map)
     {
         if (element.first == "default") {
-            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+            mWindow->connectMenuItem(element.second,
+                lc::scripting::nativeCallback([mWindow, vkey]() {
+                    mWindow->runOperationByName(vkey);
+                }));
         }
         else {
-            _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
+            std::string initMethod = "_init_" + element.first;
+            mWindow->connectMenuItem(element.second,
+                lc::scripting::nativeCallback([mWindow, vkey, initMethod]() {
+                    mWindow->runOperationByName(vkey, initMethod);
+                }));
         }
-        mWindow->connectMenuItem(element.second, _L["run_op"]);
     }
 }
 
 void OperationLoader::addOperationIcon(const std::string& vkey, const std::string& opkey) {
+    // Phase 4 PR-7 — 1 `run_op` dostring killed.
     widgets::Toolbar* toolbar = static_cast<MainWindow*>(qmainWindow)->toolbar();
+    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
     std::string icon = _L[vkey][opkey].get<std::string>();
     std::string tooltip;
 
@@ -284,49 +311,79 @@ void OperationLoader::addOperationIcon(const std::string& vkey, const std::strin
     }
 
     std::string iconPath = ":/icons/" + icon;
-    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
 
-    toolbar->addButton(vkey.c_str(), iconPath.c_str(), groupNames[vkey].c_str(), _L["run_op"], tooltip.c_str());
+    toolbar->addButton(vkey.c_str(), iconPath.c_str(), groupNames[vkey].c_str(),
+        lc::scripting::nativeCallback([mWindow, vkey]() {
+            mWindow->runOperationByName(vkey);
+        }),
+        tooltip.c_str());
 }
 
 void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const std::string& opkey) {
+    // Phase 4 PR-7 — 2 `operation_op` dostrings killed.  Each toolbar-
+    // option button becomes a native ScriptCallback capturing:
+    //   * the icon path (per-button),
+    //   * the option label (per-button),
+    //   * the method name to invoke on the CURRENT operation instance
+    //     (looked up at click time via MainWindow::currentOperation()).
     MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
     std::map<std::string, kaguya::LuaRef> options = _L[vkey][opkey];
 
-    std::vector<kaguya::LuaRef> optionsList;
+    // Helper: build a ScriptCallback that, when fired, spawns a toolbar
+    // Cancel-group button whose click callback in turn invokes the named
+    // method on the current operation.  This is the neutral analog of
+    // the legacy `mainWindow:toolbar():addButton(..., function()
+    // luaInterface:operation():<action>() end, ...)`  double-nested
+    // closure.
+    auto makeOptionCallback = [mWindow](std::string iconPath,
+                                        std::string label,
+                                        std::string action) {
+        return lc::scripting::nativeCallback([mWindow, iconPath, label, action]() {
+            mWindow->toolbar()->addButton(
+                "cancel", iconPath.c_str(), "Current operation",
+                lc::scripting::nativeCallback([mWindow, action]() {
+                    lc::scripting::ScriptObject op = mWindow->currentOperation();
+                    if (!op.isNil()) op.callMethod(action);
+                }),
+                label.c_str());
+        });
+    };
+
+    std::vector<lc::scripting::ScriptCallback> optionsList;
     for (auto element : options) {
         // operation_options for init_method
         if (element.first.find("_init") < element.first.size()) {
             std::map<std::string, kaguya::LuaRef> optionsInit = element.second;
 
-            std::vector<kaguya::LuaRef> optionsInitList;
+            std::vector<lc::scripting::ScriptCallback> optionsInitList;
             for (auto elementInit : optionsInit) {
                 std::map<std::string, std::string> optionInit = elementInit.second;
-
-                std::string action = "operation_op = function() mainWindow:toolbar():addButton('cancel', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
-                _L.dostring(action);
-                optionsInitList.push_back(_L["operation_op"]);
+                std::string iconPath = ":/icons/" + optionInit["icon"];
+                optionsInitList.push_back(
+                    makeOptionCallback(iconPath, elementInit.first, optionInit["action"]));
             }
 
             // LINEOPERATIONS_init_pal - example key for operation options list
-            mWindow->addOperationOptions(_L[vkey]["command_line"].get<std::string>() + element.first, optionsInitList);
+            mWindow->addOperationOptions(
+                _L[vkey]["command_line"].get<std::string>() + element.first,
+                std::move(optionsInitList));
         }
         else
         {
             // default operation_options
             std::map<std::string, std::string> option = element.second;
-
-            std::string action = "operation_op = function() mainWindow:toolbar():addButton('cancel', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
-            _L.dostring(action);
-            optionsList.push_back(_L["operation_op"]);
+            std::string iconPath = ":/icons/" + option["icon"];
+            optionsList.push_back(
+                makeOptionCallback(iconPath, element.first, option["action"]));
         }
     }
 
     // provide options list to mainWindow so it can run necessary function on runOperation
     if (optionsList.size() > 0) {
-        mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
+        mWindow->addOperationOptions(
+            _L[vkey]["command_line"].get<std::string>(),
+            std::move(optionsList));
     }
-    _L["operation_op"] = nullptr;
 }
 
 void OperationLoader::addContextMenuOperations(const std::string& vkey) {
