@@ -3,9 +3,9 @@
 #include <QObject>
 #include <QCheckBox>
 
+// Phase 4 PR-10 — kaguya include retired; checkboxgui uses only
+// ScriptCallback (transitively via inputgui.h).
 #include "inputgui.h"
-
-#include <kaguya/kaguya.hpp>
 
 namespace lc {
 namespace ui {

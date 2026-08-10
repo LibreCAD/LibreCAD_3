@@ -142,8 +142,7 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
-            #ui/testluaui.cpp
-            #ui/testluaoperations.cpp
+            # Phase 4 PR-10 — dead LuaIntf-era test files retired.
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp

@@ -95,7 +95,11 @@ void addLCBindings(lua_State *L) {
     .addFunction("openFile", &CadMdiChild::openFile)
     .addFunction("selection", &CadMdiChild::selection)
     .addFunction("newDocument", &CadMdiChild::newDocument)
-    .addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
+    // Phase 4 PR-10 — setDestroyCallback takes ScriptCallback; wrap LuaRef.
+    .addStaticFunction("setDestroyCallback",
+        [](CadMdiChild& self, kaguya::LuaRef cb) {
+            self.setDestroyCallback(lc::lua::makeLuaCallback(std::move(cb)));
+        })
     .addFunction("tempEntities", &CadMdiChild::tempEntities)
     .addFunction("undoManager", &CadMdiChild::undoManager)
     .addFunction("viewer", &CadMdiChild::viewer)

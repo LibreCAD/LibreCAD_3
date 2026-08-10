@@ -20,7 +20,10 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-10 — _destroyCallback stored as neutral ScriptCallback;
+// kaguya include removed from this header (the Lua state header is
+// still needed for members that use lua_State*).
+#include <lcscripting/scriptcallback.h>
 
 namespace lc {
 namespace ui {
@@ -45,10 +48,12 @@ public:
     bool openFile();
 
     /**
-     * \brief Give function to call when window is destroyed
-     * \param callback Lua function
+     * \brief Give function to call when window is destroyed.
+     * Phase 4 PR-10: takes ScriptCallback; guibridge wraps Lua-side
+     * LuaRef callers via makeLuaCallback.  The callback fires in
+     * ~CadMdiChild with zero args.
      */
-    void setDestroyCallback(kaguya::LuaRef destroyCallback);
+    void setDestroyCallback(lc::scripting::ScriptCallback destroyCallback);
 
     void keyPressEvent(QKeyEvent* event);
     lc::meta::Block_CSPtr activeViewport() const {
@@ -131,7 +136,7 @@ private:
     std::string _filename;
     lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
-    kaguya::LuaRef _destroyCallback;
+    lc::scripting::ScriptCallback _destroyCallback;
 
     std::shared_ptr<lc::storage::Document> _document;
 

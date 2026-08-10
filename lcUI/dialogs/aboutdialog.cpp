@@ -142,12 +142,15 @@ QString getLCADInfo(outputConfig& oc) {
 
 //Ext info
 QString getLuaVersion() {
+    // Phase 4 PR-10 — was a throwaway-state luaL_dostring that defined
+    // a `version()` global just to read `_VERSION`.  `_VERSION` is
+    // already a top-level Lua global once luaL_openlibs runs, so we
+    // can read it directly with lua_getglobal.  Kills the last stray
+    // dostring in the codebase (PR-10 sweep target).
     lua_State* L = luaL_newstate();
-    luaL_openlibs(L);//add function to return version, can this be done directly?
-    luaL_dostring(L,"function version() return _VERSION end");
-    lua_getglobal(L, "version");
-    lua_call(L, 0, 1);
-    QString lua_version = lua_tostring(L, -1);;
+    luaL_openlibs(L);
+    lua_getglobal(L, "_VERSION");
+    QString lua_version = lua_tostring(L, -1);
     lua_pop(L, 1);
     lua_close(L);
     return lua_version;
