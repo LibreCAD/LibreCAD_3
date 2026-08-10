@@ -85,10 +85,12 @@ public:
     void setListType(const std::string& listTypeStr);
 
     /**
-    * \brief Set callback for all items in the list
-    * \param LuaRef lua callback
+    * \brief Set callback for all items in the list (phase 4 PR-5c:
+    * neutral ScriptCallback storage; each child widget's addCallback
+    * / addFinishCallback receives a copy — pImpl is shared_ptr so
+    * copies alias the underlying callable).
     */
-    void addCallbackToAll(kaguya::LuaRef cb);
+    void addCallbackToAll(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Add given coordinates as list items
@@ -153,7 +155,7 @@ private:
     std::set<std::string> _addedKeys;
     lc::ui::MainWindow* mainWindow;
     ListType _listType;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
     unsigned int itemIdCount;
     lc::entity::CADEntity_CSPtr _selectedCoordinate;
 };

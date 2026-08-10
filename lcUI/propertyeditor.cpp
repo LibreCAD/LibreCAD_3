@@ -355,7 +355,9 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 listgui->setValue(coords);
 
                 state.dostring("vectorPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                listgui->addCallbackToAll(state["vectorPropertyCalled"]);
+                // Phase 4 PR-5c — ListGUI::addCallbackToAll takes ScriptCallback.
+                // The dostring codegen + shim wrap is killed in PR-6.
+                listgui->addCallbackToAll(lc::lua::makeLuaCallback(state["vectorPropertyCalled"]));
                 addWidget(key, listgui);
                 state["vectorPropertyCalled"] = nullptr;
             }
@@ -383,7 +385,9 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         listgui->setValue(lwPolylineBuilder.getVertices());
 
         state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-        listgui->addCallbackToAll(state["customPropertyCalled"]);
+        // Phase 4 PR-5c — ListGUI::addCallbackToAll takes ScriptCallback.
+        // The dostring codegen + shim wrap is killed in PR-6.
+        listgui->addCallbackToAll(lc::lua::makeLuaCallback(state["customPropertyCalled"]));
         addWidget(key, listgui);
         state["customPropertyCalled"] = nullptr;
 

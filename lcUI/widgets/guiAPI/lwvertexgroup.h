@@ -27,10 +27,11 @@ public:
     LWVertexGroup(std::string label, QWidget* parent = nullptr);
 
     /**
-    * \brief Add lua callback
-    * \param LuaRef callback
+    * \brief Add neutral callback (phase 4 PR-5c) — forwarded verbatim
+    * to coordgui/startWidth/endWidth (each already accepts
+    * ScriptCallback per PR-5a).  Copies of `cb` share the pImpl.
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Set main window i.e. enable coordinate selection
@@ -39,8 +40,8 @@ public:
     void setMainWindow(lc::ui::MainWindow* mainWindowIn);
 
     /**
-    * \brief Store the value in the lua table
-    * \param LuaRef to table
+    * \brief Store the vertex-group values into a neutral Map (nested
+    * shape mirroring the ListGUI aliasing invariant).
     */
     void getValue(lc::scripting::Map& map) override;
 

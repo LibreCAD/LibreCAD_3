@@ -8,7 +8,7 @@ LWVertexGroup::LWVertexGroup(std::string label, QWidget* parent)
 {
 }
 
-void LWVertexGroup::addCallback(kaguya::LuaRef cb) {
+void LWVertexGroup::addCallback(lc::scripting::ScriptCallback cb) {
     coordgui->addFinishCallback(cb);
     startWidth->addCallback(cb);
     endWidth->addCallback(cb);
