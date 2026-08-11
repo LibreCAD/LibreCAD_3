@@ -25,7 +25,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp' ]
+        # Phase 6 PR-6.6 — added `python` to the matrix now that lcUIPy/
+        # ships real .py sources (Python operations base + gear plugin
+        # + point/remove proof ports).  CodeQL Python analysis catches
+        # things like unbound-attribute reads and register/deregister
+        # symmetry issues that C++-side EventBus tests can't see (the
+        # exact bug class that shipped as PR-5.7's double-init and
+        # PR-5.5's args.asMap regression — Python-side static analysis
+        # would have surfaced both).
+        language: [ 'cpp', 'python' ]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Use only 'java' to analyze code written in Java, Kotlin or both
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
@@ -56,6 +64,11 @@ jobs:
         sudo rm -rf /usr/local/lib/android
 
     - name: Building
+      # Phase 6 PR-6.6 — skip the C++ build step for the `python` matrix
+      # leg: CodeQL's Python analyzer scans sources directly, no build
+      # needed.  Saves ~5 min per Python-leg run and avoids
+      # accidental build-failure noise blocking Python findings.
+      if: matrix.language == 'cpp'
       run: |
         # Belt-and-suspenders: checkout already fetched submodules, but
         # re-run --init --recursive so any subsequently-added path is safe.
