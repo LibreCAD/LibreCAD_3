@@ -44,6 +44,12 @@
 #include <lcscripting/scriptcallback.h>
 #include <lcscripting/scriptvalue.h>
 
+// Phase 6 PR-6.1 sub-piece 2a — ScriptCustomEntity + CustomEntityBuilder
+// direct-dispatch tests.  Exercises the 6 script-defined behavior slots
+// after the LuaRef→ScriptCallback neutralization.
+#include <builders/customentity.h>
+#include <primitive/customentity.h>
+
 #include <managers/luacustomentitymanager.h>
 #include <scriptadapter/luacallback.h>
 
@@ -302,6 +308,168 @@ TEST(LuaCustomEntityManager, ReplayPathPreservesConcreteType) {
 
     // Cleanup.
     mgr.removePlugins();
+}
+
+// -----------------------------------------------------------------------------
+// Test 4 — Phase 6 PR-6.1 sub-piece 2a: ScriptCustomEntity's OWN
+// dispatch preserves concrete type.  Constructs a ScriptCustomEntity
+// via CustomEntityBuilder with a Lua-side snap callback, invokes
+// snapPoints(...) directly on the entity, and asserts:
+//   (a) the Lua callback fired (via a hit-counter global)
+//   (b) inside the callback, `insert:position()` returned real
+//       coordinates (proves the userdata got Insert's metatable, not
+//       CADEntity's — same lesson as sub-piece 1's fixup applied to
+//       every one of the 6 script-defined behavior slots)
+//
+// Bug scenario this test catches: if the sub-piece 2a refactor lost
+// the `unwrapLuaCallback` fast path, the Lua-side `insert:position()`
+// would return nil and the coordinate assertions would fail.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, SnapDispatchPreservesConcreteInsertType) {
+    // Register a native "no-op" plugin so the manager doesn't complain
+    // about a missing plugin name when we build our custom entity via
+    // the builder (the builder itself doesn't require a registration,
+    // but keeping state clean avoids cross-test contamination).
+    auto& mgr = lc::lua::LuaCustomEntityManager::getInstance();
+    mgr.removePlugins();
+
+    // Build a real Lua state and register Insert::position + Coordinate
+    // accessors so the Lua-side callback can call them.
+    kaguya::State state;
+    state["_snap_hits"] = 0;
+    state["_snap_x"] = 0.0;
+    state["_snap_y"] = 0.0;
+
+    state["lc"] = kaguya::NewTable();
+    state["lc"]["entity"] = kaguya::NewTable();
+    state["lc"]["entity"]["Insert"].setClass(
+        kaguya::UserdataMetatable<lc::entity::Insert>()
+            .addFunction("position", &lc::entity::Insert::position));
+
+    state["lc"]["geo"] = kaguya::NewTable();
+    state["lc"]["geo"]["Coordinate"].setClass(
+        kaguya::UserdataMetatable<lc::geo::Coordinate>()
+            .addFunction("x", &lc::geo::Coordinate::x)
+            .addFunction("y", &lc::geo::Coordinate::y)
+            .addFunction("z", &lc::geo::Coordinate::z));
+
+    // EntityCoordinate return type — the snap callback must return
+    // a list of these.  Also bind SimpleSnapConstrain so the callback
+    // signature matches.
+    state["lc"]["EntityCoordinate"].setClass(
+        kaguya::UserdataMetatable<lc::EntityCoordinate>()
+            .setConstructors<lc::EntityCoordinate(const lc::geo::Coordinate&, int)>());
+    state["lc"]["SimpleSnapConstrain"].setClass(
+        kaguya::UserdataMetatable<lc::SimpleSnapConstrain>());
+
+    // The Lua callback that snapPoints will dispatch to.  It calls
+    // `insert:position()` — needs Insert's metatable — and returns a
+    // single EntityCoordinate at the insert's position.
+    state.dostring(R"lua(
+function my_snap(insert, coord, constrain, min_dist, max_pts)
+    _snap_hits = _snap_hits + 1
+    local pos = insert:position()
+    _snap_x = pos:x()
+    _snap_y = pos:y()
+    return { lc.EntityCoordinate(pos, 0) }
+end
+    )lua");
+    kaguya::LuaRef snap_fn = state["my_snap"];
+    ASSERT_EQ(snap_fn.type(), LUA_TFUNCTION)
+        << "test setup: my_snap must be a Lua function";
+
+    // We need a stub for the other 5 callbacks that builder->build()
+    // requires (checkValues fails on any nil callback).  A simple
+    // native no-op callback works.
+    auto noop = lc::scripting::nativeCallback(
+        []() { return lc::scripting::ScriptValue{}; });
+
+    // Build a real document + CustomEntityStorage so the CustomEntity
+    // (which inherits Insert) has a valid displayBlock + document.
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    auto ces = std::make_shared<lc::meta::CustomEntityStorage>(
+        "DispatchTestPlugin", "TestEntity",
+        lc::geo::Coordinate(7.0, 14.0, 21.0));
+    std::make_shared<lc::operation::AddBlock>(doc, ces)->execute();
+
+    // Construct the ScriptCustomEntity via CustomEntityBuilder.  Wire
+    // the Lua snap fn via the LuaRef overload (which wraps into a
+    // ScriptCallback internally); wire noops for the other 5 slots.
+    lc::builder::CustomEntityBuilder ceb;
+    ceb.setDisplayBlock(ces);
+    ceb.setDocument(doc);
+    ceb.setLayer(std::make_shared<lc::meta::Layer>());
+    ceb.setCoordinate(lc::geo::Coordinate(7.0, 14.0, 21.0));
+    ceb.setSnapFunction(snap_fn);
+    ceb.setNearestPointFunction(noop);
+    ceb.setDragPointsFunction(noop);
+    ceb.setNewDragPointFunction(noop);
+    ceb.setDragPointsClickedFunction(noop);
+    ceb.setDragPointsReleasedFunction(noop);
+    auto sce = ceb.build();
+
+    ASSERT_TRUE(static_cast<bool>(sce))
+        << "builder.build() must return a non-null ScriptCustomEntity";
+
+    // Dispatch snapPoints directly.  Under the fix, the Lua fast path
+    // fires and `insert:position()` returns 7/14/21.  If the refactor
+    // broke the fast path, _snap_x/_snap_y would be 0.
+    lc::SimpleSnapConstrain constrain;
+    auto snapResult = sce->snapPoints(
+        lc::geo::Coordinate(0, 0, 0),  // query point
+        constrain,
+        1e6,   // min distance
+        16);   // max points
+
+    EXPECT_EQ(state["_snap_hits"].get<int>(), 1)
+        << "snap callback must have been invoked exactly once — if 0, "
+           "dispatchToPlugin's fast path isn't being reached; if > 1, "
+           "the manager is over-firing";
+
+    // The critical assertion: `insert:position()` from Lua returned
+    // the ACTUAL Insert's position (7/14).  Pre-fix or if the
+    // refactor breaks the fast path, these would be 0 because the
+    // userdata's metatable wouldn't have `position`.
+    EXPECT_DOUBLE_EQ(state["_snap_x"].get<double>(), 7.0)
+        << "Lua-side insert:position():x() must return 7.0 — regressions "
+           "in ScriptCustomEntity's Lua fast-path dispatch land here";
+    EXPECT_DOUBLE_EQ(state["_snap_y"].get<double>(), 14.0);
+
+    // The returned snap points should have exactly 1 entry (from the
+    // Lua callback's return).  After Snapable::snapPointsCleanup the
+    // list is filtered by distance — with min_dist = 1e6 the single
+    // point at distance ~15.6 from origin survives.
+    EXPECT_EQ(snapResult.size(), 1u)
+        << "snap callback returned 1 EntityCoordinate; after cleanup "
+           "with a very-generous minDistance, the point should survive";
+
+    // Cleanup.
+    mgr.removePlugins();
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, LuaCustomEntityTypedefStillWorks) {
+    // Regression guard: the LuaCustomEntity typedef in
+    // primitive/customentity.h and builders/customentity.h must map to
+    // ScriptCustomEntity so pre-existing callers spelling
+    // `LuaCustomEntity_CSPtr` continue to compile.  This is a
+    // compile-time check disguised as a runtime test — if the typedef
+    // is missing or wrong, the file doesn't compile.
+    lc::entity::LuaCustomEntity_CSPtr as_lua_typedef;
+    lc::entity::ScriptCustomEntity_CSPtr as_new_name;
+    EXPECT_EQ(static_cast<bool>(as_lua_typedef),
+              static_cast<bool>(as_new_name))
+        << "both spellings must produce interoperable smart pointers "
+           "(default-constructed here — both should be null)";
+
+    // Also verify the typedef is a REAL type alias (not a subclass) by
+    // constructing one shape and assigning it to the other.
+    lc::entity::LuaCustomEntity_CSPtr a;
+    lc::entity::ScriptCustomEntity_CSPtr b = a;
+    lc::entity::LuaCustomEntity_CSPtr c = b;
+    EXPECT_FALSE(static_cast<bool>(c));  // still null, but the round-trip typechecked
 }
 
 } // namespace
