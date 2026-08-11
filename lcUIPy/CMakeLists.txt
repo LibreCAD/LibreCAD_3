@@ -57,20 +57,29 @@ _primary_root = '${CMAKE_CURRENT_LIST_DIR}'
 # The recursive scan at the end is a last-resort defense-in-depth for
 # unforeseen packaging layouts (matches FolderFinder's `_find_lcuipy`
 # recursive branch).
+# Phase 5 PR-5.5 fixup — coordinator's minor follow-up: require
+# __init__.py in every candidate directory, not just the recursive
+# fallback (matches Lua's FolderFinder::isValid() which checks for
+# operations.lua).  A stale/empty directory literally named lcUIPy
+# in the right place would otherwise be silently accepted.
+def _is_valid_lcuipy(cand):
+    return os.path.isdir(cand) and os.path.isfile(
+        os.path.join(cand, '__init__.py'))
+
 def _find_lcuipy():
-    if os.path.isdir(_primary_root):
+    if _is_valid_lcuipy(_primary_root):
         return _primary_root
     here = os.path.dirname(os.path.abspath(__file__))
     for _ in range(6):
         # (a) Direct sibling — Windows NSIS-style layout.
         candidate = os.path.join(here, 'lcUIPy')
-        if os.path.isdir(candidate):
+        if _is_valid_lcuipy(candidate):
             return candidate
         # (b) Share-sibling path — Ubuntu AppImage / Linux distro
         #     layout: <prefix>/bin/../share/librecad/lcUIPy.
         share_candidate = os.path.join(
             os.path.dirname(here), 'share', 'librecad', 'lcUIPy')
-        if os.path.isdir(share_candidate):
+        if _is_valid_lcuipy(share_candidate):
             return share_candidate
         here = os.path.dirname(here)
 
@@ -87,7 +96,7 @@ def _find_lcuipy():
             continue
         if 'lcUIPy' in dirs:
             cand = os.path.join(root, 'lcUIPy')
-            if os.path.exists(os.path.join(cand, '__init__.py')):
+            if _is_valid_lcuipy(cand):
                 return cand
 
     return _primary_root  # last resort — import will fail loudly

@@ -13,11 +13,13 @@
 #include <scriptadapter/luacallback.h>
 
 // Phase 5 PR-5.3 — path.py execution + lcUIPy autoregister.
+// Phase 5 PR-5.5 — Python plugin loader called from initLua.
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #include <lcpython.h>   // PythonInit
+#include "python/pypluginloader.h"
 #endif
 
 using namespace lc::ui;
@@ -133,6 +135,17 @@ except Exception as _e:
     }
 
     _pluginManager.loadPlugins();
+
+    // Phase 5 PR-5.5 — after Lua plugins load (which reads
+    // `plugin_path` from Lua state — set by path.lua), load the
+    // Python plugin siblings.  `plugin_path` for Python is set by
+    // path.py in __main__ dict at PR-5.3's exec_file above.  Interface
+    // name matches Lua's convention ("gui" for the app, "cli" for
+    // headless — the app's PluginManager was constructed with "gui"
+    // in LuaInterface's ctor, so mirror it).
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::loadPythonPluginsFromPathPy("gui");
+#endif
 }
 
 QWidget* LuaInterface::loadUiFile(const char* fileName) {

@@ -179,6 +179,9 @@ if(WITH_PYTHONSCRIPT)
     # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
     list(APPEND UI_srcs python/pyeventhooks.cpp)
     list(APPEND UI_hdrs python/pyeventhooks.h)
+    # Phase 5 PR-5.5 — Python plugin loader.
+    list(APPEND UI_srcs python/pypluginloader.cpp)
+    list(APPEND UI_hdrs python/pypluginloader.h)
 endif()
 
 QT5_WRAP_UI(UI_HEADERS
