@@ -320,4 +320,223 @@ assert isinstance(all_layers, list)
         ns);
 }
 
+// -----------------------------------------------------------------------------
+// Test — gui.* Menu widget family construction + method surface.
+// PR-5.6 sub-piece 2 additions.  Constructs Menu/MenuItem/ToolbarTab/
+// ToolbarButton/ToolbarGroup instances, calls representative methods
+// on each, verifies overloaded ctor arities resolve.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, MenuFamilyConstructAndCall) {
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    // No MainWindow needed — these widgets are constructible standalone.
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+
+    pybind11::exec(R"py(
+import lcgui
+
+# Menu: (name) ctor + label round-trip + position + setPosition.
+menu = lcgui.Menu("PyTest File")
+assert menu.label() == "PyTest File"
+menu.setLabel("Renamed")
+assert menu.label() == "Renamed"
+menu.setPosition(0)
+assert menu.position() == 0
+
+# addItem(label) → MenuItem*.  Verifies the label-only overload.
+item = menu.addItem("PyMenuItem")
+assert item is not None
+assert item.label() == "PyMenuItem"
+
+# addItem(label, cb) — callback-taking overload.
+hit_counter = {"n": 0}
+def cb():
+    hit_counter["n"] += 1
+
+item_with_cb = menu.addItem("WithCB", cb)
+assert item_with_cb is not None
+
+# itemByName round-trip.
+found = menu.itemByName("PyMenuItem")
+assert found is not None
+assert found.label() == "PyMenuItem"
+
+# QMenu-inherited hide/show/setEnabled/isEnabled.
+menu.show()
+menu.hide()
+menu.setEnabled(False)
+assert menu.isEnabled() is False
+menu.setEnabled(True)
+
+# addMenu(label) — nested menu.
+submenu = menu.addMenu("SubMenu")
+assert submenu is not None
+assert submenu.label() == "SubMenu"
+
+# removeItem/removeMenu.
+menu.removeItem("WithCB")
+menu.removeMenu("SubMenu")
+)py",
+        ns);
+}
+
+// -----------------------------------------------------------------------------
+// Test — MenuItem plain ctor + `.new(label, cb)` static factory + full
+// method surface (addCallback overloads, addCheckedCallback,
+// setCheckable/setChecked, hide/show/setEnabled, remove).
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, MenuItemConstructAndCall) {
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    pybind11::gil_scoped_acquire gil;
+    pybind11::module_::import("builtins").attr("_lc_menu_hits") =
+        pybind11::list();
+
+    pybind11::dict ns;
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+
+    pybind11::exec(R"py(
+import lcgui, builtins
+
+# Plain (label) ctor.
+mi = lcgui.MenuItem("PyItem")
+assert mi.label() == "PyItem"
+
+# .new(label, cb) static factory — the callback-taking form.
+mi_cb = lcgui.MenuItem.new("PyItemCB",
+    lambda: builtins._lc_menu_hits.append("PyItemCB fired"))
+assert mi_cb is not None
+assert mi_cb.label() == "PyItemCB"
+
+# addCallback(callback) and addCallback(name, callback) overloads.
+mi.addCallback(lambda: builtins._lc_menu_hits.append("mi anon"))
+mi.addCallback("named", lambda: builtins._lc_menu_hits.append("mi named"))
+
+# addCheckedCallback.
+mi.addCheckedCallback(
+    lambda checked: builtins._lc_menu_hits.append(("checked", checked)))
+
+# setCheckable / setChecked — QAction-inherited, must not raise.
+mi.setCheckable(True)
+mi.setChecked(True)
+
+# hide/show/setEnabled/isEnabled.
+mi.hide()
+mi.show()
+mi.setEnabled(False)
+assert mi.isEnabled() is False
+mi.setEnabled(True)
+
+# Position round-trip.
+mi.setPosition(2)
+assert mi.position() == 2
+
+# removeCallback by name (the named callback registered above).
+mi.removeCallback("named")
+
+# setLabel round-trip.
+mi.setLabel("PyItem_renamed")
+assert mi.label() == "PyItem_renamed"
+)py",
+        ns);
+
+    pybind11::module_::import("builtins").attr("_lc_menu_hits") =
+        pybind11::list();
+}
+
+// -----------------------------------------------------------------------------
+// Test — Toolbar widget family construction (ToolbarTab / ToolbarButton /
+// ToolbarGroup).  Verifies the 3 ToolbarButton ctor arities, static
+// factories, and inter-widget composition (button in group in tab).
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, ToolbarWidgetFamilyConstructAndCompose) {
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    pybind11::gil_scoped_acquire gil;
+    pybind11::module_::import("builtins").attr("_lc_tbb_hits") =
+        pybind11::list();
+
+    pybind11::dict ns;
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+
+    pybind11::exec(R"py(
+import lcgui, builtins
+
+# ToolbarTab: single (name) ctor.
+tab = lcgui.ToolbarTab("PyTab")
+assert tab.label() == "PyTab"
+tab.setLabel("PyTab_2")
+assert tab.label() == "PyTab_2"
+
+# ToolbarGroup: 2 ctor arities — (name) and (name, width).
+group = lcgui.ToolbarGroup("PyGroup")
+assert group.label() == "PyGroup"
+
+group_w = lcgui.ToolbarGroup("PyGroupW", 5)
+assert group_w.width() == 5
+
+# ToolbarButton: 3 plain ctor arities.
+btn_a = lcgui.ToolbarButton("BtnA", ":/icons/none.svg")
+assert btn_a.label() == "BtnA"
+
+btn_b = lcgui.ToolbarButton("BtnB", ":/icons/none.svg", "tooltip B")
+assert btn_b.label() == "BtnB"
+
+btn_c = lcgui.ToolbarButton("BtnC", ":/icons/none.svg", "tooltip C", True)
+assert btn_c.label() == "BtnC"
+
+# ToolbarButton static factories — callback-taking.
+btn_new = lcgui.ToolbarButton.new("BtnNew", ":/icons/none.svg",
+    lambda: builtins._lc_tbb_hits.append("BtnNew fired"))
+assert btn_new.label() == "BtnNew"
+
+btn_tt = lcgui.ToolbarButton.newWithTooltip("BtnTT", ":/icons/none.svg",
+    lambda: builtins._lc_tbb_hits.append("BtnTT fired"), "the tooltip")
+assert btn_tt.label() == "BtnTT"
+
+btn_chk = lcgui.ToolbarButton.newCheckable("BtnChk", ":/icons/none.svg",
+    lambda: builtins._lc_tbb_hits.append("BtnChk fired"),
+    "check tip", True)
+assert btn_chk.label() == "BtnChk"
+
+# Composition: add group to tab, add button to group, verify lookup.
+tab.addGroup(group)
+group.addButton(btn_a)
+group.addButton("BtnByStr", ":/icons/none.svg")
+group.addButton("BtnByCB", ":/icons/none.svg",
+    lambda: builtins._lc_tbb_hits.append("BtnByCB fired"))
+
+found = group.buttonByName("BtnA")
+assert found is not None
+
+# ToolbarGroup.buttons() returns list.
+btns = group.buttons()
+assert isinstance(btns, list)
+
+# ToolbarTab.groups() returns list.
+groups = tab.groups()
+assert isinstance(groups, list)
+
+# QWidget-inherited: hide/show/enable/disable + isEnabled.
+tab.enable(); tab.disable(); tab.enable()
+group.hide(); group.show()
+group.enable(); group.disable(); group.enable()
+btn_a.hide(); btn_a.show()
+btn_a.enable(); btn_a.disable(); btn_a.enable()
+assert btn_a.isEnabled() is True
+)py",
+        ns);
+
+    pybind11::module_::import("builtins").attr("_lc_tbb_hits") =
+        pybind11::list();
+}
+
 #endif  // LC_WITH_PYTHONSCRIPT

@@ -675,6 +675,499 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              "Notify the editor that the property under `key` "
              "changed.");
 
+    // =================================================================
+    // gui.* widget API — Menu + Toolbar widget family.
+    //
+    // Phase 5 PR-5.6 sub-piece 2 — mirrors the Lua guibridge.cpp
+    // `addLuaGUIAPIBindings` shape.  Under a single embedded module,
+    // Lua puts these under `gui.*`; we put them under `lcgui.*` (the
+    // module name Python operations import).  All callback-taking
+    // methods take a py::object and wrap via makePythonCallback so
+    // the neutral ScriptCallback layer picks them up (same wrap-at-
+    // adapter contract Lua uses via makeLuaCallback).
+    // =================================================================
+
+    // -----------------------------------------------------------------
+    // Menu.  Header confirms 3 ctors; we expose the (name) ctor (the
+    // only one Lua exposes) — the other two are QMenuBar/QMenu-taking
+    // internal ctors, not script-callable.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::Menu>(m, "Menu")
+        .def(py::init([](const std::string& name) {
+                 return new lc::ui::api::Menu(name.c_str());
+             }),
+             py::arg("name"))
+        .def("label",       &lc::ui::api::Menu::label)
+        .def("setLabel",
+             [](lc::ui::api::Menu& self, const std::string& label) {
+                 self.setLabel(label.c_str());
+             },
+             py::arg("label"))
+        .def("position",    &lc::ui::api::Menu::position)
+        .def("setPosition", &lc::ui::api::Menu::setPosition,
+             py::arg("position"))
+        .def("remove",      &lc::ui::api::Menu::remove)
+        .def("itemByName",
+             [](lc::ui::api::Menu& self, const std::string& name) {
+                 return self.itemByName(name.c_str());
+             },
+             py::arg("name"),
+             py::return_value_policy::reference)
+        .def("itemByPosition",
+             &lc::ui::api::Menu::itemByPosition,
+             py::arg("position"),
+             py::return_value_policy::reference)
+        .def("menuByName",
+             [](lc::ui::api::Menu& self, const std::string& name) {
+                 return self.menuByName(name.c_str());
+             },
+             py::arg("name"),
+             py::return_value_policy::reference)
+        .def("menuByPosition",
+             &lc::ui::api::Menu::menuByPosition,
+             py::arg("position"),
+             py::return_value_policy::reference)
+        // QMenu-inherited hide/show/setEnabled/isEnabled — same pattern
+        // Lua uses (lambdas around the Qt-base methods).
+        .def("hide", [](lc::ui::api::Menu& self) { self.hide(); })
+        .def("show", [](lc::ui::api::Menu& self) { self.show(); })
+        .def("isEnabled",
+             [](lc::ui::api::Menu& self) { return self.isEnabled(); })
+        .def("setEnabled",
+             [](lc::ui::api::Menu& self, bool enable) {
+                 self.setEnabled(enable);
+             },
+             py::arg("enabled"))
+        // addItem — 3 overloads.  (MenuItem*), (const char*), and
+        // (const char*, ScriptCallback).
+        .def("addItem",
+             [](lc::ui::api::Menu& self, lc::ui::api::MenuItem* item) {
+                 self.addItem(item);
+             },
+             py::arg("item"))
+        .def("addItem",
+             [](lc::ui::api::Menu& self, const std::string& label) {
+                 return self.addItem(label.c_str());
+             },
+             py::arg("label"),
+             py::return_value_policy::reference)
+        .def("addItem",
+             [](lc::ui::api::Menu& self, const std::string& label,
+                py::object cb) {
+                 return self.addItem(
+                     label.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("label"), py::arg("callback"),
+             py::return_value_policy::reference)
+        // removeItem: 2 overloads.
+        .def("removeItem",
+             [](lc::ui::api::Menu& self, lc::ui::api::MenuItem* item) {
+                 self.removeItem(item);
+             },
+             py::arg("item"))
+        .def("removeItem",
+             [](lc::ui::api::Menu& self, const std::string& label) {
+                 self.removeItem(label.c_str());
+             },
+             py::arg("label"))
+        // removeMenu: 2 overloads (const char*, Menu*).
+        .def("removeMenu",
+             [](lc::ui::api::Menu& self, const std::string& label) {
+                 self.removeMenu(label.c_str());
+             },
+             py::arg("label"))
+        .def("removeMenu",
+             [](lc::ui::api::Menu& self, lc::ui::api::Menu* menu) {
+                 self.removeMenu(menu);
+             },
+             py::arg("menu"))
+        // addMenu: 2 overloads (const char*, Menu*).
+        .def("addMenu",
+             [](lc::ui::api::Menu& self, const std::string& label) {
+                 return self.addMenu(label.c_str());
+             },
+             py::arg("label"),
+             py::return_value_policy::reference)
+        .def("addMenu",
+             [](lc::ui::api::Menu& self, lc::ui::api::Menu* menu) {
+                 self.addMenu(menu);
+             },
+             py::arg("menu"));
+
+    // -----------------------------------------------------------------
+    // MenuItem.  2 ctors in the header — (name) and (name, callback).
+    // Lua exposes the callback-taking one as `MenuItem.new(label, cb)`
+    // static factory; mirror that so a Python-side `MenuItem("label")`
+    // is the plain ctor and `MenuItem.new("label", callback)` is the
+    // callback-attached form.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::MenuItem>(m, "MenuItem")
+        .def(py::init([](const std::string& label) {
+                 return new lc::ui::api::MenuItem(label.c_str());
+             }),
+             py::arg("label"))
+        .def_static("new",
+             [](const std::string& label, py::object cb) {
+                 return new lc::ui::api::MenuItem(
+                     label.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("label"), py::arg("callback"),
+             py::return_value_policy::reference)
+        .def("label",       &lc::ui::api::MenuItem::label)
+        .def("setLabel",
+             [](lc::ui::api::MenuItem& self, const std::string& label) {
+                 self.setLabel(label.c_str());
+             },
+             py::arg("label"))
+        .def("position",    &lc::ui::api::MenuItem::position)
+        .def("setPosition", &lc::ui::api::MenuItem::setPosition,
+             py::arg("position"))
+        .def("remove",      &lc::ui::api::MenuItem::remove)
+        .def("removeCallback",
+             [](lc::ui::api::MenuItem& self,
+                const std::string& name) {
+                 self.removeCallback(name.c_str());
+             },
+             py::arg("name"))
+        .def("setCheckable",
+             &lc::ui::api::MenuItem::setCheckable,
+             py::arg("checkable"))
+        .def("setChecked",
+             &lc::ui::api::MenuItem::setChecked,
+             py::arg("checked"))
+        // QAction-inherited hide/show/isEnabled/setEnabled — Lua
+        // mirrors these with lambdas around the Qt-base methods.
+        .def("hide", [](lc::ui::api::MenuItem& self) { self.hide(); })
+        .def("show", [](lc::ui::api::MenuItem& self) { self.show(); })
+        .def("isEnabled",
+             [](lc::ui::api::MenuItem& self) {
+                 return self.isEnabled();
+             })
+        .def("setEnabled",
+             [](lc::ui::api::MenuItem& self, bool enable) {
+                 self.setEnabled(enable);
+             },
+             py::arg("enabled"))
+        // addCheckedCallback — takes ScriptCallback; wrap py::object.
+        .def("addCheckedCallback",
+             [](lc::ui::api::MenuItem& self, py::object cb) {
+                 self.addCheckedCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        // addCallback: 2 overloads (callback) and (name, callback).
+        .def("addCallback",
+             [](lc::ui::api::MenuItem& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("addCallback",
+             [](lc::ui::api::MenuItem& self, const std::string& name,
+                py::object cb) {
+                 self.addCallback(
+                     name.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("name"), py::arg("callback"));
+
+    // -----------------------------------------------------------------
+    // ToolbarTab.  Single ctor (name, parent) — Lua exposes just
+    // (name).  Mirror that.  addGroup + removeGroup have 2 overloads;
+    // bind both.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ToolbarTab>(m, "ToolbarTab")
+        .def(py::init([](const std::string& name) {
+                 return new lc::ui::api::ToolbarTab(name.c_str());
+             }),
+             py::arg("name"))
+        // Header: `void addButton(ToolbarButton*, const char* groupName)`
+        // — different from ToolbarGroup::addButton.  This is a
+        // convenience that appends into a named group.
+        .def("addButton",
+             [](lc::ui::api::ToolbarTab& self,
+                lc::ui::api::ToolbarButton* button,
+                const std::string& groupName) {
+                 self.addButton(button, groupName.c_str());
+             },
+             py::arg("button"), py::arg("group_name"))
+        .def("buttonByText",
+             [](lc::ui::api::ToolbarTab& self,
+                lc::ui::api::ToolbarGroup* group,
+                const std::string& text) {
+                 return self.buttonByText(group, text.c_str());
+             },
+             py::arg("group"), py::arg("text"),
+             py::return_value_policy::reference)
+        .def("groupByName",
+             [](lc::ui::api::ToolbarTab& self,
+                const std::string& name) {
+                 return self.groupByName(name.c_str());
+             },
+             py::arg("name"),
+             py::return_value_policy::reference)
+        .def("label",    &lc::ui::api::ToolbarTab::label)
+        .def("setLabel",
+             [](lc::ui::api::ToolbarTab& self,
+                const std::string& label) {
+                 self.setLabel(label.c_str());
+             },
+             py::arg("label"))
+        .def("groups",   &lc::ui::api::ToolbarTab::groups)
+        .def("remove",   &lc::ui::api::ToolbarTab::remove)
+        // QWidget-inherited setEnabled — Lua exposes as
+        // enable/disable lambdas.
+        .def("enable",
+             [](lc::ui::api::ToolbarTab& self) {
+                 self.setEnabled(true);
+             })
+        .def("disable",
+             [](lc::ui::api::ToolbarTab& self) {
+                 self.setEnabled(false);
+             })
+        // removeGroup: 2 overloads (ToolbarGroup*, const char*).
+        .def("removeGroup",
+             [](lc::ui::api::ToolbarTab& self,
+                lc::ui::api::ToolbarGroup* group) {
+                 self.removeGroup(group);
+             },
+             py::arg("group"))
+        .def("removeGroup",
+             [](lc::ui::api::ToolbarTab& self,
+                const std::string& name) {
+                 self.removeGroup(name.c_str());
+             },
+             py::arg("name"))
+        // addGroup: 3 overloads (ToolbarGroup*, name+width, name-only).
+        .def("addGroup",
+             [](lc::ui::api::ToolbarTab& self,
+                lc::ui::api::ToolbarGroup* group) {
+                 self.addGroup(group);
+             },
+             py::arg("group"))
+        .def("addGroup",
+             [](lc::ui::api::ToolbarTab& self,
+                const std::string& name, int width) {
+                 return self.addGroup(name.c_str(), width);
+             },
+             py::arg("name"), py::arg("width"),
+             py::return_value_policy::reference)
+        .def("addGroup",
+             [](lc::ui::api::ToolbarTab& self,
+                const std::string& name) {
+                 return self.addGroup(name.c_str());
+             },
+             py::arg("name"),
+             py::return_value_policy::reference);
+
+    // -----------------------------------------------------------------
+    // ToolbarButton.  4 ctors in the header (2 with callback, 2 without)
+    // — Lua exposes callback-taking as `.new(label, icon, cb)`,
+    // `.newWithTooltip(...)`, `.newCheckable(...)` static factories,
+    // and the plain ctors as py::init variants.  Mirror that shape.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ToolbarButton>(m, "ToolbarButton")
+        // Plain (no-callback) ctors: (label, icon) + (label, icon,
+        // tooltip) + (label, icon, tooltip, checkable).  The header
+        // packs these as a single ctor with default args — pybind11's
+        // py::init<...> with py::arg().default() would work, but for
+        // clarity use lambdas per arity.
+        .def(py::init([](const std::string& label,
+                         const std::string& icon) {
+                 return new lc::ui::api::ToolbarButton(
+                     label.c_str(), icon.c_str());
+             }),
+             py::arg("label"), py::arg("icon"))
+        .def(py::init([](const std::string& label,
+                         const std::string& icon,
+                         const std::string& tooltip) {
+                 return new lc::ui::api::ToolbarButton(
+                     label.c_str(), icon.c_str(), tooltip.c_str());
+             }),
+             py::arg("label"), py::arg("icon"), py::arg("tooltip"))
+        .def(py::init([](const std::string& label,
+                         const std::string& icon,
+                         const std::string& tooltip,
+                         bool checkable) {
+                 return new lc::ui::api::ToolbarButton(
+                     label.c_str(), icon.c_str(), tooltip.c_str(),
+                     checkable);
+             }),
+             py::arg("label"), py::arg("icon"),
+             py::arg("tooltip"), py::arg("checkable"))
+        // Callback-taking static factories.
+        .def_static("new",
+             [](const std::string& label, const std::string& icon,
+                py::object cb) {
+                 return new lc::ui::api::ToolbarButton(
+                     label.c_str(), icon.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("label"), py::arg("icon"), py::arg("callback"),
+             py::return_value_policy::reference)
+        .def_static("newWithTooltip",
+             [](const std::string& label, const std::string& icon,
+                py::object cb, const std::string& tooltip) {
+                 return new lc::ui::api::ToolbarButton(
+                     label.c_str(), icon.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)),
+                     tooltip.c_str());
+             },
+             py::arg("label"), py::arg("icon"), py::arg("callback"),
+             py::arg("tooltip"),
+             py::return_value_policy::reference)
+        .def_static("newCheckable",
+             [](const std::string& label, const std::string& icon,
+                py::object cb, const std::string& tooltip,
+                bool checkable) {
+                 return new lc::ui::api::ToolbarButton(
+                     label.c_str(), icon.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)),
+                     tooltip.c_str(), checkable);
+             },
+             py::arg("label"), py::arg("icon"), py::arg("callback"),
+             py::arg("tooltip"), py::arg("checkable"),
+             py::return_value_policy::reference)
+        .def("label",    &lc::ui::api::ToolbarButton::label)
+        .def("setLabel",
+             [](lc::ui::api::ToolbarButton& self,
+                const std::string& label) {
+                 self.setLabel(label.c_str());
+             },
+             py::arg("label"))
+        .def("setTooltip",
+             [](lc::ui::api::ToolbarButton& self,
+                const std::string& tooltip) {
+                 self.setTooltip(tooltip.c_str());
+             },
+             py::arg("tooltip"))
+        .def("removeCallback",
+             [](lc::ui::api::ToolbarButton& self,
+                const std::string& name) {
+                 self.removeCallback(name.c_str());
+             },
+             py::arg("name"))
+        .def("remove",   &lc::ui::api::ToolbarButton::remove)
+        // QPushButton-inherited hide/show/setEnabled/isEnabled.
+        .def("hide",
+             [](lc::ui::api::ToolbarButton& self) { self.hide(); })
+        .def("show",
+             [](lc::ui::api::ToolbarButton& self) { self.show(); })
+        .def("isEnabled",
+             [](lc::ui::api::ToolbarButton& self) {
+                 return self.isEnabled();
+             })
+        .def("enable",
+             [](lc::ui::api::ToolbarButton& self) {
+                 self.setEnabled(true);
+             })
+        .def("disable",
+             [](lc::ui::api::ToolbarButton& self) {
+                 self.setEnabled(false);
+             })
+        // addCallback: 2 overloads (callback) and (name, callback).
+        .def("addCallback",
+             [](lc::ui::api::ToolbarButton& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("addCallback",
+             [](lc::ui::api::ToolbarButton& self,
+                const std::string& name, py::object cb) {
+                 self.addCallback(
+                     name.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("name"), py::arg("callback"));
+
+    // -----------------------------------------------------------------
+    // ToolbarGroup.  Ctor (name, width=3).  addButton has 3 overloads;
+    // Lua's binding mirrors all 3.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ToolbarGroup>(m, "ToolbarGroup")
+        .def(py::init([](const std::string& name) {
+                 return new lc::ui::api::ToolbarGroup(name.c_str());
+             }),
+             py::arg("name"))
+        .def(py::init([](const std::string& name, int width) {
+                 return new lc::ui::api::ToolbarGroup(
+                     name.c_str(), width);
+             }),
+             py::arg("name"), py::arg("width"))
+        .def("label",    &lc::ui::api::ToolbarGroup::label)
+        .def("setLabel",
+             [](lc::ui::api::ToolbarGroup& self,
+                const std::string& label) {
+                 self.setLabel(label.c_str());
+             },
+             py::arg("label"))
+        .def("buttonByName",
+             [](lc::ui::api::ToolbarGroup& self,
+                const std::string& name) {
+                 return self.buttonByName(name.c_str());
+             },
+             py::arg("name"),
+             py::return_value_policy::reference)
+        .def("buttons",  &lc::ui::api::ToolbarGroup::buttons)
+        .def("remove",   &lc::ui::api::ToolbarGroup::remove)
+        .def("setWidth", &lc::ui::api::ToolbarGroup::setWidth,
+             py::arg("width"))
+        .def("width",    &lc::ui::api::ToolbarGroup::width)
+        // QGroupBox-inherited hide/show/setEnabled/enabled — enable/
+        // disable lambdas per Lua's mirror.
+        .def("hide",
+             [](lc::ui::api::ToolbarGroup& self) { self.hide(); })
+        .def("show",
+             [](lc::ui::api::ToolbarGroup& self) { self.show(); })
+        .def("enable",
+             [](lc::ui::api::ToolbarGroup& self) {
+                 self.setEnabled(true);
+             })
+        .def("disable",
+             [](lc::ui::api::ToolbarGroup& self) {
+                 self.setEnabled(false);
+             })
+        // addButton: 3 overloads (button, name+icon, name+icon+callback).
+        .def("addButton",
+             [](lc::ui::api::ToolbarGroup& self,
+                lc::ui::api::ToolbarButton* button) {
+                 self.addButton(button);
+             },
+             py::arg("button"))
+        .def("addButton",
+             [](lc::ui::api::ToolbarGroup& self,
+                const std::string& name, const std::string& icon) {
+                 return self.addButton(name.c_str(), icon.c_str());
+             },
+             py::arg("name"), py::arg("icon"),
+             py::return_value_policy::reference)
+        .def("addButton",
+             [](lc::ui::api::ToolbarGroup& self,
+                const std::string& name, const std::string& icon,
+                py::object cb) {
+                 return self.addButton(
+                     name.c_str(), icon.c_str(),
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("name"), py::arg("icon"), py::arg("callback"),
+             py::return_value_policy::reference)
+        // removeButton: 2 overloads (ToolbarButton*, const char*).
+        .def("removeButton",
+             [](lc::ui::api::ToolbarGroup& self,
+                lc::ui::api::ToolbarButton* button) {
+                 self.removeButton(button);
+             },
+             py::arg("button"))
+        .def("removeButton",
+             [](lc::ui::api::ToolbarGroup& self,
+                const std::string& name) {
+                 self.removeButton(name.c_str());
+             },
+             py::arg("name"));
+
     // -----------------------------------------------------------------
     // Module-level currentMainWindow() — Phase 5 PR-5.1 fixup: what
     // Python operation base classes call INSTEAD of frame-walking to
