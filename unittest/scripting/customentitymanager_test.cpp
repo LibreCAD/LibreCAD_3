@@ -54,8 +54,20 @@
 #include <scriptadapter/luacallback.h>
 #include <scriptadapter/customentitydispatch_lua.h>
 
+// Phase 6 PR-6.1 sub-piece 3b — DXF round-trip test (phase-6 exit
+// criterion).  Uses the Python `lc.register_plugin` API to reconstruct
+// a custom entity after save/open.  Requires lcpython + persistence.
+#include <lcpython.h>
+#include <bridge/py_lc.h>            // setRegisterPluginHook
+#include <scriptadapter/pythoncallback.h>  // makePythonCallback
+#include <persistence/file.h>
+#include <cad/operations/entitybuilder.h>
+
 #include <kaguya/kaguya.hpp>
 
+#include <cstdio>
+#include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -826,6 +838,286 @@ TEST(ScriptCustomEntity, LuaCustomEntityTypedefStillWorks) {
     lc::entity::ScriptCustomEntity_CSPtr b = a;
     lc::entity::LuaCustomEntity_CSPtr c = b;
     EXPECT_FALSE(static_cast<bool>(c));  // still null, but the round-trip typechecked
+}
+
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 sub-piece 3b — DXF round-trip test (phase-6 exit criterion).
+//
+// The plan's Exit criteria explicitly names this scenario:
+//   "A Python custom-entity plugin: create → save DXF → close → reopen →
+//    entity live, in a multi-window session where another window was
+//    closed in between (regression for the removePlugins bug)."
+//
+// Simplified for headless: one document build → save → open into a FRESH
+// document with a Python plugin registered → verify the plugin fires with
+// correct data on the reconstructed insert.  The multi-window aspect is
+// already covered by the sub-piece 1 Qt-side test
+// PluginRegistrationSurvivesLuaInterfaceDestructor.
+//
+// This test uses:
+//   * The Python-side API surface: `lc.register_plugin`, `lc.builder.
+//     CustomEntityBuilder`, `lc.persistence.File` — the full stack a
+//     real Python plugin developer would use.
+//   * `LuaCustomEntityManager` (via the register_plugin hook forwarding
+//     to it) — the actual dispatch machinery.
+//   * `NewWaitingCustomEntityEvent` — fired by DocumentImpl during open
+//     for each Insert whose displayBlock is a CustomEntityStorage.
+//
+// Rigor requirements (per coordinator's sub-piece 3b briefing):
+//   * Real method calls returning correct values, not just "file opened
+//     without throwing" or "an entity of some kind exists."
+//   * Assertions on genuinely reconstructed live state — plugin name,
+//     entity name, custom params (width/height) round-trip through DXF
+//     app-data.
+//
+// The test is CI-only executable (macOS Homebrew's Lua 5.5 breaks
+// kaguya's `lua_newuserdata` reference; needs Ubuntu CI's Lua 5.3 arm64
+// + libdxfrw runtime).
+// -----------------------------------------------------------------------------
+
+namespace {
+
+std::string uniqueTmpDxf(const std::string& prefix) {
+    const std::string pid = std::to_string(::getpid());
+    return (std::filesystem::temp_directory_path()
+            / ("librecad-" + prefix + "-" + pid + ".dxf")).string();
+}
+
+}  // namespace
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(CustomEntityDxfRoundTrip, PluginReconstructsEntityFromDxfAppData) {
+    namespace py = pybind11;
+
+    // -------------------------------------------------------------------------
+    // Setup: install the `lc.register_plugin` hook to forward into
+    // `LuaCustomEntityManager` — normally done by lcUI's installEventHooks
+    // at MainWindow construction time.  This test runs headless (no
+    // lcUI), so install manually.
+    // -------------------------------------------------------------------------
+    lc::python::setRegisterPluginHook(
+        [](const std::string& name, py::object cb) {
+            lc::lua::LuaCustomEntityManager::getInstance().registerPlugin(
+                name, lc::python::makePythonCallback(std::move(cb)));
+        });
+
+    // Clean manager state so earlier tests don't skew.
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+
+    lc::python::LCPython lcpy;
+    const std::string dxfPath = uniqueTmpDxf("customentity-roundtrip");
+    std::filesystem::remove(dxfPath);  // pre-clean
+
+    // -------------------------------------------------------------------------
+    // Step 1 — Save side.  Build a document with a custom entity via
+    // CustomEntityBuilder; save to DXF.
+    // -------------------------------------------------------------------------
+    auto sm1  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc1 = std::make_shared<lc::storage::DocumentImpl>(sm1);
+    auto ns1  = lcpy.makeNamespace();
+    lcpy.setDocument(ns1, doc1);
+    ns1.set("dxf_path", dxfPath);
+
+    const std::string saveScript = R"py(
+# Storage block with a plugin name + entity name + custom params.
+# The plugin name is what routes NewWaitingCustomEntityEvent to the
+# right plugin at reopen time.  The custom params are what DXF
+# persistence carries through app-data codes 470/471 (see sub-plan
+# section 1's dxfimpl.cpp:1473-1487 write path + :122-149 read path).
+storage = lc.meta.CustomEntityStorage(
+    'DxfRoundTripPlugin', 'TestBox',
+    lc.geo.Coordinate(5.0, 10.0, 0.0),
+    {'width': '20.5', 'height': '30.25'})
+lc.operation.AddBlock.new(document, storage).execute()
+
+# Layer for the InsertBuilder parent.
+layer = lc.meta.Layer('DxfRoundTripLayer',
+                     lc.meta.MetaLineWidthByValue(1.0),
+                     lc.Color(255, 0, 0), None, False)
+lc.operation.AddLayer.new(document, layer).execute()
+
+# 6 slot callbacks — no dispatch on the save side (no snap/drag happens
+# during save+persist).  Plain stubs suffice for build() to succeed.
+_snap    = lambda *a: []
+_nearest = lambda *a: lc.geo.Coordinate(0, 0, 0)
+_drag    = lambda *a: {}
+_newdrag = lambda *a: None
+_click   = lambda *a: None
+_release = lambda *a: None
+
+ceb = lc.builder.CustomEntityBuilder()
+ceb.setDisplayBlock(storage)
+ceb.setDocument(document)
+ceb.setCoordinate(lc.geo.Coordinate(5.0, 10.0, 0.0))
+ceb.setLayer(layer)
+ceb.setSnapFunction(_snap)
+ceb.setNearestPointFunction(_nearest)
+ceb.setDragPointsFunction(_drag)
+ceb.setNewDragPointFunction(_newdrag)
+ceb.setDragPointsClickedFunction(_click)
+ceb.setDragPointsReleasedFunction(_release)
+ce = ceb.build()
+
+# Add the ScriptCustomEntity (which IS an Insert) to the document.
+eb = lc.operation.EntityBuilder.new(document)
+eb.appendEntity(ce)
+eb.execute()
+
+# Save DXF via libdxfrw R2000.
+lc.persistence.File.save(document, dxf_path,
+                        lc.persistence.File.Type.LIBDXFRW_DXF_R2000)
+)py";
+    ASSERT_EQ(lcpy.runString(saveScript.c_str(), ns1), "");
+
+    // Verify file exists and is non-empty.
+    ASSERT_TRUE(std::filesystem::exists(dxfPath))
+        << "DXF file must be written to " << dxfPath;
+    ASSERT_GT(std::filesystem::file_size(dxfPath), 0u);
+
+    // -------------------------------------------------------------------------
+    // Step 2 — Open side.  Fresh document, fresh Python namespace.
+    // Register the reconstruction plugin BEFORE calling open, so
+    // NewWaitingCustomEntityEvent fires the plugin during load.
+    // -------------------------------------------------------------------------
+    auto sm2  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc2 = std::make_shared<lc::storage::DocumentImpl>(sm2);
+    auto ns2  = lcpy.makeNamespace();
+    lcpy.setDocument(ns2, doc2);
+    ns2.set("dxf_path", dxfPath);
+
+    // The plugin captures what it received into builtins so the test
+    // can assert on it via `runString(...)` after `open()` returns.
+    const std::string registerScript = R"py(
+import builtins
+builtins._dxf_roundtrip_state = {
+    'fired_count': 0,
+    'received_pluginName': None,
+    'received_entityName': None,
+    'received_width':      None,
+    'received_height':     None,
+    'received_position_x': None,
+    'received_position_y': None,
+    'received_position_z': None,
+    # Track the concrete type recovered from `insert.displayBlock()`
+    # (base-typed Block_CSPtr → CustomEntityStorage via classh RTTI).
+    'displayblock_is_ces': None,
+    'insert_is_insert':    None,
+}
+
+def _reconstruct(insert):
+    # Prove pybind11's polymorphic downcast on the received arg:
+    # the callback is called with an `Insert`, but the actual object
+    # could be any Insert subclass — for a DXF-reconstructed custom
+    # entity, the concrete type IS Insert (not ScriptCustomEntity —
+    # that only exists when the plugin BUILDS one via
+    # CustomEntityBuilder).  Verify via isinstance.
+    builtins._dxf_roundtrip_state['fired_count'] += 1
+    builtins._dxf_roundtrip_state['insert_is_insert'] = \
+        isinstance(insert, lc.entity.Insert)
+
+    # displayBlock() returns Block_CSPtr (base type); classh RTTI must
+    # recover the concrete CustomEntityStorage type stored in the DXF
+    # app-data.
+    block = insert.displayBlock()
+    builtins._dxf_roundtrip_state['displayblock_is_ces'] = \
+        isinstance(block, lc.meta.CustomEntityStorage)
+
+    # After the concrete-type downcast, call CustomEntityStorage's
+    # own methods (pluginName / entityName / param) — proves the
+    # DXF app-data (codes 410/411/470/471) round-tripped correctly.
+    builtins._dxf_roundtrip_state['received_pluginName'] = block.pluginName()
+    builtins._dxf_roundtrip_state['received_entityName'] = block.entityName()
+    builtins._dxf_roundtrip_state['received_width']      = block.param('width')
+    builtins._dxf_roundtrip_state['received_height']     = block.param('height')
+
+    # Insert::position() must return the coordinate we set on the
+    # save side (5, 10, 0).  If the insert's position wasn't written/read
+    # correctly by libdxfrw, these would differ.
+    pos = insert.position()
+    builtins._dxf_roundtrip_state['received_position_x'] = pos.x()
+    builtins._dxf_roundtrip_state['received_position_y'] = pos.y()
+    builtins._dxf_roundtrip_state['received_position_z'] = pos.z()
+
+lc.register_plugin('DxfRoundTripPlugin', _reconstruct)
+)py";
+    ASSERT_EQ(lcpy.runString(registerScript.c_str(), ns2), "");
+
+    // Open the DXF into doc2.  This fires NewWaitingCustomEntityEvent
+    // for the Insert whose displayBlock is a CustomEntityStorage with
+    // pluginName == "DxfRoundTripPlugin" — the manager dispatches to
+    // the registered plugin.
+    const std::string openScript = R"py(
+opened_type = lc.persistence.File.open(
+    document, dxf_path, lc.persistence.File.Library.LIBDXFRW)
+assert opened_type is not None, "libdxfrw open must return a file-type enum"
+)py";
+    ASSERT_EQ(lcpy.runString(openScript.c_str(), ns2), "");
+
+    // -------------------------------------------------------------------------
+    // Step 3 — Assertions on the reconstructed state.
+    // Real method calls on the plugin-captured concrete types; not
+    // "file opened without throwing" or "an entity exists."
+    // -------------------------------------------------------------------------
+    const std::string assertScript = R"py(
+import builtins
+s = builtins._dxf_roundtrip_state
+
+# The plugin must have fired exactly once — once per Insert that
+# matches the pluginName.  Zero means NewWaitingCustomEntityEvent
+# never reached the manager (or the manager never dispatched);
+# more than one means the DXF contains duplicates.
+assert s['fired_count'] == 1, \
+    f"Python plugin must fire exactly once on reopen; got count={s['fired_count']}"
+
+# The Insert received must actually be an Insert (isinstance check
+# proves pybind11 materialized the correct base type).
+assert s['insert_is_insert'] is True, \
+    f"received object must be an lc.entity.Insert; got {s['insert_is_insert']}"
+
+# The displayBlock returned by Insert::displayBlock (static return type
+# Block_CSPtr) must be a CustomEntityStorage after classh RTTI recovery.
+# Same discipline as sub-piece 3a's polymorphic-downcast test — this is
+# the CustomEntityStorage recovered post-DXF.
+assert s['displayblock_is_ces'] is True, \
+    f"displayBlock must be a CustomEntityStorage after RTTI recovery; " \
+    f"got {s['displayblock_is_ces']}"
+
+# The plugin name is what routed the event to us — trivially correct.
+assert s['received_pluginName'] == 'DxfRoundTripPlugin', \
+    f"pluginName mismatch: expected 'DxfRoundTripPlugin', got {s['received_pluginName']!r}"
+
+# The entity name and custom params round-tripped through DXF's
+# app-data codes 411 (entity) and 470/471 (params).
+assert s['received_entityName'] == 'TestBox', \
+    f"entityName mismatch: expected 'TestBox', got {s['received_entityName']!r}"
+assert s['received_width'] == '20.5', \
+    f"custom param 'width' failed DXF round-trip: expected '20.5', " \
+    f"got {s['received_width']!r}"
+assert s['received_height'] == '30.25', \
+    f"custom param 'height' failed DXF round-trip: expected '30.25', " \
+    f"got {s['received_height']!r}"
+
+# Position must be preserved.  Small floating tolerance for DXF's
+# ASCII-decimal representation.
+assert abs(s['received_position_x'] -  5.0) < 1e-6, \
+    f"position.x mismatch: {s['received_position_x']}"
+assert abs(s['received_position_y'] - 10.0) < 1e-6
+assert abs(s['received_position_z'] -  0.0) < 1e-6
+)py";
+    ASSERT_EQ(lcpy.runString(assertScript.c_str(), ns2), "");
+
+    // -------------------------------------------------------------------------
+    // Cleanup.
+    // -------------------------------------------------------------------------
+    std::filesystem::remove(dxfPath);
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+
+    // Clear the builtins state so subsequent tests start clean.
+    {
+        py::gil_scoped_acquire gil;
+        py::exec("import builtins; builtins._dxf_roundtrip_state = None");
+    }
 }
 
 } // namespace
