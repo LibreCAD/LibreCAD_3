@@ -33,8 +33,29 @@ public:
     // Phase 6 PR-6.1 sub-piece 2a — setter overloads.  The primary
     // setter takes a neutral ScriptCallback; the LuaRef overload wraps
     // via lc::lua::makeLuaCallback and forwards.  Both Lua callers
-    // (with kaguya::LuaRef) and future Python/native callers (with
-    // ScriptCallback) work without change.
+    // (with kaguya::LuaRef) and native callers (with a ScriptCallback
+    // produced by lc::scripting::nativeCallback) fire correctly: the
+    // dispatch in `ScriptCustomEntity` tries `unwrapLuaCallback` for
+    // the Lua fast path and falls through to `callback.invoke(...)`
+    // for native/Python callbacks (review-fixup — the initial
+    // sub-piece 2a landed with the fallback missing, silently
+    // no-op'ing native callbacks).
+    //
+    // Limitation for native callbacks: the return types for
+    // snapPoints (`vector<EntityCoordinate>`), dragPoints (`map<uint,
+    // Coordinate>`), and the Builder_SPtr / SimpleSnapConstrain arg
+    // types don't have ScriptValue kinds yet.  Native callbacks
+    // registered for those slots CAN still fire (side effects reach
+    // the callee) but their returns are ignored and the missing-kind
+    // args come through as Nil.  Sub-piece 3 will grow ScriptValue's
+    // kind set when Python custom-entity plugins land.
+    //
+    // Validation: LuaRef-overload setters check `type() ==
+    // LUA_TFUNCTION` before wrapping — a nil / non-callable LuaRef
+    // is silently rejected (leaves the slot at its default-
+    // constructed nil state, so `checkValues()` correctly fails).
+    // ScriptCallback-overload setters accept whatever the caller
+    // hands them (caller responsibility to pass a real callable).
     void setSnapFunction(lc::scripting::ScriptCallback snapFunction);
     void setSnapFunction(kaguya::LuaRef snapFunction);
     const lc::scripting::ScriptCallback& snapFunction() const;

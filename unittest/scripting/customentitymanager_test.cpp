@@ -449,6 +449,344 @@ end
     mgr.removePlugins();
 }
 
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 sub-piece 2a review fixup — coverage across the remaining
+// 5 slots.  The original sub-piece 2a only tested `snapPoints` in depth;
+// call-site-specific bugs in the other 5 dispatches would compile cleanly
+// and go uncaught.  These tests cover:
+//   * `nearestPointOnPath`  — Ret=Coordinate slot, Lua fast path + native fallback
+//   * `dragPoints`          — Ret=map<uint,Coord> slot, Lua fast path
+//   * `setDragPoint`        — void slot, Lua fast path + native fallback
+//   * `onDragPointClick`    — void slot with 3 args (Builder_SPtr in position 2)
+//   * `onDragPointRelease`  — void slot with 2 args (Builder_SPtr in position 2)
+//
+// Each Lua-path test calls a Lua-side type-specific method
+// (`insert:position()`) to exercise the concrete-type-preservation
+// invariant on that specific slot's call site.  Native-path tests assert
+// the callback actually fires (via a shared_ptr<int> counter) — the exact
+// gap that let sub-piece 2a's initial silent-no-op bug ship.
+// -----------------------------------------------------------------------------
+
+namespace {
+
+// Test-scaffolding helper: build a ScriptCustomEntity via
+// CustomEntityBuilder with 6 stub callbacks, then let the caller
+// swap out one slot before build.  Returns the built entity + the
+// kaguya state (so the test can bind Insert's metatable + inspect
+// captured globals).
+struct SceFixture {
+    kaguya::State state;
+    std::shared_ptr<lc::storage::Document> doc;
+    lc::meta::CustomEntityStorage_CSPtr ces;
+    lc::builder::CustomEntityBuilder ceb;
+
+    explicit SceFixture(const std::string& pluginName) {
+        // Bind Insert::position + Coordinate accessors + return-type
+        // classes so callbacks can call type-specific methods.
+        state["lc"] = kaguya::NewTable();
+        state["lc"]["entity"] = kaguya::NewTable();
+        state["lc"]["entity"]["Insert"].setClass(
+            kaguya::UserdataMetatable<lc::entity::Insert>()
+                .addFunction("position", &lc::entity::Insert::position));
+        state["lc"]["geo"] = kaguya::NewTable();
+        state["lc"]["geo"]["Coordinate"].setClass(
+            kaguya::UserdataMetatable<lc::geo::Coordinate>()
+                .setConstructors<lc::geo::Coordinate(double, double, double)>()
+                .addFunction("x", &lc::geo::Coordinate::x)
+                .addFunction("y", &lc::geo::Coordinate::y)
+                .addFunction("z", &lc::geo::Coordinate::z));
+
+        doc = std::make_shared<lc::storage::DocumentImpl>(
+            std::make_shared<lc::storage::StorageManagerImpl>());
+        ces = std::make_shared<lc::meta::CustomEntityStorage>(
+            pluginName, "TestEntity",
+            lc::geo::Coordinate(7.0, 14.0, 21.0));
+        std::make_shared<lc::operation::AddBlock>(doc, ces)->execute();
+
+        ceb.setDisplayBlock(ces);
+        ceb.setDocument(doc);
+        ceb.setLayer(std::make_shared<lc::meta::Layer>());
+        ceb.setCoordinate(lc::geo::Coordinate(7.0, 14.0, 21.0));
+
+        // Default all 6 slots to native no-ops so build() succeeds
+        // without the caller wiring every slot.  Individual tests
+        // override the slots they care about.
+        auto noop = lc::scripting::nativeCallback(
+            []() { return lc::scripting::ScriptValue{}; });
+        ceb.setSnapFunction(noop);
+        ceb.setNearestPointFunction(noop);
+        ceb.setDragPointsFunction(noop);
+        ceb.setNewDragPointFunction(noop);
+        ceb.setDragPointsClickedFunction(noop);
+        ceb.setDragPointsReleasedFunction(noop);
+    }
+};
+
+} // namespace
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, NearestPointOnPath_LuaPathPreservesType) {
+    SceFixture fix("NearestLuaTest");
+    fix.state["_hits"] = 0;
+    fix.state["_captured_x"] = 0.0;
+    fix.state.dostring(R"lua(
+function my_nearest(insert, coord)
+    _hits = _hits + 1
+    -- Type-specific Insert method: proves Lua metatable is Insert's, not CADEntity's.
+    _captured_x = insert:position():x()
+    return lc.geo.Coordinate(1.5, 2.5, 3.5)
+end
+    )lua");
+    // Explicit `kaguya::LuaRef` variable to disambiguate the setter
+    // overload — `state["fn"]` proxy converts to both LuaRef and
+    // ScriptCallback, so ambiguous without the explicit type.
+    kaguya::LuaRef nearest_fn = fix.state["my_nearest"];
+    fix.ceb.setNearestPointFunction(nearest_fn);
+    auto sce = fix.ceb.build();
+
+    auto result = sce->nearestPointOnPath(lc::geo::Coordinate(0, 0, 0));
+
+    EXPECT_EQ(fix.state["_hits"].get<int>(), 1)
+        << "nearest-point Lua callback must fire exactly once";
+    EXPECT_DOUBLE_EQ(fix.state["_captured_x"].get<double>(), 7.0)
+        << "insert:position():x() must resolve — concrete Insert type "
+           "preserved through nearestPointOnPath dispatch";
+    // Callback returned (1.5, 2.5, 3.5); the returned Coordinate must
+    // reach the caller.
+    EXPECT_DOUBLE_EQ(result.x(), 1.5);
+    EXPECT_DOUBLE_EQ(result.y(), 2.5);
+    EXPECT_DOUBLE_EQ(result.z(), 3.5);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, NearestPointOnPath_NativeCallbackFires) {
+    // Non-Lua path: register a nativeCallback and verify it actually
+    // FIRES (side effects reach the callee).  This is the coverage
+    // gap the coordinator's review flagged — the original sub-piece 2a
+    // silently no-op'd this case.
+    SceFixture fix("NearestNativeTest");
+
+    auto counter = std::make_shared<int>(0);
+    auto captured_coord = std::make_shared<lc::geo::Coordinate>();
+    auto native = lc::scripting::nativeCallback(
+        [counter, captured_coord](const std::vector<lc::scripting::ScriptValue>& args)
+            -> lc::scripting::ScriptValue {
+            (*counter)++;
+            // args[0] is the entity, args[1] is the query coord.
+            if (args.size() >= 2 &&
+                args[1].kind() == lc::scripting::ScriptValue::Kind::Coordinate) {
+                *captured_coord = args[1].asCoordinate();
+            }
+            // Return a specific Coordinate; the dispatch must extract it.
+            return lc::scripting::ScriptValue(
+                lc::geo::Coordinate(9.9, 8.8, 7.7));
+        });
+    fix.ceb.setNearestPointFunction(native);
+    auto sce = fix.ceb.build();
+
+    auto result = sce->nearestPointOnPath(lc::geo::Coordinate(4, 5, 6));
+
+    EXPECT_EQ(*counter, 1)
+        << "native callback MUST fire on non-Lua dispatch — this is the "
+           "coordinator-flagged regression that shipped in sub-piece 2a's "
+           "initial commit and was silently no-op'ing";
+    EXPECT_DOUBLE_EQ(captured_coord->x(), 4.0)
+        << "native callback must receive the query Coordinate arg through "
+           "the neutral ScriptValue path";
+    EXPECT_DOUBLE_EQ(captured_coord->y(), 5.0);
+    EXPECT_DOUBLE_EQ(captured_coord->z(), 6.0);
+    // The dispatch method must extract the returned Coordinate.
+    EXPECT_DOUBLE_EQ(result.x(), 9.9);
+    EXPECT_DOUBLE_EQ(result.y(), 8.8);
+    EXPECT_DOUBLE_EQ(result.z(), 7.7);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, DragPoints_LuaPathPreservesType) {
+    SceFixture fix("DragPointsLuaTest");
+    fix.state["_hits"] = 0;
+    fix.state["_captured_x"] = 0.0;
+    fix.state.dostring(R"lua(
+function my_dragpoints(insert)
+    _hits = _hits + 1
+    _captured_x = insert:position():x()
+    local result = {}
+    result[0] = lc.geo.Coordinate(1.0, 2.0, 3.0)
+    return result
+end
+    )lua");
+    kaguya::LuaRef dragpoints_fn = fix.state["my_dragpoints"];
+    fix.ceb.setDragPointsFunction(dragpoints_fn);
+    auto sce = fix.ceb.build();
+
+    auto result = sce->dragPoints();
+
+    EXPECT_EQ(fix.state["_hits"].get<int>(), 1)
+        << "dragPoints Lua callback must fire exactly once";
+    EXPECT_DOUBLE_EQ(fix.state["_captured_x"].get<double>(), 7.0)
+        << "insert:position():x() must resolve — concrete Insert type "
+           "preserved through dragPoints dispatch";
+    // The returned map must contain the Coordinate the callback
+    // returned at key 0.
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_DOUBLE_EQ(result.at(0).x(), 1.0);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, SetDragPoint_LuaPathPreservesType) {
+    SceFixture fix("SetDragPointLuaTest");
+    fix.state["_hits"] = 0;
+    fix.state["_captured_position_x"] = 0.0;
+    fix.state["_captured_insert_x"] = 0.0;
+    fix.state.dostring(R"lua(
+function my_setdrag(insert, position)
+    _hits = _hits + 1
+    _captured_insert_x = insert:position():x()
+    _captured_position_x = position:x()
+end
+    )lua");
+    kaguya::LuaRef setdrag_fn = fix.state["my_setdrag"];
+    fix.ceb.setNewDragPointFunction(setdrag_fn);
+    auto sce = fix.ceb.build();
+
+    sce->setDragPoint(lc::geo::Coordinate(11.5, 12.5, 13.5));
+
+    EXPECT_EQ(fix.state["_hits"].get<int>(), 1);
+    EXPECT_DOUBLE_EQ(fix.state["_captured_insert_x"].get<double>(), 7.0)
+        << "concrete Insert type preserved on setDragPoint dispatch";
+    EXPECT_DOUBLE_EQ(fix.state["_captured_position_x"].get<double>(), 11.5)
+        << "position arg passed through with correct Coordinate metatable";
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, SetDragPoint_NativeCallbackFires) {
+    SceFixture fix("SetDragPointNativeTest");
+    auto counter = std::make_shared<int>(0);
+    auto captured = std::make_shared<lc::geo::Coordinate>();
+    auto native = lc::scripting::nativeCallback(
+        [counter, captured](const std::vector<lc::scripting::ScriptValue>& args)
+            -> lc::scripting::ScriptValue {
+            (*counter)++;
+            if (args.size() >= 2 &&
+                args[1].kind() == lc::scripting::ScriptValue::Kind::Coordinate) {
+                *captured = args[1].asCoordinate();
+            }
+            return lc::scripting::ScriptValue{};
+        });
+    fix.ceb.setNewDragPointFunction(native);
+    auto sce = fix.ceb.build();
+
+    sce->setDragPoint(lc::geo::Coordinate(42.0, 43.0, 44.0));
+
+    EXPECT_EQ(*counter, 1)
+        << "setDragPoint native callback MUST fire — the coordinator-"
+           "flagged coverage gap for void-return slots too";
+    EXPECT_DOUBLE_EQ(captured->x(), 42.0);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, OnDragPointClick_LuaPathPreservesType) {
+    SceFixture fix("OnDragPointClickLuaTest");
+    fix.state["_hits"] = 0;
+    fix.state["_captured_insert_x"] = 0.0;
+    fix.state["_captured_point"] = 0;
+    // The Builder_SPtr passed in position 2 is Lua-userdata-opaque
+    // (no metatable exposed here) — callback just accepts it as
+    // opaque `_` and doesn't touch it.
+    fix.state.dostring(R"lua(
+function my_click(insert, _builder, point)
+    _hits = _hits + 1
+    _captured_insert_x = insert:position():x()
+    _captured_point = point
+end
+    )lua");
+    kaguya::LuaRef click_fn = fix.state["my_click"];
+    fix.ceb.setDragPointsClickedFunction(click_fn);
+    auto sce = fix.ceb.build();
+
+    // Call with a null Builder_SPtr — sufficient for the type check.
+    lc::operation::Builder_SPtr nullBuilder;
+    sce->onDragPointClick(nullBuilder, 42u);
+
+    EXPECT_EQ(fix.state["_hits"].get<int>(), 1);
+    EXPECT_DOUBLE_EQ(fix.state["_captured_insert_x"].get<double>(), 7.0)
+        << "concrete Insert type preserved on onDragPointClick dispatch";
+    EXPECT_EQ(fix.state["_captured_point"].get<int>(), 42);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntity, OnDragPointRelease_LuaPathPreservesType) {
+    SceFixture fix("OnDragPointReleaseLuaTest");
+    fix.state["_hits"] = 0;
+    fix.state["_captured_insert_x"] = 0.0;
+    fix.state.dostring(R"lua(
+function my_release(insert, _builder)
+    _hits = _hits + 1
+    _captured_insert_x = insert:position():x()
+end
+    )lua");
+    kaguya::LuaRef release_fn = fix.state["my_release"];
+    fix.ceb.setDragPointsReleasedFunction(release_fn);
+    auto sce = fix.ceb.build();
+
+    lc::operation::Builder_SPtr nullBuilder;
+    sce->onDragPointRelease(nullBuilder);
+
+    EXPECT_EQ(fix.state["_hits"].get<int>(), 1);
+    EXPECT_DOUBLE_EQ(fix.state["_captured_insert_x"].get<double>(), 7.0)
+        << "concrete Insert type preserved on onDragPointRelease dispatch";
+}
+
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 sub-piece 2a review fixup — checkValues() validation guard.
+//
+// The pre-refactor `checkValues()` rejected any LuaRef whose type wasn't
+// LUA_TFUNCTION.  The initial sub-piece 2a landed with a weakened check
+// (`ScriptCallback::isNil()` — wrapper-only, not shape).  The fix moves
+// the LUA_TFUNCTION guard into the LuaRef-overload setters, which
+// silently REJECT non-callable LuaRefs so the slot stays default-
+// constructed and `checkValues()` correctly reports it as missing.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntityBuilder, RejectNonFunctionLuaRefAtSetTime) {
+    // Set 5 valid callbacks, then use a nil kaguya::LuaRef for the 6th.
+    // Under the pre-fixup weakened check, this would have wrapped the
+    // nil LuaRef into a non-nil ScriptCallback and passed checkValues().
+    // Post-fixup, the LuaRef setter silently rejects the nil ref, the
+    // slot stays default (isNil()==true), and build() throws.
+    kaguya::State state;
+    state.dostring("function ok() end");
+    kaguya::LuaRef ok_fn = state["ok"];
+    ASSERT_EQ(ok_fn.type(), LUA_TFUNCTION);
+
+    // Build enough of a fixture to reach the setters.  We don't need a
+    // full document since build() throws at checkValues() BEFORE
+    // constructing anything.
+    lc::builder::CustomEntityBuilder ceb;
+    ceb.setDisplayBlock(std::make_shared<lc::meta::CustomEntityStorage>(
+        "TestPlugin", "TestEntity", lc::geo::Coordinate()));
+    ceb.setDocument(std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>()));
+    ceb.setLayer(std::make_shared<lc::meta::Layer>());
+    ceb.setCoordinate(lc::geo::Coordinate());
+    ceb.setSnapFunction(ok_fn);
+    ceb.setNearestPointFunction(ok_fn);
+    ceb.setDragPointsFunction(ok_fn);
+    ceb.setNewDragPointFunction(ok_fn);
+    ceb.setDragPointsClickedFunction(ok_fn);
+    // The one under test: nil LuaRef must be rejected.
+    kaguya::LuaRef nil_ref;
+    ceb.setDragPointsReleasedFunction(nil_ref);
+
+    // build() must throw because the released slot is still nil.
+    EXPECT_THROW(ceb.build(), std::runtime_error)
+        << "setDragPointsReleasedFunction(nil_LuaRef) must be REJECTED at "
+           "set time so the slot stays nil and checkValues() fails.  "
+           "Pre-fixup: the nil LuaRef was wrapped into a non-nil "
+           "ScriptCallback and passed validation, only to silently "
+           "no-op at dispatch time.";
+}
+
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(ScriptCustomEntity, LuaCustomEntityTypedefStillWorks) {
     // Regression guard: the LuaCustomEntity typedef in

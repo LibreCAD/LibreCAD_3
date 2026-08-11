@@ -9,17 +9,38 @@
 using namespace lc;
 using namespace builder;
 
+// Phase 6 PR-6.1 sub-piece 2a review fixup — pre-refactor `checkValues()`
+// rejected any LuaRef whose type wasn't LUA_TFUNCTION at BUILD time
+// (`_snapFunction.type() != LUA_TFUNCTION` etc.).  Post-refactor,
+// `ScriptCallback::isNil()` only checks whether the wrapper was
+// constructed at all — it can't peek at the underlying LuaRef's Lua-level
+// type.  A `setSnapFunction(kaguya::LuaRef())` (nil LuaRef) would call
+// `makeLuaCallback`, get a wrapper around the nil ref, store as
+// non-nil ScriptCallback, and PASS checkValues() — dispatching only
+// silently no-ops at invoke time.
+//
+// The fix here: the LuaRef-overload setters check
+// `luaRef.type() == LUA_TFUNCTION` before wrapping.  Non-function
+// LuaRefs are silently REJECTED (the slot stays whatever it was —
+// initially nil, so checkValues() correctly fails).  This preserves
+// the pre-refactor "reject non-callable at set time" semantic.
+//
+// For the ScriptCallback-overload setters, we cannot peek deeper — the
+// caller is responsible for passing a real callable.  Documented in
+// the header + inline note where the setters are defined.
+
 // --- Snap function ---
 void CustomEntityBuilder::setSnapFunction(lc::scripting::ScriptCallback snapFunction) {
     _snapFunction = std::move(snapFunction);
 }
 
 void CustomEntityBuilder::setSnapFunction(kaguya::LuaRef snapFunction) {
-    // Phase 6 PR-6.1 sub-piece 2a — LuaRef overload wraps via the Lua
-    // adapter's makeLuaCallback into a ScriptCallback with runtime tag
-    // "lua"; ScriptCustomEntity's dispatch uses unwrapLuaCallback to
-    // recover the LuaRef and call kaguya directly (preserving
-    // concrete Insert type per the sub-piece 1 fixup lesson).
+    // Phase 6 PR-6.1 sub-piece 2a review fixup — reject non-function
+    // LuaRefs before wrapping.  Matches pre-refactor `checkValues()`
+    // behavior which rejected any non-LUA_TFUNCTION LuaRef.
+    if (snapFunction.type() != LUA_TFUNCTION) {
+        return;
+    }
     setSnapFunction(lc::lua::makeLuaCallback(std::move(snapFunction)));
 }
 
@@ -36,16 +57,14 @@ const lc::scripting::ScriptCallback& CustomEntityBuilder::snapFunction() const {
 }
 
 bool CustomEntityBuilder::checkValues(bool throwExceptions) const {
-    // Phase 6 PR-6.1 sub-piece 2a — was `_snapFunction.type() ==
-    // LUA_TFUNCTION` etc.; now checks whether the neutral ScriptCallback
-    // is non-nil.  For Lua callbacks: a LuaRef wrapping a non-function
-    // Lua value passes through makeLuaCallback but produces a ScriptCallback
-    // that, on invoke, will fail — that's a runtime failure, not a
-    // build-time one.  The pre-refactor build-time check was stricter
-    // (LUA_TFUNCTION only); the new behavior accepts any non-nil callback
-    // and defers the shape check to invoke time.  Acceptable because
-    // callable-shape validation isn't a builder-level concern in the
-    // neutral world.
+    // Phase 6 PR-6.1 sub-piece 2a review fixup — `ScriptCallback::isNil()`
+    // is a wrapper-only check; the LuaRef-shape check that used to live
+    // here now lives in the LuaRef-overload setters (which refuse to
+    // wrap non-LUA_TFUNCTION refs).  Result: the slot stays default-
+    // constructed if the caller passes a bad LuaRef, so `isNil()`
+    // correctly reports the missing callback.  For ScriptCallback-
+    // overload callers (native / Python), the isNil check is all we
+    // can do — caller responsibility to pass a real callable.
     if (!throwExceptions) {
         return InsertBuilder::checkValues(throwExceptions) &&
                !_snapFunction.isNil() &&
@@ -89,6 +108,10 @@ void CustomEntityBuilder::setNearestPointFunction(lc::scripting::ScriptCallback 
 }
 
 void CustomEntityBuilder::setNearestPointFunction(const kaguya::LuaRef& nearestPointFunction) {
+    // See setSnapFunction's rationale for the LUA_TFUNCTION guard.
+    if (nearestPointFunction.type() != LUA_TFUNCTION) {
+        return;
+    }
     setNearestPointFunction(lc::lua::makeLuaCallback(nearestPointFunction));
 }
 
@@ -102,6 +125,9 @@ void CustomEntityBuilder::setDragPointsFunction(lc::scripting::ScriptCallback dr
 }
 
 void CustomEntityBuilder::setDragPointsFunction(const kaguya::LuaRef& dragPointsFunction) {
+    if (dragPointsFunction.type() != LUA_TFUNCTION) {
+        return;
+    }
     setDragPointsFunction(lc::lua::makeLuaCallback(dragPointsFunction));
 }
 
@@ -115,6 +141,9 @@ void CustomEntityBuilder::setNewDragPointFunction(lc::scripting::ScriptCallback 
 }
 
 void CustomEntityBuilder::setNewDragPointFunction(const kaguya::LuaRef& newDragPointFunction) {
+    if (newDragPointFunction.type() != LUA_TFUNCTION) {
+        return;
+    }
     setNewDragPointFunction(lc::lua::makeLuaCallback(newDragPointFunction));
 }
 
@@ -128,6 +157,9 @@ void CustomEntityBuilder::setDragPointsClickedFunction(lc::scripting::ScriptCall
 }
 
 void CustomEntityBuilder::setDragPointsClickedFunction(const kaguya::LuaRef& dragPointsClickedFunction) {
+    if (dragPointsClickedFunction.type() != LUA_TFUNCTION) {
+        return;
+    }
     setDragPointsClickedFunction(lc::lua::makeLuaCallback(dragPointsClickedFunction));
 }
 
@@ -141,5 +173,8 @@ void CustomEntityBuilder::setDragPointsReleasedFunction(lc::scripting::ScriptCal
 }
 
 void CustomEntityBuilder::setDragPointsReleasedFunction(const kaguya::LuaRef& dragPointsReleasedFunction) {
+    if (dragPointsReleasedFunction.type() != LUA_TFUNCTION) {
+        return;
+    }
     setDragPointsReleasedFunction(lc::lua::makeLuaCallback(dragPointsReleasedFunction));
 }

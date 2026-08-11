@@ -22,10 +22,8 @@ namespace {
 // dragPoints).  Runs the callback via kaguya's `luaRef.call<T>()`
 // which handles the return-type materialization from Lua's return
 // values.  Returns `true` and sets `out` on success; `false` if the
-// callback isn't Lua-backed (caller falls through to whatever
-// non-Lua handling — but for the 6 slots here, non-Lua callbacks
-// are unsupported until sub-piece 3 adds Python bindings for the
-// custom-entity behavior surface).
+// callback isn't Lua-backed — the caller then falls through to the
+// neutral ScriptValue path (see the six dispatch methods below).
 template <typename Ret, typename... Args>
 bool tryLuaCallReturning(const lc::scripting::ScriptCallback& callback,
                          Ret& out, Args&&... args) {
@@ -49,6 +47,34 @@ bool tryLuaCallVoid(const lc::scripting::ScriptCallback& callback,
     }
     luaRef(std::forward<Args>(args)...);
     return true;
+}
+
+// Phase 6 PR-6.1 sub-piece 2a review fixup — non-Lua fallback:
+// invoke the callback through the neutral ScriptValue path so
+// native (or future Python) callbacks actually FIRE.
+//
+// Motivation (coordinator's review): pre-fixup, if the callback
+// wasn't Lua-backed, dispatch silently returned a hardcoded default
+// (empty vector / query point / empty map / no-op) — never invoking
+// the ScriptCallback.  A native caller passing a real callable
+// through `nativeCallback` would satisfy `checkValues()`, build
+// successfully, and have their callback silently never fire.  This
+// fix routes non-Lua callbacks through the neutral `.invoke()` path
+// so side effects reach the callee.
+//
+// Argument packing: `shared_from_this()` upcasts to CADEntity_CSPtr
+// (via Insert's public inheritance).  Other args map to their
+// ScriptValue kinds where available; unpackable types (Builder_SPtr,
+// SimpleSnapConstrain) go through as Nil for now.  The neutral
+// ScriptValue surface will grow those kinds in later phases when
+// Python custom-entity plugins need them.
+lc::scripting::ScriptValue invokeNonLua(
+    const lc::scripting::ScriptCallback& callback,
+    const std::vector<lc::scripting::ScriptValue>& args) {
+    if (callback.isNil()) {
+        return lc::scripting::ScriptValue{};
+    }
+    return callback.invoke(args);
 }
 
 } // namespace
@@ -92,10 +118,22 @@ std::vector<EntityCoordinate> ScriptCustomEntity::snapPoints(const geo::Coordina
         Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
         return points;
     }
-    // Non-Lua path (Python/native): unsupported until sub-piece 3
-    // adds Python bindings for the custom-entity behavior slots.
-    // Returning empty is safe — the receiver treats empty snap as
-    // "this entity doesn't contribute snap points".
+    // Non-Lua path: native / (future) Python callback.  Fire through
+    // the neutral ScriptValue pipeline so side effects reach the
+    // callee.  The return value (`vector<EntityCoordinate>`) has no
+    // corresponding ScriptValue kind today, so the callback's return
+    // is IGNORED — this dispatch site is for side effects only until
+    // ScriptValue grows an EntityCoordinate list kind.  Documented at
+    // the neutral-callback registration site so callers know.
+    lc::entity::CADEntity_CSPtr self = shared_from_this();
+    invokeNonLua(_snapPoints, {
+        lc::scripting::ScriptValue(self),
+        lc::scripting::ScriptValue(coord),
+        // SimpleSnapConstrain has no ScriptValue kind yet — Nil placeholder.
+        lc::scripting::ScriptValue{},
+        lc::scripting::ScriptValue(minDistanceToSnap),
+        lc::scripting::ScriptValue(maxNumberOfSnapPoints),
+    });
     return points;
 }
 
@@ -105,10 +143,18 @@ geo::Coordinate ScriptCustomEntity::nearestPointOnPath(const geo::Coordinate& co
                             shared_from_this(), coord)) {
         return result;
     }
-    // Non-Lua path unsupported — return the query point as a safe
-    // fallback (matches the pre-refactor "no valid callback" case
-    // which would have propagated an unspecified value from the nil
-    // LuaRef's call<T>()).
+    // Non-Lua path: fire callback + try to extract a Coordinate return.
+    // If the callback's return is a Coordinate kind, use it; otherwise
+    // fall back to the query point (matches the old "no valid
+    // callback" case).
+    lc::entity::CADEntity_CSPtr self = shared_from_this();
+    lc::scripting::ScriptValue ret = invokeNonLua(_nearestPoint, {
+        lc::scripting::ScriptValue(self),
+        lc::scripting::ScriptValue(coord),
+    });
+    if (ret.kind() == lc::scripting::ScriptValue::Kind::Coordinate) {
+        return ret.asCoordinate();
+    }
     return coord;
 }
 
@@ -154,18 +200,45 @@ std::map<unsigned int, geo::Coordinate> ScriptCustomEntity::dragPoints() const {
     if (tryLuaCallReturning(_dragPoints, result, shared_from_this())) {
         return result;
     }
+    // Non-Lua path: fire callback for side effects.  Return type
+    // (`map<unsigned int, Coordinate>`) has no ScriptValue kind — same
+    // limitation as snapPoints's vector<EntityCoordinate>.  Returned
+    // ScriptValue is discarded; result stays empty.
+    lc::entity::CADEntity_CSPtr self = shared_from_this();
+    invokeNonLua(_dragPoints, {
+        lc::scripting::ScriptValue(self),
+    });
     return result;
 }
 
 void ScriptCustomEntity::onDragPointClick(lc::operation::Builder_SPtr builder, unsigned int point) const {
-    tryLuaCallVoid(_dragPointClick, shared_from_this(), builder, point);
-    // Non-Lua path — no-op until sub-piece 3.
+    if (tryLuaCallVoid(_dragPointClick, shared_from_this(), builder, point)) return;
+    // Non-Lua path: fire callback.  Builder_SPtr has no ScriptValue
+    // kind today — passes as Nil.  Callers that need builder access
+    // must use the Lua path (or wait for Python bindings to add a
+    // dedicated kind in sub-piece 3).
+    lc::entity::CADEntity_CSPtr self = shared_from_this();
+    invokeNonLua(_dragPointClick, {
+        lc::scripting::ScriptValue(self),
+        lc::scripting::ScriptValue{},  // Builder_SPtr — no kind yet
+        lc::scripting::ScriptValue(static_cast<int>(point)),
+    });
 }
 
 void ScriptCustomEntity::onDragPointRelease(lc::operation::Builder_SPtr builder) const {
-    tryLuaCallVoid(_dragPointRelease, shared_from_this(), builder);
+    if (tryLuaCallVoid(_dragPointRelease, shared_from_this(), builder)) return;
+    lc::entity::CADEntity_CSPtr self = shared_from_this();
+    invokeNonLua(_dragPointRelease, {
+        lc::scripting::ScriptValue(self),
+        lc::scripting::ScriptValue{},  // Builder_SPtr — no kind yet
+    });
 }
 
 void ScriptCustomEntity::setDragPoint(lc::geo::Coordinate position) const {
-    tryLuaCallVoid(_newDragPoint, shared_from_this(), position);
+    if (tryLuaCallVoid(_newDragPoint, shared_from_this(), position)) return;
+    lc::entity::CADEntity_CSPtr self = shared_from_this();
+    invokeNonLua(_newDragPoint, {
+        lc::scripting::ScriptValue(self),
+        lc::scripting::ScriptValue(position),
+    });
 }
