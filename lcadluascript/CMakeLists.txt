@@ -9,8 +9,11 @@ message("***** LibreCAD lcadluascript *****")
 set(lcluascript_srcs
         managers/pluginmanager.cpp
         lclua.cpp
-        primitive/customentity.cpp
-        builders/customentity.cpp
+        # Phase 6 PR-6.1 sub-piece 2b — CustomEntity classes MOVED to
+        # lcscripting/{primitive,builders}/customentity.  The Lua-side
+        # dispatch hook implementation + LuaRef→ScriptCallback wrapper
+        # helpers with LUA_TFUNCTION guard live in
+        # scriptadapter/customentitydispatch_lua.
         managers/luacustomentitymanager.cpp
         bridge/lc.cpp
         bridge/lc_geo.cpp
@@ -23,6 +26,9 @@ set(lcluascript_srcs
         bridge/lc_operation.cpp
         # Phase 4 PR-1 follow-on — Lua adapter for the neutral callback layer.
         scriptadapter/luacallback.cpp
+        # Phase 6 PR-6.1 sub-piece 2b — Lua CustomEntityDispatchHook
+        # implementation + LuaRef→ScriptCallback wrapper helpers.
+        scriptadapter/customentitydispatch_lua.cpp
 )
 
 # HEADER FILES
@@ -31,8 +37,6 @@ set(lcluascript_hdrs
         utils/timer.h
         managers/pluginmanager.h
         lclua.h
-        primitive/customentity.h
-        builders/customentity.h
         managers/luacustomentitymanager.h
         bridge/lc.h
         bridge/lc_geo.h
@@ -43,6 +47,8 @@ set(lcluascript_hdrs
         bridge/lc_maths.h
         bridge/lc_event.h
         bridge/lc_operation.h
+        # Phase 6 PR-6.1 sub-piece 2b — Lua CustomEntityDispatchHook.
+        scriptadapter/customentitydispatch_lua.h
 )
 
 # Phase 2 slice 2.6 — persistence bindings (mirror of the Python side).

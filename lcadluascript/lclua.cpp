@@ -2,6 +2,7 @@
 #include "lclua.h"
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
+#include <scriptadapter/customentitydispatch_lua.h>  // Phase 6 PR-6.1 sub-piece 2b
 #include <kaguya/kaguya.hpp>
 #include <bridge/lc.h>
 #include <bridge/lc_geo.h>
@@ -36,6 +37,15 @@ LCLua::LCLua(lua_State* L) :
     s["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
         LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
     });
+
+    // Phase 6 PR-6.1 sub-piece 2b — install the CustomEntity dispatch
+    // hook so ScriptCustomEntity's 6 dispatch methods (which live in
+    // lcscripting post-move) can reach the Lua fast path via
+    // unwrapLuaCallback + kaguya's static template deduction.
+    // Idempotent — safe to call once per LuaInterface / LCLua
+    // construction; the process-global slot always points at a fresh
+    // hook instance (which is stateless).
+    lc::lua::installLuaCustomEntityDispatchHook();
 }
 
 void LCLua::addLuaLibs() {

@@ -40,6 +40,14 @@ set(lcscripting_srcs
     scriptvalue.cpp
     scriptcallback_native.cpp
     eventbus.cpp
+    # Phase 6 PR-6.1 sub-piece 2b — CustomEntity classes physically
+    # moved from lcadluascript.  ScriptCustomEntity + CustomEntityBuilder
+    # own the neutral storage; concrete-type-preserving Lua fast path
+    # lives behind CustomEntityDispatchHook (interface here;
+    # implementation in lcadluascript/scriptadapter/).
+    customentitydispatchhook.cpp
+    builders/customentity.cpp
+    primitive/customentity.cpp
 )
 
 set(lcscripting_hdrs
@@ -47,6 +55,9 @@ set(lcscripting_hdrs
     scriptcallback.h
     scriptobject.h
     eventbus.h
+    customentitydispatchhook.h
+    builders/customentity.h
+    primitive/customentity.h
 )
 
 # SHARED for the same reason as lcpythonscript: consumers link it (lcUI,

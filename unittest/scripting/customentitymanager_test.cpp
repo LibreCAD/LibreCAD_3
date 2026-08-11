@@ -44,14 +44,15 @@
 #include <lcscripting/scriptcallback.h>
 #include <lcscripting/scriptvalue.h>
 
-// Phase 6 PR-6.1 sub-piece 2a — ScriptCustomEntity + CustomEntityBuilder
-// direct-dispatch tests.  Exercises the 6 script-defined behavior slots
-// after the LuaRef→ScriptCallback neutralization.
-#include <builders/customentity.h>
-#include <primitive/customentity.h>
+// Phase 6 PR-6.1 sub-piece 2b — ScriptCustomEntity + CustomEntityBuilder
+// physically moved to lcscripting.  Setter helpers with LUA_TFUNCTION
+// guard live in lcadluascript/scriptadapter/customentitydispatch_lua.h.
+#include <lcscripting/builders/customentity.h>
+#include <lcscripting/primitive/customentity.h>
 
 #include <managers/luacustomentitymanager.h>
 #include <scriptadapter/luacallback.h>
+#include <scriptadapter/customentitydispatch_lua.h>
 
 #include <kaguya/kaguya.hpp>
 
@@ -327,6 +328,11 @@ TEST(LuaCustomEntityManager, ReplayPathPreservesConcreteType) {
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(ScriptCustomEntity, SnapDispatchPreservesConcreteInsertType) {
+    // Phase 6 PR-6.1 sub-piece 2b — install the dispatch hook so
+    // ScriptCustomEntity's Lua fast path is reachable.  See SceFixture
+    // ctor for the full rationale.
+    lc::lua::installLuaCustomEntityDispatchHook();
+
     // Register a native "no-op" plugin so the manager doesn't complain
     // about a missing plugin name when we build our custom entity via
     // the builder (the builder itself doesn't require a registration,
@@ -402,7 +408,7 @@ end
     ceb.setDocument(doc);
     ceb.setLayer(std::make_shared<lc::meta::Layer>());
     ceb.setCoordinate(lc::geo::Coordinate(7.0, 14.0, 21.0));
-    ceb.setSnapFunction(snap_fn);
+    lc::lua::setSnapFunctionLua(ceb, snap_fn);
     ceb.setNearestPointFunction(noop);
     ceb.setDragPointsFunction(noop);
     ceb.setNewDragPointFunction(noop);
@@ -481,6 +487,17 @@ struct SceFixture {
     lc::builder::CustomEntityBuilder ceb;
 
     explicit SceFixture(const std::string& pluginName) {
+        // Phase 6 PR-6.1 sub-piece 2b — install the Lua dispatch hook
+        // so ScriptCustomEntity's dispatch methods (which live in
+        // lcscripting post-move) can reach the concrete-type-preserving
+        // fast path via unwrapLuaCallback.  Idempotent: safe to call
+        // multiple times (each SceFixture construction installs a
+        // fresh instance; the hook is stateless).  Without this, Lua-
+        // fast-path tests hit the neutral fallback and Lua-side
+        // `insert:position()` fails because the userdata gets
+        // CADEntity's metatable instead of Insert's.
+        lc::lua::installLuaCustomEntityDispatchHook();
+
         // Bind Insert::position + Coordinate accessors + return-type
         // classes so callbacks can call type-specific methods.
         state["lc"] = kaguya::NewTable();
@@ -541,7 +558,7 @@ end
     // overload — `state["fn"]` proxy converts to both LuaRef and
     // ScriptCallback, so ambiguous without the explicit type.
     kaguya::LuaRef nearest_fn = fix.state["my_nearest"];
-    fix.ceb.setNearestPointFunction(nearest_fn);
+    lc::lua::setNearestPointFunctionLua(fix.ceb, nearest_fn);
     auto sce = fix.ceb.build();
 
     auto result = sce->nearestPointOnPath(lc::geo::Coordinate(0, 0, 0));
@@ -616,7 +633,7 @@ function my_dragpoints(insert)
 end
     )lua");
     kaguya::LuaRef dragpoints_fn = fix.state["my_dragpoints"];
-    fix.ceb.setDragPointsFunction(dragpoints_fn);
+    lc::lua::setDragPointsFunctionLua(fix.ceb, dragpoints_fn);
     auto sce = fix.ceb.build();
 
     auto result = sce->dragPoints();
@@ -646,7 +663,7 @@ function my_setdrag(insert, position)
 end
     )lua");
     kaguya::LuaRef setdrag_fn = fix.state["my_setdrag"];
-    fix.ceb.setNewDragPointFunction(setdrag_fn);
+    lc::lua::setNewDragPointFunctionLua(fix.ceb, setdrag_fn);
     auto sce = fix.ceb.build();
 
     sce->setDragPoint(lc::geo::Coordinate(11.5, 12.5, 13.5));
@@ -701,7 +718,7 @@ function my_click(insert, _builder, point)
 end
     )lua");
     kaguya::LuaRef click_fn = fix.state["my_click"];
-    fix.ceb.setDragPointsClickedFunction(click_fn);
+    lc::lua::setDragPointsClickedFunctionLua(fix.ceb, click_fn);
     auto sce = fix.ceb.build();
 
     // Call with a null Builder_SPtr — sufficient for the type check.
@@ -726,7 +743,7 @@ function my_release(insert, _builder)
 end
     )lua");
     kaguya::LuaRef release_fn = fix.state["my_release"];
-    fix.ceb.setDragPointsReleasedFunction(release_fn);
+    lc::lua::setDragPointsReleasedFunctionLua(fix.ceb, release_fn);
     auto sce = fix.ceb.build();
 
     lc::operation::Builder_SPtr nullBuilder;
@@ -769,14 +786,15 @@ TEST(ScriptCustomEntityBuilder, RejectNonFunctionLuaRefAtSetTime) {
         std::make_shared<lc::storage::StorageManagerImpl>()));
     ceb.setLayer(std::make_shared<lc::meta::Layer>());
     ceb.setCoordinate(lc::geo::Coordinate());
-    ceb.setSnapFunction(ok_fn);
-    ceb.setNearestPointFunction(ok_fn);
-    ceb.setDragPointsFunction(ok_fn);
-    ceb.setNewDragPointFunction(ok_fn);
-    ceb.setDragPointsClickedFunction(ok_fn);
-    // The one under test: nil LuaRef must be rejected.
+    lc::lua::setSnapFunctionLua(ceb, ok_fn);
+    lc::lua::setNearestPointFunctionLua(ceb, ok_fn);
+    lc::lua::setDragPointsFunctionLua(ceb, ok_fn);
+    lc::lua::setNewDragPointFunctionLua(ceb, ok_fn);
+    lc::lua::setDragPointsClickedFunctionLua(ceb, ok_fn);
+    // The one under test: nil LuaRef must be rejected by the wrapper
+    // helper's LUA_TFUNCTION guard.
     kaguya::LuaRef nil_ref;
-    ceb.setDragPointsReleasedFunction(nil_ref);
+    lc::lua::setDragPointsReleasedFunctionLua(ceb, nil_ref);
 
     // build() must throw because the released slot is still nil.
     EXPECT_THROW(ceb.build(), std::runtime_error)
