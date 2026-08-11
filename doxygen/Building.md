@@ -11,10 +11,11 @@ Required libraries
 4) git
 5) Google test
 6) Eigen 3
-7) Lua >= 5.2
-8) Curl
-9) Boost
-10) LibDxfRW (building instructions follow)
+7) Lua == 5.3 (see `find_package(Lua 5.3 EXACT REQUIRED)` in the root CMakeLists — the "5.2" wording in this doc is historical and superseded)
+8) Python 3.9+ development headers (`python3-dev` on Debian/Ubuntu, `python3-devel` on Fedora/RHEL) — added for phase-5 Python scripting (`WITH_PYTHONSCRIPT=ON` by default, can be OFF for a Lua-only build).  pybind11 comes from the vendored submodule at `third_party/pybind11`; you do NOT need pybind11 installed system-wide.
+9) Curl
+10) Boost
+11) LibDxfRW (building instructions follow)
 
 LibDxfRW
 --------
@@ -91,7 +92,7 @@ Ubuntu/Mint
 ===========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev python3-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
 ```
 
 You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/

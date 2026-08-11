@@ -1,7 +1,11 @@
 #!/bin/bash
 OUTPUT_DIRECTORY=doxygen/doc
 #doxygen is main module
-MODULES=( lckernel persistence lcviewernoqt lcadluascript lcUI luacmdinterface unittest )
+# Phase 6 PR-6.2 — added `lcadpythonscript` + `lcscripting`.  Order-
+# matters caveat still applies (per the comment below), but neither
+# new module cycles into the existing ones — lcadpythonscript links
+# lckernel + lcscripting, lcscripting has no upstream dep.
+MODULES=( lckernel persistence lcviewernoqt lcscripting lcadluascript lcadpythonscript lcUI luacmdinterface unittest )
 #here order matters, if cyclic 2 run
 
 #This file generate Doxygen documentation

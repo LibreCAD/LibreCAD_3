@@ -11,6 +11,16 @@ Releases and Releases and Continuous Building
 ----------
 See https://github.com/LibreCAD/LibreCAD_3/releases
 
+Scripting
+----------
+LibreCAD_3 embeds both Lua and Python simultaneously.  User scripts,
+plugins, and custom entity classes can be written in either language;
+the two share the same underlying event bus, operation registry, and
+kernel API.  See [doxygen/Scripting.md](doxygen/Scripting.md) for the
+architecture, the parity table, and plugin authoring notes.  Python
+scripting is enabled by default at build time (`WITH_PYTHONSCRIPT=ON`);
+build with `-DWITH_PYTHONSCRIPT=OFF` for a Lua-only build.
+
 
 Reading materials for feature usage
 =========
