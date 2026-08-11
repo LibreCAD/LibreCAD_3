@@ -138,8 +138,18 @@ class PyGearOp(CreateOperations):
         if event_name != "number":
             return
         n = args.get("number")
-        if isinstance(n, int) and n > 2:
-            self.n = n
+        # Phase 5 PR-5.5 fixup round 2 — accept int OR float.  The
+        # real number-event pipeline (CliCommand::enterNumber(double)
+        # → MainWindow::triggerNumberEntered(double) →
+        # ScriptValue(Kind::Double) → toPyLocked's K::Double case) ALWAYS
+        # delivers `py::float_` — no code path produces a py::int at
+        # the number-event key.  Coerce to int for the teeth count
+        # (fractional teeth make no sense).
+        if not isinstance(n, (int, float)):
+            return
+        teeth = int(n)
+        if teeth > 2:
+            self.n = teeth
             self.step = "AWAIT_PHI"
             mw = self._get_main_window()
             if mw is not None:

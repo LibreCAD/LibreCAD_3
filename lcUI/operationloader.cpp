@@ -566,6 +566,24 @@ void OperationLoader::loadPythonOperations() {
         }
 
         // ---- CliCommand (command_line) ----
+        //
+        // Phase 5 PR-5.5 fixup round 2 — CliCommand::addCommand returns
+        // `bool` indicating whether the name was accepted; a duplicate
+        // silently loses today (the CLI command map stores the FIRST
+        // registration).  Log the collision here for parity with the
+        // `foundProperties` name-collision path above — otherwise a
+        // Python plugin registering the same CLI text as a Lua op
+        // (e.g. "LINE") would silently no-op with zero diagnostic.
+        auto addOrWarn = [&](const char* cmdName,
+                             lc::scripting::ScriptCallback cb) {
+            if (!cliCommand->addCommand(cmdName, std::move(cb))) {
+                std::cerr << "[OperationLoader] Python operation '" << name
+                          << "' CLI command '" << cmdName
+                          << "' collides with an existing command — "
+                             "Python registration silently rejected."
+                          << std::endl;
+            }
+        };
         if (py::hasattr(cls, "command_line")) {
             py::object cmd = cls.attr("command_line");
             if (py::isinstance<py::str>(cmd)) {
@@ -574,7 +592,7 @@ void OperationLoader::loadPythonOperations() {
                 // CliCommand::addCommand takes `const char*`; needed
                 // .c_str() (missing in the original PR-5.2 code was a
                 // real compile error).
-                cliCommand->addCommand(cmdStr.c_str(),
+                addOrWarn(cmdStr.c_str(),
                     lc::scripting::nativeCallback([mWindow, name]() {
                         mWindow->runOperationByName(name);
                     }));
@@ -601,7 +619,7 @@ void OperationLoader::loadPythonOperations() {
                         && std::all_of(key.begin(), key.end(),
                             [](unsigned char c) { return std::isdigit(c); });
                     if (digitsOnly) {
-                        cliCommand->addCommand(value.c_str(),
+                        addOrWarn(value.c_str(),
                             lc::scripting::nativeCallback([mWindow, name]() {
                                 mWindow->runOperationByName(name);
                             }));
@@ -610,7 +628,7 @@ void OperationLoader::loadPythonOperations() {
                         // = VALUE.  Matches Lua at
                         // operationloader.cpp:280-281.
                         std::string initMethod = "_init_" + value;
-                        cliCommand->addCommand(key.c_str(),
+                        addOrWarn(key.c_str(),
                             lc::scripting::nativeCallback(
                                 [mWindow, name, initMethod]() {
                                     mWindow->runOperationByName(name, initMethod);

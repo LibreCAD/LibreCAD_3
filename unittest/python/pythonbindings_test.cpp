@@ -270,6 +270,26 @@ assert line is not None, "LineBuilder().build() must return a Line entity"
 # gear's draw() traverse.
 eb.appendEntity(line)
 eb.execute()
+
+# Phase 5 PR-5.5 fixup round 2 — assert on the document AFTER
+# execute() so this test guards against a "silent no-op" regression
+# (calls succeeding but the entity never landing in the document).
+# EntityBuilder::processInternal writes through to the document's
+# entity container; read back via asVector() and check the endpoints
+# match what we set.
+entities = document.entityContainer().asVector(32767)  # max short = deep scan
+assert len(entities) == 1, \
+    f"expected 1 entity in document after execute, got {len(entities)}"
+
+# Downcast: the single entity should be a Line with our start/end.
+# lc.entity.Line has start()/end() accessors bound via py_lc_entity.cpp.
+stored = entities[0]
+assert isinstance(stored, lc.entity.Line), \
+    f"stored entity should be a Line, got {type(stored).__name__}"
+assert abs(stored.start().x() -  0.0) < 1e-9
+assert abs(stored.start().y() -  0.0) < 1e-9
+assert abs(stored.end().x()   - 10.0) < 1e-9
+assert abs(stored.end().y()   -  0.0) < 1e-9
 )py",
         ns);
     ASSERT_EQ(err, "") << err;
