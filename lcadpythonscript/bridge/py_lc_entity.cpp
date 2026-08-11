@@ -22,6 +22,13 @@
 #include <cad/interface/splitable.h>
 #include <cad/interface/tangentable.h>
 #include <cad/interface/unmanageddraggable.h>
+
+// Phase 6 PR-6.1 sub-piece 3a — ScriptCustomEntity Python binding.
+// The class lives in lcscripting/primitive/customentity.h post-sub-piece
+// 2b's physical move.  Bound with `py::classh` so pybind11's polymorphic
+// downcast recovers the concrete type when a base-typed pointer (e.g.,
+// `CADEntity_CSPtr` from a callback) actually holds a ScriptCustomEntity.
+#include <lcscripting/primitive/customentity.h>
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
 #include <cad/primitive/customentity.h>
@@ -464,6 +471,33 @@ void import_py_lc_entity_namespace(py::module_& m_lc,
         .def("scale",               &lc::entity::CustomEntity::scale)
         .def("setDragPoints",       &lc::entity::CustomEntity::setDragPoints)
         .def("snapPoints",          &lc::entity::CustomEntity::snapPoints);
+
+    // ------------------------------------------------------------------------
+    // Phase 6 PR-6.1 sub-piece 3a — ScriptCustomEntity (was
+    // `LuaCustomEntity` pre-sub-piece 2a; renamed with typedef; physically
+    // moved to lcscripting in sub-piece 2b).
+    //
+    // Bound with `py::classh` per plan decision 1's polymorphic-base
+    // policy — CustomEntity is bound classh, so ScriptCustomEntity MUST
+    // be classh too (mixing class_ and classh in the same hierarchy is
+    // undefined behavior at runtime).
+    //
+    // No `py::init<...>()` — construction is exclusively through
+    // `lc.builder.CustomEntityBuilder().build()`.  This mirrors the
+    // ScriptCustomEntity C++ ctor which only accepts a
+    // CustomEntityBuilder&, NEVER exposed to Python directly.  Same
+    // discipline as the EntityBuilder / Push / Remove sub-piece 5
+    // fixup class: no direct-ctor path, only the static/builder factory.
+    //
+    // No method bindings here — all script-defined behaviors
+    // (snapPoints / nearestPointOnPath / dragPoints / setDragPoint /
+    // onDragPointClick / onDragPointRelease) inherit from CustomEntity
+    // (which itself inherits from Insert + UnmanagedDraggable).
+    // Overriden dispatch semantics live inside the C++ implementation
+    // and are transparent to Python callers.
+    // ------------------------------------------------------------------------
+    py::classh<lc::entity::ScriptCustomEntity,
+               lc::entity::CustomEntity>(m_entity, "ScriptCustomEntity");
 
     // ------------------------------------------------------------------------
     // Deferred from slice 1.3: lc.EntityDispatch — every entity Python type

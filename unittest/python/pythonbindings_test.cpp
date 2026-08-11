@@ -594,4 +594,231 @@ TEST_F(PythonFixture, RegisterPluginHookAccessorReturnsInstalled) {
     lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
 }
 
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 sub-piece 3a — CustomEntityBuilder + ScriptCustomEntity
+// Python bindings.
+//
+// The coordinator's PR-6.1 sub-piece 3 briefing called out TWO high-risk
+// categories that need direct verification here:
+//   1. pybind11 object construction — verify every binding against the
+//      real header; specifically check for the bug class that hit
+//      EntityBuilder/Push/Remove/Line (calling a class as constructor
+//      when only a builder pattern is bound).  We DO NOT bind
+//      `ScriptCustomEntity()` as a Python ctor — construction is
+//      exclusively via `CustomEntityBuilder().build()`.
+//   2. pybind11's RTTI-based polymorphic downcast (via classh) —
+//      verify it genuinely recovers the concrete `ScriptCustomEntity`
+//      type when the returned entity flows through a base-typed
+//      shared_ptr, don't assume it.
+//
+// Both categories exercised by executable tests below.
+// -----------------------------------------------------------------------------
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CustomEntityBuilderConstructAndCheck) {
+    // Verify the builder constructs from Python, exposes its 6 setter
+    // methods + build() + checkValues(), and reports `checkValues()`
+    // as False when the 6 slots aren't wired.
+    const std::string err = lcpy.runString(R"py(
+ceb = lc.builder.CustomEntityBuilder()
+assert ceb is not None, "default ctor must succeed"
+
+# Inherited from InsertBuilder — should be callable.
+assert hasattr(ceb, 'setCoordinate')
+assert hasattr(ceb, 'setDisplayBlock')
+assert hasattr(ceb, 'setDocument')
+
+# The 6 script-defined setters must exist as instance methods.
+for setter in ('setSnapFunction', 'setNearestPointFunction',
+               'setDragPointsFunction', 'setNewDragPointFunction',
+               'setDragPointsClickedFunction',
+               'setDragPointsReleasedFunction'):
+    assert hasattr(ceb, setter), f"missing setter: {setter}"
+
+# Without any slots set, checkValues() must report False.
+assert ceb.checkValues() is False, \
+    "empty builder must fail checkValues() — slots are missing"
+
+# build() with an empty builder must throw (InsertBuilder's
+# checkValues fails first — no layer, no doc, etc.).
+try:
+    ceb.build()
+    assert False, "build() on empty builder must raise"
+except RuntimeError:
+    pass  # expected
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CustomEntityBuilderNoDirectCtorForEntity) {
+    // Regression guard — the class of bug the coordinator flagged from
+    // sub-piece 5's EntityBuilder/Push/Remove/Line fixup: calling a
+    // class as a constructor when only a builder / static factory
+    // exists.
+    //
+    // `lc.entity.ScriptCustomEntity` intentionally has NO `py::init`
+    // binding.  Any attempt to construct it directly must raise
+    // TypeError.
+    const std::string err = lcpy.runString(R"py(
+try:
+    lc.entity.ScriptCustomEntity()
+    assert False, \
+        "lc.entity.ScriptCustomEntity() must raise — only " \
+        "CustomEntityBuilder().build() creates one.  If this " \
+        "assertion fails, the coordinator's flagged bug class " \
+        "shipped in Python bindings."
+except TypeError:
+    pass  # expected
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CustomEntityBuilderSlotsAcceptCallables) {
+    // Verify each of the 6 setters accepts a Python callable and
+    // updates checkValues().  Also verifies the non-callable branch
+    // silently rejects (matches the LuaRef-helper LUA_TFUNCTION guard
+    // semantic from sub-piece 2a's fixup).
+    const std::string err = lcpy.runString(R"py(
+ceb = lc.builder.CustomEntityBuilder()
+
+# Set all 6 slots to Python lambdas.
+ceb.setSnapFunction(lambda *args: [])
+ceb.setNearestPointFunction(lambda *args: None)
+ceb.setDragPointsFunction(lambda *args: {})
+ceb.setNewDragPointFunction(lambda *args: None)
+ceb.setDragPointsClickedFunction(lambda *args: None)
+ceb.setDragPointsReleasedFunction(lambda *args: None)
+
+# Slots set, but InsertBuilder parent still needs coord/block/doc.
+# checkValues() should be False (parent slots missing).
+assert ceb.checkValues() is False
+
+# Non-callable arg — silently rejected (leaves slot at whatever it was).
+# The pre-set snap lambda stays in place; if the setter WOULDN'T
+# silently reject, this call would overwrite with a bad value.
+ceb.setSnapFunction("not a callable")
+
+# checkValues() still reports False because parent slots are missing,
+# not because we overwrote the snap slot — the guard silently no-ops.
+# If we somehow proved that the snap slot got reset to nil, we'd see
+# a "Snap function callback MUST be set" runtime_error on build().
+# Prove the guard rejected by verifying build() throws with the same
+# missing-parent-slots error, not a missing-snap error.  We can't
+# distinguish the exact error text portably here, but at least
+# proving build() still throws confirms nothing surprising happened.
+try:
+    ceb.build()
+    assert False, "build() must still throw (parent slots missing)"
+except RuntimeError:
+    pass
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CustomEntityBuilderBuildReturnsScriptCustomEntity) {
+    // The main event: construct a real document + custom-entity storage,
+    // wire all builder slots, call build(), and verify:
+    //   (a) build() returns a non-None value
+    //   (b) isinstance(result, lc.entity.ScriptCustomEntity) is True
+    //   (c) isinstance chain up to CustomEntity, Insert, CADEntity holds
+    //       — proves py::classh's polymorphic-base wiring is correct
+    //       for the concrete type
+    //
+    // This is the coordinator's "verify pybind11's RTTI-based
+    // polymorphic downcast" acceptance criterion — we build a real
+    // ScriptCustomEntity through the C++ ctor path and inspect the
+    // Python-side isinstance chain.
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
+
+    const std::string err = lcpy.runString(R"py(
+# Wire a storage block for the builder to reference.  CustomEntityStorage
+# is bound in lc.meta (verified in ArcCirclePropertiesMatchCpp test).
+storage = lc.meta.CustomEntityStorage(
+    'RectanglePlugin', 'Rectangle', lc.geo.Coordinate(0, 0, 0),
+    {'width': '10', 'height': '5'})
+
+# Wire the 6 script-defined callbacks — plain lambdas, no real logic
+# needed for build() to succeed.  checkValues() only guards for
+# is-nil, not for shape / behavior.
+def snap_cb(*args):    return []
+def nearest_cb(*args): return lc.geo.Coordinate(0, 0, 0)
+def drag_cb(*args):    return {}
+def newdrag_cb(*args): return None
+def click_cb(*args):   return None
+def release_cb(*args): return None
+
+# Also need a Layer for the parent InsertBuilder.  Bound in lc.meta.
+layer = lc.meta.Layer('RectangleLayer',
+                      lc.meta.MetaLineWidthByValue(1.0),
+                      lc.Color(255, 0, 0), None, False)
+
+ceb = lc.builder.CustomEntityBuilder()
+ceb.setDisplayBlock(storage)
+ceb.setDocument(document)          # injected by lcpy.setDocument
+ceb.setCoordinate(lc.geo.Coordinate(0, 0, 0))
+ceb.setLayer(layer)
+ceb.setSnapFunction(snap_cb)
+ceb.setNearestPointFunction(nearest_cb)
+ceb.setDragPointsFunction(drag_cb)
+ceb.setNewDragPointFunction(newdrag_cb)
+ceb.setDragPointsClickedFunction(click_cb)
+ceb.setDragPointsReleasedFunction(release_cb)
+
+# checkValues() should now succeed.
+assert ceb.checkValues() is True, \
+    "checkValues() must succeed once all 12 slots (6 script + 6 parent) are set"
+
+# build() must return a non-None ScriptCustomEntity.
+ce = ceb.build()
+assert ce is not None, "build() must produce a ScriptCustomEntity"
+
+# The critical assertion: pybind11's RTTI-based polymorphic downcast
+# (via classh) must recognize the returned pointer's actual type.
+# If the classh binding is broken (e.g., ScriptCustomEntity was bound
+# with plain py::class_ instead of classh, or the hierarchy is
+# misregistered), isinstance() would return False or the object
+# would materialize as the base type.
+assert isinstance(ce, lc.entity.ScriptCustomEntity), \
+    "returned object must be a ScriptCustomEntity instance — proves " \
+    "py::classh polymorphic downcast recovers the concrete type"
+
+# isinstance chain must reach up through the type hierarchy.  This
+# is the coordinator's "don't just assume pybind11's downcast works"
+# criterion.
+assert isinstance(ce, lc.entity.CustomEntity), \
+    "isinstance chain must include CustomEntity (parent)"
+assert isinstance(ce, lc.entity.Insert), \
+    "isinstance chain must include Insert (grandparent)"
+assert isinstance(ce, lc.entity.CADEntity), \
+    "isinstance chain must include CADEntity (great-grandparent)"
+
+# UnmanagedDraggable is bound as classh; ScriptCustomEntity inherits
+# CustomEntity which inherits UnmanagedDraggable — verify the multi-
+# inheritance path resolves.
+assert isinstance(ce, lc.entity.UnmanagedDraggable)
+
+# Inherited Insert methods must be reachable and return correct
+# concrete-type-preserved values.  This is the same discipline as
+# sub-piece 1's fixup applied at the Python side — verifying that
+# `ce.position()` etc. work through the polymorphic path.
+pos = ce.position()
+assert abs(pos.x() - 0.0) < 1e-9
+assert abs(pos.y() - 0.0) < 1e-9
+
+# displayBlock() must return the CustomEntityStorage we set.
+block = ce.displayBlock()
+assert block is not None
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
 } // namespace

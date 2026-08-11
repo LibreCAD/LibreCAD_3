@@ -28,6 +28,19 @@
 #include <cad/builders/point.h>
 #include <cad/builders/spline.h>
 #include <cad/builders/text.h>
+
+// Phase 6 PR-6.1 sub-piece 3a — CustomEntityBuilder Python binding.
+// The builder + entity classes physically moved to lcscripting in
+// sub-piece 2b.  Setters accept `py::object` callables which we wrap
+// via `makePythonCallback` (adapter in this same library — no cyclic
+// include).
+#include <lcscripting/builders/customentity.h>
+// ScriptCustomEntity is the return type of build() — need the full
+// definition (forward-decl in builders/customentity.h isn't sufficient
+// for pybind11's def<...>() function-pointer specialization which
+// requires the complete return type).
+#include <lcscripting/primitive/customentity.h>
+#include "../scriptadapter/pythoncallback.h"
 #include <cad/builders/textbase.h>
 
 // Full definitions required by pybind11 for InsertBuilder::build()'s return
@@ -267,6 +280,105 @@ void import_py_lc_builder_namespace(py::module_& m_builder) {
         .def("setCoordinate",   &lc::builder::InsertBuilder::setCoordinate)
         .def("setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock)
         .def("setDocument",     &lc::builder::InsertBuilder::setDocument);
+
+    // ------------------------------------------------------------------------
+    // Phase 6 PR-6.1 sub-piece 3a — CustomEntityBuilder.
+    //
+    // Verified against `lcscripting/builders/customentity.h`:
+    //   * Default ctor (via `CustomEntityBuilder() = default;`) — REAL,
+    //     safe to bind `py::init<>()`.  NOT the fake-ctor mistake class
+    //     from sub-piece 5's EntityBuilder/Push/Remove/Line fixup.
+    //   * 6 setters take `lc::scripting::ScriptCallback` — we wrap
+    //     `py::object` via `lc::python::makePythonCallback` at the
+    //     binding site (same pattern as the LuaRef-side helpers in
+    //     lcadluascript/scriptadapter/customentitydispatch_lua.{h,cpp}).
+    //   * `build()` returns `ScriptCustomEntity_CSPtr` — bound with
+    //     classh in py_lc_entity.cpp above; pybind11 propagates the
+    //     concrete type via RTTI.
+    //   * `checkValues()` is overridden but signature matches
+    //     InsertBuilder's; pybind11 handles the virtual dispatch.
+    //
+    // Callable-shape validation at set time: `py::isinstance<py::function>`
+    // isn't a good gate — Python callables include bound methods,
+    // partial objects, and any class with `__call__`, none of which are
+    // `py::function` instances.  Instead use the built-in `py::callable`
+    // check which matches Python's own `callable()` builtin.
+    //
+    // Non-callable objects are silently REJECTED (leave the slot at
+    // default-constructed nil) — matches the LuaRef-helper's
+    // LUA_TFUNCTION guard semantic from sub-piece 2a's fixup.  A
+    // subsequent `build()` call will throw because `checkValues()`
+    // reports the slot as missing.
+    // ------------------------------------------------------------------------
+    py::class_<lc::builder::CustomEntityBuilder,
+               lc::builder::InsertBuilder>(m_builder, "CustomEntityBuilder")
+        .def(py::init<>())
+        .def("build",           &lc::builder::CustomEntityBuilder::build)
+        .def("checkValues",     &lc::builder::CustomEntityBuilder::checkValues,
+             py::arg("throwExceptions") = false)
+        .def("setSnapFunction",
+             [](lc::builder::CustomEntityBuilder& self, py::object cb) {
+                 if (!py::isinstance<py::none>(cb) && py::hasattr(cb, "__call__")) {
+                     self.setSnapFunction(lc::python::makePythonCallback(std::move(cb)));
+                 }
+                 // Non-callable: leave slot at nil so checkValues() rejects.
+             },
+             py::arg("callback"),
+             "Register the snap-points callback.  Signature: "
+             "`fn(insert, coord, constrain, min_dist, max_pts) -> "
+             "list[EntityCoordinate]`.  Non-callable arg is silently "
+             "ignored (leaves the slot missing; build() will fail).")
+        .def("setNearestPointFunction",
+             [](lc::builder::CustomEntityBuilder& self, py::object cb) {
+                 if (!py::isinstance<py::none>(cb) && py::hasattr(cb, "__call__")) {
+                     self.setNearestPointFunction(lc::python::makePythonCallback(std::move(cb)));
+                 }
+             },
+             py::arg("callback"),
+             "Register the nearest-point callback.  Signature: "
+             "`fn(insert, coord) -> Coordinate`.")
+        .def("setDragPointsFunction",
+             [](lc::builder::CustomEntityBuilder& self, py::object cb) {
+                 if (!py::isinstance<py::none>(cb) && py::hasattr(cb, "__call__")) {
+                     self.setDragPointsFunction(lc::python::makePythonCallback(std::move(cb)));
+                 }
+             },
+             py::arg("callback"),
+             "Register the drag-points callback.  Signature: "
+             "`fn(insert) -> dict[int, Coordinate]`.  Note: the return "
+             "type has no ScriptValue kind today; native/Python "
+             "callbacks fire for side effects but their return is "
+             "discarded until the neutral layer grows a "
+             "Kind::CoordinateMap.")
+        .def("setNewDragPointFunction",
+             [](lc::builder::CustomEntityBuilder& self, py::object cb) {
+                 if (!py::isinstance<py::none>(cb) && py::hasattr(cb, "__call__")) {
+                     self.setNewDragPointFunction(lc::python::makePythonCallback(std::move(cb)));
+                 }
+             },
+             py::arg("callback"),
+             "Register the new-drag-point (setDragPoint) callback.  "
+             "Signature: `fn(insert, position) -> None`.")
+        .def("setDragPointsClickedFunction",
+             [](lc::builder::CustomEntityBuilder& self, py::object cb) {
+                 if (!py::isinstance<py::none>(cb) && py::hasattr(cb, "__call__")) {
+                     self.setDragPointsClickedFunction(lc::python::makePythonCallback(std::move(cb)));
+                 }
+             },
+             py::arg("callback"),
+             "Register the drag-point-click callback.  Signature: "
+             "`fn(insert, builder, point) -> None`.  Note: `builder` "
+             "arg has no ScriptValue kind; passes as None in the "
+             "current neutral surface.")
+        .def("setDragPointsReleasedFunction",
+             [](lc::builder::CustomEntityBuilder& self, py::object cb) {
+                 if (!py::isinstance<py::none>(cb) && py::hasattr(cb, "__call__")) {
+                     self.setDragPointsReleasedFunction(lc::python::makePythonCallback(std::move(cb)));
+                 }
+             },
+             py::arg("callback"),
+             "Register the drag-point-release callback.  Signature: "
+             "`fn(insert, builder) -> None`.");
 
     py::class_<lc::builder::TextBaseBuilder, lc::builder::CADEntityBuilder>(m_builder, "TextBaseBuilder")
         .def(py::init<>())
