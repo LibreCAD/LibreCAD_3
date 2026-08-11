@@ -160,6 +160,12 @@ if(WITH_QT_UI)
             ui/gui/testtoolbarbutton.cpp
             ui/gui/testinputguiwidgets.cpp
             ui/gui/testdialogwidget.cpp
+            # Phase 5 PR-5.6 — runtime smoke tests for the pyguibridge
+            # binding surface.  Guards against "plausible-looking .def()
+            # call referencing a signature that doesn't exist" — the
+            # failure mode code review alone hasn't been sufficient for
+            # this session.
+            ui/gui/testpyguibridge.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
