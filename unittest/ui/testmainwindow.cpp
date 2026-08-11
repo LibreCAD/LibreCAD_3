@@ -246,4 +246,130 @@ if "PyDemoOp" in lc.operation_registry:
     }
 }
 
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PyProofPortsImportAndRegister) {
+    // Phase 5 PR-5.7 — verify the proof ports (point_operations.py +
+    // remove_operation.py) import cleanly, run their
+    // @lc.register_operation decorator, and produce classes with the
+    // expected metadata attributes.  This is the discipline the
+    // coordinator called out repeatedly: don't rely on py_compile
+    // alone; import the ACTUAL modules and touch what they expose.
+    //
+    // The lcUIPy dir isn't auto-added to sys.path in this unit-test
+    // binary (path.py is a Qt-only bootstrap), so we manually push
+    // the source-tree lcUIPy path onto sys.path before import.  The
+    // resolution is: SOURCE_DIR is set by CMake for the WITH_QT_UI
+    // tests when `add_compile_definitions(SOURCE_DIR=...)` runs, but
+    // that's under WITH_RENDERING_UNITTESTS only — for our purposes
+    // just walk from __file__.  Or simpler: use CMAKE_CURRENT_LIST_DIR
+    // via a compile-time macro.  Simplest: infer from
+    // QCoreApplication::applicationDirPath() and walk up.
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    // The lcUIPy dir sits at LIBRECAD_SRC_ROOT/lcUIPy.  For the source
+    // tree we walk up from __file__ (the test binary's applicationDirPath
+    // is CMAKE_RUNTIME_OUTPUT_DIRECTORY = build/bin/, which is a sibling
+    // of build/{lcUI,lcUIPy,...}; walking up 2 lands on build/, walking
+    // up 3 lands on the project root).  Since the test also runs from a
+    // scratchpad build tree, we use a resilient search: try  a few known
+    // relative parents and pick the first that contains lcUIPy/.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import os, sys
+# Search upward from the applicationDirPath (bin/) for a directory
+# containing lcUIPy/create_actions/point_operations.py.  This test
+# needs to work in both the source-tree scratchpad and the
+# canonical build.
+_search_from = os.getcwd()
+_found = None
+for _i in range(6):
+    _cand = os.path.join(_search_from, 'lcUIPy',
+                         'create_actions', 'point_operations.py')
+    if os.path.isfile(_cand):
+        _found = os.path.dirname(os.path.dirname(_cand))
+        break
+    _search_from = os.path.dirname(_search_from)
+
+if _found is not None:
+    _parent = os.path.dirname(_found)
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+del _found, _search_from
+)py");
+    }
+
+    // Import the proof-port modules directly.  If they raise (missing
+    // dep, syntax error, decorator failure), py::exec propagates the
+    // exception and the test fails.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+
+# The test infra may not have lcUIPy on sys.path if the scratchpad
+# search above didn't find it — skip gracefully in that case.  A
+# CI build with the correct working directory will exercise this test.
+import importlib.util
+if importlib.util.find_spec('lcUIPy') is None:
+    # Cannot import — the test is a no-op in this environment.
+    # Fail loudly so the discovery gap is visible.
+    raise RuntimeError(
+        'lcUIPy not on sys.path — the source-tree search couldn\\'t '
+        'locate it.  Run this test from a directory where the '
+        'source-tree lcUIPy/ is reachable within 6 parents.')
+
+# Ensure clean slate — the tests above may have injected transient
+# PyDemoOp / PyDictCmdOp classes.
+if 'PyPointOperations' in lc.operation_registry:
+    del lc.operation_registry['PyPointOperations']
+if 'PyRemoveOperation' in lc.operation_registry:
+    del lc.operation_registry['PyRemoveOperation']
+
+# Import — triggers @lc.register_operation at module top-level.
+import lcUIPy.create_actions.point_operations
+import lcUIPy.actions.remove_operation
+
+# Registry entries must exist under their declared `name`.
+assert 'PyPointOperations' in lc.operation_registry, \
+    'point_operations.py did not register PyPointOperations'
+assert 'PyRemoveOperation' in lc.operation_registry, \
+    'remove_operation.py did not register PyRemoveOperation'
+
+# Class metadata: `command_line` must be PYPOINT/PYREMOVE (avoids
+# CLI collision with Lua's POINT/REMOVE).
+p_cls = lc.operation_registry['PyPointOperations']
+r_cls = lc.operation_registry['PyRemoveOperation']
+
+assert p_cls.command_line == 'PYPOINT', \
+    'PyPointOperations.command_line must be PYPOINT for Lua parity'
+assert r_cls.command_line == 'PYREMOVE', \
+    'PyRemoveOperation.command_line must be PYREMOVE for Lua parity'
+
+# icon / description / menu_actions attributes present.
+assert p_cls.icon == 'point.svg'
+assert p_cls.description == 'Python Point'
+assert p_cls.menu_actions == {'default': 'actionPoint'}
+
+assert r_cls.icon == 'delete.svg'
+assert r_cls.description == 'Python Remove'
+)py");
+    }
+
+    // Cleanup — remove the classes from the registry so subsequent
+    // tests aren't affected.  We can't reliably undo the module
+    // import (CPython caches modules in sys.modules) but we CAN
+    // clear the registry entries.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+for _name in ('PyPointOperations', 'PyRemoveOperation'):
+    if _name in lc.operation_registry:
+        del lc.operation_registry[_name]
+)py");
+    }
+}
+
 #endif  // LC_WITH_PYTHONSCRIPT

@@ -82,14 +82,17 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
 
         // Best-effort autoregister: import every module under lcUIPy/
         // that begins with `create_` or `action_` (matches Lua's
-        // createActions/actions folder scan).  If import raises, log
-        // and continue — a broken module shouldn't prevent the rest.
+        // createActions/actions folder scan).  Also descend into the
+        // `create_actions/` and `actions/` subdirs (Python-idiomatic
+        // package layout for PR-5.7's proof ports).  If import raises,
+        // log and continue — a broken module shouldn't prevent the rest.
         try {
             pybind11::exec(R"py(
 import importlib, os, sys
 try:
     import lcUIPy   # lets sys.path lookup validate first
     _lcuipy_root = os.path.dirname(lcUIPy.__file__)
+    # (1) Top-level create_*.py / action_*.py files.  Historical shape.
     for _fname in sorted(os.listdir(_lcuipy_root)):
         if not _fname.endswith('.py'):
             continue
@@ -101,6 +104,24 @@ try:
         except Exception as _e:
             # Log and move on — one broken op shouldn't kill startup.
             print('lcUIPy load: skipping', _mod, ':', _e)
+    # (2) create_actions/ and actions/ subdir modules — PR-5.7's proof
+    #     ports live here.  Import every .py under each subdir (except
+    #     __init__.py which is imported by importlib on the first
+    #     package touch).
+    for _subdir in ('create_actions', 'actions'):
+        _subpath = os.path.join(_lcuipy_root, _subdir)
+        if not os.path.isdir(_subpath):
+            continue
+        for _fname in sorted(os.listdir(_subpath)):
+            if not _fname.endswith('.py'):
+                continue
+            if _fname == '__init__.py':
+                continue
+            _mod = 'lcUIPy.' + _subdir + '.' + _fname[:-3]
+            try:
+                importlib.import_module(_mod)
+            except Exception as _e:
+                print('lcUIPy load: skipping', _mod, ':', _e)
     del _lcuipy_root
 except Exception as _e:
     print('lcUIPy autoregister skipped:', _e)
