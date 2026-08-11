@@ -539,4 +539,198 @@ assert btn_a.isEnabled() is True
         pybind11::list();
 }
 
+// -----------------------------------------------------------------------------
+// Test — Input widget family construction + value round-trips.
+// PR-5.6 sub-piece 3 additions.  Constructs every input-widget subclass
+// bound in lcgui and exercises its value/setValue/addCallback surface.
+// The critical failure mode this test guards: pybind11's inheritance
+// chain — every widget subclass declares InputGUI as base.  If the
+// base binding is missing, addWidget-into-InputGUIContainer paths fail
+// with "type not registered" at py::exec.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, InputWidgetsConstructAndRoundTrip) {
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    pybind11::gil_scoped_acquire gil;
+    pybind11::module_::import("builtins").attr("_lc_iw_hits") =
+        pybind11::list();
+
+    pybind11::dict ns;
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+
+    pybind11::exec(R"py(
+import lcgui, lc, builtins
+
+# TextGUI (Text).  value/setValue round-trip + callback.
+t = lcgui.Text("PyText")
+assert t.label() == "PyText"
+t.setValue("hello")
+assert t.value() == "hello"
+t.addFinishCallback(lambda: builtins._lc_iw_hits.append("Text.finish"))
+t.addOnChangeCallback(lambda: builtins._lc_iw_hits.append("Text.change"))
+
+# ButtonGUI (Button).  No value.  Just callback + click.
+b = lcgui.Button("PyBtn")
+b.addCallback(lambda: builtins._lc_iw_hits.append("Button.fire"))
+b.click()
+assert "Button.fire" in builtins._lc_iw_hits
+
+# CheckBoxGUI (CheckBox).  Two ctor arities (label, label+checked).
+c1 = lcgui.CheckBox("PyChk1")
+assert c1.value() is False
+c1.setValue(True)
+assert c1.value() is True
+
+c2 = lcgui.CheckBox("PyChk2", True)
+assert c2.value() is True
+
+# RadioButtonGUI (RadioButton).  Standalone (does not inherit InputGUI).
+r = lcgui.RadioButton("PyRadio")
+assert r.label() == "PyRadio"
+r.setValue(True)
+assert r.value() is True
+
+# HorizontalGroupGUI (HorizontalGroup).  addWidget takes InputGUI*.
+hg = lcgui.HorizontalGroup("PyHGroup")
+hg.addWidget("t1", t)
+hg.addWidget("b1", b)  # ButtonGUI upcast to InputGUI* via pybind11
+
+# Vertical variant via 2-arg ctor.
+vg = lcgui.HorizontalGroup("PyVGroup", True)
+assert vg.label() == "PyVGroup"
+
+# RadioGroupGUI (RadioGroup).  addButton takes (key, RadioButtonGUI*).
+rg = lcgui.RadioGroup("PyRadioGroup")
+rg.addButton("r1", r)
+
+# CoordinateGUI (Coordinate).  value returns lc::geo::Coordinate.
+coord = lcgui.Coordinate("PyCoord")
+coord.setValue(lc.geo.Coordinate(1.0, 2.0, 3.0))
+v = coord.value()
+assert abs(v.x() - 1.0) < 1e-9
+assert abs(v.y() - 2.0) < 1e-9
+
+# AngleGUI (Angle).  value returns double.
+ang = lcgui.Angle("PyAngle")
+ang.setValue(1.57)
+assert abs(ang.value() - 1.57) < 1e-9
+ang.toDegrees()
+ang.toRadians()
+
+# SliderGUI (Slider).  2 ctor arities.
+s1 = lcgui.Slider("PySlider1")
+s2 = lcgui.Slider("PySlider2", 0, 200)
+s2.setValue(100)
+assert s2.value() == 100
+
+# ComboBoxGUI (ComboBox).  addItem + setValue (2 overloads).
+cb = lcgui.ComboBox("PyCombo")
+cb.addItem("one")
+cb.addItem("two", 0)  # insert at index 0
+cb.setValue("one")
+assert cb.value() == "one"
+cb.setValue(0)  # by index
+
+# NumberGUI (Number).  2 ctor arities.
+n1 = lcgui.Number("PyNum")
+n2 = lcgui.Number("PyNumRange", -100.0, 100.0)
+n2.setValue(42.5)
+assert abs(n2.value() - 42.5) < 1e-9
+
+# ColorGUI (ColorPicker).  value returns lc.Color.
+cp = lcgui.ColorPicker("PyColor")
+cp.setValue(lc.Color(200, 100, 50))
+col = cp.value()
+# lc.Color is bound in lc kernel — accessor names vary but the object
+# must round-trip.
+assert col is not None
+
+# EntityGUI (EntityPicker).  value returns list of CADEntity_CSPtr;
+# empty by default.
+ep = lcgui.EntityPicker("PyEnt")
+lst = ep.value()
+assert isinstance(lst, list)
+
+# ListGUI (List).  addItem takes an InputGUI child; setListType by
+# string.  DELIBERATELY NO addCallbackToAll — Lua's surface excludes
+# it and Python mirrors that.
+li = lcgui.List("PyList")
+li.setListType("NONE")
+assert not hasattr(li, "addCallbackToAll"), \
+    "List must NOT expose addCallbackToAll (Lua parity)"
+)py",
+        ns);
+
+    pybind11::module_::import("builtins").attr("_lc_iw_hits") =
+        pybind11::list();
+}
+
+// -----------------------------------------------------------------------------
+// Test — DialogWidget + InputGUIContainer composition.  Constructs a
+// DialogWidget, adds child widgets by key, verifies keys() enumerates
+// them, and calls addFinishCallback.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, DialogWidgetComposition) {
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    lc::ui::MainWindow mw;
+    MainWindowRegistration mwReg(&mw);
+
+    pybind11::gil_scoped_acquire gil;
+    pybind11::module_::import("builtins").attr("_lc_dlg_hits") =
+        pybind11::list();
+
+    pybind11::dict ns;
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+    ns["mainWindow"]   = pybind11::cast(
+        &mw, pybind11::return_value_policy::reference);
+
+    pybind11::exec(R"py(
+import lcgui, builtins
+
+# DialogWidget ctor takes (title, MainWindow*).
+dlg = lcgui.DialogWidget("PyDialog", mainWindow)
+
+# Compose child widgets via addWidget under keys.
+text_widget = lcgui.Text("field_A")
+num_widget  = lcgui.Number("field_B")
+ok_button   = lcgui.Button("OK")
+
+assert dlg.addWidget("A", text_widget) is True
+assert dlg.addWidget("B", num_widget)  is True
+assert dlg.addWidget("btn", ok_button) is True
+
+# Duplicate key must be rejected.
+assert dlg.addWidget("A", lcgui.Text("dupe")) is False
+
+# keys() enumerates.
+keys = dlg.keys()
+assert isinstance(keys, list)
+assert set(keys) >= {"A", "B", "btn"}
+
+# inputWidgets() enumerates widget objects.
+widgets = dlg.inputWidgets()
+assert isinstance(widgets, list)
+assert len(widgets) >= 3
+
+# setFinishButton + addFinishCallback wire up the finish path.
+dlg.setFinishButton(ok_button)
+dlg.addFinishCallback(
+    lambda args: builtins._lc_dlg_hits.append("finish"))
+
+# enable/disable round-trip.
+dlg.enable()
+dlg.disable()
+dlg.enable()
+)py",
+        ns);
+
+    pybind11::module_::import("builtins").attr("_lc_dlg_hits") =
+        pybind11::list();
+}
+
 #endif  // LC_WITH_PYTHONSCRIPT

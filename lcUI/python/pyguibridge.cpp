@@ -1168,6 +1168,389 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              },
              py::arg("name"));
 
+    // =================================================================
+    // gui.* widget API — Input widget family.
+    //
+    // Phase 5 PR-5.6 sub-piece 3.  InputGUIContainer (base for
+    // DialogWidget + PropertyEditor) + InputGUI (base for the 13 input
+    // widget subclasses) + the widget subclasses under their
+    // Lua-exposed names (Text/Button/CheckBox/RadioButton/
+    // HorizontalGroup/RadioGroup/Coordinate/Angle/Slider/ComboBox/
+    // Number/ColorPicker=ColorGUI/EntityPicker=EntityGUI/List).
+    //
+    // gui.List has NO addCallbackToAll binding — Lua's exposed surface
+    // deliberately excludes it (see phase 3 sub-plan) and Python mirrors
+    // that decision.  LineSelectGUI and LWVertexGroup are
+    // PropertyEditor-internal and NEVER script-created; not bound
+    // (same as Lua).
+    // =================================================================
+
+    // -----------------------------------------------------------------
+    // InputGUIContainer — the base for DialogWidget + PropertyEditor.
+    // Lua exposes inputWidgets/addFinishCallback/keys/addWidget.  Mirror
+    // that surface.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::InputGUIContainer>(m, "InputGUIContainer")
+        .def("inputWidgets",
+             &lc::ui::api::InputGUIContainer::inputWidgets,
+             "Return the list of all child InputGUI widgets.")
+        .def("addFinishCallback",
+             [](lc::ui::api::InputGUIContainer& self, py::object cb) {
+                 self.addFinishCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"),
+             "Register a Python callable fired when the container "
+             "finishes (e.g. DialogWidget accept).")
+        .def("keys",
+             &lc::ui::api::InputGUIContainer::keys,
+             "Return the list of registered widget keys.")
+        .def("addWidget",
+             &lc::ui::api::InputGUIContainer::addWidget,
+             py::arg("key"), py::arg("widget"),
+             "Add an input widget under `key`; returns whether the "
+             "add succeeded (key must be unique).");
+
+    // -----------------------------------------------------------------
+    // DialogWidget — subclasses QDialog + InputGUIContainer.  Ctor
+    // takes (title, MainWindow*).  Lua exposes setFinishButton/
+    // enable/disable + addWidget override.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::DialogWidget,
+               lc::ui::api::InputGUIContainer>(m, "DialogWidget")
+        .def(py::init<const std::string&, lc::ui::MainWindow*>(),
+             py::arg("title"), py::arg("main_window"))
+        .def("setFinishButton",
+             &lc::ui::api::DialogWidget::setFinishButton,
+             py::arg("button"),
+             "Wire a ButtonGUI as the widget that fires "
+             "finishCallbacks on click.")
+        .def("enable",
+             [](lc::ui::api::DialogWidget& self) {
+                 self.setEnabled(true);
+             })
+        .def("disable",
+             [](lc::ui::api::DialogWidget& self) {
+                 self.setEnabled(false);
+             })
+        .def("addWidget",
+             &lc::ui::api::DialogWidget::addWidget,
+             py::arg("key"), py::arg("widget"),
+             "Add an input widget under `key`.");
+
+    // -----------------------------------------------------------------
+    // InputGUI — the base for the widget subclasses below.  Bound as
+    // a class so subclass upcasts work (needed by
+    // HorizontalGroupGUI::addWidget which takes QWidget* — pybind11
+    // passes InputGUI* implicitly).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::InputGUI>(m, "InputGUI")
+        .def("label", &lc::ui::api::InputGUI::label)
+        .def("setLabel",
+             &lc::ui::api::InputGUI::setLabel,
+             py::arg("label"))
+        .def("key",   &lc::ui::api::InputGUI::key)
+        .def("enable",
+             [](lc::ui::api::InputGUI& self) {
+                 self.setEnabled(true);
+             })
+        .def("disable",
+             [](lc::ui::api::InputGUI& self) {
+                 self.setEnabled(false);
+             });
+
+    // -----------------------------------------------------------------
+    // TextGUI (bound as `Text` per Lua's exposure).  Ctor: (label).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::TextGUI, lc::ui::api::InputGUI>(m, "Text")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("value",    &lc::ui::api::TextGUI::value)
+        .def("setValue",
+             &lc::ui::api::TextGUI::setValue,
+             py::arg("value"))
+        .def("addFinishCallback",
+             [](lc::ui::api::TextGUI& self, py::object cb) {
+                 self.addFinishCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("addOnChangeCallback",
+             [](lc::ui::api::TextGUI& self, py::object cb) {
+                 self.addOnChangeCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"));
+
+    // -----------------------------------------------------------------
+    // ButtonGUI (bound as `Button`).  Ctor: (label).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ButtonGUI, lc::ui::api::InputGUI>(m, "Button")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("addCallback",
+             [](lc::ui::api::ButtonGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("click",   &lc::ui::api::ButtonGUI::click);
+
+    // -----------------------------------------------------------------
+    // CheckBoxGUI (bound as `CheckBox`).  Header ctor:
+    // `CheckBoxGUI(std::string label, bool checked = false)` — 1 ctor
+    // with 1 default arg.  Bind with py::arg default so Python callers
+    // can use CheckBox("Label") or CheckBox("Label", True).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::CheckBoxGUI,
+               lc::ui::api::InputGUI>(m, "CheckBox")
+        .def(py::init<std::string, bool>(),
+             py::arg("label"), py::arg("checked") = false)
+        .def("addCallback",
+             [](lc::ui::api::CheckBoxGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("value",    &lc::ui::api::CheckBoxGUI::value)
+        .def("setValue",
+             &lc::ui::api::CheckBoxGUI::setValue,
+             py::arg("checked"));
+
+    // -----------------------------------------------------------------
+    // RadioButtonGUI (bound as `RadioButton`).  Ctor: (label).  Does
+    // NOT inherit InputGUI (per header comment) — bound standalone.
+    // Lua binds with method names `checked`/`setChecked` but the header
+    // has `value()`/`setValue()`.  Expose the header names for
+    // correctness; Python callers see the actual .h signature.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::RadioButtonGUI>(m, "RadioButton")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("label",    &lc::ui::api::RadioButtonGUI::label)
+        .def("setLabel",
+             &lc::ui::api::RadioButtonGUI::setLabel,
+             py::arg("label"))
+        .def("addCallback",
+             [](lc::ui::api::RadioButtonGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("value",    &lc::ui::api::RadioButtonGUI::value)
+        .def("setValue",
+             &lc::ui::api::RadioButtonGUI::setValue,
+             py::arg("toggle"));
+
+    // -----------------------------------------------------------------
+    // HorizontalGroupGUI (bound as `HorizontalGroup`).  Header:
+    // `HorizontalGroupGUI(std::string, bool vertical=false)`.  addWidget
+    // takes (key, QWidget*).  We expose an InputGUI* overload only —
+    // ButtonGUI/CheckBoxGUI upcast automatically via pybind11's
+    // class hierarchy.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::HorizontalGroupGUI,
+               lc::ui::api::InputGUI>(m, "HorizontalGroup")
+        .def(py::init<std::string, bool>(),
+             py::arg("label"), py::arg("vertical") = false)
+        .def("addWidget",
+             [](lc::ui::api::HorizontalGroupGUI& self,
+                const std::string& key,
+                lc::ui::api::InputGUI* widget) {
+                 self.addWidget(key, widget);
+             },
+             py::arg("key"), py::arg("widget"));
+
+    // -----------------------------------------------------------------
+    // RadioGroupGUI (bound as `RadioGroup`).  Ctor: (label).
+    // addButton(key, RadioButtonGUI*).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::RadioGroupGUI,
+               lc::ui::api::InputGUI>(m, "RadioGroup")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("addButton",
+             &lc::ui::api::RadioGroupGUI::addButton,
+             py::arg("key"), py::arg("radio_button"));
+
+    // -----------------------------------------------------------------
+    // CoordinateGUI (bound as `Coordinate`).  Ctor: (label).  value()
+    // returns lc::geo::Coordinate — kernel type registered by lc.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::CoordinateGUI,
+               lc::ui::api::InputGUI>(m, "Coordinate")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("addFinishCallback",
+             [](lc::ui::api::CoordinateGUI& self, py::object cb) {
+                 self.addFinishCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("addOnChangeCallback",
+             [](lc::ui::api::CoordinateGUI& self, py::object cb) {
+                 self.addOnChangeCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("value",    &lc::ui::api::CoordinateGUI::value)
+        .def("setValue",
+             &lc::ui::api::CoordinateGUI::setValue,
+             py::arg("coordinate"));
+
+    // -----------------------------------------------------------------
+    // AngleGUI (bound as `Angle`).  Ctor: (label).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::AngleGUI,
+               lc::ui::api::InputGUI>(m, "Angle")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("toDegrees", &lc::ui::api::AngleGUI::toDegrees)
+        .def("toRadians", &lc::ui::api::AngleGUI::toRadians)
+        .def("addFinishCallback",
+             [](lc::ui::api::AngleGUI& self, py::object cb) {
+                 self.addFinishCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("addOnChangeCallback",
+             [](lc::ui::api::AngleGUI& self, py::object cb) {
+                 self.addOnChangeCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("value",    &lc::ui::api::AngleGUI::value)
+        .def("setValue",
+             &lc::ui::api::AngleGUI::setValue,
+             py::arg("value"));
+
+    // -----------------------------------------------------------------
+    // SliderGUI (bound as `Slider`).  Header ctor:
+    // `SliderGUI(std::string, int setMin=0, int setMax=100)`.  Expose
+    // both arities.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::SliderGUI,
+               lc::ui::api::InputGUI>(m, "Slider")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def(py::init<std::string, int, int>(),
+             py::arg("label"), py::arg("min"), py::arg("max"))
+        .def("addCallback",
+             [](lc::ui::api::SliderGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("value",    &lc::ui::api::SliderGUI::value)
+        .def("setValue",
+             &lc::ui::api::SliderGUI::setValue,
+             py::arg("value"));
+
+    // -----------------------------------------------------------------
+    // ComboBoxGUI (bound as `ComboBox`).  Ctor: (label).  addItem has
+    // an index default; setValue has 2 overloads (string / int).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ComboBoxGUI,
+               lc::ui::api::InputGUI>(m, "ComboBox")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("addCallback",
+             [](lc::ui::api::ComboBoxGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("addItem",
+             &lc::ui::api::ComboBoxGUI::addItem,
+             py::arg("item"), py::arg("index") = -1)
+        .def("value",    &lc::ui::api::ComboBoxGUI::value)
+        // setValue: 2 overloads (string / int).
+        .def("setValue",
+             [](lc::ui::api::ComboBoxGUI& self,
+                const std::string& value) {
+                 self.setValue(value);
+             },
+             py::arg("value"))
+        .def("setValue",
+             [](lc::ui::api::ComboBoxGUI& self, int index) {
+                 self.setValue(index);
+             },
+             py::arg("index"));
+
+    // -----------------------------------------------------------------
+    // NumberGUI (bound as `Number`).  Header ctor:
+    // `NumberGUI(std::string, double minVal=-10000, double maxVal=10000)`.
+    // Lua only exposes the (label) form; we mirror that.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::NumberGUI,
+               lc::ui::api::InputGUI>(m, "Number")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def(py::init<std::string, double, double>(),
+             py::arg("label"), py::arg("min"), py::arg("max"))
+        .def("addCallback",
+             [](lc::ui::api::NumberGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"))
+        .def("value",    &lc::ui::api::NumberGUI::value)
+        .def("setValue",
+             &lc::ui::api::NumberGUI::setValue,
+             py::arg("value"));
+
+    // -----------------------------------------------------------------
+    // ColorGUI (bound as `ColorPicker`).  Ctor: (label).
+    // value()/setValue() take lc::Color.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ColorGUI,
+               lc::ui::api::InputGUI>(m, "ColorPicker")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("value",    &lc::ui::api::ColorGUI::value)
+        .def("setValue",
+             &lc::ui::api::ColorGUI::setValue,
+             py::arg("color"))
+        .def("addCallback",
+             [](lc::ui::api::ColorGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"));
+
+    // -----------------------------------------------------------------
+    // EntityGUI (bound as `EntityPicker`).  Ctor: (label).  value()
+    // returns vector<CADEntity_CSPtr>.
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::EntityGUI,
+               lc::ui::api::InputGUI>(m, "EntityPicker")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("value",    &lc::ui::api::EntityGUI::value)
+        .def("setValue",
+             &lc::ui::api::EntityGUI::setValue,
+             py::arg("entities"))
+        .def("addEntity",
+             &lc::ui::api::EntityGUI::addEntity,
+             py::arg("entity"))
+        .def("addCallback",
+             [](lc::ui::api::EntityGUI& self, py::object cb) {
+                 self.addCallback(
+                     lc::python::makePythonCallback(std::move(cb)));
+             },
+             py::arg("callback"));
+
+    // -----------------------------------------------------------------
+    // ListGUI (bound as `List`).  Header ctor:
+    // `ListGUI(std::string, ListType=NONE)`.  Lua exposes JUST (label);
+    // mirror that + the (label, string-list-type) overload for feature
+    // parity with Lua's `setListType(string)`.  addItem takes an
+    // InputGUI*.  DELIBERATELY NO addCallbackToAll (Lua omits it too).
+    // -----------------------------------------------------------------
+    py::class_<lc::ui::api::ListGUI,
+               lc::ui::api::InputGUI>(m, "List")
+        .def(py::init<std::string>(), py::arg("label"))
+        .def("addItem",
+             &lc::ui::api::ListGUI::addItem,
+             py::arg("key"), py::arg("widget"))
+        .def("setListType",
+             [](lc::ui::api::ListGUI& self,
+                const std::string& listTypeStr) {
+                 self.setListType(listTypeStr);
+             },
+             py::arg("list_type"),
+             "Set the list type by name: `NONE`, `COORDINATE`, or "
+             "`LW_VERTEX`.");
+
     // -----------------------------------------------------------------
     // Module-level currentMainWindow() — Phase 5 PR-5.1 fixup: what
     // Python operation base classes call INSTEAD of frame-walking to
