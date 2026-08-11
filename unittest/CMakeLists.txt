@@ -98,10 +98,22 @@ if(WITH_PYTHONSCRIPT)
         scripting/scriptcallback_test.cpp  # Phase 4 slice 4.1
         scripting/scriptobject_test.cpp    # Phase 4 slice 4.1 follow-on
         scripting/eventbus_test.cpp        # Phase 4 slice 4.1 follow-on
+        # Phase 6 PR-6.1 sub-piece 1 fixup — concrete-Insert dispatch
+        # test for LuaCustomEntityManager.  Regression coverage for the
+        # type-erasure bug (`CADEntity_CSPtr` upcast before ScriptValue
+        # boxing) that broke Lua's Insert-metatable selection.
+        # Exercises BOTH the native ScriptCallback fallback path AND the
+        # Lua fast path (via a real kaguya::LuaRef calling
+        # `insert:position()`).  Needs lcluascript + kaguya headers +
+        # a real Lua 5.3 runtime — hence CI-only (macOS Homebrew ships
+        # Lua 5.5 which breaks kaguya).
+        scripting/customentitymanager_test.cpp
         )
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
+    include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")  # Phase 6 PR-6.1
     include_directories("${CMAKE_SOURCE_DIR}")   # for <lcscripting/...>
-    set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting)
+    set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting lcluascript)
     # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
     # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
     if(WITH_PERSISTENCE)
