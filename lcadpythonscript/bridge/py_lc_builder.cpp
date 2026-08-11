@@ -301,8 +301,11 @@ void import_py_lc_builder_namespace(py::module_& m_builder) {
     // Callable-shape validation at set time: `py::isinstance<py::function>`
     // isn't a good gate — Python callables include bound methods,
     // partial objects, and any class with `__call__`, none of which are
-    // `py::function` instances.  Instead use the built-in `py::callable`
-    // check which matches Python's own `callable()` builtin.
+    // `py::function` instances.  Instead we check `py::hasattr(cb,
+    // "__call__")` (Python's `callable()` builtin does effectively the
+    // same thing internally).  Note: pybind11 does NOT export a
+    // `py::callable(cb)` predicate the way the old drafts of this doc
+    // implied — the actual code below correctly uses `hasattr`.
     //
     // Non-callable objects are silently REJECTED (leave the slot at
     // default-constructed nil) — matches the LuaRef-helper's

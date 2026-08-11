@@ -682,10 +682,38 @@ TEST_F(PythonFixture, CustomEntityBuilderSlotsAcceptCallables) {
     // updates checkValues().  Also verifies the non-callable branch
     // silently rejects (matches the LuaRef-helper LUA_TFUNCTION guard
     // semantic from sub-piece 2a's fixup).
-    const std::string err = lcpy.runString(R"py(
-ceb = lc.builder.CustomEntityBuilder()
+    //
+    // Coordinator's sub-piece 3a review flagged the original test's
+    // "silently rejected" claim as unprovable-as-written: build()
+    // throws for MISSING PARENT SLOTS regardless of whether the
+    // non-callable guard worked, so the throw doesn't discriminate.
+    // Fix: set all parent slots too, so a successful build() ⇔ the
+    // guard preserved the pre-set snap lambda; a build() throw with
+    // "Snap function callback MUST be set" ⇔ the guard REPLACED the
+    // slot with nil (broken).
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
 
-# Set all 6 slots to Python lambdas.
+    const std::string err = lcpy.runString(R"py(
+# Wire ALL parent slots (layer, block, doc, coord) so build() can
+# succeed once the 6 script slots are set correctly.  Any build()
+# failure now attributes cleanly to the script-slot semantics under
+# test.
+storage = lc.meta.CustomEntityStorage(
+    'GuardTestPlugin', 'GuardTest', lc.geo.Coordinate(0, 0, 0),
+    {'width': '1', 'height': '1'})
+layer = lc.meta.Layer('GuardTestLayer',
+                      lc.meta.MetaLineWidthByValue(1.0),
+                      lc.Color(0, 0, 0), None, False)
+
+ceb = lc.builder.CustomEntityBuilder()
+ceb.setDisplayBlock(storage)
+ceb.setDocument(document)
+ceb.setCoordinate(lc.geo.Coordinate(0, 0, 0))
+ceb.setLayer(layer)
+
+# Set all 6 script slots to Python lambdas.
 ceb.setSnapFunction(lambda *args: [])
 ceb.setNearestPointFunction(lambda *args: None)
 ceb.setDragPointsFunction(lambda *args: {})
@@ -693,28 +721,41 @@ ceb.setNewDragPointFunction(lambda *args: None)
 ceb.setDragPointsClickedFunction(lambda *args: None)
 ceb.setDragPointsReleasedFunction(lambda *args: None)
 
-# Slots set, but InsertBuilder parent still needs coord/block/doc.
-# checkValues() should be False (parent slots missing).
-assert ceb.checkValues() is False
+# All 12 slots (6 script + 6 parent) set.  checkValues() must succeed.
+assert ceb.checkValues() is True
 
-# Non-callable arg — silently rejected (leaves slot at whatever it was).
-# The pre-set snap lambda stays in place; if the setter WOULDN'T
-# silently reject, this call would overwrite with a bad value.
+# Now the discriminating test: pass a NON-callable to setSnapFunction.
+# If the guard works, the slot is silently preserved as the previously-
+# set lambda; build() succeeds.  If the guard is broken (silently
+# accepts the non-callable), it'll store the string via
+# makePythonCallback and... actually that would also pass checkValues()
+# because isNil() only checks the wrapper.  So the true discriminator
+# is: after passing a non-callable, does the SNAP slot still contain
+# the ORIGINAL LAMBDA?  We can't inspect the slot directly, but we
+# CAN observe via `ceb.build()` succeeding (guard worked, slot still
+# has the original lambda) vs. `ceb.build()` failing with "Snap
+# function callback MUST be set" (guard cleared the slot to nil).
+#
+# There are 3 possible outcomes and each is diagnostic:
+#   (a) build() succeeds        → guard preserved the lambda ✓
+#   (b) build() raises "Snap"   → guard cleared to nil (wrong shape)
+#   (c) build() succeeds but the stored callback IS the string (silently
+#        wrapped) — impossible to detect without dispatching; addressed
+#        by the dispatch tests below which fire real callbacks and
+#        would explode if the slot held a non-callable object.
 ceb.setSnapFunction("not a callable")
 
-# checkValues() still reports False because parent slots are missing,
-# not because we overwrote the snap slot — the guard silently no-ops.
-# If we somehow proved that the snap slot got reset to nil, we'd see
-# a "Snap function callback MUST be set" runtime_error on build().
-# Prove the guard rejected by verifying build() throws with the same
-# missing-parent-slots error, not a missing-snap error.  We can't
-# distinguish the exact error text portably here, but at least
-# proving build() still throws confirms nothing surprising happened.
-try:
-    ceb.build()
-    assert False, "build() must still throw (parent slots missing)"
-except RuntimeError:
-    pass
+# Case (a) or (c): build() should succeed.  Case (b) would raise.
+ce = ceb.build()
+assert ce is not None, (
+    "build() must succeed after a non-callable was passed to "
+    "setSnapFunction — proves the guard preserved the previously-set "
+    "lambda instead of silently accepting the string or clearing to "
+    "nil.  Case (b) 'guard cleared to nil' would fail here with "
+    "'Snap function callback MUST be set'.  Case (c) 'silently "
+    "wrapped a non-callable' would pass here but blow up on dispatch "
+    "— covered by CustomEntityDispatchFiresPythonCallback below."
+)
 )py",
         ns);
     ASSERT_EQ(err, "") << err;
@@ -813,11 +854,220 @@ pos = ce.position()
 assert abs(pos.x() - 0.0) < 1e-9
 assert abs(pos.y() - 0.0) < 1e-9
 
-# displayBlock() must return the CustomEntityStorage we set.
+# displayBlock() must return the CustomEntityStorage we set.  The
+# coordinator's PR-6.1 sub-piece 3a review flagged that this is where
+# the GENUINE downcast test lives — not on the `ce` variable itself
+# (whose C++ static return type ScriptCustomEntity_CSPtr already
+# equals its dynamic type, so no RTTI recovery happens at the pybind11
+# boundary).
+#
+# `Insert::displayBlock()` returns `Block_CSPtr` (BASE type — see
+# lckernel/cad/primitive/insert.h).  The actual object stored via
+# `ceb.setDisplayBlock(storage)` above IS a CustomEntityStorage
+# (concrete subclass of Block).  Recovering the concrete type at the
+# Python boundary requires py::classh's RTTI-based polymorphic
+# downcast to actually fire.  If Block's classh binding is broken or
+# CustomEntityStorage isn't in the classh hierarchy, isinstance would
+# return False.
 block = ce.displayBlock()
 assert block is not None
+assert isinstance(block, lc.meta.CustomEntityStorage), (
+    "displayBlock() returns a base-typed Block_CSPtr; classh RTTI "
+    "must recover the concrete CustomEntityStorage type.  This is "
+    "the ACTUAL polymorphic-downcast verification "
+    "(the outer `ce` variable's static type already equals its "
+    "dynamic type, so no RTTI runs there — corrected per "
+    "coordinator's sub-piece 3a review)."
+)
+# Sanity: methods on the recovered concrete type must work.
+assert block.pluginName() == 'RectanglePlugin', \
+    "concrete CustomEntityStorage method must resolve after RTTI downcast"
+assert block.entityName() == 'Rectangle'
 )py",
         ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 sub-piece 3b — dispatch-through-Python tests for
+// ScriptCustomEntity's 6 script-defined behavior slots.
+//
+// The coordinator's sub-piece 3a review called out the critical gap:
+// "None of the 6 script-dispatch callback slots are invoked through the
+// real dispatch path by any test.  Construction and binding surface are
+// thoroughly tested; runtime dispatch through a registered Python
+// callback is completely unverified.  This is exactly the 'construction
+// works, dispatch silently doesn't' pattern that caused every real Lua-
+// side bug in sub-pieces 1 and 2a."
+//
+// These tests close that gap.  They construct a ScriptCustomEntity via
+// CustomEntityBuilder with Python callbacks, then INVOKE dispatch
+// methods directly through the entity and assert:
+//   * the Python callback fired at all;
+//   * it received the expected arguments;
+//   * (for return-valued slots) the return value flowed back through
+//     the neutral ScriptValue path.
+//
+// The dispatch runs via the neutral fallback path (invokeNonLua) since
+// no Lua adapter is loaded in this headless test binary.  This proves
+// that the sub-piece 2a fixup's "non-Lua callbacks silently no-op" bug
+// really is fixed on the Python side too.
+// -----------------------------------------------------------------------------
+
+// Helper: build a ScriptCustomEntity with the given 6 Python callbacks
+// set on the appropriate slots.  Returns the CE via the pushed
+// `_test_ce` name in the Python namespace.  Callers can then invoke
+// dispatch methods on `_test_ce` from within their own runString.
+namespace {
+
+const char* kBuildCeScript = R"py(
+_storage = lc.meta.CustomEntityStorage(
+    'DispatchTestPlugin', 'DispatchTest', lc.geo.Coordinate(0, 0, 0),
+    {})
+_layer = lc.meta.Layer('DispatchTestLayer',
+                       lc.meta.MetaLineWidthByValue(1.0),
+                       lc.Color(0, 0, 0), None, False)
+_ceb = lc.builder.CustomEntityBuilder()
+_ceb.setDisplayBlock(_storage)
+_ceb.setDocument(document)
+_ceb.setCoordinate(lc.geo.Coordinate(0, 0, 0))
+_ceb.setLayer(_layer)
+_ceb.setSnapFunction(_snap_cb)
+_ceb.setNearestPointFunction(_nearest_cb)
+_ceb.setDragPointsFunction(_drag_cb)
+_ceb.setNewDragPointFunction(_newdrag_cb)
+_ceb.setDragPointsClickedFunction(_click_cb)
+_ceb.setDragPointsReleasedFunction(_release_cb)
+_test_ce = _ceb.build()
+)py";
+
+}  // namespace
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CustomEntityDispatchFiresPythonCallback_NearestPoint) {
+    // The coordinator's mandatory acceptance test: register a real
+    // Python callback for one of the 6 slots + invoke the dispatch +
+    // verify it fires with correct data.
+    //
+    // We pick `nearestPointOnPath` because:
+    //   * It has a return value (Coordinate) that traverses the
+    //     ScriptValue path, exercising BOTH argument packaging AND
+    //     return extraction.
+    //   * It's a public overrideable method on CustomEntity, so we
+    //     can invoke it directly through pybind11 (no adapter needed).
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
+
+    const std::string script = std::string(R"py(
+# Track callback invocations + captured args in a mutable container.
+_fired_state = {'count': 0, 'received_query_coord': None}
+
+def _nearest_cb(insert, coord):
+    _fired_state['count'] += 1
+    _fired_state['received_query_coord'] = (coord.x(), coord.y(), coord.z())
+    # Return a specific Coordinate so we can verify the return path.
+    return lc.geo.Coordinate(99.0, 88.0, 77.0)
+
+# The other 5 slots need to be set (checkValues gates on them) — plain
+# lambdas suffice.
+def _snap_cb(*a):    return []
+def _drag_cb(*a):    return {}
+def _newdrag_cb(*a): return None
+def _click_cb(*a):   return None
+def _release_cb(*a): return None
+)py") + kBuildCeScript + R"py(
+# Fire the dispatch.  In the C++ implementation, `nearestPointOnPath`
+# ends up in ScriptCustomEntity::nearestPointOnPath which:
+#   1. Queries the installed CustomEntityDispatchHook (none in headless
+#      Python-only test — returns nullptr).
+#   2. Falls through to invokeNonLua(), which calls
+#      `callback.invoke({self, coord})` on the neutral ScriptCallback
+#      pipeline.
+#   3. PythonCallbackImpl::invoke wraps args as py::tuple and calls the
+#      Python callable.
+#   4. The returned Coordinate is packed into a ScriptValue::Kind::Coordinate.
+#   5. ScriptCustomEntity extracts .asCoordinate() and returns it.
+query = lc.geo.Coordinate(1.5, 2.5, 3.5)
+result = _test_ce.nearestPointOnPath(query)
+
+# (a) The Python callback must have fired exactly once.  If it didn't
+# fire, `_fired_state['count'] == 0` and the pre-refactor "silently
+# no-op" bug shipped in the Python side too.
+assert _fired_state['count'] == 1, (
+    f"nearest-point callback must have fired exactly once; got "
+    f"count={_fired_state['count']}.  0 means the C++ dispatch never "
+    f"reached the neutral ScriptCallback fallback path — the exact "
+    f"pre-fixup bug from sub-piece 2a but for the Python side."
+)
+
+# (b) The query coordinate must have arrived through the ScriptValue
+# packaging with correct x/y/z.  If the pack/unpack path is broken,
+# received_query_coord will be wrong.
+assert _fired_state['received_query_coord'] == (1.5, 2.5, 3.5), (
+    f"query Coordinate arg must round-trip through ScriptValue::"
+    f"Coordinate; got {_fired_state['received_query_coord']}"
+)
+
+# (c) The returned Coordinate must have flowed back through
+# ScriptValue::Kind::Coordinate extraction.  If the return-path
+# extraction is broken (e.g., extracts wrong kind), we'd see the
+# fallback (query coordinate) instead of (99, 88, 77).
+assert abs(result.x() - 99.0) < 1e-9, \
+    f"nearest-point return Coordinate x mismatch: expected 99.0, got {result.x()}"
+assert abs(result.y() - 88.0) < 1e-9
+assert abs(result.z() - 77.0) < 1e-9
+)py";
+    const std::string err = lcpy.runString(script.c_str(), ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CustomEntityDispatchFiresPythonCallback_OnDragPointClick) {
+    // Test a VOID-return slot (onDragPointClick) so we also cover the
+    // fire-with-no-return-materialization branch.  Also verifies the
+    // 3-arg form (insert, builder, point) where `builder` is
+    // Builder_SPtr (no ScriptValue kind, passes as Nil / None).
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
+
+    const std::string script = std::string(R"py(
+_fired_state = {'count': 0, 'received_point': None, 'builder_was_none': None}
+
+def _click_cb(insert, builder, point):
+    _fired_state['count'] += 1
+    _fired_state['received_point'] = point
+    _fired_state['builder_was_none'] = (builder is None)
+
+def _snap_cb(*a):    return []
+def _nearest_cb(*a): return lc.geo.Coordinate(0, 0, 0)
+def _drag_cb(*a):    return {}
+def _newdrag_cb(*a): return None
+def _release_cb(*a): return None
+)py") + kBuildCeScript + R"py(
+# onDragPointClick takes a Builder_SPtr and an unsigned int point ID.
+# From Python we can only pass None for the builder (no bound
+# construction API — it's an operation-time-internal type).
+# ScriptCustomEntity's dispatch will pass None -> Nil ScriptValue ->
+# None back to Python.
+_test_ce.onDragPointClick(None, 42)
+
+assert _fired_state['count'] == 1, (
+    f"drag-point-click callback must have fired exactly once; got "
+    f"count={_fired_state['count']}"
+)
+assert _fired_state['received_point'] == 42, (
+    f"point arg must round-trip through ScriptValue::Int; got "
+    f"{_fired_state['received_point']}"
+)
+assert _fired_state['builder_was_none'] is True, (
+    "Builder_SPtr has no ScriptValue kind today; passes as None on "
+    "the Python side.  If this assertion fails, someone added a "
+    "kind for Builder_SPtr — update the header's inline note."
+)
+)py";
+    const std::string err = lcpy.runString(script.c_str(), ns);
     ASSERT_EQ(err, "") << err;
 }
 
