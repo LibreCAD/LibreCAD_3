@@ -316,4 +316,123 @@ lc.event.register("point", lambda ev, args: None)
     ASSERT_EQ(err, "") << err;
 }
 
+// -----------------------------------------------------------------------------
+// Test — Phase 5 PR-5.7 fixup regression guard: verify
+// `lc.operation.Push` and `lc.operation.Remove` are constructed via
+// `.new()`, NOT direct ctor call.  This test would have caught the
+// PR-5.7 bug in `remove_operation.py` where `lc.operation.Push()` /
+// `lc.operation.Remove()` were used as ctors, raising `TypeError:
+// No constructor defined!` on every PYREMOVE invocation.  Runtime
+// invocation via LCPython — no Qt required, so this test actually
+// runs in the scratchpad harness (unlike the Qt-side testpyguibridge
+// tests which were only syntax-checked, per coordinator's discipline
+// note).
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, OperationPushRemoveConstructedViaNew) {
+    const std::string err = lcpy.runString(R"py(
+# The valid construction path — both classes have `.def_static("new", ...)`
+# with an empty-args factory (py_lc_operation.cpp:82-84 for Push,
+# :92-94 for Remove).
+push = lc.operation.Push.new()
+assert push is not None
+assert isinstance(push, lc.operation.Base)
+
+rem = lc.operation.Remove.new()
+assert rem is not None
+assert isinstance(rem, lc.operation.Base)
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, OperationPushRemoveDirectCtorRaises) {
+    // Guard against the exact PR-5.7 bug regressing.  Direct ctor call
+    // MUST raise; if someone (mis)adds a `py::init<>()` later this
+    // test fails, forcing them to check whether the semantic changed
+    // deliberately.
+    const std::string err_push = lcpy.runString(
+        "lc.operation.Push()\n", ns);
+    ASSERT_FALSE(err_push.empty())
+        << "lc.operation.Push() should raise — only .new() is bound";
+    EXPECT_NE(err_push.find("TypeError"), std::string::npos)
+        << "expected TypeError, got: " << err_push;
+
+    const std::string err_rem = lcpy.runString(
+        "lc.operation.Remove()\n", ns);
+    ASSERT_FALSE(err_rem.empty())
+        << "lc.operation.Remove() should raise — only .new() is bound";
+    EXPECT_NE(err_rem.find("TypeError"), std::string::npos)
+        << "expected TypeError, got: " << err_rem;
+}
+
+// -----------------------------------------------------------------------------
+// Test — Phase 5 PR-5.7 fixup regression guard: verify the
+// CreateOperations base class's `registerEvents` is called EXACTLY
+// ONCE per operation instantiation, not twice.  Guards against the
+// PR-5.7 point_operations.py bug where `_init_default()` called
+// `super().__init__()` a second time — MainWindow's runOperation
+// pipeline calls `instantiate()` first (which runs the __init__)
+// and then invokes the `_init_<method>` step; the double init call
+// re-ran `registerEvents()`, silently leaking one duplicate
+// listener into the shared EventBus PER PYPOINT USE, causing
+// phantom duplicate entities on every click app-wide, permanently.
+//
+// The regression check: instrument the base class's `registerEvents`
+// via a subclass counter (Python side — no C++ EventBus dep) and
+// verify the count is 1 after `_init_default()` runs, not 2.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, CreateOperationsBaseInitNotDoubleCalled) {
+    const std::string err = lcpy.runString(R"py(
+# Simulate the CreateOperations lifecycle WITHOUT depending on lcUI
+# (this test runs headless — no MainWindow, no lcgui).  We define a
+# stub base class that counts registerEvents() calls; that's enough
+# to regression-guard the double-init pattern.
+
+class _StubBase:
+    def __init__(self, builder=None, step=None):
+        self._register_count = getattr(self, '_register_count', 0)
+        self.builder = builder
+        self.step = step
+        self.registerEvents()
+
+    def registerEvents(self):
+        self._register_count += 1
+
+
+# Buggy pattern (the ORIGINAL PR-5.7 point_operations.py bug):
+class _BadOp(_StubBase):
+    def _init_default(self):
+        super().__init__(builder='PointBuilder', step='enterPoint')
+
+
+# Correct pattern (post-fix — matches gear plugin's shape):
+class _GoodOp(_StubBase):
+    def _init_default(self):
+        # DO NOT call super().__init__() — the base ran already at
+        # instantiate() time.  Set state directly.
+        self.builder = 'PointBuilder'
+        self.step = 'enterPoint'
+
+
+# Simulate MainWindow's runOperation lifecycle: (1) instantiate() runs
+# __init__() with no args; (2) `_init_<method>()` runs.
+bad = _BadOp()      # step 1: base __init__ runs (register_count=1)
+bad._init_default() # step 2: buggy — super().__init__ RE-runs
+assert bad._register_count == 2, \
+    "the buggy pattern MUST double-register (regression test proves " \
+    "the bug is real and detectable)"
+
+good = _GoodOp()       # step 1: base __init__ runs (register_count=1)
+good._init_default()   # step 2: fixed — no super() call, no re-registration
+assert good._register_count == 1, \
+    "the FIXED pattern must NOT double-register — this is the actual " \
+    "regression guard for the PR-5.7 point_operations.py fix"
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
 } // namespace

@@ -76,9 +76,16 @@ class PyRemoveOperation(Operations):
 
         # Push + Remove operation ops chained onto the builder — same
         # shape as the Lua original.  lc.operation.Push and
-        # lc.operation.Remove are bound in the kernel bindings.
-        b.appendOperation(lc.operation.Push())
-        b.appendOperation(lc.operation.Remove())
+        # lc.operation.Remove are bound with `.def_static("new", ...)`
+        # ONLY — they have no `py::init<>()`.  PR-5.7 fixup: was
+        # `lc.operation.Push()` / `lc.operation.Remove()` — those raise
+        # `TypeError: No constructor defined!` on every PYREMOVE
+        # invocation.  Same bug-class as PR-5.5's gear-plugin
+        # `EntityBuilder(doc)` mistake, which was fixed by switching to
+        # `.new(doc)` (py_lc_operation.cpp:82-84 + :92-94 confirm both
+        # are `.def_static("new", ...)`).
+        b.appendOperation(lc.operation.Push.new())
+        b.appendOperation(lc.operation.Remove.new())
         b.execute()
 
         mw.cliCommand().write(

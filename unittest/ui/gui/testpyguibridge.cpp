@@ -115,9 +115,18 @@ assert isinstance(name, str)
 lst = lua_iface.pluginList("../does-not-exist")
 assert isinstance(lst, list)
 
-# currentOperation — before any operation runs, returns a Nil
-# ScriptObject.  Just verify the call itself works.
-op = mainWindow.currentOperation()
+# PR-5.7 fixup — currentOperation() / operation() / setOperation()
+# bindings REMOVED because they return/take lc::scripting::ScriptObject
+# which isn't registered with pybind11.  The test used to exercise
+# `mainWindow.currentOperation()` here — which would have raised
+# `TypeError: Unregistered type` if the test binary had ever been
+# run.  See the pyguibridge.cpp inline note.
+assert not hasattr(mainWindow, "currentOperation"), \
+    "currentOperation must not be bound — see ScriptObject note in pyguibridge.cpp"
+assert not hasattr(lua_iface, "operation"), \
+    "LuaInterface.operation must not be bound — see ScriptObject note"
+assert not hasattr(lua_iface, "setOperation"), \
+    "LuaInterface.setOperation must not be bound — see ScriptObject note"
 
 # menuByPosition on an empty menu bar — returns None or a menu; either
 # is fine as long as the call doesn't raise.

@@ -171,10 +171,16 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              &lc::ui::MainWindow::runLastOperation,
              "Re-invoke the last operation with its previous init "
              "method.")
-        .def("currentOperation",
-             &lc::ui::MainWindow::currentOperation,
-             "Return the current operation instance as a neutral "
-             "ScriptObject (adapters materialize per runtime).")
+        // Phase 5 PR-5.7 fixup — `currentOperation()` returns
+        // `lc::scripting::ScriptObject`, which is NOT registered with
+        // pybind11 anywhere in the tree.  Calling it from Python would
+        // raise `TypeError: Unregistered type: lc::scripting::ScriptObject`
+        // immediately.  The Python surface doesn't need to introspect
+        // the current operation from Python (operations are managed
+        // through `@lc.register_operation` + `runOperationByName`, not
+        // by inspecting an internal state slot).  Removed pending a
+        // proper ScriptObject binding — track as a follow-up if a
+        // Python caller ever actually needs to inspect an in-flight op.
         .def("copySelectedEntities",
              &lc::ui::MainWindow::copySelectedEntities,
              py::arg("entities"),
@@ -252,16 +258,16 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("finishOperation",
              &lc::ui::LuaInterface::finishOperation,
              "Clear the current operation slot and reset the CLI "
-             "prompt to command-entry mode.")
-        .def("operation",
-             &lc::ui::LuaInterface::operation,
-             "Return the current operation instance as a neutral "
-             "ScriptObject.")
-        .def("setOperation",
-             &lc::ui::LuaInterface::setOperation,
-             py::arg("operation"),
-             "Set the current operation instance (neutral "
-             "ScriptObject).");
+             "prompt to command-entry mode.");
+        // Phase 5 PR-5.7 fixup — `operation()` returns
+        // `lc::scripting::ScriptObject` and `setOperation()` takes one.
+        // Same unregistered-type issue as MainWindow.currentOperation()
+        // above: `ScriptObject` isn't bound with pybind11, so calling
+        // either from Python raises `TypeError: Unregistered type` at
+        // dispatch.  Removed pending a proper ScriptObject binding.
+        // Python callers don't need to touch the internal
+        // operation-slot state directly — same rationale as the
+        // MainWindow removal above.
 
     // -----------------------------------------------------------------
     // CliCommand — surface CreateOperations.close() reaches into for the

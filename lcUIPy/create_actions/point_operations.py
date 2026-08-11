@@ -44,10 +44,31 @@ class PyPointOperations(CreateOperations):
 
     def _init_default(self):
         """Entry point OperationLoader calls when the CLI command runs
-        without a specific init-suffix (the default init method)."""
-        # Bind the builder factory + step tag on CreateOperations.
-        super().__init__(builder=lc.builder.PointBuilder,
-                         step='enterPoint')
+        without a specific init-suffix (the default init method).
+
+        PR-5.7 fixup — critical bug: previously this called
+        `super().__init__(builder=..., step=...)`, which
+        DOUBLE-REGISTERED every event listener.  `MainWindow::runOperation`
+        constructs the instance via `instantiate()` FIRST — that already
+        runs `CreateOperations.__init__()` (which calls
+        `registerEvents()`).  Then `_init_default` fires — the second
+        `super().__init__()` call re-runs `registerEvents()` on the
+        SAME EventBus.  Result: the first click after PYPOINT fires
+        onEvent twice, creating 2 duplicate Points; `close()`'s
+        single-match `unregisterEvents()` then leaves ONE stale
+        registration permanently in the shared EventBus, corrupting
+        every subsequent click app-wide until process restart.
+
+        Fix (mirrors the gear-plugin `_init_default` pattern at
+        `lcUIPy/plugins/gear/plugin.py:114-125`): set instance state
+        directly.  DO NOT call `super().__init__()` — the base class's
+        constructor already ran at `instantiate()` time.
+        """
+        # The base constructor ran with defaults (builder=None,
+        # step=None) — we need to attach the real builder + starting
+        # step now.  Instance attrs override the defaults.
+        self.builder = lc.builder.PointBuilder()
+        self.step = 'enterPoint'
 
         # Show the CLI prompt and print the "add a new point" hint.
         mw = self._get_main_window()
