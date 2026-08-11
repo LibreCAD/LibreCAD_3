@@ -20,6 +20,28 @@ namespace py = pybind11;
 namespace lc {
 namespace python {
 
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 — custom-entity plugin registration hook.  Process-global
+// slot filled by lcUI at initLua time.  Same pattern as the event hooks
+// in py_lc_event.cpp (registerHookSlot() / deregisterHookSlot()).
+// -----------------------------------------------------------------------------
+namespace {
+
+RegisterPluginHook& registerPluginHookSlot() {
+    static RegisterPluginHook h;
+    return h;
+}
+
+} // namespace
+
+void setRegisterPluginHook(RegisterPluginHook hook) {
+    registerPluginHookSlot() = std::move(hook);
+}
+
+const RegisterPluginHook& registerPluginHook() {
+    return registerPluginHookSlot();
+}
+
 void import_py_lc_namespace(py::module_& m) {
     // ------------------------------------------------------------------------
     // lc.Visitable — abstract interface (no constructors). Bound with
@@ -148,6 +170,31 @@ void import_py_lc_namespace(py::module_& m) {
         "Reads by the C++ OperationLoader second source (phase 5 PR-5.2) "
         "iterate the dict sorted by name.  Duplicate names are logged "
         "and REJECTED (first wins).");
+
+    // ------------------------------------------------------------------------
+    // Phase 6 PR-6.1 — `lc.register_plugin(name, fn)`: the Python analog
+    // of Lua's `registerPlugin(name, fn)`.  Routes through the hook slot
+    // (installed by lcUI at initLua time) which forwards to
+    // `LuaCustomEntityManager::registerPlugin(name, ScriptCallback)`.
+    //
+    // If the hook isn't installed (headless CLI mode — no lcUI loaded),
+    // this is a silent no-op.  Matches the sibling event.register/
+    // event.deregister behavior.
+    //
+    // The plugin's callable receives ONE argument: the `lc.entity.Insert`
+    // whose displayBlock's `pluginName` matches `name`.
+    // ------------------------------------------------------------------------
+    m.def("register_plugin",
+        [](const std::string& name, py::object callback) {
+            auto& hook = registerPluginHookSlot();
+            if (hook) hook(name, std::move(callback));
+        },
+        py::arg("name"), py::arg("callback"),
+        "Register a Python callable to reconstruct waiting custom "
+        "entities whose plugin name matches `name`.  The callable "
+        "receives one argument: the `lc.entity.Insert` whose display "
+        "block's `pluginName` matches.  Silent no-op if no MainWindow "
+        "has installed the hook (headless CLI mode).");
 }
 
 } // namespace python

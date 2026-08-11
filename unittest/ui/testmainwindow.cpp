@@ -10,6 +10,9 @@
 #include <lcpython.h>
 #include <lcscripting/scriptvalue.h>
 #include <lcscripting/scriptobject.h>
+#include <lcscripting/scriptcallback.h>  // Phase 6 PR-6.1 nativeCallback
+#include <managers/luacustomentitymanager.h>  // Phase 6 PR-6.1 multi-window bug test
+#include <luainterface.h>  // Phase 6 PR-6.1 — construct/destruct LuaInterface directly
 #endif
 
 TEST(MWindowTest, WindowWidgetTest) {
@@ -370,6 +373,71 @@ for _name in ('PyPointOperations', 'PyRemoveOperation'):
         del lc.operation_registry[_name]
 )py");
     }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PluginRegistrationSurvivesLuaInterfaceDestructor) {
+    // Phase 6 PR-6.1 — multi-window bug regression test.  The bug:
+    // `~LuaInterface` used to call
+    // `LuaCustomEntityManager::getInstance().removePlugins()`, wiping
+    // out custom-entity plugins for the entire process (the manager is
+    // a singleton).  Closing one MainWindow silently broke every other
+    // window's custom-entity reconstruction on next DXF open.
+    //
+    // The fix (see luainterface.cpp:31-44): don't call removePlugins()
+    // from ~LuaInterface.  Plugin lifecycle is process-scoped.
+    //
+    // This test proves the fix behaviorally:
+    //   1. Install a hook (via `lc.register_plugin`) that registers a
+    //      Python callback with the manager.
+    //   2. Construct a LuaInterface, then destruct it (simulating one
+    //      window close).
+    //   3. Verify the plugin is STILL registered in the manager.
+    //
+    // Post-fix: assertion passes.  Pre-fix: it fails because the
+    // ~LuaInterface call cleared the manager's map.
+    QApplication app(argc, argv);
+    lc::python::PythonInit::initialize();
+
+    // Ensure a clean manager state so previous tests don't skew.
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+
+    // Register a plugin via the neutralized manager directly (ScriptCallback
+    // overload).  We use a nativeCallback so the test doesn't depend on
+    // Python or Lua state being alive — pure C++ registration.
+    int fire_count = 0;
+    auto native_cb = lc::scripting::nativeCallback(
+        [&fire_count]() {
+            fire_count++;
+            return lc::scripting::ScriptValue{};
+        });
+    lc::lua::LuaCustomEntityManager::getInstance().registerPlugin(
+        "MultiWindowTestPlugin", native_cb);
+
+    ASSERT_TRUE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin(
+        "MultiWindowTestPlugin"))
+        << "manager must have the plugin registered before we simulate "
+           "a window close";
+
+    // Now create + destroy a LuaInterface, simulating one MainWindow
+    // close.  If the pre-fix behavior returned (removePlugins() in the
+    // destructor), the plugin map would be cleared.
+    {
+        lc::ui::LuaInterface luaInterface;
+        // Destructor fires at end of scope.
+    }
+
+    EXPECT_TRUE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin(
+        "MultiWindowTestPlugin"))
+        << "MULTI-WINDOW BUG: ~LuaInterface must NOT clear the "
+           "manager's plugin map.  Plugin registration is process-"
+           "scoped; only the singleton's own destructor at process exit "
+           "should clear it.  If this assertion fails, someone re-added "
+           "removePlugins() to ~LuaInterface — do NOT re-add it.  See "
+           "luainterface.cpp:31-44 for the explanation.";
+
+    // Cleanup — clear the manager for the next test.
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 }
 
 #endif  // LC_WITH_PYTHONSCRIPT

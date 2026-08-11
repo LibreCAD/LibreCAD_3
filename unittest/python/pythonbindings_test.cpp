@@ -20,6 +20,8 @@
 
 #include <lcpython.h>
 
+#include <bridge/py_lc.h>  // Phase 6 PR-6.1 — setRegisterPluginHook for direct hook tests
+
 #include <cad/geometry/geocoordinate.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
@@ -433,6 +435,163 @@ assert good._register_count == 1, \
 )py",
         ns);
     ASSERT_EQ(err, "") << err;
+}
+
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 — custom-entity plugin registration hook.
+//
+// Tests the `lc.register_plugin(name, fn)` binding + the underlying hook
+// slot mechanism.  These tests actually EXECUTE (headless — no Qt needed),
+// closing the runtime-verification gap the coordinator flagged multiple
+// times this session.
+// -----------------------------------------------------------------------------
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, RegisterPluginSilentWhenNoHook) {
+    // No lcUI is loaded in this test process (headless).
+    // `lc.register_plugin(...)` must NOT raise — it should be a silent
+    // no-op when no MainWindow has installed the hook.
+    //
+    // Clear any previous hook first (tests share process state).
+    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+
+    const std::string err = lcpy.runString(R"py(
+def my_plugin(insert):
+    pass
+lc.register_plugin("some_plugin", my_plugin)
+# Second registration MUST also not raise.
+lc.register_plugin("some_plugin", my_plugin)
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, RegisterPluginFiresHookWithNameAndCallback) {
+    // Install a test hook that records what got passed.  Verify that
+    // calling `lc.register_plugin(name, fn)` reaches the hook with the
+    // exact name and the exact callback object.
+    //
+    // This is the executable regression guard for the new binding — if
+    // the argument order gets swapped, if the callback isn't forwarded,
+    // if the hook slot doesn't fire, this test catches it at runtime.
+
+    // Test state — a bucket in `builtins` so lifetime spans the exec
+    // boundaries (same pattern as testtoolbarbutton.cpp).
+    {
+        py::gil_scoped_acquire gil;
+        py::module_::import("builtins").attr("_lc_plugin_hook_state") =
+            py::dict();
+    }
+
+    // Install a hook that records the name it saw and pushes the
+    // callback into the builtins state so Python-side assertions can
+    // introspect it.
+    std::string captured_name;
+    lc::python::setRegisterPluginHook(
+        [&captured_name](const std::string& name, py::object cb) {
+            captured_name = name;
+            py::gil_scoped_acquire gil;
+            py::module_::import("builtins")
+                .attr("_lc_plugin_hook_state")["callback"] = cb;
+            py::module_::import("builtins")
+                .attr("_lc_plugin_hook_state")["fired"] = py::bool_(true);
+        });
+
+    const std::string err = lcpy.runString(R"py(
+def plug(insert):
+    return "plug called"
+
+lc.register_plugin("Rectangle", plug)
+
+import builtins
+assert builtins._lc_plugin_hook_state["fired"] is True, \
+    "hook must fire when lc.register_plugin is called"
+
+# The exact same callable must reach the hook (identity check via `is`).
+assert builtins._lc_plugin_hook_state["callback"] is plug, \
+    "hook must receive the SAME callback object; if this fails the " \
+    "py::object was copied or moved through a lossy path"
+
+# Prove the callback is invocable through the recorded reference — the
+# hook side has stored a REAL Python callable, not a stale reference.
+result = builtins._lc_plugin_hook_state["callback"](None)
+assert result == "plug called"
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+    EXPECT_EQ(captured_name, "Rectangle")
+        << "the C++ side of the hook must see the exact name string";
+
+    // Clean up hook so subsequent tests aren't affected.
+    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+    {
+        py::gil_scoped_acquire gil;
+        py::module_::import("builtins").attr("_lc_plugin_hook_state") =
+            py::dict();
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, RegisterPluginHookInvokedOncePerCall) {
+    // Regression guard: hook must fire EXACTLY ONCE per
+    // `lc.register_plugin(name, fn)` call.  If the pybind11 lambda were
+    // accidentally shape-mismatched to a multi-callable dispatcher,
+    // this would surface as N-fold firing.  Given this session's
+    // multi-fire failure mode in PR-5.7 (double-init on EventBus),
+    // explicit count-based verification is worth having.
+
+    int fire_count = 0;
+    lc::python::setRegisterPluginHook(
+        [&fire_count](const std::string&, py::object) {
+            fire_count++;
+        });
+
+    const std::string err = lcpy.runString(R"py(
+def plug(insert):
+    pass
+
+lc.register_plugin("SinglePlugin", plug)
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+    EXPECT_EQ(fire_count, 1)
+        << "hook must fire exactly once per lc.register_plugin() call";
+
+    // A second registration under a different name should ALSO fire
+    // exactly once.
+    fire_count = 0;
+    const std::string err2 = lcpy.runString(R"py(
+def plug2(insert):
+    pass
+lc.register_plugin("SecondPlugin", plug2)
+)py",
+        ns);
+    ASSERT_EQ(err2, "") << err2;
+    EXPECT_EQ(fire_count, 1)
+        << "hook must fire exactly once per lc.register_plugin() call "
+           "(second name)";
+
+    // Clean up.
+    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, RegisterPluginHookAccessorReturnsInstalled) {
+    // The `registerPluginHook()` accessor added for testability MUST
+    // return the currently-installed hook (so lcUI tests can verify
+    // installation succeeded).  Empty when no hook is installed.
+    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+    EXPECT_FALSE(static_cast<bool>(lc::python::registerPluginHook()))
+        << "empty state must return falsy hook";
+
+    lc::python::setRegisterPluginHook(
+        [](const std::string&, py::object) {});
+    EXPECT_TRUE(static_cast<bool>(lc::python::registerPluginHook()))
+        << "after set, accessor must return truthy hook";
+
+    // Clean up.
+    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
 }
 
 } // namespace

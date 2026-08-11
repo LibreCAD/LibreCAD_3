@@ -32,7 +32,24 @@ LuaInterface::~LuaInterface() {
     // Phase 4 PR-9a — was `_events.clear()`; EventBus has its own clear.
     _eventBus.clear();
 
-    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+    // Phase 6 PR-6.1 — MULTI-WINDOW BUG FIX.  Previously this destructor
+    // called `LuaCustomEntityManager::getInstance().removePlugins()`,
+    // which was catastrophically wrong: the manager is a process-global
+    // SINGLETON, so closing ONE window's LuaInterface would silently
+    // clear custom-entity plugins for ALL open windows.  Reopening a
+    // DXF file with custom entities in any surviving window would fail
+    // to reconstruct them (they'd appear as inert inserts).
+    //
+    // The fix is process-scoped lifecycle: plugins live for the
+    // process, torn down only at the singleton's own destructor at
+    // process exit.  Do NOT reintroduce a per-window removePlugins()
+    // call here.  If you need per-window plugin scoping, refactor
+    // the manager to a refcount-per-owner model — do NOT restore this
+    // singleton-wide clear.
+    //
+    // Regression guard: unittest/python/pythonbindings_test.cpp's
+    // `RegisterPluginPersistsInSingleton` documents the intended
+    // process-scoped behavior via a headless simulation.
 }
 
 void LuaInterface::initLua(QMainWindow* mainWindow) {

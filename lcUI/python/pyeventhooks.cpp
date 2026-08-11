@@ -7,8 +7,14 @@
 
 #include <pybind11/pybind11.h>
 
+#include <bridge/py_lc.h>          // Phase 6 PR-6.1 — registerPluginHook
 #include <bridge/py_lc_event.h>
 #include <scriptadapter/pythoncallback.h>
+
+// Phase 6 PR-6.1 — lc.register_plugin(...) needs the neutralized
+// LuaCustomEntityManager (which now accepts ScriptCallback).  Include
+// path traverses lcadluascript because lcUI already links against it.
+#include <managers/luacustomentitymanager.h>
 
 #include "mainwindow.h"
 #include "windowmanager.h"
@@ -57,6 +63,20 @@ void installEventHooks() {
             lc::ui::MainWindow* mw = currentMainWindow();
             if (mw == nullptr) return;
             mw->luaInterface()->deleteEvent(
+                name, lc::python::makePythonCallback(std::move(obj)));
+        });
+
+    // Phase 6 PR-6.1 — `lc.register_plugin(name, fn)` hook.  Routes into
+    // the process-global LuaCustomEntityManager (neutralized to accept
+    // ScriptCallback), so Python-authored plugins share the same
+    // manager as Lua-authored ones.  Unlike the event hooks above,
+    // there is NO per-MainWindow routing here — the plugin manager is
+    // process-scoped by design (see the multi-window bug fix note in
+    // luainterface.cpp:31-44).  A Python plugin registered in one
+    // window remains registered when that window closes.
+    lc::python::setRegisterPluginHook(
+        [](const std::string& name, py::object obj) {
+            lc::lua::LuaCustomEntityManager::getInstance().registerPlugin(
                 name, lc::python::makePythonCallback(std::move(obj)));
         });
 }

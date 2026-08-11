@@ -273,7 +273,13 @@ int main(int argc, char** argv) {
 
     delete[] pixel_data;
 
-    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+    // Phase 6 PR-6.1 — was `LuaCustomEntityManager::getInstance().removePlugins()`.
+    // In luacmdinterface this call happened at process exit (single-shot
+    // CLI tool), so the behavior wasn't harmful the way the ~LuaInterface
+    // call in lcUI was.  Kept the removal for consistency: the manager's
+    // own static destructor clears its map at process exit, so this call
+    // is redundant here and misleading (implies per-window cleanup which
+    // was the source of the multi-window bug).
     glfwDestroyWindow(window);
 
     delete lcPainter;
