@@ -116,7 +116,13 @@ class CreateOperations(Operations):
         mw = self._get_main_window()
         if mw is None:
             return
-        b = lc.operation.EntityBuilder(mw.cadMdiChild().document())
+        # Phase 5 PR-5.5 fixup — `lc.operation.EntityBuilder(doc)` is
+        # NOT a bound constructor; py_lc_operation.cpp:160-168 exposes
+        # only `def_static("new", ...)`.  Calling it as a ctor raised
+        # `TypeError: No constructor defined!` on every real use.
+        # Confirmed correct call form via
+        # `unittest/python/persistence_test.cpp:58-65`.
+        b = lc.operation.EntityBuilder.new(mw.cadMdiChild().document())
         b.appendEntity(self.build())
         b.execute()
         self.manualClose()

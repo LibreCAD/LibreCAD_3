@@ -113,16 +113,6 @@ except Exception as _e:
     }
 #endif
 
-    // Phase 5 PR-5.2 — Python second source.  After Lua ops load
-    // (populating foundProperties which the collision check reads)
-    // AND path.py + autoregister ran (populating lc.operation_registry
-    // with any @lc.register_operation classes found in lcUIPy/), walk
-    // the registry and wire each Python operation through the same
-    // CliCommand/Toolbar/Menu/ContextMenu paths.
-#ifdef LC_WITH_PYTHONSCRIPT
-    opLoader.loadPythonOperations();
-#endif
-
     if (s) {
         const char* out = lua_tostring(_L.state(), -1);
         if (out == nullptr) {
@@ -136,15 +126,30 @@ except Exception as _e:
 
     _pluginManager.loadPlugins();
 
-    // Phase 5 PR-5.5 — after Lua plugins load (which reads
-    // `plugin_path` from Lua state — set by path.lua), load the
-    // Python plugin siblings.  `plugin_path` for Python is set by
-    // path.py in __main__ dict at PR-5.3's exec_file above.  Interface
-    // name matches Lua's convention ("gui" for the app, "cli" for
-    // headless — the app's PluginManager was constructed with "gui"
-    // in LuaInterface's ctor, so mirror it).
+    // Phase 5 PR-5.5 fixup — Python plugin loading MOVED to BEFORE
+    // loadPythonOperations.  Rationale (confirmed by coordinator's
+    // review of PR-5.5): `@lc.register_operation` in a plugin.py
+    // populates `lc.operation_registry` but performs zero wiring;
+    // OperationLoader::loadPythonOperations is the ONE-SHOT walk that
+    // wires CLI/menu/toolbar entries FROM that registry.  If plugins
+    // load AFTER loadPythonOperations, their `@register_operation`
+    // classes sit in the registry with no UI hookup — the gear sample
+    // literally can't be reached via CLI/menu/toolbar.  Load plugins
+    // FIRST so their registrations are visible to the operation walk.
+    //
+    // Diverges from Lua's exact ordering (Lua plugins load AFTER
+    // Lua ops) but Lua plugins use `create_button` / `luaConnect`
+    // for their own UI hookup, not the ops registry.  Python's
+    // decorator-based registration requires the reverse.
 #ifdef LC_WITH_PYTHONSCRIPT
     lc::ui::python::loadPythonPluginsFromPathPy("gui");
+
+    // Phase 5 PR-5.2 — Python second source.  Walks
+    // `lc.operation_registry` (populated by @lc.register_operation
+    // across lcUIPy/ autoregister AND every plugin.py that ran above)
+    // and wires each Python operation through the same
+    // CliCommand/Toolbar/Menu/ContextMenu paths.
+    opLoader.loadPythonOperations();
 #endif
 }
 

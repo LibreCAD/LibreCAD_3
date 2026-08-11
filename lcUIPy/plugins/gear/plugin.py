@@ -93,7 +93,10 @@ def _calc_gear_points(n, phi, pc):
 class PyGearOp(CreateOperations):
     """Interactive gear operation — Python port of the Lua sample.
 
-    Step machine: TEETH → PHI → PC → ORIGIN → SCALE_POINT → DONE.
+    Step machine: AWAIT_TEETH → AWAIT_PHI → AWAIT_PC → AWAIT_ORIGIN →
+    AWAIT_SCALE.  The AWAIT_SCALE handler calls `draw()` which in turn
+    calls `close()` — matches the Lua sample's terminal state (there
+    is no distinct DONE step; the operation just closes).
     Values flow in through `onEvent(name, args)`; `_get_main_window()`
     resolves the active MainWindow via `lcgui.currentMainWindow()`.
     """
@@ -123,11 +126,18 @@ class PyGearOp(CreateOperations):
 
     # onEvent is inherited from CreateOperations; step-name methods
     # below implement the actual state machine.
+    #
+    # Phase 5 PR-5.5 fixup — `args` is a real Python DICT here (not a
+    # ScriptValue with `.asMap()`).  MainWindow's trigger* slots build
+    # `ScriptValue(Map)` payloads via `makeMap` and the
+    # PythonCallbackImpl's `toPyLocked` MapKind case materializes those
+    # into plain `py::dict` before onEvent fires (verified via
+    # mainwindow.cpp:588-626 for the trigger* payload shapes: `number`,
+    # `text`, `position`, `key`, `widget` are the top-level keys).
     def AWAIT_TEETH(self, event_name, args):
         if event_name != "number":
             return
-        # args is a Map with `number` key.
-        n = args.asMap()["number"].asInt() if hasattr(args, "asMap") else args
+        n = args.get("number")
         if isinstance(n, int) and n > 2:
             self.n = n
             self.step = "AWAIT_PHI"
@@ -138,7 +148,9 @@ class PyGearOp(CreateOperations):
     def AWAIT_PHI(self, event_name, args):
         if event_name != "number":
             return
-        v = args.asMap()["number"].asDouble() if hasattr(args, "asMap") else args
+        v = args.get("number")
+        if v is None:
+            return
         self.phi = float(v)
         self.step = "AWAIT_PC"
         mw = self._get_main_window()
@@ -148,7 +160,9 @@ class PyGearOp(CreateOperations):
     def AWAIT_PC(self, event_name, args):
         if event_name != "number":
             return
-        v = args.asMap()["number"].asDouble() if hasattr(args, "asMap") else args
+        v = args.get("number")
+        if v is None:
+            return
         self.pc = float(v)
         self.step = "AWAIT_ORIGIN"
         mw = self._get_main_window()
@@ -158,9 +172,9 @@ class PyGearOp(CreateOperations):
     def AWAIT_ORIGIN(self, event_name, args):
         if event_name != "point":
             return
-        # args carries `position` in a Map with widget + position keys.
-        coord = args.asMap()["position"].asCoordinate() \
-            if hasattr(args, "asMap") else args
+        coord = args.get("position")
+        if coord is None:
+            return
         self.origin = coord
         self.step = "AWAIT_SCALE"
         mw = self._get_main_window()
@@ -170,8 +184,9 @@ class PyGearOp(CreateOperations):
     def AWAIT_SCALE(self, event_name, args):
         if event_name != "point":
             return
-        coord = args.asMap()["position"].asCoordinate() \
-            if hasattr(args, "asMap") else args
+        coord = args.get("position")
+        if coord is None:
+            return
         self.scale_point = coord
         self.draw()
         # draw() calls close() itself.
@@ -189,31 +204,40 @@ class PyGearOp(CreateOperations):
         if not points:
             return
 
-        # Scale + translate to match the user's origin + scale point.
-        # Origin is the center; scale_point sets the outer radius.
+        # Phase 5 PR-5.5 fixup — the origin-to-scale_point distance is
+        # applied as a MULTIPLICATIVE scale on top of the gear geometry
+        # computed at true circular-pitch units, matching Lua's exact
+        # semantics (verified against plugins_disabled/gear/plugin.lua:
+        # `Scale(Coordinate(0,0,0), Coord(distance, distance))` after
+        # translate-to-origin).  The pre-fixup code normalized the
+        # geometry to hit the scale_point exactly as the outer radius
+        # — different final size for the same input.
         ox, oy = self.origin.x(), self.origin.y()
-        # distance from origin to scale_point sets the gear's outer scale
         dx = self.scale_point.x() - ox
         dy = self.scale_point.y() - oy
-        outer_scale = math.hypot(dx, dy)
-        # The pre-scale gear's outer radius is `ro`; recompute to
-        # normalize.  For simplicity use n * pc / (2 * pi) + addendum
-        # from the calc (identical to _calc_gear_points).  Simpler:
-        # compute the max radius from the actual points.
-        max_r = max(math.hypot(x, y) for (x, y) in points)
-        if max_r == 0:
+        scale = math.hypot(dx, dy)
+        if scale == 0:
             return
-        norm = outer_scale / max_r
 
-        eb = lc.operation.EntityBuilder(doc)
-        # Iterate consecutive pairs, closing back to the first vertex.
+        # Phase 5 PR-5.5 fixup — `lc.entity.Line(...)` is NOT a bound
+        # ctor (py_lc_entity.cpp has zero `py::init` calls for any of
+        # its 12 entity types); use `lc.builder.LineBuilder`
+        # + setStartPoint/setEndPoint/setLayer + build() instead.
+        # Same pattern LineBuilder is bound with in py_lc_builder.cpp.
+        eb = lc.operation.EntityBuilder.new(doc)
         n_pts = len(points)
         for i in range(n_pts):
             x1, y1 = points[i]
             x2, y2 = points[(i + 1) % n_pts]
-            start = lc.geo.Coordinate(x1 * norm + ox, y1 * norm + oy, 0)
-            end = lc.geo.Coordinate(x2 * norm + ox, y2 * norm + oy, 0)
-            eb.appendEntity(lc.entity.Line(start, end, layer))
+            start = lc.geo.Coordinate(x1 * scale + ox,
+                                       y1 * scale + oy, 0)
+            end = lc.geo.Coordinate(x2 * scale + ox,
+                                     y2 * scale + oy, 0)
+            lb = lc.builder.LineBuilder()
+            lb.setStartPoint(start)
+            lb.setEndPoint(end)
+            lb.setLayer(layer)
+            eb.appendEntity(lb.build())
         eb.execute()
         self.close()
 

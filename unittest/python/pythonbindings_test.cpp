@@ -23,6 +23,7 @@
 #include <cad/geometry/geocoordinate.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
+#include <memory>
 
 #include <memory>
 #include <string>
@@ -213,6 +214,62 @@ class NoNameAttr:
 
 assert "NoNameAttr" in lc.operation_registry, \
     "missing `name` must fall back to __name__"
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+// -----------------------------------------------------------------------------
+// Test — Phase 5 PR-5.5 fixup: runtime smoke test for the API calls
+// the PR-5.5 fixup switched to.  Exercises the ACTUAL binding surface
+// (`EntityBuilder.new(doc)`, `LineBuilder().set*().build()`) rather
+// than just py_compile — catches "No constructor defined!" style
+// errors immediately.
+//
+// The coordinator called this discipline out explicitly: 2 prior
+// verification rounds on PR-5.1 didn't catch the
+// `EntityBuilder(doc)` bug because they only exercised the mainWindow
+// access path, not the runtime entity-construction path.  This test
+// closes that gap for the specific calls the fixup landed.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, EntityBuilderAndLineBuilderRuntimeCalls) {
+    // Construct a real Document via C++ (persistence_test.cpp pattern —
+    // DocumentImpl has no py::init) and inject into the Python
+    // namespace so the smoke test can call `EntityBuilder.new(doc)`
+    // with a real doc.
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
+
+    const std::string err = lcpy.runString(R"py(
+# Verify the exact call shape lcUIPy/create_operations.py::createEntity
+# and lcUIPy/plugins/gear/plugin.py::draw() rely on.
+# `document` was injected by lcpy.setDocument above.
+
+# EntityBuilder — `.new()` static, NOT constructor.  Pre-fixup call
+# `lc.operation.EntityBuilder(doc)` raised TypeError immediately.
+eb = lc.operation.EntityBuilder.new(document)
+assert eb is not None, "EntityBuilder.new must return an instance"
+
+# Layer for the LineBuilder — construct one directly (LineBuilder's
+# setLayer needs a real Layer, not None).
+layer = lc.meta.Layer('smoke', lc.meta.MetaLineWidthByValue(1.0),
+                      lc.Color(255, 0, 0), None, False)
+
+# LineBuilder — Python entity types have NO py::init bindings; the
+# builder pattern is the only supported construction path.
+lb = lc.builder.LineBuilder()
+lb.setStartPoint(lc.geo.Coordinate(0, 0, 0))
+lb.setEndPoint(lc.geo.Coordinate(10, 0, 0))
+lb.setLayer(layer)
+line = lb.build()
+assert line is not None, "LineBuilder().build() must return a Line entity"
+
+# Round-trip: append + execute — the full path createEntity() /
+# gear's draw() traverse.
+eb.appendEntity(line)
+eb.execute()
 )py",
         ns);
     ASSERT_EQ(err, "") << err;

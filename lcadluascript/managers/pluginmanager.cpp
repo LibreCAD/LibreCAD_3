@@ -66,13 +66,21 @@ void PluginManager::loadPlugin(const char* file) {
     state["LC_interface"] = _interface;
     bool s = state.dofile(file);
 
-    // Phase 5 PR-5.5 — inverted success check FIXED.  kaguya::State's
-    // dofile returns TRUE on ERROR (mirroring lua_pcall's return),
-    // so the previous `if (s)` fired on ERROR but silently succeeded
-    // on real errors that the log message should have captured.
-    // Same bug pattern as luainterface.cpp:40 (fixed there separately
-    // by the phase-4 refactor sweep).
-    if (!s) {
+    // Phase 5 PR-5.5 fixup — kaguya::State::dofile returns TRUE on
+    // SUCCESS, verified via third_party/kaguya/include/kaguya/state.hpp
+    // (dofile's own doc comment).  The PR-5.5 "fix" got the polarity
+    // exactly backwards: `if (!s) return; else print error` printed
+    // a bogus "Plugin X load failed: <stack top>" on every SUCCESSFUL
+    // plugin load AND swallowed real errors silently.  Correct
+    // behavior: success returns silently; failure prints the error
+    // string from Lua's stack.
+    //
+    // Note on luainterface.cpp:40's identically-shaped `if (s)` block
+    // (Lua's output-tostring path) — verified via `git log --grep`
+    // it has NEVER been touched despite the earlier comment claiming
+    // phase-4 fixed it; that path is log-only and out of scope for
+    // this PR (pre-existing, tracked separately if worth surfacing).
+    if (s) {
         // Load ok — nothing to print.
         return;
     }
