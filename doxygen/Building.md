@@ -101,6 +101,26 @@ You need to compile Google Test in /usr/src/gtest/ and move the libraries in /us
 GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
 http://askubuntu.com/a/456849
 
+### AppImage packaging (phase 6 PR-6.3)
+The Ubuntu build script (`scripts/ubuntu-install/createAppImage.sh`)
+uses `linuxdeploy` + the Qt plugin to produce a distributable AppImage.
+
+**Python scripting in the current AppImage:** the librecad binary is
+linked against libpython3.X.so, so `linuxdeploy` bundles the shared
+library automatically.  The Python **standard library** (~30 MB of .py
+files under `/usr/lib/python3.X/`) is NOT a shared-library dependency
+and is not bundled.  A user running the AppImage on a system without
+matching Python installed will get `ImportError` on `import os` (etc.)
+in Python scripts that reach for stdlib modules.
+
+Two ways to work around this today:
+1. Ship the AppImage with `-DWITH_PYTHONSCRIPT=OFF` for a Lua-only
+   binary.  Python-authored operations won't be available, but Lua
+   ones work fully.
+2. Add a `linuxdeploy-plugin-python` step to `createAppImage.sh` that
+   bundles libpython + a stdlib subset (~30-50 MB AppImage size
+   increase).  Deferred; not blocking the Python scripting phase.
+
 Windows
 =======
 

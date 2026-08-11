@@ -5,7 +5,7 @@ base: core20
 confinement: devmode
 summary: "librecad: is a 2D CAD"
 description: |
-  LibreCAD 3 is a next generation 2D CAD application written to be modular, with a core independent from GUI toolkits. Scripting is possible with Lua.
+  LibreCAD 3 is a next generation 2D CAD application written to be modular, with a core independent from GUI toolkits. Scripting is possible with Lua and Python.
 source-code: https://github.com/LibreCAD/LibreCAD_3
 contact:
   - https://forum.librecad.org/
@@ -29,7 +29,12 @@ parts:
       - qttools5-dev
       - qttools5-dev-tools
       - libqt5opengl5-dev
-      - liblua5.2-dev
+      # Phase 6 PR-6.4 — the stale liblua5.2-dev pin here has been out
+      # of sync with the root CMakeLists' `find_package(Lua 5.3 EXACT
+      # REQUIRED)` for years.  Fixed to 5.3.  Also added python3-dev
+      # for the phase-5 Python scripting layer (WITH_PYTHONSCRIPT=ON).
+      - liblua5.3-dev
+      - python3-dev
       - git
       - g++
       - libcairo2-dev
@@ -54,6 +59,13 @@ parts:
       - libboost-log-dev
       - libboost-program-options-dev
       - libglew2.2
+      # Phase 6 PR-6.4 — stage python3 so the packaged snap has a
+      # runtime interpreter that lcadpythonscript's embedded pybind11
+      # can link against.  Without this, the snap builds cleanly (the
+      # build-packages libpython dev headers satisfy the build) but
+      # the installed snap fails at runtime with "cannot find
+      # libpython3.X.so".
+      - python3
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
