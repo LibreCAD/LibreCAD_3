@@ -17,6 +17,18 @@
 #include <cad/builders/insert.h>
 #include <cad/primitive/insert.h>
 #include <cad/primitive/mtext.h>
+
+// Phase 6 PR-6.1 sub-piece 3c fixup — CustomEntityBuilder was moved to
+// lcscripting in sub-piece 2b.  This Lua binding uses the sub-piece 2b
+// free helpers (`setSnapFunctionLua` etc.) which wrap LuaRef →
+// ScriptCallback with the LUA_TFUNCTION guard preserved.  ScriptCustomEntity's
+// complete definition is required at the `.addFunction("build", ...)`
+// site — kaguya's typeid-based metatable lookup needs the complete
+// return type.
+#include <lcscripting/builders/customentity.h>
+#include <lcscripting/primitive/customentity.h>
+#include <scriptadapter/customentitydispatch_lua.h>
+
 #include "lc_builder.h"
 
 void import_lc_builder_namespace(kaguya::State& state) {
@@ -282,6 +294,66 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock)
             .addFunction("setDocument", &lc::builder::InsertBuilder::setDocument)
                                                     );
+
+    // ---------------------------------------------------------------
+    // Phase 6 PR-6.1 sub-piece 3c fixup — CustomEntityBuilder Lua binding.
+    //
+    // Mirror of py_lc_builder.cpp's Python binding but wiring the 6
+    // script-defined behavior slots through
+    // `lc::lua::setSnapFunctionLua` etc. free helpers.  Those helpers
+    // check `LuaRef.type() == LUA_TFUNCTION` before wrapping into
+    // ScriptCallback via `makeLuaCallback` — preserves the pre-refactor
+    // "reject non-callable at set time" semantic that `ScriptCallback::
+    // isNil()` alone can't provide (see sub-piece 2a fixup rationale).
+    //
+    // Without this binding, the reference custom-entity plugin
+    // (lcUILua/plugins_disabled/rectangle/plugin.lua) — and any future
+    // Lua custom-entity plugin — has no way to construct a
+    // `CustomEntityBuilder` from Lua.  The gap was documented in
+    // sub-piece 3c's original commit but not closed until now.
+    // ---------------------------------------------------------------
+    state["lc"]["builder"]["CustomEntityBuilder"].setClass(
+        kaguya::UserdataMetatable<lc::builder::CustomEntityBuilder,
+                                  lc::builder::InsertBuilder>()
+            .setConstructors<lc::builder::CustomEntityBuilder()>()
+            .addFunction("build",
+                         &lc::builder::CustomEntityBuilder::build)
+            .addFunction("checkValues",
+                         &lc::builder::CustomEntityBuilder::checkValues)
+            // 6 setter overloads via free helpers.  Lambdas accept
+            // `CustomEntityBuilder*` as the userdata-self arg + a
+            // LuaRef; forward to the free helper.
+            .addStaticFunction("setSnapFunction",
+                [](lc::builder::CustomEntityBuilder* self,
+                   kaguya::LuaRef fn) {
+                    lc::lua::setSnapFunctionLua(*self, fn);
+                })
+            .addStaticFunction("setNearestPointFunction",
+                [](lc::builder::CustomEntityBuilder* self,
+                   kaguya::LuaRef fn) {
+                    lc::lua::setNearestPointFunctionLua(*self, fn);
+                })
+            .addStaticFunction("setDragPointsFunction",
+                [](lc::builder::CustomEntityBuilder* self,
+                   kaguya::LuaRef fn) {
+                    lc::lua::setDragPointsFunctionLua(*self, fn);
+                })
+            .addStaticFunction("setNewDragPointFunction",
+                [](lc::builder::CustomEntityBuilder* self,
+                   kaguya::LuaRef fn) {
+                    lc::lua::setNewDragPointFunctionLua(*self, fn);
+                })
+            .addStaticFunction("setDragPointsClickedFunction",
+                [](lc::builder::CustomEntityBuilder* self,
+                   kaguya::LuaRef fn) {
+                    lc::lua::setDragPointsClickedFunctionLua(*self, fn);
+                })
+            .addStaticFunction("setDragPointsReleasedFunction",
+                [](lc::builder::CustomEntityBuilder* self,
+                   kaguya::LuaRef fn) {
+                    lc::lua::setDragPointsReleasedFunctionLua(*self, fn);
+                })
+                                                          );
 
     state["lc"]["builder"]["TextBaseBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBaseBuilder, lc::builder::CADEntityBuilder>()
             .setConstructors<lc::builder::TextBaseBuilder()>()

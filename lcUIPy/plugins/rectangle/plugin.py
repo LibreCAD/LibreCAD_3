@@ -39,6 +39,14 @@ import lc
 
 from lcUIPy.create_operations import CreateOperations
 
+# `lcgui` is optional — headless / CLI mode may not have it loaded.
+# Used by `_preview_add` / `_preview_remove` to reach the current
+# MainWindow's tempEntities.  Silent no-op when None.
+try:
+    import lcgui as _gui
+except ImportError:
+    _gui = None
+
 
 # =============================================================================
 # Module-level per-Insert state for interactive drag operations.
@@ -140,6 +148,21 @@ def _drag_point_click(insert, builder, point_id):
 
     Per PR-5.5's fixup lesson: `lc.operation.Push()` / `Remove()` are
     NOT valid ctor calls; use `.new()` static factories.
+
+    ARCHITECTURAL GAP (task_TBD — Python-side dispatch hook): the
+    Python neutral dispatch path passes `builder` as None because
+    `Builder_SPtr` has no `ScriptValue` kind (see
+    lcscripting/scriptvalue.h — no Kind::Builder).  When lcadluascript's
+    `LuaCustomEntityDispatchHook` fires for a Lua-registered plugin,
+    `builder` is a real kaguya userdata; when the neutral fallback
+    fires for a Python-registered plugin, `builder` is None.  The
+    proper long-term fix is to add a Python-side dispatch hook that
+    mirrors sub-piece 2b's Lua hook — bindings for
+    `lc::operation::Builder` + a hook implementation in
+    lcadpythonscript/scriptadapter/.  For now this plugin is
+    DEFENSIVE: when `builder is None`, fall back to direct
+    `.execute()`, sacrificing undo-transaction grouping but keeping
+    the drag operation functional.
     """
     key = insert.id()
     _drag_selected_point[key] = point_id
@@ -152,13 +175,27 @@ def _drag_point_click(insert, builder, point_id):
     existing = doc.entitiesByBlock(block).asVector(32767)
     _drag_storage[key] = list(existing)
 
-    # Remove from document; preview via tempEntities.
+    # Preview: add the snapshotted lines to tempEntities so the user
+    # sees the rectangle outline during drag.  Reachable from a real
+    # GUI session via mainWindow's cadMdiChild → tempEntities.
+    _preview_add(insert.document(), existing)
+
+    # Remove from document; commit through the builder if we have one,
+    # else direct execute (see docstring's ARCHITECTURAL GAP note).
     _remove_via_builder(builder, doc, list(existing) + [insert])
 
 
 def _drag_point_release(insert, builder):
     """Called when the user releases the drag.  Commits the new
-    rectangle to the document with the updated width/height/base."""
+    rectangle to the document with the updated width/height/base.
+
+    ARCHITECTURAL GAP: same builder-is-None situation as
+    _drag_point_click; falls back to direct execute when builder is
+    None.  Coordinator's PR-6.1 sub-piece 3c review flagged the
+    previous version for calling `.execute()` unconditionally
+    (ignoring `builder`) — now fixed to use `builder.append(...)`
+    when non-None per the intended undo-transaction-grouping shape.
+    """
     key = insert.id()
     doc = insert.document()
 
@@ -168,10 +205,13 @@ def _drag_point_release(insert, builder):
     if base is None or w is None or h is None:
         return
 
+    # Clear the preview lines from tempEntities.
+    if key in _drag_storage:
+        _preview_remove(doc, _drag_storage[key])
+
     # Storage block with the new width/height.  ID key = "LC Plugin"
     # so this insert routes back to THIS plugin on DXF reload.
     block = _create_storage(base, w, h)
-    lc.operation.AddBlock.new(doc, block).execute()
 
     # Add the 4 lines + the CustomEntity Insert.
     eb = lc.operation.EntityBuilder.new(doc)
@@ -179,7 +219,28 @@ def _drag_point_release(insert, builder):
     for line in _generate_lines(base, p2, insert.layer(), block):
         eb.appendEntity(line)
     eb.appendEntity(_create_rectangle_entity(base, insert.layer(), doc, block))
-    eb.execute()
+
+    # Commit through the builder (undo-transaction grouping) OR direct
+    # execute (defensive path per _drag_point_click's ARCHITECTURAL GAP
+    # note).
+    if builder is not None:
+        # Preferred path — atomic group via Builder::append.  Add the
+        # AddBlock op then the EntityBuilder.
+        try:
+            builder.append(lc.operation.AddBlock.new(doc, block))
+            builder.append(eb)
+        except AttributeError:
+            # Very old runtime hit; fall through to direct execute
+            # for robustness.  If this path fires, the ARCHITECTURAL
+            # GAP fix (Python-side dispatch hook + Builder binding)
+            # hasn't landed yet.
+            lc.operation.AddBlock.new(doc, block).execute()
+            eb.execute()
+    else:
+        # Defensive path — direct execute.  Undo groups the two ops
+        # separately instead of as one drag transaction.
+        lc.operation.AddBlock.new(doc, block).execute()
+        eb.execute()
 
     # Cleanup per-Insert drag state.
     for d in (_drag_storage, _drag_selected_point,
@@ -189,11 +250,25 @@ def _drag_point_release(insert, builder):
 
 def _new_drag_point(insert, position):
     """Called continuously as the user drags.  Updates width/height/base
-    based on which corner is being dragged."""
+    based on which corner is being dragged AND refreshes the live
+    tempEntities preview.
+
+    Sub-piece 3c fixup — the previous version updated state but never
+    touched tempEntities, so the user saw no live preview during drag
+    (coordinator's Lua-side regression note applies to Python too —
+    fixed here alongside the Lua fix).
+    """
     key = insert.id()
     point_id = _drag_selected_point.get(key)
     if point_id is None:
         return
+
+    doc = insert.document()
+
+    # Remove old preview lines (from either the last drag update or
+    # from the initial click's snapshot).
+    if key in _drag_storage:
+        _preview_remove(doc, _drag_storage[key])
 
     block = insert.displayBlock()
     w = float(block.param("width"))
@@ -221,6 +296,14 @@ def _new_drag_point(insert, position):
     _drag_width[key] = w
     _drag_height[key] = h
     _drag_base[key] = base
+
+    # Generate the new preview lines from the updated base + dims.  No
+    # block reference — these are throwaway preview entities that live
+    # in tempEntities only.
+    p2 = lc.geo.Coordinate(base.x() + w, base.y() + h, base.z())
+    preview_lines = _generate_lines(base, p2, insert.layer(), None)
+    _drag_storage[key] = preview_lines
+    _preview_add(doc, preview_lines)
 
 
 # =============================================================================
@@ -292,7 +375,14 @@ def _generate_lines(p1, p2, layer, block=None, meta_info=None):
 
 def _remove_via_builder(builder, doc, entities):
     """Remove `entities` from `doc` via the operation `builder` using
-    the Push+Remove pattern."""
+    the Push+Remove pattern.
+
+    Sub-piece 3c fixup — the previous version called `builder.append(...)`
+    unconditionally, which raised AttributeError on `builder=None`
+    (silently swallowed by PythonCallbackImpl::invoke).  Now: guard on
+    None, direct execute when builder is None.  See ARCHITECTURAL GAP
+    note in `_drag_point_click`.
+    """
     # Per PR-5.5 fixup — Push and Remove are `.def_static("new", ...)`
     # only, NOT `py::init<>()`.  Calling `Push()` / `Remove()` raises
     # TypeError.  Same fix as `remove_operation.py`.
@@ -301,10 +391,49 @@ def _remove_via_builder(builder, doc, entities):
         inner.appendEntity(e)
     inner.appendOperation(lc.operation.Push.new())
     inner.appendOperation(lc.operation.Remove.new())
-    # `builder` is a `lc::operation::Builder&` — the drag callback's
-    # 2nd arg.  It has `.append(other)` which chains a sub-builder.
-    # (`Builder::append(Builder_SPtr)` — bound.)
-    builder.append(inner)
+
+    if builder is not None:
+        try:
+            builder.append(inner)
+        except AttributeError:
+            # Should not happen if a Builder binding lands (see
+            # ARCHITECTURAL GAP note); guard for robustness.
+            inner.execute()
+    else:
+        # Defensive path — no Builder available in the Python neutral
+        # dispatch fallback.  Direct execute.
+        inner.execute()
+
+
+def _preview_add(doc, entities):
+    """Add `entities` to the current MainWindow's tempEntities for
+    live drag preview.  No-op in headless mode (no mainWindow)."""
+    if _gui is None:
+        return
+    mw = _gui.currentMainWindow()
+    if mw is None:
+        return
+    temp = mw.cadMdiChild().tempEntities()
+    for e in entities:
+        try:
+            temp.addEntity(e)
+        except Exception:
+            pass  # entity may not be a temp-eligible type; skip.
+
+
+def _preview_remove(doc, entities):
+    """Remove `entities` from tempEntities.  Symmetric with _preview_add."""
+    if _gui is None:
+        return
+    mw = _gui.currentMainWindow()
+    if mw is None:
+        return
+    temp = mw.cadMdiChild().tempEntities()
+    for e in entities:
+        try:
+            temp.removeEntity(e)
+        except Exception:
+            pass
 
 
 # =============================================================================
@@ -426,6 +555,21 @@ def _on_new_waiting_custom_entity(insert):
     the DXF reader (or by whatever code fired NewWaitingCustomEntityEvent).
     We build a `ScriptCustomEntity` wired to the module's 6 behavior
     functions, then append it to the document.
+
+    Sub-piece 3c fixup — REPLACES the placeholder Insert.  The pre-fix
+    version omitted `ceb.setID(insert.id())`; CADEntityBuilder::id()
+    lazily allocates a fresh ID when unset, so the reconstructed
+    entity got a DIFFERENT ID than the placeholder Insert already
+    sitting in the document (added by DocumentImpl::insertEntity
+    before NewWaitingCustomEntityEvent fires).  The old placeholder is
+    never removed — nothing stages it for removal — so every DXF
+    reload created a DUPLICATE entity.  Setting the ID explicitly
+    replaces the placeholder atomically via the storage manager's
+    id-keyed dispatch.
+
+    (task_e20ba02a is orthogonal: once libdxfrw is fixed, DXF reload
+    will actually reach this callback, and this setID fix keeps the
+    reconstruction from creating duplicates.)
     """
     ceb = lc.builder.CustomEntityBuilder()
     # Copy the InsertBuilder-parent fields explicitly.  The Lua
@@ -435,6 +579,11 @@ def _on_new_waiting_custom_entity(insert):
     ceb.setCoordinate(insert.position())
     ceb.setDocument(insert.document())
     ceb.setDisplayBlock(insert.displayBlock())
+    # CRITICAL: setID(insert.id()) so the rebuilt entity REPLACES the
+    # placeholder Insert; without this call, the placeholder stays in
+    # the document AND the rebuilt entity is added alongside it,
+    # duplicating every custom entity on every reload.
+    ceb.setID(insert.id())
     ceb.setSnapFunction(_snap_points)
     ceb.setNearestPointFunction(_nearest_point)
     ceb.setDragPointsFunction(_drag_points)

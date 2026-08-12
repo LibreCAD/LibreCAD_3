@@ -1,27 +1,30 @@
--- Rectangle plugin — modernized (Phase 6 PR-6.1 sub-piece 3c).
+-- Rectangle plugin — modernized (Phase 6 PR-6.1 sub-piece 3c + fixup).
 --
--- Companion to lcUIPy/plugins/rectangle/plugin.py (same "LC Plugin" name so
--- the two versions produce interoperable DXFs).  This file replaces the
--- pre-refactor version that used removed APIs:
---   * `luaInterface:luaConnect` (removed — replaced by `create_button`'s
---     built-in callback + or by direct listener registration).
---   * `create_button` (removed — replaced by the `toolbar:addButton(...)`
---     variant with a callback).
---   * `active_widget()` (replaced by `mainWindow:cadMdiChild()`).
---   * `Builder(d, "Rectangle")` — the old operations::Builder wrapper.
---     Replaced by direct `EntityBuilder` + inline `AddBlock` calls.
---   * `LuaCustomEntityManager.getInstance():registerPlugin(...)` —
---     replaced by the global `registerPlugin(name, fn)` bound in
---     lcadluascript/lclua.cpp.
---   * `ceb:copy(insert)` — never existed on the C++ side; the Lua
---     original was calling a nonexistent method.  Set the parent
---     InsertBuilder fields explicitly instead.
+-- Companion to lcUIPy/plugins/rectangle/plugin.py (same "LC Plugin" name
+-- so the two versions produce interoperable DXFs).
 --
--- Also known BLOCKER (task_e20ba02a): the DXF reload of custom entities
--- is broken by an upstream libdxfrw bug (DRW_Entity::parseDxfGroups
--- dead loop drops all app-data on read).  The plugin registration is
--- correct today; the on-reload dispatch will fire only after libdxfrw
--- is fixed.
+-- Coordinator's PR-6.1 sub-piece 3c review flagged 3 systemic issues in
+-- the initial rewrite of this file:
+--   1. Bare-global class references (Coordinate, EntityBuilder,
+--      CustomEntityBuilder, LineBuilder, Push, Remove, etc.) don't
+--      exist in the current Lua bridge — everything is namespaced under
+--      lc.*.  luac -p passed the OLD file, but that's meaningless: Lua
+--      resolves globals at CALL time, so a completely broken file still
+--      parses clean.  This rewrite uses the correct namespaced forms
+--      (lc.geo.Coordinate, lc.builder.CustomEntityBuilder, etc.).
+--   2. `toolbar` as a bare global doesn't exist — reachable only via
+--      `mainWindow:toolbar()`.  Fixed here.
+--   3. `CustomEntityBuilder` had ZERO Lua binding until sub-piece 3c
+--      fixup (this same commit) — added in lcadluascript/bridge/
+--      lc_builder.cpp.  Uses the sub-piece 2b free helpers
+--      (setSnapFunctionLua etc.) which preserve the LUA_TFUNCTION
+--      guard from sub-piece 2a fixup.
+--
+-- Also: this file is at `plugins_disabled/rectangle/` — the plugin
+-- loader points at `plugins/` per lcUILua/CMakeLists.txt, so this file
+-- doesn't auto-load.  Enabling requires renaming the parent directory
+-- or moving this file to `plugins/rectangle/`.  Kept disabled for now
+-- pending the libdxfrw reload blocker (task_e20ba02a).
 
 -- =============================================================================
 -- Module-level per-Insert state for interactive drag operations.
@@ -45,10 +48,10 @@ local function snapPoints(insert, coord, constrain, min_dist, max_pts)
     local base = insert:position()
 
     return {
-        EntityCoordinate(base, 0),
-        EntityCoordinate(Coordinate(base:x() + w, base:y(), base:z()), 1),
-        EntityCoordinate(Coordinate(base:x() + w, base:y() + h, base:z()), 2),
-        EntityCoordinate(Coordinate(base:x(), base:y() + h, base:z()), 3),
+        lc.EntityCoordinate(base, 0),
+        lc.EntityCoordinate(lc.geo.Coordinate(base:x() + w, base:y(), base:z()), 1),
+        lc.EntityCoordinate(lc.geo.Coordinate(base:x() + w, base:y() + h, base:z()), 2),
+        lc.EntityCoordinate(lc.geo.Coordinate(base:x(), base:y() + h, base:z()), 3),
     }
 end
 
@@ -69,7 +72,7 @@ local function nearestPointOnPath(insert, coord)
     end
 
     if best_pt == nil then
-        return Coordinate(0, 0, 0)
+        return lc.geo.Coordinate(0, 0, 0)
     end
     return best_pt
 end
@@ -81,15 +84,15 @@ local function dragPoints(insert)
     local base = insert:position()
 
     return {
-        [0] = Coordinate(base:x(),     base:y(),     base:z()),
-        [1] = Coordinate(base:x() + w, base:y(),     base:z()),
-        [2] = Coordinate(base:x() + w, base:y() + h, base:z()),
-        [3] = Coordinate(base:x(),     base:y() + h, base:z()),
+        [0] = lc.geo.Coordinate(base:x(),     base:y(),     base:z()),
+        [1] = lc.geo.Coordinate(base:x() + w, base:y(),     base:z()),
+        [2] = lc.geo.Coordinate(base:x() + w, base:y() + h, base:z()),
+        [3] = lc.geo.Coordinate(base:x(),     base:y() + h, base:z()),
     }
 end
 
 -- Forward declarations of the create helpers used inside the drag
--- callbacks.  Lua's local-scope rules require this.
+-- callbacks.  Lua's local-scope rules require this ordering.
 local createStorage
 local createInsert
 local generate_lines
@@ -103,18 +106,30 @@ local function dragPointClicked(insert, builder, point_id)
     local existing = doc:entitiesByBlock(insert:displayBlock()):asVector()
     drag_storage[id] = existing
 
-    -- Remove-via-builder: sub-EntityBuilder with Push+Remove.
-    local inner = EntityBuilder(doc)
+    -- Preview: add the snapshotted lines to tempEntities so the user
+    -- sees the outline during the drag.  Sub-piece 3c fixup — the
+    -- previous rewrite had DROPPED this preview code (regression from
+    -- the pre-refactor version).  Restored here.
+    local temp = mainWindow:cadMdiChild():tempEntities()
+    for _, e in pairs(existing) do
+        temp:addEntity(e)
+    end
+
+    -- Remove existing entities from the document.  Push+Remove chain
+    -- inside an inner EntityBuilder, then appended to `builder`.
+    -- lc.operation.Push and Remove use `.new()` static factories per
+    -- PR-5.5's fixup pattern (identical to Python side).
+    local inner = lc.operation.EntityBuilder.new(doc)
     for _, e in pairs(existing) do
         inner:appendEntity(e)
     end
     inner:appendEntity(insert)
-    inner:appendOperation(Push())
-    inner:appendOperation(Remove())
+    inner:appendOperation(lc.operation.Push.new())
+    inner:appendOperation(lc.operation.Remove.new())
     builder:append(inner)
 
     -- Also remove the block itself.
-    builder:append(RemoveBlock(doc, insert:displayBlock()))
+    builder:append(lc.operation.RemoveBlock.new(doc, insert:displayBlock()))
 end
 
 local function dragPointReleased(insert, builder)
@@ -128,13 +143,21 @@ local function dragPointReleased(insert, builder)
         return
     end
 
+    -- Clear preview lines from tempEntities.
+    if drag_storage[id] ~= nil then
+        local temp = mainWindow:cadMdiChild():tempEntities()
+        for _, e in pairs(drag_storage[id]) do
+            temp:removeEntity(e)
+        end
+    end
+
     -- New block with the updated width/height.
     local block = createStorage(base, w, h)
-    builder:append(AddBlock(doc, block))
+    builder:append(lc.operation.AddBlock.new(doc, block))
 
     -- Add the 4 lines + the CustomEntity Insert.
-    local eb = EntityBuilder(doc)
-    local p2 = Coordinate(base:x() + w, base:y() + h, base:z())
+    local eb = lc.operation.EntityBuilder.new(doc)
+    local p2 = lc.geo.Coordinate(base:x() + w, base:y() + h, base:z())
     for _, line in pairs(generate_lines(base, p2, insert:layer(), block, insert:metaInfo())) do
         eb:appendEntity(line)
     end
@@ -156,6 +179,19 @@ local function newDragPoints(insert, position)
         return
     end
 
+    local doc = insert:document()
+
+    -- Sub-piece 3c fixup — remove OLD preview lines from tempEntities
+    -- before generating new ones for the current drag position.  The
+    -- pre-fix rewrite silently dropped this preview code (regression);
+    -- restored here.
+    local temp = mainWindow:cadMdiChild():tempEntities()
+    if drag_storage[id] ~= nil then
+        for _, e in pairs(drag_storage[id]) do
+            temp:removeEntity(e)
+        end
+    end
+
     local block = insert:displayBlock()
     local w = tonumber(block:param("width"))
     local h = tonumber(block:param("height"))
@@ -168,19 +204,28 @@ local function newDragPoints(insert, position)
     elseif point_id == 1 then
         w = position:x() - base:x()
         h = (base:y() + h) - position:y()
-        base = Coordinate(base:x(), position:y(), base:z())
+        base = lc.geo.Coordinate(base:x(), position:y(), base:z())
     elseif point_id == 2 then
         w = position:x() - base:x()
         h = position:y() - base:y()
     else -- point_id == 3
         w = (base:x() + w) - position:x()
         h = position:y() - base:y()
-        base = Coordinate(position:x(), base:y(), base:z())
+        base = lc.geo.Coordinate(position:x(), base:y(), base:z())
     end
 
     drag_width[id] = w
     drag_height[id] = h
     drag_base[id] = base
+
+    -- Generate new preview lines from the updated dimensions +
+    -- register them for both the next drag update AND the temp
+    -- entities.
+    local p2 = lc.geo.Coordinate(base:x() + w, base:y() + h, base:z())
+    drag_storage[id] = generate_lines(base, p2, insert:layer(), nil, insert:metaInfo())
+    for _, e in pairs(drag_storage[id]) do
+        temp:addEntity(e)
+    end
 end
 
 -- =============================================================================
@@ -188,14 +233,14 @@ end
 -- =============================================================================
 
 createStorage = function(pos, width, height)
-    return CustomEntityStorage("LC Plugin", "Rectangle", pos, {
+    return lc.meta.CustomEntityStorage("LC Plugin", "Rectangle", pos, {
         width  = tostring(width),
         height = tostring(height),
     })
 end
 
 createInsert = function(position, layer, document, storage, metaInfo)
-    local ceb = CustomEntityBuilder()
+    local ceb = lc.builder.CustomEntityBuilder()
     ceb:setLayer(layer)
     ceb:setCoordinate(position)
     ceb:setDocument(document)
@@ -216,14 +261,14 @@ generate_lines = function(p1, p2, layer, block, metaInfo)
     local lines = {}
     local corners = {
         p1,
-        Coordinate(p2:x(), p1:y(), p1:z()),
+        lc.geo.Coordinate(p2:x(), p1:y(), p1:z()),
         p2,
-        Coordinate(p1:x(), p2:y(), p1:z()),
+        lc.geo.Coordinate(p1:x(), p2:y(), p1:z()),
     }
     for i = 1, 4 do
         local start = corners[i]
         local endc  = corners[(i % 4) + 1]
-        local lb = LineBuilder()
+        local lb = lc.builder.LineBuilder()
         lb:setStart(start)
         lb:setEnd(endc)
         lb:setLayer(layer)
@@ -241,8 +286,8 @@ end
 -- =============================================================================
 -- Interactive create operation — RECTANGLE.
 --
--- Uses the CreateOperations base class shape (per phase 5's create-op
--- pattern in createActions/pointoperations.lua).  Two clicks: p1, p2.
+-- Uses the CreateOperations base class shape (per createActions/
+-- pointoperations.lua's pattern).  Two clicks: p1, p2.
 -- =============================================================================
 
 Rectangle = {}
@@ -327,10 +372,10 @@ function Rectangle:storeRectangle()
     local w = self.p2:x() - self.p1:x()
     local h = self.p2:y() - self.p1:y()
     local block = createStorage(self.p1, w, h)
-    AddBlock(doc, block):execute()
+    lc.operation.AddBlock.new(doc, block):execute()
 
     -- Add the 4 lines + the CustomEntity Insert.
-    local eb = EntityBuilder(doc)
+    local eb = lc.operation.EntityBuilder.new(doc)
     for _, line in pairs(generate_lines(self.p1, self.p2, layer, block, metaInfo)) do
         eb:appendEntity(line)
     end
@@ -359,12 +404,14 @@ end
 -- =============================================================================
 -- GUI wiring (Quick Access toolbar button).
 --
--- Modernized: uses `toolbar:addButton(...)` with a callback instead of
--- the removed `create_button` + `luaConnect` combo.
+-- Sub-piece 3c fixup — was using bare `toolbar` global which doesn't
+-- exist; only reachable via `mainWindow:toolbar()`.  Also uses the
+-- modern `Toolbar:addButton(name, icon, group, cb, tooltip)` signature
+-- instead of the removed `luaConnect` + `create_button` combo.
 -- =============================================================================
 
 if LC_interface == "gui" then
-    toolbar:addButton("Rectangle", "", "Quick Access",
+    mainWindow:toolbar():addButton("Rectangle", "", "Quick Access",
         function()
             mainWindow:runOperationByName("Rectangle")
         end,
@@ -377,21 +424,30 @@ end
 -- Fires when NewWaitingCustomEntityEvent is emitted for an Insert whose
 -- displayBlock is a CustomEntityStorage with pluginName == "LC Plugin".
 --
+-- Sub-piece 3c fixup — CRITICAL: `ceb:setID(insert:id())` REPLACES the
+-- placeholder Insert already sitting in the document; without this, the
+-- placeholder stays AND the rebuilt entity is added alongside it,
+-- duplicating every custom entity on every reload.  Same fix applied
+-- to the Python companion.
+--
 -- NOTE (task_e20ba02a): the DXF reload dispatch is currently BLOCKED by
--- an upstream libdxfrw bug that drops app-data on read.  The plugin
--- registration itself is correct today; the callback fires only after
--- the upstream fix.
+-- an upstream libdxfrw bug (DRW_Entity::parseDxfGroups dead loop drops
+-- all app-data on read).  The plugin registration itself is correct
+-- today; the callback fires only after the upstream fix.
 -- =============================================================================
 
 local function onNewWaitingCustomEntity(insert)
-    local ceb = CustomEntityBuilder()
-    -- Set the parent InsertBuilder fields explicitly.  Pre-refactor
-    -- versions used `ceb:copy(insert)` which never existed on the C++
+    local ceb = lc.builder.CustomEntityBuilder()
+    -- Set the parent InsertBuilder fields explicitly.  The pre-refactor
+    -- version used `ceb:copy(insert)` which never existed on the C++
     -- side.
     ceb:setLayer(insert:layer())
     ceb:setCoordinate(insert:position())
     ceb:setDocument(insert:document())
     ceb:setDisplayBlock(insert:displayBlock())
+    -- Sub-piece 3c fixup — CRITICAL replace-not-duplicate semantic.
+    -- See docstring above.
+    ceb:setID(insert:id())
     ceb:setSnapFunction(snapPoints)
     ceb:setNearestPointFunction(nearestPointOnPath)
     ceb:setDragPointsFunction(dragPoints)
@@ -400,7 +456,7 @@ local function onNewWaitingCustomEntity(insert)
     ceb:setDragPointsReleasedFunction(dragPointReleased)
     local ce = ceb:build()
 
-    local eb = EntityBuilder(insert:document())
+    local eb = lc.operation.EntityBuilder.new(insert:document())
     eb:appendEntity(ce)
     eb:execute()
 end
