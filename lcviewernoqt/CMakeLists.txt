@@ -151,7 +151,7 @@ add_custom_command(
 )
 
 # Boost logging
-#find_package(Boost REQUIRED COMPONENTS log)
+find_package(Boost REQUIRED COMPONENTS log)
 FIND_PACKAGE (Threads)
 if (NOT MSVC)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -195,7 +195,7 @@ find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
     include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${Eigen3_INCLUDE_DIR})
+    include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
 # BUILDING CONFIG

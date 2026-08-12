@@ -1,7 +1,11 @@
 #ifndef MANAGER_H
 #define MANAGER_H
 #include <GL/glew.h>
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #include <signal.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

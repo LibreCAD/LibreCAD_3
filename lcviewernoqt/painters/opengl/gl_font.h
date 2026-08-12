@@ -3,7 +3,11 @@
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/glew.h>
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

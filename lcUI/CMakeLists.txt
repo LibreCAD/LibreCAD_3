@@ -220,7 +220,7 @@ else()
 endif()
 
 # Boost logging
-#find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
+find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
 FIND_PACKAGE (Threads)
 if (NOT MSVC)
 include_directories(${Boost_INCLUDE_DIRS})

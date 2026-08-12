@@ -161,8 +161,8 @@ if(MSVC)
     #SET(Boost_USE_STATIC_LIBS ON)
     FIND_PACKAGE(Boost COMPONENTS log log_setup REQUIRED)
     find_package(Eigen3 REQUIRED)
-    include_directories("${Eigen3_INCLUDE_DIR}")
-    include_directories("${Eigen3_INCLUDE_DIR}")
+    include_directories("${EIGEN3_INCLUDE_DIR}")
+    include_directories("${EIGEN3_INCLUDE_DIR}")
     message("${CMAKE_SOURCE_DIR}/include")
     include_directories("third_party/msvc_dirent")
 endif()
@@ -193,6 +193,18 @@ message("\n")
 if (WITH_CAIRO)
     add_definitions(-DWITH_CAIRO)
 endif(WITH_CAIRO)
+
+# lckernel/nano-signal-slot (vendored submodule, upstream not fixable from
+# here) uses "Delegate::template bind(instance)" without an explicit template
+# argument list, which recent Clang rejects as ill-formed. This header is
+# transitively included well beyond lckernel itself, so downgrade the
+# diagnostic globally, before any add_subdirectory(), if the compiler
+# supports the flag.
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-Wno-missing-template-arg-list-after-template-kw" HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
+if(HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
+    add_definitions("-Wno-missing-template-arg-list-after-template-kw")
+endif()
 
 #Add each LibreCAD component
 add_subdirectory("lckernel")

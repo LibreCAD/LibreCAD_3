@@ -14,7 +14,7 @@ find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
     include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${Eigen3_INCLUDE_DIR})
+    include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
 # LibbDXFRW

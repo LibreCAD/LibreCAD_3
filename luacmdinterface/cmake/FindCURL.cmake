@@ -8,19 +8,24 @@
 FIND_PACKAGE(PkgConfig)
 PKG_CHECK_MODULES(PC_CURL libcurl)
 
-# Look for the header file.
+# Look for the header file.  No NO_DEFAULT_PATH here: on modern macOS
+# curl's headers/library live only inside the SDK sysroot (e.g.
+# .../MacOSX.sdk/usr/lib/libcurl.tbd, a link-stub, not a real .dylib
+# under /usr/lib) which CMake's own platform-aware default search
+# already knows how to find; NO_DEFAULT_PATH previously restricted the
+# search to the hardcoded hints below, none of which resolve there.
 FIND_PATH(CURL_INCLUDE_DIR curl/curl.h
         ${PC_CURL_INCLUDEDIR}
         $ENV{INCLUDE}
         $ENV{LIB_DIR}/include
         /usr/local/include
         /usr/include
-        NO_DEFAULT_PATH
         )
 
 MARK_AS_ADVANCED(CURL_INCLUDE_DIR)
 
-# Look for the library.
+# Look for the library.  See the FIND_PATH comment above for why
+# NO_DEFAULT_PATH was removed.
 FIND_LIBRARY(CURL_LIBRARY
         NAMES curl libcurl_imp
         PATHS
@@ -29,7 +34,6 @@ FIND_LIBRARY(CURL_LIBRARY
         $ENV{LIB_DIR}/lib
         /usr/local/lib
         /usr/lib
-        NO_DEFAULT_PATH
         )
 
 MARK_AS_ADVANCED(CURL_LIBRARY)
