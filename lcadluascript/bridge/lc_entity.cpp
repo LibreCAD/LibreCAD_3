@@ -22,6 +22,16 @@
 #include <cad/primitive/insert.h>
 #include <cad/interface/unmanageddraggable.h>
 #include <cad/primitive/customentity.h>
+// Phase 6 PR-6.1 sub-piece 3c 2nd fixup — ScriptCustomEntity (in
+// lcscripting/, post-sub-piece 2b move) needs a Lua class registration
+// so kaguya can:
+//   * materialize `CustomEntityBuilder::build()`'s return value as a
+//     usable Lua userdata;
+//   * populate the shared_ptr<ScriptCustomEntity> → shared_ptr<CADEntity>
+//     cross-type conversion table (kaguya's conversion is per-class
+//     `setClass()`-populated; missing registration returns a NULL
+//     shared_ptr silently — the bug the coordinator caught).
+#include <lcscripting/primitive/customentity.h>
 #include "lc_entity.h"
 
 //Do split if possible
@@ -395,4 +405,33 @@ void import_lc_entity_namespace(kaguya::State& state) {
             .addFunction("setDragPoints", &lc::entity::CustomEntity::setDragPoints)
             .addFunction("snapPoints", &lc::entity::CustomEntity::snapPoints)
                                                   );
+
+    // Phase 6 PR-6.1 sub-piece 3c 2nd fixup — ScriptCustomEntity.
+    //
+    // The class `CustomEntityBuilder::build()` actually returns.
+    // Without this registration, kaguya's cross-type shared_ptr
+    // conversion (needed when the builder's return flows into
+    // `eb:appendEntity(...)` which expects `CADEntity_CSPtr`) returns
+    // a NULL shared_ptr silently — the coordinator's independently-
+    // verified bug.  `plugin.lua` calls `eb:appendEntity(ceb:build())`
+    // in 3 places, each immediately followed by `eb:execute()`, so
+    // every call would silently feed a null entity into a real
+    // document-mutating operation with no error.
+    //
+    // Single-base since `ScriptCustomEntity : public CustomEntity`
+    // directly (no additional bases at the ScriptCustomEntity level —
+    // the multiple inheritance surface is inherited transitively from
+    // CustomEntity's own MultipleBase<Insert, UnmanagedDraggable>).
+    // Using `MultipleBase<CustomEntity>` for consistency with the
+    // rest of this file's registrations even though a single-arg form
+    // would also work.
+    //
+    // No methods bound directly on ScriptCustomEntity — script-defined
+    // behavior slots (snap/nearest/dragPoints/etc.) inherit from
+    // CustomEntity → Insert → Snapable/Draggable, all of which are
+    // already registered above.
+    state["lc"]["entity"]["ScriptCustomEntity"].setClass(
+        kaguya::UserdataMetatable<lc::entity::ScriptCustomEntity,
+                                  kaguya::MultipleBase<lc::entity::CustomEntity>>()
+    );
 }

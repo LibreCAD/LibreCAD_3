@@ -54,6 +54,19 @@
 #include <scriptadapter/luacallback.h>
 #include <scriptadapter/customentitydispatch_lua.h>
 
+// Phase 6 PR-6.1 sub-piece 3c 2nd fixup — needs the full Lua binding
+// surface (import_lc_* functions) to prove the ScriptCustomEntity Lua
+// registration correctly wires up the shared_ptr<T> → shared_ptr<CADEntity>
+// cross-type conversion path that `eb:appendEntity(ceb:build())`
+// depends on.
+#include <bridge/lc.h>
+#include <bridge/lc_geo.h>
+#include <bridge/lc_meta.h>
+#include <bridge/lc_entity.h>
+#include <bridge/lc_builder.h>
+#include <bridge/lc_storage.h>
+#include <bridge/lc_operation.h>
+
 // Phase 6 PR-6.1 sub-piece 3b — DXF round-trip test (phase-6 exit
 // criterion).  Uses the Python `lc.register_plugin` API to reconstruct
 // a custom entity after save/open.  Requires lcpython + persistence.
@@ -96,6 +109,17 @@ struct InsertFixture {
         ib.setDisplayBlock(ces);
         ib.setDocument(doc);
         ib.setLayer(std::make_shared<lc::meta::Layer>());
+        // Phase 6 PR-6.1 sub-piece 3c 2nd fixup — the fixture was
+        // missing `setCoordinate(...)` so `insert->position()` returned
+        // (0,0,0) regardless of the storage's base coord.  Downstream
+        // tests (NativeCallbackReceivesConcreteInsert, ReplayPath...,
+        // LuaCallbackReceivesInsertNotBaseCADEntity) all asserted on
+        // position == (11,22,33) which is what the storage carries.
+        // Bug was invisible until this session's local Lua 5.3 arm64
+        // build let the test suite actually run outside CI — a
+        // discipline note in itself: even runtime-executing tests can
+        // pre-existing-fail invisibly if never actually run locally.
+        ib.setCoordinate(lc::geo::Coordinate(11.0, 22.0, 33.0));
         insert = ib.build();
     }
 };
@@ -283,6 +307,18 @@ TEST(LuaCustomEntityManager, ReplayPathPreservesConcreteType) {
     // The DocumentList tracks it as "waiting" because no plugin was
     // registered when it was created.
     InsertFixture fix("ReplayTestPlugin");
+    // Phase 6 PR-6.1 sub-piece 3c 2nd fixup — actually put the Insert
+    // into the document via `insertEntity`.  Only *that* call
+    // populates DocumentImpl::_waitingCustomEntities, which is what
+    // DocumentList aggregates and what registerPlugin's replay path
+    // reads.  Without this, the fixture builds an Insert that never
+    // makes it into the document at all — so waitingCustomEntities
+    // is empty, the ASSERT_EQ below fires, and the entire test never
+    // exercises the replay path.  The other InsertFixture-based
+    // tests (NativeCallback…, LuaCallback…) fire the event manually
+    // via newWaitingCustomEntityEvent(), so they don't need this
+    // side-effect and we keep it local to the replay test.
+    fix.doc->insertEntity(fix.insert);
 
     // Verify the DocumentList sees the waiting entity.
     ASSERT_EQ(lc::storage::DocumentList::getInstance()
@@ -1160,6 +1196,157 @@ assert abs(s['received_position_z'] -  0.0) < 1e-6
         py::gil_scoped_acquire gil;
         py::exec("import builtins; builtins._dxf_roundtrip_state = None");
     }
+}
+
+// -----------------------------------------------------------------------------
+// Phase 6 PR-6.1 sub-piece 3c 2nd fixup — runtime verification that
+// ScriptCustomEntity Lua registration wires up the cross-type
+// shared_ptr conversion.
+//
+// Coordinator's review of the initial sub-piece 3c fixup found:
+// `CustomEntityBuilder::build()` returns `ScriptCustomEntity_CSPtr`.
+// Without a Lua class registration for that type, kaguya's cross-type
+// conversion (needed to pass the built entity into `eb:appendEntity(...)`
+// which expects `CADEntity_CSPtr`) SILENTLY returns a null shared_ptr.
+// `plugin.lua` calls `eb:appendEntity(ceb:build())` in 3 places, each
+// immediately followed by `eb:execute()`.  A silent null would land
+// in a document-mutating operation with no error.
+//
+// This test proves the fix: register the full Lua binding surface via
+// `import_lc_*_namespace`, run the exact pattern the plugin uses
+// (`ceb:build()` → `eb:appendEntity(...)`), then read back from the
+// document to confirm the entity is really there (not silently null).
+//
+// CI-only executable (macOS Homebrew's Lua 5.5 breaks kaguya).
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(ScriptCustomEntityLuaRegistration, BuildFlowsThroughAppendEntity) {
+    // 1. Build a real document + CustomEntityStorage block.  Same
+    //    fixture pattern the earlier SnapDispatchPreservesConcreteInsertType
+    //    test uses, minus the manager wiring — we're testing the
+    //    builder → entity → operation path.
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    auto ces = std::make_shared<lc::meta::CustomEntityStorage>(
+        "LuaRegTestPlugin", "TestBox",
+        lc::geo::Coordinate(42.0, 43.0, 44.0));
+    std::make_shared<lc::operation::AddBlock>(doc, ces)->execute();
+
+    // 2. Set up a kaguya state with the FULL Lua binding surface.  We
+    //    need lc.builder + lc.entity + lc.operation + lc.geo + lc.meta
+    //    + lc.storage all registered because the plugin pattern touches
+    //    every one of them.  Same order as LCLua::importLCKernel.
+    kaguya::State state;
+    state["lc"] = kaguya::NewTable();
+    // The `import_lc_*_namespace` functions live at the GLOBAL namespace
+    // (verified against lcadluascript/bridge/lc.cpp:11 —
+    // `void import_lc_namespace(kaguya::State&) { ... }` at file scope).
+    ::import_lc_namespace(state);
+    ::import_lc_geo_namespace(state);
+    ::import_lc_meta_namespace(state);
+    ::import_lc_entity_namespace(state);
+    ::import_lc_builder_namespace(state);
+    ::import_lc_storage_namespace(state);
+    ::import_lc_operation_namespace(state);
+
+    // Inject the C++-built document + storage as Lua globals so the
+    // test script can reach them without needing an EntityBuilder ctor
+    // for scratch documents.
+    state["_test_doc"]     = doc;
+    state["_test_storage"] = ces;
+    state["_test_layer"]   = std::make_shared<lc::meta::Layer>();
+
+    // Sanity: `ScriptCustomEntity` MUST be a registered Lua class OR
+    // the whole downstream test is moot.  This proves the fix's
+    // presence at Lua-visible-scope rather than via internal C++
+    // introspection.
+    ASSERT_NO_THROW(state.dostring(R"lua(
+assert(lc.entity.ScriptCustomEntity ~= nil,
+    "lc.entity.ScriptCustomEntity Lua class registration is missing")
+    )lua"));
+
+    // 3. THE CRITICAL TEST: replicate `plugin.lua`'s exact pattern.
+    //    Build a ScriptCustomEntity via CustomEntityBuilder, pass it
+    //    into an EntityBuilder via `appendEntity`, execute.  If the
+    //    Lua class registration is missing, kaguya's cross-type
+    //    conversion returns a null shared_ptr and the entity is
+    //    silently lost.  Post-fix: the entity actually reaches the
+    //    document.
+    state.dostring(R"lua(
+-- 6 stub script-behavior callbacks — plain no-ops.  checkValues()
+-- only gates on is-nil.
+local function _noop() end
+local function _snap(insert, coord, constrain, min_dist, max_pts)
+    return {}  -- empty EntityCoordinate list
+end
+local function _nearest(insert, coord)
+    return lc.geo.Coordinate(0, 0, 0)
+end
+local function _drag(insert)
+    return {}  -- empty dragPoints map
+end
+
+local ceb = lc.builder.CustomEntityBuilder()
+ceb:setDisplayBlock(_test_storage)
+ceb:setDocument(_test_doc)
+ceb:setLayer(_test_layer)
+ceb:setCoordinate(lc.geo.Coordinate(42.0, 43.0, 44.0))
+ceb:setSnapFunction(_snap)
+ceb:setNearestPointFunction(_nearest)
+ceb:setDragPointsFunction(_drag)
+ceb:setNewDragPointFunction(_noop)
+ceb:setDragPointsClickedFunction(_noop)
+ceb:setDragPointsReleasedFunction(_noop)
+
+local ce = ceb:build()
+assert(ce ~= nil,
+    "CustomEntityBuilder:build() returned nil — should return a ScriptCustomEntity")
+
+-- The EXACT pattern from plugin.lua's storeRectangle / _init_default
+-- flow: eb:appendEntity(ceb:build()) → eb:execute().  If the
+-- ScriptCustomEntity Lua registration was missing, kaguya's cross-type
+-- shared_ptr conversion would return a NULL shared_ptr here silently.
+local eb = lc.operation.EntityBuilder.new(_test_doc)
+eb:appendEntity(ce)
+eb:execute()
+    )lua");
+
+    // 4. THE PROOF: read back from the document.  If the entity was
+    //    silently null'd during Lua-side conversion, no entity landed
+    //    in the document post-execute().  Post-fix, exactly one
+    //    entity is there.
+    auto entities = doc->entityContainer().asVector(32767);
+    ASSERT_EQ(entities.size(), 1u)
+        << "ScriptCustomEntity built via Lua CustomEntityBuilder MUST "
+           "land in the document after appendEntity+execute.  Zero "
+           "entities means the shared_ptr cross-type conversion "
+           "silently null'd during Lua → C++ marshaling — the "
+           "coordinator-flagged bug.  If this assertion fails, the "
+           "`state[\"lc\"][\"entity\"][\"ScriptCustomEntity\"].setClass(...)` "
+           "registration in lcadluascript/bridge/lc_entity.cpp is "
+           "missing or wrong.";
+
+    // 5. Concrete-type check: the entity in the document must be a
+    //    ScriptCustomEntity (via dynamic_pointer_cast) so we know the
+    //    right class flowed through, not just "some CADEntity."
+    auto as_sce = std::dynamic_pointer_cast<
+        const lc::entity::ScriptCustomEntity>(entities[0]);
+    ASSERT_TRUE(static_cast<bool>(as_sce))
+        << "the entity in the document must be a ScriptCustomEntity — "
+           "if this fails, the Lua registration returned a null-typed "
+           "wrapper that flowed through as a base CADEntity, losing "
+           "the script-defined behaviors.";
+
+    // 6. Verify the concrete-type-preserved fields survived: the
+    //    CustomEntityStorage's plugin name + entity name must be
+    //    reachable via the recovered ScriptCustomEntity's
+    //    displayBlock().
+    auto block = std::dynamic_pointer_cast<
+        const lc::meta::CustomEntityStorage>(as_sce->displayBlock());
+    ASSERT_TRUE(static_cast<bool>(block))
+        << "recovered entity's displayBlock must be a CustomEntityStorage";
+    EXPECT_EQ(block->pluginName(), "LuaRegTestPlugin");
+    EXPECT_EQ(block->entityName(), "TestBox");
 }
 
 } // namespace
