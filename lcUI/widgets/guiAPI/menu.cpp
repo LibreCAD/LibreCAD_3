@@ -57,8 +57,8 @@ MenuItem* Menu::addItem(const char* menuItemLabel) {
     return newItem;
 }
 
-MenuItem* Menu::addItem(const char* menuItemLabel, kaguya::LuaRef callback) {
-    MenuItem* newItem = new MenuItem(menuItemLabel, callback);
+MenuItem* Menu::addItem(const char* menuItemLabel, lc::scripting::ScriptCallback callback) {
+    MenuItem* newItem = new MenuItem(menuItemLabel, std::move(callback));
     addItem(newItem);
 
     return newItem;

@@ -2,8 +2,11 @@
 
 #include <QMenu>
 #include <cad/base/cadentity.h>
-#include <kaguya/kaguya.hpp>
 
+// Phase 4 PR-8 — kaguya::State _L member retired; every context-menu
+// callback is a native ScriptCallback lambda now.  The retired _L
+// initializer also removes the constructed-before-initLua ordering
+// caveat (mainwindow.cpp:32 vs :58).
 #include "mainwindow.h"
 #include "widgets/guiAPI/menu.h"
 
@@ -92,7 +95,6 @@ private:
 private:
     static std::map<lc::ui::MainWindow*, int> instancesId;
     static std::map<int, ContextMenuManager*> instances;
-    kaguya::State _L;
     std::map<std::string, std::vector<std::string>> _operationMap;
     lc::ui::MainWindow* _mainWindow;
     static int _instanceCount;

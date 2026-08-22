@@ -1,5 +1,12 @@
 #include "propertyeditor.h"
 
+// Phase 4 PR-6 — every property-widget callback is a native lambda
+// capturing `key`.  The 9 kaguya-dostring codegen closures + 7 PR-5a
+// scalar-widget shims + 2 PR-5c list-widget shims are gone; the Lua
+// adapter is not touched here at all anymore.  This kills the last
+// scratch-global codegen sites in the panel path.
+#include <lcscripting/scriptcallback.h>
+
 #include "widgets/guiAPI/entitynamevisitor.h"
 #include <QVBoxLayout>
 #include <QScrollArea>
@@ -132,7 +139,11 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
 }
 
 void PropertyEditor::propertyChanged(const std::string& key) {
-    kaguya::LuaRef propertiesTable = generateInfo(mainWindow->luaInterface()->luaState());
+    // Phase 4 PR-5b — generateInfo returns a language-neutral Map; read
+    // typed values via ScriptValue accessors.  The vector case reads back
+    // the nested Map that ListGUI writes under `key` (aliasing preserved
+    // — see listgui.cpp) and pulls out its Coordinate children.
+    auto propertiesTable = generateInfo();
     lc::entity::CADEntity_CSPtr entity = mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]);
 
     std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
@@ -150,29 +161,41 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     std::string propertyName = key.substr(secondLastUnderscore + 1, lastUnderscore - secondLastUnderscore - 1);
 
     lc::entity::PropertiesMap propertiesList;
+    const auto& tableRef = *propertiesTable;
 
     if (entityType == "angle") {
-        propertiesList[propertyName] = lc::entity::AngleProperty(propertiesTable[key].get<double>());
+        propertiesList[propertyName] = lc::entity::AngleProperty(tableRef.at(key).asDouble());
     }
 
     if (entityType == "double") {
-        propertiesList[propertyName] = propertiesTable[key].get<double>();
+        propertiesList[propertyName] = tableRef.at(key).asDouble();
     }
 
     if (entityType == "bool") {
-        propertiesList[propertyName] = propertiesTable[key].get<bool>();
+        propertiesList[propertyName] = tableRef.at(key).asBool();
     }
 
     if (entityType == "coordinate") {
-        propertiesList[propertyName] = propertiesTable[key].get<lc::geo::Coordinate>();
+        propertiesList[propertyName] = tableRef.at(key).asCoordinate();
     }
 
     if (entityType == "text") {
-        propertiesList[propertyName] = propertiesTable[key].get<std::string>();
+        propertiesList[propertyName] = tableRef.at(key).asString();
     }
 
     if (entityType == "vector") {
-        propertiesList[propertyName] = propertiesTable[key].get<std::vector<lc::geo::Coordinate>>();
+        // ListGUI's nested Map holds CoordinateGUI children whose keys are
+        // arbitrary suffixes of `key`.  Flatten them into a plain vector.
+        std::vector<lc::geo::Coordinate> coords;
+        auto it = tableRef.find(key);
+        if (it != tableRef.end() && it->second.asMap()) {
+            for (const auto& kv : *it->second.asMap()) {
+                if (kv.second.kind() == lc::scripting::ScriptValue::Kind::Coordinate) {
+                    coords.push_back(kv.second.asCoordinate());
+                }
+            }
+        }
+        propertiesList[propertyName] = coords;
     }
 
     // returns nullptr if not custom property
@@ -187,7 +210,7 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     }
 
     if (entityType == "layer") {
-        std::string layerName = propertiesTable[key].get<std::string>();
+        std::string layerName = tableRef.at(key).asString();
         lc::meta::Layer_CSPtr layer = mainWindow->layers()->layerByName(layerName.c_str());
         if (layer != nullptr) {
             changedEntity = entity->modify(layer, entity->metaInfo(), entity->block());
@@ -207,43 +230,49 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     mainWindow->cadMdiChild()->viewer()->docCanvas()->updateSelection();
 }
 
-lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity) {
+lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::string& key, const std::string& entityType, lc::scripting::Map propertiesTable, lc::entity::CADEntity_CSPtr oldEntity) {
+    // Phase 4 PR-5b — walk the neutral Map instead of a LuaRef table.
+    // Layout: propertiesTable[key] holds a nested Map of vertex groups
+    // (as built by ListGUI::getValue); each vertex group's value is
+    // itself a Map (as built by LWVertexGroup::getValue) with the four
+    // property entries `<vertKey>_Location`, `_StartWidth`, `_EndWidth`,
+    // `_Bulge` (all aliased to top-level entries — see propertyeditor.cpp
+    // aliasing note in listgui.cpp).
     if (entityType == "customLWPolyline") {
-        kaguya::LuaTable entTable = propertiesTable[key];
-        std::vector<kaguya::LuaRef> vertexKeys = entTable.keys();
+        auto entIt = propertiesTable->find(key);
+        if (entIt == propertiesTable->end() || !entIt->second.asMap()) {
+            return nullptr;
+        }
+        const auto& entTable = *entIt->second.asMap();
 
         std::vector<lc::builder::LWBuilderVertex> builderVertices;
-        for (kaguya::LuaRef vertexKey : vertexKeys)
-        {
-            std::string vertKey = vertexKey.get<std::string>();
-            kaguya::LuaTable vertexTable = propertiesTable[vertexKey];
-            std::vector<kaguya::LuaRef> vertexPropertiesKeys = vertexTable.keys();
+        for (const auto& vertexEntry : entTable) {
+            if (!vertexEntry.second.asMap()) {
+                continue;
+            }
+            const auto& vertexTable = *vertexEntry.second.asMap();
 
             lc::geo::Coordinate loc;
-            double sWidth;
-            double eWidth;
-            double bulge;
+            double sWidth = 0.0;
+            double eWidth = 0.0;
+            double bulge  = 0.0;
 
-            for (kaguya::LuaRef vertexPropKey : vertexPropertiesKeys)
-            {
-                std::string propKey = vertexPropKey.get<std::string>();
+            for (const auto& propEntry : vertexTable) {
+                const std::string& propKey = propEntry.first;
                 auto lastUnderscore = propKey.find_last_of("_");
                 std::string propType = propKey.substr(lastUnderscore + 1);
 
                 if (propType == "Location") {
-                    loc = vertexTable[vertexPropKey].get<lc::geo::Coordinate>();
+                    loc = propEntry.second.asCoordinate();
                 }
-
                 if (propType == "StartWidth") {
-                    sWidth = vertexTable[vertexPropKey].get<double>();
+                    sWidth = propEntry.second.asDouble();
                 }
-
                 if (propType == "EndWidth") {
-                    eWidth = vertexTable[vertexPropKey].get<double>();
+                    eWidth = propEntry.second.asDouble();
                 }
-
                 if (propType == "Bulge") {
-                    bulge = vertexTable[vertexPropKey].get<double>();
+                    bulge = propEntry.second.asDouble();
                 }
             }
 
@@ -262,60 +291,61 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
 
 void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties) {
     _currentEntity = entityID;
-    kaguya::State state(mainWindow->luaInterface()->luaState());
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
         std::string key = generatePropertyKey(entityID, iter->first, iter->second.which());
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
+            // Phase 4 PR-6 — every widget's callback is a native lambda
+            // capturing `key` by value; `this` is captured too because
+            // the singleton `GetPropertyEditor(mainWindow)` the old
+            // dostring called was just `this`.  Replaces the old
+            // `anglePropertyCalled`/`numberPropertyCalled`/... scratch
+            // globals + Lua-side codegen closures.
+            auto makeCb = [this, key]() {
+                return lc::scripting::nativeCallback([this, key]() {
+                    this->propertyChanged(key);
+                });
+            };
+
             // angleproperty
             if (iter->second.which() == 0) {
                 lc::ui::api::AngleGUI* anglegui = new lc::ui::api::AngleGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 anglegui->setValue(boost::get<lc::entity::AngleProperty>(iter->second).Get());
-                state.dostring("anglePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                anglegui->addFinishCallback(state["anglePropertyCalled"]);
+                anglegui->addFinishCallback(makeCb());
                 addWidget(key, anglegui);
-                state["anglePropertyCalled"] = nullptr;
             }
 
             // double
             if (iter->second.which() == 1) {
                 lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(std::string(1,std::toupper(iter->first[0])) + iter->first.substr(1));
                 numbergui->setValue(boost::get<double>(iter->second));
-                state.dostring("numberPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                numbergui->addCallback(state["numberPropertyCalled"]);
+                numbergui->addCallback(makeCb());
                 addWidget(key, numbergui);
-                state["numberPropertyCalled"] = nullptr;
             }
 
             // bool
             if (iter->second.which() == 2) {
                 lc::ui::api::CheckBoxGUI* checkboxgui = new lc::ui::api::CheckBoxGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 checkboxgui->setValue(boost::get<bool>(iter->second));
-                state.dostring("boolPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                checkboxgui->addCallback(state["boolPropertyCalled"]);
+                checkboxgui->addCallback(makeCb());
                 addWidget(key, checkboxgui);
-                state["boolPropertyCalled"] = nullptr;
             }
 
             // coordinate
             if (iter->second.which() == 3) {
                 lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
-                state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                coordinategui->addFinishCallback(state["coordinatePropertyCalled"]);
+                coordinategui->addFinishCallback(makeCb());
                 addWidget(key, coordinategui);
-                state["coordinatePropertyCalled"] = nullptr;
             }
 
             // text (string)
             if (iter->second.which() == 4) {
                 lc::ui::api::TextGUI* textgui = new lc::ui::api::TextGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 textgui->setValue(boost::get<std::string>(iter->second));
-                state.dostring("textPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                textgui->addFinishCallback(state["textPropertyCalled"]);
+                textgui->addFinishCallback(makeCb());
                 addWidget(key, textgui);
-                state["textPropertyCalled"] = nullptr;
             }
 
             // vector
@@ -326,10 +356,8 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 std::vector<lc::geo::Coordinate> coords = boost::get<std::vector<lc::geo::Coordinate>>(iter->second);
                 listgui->setValue(coords);
 
-                state.dostring("vectorPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-                listgui->addCallbackToAll(state["vectorPropertyCalled"]);
+                listgui->addCallbackToAll(makeCb());
                 addWidget(key, listgui);
-                state["vectorPropertyCalled"] = nullptr;
             }
 
             _entityProperties[entityID].push_back(key);
@@ -340,7 +368,6 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
 void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
     _currentEntity = entity->id();
-    kaguya::State state(mainWindow->luaInterface()->luaState());
 
     api::EntityNameVisitor entityVisitor;
     entity->dispatch(entityVisitor);
@@ -354,10 +381,11 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         lwPolylineBuilder.copy(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity));
         listgui->setValue(lwPolylineBuilder.getVertices());
 
-        state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-        listgui->addCallbackToAll(state["customPropertyCalled"]);
+        // Phase 4 PR-6 — native lambda replaces `customPropertyCalled`
+        // dostring codegen.
+        listgui->addCallbackToAll(lc::scripting::nativeCallback(
+            [this, key]() { this->propertyChanged(key); }));
         addWidget(key, listgui);
-        state["customPropertyCalled"] = nullptr;
 
         _entityProperties[entity->id()].push_back(key);
         _widgetKeyToEntity[key] = entity->id();
@@ -366,20 +394,20 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
 
 void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr entity) {
     unsigned long entityID = entity->id();
-    kaguya::State state(mainWindow->luaInterface()->luaState());
 
     lc::ui::api::LineSelectGUI* lineSelectGUI = new lc::ui::api::LineSelectGUI(mainWindow->cadMdiChild(), _metaInfoManager, "Meta Info");
     lineSelectGUI->setEntityMetaInfo(entity);
     std::string key = "entity" + std::to_string(entityID) + "_" + "lineSelect";
-    state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
-
-    lineSelectGUI->addCallback(state["customPropertyCalled"]);
+    // Phase 4 PR-6 — native lambda captures `key` by value (per-call).
+    // Replaces the reused `customPropertyCalled` scratch global that the
+    // old Lua-side codegen overwrote on every call.
+    lineSelectGUI->addCallback(lc::scripting::nativeCallback(
+        [this, key]() { this->propertyChanged(key); }));
     addWidget(key, lineSelectGUI);
     _entityProperties[entityID].push_back(key);
     _widgetKeyToEntity[key] = entityID;
 
     std::string key2 = "entity" + std::to_string(entityID) + "_" + "layer";
-    state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key2 + "') end");
 
     std::vector<lc::meta::Layer_CSPtr> layersList = mainWindow->layers()->layers();
     lc::ui::api::ComboBoxGUI* layerGUI = new lc::ui::api::ComboBoxGUI("Layer");
@@ -390,7 +418,8 @@ void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr e
     }
 
     layerGUI->setValue(entity->layer()->name());
-    layerGUI->addCallback(state["customPropertyCalled"]);
+    layerGUI->addCallback(lc::scripting::nativeCallback(
+        [this, key2]() { this->propertyChanged(key2); }));
     addWidget(key2, layerGUI);
     _entityProperties[entityID].push_back(key2);
     _widgetKeyToEntity[key2] = entityID;

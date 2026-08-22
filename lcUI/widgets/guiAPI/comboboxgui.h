@@ -39,7 +39,7 @@ public:
     * \brief Add callback for activated signal
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Overridden Set ComboBox GUI widget label
@@ -76,7 +76,7 @@ public:
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Hide widget label
@@ -111,7 +111,7 @@ private:
     QLabel* _textLabel;
     QComboBox* _comboBox;
 
-    std::vector<kaguya::LuaRef> _activatedCallbacks;
+    std::vector<lc::scripting::ScriptCallback> _activatedCallbacks;
 };
 }
 }

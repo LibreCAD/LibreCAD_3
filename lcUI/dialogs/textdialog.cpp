@@ -1,6 +1,15 @@
 #include "textdialog.h"
 #include "ui_textdialog.h"
 
+// Phase 4 PR-9c — okButtonClicked routes through the neutral scripting
+// layer: MTextOperations resolved via runOperationByName (which walks
+// the PR-7 resolver list, so phase-5 Python would find the same class
+// too); copyEntity invoked via currentOperation().callMethod, killing
+// the `updateTextOp` dostring.
+#include <lcscripting/scriptcallback.h>
+#include <lcscripting/scriptobject.h>
+#include <lcscripting/scriptvalue.h>
+
 using namespace lc::ui::dialog;
 
 TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
@@ -89,9 +98,13 @@ TextDialog::~TextDialog()
 }
 
 void TextDialog::okButtonClicked() {
-    kaguya::State state(_mainWindow->luaInterface()->luaState());
-    _mainWindow->runOperation(state["MTextOperations"]);
-    state.dostring("updateTextOp = function(textEntity) mainWindow:currentOperation():copyEntity(textEntity) end");
+    // Phase 4 PR-9c — MTextOperations resolution routes through
+    // MainWindow::runOperationByName, which walks the PR-7 resolver
+    // list (Lua-globals resolver today; phase 5 will push a Python
+    // registry resolver AFTER it — same class name in either source
+    // will resolve, satisfying the two-source design).
+    _mainWindow->runOperationByName("MTextOperations");
+
     lc::builder::MTextBuilder textBuilder;
     textBuilder.setLayer(_mainWindow->cadMdiChild()->activeLayer());
     textBuilder.setMetaInfo(_mainWindow->cadMdiChild()->metaInfoManager()->metaInfo());
@@ -109,7 +122,18 @@ void TextDialog::okButtonClicked() {
     textBuilder.setBold(boldCheckbox->isChecked());
     textBuilder.setItalic(italicCheckbox->isChecked());
 
-    state["updateTextOp"](textBuilder.build());
+    // Phase 4 PR-9c — replaces `updateTextOp = function(textEntity)
+    // mainWindow:currentOperation():copyEntity(textEntity) end` dostring
+    // codegen.  The current operation (just started above by
+    // runOperationByName) receives the freshly-built MText via its
+    // `copyEntity` method — LuaObjectImpl::callMethod prepends `self`
+    // so the Lua-side `op:copyEntity(t)` invocation shape is preserved.
+    lc::scripting::ScriptObject curOp = _mainWindow->currentOperation();
+    if (!curOp.isNil()) {
+        std::vector<lc::scripting::ScriptValue> args;
+        args.emplace_back(textBuilder.build());
+        curOp.callMethod("copyEntity", args);
+    }
 
     this->close();
 }

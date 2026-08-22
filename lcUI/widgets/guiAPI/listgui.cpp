@@ -47,13 +47,19 @@ ListGUI::~ListGUI()
     delete ui;
 }
 
-void ListGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = kaguya::NewTable();
+void ListGUI::getValue(lc::scripting::Map& map) {
+    // Phase 4 PR-5b — build a nested Map under _key.  Each child writes
+    // its value at the top level (top-level access still works — legacy
+    // PropertyEditor read path) AND we alias the same ScriptValue into
+    // the nested Map (list traversal path).  For nested Map ScriptValues
+    // this preserves the aliasing invariant documented in scriptvalue.h.
+    auto nested = lc::scripting::makeMap();
+    (*map)[_key] = lc::scripting::ScriptValue(nested);
 
     for (InputGUI* inputWidget : itemList) {
         if (inputWidget != nullptr) {
-            inputWidget->getLuaValue(table);
-            table[_key][inputWidget->key()] = table[inputWidget->key()];
+            inputWidget->getValue(map);
+            (*nested)[inputWidget->key()] = (*map)[inputWidget->key()];
         }
     }
 }
@@ -108,9 +114,14 @@ void ListGUI::plusButtonClicked() {
         itemIdCount++;
         addItem(newkey, coordWidget);
 
-        for (kaguya::LuaRef& cb : _callbacks) {
+        // Phase 4 PR-5c — ScriptCallback pImpl is shared_ptr, so
+        // copying into each child aliases the same callable; then
+        // fire the callback (parity with legacy `cb()` semantics —
+        // the vector-property Lua side was implicitly aware of Item
+        // additions).
+        for (auto& cb : _callbacks) {
             coordWidget->addFinishCallback(cb);
-            cb();
+            cb.invoke();
         }
     }
 
@@ -120,9 +131,9 @@ void ListGUI::plusButtonClicked() {
         itemIdCount++;
         addItem(newkey, lwVertexGroup);
 
-        for (kaguya::LuaRef& cb : _callbacks) {
+        for (auto& cb : _callbacks) {
             lwVertexGroup->addCallback(cb);
-            cb();
+            cb.invoke();
         }
     }
 }
@@ -144,8 +155,8 @@ void ListGUI::minusButtonClicked() {
     }
     selectedItem->setHidden(true);
 
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb();
+    for (auto& cb : _callbacks) {
+        cb.invoke();
     }
 
     listWidget->setCurrentItem(listWidget->item(0));
@@ -216,7 +227,12 @@ void ListGUI::setValue(std::vector<lc::builder::LWBuilderVertex> builderVertices
     }
 }
 
-void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
+void ListGUI::addCallbackToAll(lc::scripting::ScriptCallback cb) {
+    // Phase 4 PR-5c — cb's pImpl is shared_ptr, so every push_back /
+    // addFinishCallback / addCallback copy references the same
+    // underlying callable.  We stash a copy in _callbacks for future
+    // plusButtonClicked bindings, then hand a copy to each existing
+    // child widget.
     _callbacks.push_back(cb);
     if (_listType == ListType::COORDINATE) {
         for (InputGUI* inputWidget : itemList) {

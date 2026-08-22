@@ -5,7 +5,11 @@
 #include <QWidget>
 #include <QContextMenuEvent>
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-5b — kaguya removed from the InputGUI base header.  Subclass
+// getValue(Map&) writes into a neutral ScriptValue::Map that adapters
+// materialize per-runtime.
+#include <lcscripting/scriptcallback.h>
+#include <lcscripting/scriptvalue.h>
 
 #include <string>
 #include <vector>
@@ -44,10 +48,13 @@ public:
     virtual void setLabel(const std::string& newLabel);
 
     /**
-    * \brief add key and value to the lua table
-    * \param LuaRef lua table
+    * \brief Write the widget's key/value into a language-neutral Map that
+    * the callback runtime will materialize into its own table shape
+    * (Lua table, Python dict).
+    * \param ScriptValue::Map neutral table (shared_ptr — aliasing-safe;
+    *        see the ListGUI aliasing note in scriptvalue.h).
     */
-    virtual void getLuaValue(kaguya::LuaRef& table) = 0;
+    virtual void getValue(lc::scripting::Map& map) = 0;
 
     /**
     * \brief Hide label of the input gui

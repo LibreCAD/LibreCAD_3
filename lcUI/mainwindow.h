@@ -3,6 +3,14 @@
 #include "luainterface.h"
 #include <kaguya/kaguya.hpp>
 
+// Phase 4 PR-7 — runOperation dispatches through ScriptObject (neutral
+// operation-instance shape); operation_options stores ScriptCallback
+// vectors; runOperationByName resolves via an ordered resolver list
+// (Lua globals today; phase 5 adds Python registry).
+#include <lcscripting/scriptobject.h>
+#include <lcscripting/scriptcallback.h>
+#include <functional>
+
 #include <QMainWindow>
 #include <QShortcut>
 #include "widgets/clicommand.h"
@@ -76,16 +84,51 @@ namespace lc
             int contextMenuManagerId();
 
             /**
-            * \brief Connect existing menu item to lua callback function
-            * \param itemName item name , callback - function callback
+            * \brief Connect existing menu item to a script callback
+            * \param itemName item name , callback - ScriptCallback (Lua
+            *        adapter wraps LuaRef at the guibridge)
+            *
+            * Phase 4 PR-4 refactor: was `kaguya::LuaRef`; guibridge.cpp
+            * now wraps Lua-side LuaRefs via lc::lua::makeLuaCallback().
             */
-            void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
+            void connectMenuItem(const std::string& itemName,
+                                 lc::scripting::ScriptCallback callback);
 
             /**
-            * \brief Run tool operation
-            * \param operation Operation class , init_method - which init_method to run
+            * \brief Run tool operation.  Phase 4 PR-7: was
+            * `kaguya::LuaRef`; now takes a neutral ScriptObject wrapping
+            * the operation-class object (Lua adapter wraps a LuaRef;
+            * Python adapter — phase 5 — wraps a py::type).
+            * \param operation Operation class , init_method - FULL init
+            *        method name to run (e.g. "_init_default" or a
+            *        computed "_init_pal" — the `_init_` prefix is
+            *        caller-side, matching today's contract).
             */
-            void runOperation(kaguya::LuaRef operation, const std::string& init_method = "");
+            void runOperation(lc::scripting::ScriptObject operation,
+                              const std::string& init_method = "");
+
+            /**
+            * \brief Run tool operation resolved by name.  Phase 4 PR-7:
+            * new native entry point that replaces the Lua-side
+            * `run_basic_operation(<name>, <init_method>)` dostring family.
+            * Resolution walks an ordered resolver list; the first
+            * non-nil result wins.  The initial list contains only the
+            * Lua-global resolver; phase 5 pushes the Python registry
+            * resolver so both sources are honored.
+            */
+            void runOperationByName(const std::string& name,
+                                    const std::string& init_method = "");
+
+            /**
+            * \brief Register an ordered operation resolver.  Later
+            * registrations win (last-in-first-out) so late-added sources
+            * (Python registry) take precedence over the earlier Lua
+            * globals resolver — mirrors the "second source added later
+            * shouldn't be shadowed" design in the phase-4 sub-plan.
+            */
+            using OperationResolver =
+                std::function<lc::scripting::ScriptObject(const std::string&)>;
+            void registerOperationResolver(OperationResolver resolver);
 
             /**
             * \brief Called on operation finish
@@ -97,7 +140,8 @@ namespace lc
             *        are to be added during the operation
             * \param operation string to identify for which operation , options - list of functions to be run
             */
-            void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
+            void addOperationOptions(std::string operation,
+                                     std::vector<lc::scripting::ScriptCallback> options);
 
             /**
             * \brief Read UI settings on program start up
@@ -115,9 +159,12 @@ namespace lc
             std::string lastOperationName();
 
             /**
-            * \brief Return the current operation
+            * \brief Return the current operation instance (phase 4
+            * PR-7: neutral ScriptObject).  Same underlying value as
+            * `luaInterface->operation()`; retained here for API
+            * compatibility with tests + external callers.
             */
-            kaguya::LuaRef currentOperation();
+            lc::scripting::ScriptObject currentOperation();
 
             /**
             * \brief Copy selected entities to the clipboard
@@ -285,13 +332,24 @@ namespace lc
             lc::ui::CopyManager _copyManager;
 
             lc::geo::Coordinate lastPoint;
-            std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
+            // Phase 4 PR-7 — options materialize as native/Lua callbacks
+            // stored neutrally; keyed by (command_line + init_method) OR
+            // (command_line) — the runOperation dispatch does the two-tier
+            // lookup preserving the pre-refactor behavior.
+            std::map<std::string, std::vector<lc::scripting::ScriptCallback>> operation_options;
 
             QMap<QString, api::Menu*> menuMap;
             int _contextMenuManagerId;
 
-            kaguya::LuaRef _oldOperation;
+            // Phase 4 PR-7 — _oldOperation stores the operation-class
+            // ScriptObject that spawned the current instance, so
+            // runLastOperation can re-instantiate.  _oldOpInitMethod is
+            // the FULL method name (already includes `_init_` prefix).
+            lc::scripting::ScriptObject _oldOperation;
             std::string _oldOpInitMethod;
+
+            // Phase 4 PR-7 — ordered resolver list; last-registered wins.
+            std::vector<OperationResolver> _operationResolvers;
 
             // Shortcuts
             QShortcut* copyShortcut;

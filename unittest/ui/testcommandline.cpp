@@ -6,6 +6,10 @@
 
 #include <kaguya/kaguya.hpp>
 
+// Phase 4 PR-2 — CliCommand takes lc::scripting::ScriptCallback now, not
+// kaguya::LuaRef.  Tests use the Lua adapter's makeLuaCallback wrapper.
+#include <scriptadapter/luacallback.h>
+
 #include "uitests.h"
 
 TEST(CommandLine, CommandTest) {
@@ -18,7 +22,7 @@ TEST(CommandLine, CommandTest) {
     QString c1 = "COMMAND";
     QString c2 = "INVALID";
 
-    cliTest.addCommand(c1.toStdString().c_str(), kaguya::LuaRef());
+    cliTest.addCommand(c1.toStdString().c_str(), lc::scripting::ScriptCallback{});
     cliTest.testCommand(c1);
     cliTest.testCommand(c2);
 
@@ -126,7 +130,7 @@ TEST(CommandLine, EnableCommandTest) {
     state.dostring("testfunction = function() testvalue=true end");
 
     const char *c1 = "COMMAND";
-    cliTest.addCommand(c1, state["testfunction"]);
+    cliTest.addCommand(c1, lc::lua::makeLuaCallback(state["testfunction"]));
 
     EXPECT_TRUE(cliTest.isCommandEnabled("COMMAND"));
     EXPECT_FALSE(state["testvalue"].get<bool>());
@@ -157,8 +161,8 @@ TEST(CommandLine, GetAPITest) {
     EXPECT_EQ(0, availableCommands.size());
     EXPECT_EQ(0, commandsEntered.size());
 
-    cliTest.addCommand("COMMAND1", state["testfunction"]);
-    cliTest.addCommand("COMMAND2", state["testfunction"]);
+    cliTest.addCommand("COMMAND1", lc::lua::makeLuaCallback(state["testfunction"]));
+    cliTest.addCommand("COMMAND2", lc::lua::makeLuaCallback(state["testfunction"]));
 
     availableCommands = cliTest.availableCommands();
     commandsEntered = cliTest.commandsHistory();

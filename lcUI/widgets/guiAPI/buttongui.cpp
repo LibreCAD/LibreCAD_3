@@ -20,17 +20,18 @@ void ButtonGUI::setLabel(const std::string& newLabel) {
     _pushButton->setText(QString(newLabel.c_str()));
 }
 
-void ButtonGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void ButtonGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void ButtonGUI::callbackCalled() {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb();
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks) {
+        cb.invoke();
     }
 }
 
-void ButtonGUI::getLuaValue(kaguya::LuaRef& table) {
+void ButtonGUI::getValue(lc::scripting::Map& map) {
 }
 
 void ButtonGUI::click() {

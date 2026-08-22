@@ -33,13 +33,14 @@ void SliderGUI::setLabel(const std::string& newLabel) {
     _textLabel->setText(QString(newLabel.c_str()));
 }
 
-void SliderGUI::addCallback(kaguya::LuaRef cb) {
-    _valueChangeCallbacks.push_back(cb);
+void SliderGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _valueChangeCallbacks.push_back(std::move(cb));
 }
 
 void SliderGUI::valueChangedCallbacks(int value) {
-    for (kaguya::LuaRef& cb : _valueChangeCallbacks) {
-        cb(value);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _valueChangeCallbacks) {
+        cb.call(value);
     }
 }
 
@@ -55,8 +56,8 @@ void SliderGUI::setValue(int val) {
     _slider->setValue(val);
 }
 
-void SliderGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void SliderGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void SliderGUI::copyValue(QDataStream& stream) {

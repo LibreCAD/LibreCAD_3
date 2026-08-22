@@ -12,6 +12,28 @@
 #include "widgets/guiAPI/entitygui.h"
 #include "widgets/guiAPI/buttongui.h"
 
+// Phase 4 PR-4 — native lambda replacements for the run_script /
+// run_customizetoolbar / changeLayout dostrings need the ScriptDock widget.
+// Phase 3 PR-3.1 — LuaScript widget renamed to ScriptDock (generalized
+// for both Lua and Python).  The Lua-visible name `lc.LuaScript` is
+// aliased in guibridge for backward compat.
+#include "widgets/scriptdock.h"
+
+// Phase 4 PR-7 — Lua-globals resolver in registerOperationResolvers()
+// wraps kaguya::LuaRef via makeLuaObject.
+#include <scriptadapter/luacallback.h>
+
+// Phase 5 PR-5.1 fixup — installEventHooks() called unconditionally
+// at MainWindow ctor.
+#ifdef LC_WITH_PYTHONSCRIPT
+#include "python/pyeventhooks.h"
+#endif
+
+// Phase 4 PR-9b — trigger* slots build ScriptValue::Map payloads
+// natively; CadMdiChild* travels as an OpaquePtr with the tag from
+// opaquetags.h.
+#include "lua/opaquetags.h"
+
 using namespace lc::ui;
 
 MainWindow::MainWindow()
@@ -50,7 +72,49 @@ MainWindow::MainWindow()
     // connect required signals and slots
     ConnectInputEvents();
 
-    // open qt bridge and run lua scripts
+    // Phase 4 PR-7 — register the default Lua-globals resolver so
+    // runOperationByName can find operation classes exposed as Lua
+    // globals (this is exactly what the killed `run_basic_operation`
+    // dostring resolved via `_G[name]`).  Phase 5 PR-5.2 fixup —
+    // MOVED to BEFORE `_luaInterface.initLua(this)`.  Rationale: the
+    // reverse-walking dispatch in runOperationByName means later-
+    // registered resolvers win; initLua runs OperationLoader (which
+    // registers the Python resolver).  If we register Lua's resolver
+    // AFTER initLua, Lua's resolver ends up LAST in the list, so
+    // reverse-walk hits Lua first — the OPPOSITE of PR-7's stated
+    // "later wins → Python wins" design intent.  Fix: register Lua
+    // FIRST (before initLua), Python SECOND (during initLua's
+    // loadPythonOperations), so reverse-walk correctly finds
+    // Python-defined ops before Lua-global ones.
+    registerOperationResolver([this](const std::string& name)
+                              -> lc::scripting::ScriptObject {
+        kaguya::State state(_luaInterface.luaState());
+        kaguya::LuaRef ref = state[name];
+        if (ref.isNilref() || ref.type() != LUA_TTABLE) {
+            return lc::scripting::ScriptObject{};
+        }
+        return lc::lua::makeLuaObject(std::move(ref));
+    });
+
+    // Phase 5 PR-5.1 fixup — install the lc.event.register /
+    // lc.event.deregister hooks HERE, not lazily from ScriptDock's
+    // ctor.  Python operations registered via lc.event.register at
+    // startup (PR-5.2's OperationLoader second source calls a
+    // Python operation's `__init__` which registers listeners) fire
+    // BEFORE the ScriptDock has ever been opened, so the hook slots
+    // were previously still default-constructed (falsy) and every
+    // early registration silently no-op'd.  MUST be installed BEFORE
+    // initLua so Python ops that register listeners at load time see
+    // live hook slots.
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::installEventHooks();
+#endif
+
+    // open qt bridge and run lua scripts — this triggers OperationLoader
+    // which pushes the Python-registry resolver ONTO the resolver list
+    // AFTER the Lua-globals resolver above, so the reverse-walking
+    // dispatch in runOperationByName correctly resolves Python-defined
+    // operations first when both languages define the same name.
     _luaInterface.initLua(this);
 
     _toolbar.addSnapOptions();
@@ -82,93 +146,147 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::addOtherMenus() {
-    // add lua script
-    kaguya::State state(_luaInterface.luaState());
-    state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
-    state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
-    state["run_aboutdialog"] = kaguya::function([&] {
-        auto aboutDialog = new dialog::AboutDialog(this);
-        aboutDialog->show();
-        });
-    state["run_textdialog"] = kaguya::function([&] {
-        auto textDialog = new dialog::TextDialog(this, this);
-        textDialog->show();
-        });
+    // Phase 4 PR-4 — replaces the phase-4 sub-plan's "Kind C" dostring
+    // codegen sites for menu callbacks with native ScriptCallback
+    // lambdas.  Kill list (verbatim from the sub-plan / mainwindow.cpp:
+    // pre-refactor line 87-88 + 103-111):
+    //   * `run_luascript = function() lc.LuaScript(mainWindow):show() end`
+    //   * `run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end`
+    //   * 5 `changeLayout = function() mainWindow:...() end` sites
+    //   * the scratch-global cleanup pattern
+    // The precedent for the native lambda replacement is the two Lua-
+    // native binding sites already present here at pre-refactor lines
+    // 89-96 (`run_aboutdialog`, `run_textdialog`) — the exact same
+    // idiom just moved into native callbacks bound directly to menu
+    // items via `nativeCallback([]{...})`.
 
-    api::Menu* luaMenu = addMenu("Lua");
-    luaMenu->addItem("Run script", state["run_luascript"]);
-    luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
+    MainWindow* self = this;
+
+    // Phase 3 PR-3.3 — menu renamed "Lua" → "Script" now that the dock
+    // supports both languages.  ScriptDock (phase 3 PR-3.1) replaces
+    // the old LuaScript widget; the Lua-visible name `lc.LuaScript`
+    // remains bound as an alias in guibridge for backward compat.
+    api::Menu* scriptMenu = addMenu("Script");
+    scriptMenu->addItem("Run script",
+        lc::scripting::nativeCallback([self]() {
+            auto ls = new lc::ui::widgets::ScriptDock(self);
+            ls->show();
+        }));
+    scriptMenu->addItem("Customize Toolbar",
+        lc::scripting::nativeCallback([self]() {
+            self->runCustomizeToolbar();
+        }));
 
     api::Menu* viewMenu = addMenu("View");
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(1) end");
-    viewMenu->addItem("Default Layout 1", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(2) end");
-    viewMenu->addItem("Default Layout 2", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(3) end");
-    viewMenu->addItem("Default Layout 3", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:loadDockLayout() end");
-    viewMenu->addItem("Load Dock Layout", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:saveDockLayout() end");
-    viewMenu->addItem("Save Dock Layout", state["changeLayout"]);
+    viewMenu->addItem("Default Layout 1",
+        lc::scripting::nativeCallback([self]() { self->changeDockLayout(1); }));
+    viewMenu->addItem("Default Layout 2",
+        lc::scripting::nativeCallback([self]() { self->changeDockLayout(2); }));
+    viewMenu->addItem("Default Layout 3",
+        lc::scripting::nativeCallback([self]() { self->changeDockLayout(3); }));
+    viewMenu->addItem("Load Dock Layout",
+        lc::scripting::nativeCallback([self]() { self->loadDockLayout(); }));
+    viewMenu->addItem("Save Dock Layout",
+        lc::scripting::nativeCallback([self]() { self->saveDockLayout(); }));
 
     api::Menu* aboutMenu = addMenu("About");
-    aboutMenu->addItem("About", state["run_aboutdialog"]);
+    aboutMenu->addItem("About",
+        lc::scripting::nativeCallback([self]() {
+            auto aboutDialog = new dialog::AboutDialog(self);
+            aboutDialog->show();
+        }));
 
     api::Menu* textMenu = menuByName("Create")->menuByName("Text");
     if (textMenu != nullptr) {
-        textMenu->addItem("Text Dialog", state["run_textdialog"]);
+        textMenu->addItem("Text Dialog",
+            lc::scripting::nativeCallback([self]() {
+                auto textDialog = new dialog::TextDialog(self, self);
+                textDialog->show();
+            }));
     }
 }
 
-void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method) {
+void MainWindow::runOperation(lc::scripting::ScriptObject operation,
+                              const std::string& init_method) {
+    // Phase 4 PR-7 — routed through ScriptObject / ScriptCallback.
+    //   * `finish_op` dostring gone → native Cancel-button lambda calling
+    //     `_luaInterface.finishOperation()` directly.
+    //   * `operation.call<LuaRef>()` → `operation.instantiate()`, which
+    //     preserves the instance's method-callable identity (unlike the
+    //     lossy Value round-trip that `call()` does).
+    //   * `op["_init_default"](op)` → `instance.callMethod("_init_default")`
+    //     (the Lua adapter prepends `self` implicitly — see luacallback.cpp).
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
     _cadMdiChild.viewer()->setOperationActive(true);
-    kaguya::State state(_luaInterface.luaState());
 
-    // if current operation had extra operation _toolbar icons, add them
-    if (!operation["operation_options"].isNilref())
-    {
-        if (operation_options.find(operation["command_line"].get<std::string>() + init_method) != operation_options.end()) {
-            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"].get<std::string>() + init_method];
-
-            for (auto op : options) {
-                // run operation which adds option icon to _toolbar
-                op();
-            }
-        } else if (operation_options.find(operation["command_line"]) != operation_options.end()) {
-            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
-
-            for (auto op : options) {
-                // run operation which adds option icon to _toolbar
-                op();
+    // Extra option toolbar icons.  Two-tier key: first "cmdLine+init",
+    // then plain "cmdLine".  Matches the legacy two-branch lookup.
+    if (operation.hasAttr("operation_options")) {
+        std::string cmdLine = operation.getAttr("command_line").asString();
+        auto it = operation_options.find(cmdLine + init_method);
+        if (it == operation_options.end()) {
+            it = operation_options.find(cmdLine);
+        }
+        if (it != operation_options.end()) {
+            for (auto& opt : it->second) {
+                // Fire the option: it adds an icon button to the toolbar.
+                opt.invoke();
             }
         }
     }
 
-    // add _toolbar cancel button
-    state.dostring("finish_op = function() finish_operation() end");
-    _toolbar.addButton("", ":/icons/quit.svg", "Current operation", state["finish_op"], "Cancel");
-    state["finish_op"] = nullptr;
+    // Cancel button — was `finish_op = function() finish_operation() end`
+    // dostring (killed in PR-7).  Native lambda calls
+    // `luaInterface.finishOperation()` directly.
+    _toolbar.addButton("", ":/icons/quit.svg", "Current operation",
+        lc::scripting::nativeCallback([this]() {
+            _luaInterface.finishOperation();
+        }),
+        "Cancel");
 
-    // call operation to run CreateOperations init method etc
-    _luaInterface.setOperation(operation.call<kaguya::LuaRef>());
-    kaguya::LuaRef op = _luaInterface.operation();
-    if (init_method == "") {
-        if (!op["_init_default"].isNilref()) {
-            op["_init_default"](op);
+    // Instantiate the operation class + run its init method.
+    lc::scripting::ScriptObject instance = operation.instantiate();
+    _luaInterface.setOperation(instance);
+    if (init_method.empty()) {
+        if (instance.hasAttr("_init_default")) {
+            instance.callMethod("_init_default");
         }
-    }
-    else {
-        op[init_method.c_str()](op);
+    } else {
+        instance.callMethod(init_method);
     }
 
-    _oldOperation = operation;
+    _oldOperation = std::move(operation);
     _oldOpInitMethod = init_method;
 }
 
-void MainWindow::addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options) {
-    operation_options[operation] = options;
+void MainWindow::runOperationByName(const std::string& name,
+                                    const std::string& init_method) {
+    // Phase 4 PR-7 — native replacement for the Lua-side
+    // `run_basic_operation(name, init_method)` dostring family (killed
+    // in operationloader.cpp).  Ordered resolver list: latest-registered
+    // wins so Python registry (phase 5) supersedes the Lua-globals
+    // resolver.
+    for (auto it = _operationResolvers.rbegin();
+         it != _operationResolvers.rend(); ++it) {
+        auto op = (*it)(name);
+        if (!op.isNil()) {
+            runOperation(std::move(op), init_method);
+            return;
+        }
+    }
+    // Unresolved name: silently no-op, matching Lua's dostring behavior
+    // where `run_basic_operation(nil)` produced no-op via LuaObjectImpl's
+    // nil-guard.  A future PR may surface a diagnostic through the CLI.
+}
+
+void MainWindow::registerOperationResolver(OperationResolver resolver) {
+    _operationResolvers.push_back(std::move(resolver));
+}
+
+void MainWindow::addOperationOptions(std::string operation,
+                                     std::vector<lc::scripting::ScriptCallback> options) {
+    operation_options[std::move(operation)] = std::move(options);
 }
 
 void MainWindow::operationFinished() {
@@ -246,17 +364,19 @@ void MainWindow::ConnectInputEvents()
 }
 
 void MainWindow::runLastOperation() {
-    if (!_oldOperation.isNilref()) {
+    // Phase 4 PR-7 — ScriptObject nil check.
+    if (!_oldOperation.isNil()) {
         runOperation(_oldOperation, _oldOpInitMethod);
     }
 }
 
 /* Menu functions */
 
-void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
+void MainWindow::connectMenuItem(const std::string& itemName,
+                                 lc::scripting::ScriptCallback callback)
 {
     lc::ui::api::MenuItem* menuItem = findMenuItemByObjectName(itemName.c_str());
-    menuItem->addCallback(callback);
+    menuItem->addCallback(std::move(callback));
 }
 
 void MainWindow::initMenuAPI() {
@@ -496,107 +616,146 @@ void MainWindow::removeMenu(int position) {
 
 /* Trigger slots */
 
+// Phase 4 PR-9b — every trigger* slot now builds a ScriptValue::Map
+// payload natively and hits `LuaInterface::triggerEvent(string,
+// ScriptValue)` (PR-9a's native overload) — no more Lua scratch globals
+// (`mousePressed`, `keyEvent`, `numberEntered`, ...) manufactured on
+// every event.  The `widget` entry (previously `state[...]["widget"] =
+// &_cadMdiChild`) becomes an OpaquePtr with the `CadMdiChild*` tag; the
+// adapter's registered encoder materializes it back into userdata on
+// entry to each Lua listener.
+//
+// Lazy materialization: check `listenerCount(name) > 0` before building
+// expensive payloads — mouseMove fires per pixel, and manufacturing a
+// per-event Map only to have zero listeners see it is measurable waste.
+//
+// The parallel Qt `emit point(...)` signal calls in triggerMousePressed
+// / triggerCoordinateEntered / triggerRelativeCoordinateEntered are
+// untouched — they feed the C++-side `triggerPoint` slot that updates
+// `lastPoint`.  Preserving them verbatim is part of PR-9b's contract.
+
+namespace {
+    // Build a ScriptValue holding an OpaquePtr(CadMdiChild*).  Named
+    // helper so every trigger slot's `widget` entry reads the same.
+    inline lc::scripting::ScriptValue widgetOpaque(lc::ui::CadMdiChild* w) {
+        return lc::scripting::ScriptValue(
+            lc::scripting::OpaquePtr{w, lc::ui::opaquetag::CadMdiChild});
+    }
+}
+
 void MainWindow::triggerMousePressed()
 {
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
-    kaguya::State state(_luaInterface.luaState());
-    state["mousePressed"] = kaguya::NewTable();
-    state["mousePressed"]["position"] = cursorPos;
-    state["mousePressed"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["mousePressed"]);
+    if (_luaInterface.listenerCount("point") > 0) {
+        auto payload = lc::scripting::makeMap();
+        (*payload)["position"] = lc::scripting::ScriptValue(cursorPos);
+        (*payload)["widget"]   = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("point", lc::scripting::ScriptValue(payload));
+    }
 
     emit point(cursorPos);
 }
 
 void MainWindow::triggerMouseReleased()
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["mouseRelease"] = kaguya::NewTable();
-    state["mouseRelease"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("mouseRelease", state["mouseRelease"]);
+    if (_luaInterface.listenerCount("mouseRelease") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("mouseRelease", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerSelectionChanged()
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["selectionChanged"] = kaguya::NewTable();
-    state["selectionChanged"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("selectionChanged", state["selectionChanged"]);
+    if (_luaInterface.listenerCount("selectionChanged") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("selectionChanged", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerMouseMoved()
 {
+    // mouseMove is the hottest per-pixel event; the listenerCount guard
+    // is not a micro-optimization here, it's the observable difference
+    // between "adds ~1 payload construction per pixel of movement" and
+    // "adds nothing when no script is listening".
+    if (_luaInterface.listenerCount("mouseMove") == 0) return;
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
-    kaguya::State state(_luaInterface.luaState());
-    state["mouseMove"] = kaguya::NewTable();
-    state["mouseMove"]["position"] = cursorPos;
-    state["mouseMove"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("mouseMove", state["mouseMove"]);
+    auto payload = lc::scripting::makeMap();
+    (*payload)["position"] = lc::scripting::ScriptValue(cursorPos);
+    (*payload)["widget"]   = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("mouseMove", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerKeyPressed(int key)
 {
     if (key == Qt::Key_Escape)
     {
-        // run finish operation
-        auto state = _luaInterface.luaState();
-        _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+        // Escape triggers the finishOperation event with an empty
+        // payload (was `kaguya::LuaRef(state)` — a nil LuaRef; the
+        // neutral form uses default-constructed ScriptValue).
+        _luaInterface.triggerEvent("finishOperation");
     }
     else
     {
-        kaguya::State state(_luaInterface.luaState());
-        state["keyEvent"] = kaguya::NewTable();
-        state["keyEvent"]["key"] = key;
-        state["keyEvent"]["widget"] = &_cadMdiChild;
-        _luaInterface.triggerEvent("keyPressed", state["keyEvent"]);
+        if (_luaInterface.listenerCount("keyPressed") == 0) return;
+        auto payload = lc::scripting::makeMap();
+        (*payload)["key"]    = lc::scripting::ScriptValue(key);
+        (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("keyPressed", lc::scripting::ScriptValue(payload));
     }
 }
 
 void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["coordinateEntered"] = kaguya::NewTable();
-    state["coordinateEntered"]["position"] = coordinate;
-    state["coordinateEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["coordinateEntered"]);
+    if (_luaInterface.listenerCount("point") > 0) {
+        auto payload = lc::scripting::makeMap();
+        (*payload)["position"] = lc::scripting::ScriptValue(coordinate);
+        (*payload)["widget"]   = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("point", lc::scripting::ScriptValue(payload));
+    }
 
     emit point(coordinate);
 }
 
 void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["relCoordinateEntered"] = kaguya::NewTable();
-    state["relCoordinateEntered"]["position"] = lastPoint + coordinate;
-    state["relCoordinateEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["relCoordinateEntered"]);
+    if (_luaInterface.listenerCount("point") > 0) {
+        auto payload = lc::scripting::makeMap();
+        (*payload)["position"] =
+            lc::scripting::ScriptValue(lastPoint + coordinate);
+        (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+        _luaInterface.triggerEvent("point", lc::scripting::ScriptValue(payload));
+    }
 
     emit point(lastPoint + coordinate);
 }
 
 void MainWindow::triggerNumberEntered(double number)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["numberEntered"] = kaguya::NewTable();
-    state["numberEntered"]["number"] = number;
-    state["numberEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("number", state["numberEntered"]);
+    if (_luaInterface.listenerCount("number") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["number"] = lc::scripting::ScriptValue(number);
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("number", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerTextEntered(QString text)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["textEntered"] = kaguya::NewTable();
-    state["textEntered"]["text"] = text.toStdString();
-    state["textEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("text", state["textEntered"]);
+    if (_luaInterface.listenerCount("text") == 0) return;
+    auto payload = lc::scripting::makeMap();
+    (*payload)["text"]   = lc::scripting::ScriptValue(text.toStdString());
+    (*payload)["widget"] = widgetOpaque(&_cadMdiChild);
+    _luaInterface.triggerEvent("text", lc::scripting::ScriptValue(payload));
 }
 
 void MainWindow::triggerFinishOperation()
 {
-    auto state = _luaInterface.luaState();
-    _luaInterface.triggerEvent("operationFinished", kaguya::LuaRef(state));
-    _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+    // Double-fire order preserved verbatim: operationFinished THEN
+    // finishOperation (mainwindow.cpp:598-599 pre-refactor, per the
+    // phase-4 sub-plan's PRESERVE list).  Both use empty payloads
+    // (was `kaguya::LuaRef(state)` — a nil LuaRef).
+    _luaInterface.triggerEvent("operationFinished");
+    _luaInterface.triggerEvent("finishOperation");
 }
 
 void MainWindow::triggerCommandEntered(QString command)
@@ -706,10 +865,11 @@ void MainWindow::selectionChanged() {
 }
 
 std::string MainWindow::lastOperationName() {
-    return _oldOperation["name"].get<std::string>();
+    // Phase 4 PR-7 — was `_oldOperation["name"].get<std::string>()`.
+    return _oldOperation.getAttr("name").asString();
 }
 
-kaguya::LuaRef MainWindow::currentOperation() {
+lc::scripting::ScriptObject MainWindow::currentOperation() {
     return _luaInterface.operation();
 }
 

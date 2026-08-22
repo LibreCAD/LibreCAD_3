@@ -1,4 +1,10 @@
 #pragma once
+
+#if _MSC_VER && !__INTEL_COMPILER
+#define  _WIN32_WINNT 0x0601
+#endif
+
+
 #include <boost/log/common.hpp>
 #include <boost/log/sources/logger.hpp>
 

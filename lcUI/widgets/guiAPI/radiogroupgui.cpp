@@ -25,17 +25,17 @@ void RadioGroupGUI::addButton(const std::string& key, RadioButtonGUI* newWidget)
     _addedKeys.insert(key);
 }
 
-void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
+void RadioGroupGUI::getValue(lc::scripting::Map& map) {
     RadioButtonGUI* checkButton = qobject_cast<RadioButtonGUI*>(qbuttongroup->checkedButton());
     if (checkButton != nullptr) {
-        table[_key] = checkButton->label();
+        (*map)[_key] = lc::scripting::ScriptValue(checkButton->label());
     }
 
     QList<QAbstractButton*> buttons = qbuttongroup->buttons();
     for (QAbstractButton* abstractButton : buttons) {
         RadioButtonGUI* guiButton = qobject_cast<RadioButtonGUI*>(abstractButton);
         if (guiButton != nullptr) {
-            guiButton->getLuaValue(table);
+            guiButton->getValue(map);
         }
     }
 }

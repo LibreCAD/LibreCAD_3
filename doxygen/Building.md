@@ -11,10 +11,11 @@ Required libraries
 4) git
 5) Google test
 6) Eigen 3
-7) Lua >= 5.2
-8) Curl
-9) Boost
-10) LibDxfRW (building instructions follow)
+7) Lua == 5.3 (see `find_package(Lua 5.3 EXACT REQUIRED)` in the root CMakeLists — the "5.2" wording in this doc is historical and superseded)
+8) Python 3.9+ development headers (`python3-dev` on Debian/Ubuntu, `python3-devel` on Fedora/RHEL) — added for phase-5 Python scripting (`WITH_PYTHONSCRIPT=ON` by default, can be OFF for a Lua-only build).  pybind11 comes from the vendored submodule at `third_party/pybind11`; you do NOT need pybind11 installed system-wide.
+9) Curl
+10) Boost
+11) LibDxfRW (building instructions follow)
 
 LibDxfRW
 --------
@@ -91,7 +92,7 @@ Ubuntu/Mint
 ===========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev python3-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
 ```
 
 You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
@@ -99,6 +100,26 @@ You need to compile Google Test in /usr/src/gtest/ and move the libraries in /us
 ### Ubuntu 14.xx
 GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
 http://askubuntu.com/a/456849
+
+### AppImage packaging (phase 6 PR-6.3)
+The Ubuntu build script (`scripts/ubuntu-install/createAppImage.sh`)
+uses `linuxdeploy` + the Qt plugin to produce a distributable AppImage.
+
+**Python scripting in the current AppImage:** the librecad binary is
+linked against libpython3.X.so, so `linuxdeploy` bundles the shared
+library automatically.  The Python **standard library** (~30 MB of .py
+files under `/usr/lib/python3.X/`) is NOT a shared-library dependency
+and is not bundled.  A user running the AppImage on a system without
+matching Python installed will get `ImportError` on `import os` (etc.)
+in Python scripts that reach for stdlib modules.
+
+Two ways to work around this today:
+1. Ship the AppImage with `-DWITH_PYTHONSCRIPT=OFF` for a Lua-only
+   binary.  Python-authored operations won't be available, but Lua
+   ones work fully.
+2. Add a `linuxdeploy-plugin-python` step to `createAppImage.sh` that
+   bundles libpython + a stdlib subset (~30-50 MB AppImage size
+   increase).  Deferred; not blocking the Python scripting phase.
 
 Windows
 =======

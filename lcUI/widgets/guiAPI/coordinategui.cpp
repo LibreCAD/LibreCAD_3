@@ -71,19 +71,20 @@ QString CoordinateGUI::generateTooltip() const {
     return tooltipcoord + "\n" + tooltipmagnitude + "\n" + tooltipangle;
 }
 
-void CoordinateGUI::addFinishCallback(kaguya::LuaRef cb) {
-    _callbacks_finished.push_back(cb);
+void CoordinateGUI::addFinishCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks_finished.push_back(std::move(cb));
 }
 
-void CoordinateGUI::addOnChangeCallback(kaguya::LuaRef cb) {
-    _callbacks_onchange.push_back(cb);
+void CoordinateGUI::addOnChangeCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks_onchange.push_back(std::move(cb));
 }
 
 void CoordinateGUI::editingFinishedCallbacks() {
     updateCoordinate();
 
-    for (kaguya::LuaRef& cb : _callbacks_finished) {
-        cb(_coordinate);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks_finished) {
+        cb.call(_coordinate);
     }
 }
 
@@ -91,8 +92,9 @@ void CoordinateGUI::textChangedCallbacks() {
     updateCoordinate();
     updateCoordinateDisplay();
 
-    for (kaguya::LuaRef& cb : _callbacks_onchange) {
-        cb(_coordinate);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks_onchange) {
+        cb.call(_coordinate);
     }
 }
 
@@ -113,8 +115,8 @@ void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
     _xcoordEdit->blockSignals(false);
 }
 
-void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void CoordinateGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void CoordinateGUI::enableCoordinateSelection(lc::ui::MainWindow* mainWindow) {

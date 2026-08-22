@@ -4,6 +4,14 @@
 #include "guiAPI/toolbarbutton.h"
 #include "guiAPI/toolbargroup.h"
 
+// Phase 4 PR-3 — native lambdas replace the snap_op dostring codegen.
+// MainWindow → CadMdiChild → SnapManagerImpl direct C++ call path.
+#include "mainwindow.h"
+#include "cadmdichild.h"
+#include <managers/snapmanagerimpl.h>
+
+#include <utility>
+
 using namespace lc::ui::widgets;
 
 Toolbar::Toolbar(lc::ui::LuaInterface* luaInterface, QWidget* parent) :
@@ -96,33 +104,86 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
 }
 
 void Toolbar::addSnapOptions() {
-    // Add toolbar snap options
+    // Phase 4 PR-3 — replaces 4 dostring-codegen sites with native
+    // lambdas.  Kill list:
+    //   * `snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) end`
+    //   * `... setIntersectionSnappable(enabled) ...`   (Lua alias for setIntersectionsSnappable)
+    //   * `... setMiddleSnappable(enabled) ...`
+    //   * `... setEntitySnappable(enabled) ...`
+    //   * `state["snap_op"] = nullptr;` (the scratch-global cleanup)
+    // The MainWindow parent gives us the CadMdiChild → SnapManagerImpl
+    // path directly; the previous chain went through Lua globals just
+    // to reach this same C++ method.
     lc::ui::api::ToolbarTab* quickAccessTab = tabByName("Quick Access");
-    kaguya::State state(luaInterface->luaState());
-
     quickAccessTab->addGroup(new lc::ui::api::ToolbarGroup("Snap Options", 2));
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) end");
-    addButton("SnapGrid", ":/icons/snap_grid.svg", "Snap Options", state["snap_op"], "Snap Grid", true);
 
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
-    addButton("SnapIntersection", ":/icons/snap_intersection.svg", "Snap Options", state["snap_op"], "Snap Intersection", true);
+    lc::ui::MainWindow* mainWindow = qobject_cast<lc::ui::MainWindow*>(parentWidget());
+    auto snapSetter = [mainWindow](void (lc::viewer::manager::SnapManagerImpl::*fn)(bool),
+                                   bool enabled) {
+        if (mainWindow && mainWindow->cadMdiChild()) {
+            auto sm = mainWindow->cadMdiChild()->getSnapManager();
+            if (sm) (sm.get()->*fn)(enabled);
+        }
+    };
 
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
-    addButton("SnapMiddle", ":/icons/snap_middle.svg", "Snap Options", state["snap_op"], "Snap Middle", true);
+    addButton("SnapGrid",
+              ":/icons/snap_grid.svg", "Snap Options",
+              lc::scripting::nativeCallback(
+                  [snapSetter](const std::vector<lc::scripting::ScriptValue>& args) {
+                      snapSetter(&lc::viewer::manager::SnapManagerImpl::setGridSnappable,
+                                 !args.empty() && args[0].asBool());
+                      return lc::scripting::ScriptValue{};
+                  }),
+              "Snap Grid", true);
 
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
-    addButton("SnapEntity", ":/icons/snap_entity.svg", "Snap Options", state["snap_op"], "Snap Entity", true);
+    addButton("SnapIntersection",
+              ":/icons/snap_intersection.svg", "Snap Options",
+              lc::scripting::nativeCallback(
+                  [snapSetter](const std::vector<lc::scripting::ScriptValue>& args) {
+                      snapSetter(&lc::viewer::manager::SnapManagerImpl::setIntersectionsSnappable,
+                                 !args.empty() && args[0].asBool());
+                      return lc::scripting::ScriptValue{};
+                  }),
+              "Snap Intersection", true);
 
-    state["snap_op"] = nullptr;
+    addButton("SnapMiddle",
+              ":/icons/snap_middle.svg", "Snap Options",
+              lc::scripting::nativeCallback(
+                  [snapSetter](const std::vector<lc::scripting::ScriptValue>& args) {
+                      snapSetter(&lc::viewer::manager::SnapManagerImpl::setMiddleSnappable,
+                                 !args.empty() && args[0].asBool());
+                      return lc::scripting::ScriptValue{};
+                  }),
+              "Snap Middle", true);
+
+    addButton("SnapEntity",
+              ":/icons/snap_entity.svg", "Snap Options",
+              lc::scripting::nativeCallback(
+                  [snapSetter](const std::vector<lc::scripting::ScriptValue>& args) {
+                      snapSetter(&lc::viewer::manager::SnapManagerImpl::setEntitySnappable,
+                                 !args.empty() && args[0].asBool());
+                      return lc::scripting::ScriptValue{};
+                  }),
+              "Snap Entity", true);
 }
 
-void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip, bool checkable, const char* tabName)
+void Toolbar::addButton(const char* name, const char* icon, const char* groupBox,
+                        lc::scripting::ScriptCallback cb,
+                        const char* tooltip, bool checkable, const char* tabName,
+                        const char* iconFallbackDir)
 {
     if (_tabs.find(tabName) == _tabs.end()) {
         addTab(tabName);
     }
 
-    lc::ui::api::ToolbarButton* button = new lc::ui::api::ToolbarButton(name, icon, cb, tooltip, checkable);
+    // Phase 5 PR-5.4 — iconFallbackDir forwarded to ToolbarButton so
+    // plugin-supplied icons resolve without recompiling resource.qrc.
+    // Existing callers pass nullptr (default) which preserves the
+    // qrc-only lookup behavior.
+    lc::ui::api::ToolbarButton* button =
+        new lc::ui::api::ToolbarButton(name, icon, std::move(cb), tooltip,
+                                       checkable, /*parent=*/nullptr,
+                                       iconFallbackDir);
     _tabs[tabName]->addButton(button, groupBox);
 }
 

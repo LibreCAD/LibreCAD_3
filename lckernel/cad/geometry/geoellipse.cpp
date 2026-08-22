@@ -1,6 +1,8 @@
-#include "geoellipse.h"
 
-#include "cmath"
+#include <cmath>
+
+#include "geoellipse.h"
+#include "cad/math/lcmath.h"
 
 
 using namespace lc;
@@ -215,4 +217,33 @@ double Ellipse::getEllipseAngle(const Coordinate& coord) const {
     Coordinate offset = coord - _center;
     Coordinate point = offset.rotate(-_majorP.angle());
     return atan2(point.y() * _majorP.magnitude(), point.x() * _minorRadius);
+}
+
+double Ellipse::getLength() const {
+	using namespace lc::maths;
+	double a = _majorP.magnitude();
+	double b = _minorRadius;
+	double x1 = Math::correctAngle(_startAngle) + M_PI;
+	double x2 = Math::correctAngle(_endAngle) + M_PI;
+	if (a < b) {
+		std::swap(a, b);
+		x1 -= M_PI/2;
+		x2 -= M_PI/2;
+	}
+	if (x2 < x1) {
+		x2 += 2 * M_PI;
+	}
+	double k2 =  std::min(1., b / a);
+	double k = std::sqrt(1. - k2 * k2);
+	if (isArc()) {
+		return 4. * a * Math::ellint2E(k);
+	}
+	double ret = 0.;
+	if (x2 >= M_PI) {
+		ret = 2 * (floor(x2/M_PI) - floor(x1/M_PI)) * Math::ellint2E(k);
+	}
+	x1 = std::fmod(x1, M_PI);
+	x2 = std::fmod(x2, M_PI);
+	ret += Math::ellint2E(x2, k) - Math::ellint2E(x1, k);
+	return a * ret;
 }

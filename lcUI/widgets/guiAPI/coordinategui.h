@@ -43,13 +43,13 @@ public:
     * \brief Add callback for editingFinished
     * \param LuaRef lua callback
     */
-    void addFinishCallback(kaguya::LuaRef cb);
+    void addFinishCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Add callback for textChanged
     * \param LuaRef lua callback
     */
-    void addOnChangeCallback(kaguya::LuaRef cb);
+    void addOnChangeCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Update the coordinate variable
@@ -83,7 +83,7 @@ public:
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Enable coordinate selection by connecting to slot in mainwindow
@@ -146,8 +146,8 @@ private:
 
     bool _pointSelectionEnabled;
 
-    std::vector<kaguya::LuaRef> _callbacks_finished;
-    std::vector<kaguya::LuaRef> _callbacks_onchange;
+    std::vector<lc::scripting::ScriptCallback> _callbacks_finished;
+    std::vector<lc::scripting::ScriptCallback> _callbacks_onchange;
 };
 
 }

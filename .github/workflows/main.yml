@@ -1,0 +1,121 @@
+name: Librecad3 Builders
+'on':
+  workflow_dispatch: null
+  push:
+    branches:
+      - main
+      - ci_dev
+
+jobs:
+  linux:
+    name: BuildLinux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          submodules: 'recursive'
+
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
+
+      - run: cd ${{ github.workspace }}
+
+      - run: sudo ${{ github.workspace }}/scripts/ubuntu-install/createAppImage.sh
+
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
+
+      - name: Uploading AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: assets
+          path: ${{ github.workspace }}/build/LibreCAD**AppImage
+          retention-days: 2
+
+      - name: Uploading snap
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/librecad**snap
+          name: LibreCAD3.snap
+          retention-days: 2
+
+  windows:
+    name: BuildWindows
+    runs-on: windows-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install Visual Studio 2019 with tools
+        run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
+
+      - run: ${{ github.workspace }}/scripts/windows-install/createConanDirAndInstallDependencies.bat
+
+      - run: cd ${{ github.workspace }}/..
+
+      - name: Install Qt5
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 5.15.2
+
+      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
+
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
+
+      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
+
+      - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
+
+      - run: cd ${{ github.workspace }}
+
+      - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
+
+      - run: cd ${{ github.workspace }}
+
+      - name: Rename installer
+        run: |
+          mv build/bin/LibreCAD3*.exe build/bin/LibreCAD3-`git describe --always`.exe
+        shell: bash
+
+      - name: Uploading exe
+        uses: actions/upload-artifact@v4
+        with:
+          path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
+          name: assets
+
+  UpdateAssets:
+    if: github.repository_owner == 'LibreCAD'
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Upload latest pre-release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Continuous Build"
+          files: |
+            assets/LibreCAD*.*
+            LICENSE

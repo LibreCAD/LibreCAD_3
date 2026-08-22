@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (UnitTest)
 
 message("***** LibreCAD unit tests *****")
@@ -6,6 +6,8 @@ message("***** LibreCAD unit tests *****")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTORCC ON)
+
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -34,6 +36,14 @@ include_directories(${GLEW_INCLUDE_DIR})
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
+if (MSVC)
+	#gtest
+	find_package(GTest REQUIRED)
+	include_directories(${GTest_INCLUDE_DIRS})
+	include_directories(${RapidJSON_INCLUDE_DIRS})
+endif()
+
 
 # Coverage
 if(WITH_COVERAGE)
@@ -67,11 +77,49 @@ lckernel/operations/blocksopstest.cpp
 lckernel/operations/buildertest.cpp
 lckernel/operations/layerops.cpp
 lckernel/dochelpers/documentlist.cpp
-lckernel/geometry/testgeoellipse.cpp 
-lckernel/primitive/testellipse.cpp 
-lckernel/geometry/comparecoordinate.cpp 
+lckernel/geometry/testgeoellipse.cpp
+lckernel/primitive/testellipse.cpp
+lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
+luacmdinterface/dispatch_test.cpp
 )
+
+# Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.
+# Phase 2 slice 2.3 — demoscript_test.cpp: verifies luacmdinterface/test.py
+# runs end-to-end against a real DocumentImpl (the plan's "primary exit
+# criterion" for phase 2 = entity-count diff of .lua vs .py).
+# Only included when WITH_PYTHONSCRIPT is ON; the test files start with
+# `#include <lcpython.h>` which needs pybind11.
+if(WITH_PYTHONSCRIPT)
+    list(APPEND src
+        python/pythonbindings_test.cpp
+        python/demoscript_test.cpp
+        python/parity_test.cpp             # Phase 2 slice 2.4 parity dump
+        scripting/scriptcallback_test.cpp  # Phase 4 slice 4.1
+        scripting/scriptobject_test.cpp    # Phase 4 slice 4.1 follow-on
+        scripting/eventbus_test.cpp        # Phase 4 slice 4.1 follow-on
+        # Phase 6 PR-6.1 sub-piece 1 fixup — concrete-Insert dispatch
+        # test for LuaCustomEntityManager.  Regression coverage for the
+        # type-erasure bug (`CADEntity_CSPtr` upcast before ScriptValue
+        # boxing) that broke Lua's Insert-metatable selection.
+        # Exercises BOTH the native ScriptCallback fallback path AND the
+        # Lua fast path (via a real kaguya::LuaRef calling
+        # `insert:position()`).  Needs lcluascript + kaguya headers +
+        # a real Lua 5.3 runtime — hence CI-only (macOS Homebrew ships
+        # Lua 5.5 which breaks kaguya).
+        scripting/customentitymanager_test.cpp
+        )
+    include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
+    include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")  # Phase 6 PR-6.1
+    include_directories("${CMAKE_SOURCE_DIR}")   # for <lcscripting/...>
+    set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting lcluascript)
+    # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
+    # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
+    if(WITH_PERSISTENCE)
+        list(APPEND src python/persistence_test.cpp)
+    endif()
+endif()
 
 set(hdrs
 lckernel/primitive/entitytest.h
@@ -106,8 +154,9 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
-            #ui/testluaui.cpp
-            #ui/testluaoperations.cpp
+            # Phase 4 PR-10 — dead LuaIntf-era test files retired.
+            # Phase 3 PR-3.4 — dual-language ScriptDock test.
+            ui/testscriptdock.cpp
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
@@ -123,6 +172,12 @@ if(WITH_QT_UI)
             ui/gui/testtoolbarbutton.cpp
             ui/gui/testinputguiwidgets.cpp
             ui/gui/testdialogwidget.cpp
+            # Phase 5 PR-5.6 — runtime smoke tests for the pyguibridge
+            # binding surface.  Guards against "plausible-looking .def()
+            # call referencing a signature that doesn't exist" — the
+            # failure mode code review alone hasn't been sufficient for
+            # this session.
+            ui/gui/testpyguibridge.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
@@ -141,6 +196,7 @@ if(WITH_RENDERING_UNITTESTS)
     set(Boost_USE_MULTITHREADED ON)
     find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
 
     find_package(glfw3 3.2 REQUIRED)
 
@@ -156,11 +212,25 @@ if(WITH_RENDERING_UNITTESTS)
     )
 endif()
 
+if (MSVC)
+	message(gtestLib="${GTest-LIBRARY-DIR}")
+	message(gtestLib="${GTest-LIBRARIES}")
+	set(EXTRA_LIBS ${EXTRA_LIBS}
+		${GTest-LIBRARIES}
+		GTest::gtest
+		GTest::gtest_main
+		GTest::gmock
+		GTest::gmock_main)
+endif()
+
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
 include_directories("${CMAKE_SOURCE_DIR}/persistence")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
+# Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
+include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+

@@ -33,12 +33,12 @@ EntityGUI::~EntityGUI()
     delete ui;
 }
 
-void EntityGUI::getLuaValue(kaguya::LuaRef& table) {
+void EntityGUI::getValue(lc::scripting::Map& map) {
     if (_selectedEntitiesList.size() == 1) {
-        table[_key] = _selectedEntitiesList[0];
+        (*map)[_key] = lc::scripting::ScriptValue(_selectedEntitiesList[0]);
     }
     else {
-        table[_key] = value();
+        (*map)[_key] = lc::scripting::ScriptValue(value());
     }
 }
 
@@ -117,16 +117,18 @@ void EntityGUI::setValue(std::vector<lc::entity::CADEntity_CSPtr> newSelectedEnt
     }
 }
 
-void EntityGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void EntityGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void EntityGUI::itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* previous) {
     int index = current->data(Qt::UserRole).toInt();
     entityItemSelected(_selectedEntitiesList[index]);
 
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(_selectedEntitiesList[index]);
+    // Phase 4 PR-5a — neutral callback invocation.
+    lc::entity::CADEntity_CSPtr selected = _selectedEntitiesList[index];
+    for (auto& cb : _callbacks) {
+        cb.call(selected);
     }
 }
 

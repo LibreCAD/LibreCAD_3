@@ -1,4 +1,7 @@
+CMakeFiles/
+*_autogen/
 kerneldev.pro.user
+*.cmake
 *.autosave
 demo.*
 *generated*
@@ -33,3 +36,8 @@ conan/
 
 # Auto generated build constants
 /lckernel/build_constants.cpp
+
+# Python build artifacts — Phase 5 introduced the lcUIPy/ tree.
+__pycache__/
+*.py[cod]
+*$py.class

@@ -2,6 +2,7 @@
 #include "lclua.h"
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
+#include <scriptadapter/customentitydispatch_lua.h>  // Phase 6 PR-6.1 sub-piece 2b
 #include <kaguya/kaguya.hpp>
 #include <bridge/lc.h>
 #include <bridge/lc_geo.h>
@@ -12,6 +13,9 @@
 #include <bridge/lc_maths.h>
 #include <bridge/lc_operation.h>
 #include <bridge/lc_event.h>
+#if USE_PERSISTENCE
+#include <bridge/lc_persistence.h>
+#endif
 
 using namespace lc::lua;
 
@@ -33,6 +37,15 @@ LCLua::LCLua(lua_State* L) :
     s["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
         LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
     });
+
+    // Phase 6 PR-6.1 sub-piece 2b — install the CustomEntity dispatch
+    // hook so ScriptCustomEntity's 6 dispatch methods (which live in
+    // lcscripting post-move) can reach the Lua fast path via
+    // unwrapLuaCallback + kaguya's static template deduction.
+    // Idempotent — safe to call once per LuaInterface / LCLua
+    // construction; the process-global slot always points at a fresh
+    // hook instance (which is stateless).
+    lc::lua::installLuaCustomEntityDispatchHook();
 }
 
 void LCLua::addLuaLibs() {
@@ -121,4 +134,9 @@ void LCLua::importLCKernel() {
     import_lc_maths_namespace(state);
     import_lc_event_namespace(state);
     import_lc_operation_namespace(state);
+#if USE_PERSISTENCE
+    // Phase 2 slice 2.6 — persistence bindings, in parity with the Python
+    // side.  Gated on USE_PERSISTENCE so an OFF build keeps working.
+    import_lc_persistence_namespace(state);
+#endif
 }

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <kaguya/kaguya.hpp>
+// Phase 4 PR-4 — MenuItem stores neutral ScriptCallbacks instead of
+// raw kaguya::LuaRef.  Lua callers still see LuaRef; guibridge.cpp
+// wraps via lc::lua::makeLuaCallback().  kaguya include removed here.
+#include <lcscripting/scriptcallback.h>
 
 #include <unordered_map>
 #include <QAction>
@@ -22,10 +25,11 @@ public:
     /**
     * \brief Menu item Constructor
     * \param string menu item name
-    * \param LuaRef callback
+    * \param ScriptCallback callback (Lua adapter wraps at the guibridge)
     * \param pointer to QWidget parent
     */
-    MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* parent = nullptr);
+    MenuItem(const char* menuItemName, lc::scripting::ScriptCallback callback,
+             QWidget* parent = nullptr);
 
     /**
     * \brief Menu item Constructor
@@ -48,22 +52,19 @@ public:
 
     /**
     * \brief add callback for item
-    * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef callback);
+    void addCallback(lc::scripting::ScriptCallback callback);
 
     /**
     * \brief add checked callback for item
-    * \param LuaRef callback
     */
-    void addCheckedCallback(kaguya::LuaRef callback);
+    void addCheckedCallback(lc::scripting::ScriptCallback callback);
 
     /**
     * \brief add named callback for item
     * \param string callback name to identify callback
-    * \param LuaRef callback
     */
-    void addCallback(const char* cb_name, kaguya::LuaRef callback);
+    void addCallback(const char* cb_name, lc::scripting::ScriptCallback callback);
 
     /**
     * \brief remove named callback
@@ -124,8 +125,8 @@ private:
     void updateItemPositionsAfterSet(QList<QAction*>& items);
 
 private:
-    std::vector<kaguya::LuaRef> callbacks;
-    std::vector<kaguya::LuaRef> _checkedCallbacks;
+    std::vector<lc::scripting::ScriptCallback> callbacks;
+    std::vector<lc::scripting::ScriptCallback> _checkedCallbacks;
     std::unordered_map<std::string, int> namedCallbacks;
     int _position;
 };

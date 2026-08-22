@@ -20,6 +20,18 @@ extern "C"
 }
 #include <GL/glew.h>
 
+// Phase 6 PR-6.2 — Python version display alongside Lua's.  `Py_GetVersion()`
+// is a stable C API that returns the runtime interpreter's version string
+// (major.minor.patch + build info).  Does NOT require the GIL — it returns
+// a static string set during Py_Initialize (or the linked libpython's
+// baked-in version if the interpreter hasn't initialized yet, which is
+// exactly the AboutDialog's context — showing "which Python am I linked
+// against" is what the user wants here).  Guarded behind
+// LC_WITH_PYTHONSCRIPT so an OFF build stays clean.
+#ifdef LC_WITH_PYTHONSCRIPT
+#include <Python.h>
+#endif
+
 struct outputConfig {
     QString lineFormat;	// 1: field name, 2: value
     QString bodyFormat;	// 1: header, 2: body
@@ -142,15 +154,37 @@ QString getLCADInfo(outputConfig& oc) {
 
 //Ext info
 QString getLuaVersion() {
+    // Phase 4 PR-10 — was a throwaway-state luaL_dostring that defined
+    // a `version()` global just to read `_VERSION`.  `_VERSION` is
+    // already a top-level Lua global once luaL_openlibs runs, so we
+    // can read it directly with lua_getglobal.  Kills the last stray
+    // dostring in the codebase (PR-10 sweep target).
     lua_State* L = luaL_newstate();
-    luaL_openlibs(L);//add function to return version, can this be done directly?
-    luaL_dostring(L,"function version() return _VERSION end");
-    lua_getglobal(L, "version");
-    lua_call(L, 0, 1);
-    QString lua_version = lua_tostring(L, -1);;
+    luaL_openlibs(L);
+    lua_getglobal(L, "_VERSION");
+    QString lua_version = lua_tostring(L, -1);
     lua_pop(L, 1);
     lua_close(L);
     return lua_version;
+}
+
+// Phase 6 PR-6.2 — Python version accessor.  Returns the linked
+// interpreter's version string when the build is Python-enabled;
+// returns "(not built)" otherwise so the OFF-build About dialog
+// clearly signals no Python.  Trims the "\n[build info]" suffix
+// Py_GetVersion() appends — the About dialog wants just the
+// N.N.N part for the "Python Version" row.
+QString getPythonVersion() {
+#ifdef LC_WITH_PYTHONSCRIPT
+    // Py_GetVersion returns a static string like "3.12.5 (main, ...)\n".
+    // Split on the first whitespace to get just the version.
+    const char* raw = Py_GetVersion();
+    if (raw == nullptr) return QStringLiteral("(unknown)");
+    QString full = QString::fromUtf8(raw);
+    return full.section(QChar(' '), 0, 0);
+#else
+    return QStringLiteral("(not built)");
+#endif
 }
 
 QString getGLVersion() {
@@ -168,6 +202,8 @@ QString getExtInfo(outputConfig& oc) {
         oc.lineFormat.arg("Qt Version").arg(qVersion()) +
         oc.lineFormat.arg("Boost Version").arg(boost_info) +
         oc.lineFormat.arg("Lua Version").arg(getLuaVersion()) +
+        // Phase 6 PR-6.2 — new Python row.
+        oc.lineFormat.arg("Python Version").arg(getPythonVersion()) +
         oc.lineFormat.arg("libdxfrw Version").arg(DRW_VERSION) +
         oc.lineFormat.arg("OpenGL Version").arg(getGLVersion()) +
         oc.lineFormat.arg("CMake Version").arg(CMAKE_VERSION)

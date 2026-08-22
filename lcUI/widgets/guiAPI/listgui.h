@@ -46,10 +46,12 @@ public:
     ~ListGUI();
 
     /**
-    * \brief Get lua value
-    * \param LuaRef table
+    * \brief Write list contents as a nested Map under _key.  See the
+    * scriptvalue.h aliasing note — each child's ScriptValue is stored
+    * BOTH at the top level (for legacy PropertyEditor read paths) and
+    * inside the nested Map (for the list traversal path).
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Add list item to list
@@ -83,10 +85,12 @@ public:
     void setListType(const std::string& listTypeStr);
 
     /**
-    * \brief Set callback for all items in the list
-    * \param LuaRef lua callback
+    * \brief Set callback for all items in the list (phase 4 PR-5c:
+    * neutral ScriptCallback storage; each child widget's addCallback
+    * / addFinishCallback receives a copy — pImpl is shared_ptr so
+    * copies alias the underlying callable).
     */
-    void addCallbackToAll(kaguya::LuaRef cb);
+    void addCallbackToAll(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Add given coordinates as list items
@@ -151,7 +155,7 @@ private:
     std::set<std::string> _addedKeys;
     lc::ui::MainWindow* mainWindow;
     ListType _listType;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
     unsigned int itemIdCount;
     lc::entity::CADEntity_CSPtr _selectedCoordinate;
 };

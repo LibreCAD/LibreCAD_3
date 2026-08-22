@@ -55,20 +55,20 @@ void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
     qboxlayout->addWidget(newWidget);
 }
 
-void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {
+void HorizontalGroupGUI::getValue(lc::scripting::Map& map) {
     for (QWidget* inputWidget : _widgets) {
         InputGUI* inpgui = qobject_cast<InputGUI*>(inputWidget);
         if (inpgui != nullptr) {
-            inpgui->getLuaValue(table);
+            inpgui->getValue(map);
         } else {
             CheckBoxGUI* checkbox = qobject_cast<CheckBoxGUI*>(inputWidget);
             if (checkbox != nullptr) {
-                checkbox->getLuaValue(table);
+                checkbox->getValue(map);
             }
 
             RadioButtonGUI* radiobutton = qobject_cast<RadioButtonGUI*>(inputWidget);
             if (radiobutton != nullptr) {
-                radiobutton->getLuaValue(table);
+                radiobutton->getValue(map);
             }
         }
     }

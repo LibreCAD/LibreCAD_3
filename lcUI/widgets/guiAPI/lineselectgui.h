@@ -28,7 +28,7 @@ public:
     * \brief Add lua value to table (not used)
     * \param LuaRef value table
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Hide label for the widget (not used)
@@ -39,7 +39,7 @@ public:
     * \brief Add lua callback
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Set select tools to current meta info of the given entity
@@ -62,7 +62,7 @@ private:
     lc::ui::widgets::LinePatternSelect _linePatternSelect;
     lc::ui::widgets::LineWidthSelect _lineWidthSelect;
     lc::ui::widgets::ColorSelect _colorSelect;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
 };
 }
 }

@@ -25,13 +25,14 @@ LineSelectGUI::LineSelectGUI(CadMdiChild* mdiChild, MetaInfoManager_SPtr metaInf
 }
 
 void LineSelectGUI::metaInfoManagerChanged() {
-    for (int i = 0; i < _callbacks.size(); i++) {
-        _callbacks[i]();
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks) {
+        cb.invoke();
     }
 }
 
-void LineSelectGUI::addCallback(kaguya::LuaRef cb) {
-    _callbacks.push_back(cb);
+void LineSelectGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks.push_back(std::move(cb));
 }
 
 void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
@@ -51,7 +52,7 @@ void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
     _linePatternSelect.setLinePattern(linePatternInfo);
 }
 
-void LineSelectGUI::getLuaValue(kaguya::LuaRef& table) {
+void LineSelectGUI::getValue(lc::scripting::Map& map) {
 }
 
 void LineSelectGUI::hideLabel() {

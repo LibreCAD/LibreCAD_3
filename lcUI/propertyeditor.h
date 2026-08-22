@@ -79,7 +79,7 @@ private:
     /**
     * \brief Helper function that deals with when a custom property widget value is changed
     */
-    lc::entity::CADEntity_CSPtr customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity);
+    lc::entity::CADEntity_CSPtr customPropertyChanged(const std::string& key, const std::string& entityType, lc::scripting::Map propertiesTable, lc::entity::CADEntity_CSPtr oldEntity);
 
     /**
     * \brief Helper function to generate the property key

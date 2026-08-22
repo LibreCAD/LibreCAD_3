@@ -3,9 +3,9 @@
 #include <QObject>
 #include <QCheckBox>
 
+// Phase 4 PR-10 — kaguya include retired; checkboxgui uses only
+// ScriptCallback (transitively via inputgui.h).
 #include "inputgui.h"
-
-#include <kaguya/kaguya.hpp>
 
 namespace lc {
 namespace ui {
@@ -36,13 +36,13 @@ public:
     * \brief Add callback on state changed
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Get value
@@ -77,7 +77,7 @@ protected:
     void pasteValue(QDataStream& stream) override;
 
 private:
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
     QCheckBox* _checkBox;
 };
 }

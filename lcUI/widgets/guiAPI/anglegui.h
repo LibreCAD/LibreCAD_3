@@ -46,16 +46,14 @@ public:
     void toRadians();
 
     /**
-    * \brief Add callback for editingFinished
-    * \param LuaRef lua callback
+    * \brief Add callback for editingFinished (phase 4 PR-5a: neutral)
     */
-    void addFinishCallback(kaguya::LuaRef cb);
+    void addFinishCallback(lc::scripting::ScriptCallback cb);
 
     /**
-    * \brief Add callback for textChanged
-    * \param LuaRef lua callback
+    * \brief Add callback for textChanged (phase 4 PR-5a: neutral)
     */
-    void addOnChangeCallback(kaguya::LuaRef cb);
+    void addOnChangeCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Overridden Angle Text GUI widget label
@@ -79,7 +77,7 @@ public:
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Hide widget label
@@ -125,8 +123,8 @@ private:
     QLabel* _textLabel;
     QPushButton* _angleTypeButton;
     QLineEdit* _lineEdit;
-    std::vector<kaguya::LuaRef> _callbacks_finished;
-    std::vector<kaguya::LuaRef> _callbacks_onchange;
+    std::vector<lc::scripting::ScriptCallback> _callbacks_finished;
+    std::vector<lc::scripting::ScriptCallback> _callbacks_onchange;
 };
 
 }

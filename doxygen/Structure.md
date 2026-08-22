@@ -24,6 +24,22 @@ It provides the functions from the LCKernel to lua, since lcKernel should not ha
 </div>
 
 <div>
+<h2> <a href="../../lcadpythonscript/html/index.html">lcadpythonscript</a> </h2>
+Phase 5 addition — a sibling of lcadluascript exposing the same LCKernel surface to Python via pybind11.
+Both scripting languages live behind a neutral scripting layer (<a href="../../lcscripting/html/index.html">lcscripting</a>),
+so Lua and Python share the exact same C++-side event bus, callback dispatch, and operation registry.
+See <a href="Scripting.md">Scripting.md</a> for the full architecture, the parity table, and plugin
+authoring notes.
+</div>
+
+<div>
+<h2> lcscripting </h2>
+Neutral scripting layer (phase 4).  Contains <code>ScriptCallback</code>, <code>ScriptObject</code>, and
+<code>ScriptValue</code> — the language-agnostic types every scripting adapter (Lua, Python, future runtimes)
+wraps into.  The EventBus, the operation registry, and custom-entity plugin slots all live here.
+</div>
+
+<div>
 <h2> <a href="../../lcUI/html/index.html">lcUI</a> </h2>
 It contains gui related operations and widgets.
 </div>

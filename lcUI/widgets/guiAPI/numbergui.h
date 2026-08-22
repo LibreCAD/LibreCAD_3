@@ -38,7 +38,7 @@ public:
     * \brief Add lua callbacks for value changed signal
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Overridden set SLider GUI widget label
@@ -62,7 +62,7 @@ public:
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Hide widget label
@@ -92,7 +92,7 @@ private:
     QLabel* _textLabel;
     QDoubleSpinBox* _spinBox;
 
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
 };
 }
 }

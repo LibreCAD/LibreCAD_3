@@ -66,6 +66,48 @@ public:
      */
     void addContextTransitions(const std::string& vkey, const std::string& opkey);
 
+#ifdef LC_WITH_PYTHONSCRIPT
+    /**
+     * \brief Phase 5 PR-5.2 — walk `lc.operation_registry` (a Python
+     * dict populated by `@lc.register_operation`), and for each entry,
+     * do the same wiring the Lua path does.  Wired today (this slice):
+     *   - CliCommand::addCommand (str + dict command_line forms),
+     *   - MainWindow::connectMenuItem (menu_actions dict),
+     *   - Toolbar::addButton (icon + description → tooltip),
+     *   - ContextMenuManager::addOperation + addTransition.
+     *
+     * DEFERRED (fixup — matched sub-plan's phase-5 wiring list but
+     * not yet in scope for this slice):
+     *   - `operation_options` toolbar-option-icon binding (Lua sibling
+     *     is OperationLoader::addOperationToolbarOptions).  Needs the
+     *     same nested-lambda `mainWindow:toolbar():addButton(...,
+     *     function() luaInterface:operation():<action>() end, ...)`
+     *     factory shape phase-4 PR-7 built for Lua; landing here
+     *     requires the same shape ported to Python + a way to invoke
+     *     a named method on `MainWindow::currentOperation()` — which
+     *     is a Python ScriptObject now.  Tracked as a follow-up
+     *     alongside PR-5.6's gui.* bindings expansion.
+     *
+     * Also pushes a Python-registry resolver onto MainWindow's ordered
+     * resolver list (phase 4 PR-7) so `MainWindow::runOperationByName(
+     * name)` resolves against BOTH sources.  See the resolver-order
+     * note at LuaInterface::initLua's call site — the Lua-globals
+     * resolver is registered BEFORE `initLua` runs (MainWindow ctor
+     * ordering, phase-5 PR-5.2 fixup), so the reverse-walk at dispatch
+     * checks Python FIRST — matching PR-7's "later-registered wins"
+     * design intent verbatim.
+     *
+     * Iteration is SORTED BY NAME (Lua's std::set gives alphabetical
+     * order for toolbar/menu wiring; match it so ui_settings.json's
+     * toolbar-layout persistence stays stable).
+     *
+     * Name collisions with already-registered Lua vkeys are rejected
+     * with a logged warning (registry shares a namespace with toolbar
+     * labels + ContextMenuManager _operationMap + ui_settings.json).
+     */
+    void loadPythonOperations();
+#endif
+
 private:
     /**
      * \brief Load lua folder eg, createActions

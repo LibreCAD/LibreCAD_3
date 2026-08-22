@@ -35,13 +35,15 @@ void ComboBoxGUI::setLabel(const std::string& newLabel) {
     _textLabel->setText(QString(newLabel.c_str()));
 }
 
-void ComboBoxGUI::addCallback(kaguya::LuaRef cb) {
-    _activatedCallbacks.push_back(cb);
+void ComboBoxGUI::addCallback(lc::scripting::ScriptCallback cb) {
+    _activatedCallbacks.push_back(std::move(cb));
 }
 
-void ComboBoxGUI::activatedCallbacks(int index) {
-    for (kaguya::LuaRef& cb : _activatedCallbacks) {
-        cb(_comboBox->currentText().toStdString());
+void ComboBoxGUI::activatedCallbacks(int /*index*/) {
+    // Phase 4 PR-5a — neutral callback invocation.
+    const std::string current = _comboBox->currentText().toStdString();
+    for (auto& cb : _activatedCallbacks) {
+        cb.call(current);
     }
 }
 
@@ -69,8 +71,8 @@ void ComboBoxGUI::setValue(int index) {
     _comboBox->setCurrentIndex(index);
 }
 
-void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void ComboBoxGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void ComboBoxGUI::copyValue(QDataStream& stream) {

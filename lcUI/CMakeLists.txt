@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
 PROJECT (LC)
 
 message("***** LibreCAD Qt user interface *****")
@@ -7,9 +7,12 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# to allow Qt qrc files
+set(CMAKE_AUTORCC ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+
 set(QT_USE_QTOPENGL TRUE)
 
 find_package(Qt5Widgets)
@@ -38,7 +41,7 @@ windowmanager.h
 operationloader.h
 propertyeditor.h
 widgets/clicommand.h
-widgets/luascript.h
+widgets/scriptdock.h
 widgets/toolbar.h
 widgets/guiAPI/toolbartab.h
 widgets/layers.h
@@ -91,7 +94,6 @@ managers/uisettings.h
 managers/hookmanager.h
 managers/contextmenumanager.h
 managers/copymanager.h
-managers/metainfomanager.cpp
 managers/metainfomanager.h)
 
 set(UI_srcs
@@ -108,8 +110,9 @@ mainwindow.cpp
 windowmanager.cpp
 operationloader.cpp
 propertyeditor.cpp
+ui/resource.qrc
 widgets/clicommand.cpp
-widgets/luascript.cpp
+widgets/scriptdock.cpp
 widgets/toolbar.cpp
 widgets/guiAPI/toolbartab.cpp
 widgets/layers.cpp
@@ -163,12 +166,28 @@ managers/uisettings.cpp
 managers/contextmenumanager.cpp
 managers/copymanager.cpp
 managers/metainfomanager.cpp
-managers/metainfomanager.h)
+)
+
+# Phase 3 PR-3.2 — lcgui embedded Python module.  Compiled into lcui
+# only when WITH_PYTHONSCRIPT=ON (the file itself is #ifdef-guarded, so
+# an unconditional add here would still build cleanly on OFF, but
+# adding conditionally avoids any pybind11 include-path requirement
+# leaking into the OFF-build).
+if(WITH_PYTHONSCRIPT)
+    list(APPEND UI_srcs python/pyguibridge.cpp)
+    list(APPEND UI_hdrs python/pyguibridge.h)
+    # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
+    list(APPEND UI_srcs python/pyeventhooks.cpp)
+    list(APPEND UI_hdrs python/pyeventhooks.h)
+    # Phase 5 PR-5.5 — Python plugin loader.
+    list(APPEND UI_srcs python/pypluginloader.cpp)
+    list(APPEND UI_hdrs python/pypluginloader.h)
+endif()
 
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui
 widgets/clicommand.ui
-widgets/luascript.ui
+widgets/scriptdock.ui
 widgets/toolbar.ui
 widgets/guiAPI/toolbartab.ui
 widgets/guiAPI/dialogwidget.ui
@@ -202,9 +221,11 @@ endif()
 
 # Boost logging
 find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
-FIND_PACKAGE ( Threads )
+FIND_PACKAGE (Threads)
+if (NOT MSVC)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
+endif()
 
 #Lua
 find_package(Lua 5.3 EXACT REQUIRED)
@@ -221,7 +242,7 @@ set(SEPARATE_BUILD OFF)
 
 # GLEW library-------------------------
 
-cmake_policy(SET CMP0074 OLD)
+#cmake_policy(SET CMP0074 OLD)
 find_package(GLEW REQUIRED)
 
 include_directories(
@@ -267,21 +288,63 @@ set(EXTRA_LIBS
 		Qt5::Svg
         ${APR_LIBRARIES})
 
+# Phase 3 PR-3.1 — ScriptDock's Python leg needs lcpythonscript +
+# pybind11::embed on WITH_PYTHONSCRIPT=ON builds.  The root
+# CMakeLists.txt already adds -DLC_WITH_PYTHONSCRIPT globally so the
+# #ifdef in scriptdock.{h,cpp} fires; here we just link the required
+# libraries.  When WITH_PYTHONSCRIPT=OFF (Windows/embed CPython), the
+# Python code paths compile out and no link is needed.
+if(WITH_PYTHONSCRIPT)
+    set(EXTRA_LIBS "${EXTRA_LIBS}" lcpythonscript pybind11::embed)
+    if(APPLE)
+        include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    else()
+        include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
+    endif()
+endif()
+
+if (MSVC)
+    set(EXTRA_LIBS "${EXTRA_LIBS}" Boost::log)
+    find_package(RapidJSON REQUIRED)
+    include_directories("${RapidJSON_INCLUDE_DIR}")
+endif()
+
 #Create library for unit tests
 if(WITH_UNITTESTS)
     add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+    set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
-add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+if (MSVC)
+    add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+else()
+    set(UI_icon "${CMAKE_SOURCE_DIR}/res/librecad.rc")
+    add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+endif()
 
 qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
 ${GLEW_LIBRARY})
 
+if (MSVC)
+    target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
+endif()
+
+if (MSVC)
+    target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
+    message(CMAKE_INSTALL_BINDIR="${CMAKE_INSTALL_BINDIR}")
+endif()
+
 # INSTALLATION
 install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+if (NOT MSVC)
+	install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+else()
+	install(TARGETS librecad DESTINATION "${FINAL_INSTALL_DIR}")
+	install(DIRECTORY "${CMAKE_SOURCE_DIR}/build/bin/lcUI/ui" DESTINATION "lcUI")
+endif()
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${SETTINGS_PATH}")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${SETTINGS_PATH}")
+

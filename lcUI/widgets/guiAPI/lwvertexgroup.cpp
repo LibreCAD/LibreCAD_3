@@ -8,7 +8,7 @@ LWVertexGroup::LWVertexGroup(std::string label, QWidget* parent)
 {
 }
 
-void LWVertexGroup::addCallback(kaguya::LuaRef cb) {
+void LWVertexGroup::addCallback(lc::scripting::ScriptCallback cb) {
     coordgui->addFinishCallback(cb);
     startWidth->addCallback(cb);
     endWidth->addCallback(cb);
@@ -18,14 +18,18 @@ void LWVertexGroup::setMainWindow(lc::ui::MainWindow* mainWindowIn) {
     coordgui->enableCoordinateSelection(mainWindowIn);
 }
 
-void LWVertexGroup::getLuaValue(kaguya::LuaRef& table) {
-    HorizontalGroupGUI::getLuaValue(table);
-    table[_key] = kaguya::NewTable();
+void LWVertexGroup::getValue(lc::scripting::Map& map) {
+    HorizontalGroupGUI::getValue(map);
 
-    table[_key][_key + "_Location"] = table[_key + "_Location"];
-    table[_key][_key + "_StartWidth"] = table[_key + "_StartWidth"];
-    table[_key][_key + "_EndWidth"] = table[_key + "_EndWidth"];
-    table[_key][_key + "_Bulge"] = _bulge;
+    // Phase 4 PR-5b — nested-Map aliasing.  Preserve the LuaInterface
+    // semantics where the nested table under _key holds the same
+    // per-child ScriptValues that live at the top level.
+    auto nested = lc::scripting::makeMap();
+    (*nested)[_key + "_Location"]   = (*map)[_key + "_Location"];
+    (*nested)[_key + "_StartWidth"] = (*map)[_key + "_StartWidth"];
+    (*nested)[_key + "_EndWidth"]   = (*map)[_key + "_EndWidth"];
+    (*nested)[_key + "_Bulge"]      = lc::scripting::ScriptValue(_bulge);
+    (*map)[_key] = lc::scripting::ScriptValue(nested);
 }
 
 void LWVertexGroup::setKey(const std::string& keyIn) {

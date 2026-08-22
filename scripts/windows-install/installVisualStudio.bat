@@ -1,0 +1,1 @@
+choco install visualstudio2019community --package-parameters='"--add Microsoft.VisualStudio.Component.VC.CMake.Project Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.Windows10SDK.19041"'

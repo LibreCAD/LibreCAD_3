@@ -1,0 +1,110 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ 'master' ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ 'master' ]
+  schedule:
+    - cron: '59 14 * * 2'
+
+jobs:
+  analyze:
+    name: Analyze
+
+    runs-on: ubuntu-22.04
+    env:
+      platform_version: 22.04
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Phase 6 PR-6.6 — added `python` to the matrix now that lcUIPy/
+        # ships real .py sources (Python operations base + gear plugin
+        # + point/remove proof ports).  CodeQL Python analysis catches
+        # things like unbound-attribute reads and register/deregister
+        # symmetry issues that C++-side EventBus tests can't see (the
+        # exact bug class that shipped as PR-5.7's double-init and
+        # PR-5.5's args.asMap regression — Python-side static analysis
+        # would have surfaced both).
+        language: [ 'cpp', 'python' ]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+        # Use only 'java' to analyze code written in Java, Kotlin or both
+        # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
+        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        # Fetch submodules recursively at checkout time.  The previous config
+        # relied on the Building step's `git submodule update`, which no-ops
+        # on a fresh checkout — kaguya (and now pybind11) would come up
+        # empty.  Phase 1 slice 1.2 CI fix.
+        submodules: recursive
+
+    - name: Install Qt and dependencies
+      run: |
+        sudo apt-get -y update
+        # `python3-dev` added for lcadpythonscript (WITH_PYTHONSCRIPT=ON) —
+        # phase 1 slice 1.2.
+        sudo apt-get -qq install -y -qq cmake qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev git gcc \
+        libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-all-dev libboost-program-options-dev \
+        libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev \
+        libbz2-dev libglfw3-dev libglm-dev libfltk1.3-dev doxygen mkdocs qtchooser freeglut3-dev fuse \
+        python3-dev python3
+        sudo ln -snf /usr/lib/x86_64-linux-gnu/qtchooser/qt5.conf /usr/lib/x86_64-linux-gnu/qtchooser/default.conf
+        sudo rm -rf /usr/local/lib/android
+
+    - name: Building
+      # Phase 6 PR-6.6 — skip the C++ build step for the `python` matrix
+      # leg: CodeQL's Python analyzer scans sources directly, no build
+      # needed.  Saves ~5 min per Python-leg run and avoids
+      # accidental build-failure noise blocking Python findings.
+      if: matrix.language == 'cpp'
+      run: |
+        # Belt-and-suspenders: checkout already fetched submodules, but
+        # re-run --init --recursive so any subsequently-added path is safe.
+        git submodule update --init --recursive
+        mkdir -p libdxfrw/release
+        pushd libdxfrw/release
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
+        make -j 4
+        echo "installing dxfrw"
+        sudo make install
+        popd
+
+        echo "building LibreCAD"
+        mkdir build
+        pushd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
+        make -j 4
+        echo "installing LibreCAD"
+        sudo make install DESTDIR=AppDir
+        popd
+
+        sudo apt-get -qq install clang-15 clang-tools-15
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+
+        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+        # queries: security-extended,security-and-quality
+
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{matrix.language}}"

@@ -7,10 +7,10 @@
 #include <QScrollArea>
 #include <QSpacerItem>
 
+// Phase 4 PR-10 — kaguya include retired; toolbartab holds no LuaRef
+// members (callbacks live on ToolbarButton as ScriptCallback since PR-3).
 #include "toolbarbutton.h"
 #include "toolbargroup.h"
-
-#include <kaguya/kaguya.hpp>
 
 namespace Ui {
 class ToolbarTab;

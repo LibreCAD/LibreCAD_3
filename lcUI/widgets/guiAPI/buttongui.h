@@ -3,8 +3,11 @@
 #include <QObject>
 #include <QPushButton>
 
+// Phase 4 PR-10 — kaguya include retired; buttongui uses only
+// ScriptCallback (transitively via inputgui.h).  Stale LuaRef refs
+// remain in doc comments below as historical hints — they no longer
+// name any real type.
 #include "inputgui.h"
-#include <kaguya/kaguya.hpp>
 
 namespace lc {
 namespace ui {
@@ -33,13 +36,13 @@ public:
     /**
     * \brief Do nothing since button does not have a value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getValue(lc::scripting::Map& map) override;
 
     /**
     * \brief Add button callback
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(lc::scripting::ScriptCallback cb);
 
     /**
     * \brief Click the button
@@ -72,7 +75,7 @@ protected:
     void pasteValue(QDataStream& stream) override;
 
 private:
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<lc::scripting::ScriptCallback> _callbacks;
 };
 }
 }

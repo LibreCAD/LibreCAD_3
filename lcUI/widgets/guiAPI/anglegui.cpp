@@ -85,8 +85,9 @@ void AngleGUI::editingFinishedCallbacks() {
         angleInRad = _lineEdit->text().toDouble();
     }
 
-    for (kaguya::LuaRef& cb : _callbacks_finished) {
-        cb(angleInRad);
+    // Phase 4 PR-5a — neutral callback invocation.
+    for (auto& cb : _callbacks_finished) {
+        cb.call(angleInRad);
     }
 }
 
@@ -100,17 +101,17 @@ void AngleGUI::textChangedCallbacks(const QString& changedText) {
         angleInRad = changedText.toDouble();
     }
 
-    for (kaguya::LuaRef& cb : _callbacks_onchange) {
-        cb(angleInRad);
+    for (auto& cb : _callbacks_onchange) {
+        cb.call(angleInRad);
     }
 }
 
-void AngleGUI::addFinishCallback(kaguya::LuaRef cb) {
-    _callbacks_finished.push_back(cb);
+void AngleGUI::addFinishCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks_finished.push_back(std::move(cb));
 }
 
-void AngleGUI::addOnChangeCallback(kaguya::LuaRef cb) {
-    _callbacks_onchange.push_back(cb);
+void AngleGUI::addOnChangeCallback(lc::scripting::ScriptCallback cb) {
+    _callbacks_onchange.push_back(std::move(cb));
 }
 
 void AngleGUI::setLabel(const std::string& newLabel) {
@@ -142,8 +143,8 @@ void AngleGUI::setValue(double val) {
     _lineEdit->setText(QString::number(angle));
 }
 
-void AngleGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = value();
+void AngleGUI::getValue(lc::scripting::Map& map) {
+    (*map)[_key] = lc::scripting::ScriptValue(value());
 }
 
 void AngleGUI::copyValue(QDataStream& stream) {

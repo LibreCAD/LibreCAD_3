@@ -37,7 +37,10 @@ public:
 * @brief The Loop class
 * Allows for looping over a set of entities
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * l=Line(Coord(0,0), Coord(10,100));
 * d=app.currentDocument()
@@ -72,7 +75,10 @@ DECLARE_SHORT_SHARED_PTR(Loop)
 * @brief The begin class
 * Allows for setting up the beginning of a loop (NOT YET IMPLEMENTED)
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * l=Line(Coord(0,0), Coord(10,100));
 * d=app.currentDocument()
@@ -110,7 +116,10 @@ DECLARE_SHORT_SHARED_PTR(Begin)
 * @brief The Move class
 * Allows for setting up the beginning of a loop (NOT YET IMPLEMENTED)
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * l=Line(Coord(0,0), Coord(10,100));
 * d=app.currentDocument()
@@ -146,7 +155,10 @@ DECLARE_SHORT_SHARED_PTR(Move)
 * @brief The Copy class
 * Allows for copy of the current set of entities
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * l=Line(Coord(0,0), Coord(10,100));
 * d=app.currentDocument()
@@ -182,7 +194,10 @@ DECLARE_SHORT_SHARED_PTR(Copy)
 * @brief The Rotate class
 * Allows for copy of the current set of entities
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * l=Line(Coord(0,0), Coord(10,100));
 * d=app.currentDocument()
@@ -238,7 +253,10 @@ DECLARE_SHORT_SHARED_PTR(Scale)
 * @brief The Push class
 * Allows for pushing all entities on the stack for the next operation
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * l=Line(Coord(0,0), Coord(10,100));
 * d=app.currentDocument()
@@ -272,7 +290,10 @@ DECLARE_SHORT_SHARED_PTR(Push)
 * @brief The SelectByLayer class
 * Select entities within a document
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * start = microtime()
 * layer = app.getLayer("0")
@@ -307,7 +328,10 @@ DECLARE_SHORT_SHARED_PTR(SelectByLayer)
 * @brief The Delete class
 * Delete entities from the document
 *
-* Example (lua):
+* Example (pseudocode; usable from both Lua and Python via the shared
+* `lc.*` namespace — Lua callers write `b:append(l)` and Python callers
+* write `b.append(l)` on the same conceptual surface.  Both languages
+* preserve method names 1:1; only the call syntax differs — `:` vs `.`):
 * <pre>
 * start = microtime()
 * layer = app.getLayer("0")

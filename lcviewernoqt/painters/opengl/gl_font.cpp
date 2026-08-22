@@ -113,10 +113,10 @@ bool GL_Font::readyFont(const std::string& path, std::string& fontFamily, std::s
         Character ch = { texture, vbo,vao,
                          face->glyph->bitmap_left,
                          face->glyph->bitmap_top,
-                         face->glyph->bitmap.width,
-                         face->glyph->bitmap.rows,
-                         face->glyph->advance.x,
-                         face->glyph->advance.y
+                         static_cast<int>(face->glyph->bitmap.width),
+                         static_cast<int>(face->glyph->bitmap.rows),
+                         static_cast<int>(face->glyph->advance.x),
+                         static_cast<int>(face->glyph->advance.y)
                        };
 
         _characters.insert(std::pair<unsigned int, Character>(c, ch));

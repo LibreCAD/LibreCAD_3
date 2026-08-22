@@ -41,9 +41,12 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 }
 
 CadMdiChild::~CadMdiChild() {
-    if(_destroyCallback) {
-        _destroyCallback();
-    }
+    // Phase 4 PR-10 — _destroyCallback is ScriptCallback now; invoke()
+    // is nil-safe (returns Nil for a default-constructed callback), so
+    // no explicit isNil check needed.  Matches the pre-refactor
+    // behavior where an unset LuaRef converted to false in the bool
+    // context.
+    _destroyCallback.invoke();
 }
 
 
@@ -191,7 +194,7 @@ std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
     return _viewerProxy->cursor();
 }
 
-void CadMdiChild::setDestroyCallback(kaguya::LuaRef destroyCallback) {
+void CadMdiChild::setDestroyCallback(lc::scripting::ScriptCallback destroyCallback) {
     _destroyCallback = std::move(destroyCallback);
 }
 
