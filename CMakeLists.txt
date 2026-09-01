@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.6)
 project(LC)
 
+# https://stackoverflow.com/questions/7229571/cmake-visual-studio-debug-folder
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# This foreach is needed to avoid binary builds in bin/RelWithDebInfo folder
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
@@ -83,7 +89,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_USE_MULTITHREADED ON)
 
 # settings path
-set(SETTINGS_PATH "${PROJECT_BINARY_DIR}/bin")
+set(SETTINGS_PATH "") # The settings will be at the same place as executable (portable mode)
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)
