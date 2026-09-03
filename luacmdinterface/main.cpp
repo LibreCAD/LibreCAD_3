@@ -134,8 +134,9 @@ int main(int argc, char** argv) {
 
     /* try to guess from file extension the output type */
     if (fType.empty()) {
-        fType = boost::filesystem::extension(fOut);
-        fType = fType.substr(fType.find_first_of('.') + 1);
+        fType = fOut.extension().string();
+        if (!fType.empty() && fType[0] == '.')
+            fType = fType.substr(1);
     }
 
     std::transform(fType.begin(), fType.end(), fType.begin(), ::tolower);
