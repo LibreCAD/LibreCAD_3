@@ -24,6 +24,7 @@
 //   entities-are-immutable invariant is what makes py::classh safe here.
 //   No mutating bindings are added for entity classes.
 
+#include "lcpython_api.h"
 #include "qt_keywords_push.h"
 #include <pybind11/embed.h>
 #include <pybind11/pytypes.h>
@@ -89,8 +90,8 @@ public:
     PyNamespace& operator=(const PyNamespace&) = delete;
 
     // Internal accessor used by LCPython — under GIL only.
-    pybind11::dict& dict();
-    const pybind11::dict& dict() const;
+    LC_PYTHON_API pybind11::dict& dict();
+    LC_PYTHON_API const pybind11::dict& dict() const;
 
     /// Inject a named value into the namespace under the GIL. Generic
     /// counterpart to LCPython::setDocument() for callers (tests, future
