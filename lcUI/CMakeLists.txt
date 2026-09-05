@@ -345,6 +345,10 @@ else()
 	install(TARGETS librecad DESTINATION "${FINAL_INSTALL_DIR}")
 	install(DIRECTORY "${CMAKE_SOURCE_DIR}/build/bin/lcUI/ui" DESTINATION "lcUI")
 endif()
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${SETTINGS_PATH}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${SETTINGS_PATH}")
+# SETTINGS_PATH is the runtime lookup path baked into the binary and is
+# intentionally empty for portable mode, so it can't be used as a build-time
+# copy destination (file(COPY) rejects an empty DESTINATION).  Copy next to
+# the executable instead, which is where portable mode expects them.
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
