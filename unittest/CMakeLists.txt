@@ -24,8 +24,11 @@ FIND_PACKAGE ( Threads REQUIRED )
 
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
 
-# Boost logging
-find_package(Boost REQUIRED COMPONENTS log)
+# Boost logging, plus filesystem for the path handling in the Python tests
+# (this list is unconditional; the one further down is WITH_RENDERING_UNITTESTS
+# only, so relying on that one left filesystem satisfied merely transitively
+# through Boost::log).
+find_package(Boost REQUIRED COMPONENTS log filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
