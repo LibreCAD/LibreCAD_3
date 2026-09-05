@@ -19,7 +19,7 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <scriptadapter/pythoncallback.h>
 #include <lcpython.h>
-#include <pybind11/embed.h>
+#include <pybind11_qt.h>
 #endif
 
 #include "../uitests.h"

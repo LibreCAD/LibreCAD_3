@@ -22,7 +22,7 @@
 #include <cad/storage/document.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
-#include <pybind11/embed.h>
+#include <pybind11_qt.h>
 #include <lcpython.h>
 #include <lcscripting/scriptvalue.h>
 #include <luainterface.h>

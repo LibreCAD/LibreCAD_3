@@ -21,7 +21,7 @@
 #include <windowmanager.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
-#include <pybind11/embed.h>
+#include <pybind11_qt.h>
 #include <lcpython.h>
 #endif
 

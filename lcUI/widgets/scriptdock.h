@@ -16,7 +16,7 @@
 // tears the dict down under GIL (permanent-release GIL pattern from
 // phase 1).
 #ifdef LC_WITH_PYTHONSCRIPT
-#include <pybind11/pybind11.h>
+#include <pybind11_qt.h>
 #endif
 
 #include <memory>

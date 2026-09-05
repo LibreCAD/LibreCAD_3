@@ -4,9 +4,7 @@
 
 #include "pypluginloader.h"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include <pybind11/eval.h>
+#include <pybind11_qt.h>
 
 #include <dirent.h>
 #include <sys/stat.h>

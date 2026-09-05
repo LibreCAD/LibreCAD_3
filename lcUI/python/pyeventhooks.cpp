@@ -5,7 +5,7 @@
 
 #include "pyeventhooks.h"
 
-#include <pybind11/pybind11.h>
+#include <pybind11_qt.h>
 
 #include <bridge/py_lc.h>          // Phase 6 PR-6.1 — registerPluginHook
 #include <bridge/py_lc_event.h>
