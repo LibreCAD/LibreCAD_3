@@ -19,6 +19,7 @@
 //     lcadluascript's OpaquePtr encoder registry (phase 4 PR-8) where
 //     unset entries fall back gracefully.
 
+#include "../lcpython_api.h"
 #include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
 #include "../qt_keywords_pop.h"
@@ -42,10 +43,10 @@ using EventHook = std::function<void(const std::string&, pybind11::object)>;
 /// registrations OVERWRITE the previous hook (matches the OpaquePtr
 /// registry semantics — one hook per process; multi-window support
 /// resolves via the hook's own logic against WindowManager).
-void setEventRegisterHook(EventHook hook);
+LC_PYTHON_API void setEventRegisterHook(EventHook hook);
 
 /// Install a hook fired by `lc.event.deregister(name, obj)`.
-void setEventDeregisterHook(EventHook hook);
+LC_PYTHON_API void setEventDeregisterHook(EventHook hook);
 
 } // namespace python
 } // namespace lc

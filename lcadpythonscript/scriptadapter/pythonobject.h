@@ -12,6 +12,7 @@
 #include <lcscripting/scriptobject.h>
 #include <lcscripting/scriptvalue.h>
 
+#include "../lcpython_api.h"
 #include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
 #include "../qt_keywords_pop.h"
@@ -24,7 +25,7 @@ namespace lc {
 namespace python {
 
 /// Wrap a py::object (Python operation instance) into a ScriptObject.
-lc::scripting::ScriptObject makePythonObject(pybind11::object obj);
+LC_PYTHON_API lc::scripting::ScriptObject makePythonObject(pybind11::object obj);
 
 } // namespace python
 } // namespace lc
