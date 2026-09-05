@@ -73,6 +73,12 @@ jobs:
         # Belt-and-suspenders: checkout already fetched submodules, but
         # re-run --init --recursive so any subsequently-added path is safe.
         git submodule update --init --recursive
+
+        # libdxfrw is not a submodule, so it has to be cloned explicitly the
+        # same way scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
+        # does.  Without it `mkdir -p libdxfrw/release` just created an empty
+        # directory and cmake failed on the missing CMakeLists.txt.
+        git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
         mkdir -p libdxfrw/release
         pushd libdxfrw/release
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
