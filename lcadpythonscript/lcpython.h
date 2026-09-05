@@ -24,8 +24,10 @@
 //   entities-are-immutable invariant is what makes py::classh safe here.
 //   No mutating bindings are added for entity classes.
 
+#include "qt_keywords_push.h"
 #include <pybind11/embed.h>
 #include <pybind11/pytypes.h>
+#include "qt_keywords_pop.h"
 
 #include <cad/storage/document.h>
 

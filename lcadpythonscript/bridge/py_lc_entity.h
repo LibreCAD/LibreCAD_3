@@ -2,7 +2,9 @@
 
 // Bridge — lc.entity.* (mirrors lcadluascript/bridge/lc_entity.h). Slice 1.6.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {

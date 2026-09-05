@@ -19,7 +19,9 @@
 //     lcadluascript's OpaquePtr encoder registry (phase 4 PR-8) where
 //     unset entries fall back gracefully.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 #include <functional>
 #include <string>

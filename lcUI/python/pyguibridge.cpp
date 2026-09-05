@@ -12,7 +12,12 @@
 
 #include "pyguibridge.h"
 
-#include <pybind11_qt.h>
+#include <qt_keywords_push.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
+#include <qt_keywords_pop.h>
 
 #include "mainwindow.h"
 #include "cadmdichild.h"

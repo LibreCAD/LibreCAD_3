@@ -3,7 +3,9 @@
 // Bridge — top-level lc.* names (mirrors lcadluascript/bridge/lc.h).
 // Populated in slice 1.3.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 #include <functional>
 #include <string>

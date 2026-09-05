@@ -21,7 +21,9 @@
 #include <windowmanager.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
-#include <pybind11_qt.h>
+#include <qt_keywords_push.h>
+#include <pybind11/embed.h>
+#include <qt_keywords_pop.h>
 #include <lcpython.h>
 #endif
 

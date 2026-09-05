@@ -22,7 +22,9 @@
 #include <lcscripting/scriptcallback.h>
 #include <lcscripting/scriptvalue.h>
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 #include <memory>
 #include <string>
