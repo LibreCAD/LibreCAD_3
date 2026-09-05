@@ -80,7 +80,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <memory>
 #include <string>
 
@@ -915,7 +915,7 @@ namespace {
 
 std::string uniqueTmpDxf(const std::string& prefix) {
     const std::string pid = std::to_string(::getpid());
-    return (std::filesystem::temp_directory_path()
+    return (boost::filesystem::temp_directory_path()
             / ("librecad-" + prefix + "-" + pid + ".dxf")).string();
 }
 
@@ -984,7 +984,7 @@ TEST(CustomEntityDxfRoundTrip, PluginReconstructsEntityFromDxfAppData) {
 
     lc::python::LCPython lcpy;
     const std::string dxfPath = uniqueTmpDxf("customentity-roundtrip");
-    std::filesystem::remove(dxfPath);  // pre-clean
+    boost::filesystem::remove(dxfPath);  // pre-clean
 
     // -------------------------------------------------------------------------
     // Step 1 — Save side.  Build a document with a custom entity via
@@ -1048,9 +1048,9 @@ lc.persistence.File.save(document, dxf_path,
     ASSERT_EQ(lcpy.runString(saveScript.c_str(), ns1), "");
 
     // Verify file exists and is non-empty.
-    ASSERT_TRUE(std::filesystem::exists(dxfPath))
+    ASSERT_TRUE(boost::filesystem::exists(dxfPath))
         << "DXF file must be written to " << dxfPath;
-    ASSERT_GT(std::filesystem::file_size(dxfPath), 0u);
+    ASSERT_GT(boost::filesystem::file_size(dxfPath), 0u);
 
     // -------------------------------------------------------------------------
     // Step 2 — Open side.  Fresh document, fresh Python namespace.
@@ -1187,7 +1187,7 @@ assert abs(s['received_position_z'] -  0.0) < 1e-6
     // -------------------------------------------------------------------------
     // Cleanup.
     // -------------------------------------------------------------------------
-    std::filesystem::remove(dxfPath);
+    boost::filesystem::remove(dxfPath);
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
     lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
 
