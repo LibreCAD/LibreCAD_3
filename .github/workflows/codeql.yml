@@ -63,6 +63,22 @@ jobs:
         sudo ln -snf /usr/lib/x86_64-linux-gnu/qtchooser/qt5.conf /usr/lib/x86_64-linux-gnu/qtchooser/default.conf
         sudo rm -rf /usr/local/lib/android
 
+    # Must run BEFORE the build: for compiled languages CodeQL builds its
+    # database by tracing the compiler as the build runs.  With the build
+    # ahead of this step there is nothing left to trace, and the analysis
+    # below fails with "No source code was seen during the build" even when
+    # the build itself is perfectly clean.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+
+        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+        # queries: security-extended,security-and-quality
+
     - name: Building
       # Phase 6 PR-6.6 — skip the C++ build step for the `python` matrix
       # leg: CodeQL's Python analyzer scans sources directly, no build
@@ -97,18 +113,6 @@ jobs:
         popd
 
         sudo apt-get -qq install clang-15 clang-tools-15
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-
-        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-        # queries: security-extended,security-and-quality
-
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
