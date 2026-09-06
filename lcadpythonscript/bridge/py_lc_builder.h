@@ -2,7 +2,9 @@
 
 // Bridge — lc.builder.* (mirrors lcadluascript/bridge/lc_builder.h).  Slice 1.7.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {

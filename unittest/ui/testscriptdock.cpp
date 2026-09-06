@@ -22,7 +22,9 @@
 #include <cad/storage/document.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/embed.h>
+#include <qt_keywords_pop.h>
 #include <lcpython.h>
 #include <lcscripting/scriptvalue.h>
 #include <luainterface.h>

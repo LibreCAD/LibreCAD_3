@@ -112,7 +112,11 @@ public:
                 _lc_test_array_result.fn_type = type(args.callback)
             end
         )");
-        _luaInterface.registerEvent("_lc_test_array_event", state["_lc_test_fn"]);
+        // .get<LuaRef>() disambiguates: the kaguya proxy converts to both
+        // kaguya::LuaRef and lc::scripting::ScriptCallback, and this test
+        // exercises the Lua pass-through overload.
+        _luaInterface.registerEvent("_lc_test_array_event",
+                                    state["_lc_test_fn"].get<kaguya::LuaRef>());
 
         // Build a payload that HAS to go through the pass-through path
         // to survive: an array table + a function reference.  The
@@ -124,7 +128,8 @@ public:
                 callback = function() return "unused" end,
             }
         )");
-        _luaInterface.triggerEvent("_lc_test_array_event", state["_lc_test_payload"]);
+        _luaInterface.triggerEvent("_lc_test_array_event",
+                                   state["_lc_test_payload"].get<kaguya::LuaRef>());
 
         // Verify: ipairs iterated 3 entries, summed to 60, args.arr[1]
         // = 10 (integer key resolved), and args.callback is still a
@@ -137,7 +142,7 @@ public:
 
         // Cleanup so subsequent runs don't accumulate.
         _luaInterface.deleteEvent("_lc_test_array_event",
-                                  state["_lc_test_fn"]);
+                                  state["_lc_test_fn"].get<kaguya::LuaRef>());
         state["_lc_test_payload"]      = nullptr;
         state["_lc_test_fn"]           = nullptr;
         state["_lc_test_array_result"] = nullptr;

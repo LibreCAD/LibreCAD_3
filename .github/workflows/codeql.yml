@@ -63,41 +63,31 @@ jobs:
         sudo ln -snf /usr/lib/x86_64-linux-gnu/qtchooser/qt5.conf /usr/lib/x86_64-linux-gnu/qtchooser/default.conf
         sudo rm -rf /usr/local/lib/android
 
-    - name: Building
-      # Phase 6 PR-6.6 — skip the C++ build step for the `python` matrix
-      # leg: CodeQL's Python analyzer scans sources directly, no build
-      # needed.  Saves ~5 min per Python-leg run and avoids
-      # accidental build-failure noise blocking Python findings.
+    # libdxfrw is a dependency, not part of this project, so it is built here
+    # -- BEFORE Initialize CodeQL -- and into RUNNER_TEMP rather than the
+    # workspace.  Building it inside the traced window would put third-party
+    # translation units into the C++ database and report their findings as
+    # alerts on this repository, at paths that do not exist in this repository
+    # and so can be neither reviewed nor fixed here.  LibreCAD picks the
+    # library up from the /usr install, not from the source tree, so the
+    # location does not matter to the build.
+    - name: Build libdxfrw
       if: matrix.language == 'cpp'
       run: |
-        # Belt-and-suspenders: checkout already fetched submodules, but
-        # re-run --init --recursive so any subsequently-added path is safe.
-        git submodule update --init --recursive
-
-        # libdxfrw is not a submodule, so it has to be cloned explicitly the
-        # same way scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
-        # does.  Without it `mkdir -p libdxfrw/release` just created an empty
-        # directory and cmake failed on the missing CMakeLists.txt.
-        git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
-        mkdir -p libdxfrw/release
-        pushd libdxfrw/release
+        git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw "$RUNNER_TEMP/libdxfrw"
+        mkdir -p "$RUNNER_TEMP/libdxfrw/release"
+        pushd "$RUNNER_TEMP/libdxfrw/release"
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
         make -j 4
         echo "installing dxfrw"
         sudo make install
         popd
 
-        echo "building LibreCAD"
-        mkdir build
-        pushd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
-        make -j 4
-        echo "installing LibreCAD"
-        sudo make install DESTDIR=AppDir
-        popd
-
-        sudo apt-get -qq install clang-15 clang-tools-15
-
+    # Must run BEFORE the build: for compiled languages CodeQL builds its
+    # database by tracing the compiler as the build runs.  With the build
+    # ahead of this step there is nothing left to trace, and the analysis
+    # below fails with "No source code was seen during the build" even when
+    # the build itself is perfectly clean.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
@@ -109,6 +99,32 @@ jobs:
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
+    - name: Building
+      # Phase 6 PR-6.6 — skip the C++ build step for the `python` matrix
+      # leg: CodeQL's Python analyzer scans sources directly, no build
+      # needed.  Saves ~5 min per Python-leg run and avoids
+      # accidental build-failure noise blocking Python findings.
+      if: matrix.language == 'cpp'
+      run: |
+        # Belt-and-suspenders: checkout already fetched submodules, but
+        # re-run --init --recursive so any subsequently-added path is safe.
+        git submodule update --init --recursive
+
+        echo "building LibreCAD"
+        mkdir build
+        pushd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
+        make -j 4
+        # install/fast, not install: the plain install target depends on `all`,
+        # and lckernel regenerates build_constants.cpp on every make, so a
+        # plain `sudo make install` recompiles inside sudo.  sudo strips LD_*
+        # from the environment, which is how the CodeQL tracer is injected, so
+        # anything compiled there is silently missing from the database.
+        echo "installing LibreCAD"
+        sudo make install/fast DESTDIR=AppDir
+        popd
+
+        sudo apt-get -qq install clang-15 clang-tools-15
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

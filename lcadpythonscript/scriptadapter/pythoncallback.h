@@ -22,7 +22,10 @@
 #include <lcscripting/scriptcallback.h>
 #include <lcscripting/scriptvalue.h>
 
+#include "../lcpython_api.h"
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 #include <memory>
 #include <string>
@@ -33,7 +36,7 @@ namespace python {
 
 /// Wrap a py::object into a ScriptCallback.  The `runtime()` tag is
 /// "python", and the underlying pImpl handles the GIL discipline.
-lc::scripting::ScriptCallback makePythonCallback(pybind11::object obj);
+LC_PYTHON_API lc::scripting::ScriptCallback makePythonCallback(pybind11::object obj);
 
 /// Convert a ScriptValue to a py::object (returns py::none() for Nil).
 /// Must be called with the GIL held.

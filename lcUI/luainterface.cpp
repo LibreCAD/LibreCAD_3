@@ -15,9 +15,11 @@
 // Phase 5 PR-5.3 — path.py execution + lcUIPy autoregister.
 // Phase 5 PR-5.5 — Python plugin loader called from initLua.
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <qt_keywords_pop.h>
 #include <lcpython.h>   // PythonInit
 #include "python/pypluginloader.h"
 #endif

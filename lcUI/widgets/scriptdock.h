@@ -16,7 +16,9 @@
 // tears the dict down under GIL (permanent-release GIL pattern from
 // phase 1).
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
+#include <qt_keywords_pop.h>
 #endif
 
 #include <memory>

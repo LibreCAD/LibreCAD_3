@@ -22,7 +22,7 @@
 #include <cad/storage/storagemanagerimpl.h>
 
 #include <cstdio>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <memory>
 #include <string>
 
@@ -30,7 +30,7 @@ namespace {
 
 std::string uniqueTmpDxf() {
     auto pid = std::to_string(::getpid());
-    return (std::filesystem::temp_directory_path()
+    return (boost::filesystem::temp_directory_path()
             / ("librecad-persistence-" + pid + ".dxf")).string();
 }
 
@@ -39,7 +39,7 @@ std::string uniqueTmpDxf() {
 TEST(PersistenceTest, DxfRoundTrip) {
     // ---- Build a document in Python, save it out, open back in fresh doc.
     const std::string dxfPath = uniqueTmpDxf();
-    std::filesystem::remove(dxfPath);  // ignore errors if it doesn't exist
+    boost::filesystem::remove(dxfPath);  // ignore errors if it doesn't exist
 
     auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
     auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
@@ -92,8 +92,8 @@ lc.persistence.File.save(document, dxf_path,
     ASSERT_EQ(lcpy.runString(script.c_str(), ns), "");
 
     // ---- Confirm the file exists and is non-empty (basic sanity).
-    ASSERT_TRUE(std::filesystem::exists(dxfPath));
-    ASSERT_GT(std::filesystem::file_size(dxfPath), 0u);
+    ASSERT_TRUE(boost::filesystem::exists(dxfPath));
+    ASSERT_GT(boost::filesystem::file_size(dxfPath), 0u);
 
     // ---- Open into a fresh document and verify the same entities come back.
     auto sm2  = std::make_shared<lc::storage::StorageManagerImpl>();
@@ -122,7 +122,7 @@ lc.persistence.File.save(document, dxf_path,
     EXPECT_EQ(nArc,    1);
 
     // Cleanup — leaving temp DXFs around clutters /tmp.
-    std::filesystem::remove(dxfPath);
+    boost::filesystem::remove(dxfPath);
 }
 
 TEST(PersistenceTest, EnumsAndHelpersRegistered) {

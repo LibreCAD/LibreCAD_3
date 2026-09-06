@@ -9,7 +9,9 @@
 // script-callable persistence — there is no working GUI-harness fallback,
 // and today no script (Lua or Python) can do headless DXF I/O.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {

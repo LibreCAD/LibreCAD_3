@@ -29,7 +29,9 @@ extern "C"
 // against" is what the user wants here).  Guarded behind
 // LC_WITH_PYTHONSCRIPT so an OFF build stays clean.
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <Python.h>
+#include <qt_keywords_pop.h>
 #endif
 
 struct outputConfig {

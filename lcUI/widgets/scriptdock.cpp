@@ -7,8 +7,10 @@
 #include <QFileInfo>
 
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <qt_keywords_pop.h>
 #include <lcpython.h>   // PythonInit
 // Phase 5 PR-5.1 fixup: pyeventhooks.h include no longer needed here —
 // installEventHooks() moved to MainWindow ctor.
