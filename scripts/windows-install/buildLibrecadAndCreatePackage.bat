@@ -11,11 +11,16 @@ cmake -S %cd% -G "Visual Studio 17 2022" ^
 -DWITH_RENDERING_UNITTESTS=OFF ^
 --install-prefix %cd%\installprefix
 
+REM Fail here rather than letting a broken configure surface much later as a
+REM missing CPackConfig.cmake.
+if errorlevel 1 exit /b 1
+
 rem -DWITH_UNITTESTS=OFF
 cd build
 dir CPack*.cmake
 
 cmake --build . --config Release --target package
+if errorlevel 1 exit /b 1
 
 cd bin/Release
 dir
