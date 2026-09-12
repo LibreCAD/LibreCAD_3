@@ -108,8 +108,9 @@ if(WITH_PYTHONSCRIPT)
         # Exercises BOTH the native ScriptCallback fallback path AND the
         # Lua fast path (via a real kaguya::LuaRef calling
         # `insert:position()`).  Needs lcluascript + kaguya headers +
-        # a real Lua 5.3 runtime — hence CI-only (macOS Homebrew ships
-        # Lua 5.5 which breaks kaguya).
+        # a real Lua runtime.  Any Lua from 5.3 up now works, including the
+        # 5.5 that Homebrew defaults to — see the GC-constant mapping in the
+        # top-level CMakeLists.txt.
         scripting/customentitymanager_test.cpp
         )
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
@@ -188,7 +189,10 @@ if(WITH_QT_UI)
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
 
     #Lua
-    find_package(Lua 5.3 EXACT REQUIRED)
+    # Lua 5.3 or newer.  Was EXACT 5.3, which made the build unusable on any
+    # distribution shipping a newer Lua (Homebrew now defaults to 5.5).
+    # kaguya supports 5.4+ as of the submodule bump in this commit.
+    find_package(Lua 5.3 REQUIRED)
     include_directories(${LUA_INCLUDE_DIR})
 endif(WITH_QT_UI)
 
