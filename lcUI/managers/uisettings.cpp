@@ -269,7 +269,7 @@ rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
         return rapidjson::Document();
     }
 
-    return std::move(settingsDocument);
+    return settingsDocument;   // std::move here would defeat copy elision
 }
 
 void UiSettings::writeSettingsFile(rapidjson::Document& document) {

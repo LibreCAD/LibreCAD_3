@@ -45,6 +45,7 @@ using namespace lc::viewer;
 
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
     _document(document),
+    _painterPtr(nullptr),
     _zoomMin(0.005),
     _zoomMax(200.0),
     _deviceWidth(0),
@@ -52,7 +53,6 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
     _selectedArea(nullptr),
     _selectedAreaIntersects(false),
     _deviceToUser(std::move(deviceToUser)),
-    _painterPtr(nullptr),
     _viewport(viewport)
 {
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);

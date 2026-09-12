@@ -179,13 +179,13 @@ void MenuItem::updateOtherPositionsAfterRemove() {
 
 void MenuItem::itemTriggered() {
     // Phase 4 PR-4 — invoke neutral callbacks (nil-safe: nil returns Nil).
-    for (int i = 0; i < callbacks.size(); i++) {
+    for (size_t i = 0; i < callbacks.size(); i++) {
         callbacks[i].invoke();
     }
 }
 
 void MenuItem::itemToggled(bool toggle) {
-    for (int i = 0; i < _checkedCallbacks.size(); i++) {
+    for (size_t i = 0; i < _checkedCallbacks.size(); i++) {
         _checkedCallbacks[i].call(toggle);
     }
 }

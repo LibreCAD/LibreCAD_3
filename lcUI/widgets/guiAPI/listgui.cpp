@@ -165,7 +165,7 @@ void ListGUI::minusButtonClicked() {
 void ListGUI::setListType(ListGUI::ListType listTypeIn) {
     if (listTypeIn == ListType::COORDINATE) {
         // check if all already added widgets are of type coordinate
-        for (int i = 0; i < itemList.size(); i++) {
+        for (size_t i = 0; i < itemList.size(); i++) {
             CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(itemList[i]);
             if (coordgui == nullptr) {
                 return;
@@ -179,7 +179,7 @@ void ListGUI::setListType(ListGUI::ListType listTypeIn) {
 
     if (listTypeIn == ListType::LW_VERTEX) {
         // check if all already added widgets are of type coordinate
-        for (int i = 0; i < itemList.size(); i++) {
+        for (size_t i = 0; i < itemList.size(); i++) {
             LWVertexGroup* lwvertex = qobject_cast<LWVertexGroup*>(itemList[i]);
             if (lwvertex == nullptr) {
                 return;

@@ -14,8 +14,8 @@ using namespace lc::ui::dialog;
 
 TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     : QDialog(parent),
-      _mainWindow(mainWindowIn),
-      ui(new Ui::TextDialog)
+    ui(new Ui::TextDialog),
+    _mainWindow(mainWindowIn)
 {
     ui->setupUi(this);
 

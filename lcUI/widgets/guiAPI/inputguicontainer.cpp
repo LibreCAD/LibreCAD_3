@@ -12,8 +12,8 @@ using namespace lc::ui::api;
 
 InputGUIContainer::InputGUIContainer(const std::string& label, lc::ui::MainWindow* mainWindow)
     :
-    _label(label),
-    mainWindow(mainWindow)
+    mainWindow(mainWindow),
+    _label(label)
 {
 }
 

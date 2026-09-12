@@ -9,9 +9,9 @@ using namespace lc::ui::api;
 EntityGUI::EntityGUI(std::string label, QWidget* parent)
     :
     InputGUI(label, parent),
-    mainWindow(nullptr),
+    ui(new Ui::EntityGUI),
     _entitySelectionEnabled(false),
-    ui(new Ui::EntityGUI)
+    mainWindow(nullptr)
 {
     _type = "entity";
     ui->setupUi(this);
