@@ -3,7 +3,15 @@ cd ${{ github.workspace }}
 
 pwd
 
-cmake -S %cd% -G "Visual Studio 17 2022" ^
+REM No -G here on purpose.  This used to pin "Visual Studio 17 2022", which the
+REM runner image no longer ships: conan detects msvc 18 (compiler.version=195,
+REM toolset v145), so cmake failed with
+REM
+REM   Generator "Visual Studio 17 2022" could not find any instance of Visual Studio.
+REM
+REM Letting cmake pick the newest installed Visual Studio keeps working when the
+REM image moves again, and the conan toolchain already pins the toolset.
+cmake -S %cd% ^
 -B %cd%\build ^
 -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake ^
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ^
