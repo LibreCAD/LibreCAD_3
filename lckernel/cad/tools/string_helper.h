@@ -57,9 +57,16 @@ public:
     /**
      * Comparator for map to setup case Insensitive comparison ofstd::strings, useful in std::map
      */
-    struct cmpCaseInsensitive : std::binary_function<std::string, std::string, bool> {
+    // Deliberately not derived from std::binary_function: it was deprecated in
+    // C++11 and removed in C++17, and it only ever supplied the
+    // first_argument_type/second_argument_type/result_type typedefs that
+    // std::bind1st, std::bind2nd and std::not2 needed.  Those are gone too, and
+    // nothing here uses the typedefs -- both structs are used purely for their
+    // operator(), as a std::map comparator and a lexicographical_compare
+    // predicate respectively.
+    struct cmpCaseInsensitive {
         // case-independent (ci) compare_less binary function
-        struct nocase_compare : public std::binary_function<unsigned char, unsigned char, bool> {
+        struct nocase_compare {
             bool operator()(unsigned char c1, unsigned char c2) const {
                 return std::tolower(c1) < std::tolower(c2);
             }
