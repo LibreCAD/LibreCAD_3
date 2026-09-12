@@ -4,7 +4,12 @@ name: Librecad3 Builders
   push:
     branches:
       - main
+      - master
       - ci_dev
+  pull_request:
+    branches:
+      - main
+      - master
 
 jobs:
   linux:
