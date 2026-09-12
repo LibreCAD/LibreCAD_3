@@ -1,4 +1,5 @@
 #include "lcadviewer.h"
+#include "glewsupport.h"
 #include <QtGui>
 #include <QVBoxLayout>
 #include <iostream>
@@ -123,14 +124,10 @@ void LCADViewer::initializeGL()
 
     if (CC != 0)
     {
-        GLenum err = glewInit();
+        std::string glewError;
 
-        if (err != GLEW_OK) {
-            LOG_ERROR << "GLEW Error: " << glewGetErrorString(err) << std::endl;
-            exit(1);
-        }
-        if (!GLEW_VERSION_2_1) {
-            LOG_ERROR << "OpenGL version 2.1 is not available" << std::endl;
+        if (!initialiseGlew(glewError)) {
+            LOG_ERROR << glewError << std::endl;
             exit(1);
         }
 

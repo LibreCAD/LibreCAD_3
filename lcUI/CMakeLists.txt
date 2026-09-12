@@ -31,6 +31,7 @@ cadmdichild.h
 const.h
 luainterface.h
 lcadviewer.h
+glewsupport.h
 lcadviewerproxy.h
 lcadmodelviewerimpl.h
 lcadpaperviewerimpl.h
@@ -101,6 +102,7 @@ cadmdichild.cpp
 main.cpp
 luainterface.cpp
 lcadviewer.cpp
+glewsupport.cpp
 lcadviewerproxy.cpp
 lcadmodelviewerimpl.cpp
 lcadpaperviewerimpl.cpp

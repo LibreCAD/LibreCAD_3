@@ -207,8 +207,19 @@ endif(WITH_CAIRO)
 # diagnostic globally, before any add_subdirectory(), if the compiler
 # supports the flag.
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-Wno-missing-template-arg-list-after-template-kw" HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
-if(HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
+# Probe the POSITIVE spelling even though the negative one is what gets added.
+# GCC accepts any unrecognised -Wno-* silently, so probing "-Wno-..." succeeds
+# there and the flag gets added to a compiler that does not know it -- GCC then
+# reports, on every file that emits any other diagnostic:
+#
+#   cc1plus: note: unrecognized command-line option
+#   '-Wno-missing-template-arg-list-after-template-kw' may have been intended
+#   to silence earlier diagnostics
+#
+# GCC does reject the positive spelling outright, so probing that tells the two
+# compilers apart and the flag reaches Clang only.
+check_cxx_compiler_flag("-Wmissing-template-arg-list-after-template-kw" HAS_MISSING_TEMPLATE_ARG_LIST_WARNING)
+if(HAS_MISSING_TEMPLATE_ARG_LIST_WARNING)
     add_definitions("-Wno-missing-template-arg-list-after-template-kw")
 endif()
 
