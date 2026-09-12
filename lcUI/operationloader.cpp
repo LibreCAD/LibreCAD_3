@@ -88,8 +88,8 @@ private:
 
 OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState)
     :
-    qmainWindow(qmainWindow),
-    _L(luaState)
+    _L(luaState),
+    qmainWindow(qmainWindow)
 {
     std::string path = FolderFinder{}(luaPath);
     std::cout<<"updated path:: "<<path<<std::endl;

@@ -10,7 +10,10 @@ using namespace lc::ui::widgets;
 WidgetTitleBar::WidgetTitleBar( const QString& title,
                                 QDockWidget* parent,
                                 WidgetTitleBar::TitleBarOptions hideOptions)
-    : QWidget(parent), m_pMainHLayout(nullptr), m_pMainVLayout(nullptr), closed(false)
+    : QWidget(parent),
+    m_pMainVLayout(nullptr),
+    m_pMainHLayout(nullptr),
+    closed(false)
 {
     pDock = parent;
     expandedFeatures = pDock->features();

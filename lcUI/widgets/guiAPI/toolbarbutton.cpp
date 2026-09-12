@@ -20,8 +20,8 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon,
                              const char* tooltip, bool _checkable,
                              QWidget* parent, const char* fallbackDir)
     :
-    _label(buttonLabel),
     QPushButton("", parent),
+    _label(buttonLabel),
     _checkable(_checkable)
 {
     this->setObjectName(buttonLabel);

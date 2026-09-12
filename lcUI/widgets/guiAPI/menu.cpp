@@ -10,8 +10,8 @@ using namespace lc::ui::api;
 Menu::Menu(const char* menuName, QWidget* parent)
     :
     QMenu(QString(menuName), parent),
-    _position(-1),
-    insideMenu(false)
+    insideMenu(false),
+    _position(-1)
 {
     this->setObjectName(menuName);
 }
@@ -19,16 +19,16 @@ Menu::Menu(const char* menuName, QWidget* parent)
 Menu::Menu(QMenuBar* menuBar)
     :
     QMenu(menuBar),
-    _position(-1),
-    insideMenu(false)
+    insideMenu(false),
+    _position(-1)
 {
 }
 
 Menu::Menu(QMenu* menu)
     :
     QMenu(menu),
-    _position(-1),
-    insideMenu(false)
+    insideMenu(false),
+    _position(-1)
 {
 }
 

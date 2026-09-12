@@ -25,9 +25,9 @@ using namespace lc::ui::widgets;
 CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     :
     QDialog(parent),
+    ui(new Ui::CustomizeToolbar),
     _toolbar(toolbar),
-    _saveOnClose(CloseMode::Ask),
-    ui(new Ui::CustomizeToolbar)
+    _saveOnClose(CloseMode::Ask)
 {
     ui->setupUi(this);
 
