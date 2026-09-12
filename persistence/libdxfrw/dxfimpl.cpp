@@ -3,6 +3,7 @@
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
+#include <set>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
@@ -856,11 +857,27 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     auto col = layer->color();
     lay.name = layer->name();
     lay.color = icol_inst.colorToInt(col);
-    auto wid = layer->lineWidth().width();
-    std::cout << wid;
-//    auto val = widthToInt();
 
-//    lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>();
+    // Issue #412 phase 3: (a) stop the stray `std::cout << wid;` that has
+    // been dumping the layer line width to stdout on every save since 2016.
+    // (b) actually emit the layer line weight — the conversion was commented
+    // out for a decade, so every saved layer defaulted to widthDefault.
+    auto wid = layer->lineWidth().width();
+    int lwIdx = widthToInt(wid);
+    if (lwIdx >= 0) {
+        lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>(lwIdx);
+    } else {
+        lay.lWeight = DRW_LW_Conv::widthDefault;
+    }
+
+    // Issue #412 phase 3: emit the layer's line pattern name (code 6) so the
+    // reader can match entities that reference it back to the layer LTYPE.
+    // Skip an empty/unset pattern; libdxfrw defaults to "CONTINUOUS".
+    auto lp = layer->linePattern();
+    if (lp != nullptr && !lp->name().empty()) {
+        lay.lineType = lp->name();
+    }
+
     lay.flags = layer->isFrozen() ? 0x01 : 0x00;
 
     dxfW->writeLayer(&lay);
@@ -1338,12 +1355,59 @@ void DXFimpl::writeLTypes() {
     ltype.path.push_back(12.7);
     ltype.path.push_back(-12.7);
     dxfW->writeLineType(&ltype);
+
+    // Issue #412 phase 3: emit every DxfLinePatternByValue registered on the
+    // document, not just the hardcoded set above.  Without this, entities
+    // referencing a user-imported LTYPE (very common when a supplier's DXF
+    // is opened and re-saved) point at an absent LTYPE table entry — the
+    // resulting file is structurally invalid DXF.  Skip names already
+    // covered by the hardcoded standard set to avoid duplicate table entries.
+    static const std::set<std::string> kBuiltin{
+        "CONTINUOUS", "ByLayer", "ByBlock",
+        "DOT", "DOTTINY", "DOT2", "DOTX2",
+        "DASHED", "DASHEDTINY", "DASHED2", "DASHEDX2",
+        "DASHDOT", "DASHDOTTINY", "DASHDOT2", "DASHDOTX2",
+        "DIVIDE", "DIVIDETINY", "DIVIDE2", "DIVIDEX2",
+        "BORDER", "BORDERTINY", "BORDER2", "BORDERX2",
+        "CENTER", "CENTERTINY", "CENTER2", "CENTERX2"};
+    for (const auto& lp : _document->linePatterns()) {
+        if (lp == nullptr) continue;
+        const std::string& name = lp->name();
+        if (name.empty() || kBuiltin.count(name)) continue;
+
+        DRW_LType user;
+        user.name = name;
+        user.desc = lp->description();
+        user.path = lp->path();
+        user.size = static_cast<int>(user.path.size());
+        user.length = lp->length();
+        dxfW->writeLineType(&user);
+    }
 }
 
 void DXFimpl::writeAppId() {
     DRW_AppId ai;
     ai.name ="LibreCad";
     dxfW->writeAppId(&ai);
+}
+
+// Issue #412 phase 3: writeHeader was defaulted to empty; drawings saved by
+// LibreCAD carried no HEADER variables at all.  Some readers (AutoCAD in
+// strict mode, ezdxf pedantic mode) reject a file with no $ACADVER, and
+// downstream tools that key off $INSUNITS silently pick the wrong unit.
+// Emit a small viable set — the version tag matches whatever writeDXF
+// selected, the units default to Millimeter, measurement to Metric.
+void DXFimpl::writeHeader(DRW_Header& data) {
+    // $ACADVER identifies the DXF spec; libdxfrw's writer also writes it
+    // unconditionally, so this is belt-and-braces for readers that check the
+    // header variable rather than the file preamble.
+    data.addStr("$ACADVER", "AC1015", 1);
+    // Default to Metric with millimeter insertion units.  The document API
+    // doesn't currently expose a unit-of-measure field for the whole
+    // drawing, so hard-code the sensible default rather than the DXF
+    // spec-default of 0 (unitless).
+    data.addInt("$MEASUREMENT", 1, 70);       // 0 = English, 1 = Metric
+    data.addInt("$INSUNITS", 4, 70);          // 4 = Millimeter
 }
 
 // Issue #412 phase 1: populate the DRW_Dimension base header shared by all

@@ -128,7 +128,7 @@ public:
     // WRITE FUNCTIONALITY
     bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
 
-    void writeHeader(DRW_Header& data) override {}
+    void writeHeader(DRW_Header& data) override;
 
     void writeBlocks() override;
 

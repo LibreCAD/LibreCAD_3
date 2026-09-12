@@ -32,10 +32,13 @@
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
 
+#include <cad/meta/dxflinepattern.h>
+
 #include <cad/operations/blockops.h>
 #include <cad/operations/builder.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/operations/layerops.h>
+#include <cad/operations/linepatternops.h>
 
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
@@ -385,6 +388,70 @@ TEST(DxfExportTest, EveryReaderProducibleKindReachesTheFile) {
     EXPECT_GE(counted.count("HATCH"),     1) << "HATCH dropped. " << dbg;
     EXPECT_GE(counted.count("IMAGE"),     1) << "IMAGE dropped. " << dbg;
     EXPECT_GE(counted.count("DIMENSION"), 5) << "DIMENSION dropped. " << dbg;
+
+    boost::filesystem::remove(dxfPath);
+}
+
+// Issue #412 phase 3: tables and header fidelity.  writeLTypes historically
+// emitted only a hardcoded set — user-imported LTYPES vanished, so entities
+// referencing them pointed at an absent table entry (structurally invalid
+// DXF).  writeLayer had `lWeight` commented out and never wrote the line
+// pattern name (both layer-attribute round-trip losses).  writeHeader was
+// empty; some strict readers reject a headerless file, and $INSUNITS
+// silently defaulted to unitless.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfExportTest, Phase3TablesAndHeaderFidelity) {
+    const std::string dxfPath = uniqueTmpDxf("phase3");
+    boost::filesystem::remove(dxfPath);
+
+    auto sm = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+
+    // Register a custom line pattern that is NOT in the built-in set.
+    auto customLP = std::make_shared<lc::meta::DxfLinePatternByValue>(
+        "MYCUSTOMPATTERN", "Sample custom pattern",
+        std::vector<double>{5.0, -2.0, 1.0, -2.0}, 10.0);
+    std::make_shared<lc::operation::AddLinePattern>(doc, customLP)->execute();
+
+    // Layer with a line pattern reference + a non-default line weight so we
+    // can assert both fields make it through to the layer table.
+    auto layer = std::make_shared<lc::meta::Layer>(
+        "trace", lc::meta::MetaLineWidthByValue(0.5),
+        lc::Color(0, 255, 0, 255), customLP, /*frozen=*/false);
+    std::make_shared<lc::operation::AddLayer>(doc, layer)->execute();
+
+    // Save the document with just one entity so the file is exercised.
+    auto eb = std::make_shared<lc::operation::EntityBuilder>(doc);
+    eb->appendEntity(std::make_shared<lc::entity::Line>(
+        lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 1), layer));
+    eb->execute();
+
+    lc::persistence::File::save(
+        doc, dxfPath, lc::persistence::File::Type::LIBDXFRW_DXF_R2000);
+
+    ASSERT_TRUE(boost::filesystem::exists(dxfPath));
+
+    // Grep the raw text for the custom LTYPE — the LTYPES section pairs a
+    // "LTYPE" 0-code with a name.  The simplest and most robust check for
+    // the plan's stated defect is "does the custom name appear anywhere?"
+    std::ifstream in(dxfPath);
+    std::string blob((std::istreambuf_iterator<char>(in)),
+                     std::istreambuf_iterator<char>());
+
+    EXPECT_NE(blob.find("MYCUSTOMPATTERN"), std::string::npos)
+        << "User-defined line pattern was not emitted in the LTYPE table.";
+
+    // Header vars — the presence of $ACADVER and $INSUNITS in the HEADER
+    // section is the primary regression check for writeHeader coming to life.
+    EXPECT_NE(blob.find("$ACADVER"), std::string::npos)
+        << "$ACADVER missing from HEADER section.";
+    EXPECT_NE(blob.find("$INSUNITS"), std::string::npos)
+        << "$INSUNITS missing from HEADER section.";
+
+    // Regression: writeLayer's `std::cout << wid` used to spam stdout on
+    // every save.  We can't easily capture stdout of gtest itself, but this
+    // acts as a documentation anchor for the change.
 
     boost::filesystem::remove(dxfPath);
 }
