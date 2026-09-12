@@ -28,7 +28,10 @@ link_directories(${Boost_LIBRARY_DIRS})
 message(boost_dirs="${Boost_LIBRARY_DIRS}")
 
 #Lua
-find_package(Lua 5.3 EXACT REQUIRED)
+# Lua 5.3 or newer.  Was EXACT 5.3, which made the build unusable on any
+# distribution shipping a newer Lua (Homebrew now defaults to 5.5).
+# kaguya supports 5.4+ as of the submodule bump in this commit.
+find_package(Lua 5.3 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 
