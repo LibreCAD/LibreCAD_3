@@ -167,8 +167,24 @@ if(MSVC)
     #SET(Boost_USE_STATIC_LIBS ON)
     FIND_PACKAGE(Boost COMPONENTS log log_setup REQUIRED)
     find_package(Eigen3 REQUIRED)
-    include_directories("${EIGEN3_INCLUDE_DIR}")
-    include_directories("${EIGEN3_INCLUDE_DIR}")
+    # Conan's Eigen3Config.cmake exports the Eigen3::Eigen target and leaves the
+    # legacy FindEigen3 variable unset, so EIGEN3_INCLUDE_DIR was empty on the
+    # Windows/Conan build and cmake rejected the quoted empty string:
+    #
+    #   CMakeLists.txt:170 (include_directories):
+    #     include_directories given empty-string as include directory.
+    #
+    # The unquoted spelling earlier in this file fails more quietly: it expands
+    # to nothing, so Eigen's headers were never on the include path at all.
+    # Take the directory from whichever form the config actually provided.
+    if(NOT EIGEN3_INCLUDE_DIR AND TARGET Eigen3::Eigen)
+        get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+    endif()
+    if(EIGEN3_INCLUDE_DIR)
+        include_directories(${EIGEN3_INCLUDE_DIR})
+    else()
+        message(FATAL_ERROR "Eigen3 found but neither EIGEN3_INCLUDE_DIR nor Eigen3::Eigen yielded an include directory")
+    endif()
     message("${CMAKE_SOURCE_DIR}/include")
     include_directories("third_party/msvc_dirent")
 endif()
