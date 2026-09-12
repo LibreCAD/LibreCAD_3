@@ -289,6 +289,64 @@ void populateOneOfEach(const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
 
 } // namespace
 
+namespace {
+
+// Issue #412 phase 2: helpers to grep specific DXF group codes.  A DXF entry
+// looks like a sequence of alternating "code" / "value" lines; find every
+// occurrence of a (code, value) pair inside an entity of a given keyword.
+struct DxfPairsInEntities {
+    // pairsByEntity["LINE"] = { {"10", "1.0"}, {"20", "2.0"}, {"30", "3.0"}, ... }
+    std::map<std::string, std::vector<std::pair<std::string, std::string>>> pairs;
+
+    explicit DxfPairsInEntities(const std::string& path) {
+        std::ifstream in(path);
+        std::string codeLine, valueLine;
+        bool inEntities = false;
+        std::string current;
+        auto trim = [](std::string& s) {
+            auto notSpace = [](unsigned char c) { return !std::isspace(c); };
+            s.erase(s.begin(), std::find_if(s.begin(), s.end(), notSpace));
+            s.erase(std::find_if(s.rbegin(), s.rend(), notSpace).base(), s.end());
+        };
+        while (std::getline(in, codeLine) && std::getline(in, valueLine)) {
+            trim(codeLine);
+            trim(valueLine);
+            if (codeLine == "0") {
+                if (valueLine == "SECTION") {
+                    std::string c, v;
+                    if (std::getline(in, c) && std::getline(in, v)) {
+                        trim(c); trim(v);
+                        if (c == "2" && v == "ENTITIES") inEntities = true;
+                    }
+                    current.clear();
+                    continue;
+                }
+                if (valueLine == "ENDSEC") { inEntities = false; current.clear(); continue; }
+                current = inEntities ? valueLine : std::string();
+                continue;
+            }
+            if (!current.empty()) {
+                pairs[current].emplace_back(codeLine, valueLine);
+            }
+        }
+    }
+
+    // Return every value for a specific code inside the first N entities of
+    // the given keyword.  Useful for asserting "code 30 exists and equals 7".
+    std::vector<std::string> valuesFor(const std::string& keyword,
+                                       const std::string& code) const {
+        std::vector<std::string> out;
+        auto it = pairs.find(keyword);
+        if (it == pairs.end()) return out;
+        for (const auto& p : it->second) {
+            if (p.first == code) out.push_back(p.second);
+        }
+        return out;
+    }
+};
+
+}  // namespace
+
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfExportTest, EveryReaderProducibleKindReachesTheFile) {
     const std::string dxfPath = uniqueTmpDxf("one-of-each");
@@ -327,6 +385,117 @@ TEST(DxfExportTest, EveryReaderProducibleKindReachesTheFile) {
     EXPECT_GE(counted.count("HATCH"),     1) << "HATCH dropped. " << dbg;
     EXPECT_GE(counted.count("IMAGE"),     1) << "IMAGE dropped. " << dbg;
     EXPECT_GE(counted.count("DIMENSION"), 5) << "DIMENSION dropped. " << dbg;
+
+    boost::filesystem::remove(dxfPath);
+}
+
+// Issue #412 phase 2: correctness of writers that already ran.  Line, Circle,
+// Arc, Ellipse and Text used to drop the Z coordinate of every point; Text
+// never emitted its style; MText corrupted alignment on round-trip because
+// codes 71/72/73 mean different things for MTEXT than for TEXT and the writer
+// used the TEXT interpretation.  Regression tripwire for those fixes.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfExportTest, Phase2PreservesZAndTextAttributes) {
+    const std::string dxfPath = uniqueTmpDxf("phase2");
+    boost::filesystem::remove(dxfPath);
+
+    auto sm = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    auto layer = std::make_shared<lc::meta::Layer>(
+        "0", lc::meta::MetaLineWidthByValue(0.25),
+        lc::Color(255, 255, 255, 255));
+
+    auto eb = std::make_shared<lc::operation::EntityBuilder>(doc);
+
+    // Z=7 on line start, Z=8 on line end.
+    eb->appendEntity(std::make_shared<lc::entity::Line>(
+        lc::geo::Coordinate(0, 0, 7), lc::geo::Coordinate(10, 0, 8), layer));
+
+    // Circle Z=9.
+    eb->appendEntity(std::make_shared<lc::entity::Circle>(
+        lc::geo::Coordinate(20, 0, 9), 5.0, layer));
+
+    // Arc Z=11.
+    eb->appendEntity(std::make_shared<lc::entity::Arc>(
+        lc::geo::Coordinate(40, 0, 11), 5.0, 0.0, M_PI, true, layer));
+
+    // Text at Z=13, with custom style "MyStyle".
+    eb->appendEntity(std::make_shared<lc::entity::Text>(
+        lc::geo::Coordinate(0, 10, 13), "hello", 2.5, 0.0, "MyStyle",
+        lc::TextConst::DrawingDirection::None,
+        lc::TextConst::HAlign::HALeft,
+        lc::TextConst::VAlign::VABaseline, layer));
+
+    // MText at Z=15, HAlign=Center + VAlign=Middle => attachment 5 (Middle
+    // center).  Textgen=Backward => drawing direction 1.
+    eb->appendEntity(std::make_shared<lc::entity::MText>(
+        lc::geo::Coordinate(0, 15, 15), "hi", 2.5, 0.0, "STANDARD",
+        lc::TextConst::DrawingDirection::Backward,
+        lc::TextConst::HAlign::HACenter,
+        lc::TextConst::VAlign::VAMiddle,
+        false, false, false, false, layer));
+
+    eb->execute();
+
+    lc::persistence::File::save(
+        doc, dxfPath, lc::persistence::File::Type::LIBDXFRW_DXF_R2000);
+
+    ASSERT_TRUE(boost::filesystem::exists(dxfPath));
+
+    DxfPairsInEntities parsed(dxfPath);
+
+    // Line — code 30 is basePoint.z, code 31 is secPoint.z.
+    {
+        auto z10 = parsed.valuesFor("LINE", "30");   // basePoint.z
+        auto z11 = parsed.valuesFor("LINE", "31");   // secPoint.z
+        ASSERT_FALSE(z10.empty()) << "LINE has no code 30 (start z)";
+        ASSERT_FALSE(z11.empty()) << "LINE has no code 31 (end z)";
+        EXPECT_DOUBLE_EQ(std::stod(z10.front()), 7.0);
+        EXPECT_DOUBLE_EQ(std::stod(z11.front()), 8.0);
+    }
+    // Circle — code 30 is center.z.
+    {
+        auto z = parsed.valuesFor("CIRCLE", "30");
+        ASSERT_FALSE(z.empty());
+        EXPECT_DOUBLE_EQ(std::stod(z.front()), 9.0);
+    }
+    // Arc — code 30 is center.z.
+    {
+        auto z = parsed.valuesFor("ARC", "30");
+        ASSERT_FALSE(z.empty());
+        EXPECT_DOUBLE_EQ(std::stod(z.front()), 11.0);
+    }
+    // Text — code 30 is basePoint.z, code 7 is style name.
+    {
+        auto z = parsed.valuesFor("TEXT", "30");
+        ASSERT_FALSE(z.empty());
+        EXPECT_DOUBLE_EQ(std::stod(z.front()), 13.0);
+
+        auto style = parsed.valuesFor("TEXT", "7");
+        ASSERT_FALSE(style.empty()) << "TEXT missing style (code 7)";
+        EXPECT_EQ(style.front(), "MyStyle")
+            << "Text style was dropped before phase 2.";
+    }
+    // MText — code 30 is basePoint.z, code 71 is attachment point (5 for
+    // middle-center), code 72 is drawing direction (1 for backward).
+    {
+        auto z = parsed.valuesFor("MTEXT", "30");
+        ASSERT_FALSE(z.empty());
+        EXPECT_DOUBLE_EQ(std::stod(z.front()), 15.0);
+
+        auto attach = parsed.valuesFor("MTEXT", "71");
+        ASSERT_FALSE(attach.empty()) << "MTEXT missing attachment point";
+        EXPECT_EQ(std::stoi(attach.front()), 5)
+            << "MTEXT attachment (Middle center) should be 5, was "
+            << attach.front();
+
+        auto dir = parsed.valuesFor("MTEXT", "72");
+        ASSERT_FALSE(dir.empty());
+        EXPECT_EQ(std::stoi(dir.front()), 1)
+            << "MTEXT drawing direction (Backward) should be 1, was "
+            << dir.front();
+    }
 
     boost::filesystem::remove(dxfPath);
 }

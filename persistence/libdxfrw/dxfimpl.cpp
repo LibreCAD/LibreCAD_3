@@ -917,26 +917,34 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 void DXFimpl::writePoint(const lc::entity::Point_CSPtr& p) {
     DRW_Point point;
     getEntityAttributes(&point, p);
+    // Issue #412 phase 2: propagate Z through — the lc::entity::Point IS a
+    // geo::Coordinate, so it has a real z() value the writer used to drop.
     point.basePoint.x = p->x();
     point.basePoint.y = p->y();
+    point.basePoint.z = p->z();
     dxfW->writePoint(&point);
 }
 
 void DXFimpl::writeLine(const lc::entity::Line_CSPtr& l) {
     DRW_Line line;
     getEntityAttributes(&line, l);
+    // Issue #412 phase 2: preserve Z on both endpoints.
     line.basePoint.x = l->start().x();
     line.basePoint.y = l->start().y();
+    line.basePoint.z = l->start().z();
     line.secPoint.x = l->end().x();
     line.secPoint.y = l->end().y();
+    line.secPoint.z = l->end().z();
     dxfW->writeLine(&line);
 }
 
 void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr& c) {
     DRW_Circle circle;
     getEntityAttributes(&circle, c);
+    // Issue #412 phase 2: preserve Z of center.
     circle.basePoint.x = c->center().x();
     circle.basePoint.y = c->center().y();
+    circle.basePoint.z = c->center().z();
     circle.radious = c->radius();
     dxfW->writeCircle(&circle);
 }
@@ -944,8 +952,10 @@ void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr& c) {
 void DXFimpl::writeArc(const lc::entity::Arc_CSPtr& a) {
     DRW_Arc arc;
     getEntityAttributes(&arc, a);
+    // Issue #412 phase 2: preserve Z of center.
     arc.basePoint.x = a->center().x();
     arc.basePoint.y = a->center().y();
+    arc.basePoint.z = a->center().z();
     arc.radious = a->radius();
     if (a->CCW()) {
         arc.staangle = a->startAngle();
@@ -960,10 +970,13 @@ void DXFimpl::writeArc(const lc::entity::Arc_CSPtr& a) {
 void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr& s) {
     DRW_Ellipse el;
     getEntityAttributes(&el, s);
+    // Issue #412 phase 2: preserve Z of both center and major axis point.
     el.basePoint.x = s->center().x();
     el.basePoint.y = s->center().y();
+    el.basePoint.z = s->center().z();
     el.secPoint.x = s->majorP().x();
     el.secPoint.y = s->majorP().y();
+    el.secPoint.z = s->majorP().z();
     el.ratio = 1/s->ratio();
     if (s->isReversed()) {
         el.staparam = s->endAngle();
@@ -1571,14 +1584,29 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     std::string correctedText = t->text_value();
     std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
 
+    // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
+    tex.basePoint.z = t->insertion_point().z();
     tex.text = correctedText;
     tex.textgen = t->textgeneration();
     tex.height = t->height();
     tex.angle = t->angle() * 180 / M_PI;
     tex.alignH = DRW_Text::HAlign(t->halign());
     tex.alignV = DRW_Text::VAlign(t->valign());
+    // Issue #412 phase 2: text style was never written; downstream readers
+    // would fall back to "STANDARD" but any user-picked style silently reset.
+    // Empty style is invalid DXF, so keep the default fallback.
+    if (!t->style().empty()) {
+        tex.style = t->style();
+    }
+    // Issue #412 phase 2: alignment point (code 11) was defaulting to (0,0,0),
+    // which means the reader anchors non-left/non-baseline text at the origin
+    // instead of at the intended insertion point.  libdxfrw's writeText only
+    // emits code 11 when alignment is non-default, so seeding secPoint with
+    // the insertion point costs nothing when unused and fixes placement when
+    // it matters.
+    tex.secPoint = tex.basePoint;
 
     dxfW->writeText(&tex);
 }
@@ -1594,14 +1622,63 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
         correctedText.replace(index, 1, "\\P");
     }
 
+    // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
+    tex.basePoint.z = t->insertion_point().z();
     tex.text = correctedText;
-    tex.textgen = t->textgeneration();
     tex.height = t->height();
     tex.angle = t->angle() * 180 / M_PI;
-    tex.alignH = DRW_Text::HAlign(t->halign());
-    tex.alignV = DRW_Text::VAlign(t->valign());
+    if (!t->style().empty()) {
+        tex.style = t->style();
+    }
+
+    // Issue #412 phase 2: DXF group-code semantics differ between TEXT and
+    // MTEXT.  For MTEXT, code 71 is the ATTACHMENT POINT (1..9, TL..BR), not
+    // a text generation flag; code 72 is the DRAWING DIRECTION (1=LtR,
+    // 3=TtB, 5=byStyle), not horizontal alignment; code 73 is the LINE
+    // SPACING STYLE (1=at least, 2=exact), not vertical alignment.  The
+    // previous writer passed halign/valign/textgeneration straight through
+    // into 71/72/73 — reader-side addMText then reversed that with its
+    // %3 and /3 rowcode/colcode arithmetic, so on round-trip an MText's
+    // alignment was consistently garbled.  Compute the attachment point
+    // from HAlign * VAlign the way addMText decodes it.
+    int col;
+    switch (t->halign()) {
+        case lc::TextConst::HAlign::HALeft:   col = 1; break;
+        case lc::TextConst::HAlign::HACenter: col = 2; break;
+        case lc::TextConst::HAlign::HARight:  col = 3; break;
+        default:                              col = 1; break;
+    }
+    int row;
+    switch (t->valign()) {
+        case lc::TextConst::VAlign::VATop:    row = 1; break;
+        case lc::TextConst::VAlign::VAMiddle: row = 2; break;
+        case lc::TextConst::VAlign::VABottom: row = 3; break;
+        case lc::TextConst::VAlign::VABaseline: /* fall through */
+        default:                              row = 3; break;
+    }
+    tex.textgen = (row - 1) * 3 + col;   // MText attachment point, code 71
+
+    // Drawing direction encoding (code 72): 1=LtR, 3=TtB, 5=byStyle.
+    // lc::TextConst::DrawingDirection: None=0, Backward=1, UpsideDown=3.
+    // Reader's addMText maps 1->Backward, 3->UpsideDown, else->None.  Match
+    // that inverse here so round-trip is symmetric.
+    // libdxfrw types alignH/alignV as enums (DRW_Text::HAlign/VAlign) even on
+    // the DRW_MText path where the DXF semantics have nothing to do with
+    // TEXT alignment.  Cast is required — the integer we set here is what the
+    // writer emits verbatim as code 72 / code 73 for MTEXT.
+    switch (t->textgeneration()) {
+        case lc::TextConst::DrawingDirection::Backward:
+            tex.alignH = static_cast<DRW_Text::HAlign>(1); break;
+        case lc::TextConst::DrawingDirection::UpsideDown:
+            tex.alignH = static_cast<DRW_Text::HAlign>(3); break;
+        default:
+            tex.alignH = static_cast<DRW_Text::HAlign>(0); break;
+    }
+    // Line spacing style (code 73): 1=at least, 2=exact.  lc::entity::MText
+    // doesn't currently carry a spacing style so default to 1.
+    tex.alignV = static_cast<DRW_Text::VAlign>(1);
 
     dxfW->writeMText(&tex);
 }
