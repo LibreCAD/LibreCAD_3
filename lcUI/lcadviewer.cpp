@@ -61,6 +61,9 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
         CASE(ApplicationSource);
         CASE(OtherSource);
         CASE(InvalidSource);
+        // AnySource/AnyType/AnySeverity are Qt's filter sentinels and
+        // Invalid* cannot arrive on a real message; nothing to name.
+        default: break;
     }
 #undef CASE
 
@@ -79,6 +82,9 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
         CASE(MarkerType);
         CASE(GroupPushType);
         CASE(GroupPopType);
+        // AnySource/AnyType/AnySeverity are Qt's filter sentinels and
+        // Invalid* cannot arrive on a real message; nothing to name.
+        default: break;
     }
 #undef CASE
 
@@ -97,6 +103,11 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
         break;
     case QOpenGLDebugMessage::LowSeverity:
         LOG_INFO << error.toStdString() << std::endl;
+        break;
+    default:
+        // AnySeverity is a filter sentinel and InvalidSeverity cannot arrive on
+        // a real message; log them at debug rather than dropping them silently.
+        LOG_DEBUG << error.toStdString() << std::endl;
         break;
     }
 }
@@ -258,7 +269,10 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
 
     for(auto pair : imagemaps)
     {
-        _docCanvas->zoom(*pair.first, zoom, true, event->pos().x(), event->pos().y());
+        // pos() is deprecated; position() is QPointF, and zoom() takes
+        // integral device coordinates, so round back to a QPoint.
+        const QPoint wheelPos = event->position().toPoint();
+        _docCanvas->zoom(*pair.first, zoom, true, wheelPos.x(), wheelPos.y());
     }
 
     updateBackground();

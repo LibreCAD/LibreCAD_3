@@ -114,14 +114,14 @@ void ToolbarButton::removeCallback(const char* cb_name) {
 }
 
 void ToolbarButton::callbackCalled() {
-    for (int i = 0; i < callbacks.size(); i++) {
+    for (size_t i = 0; i < callbacks.size(); i++) {
         // Nil-safe: nil callback's invoke() is a graceful no-op returning Nil.
         callbacks[i].invoke();
     }
 }
 
 void ToolbarButton::callbackCalledToggle(bool enabled) {
-    for (int i = 0; i < callbacks.size(); i++) {
+    for (size_t i = 0; i < callbacks.size(); i++) {
         callbacks[i].call(enabled);
     }
 }

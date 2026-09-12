@@ -26,7 +26,7 @@ void VertexArray::addBuffer(const VertexBuffer& vb,const VertexBufferLayout& lay
 
     unsigned int offset=0;
 
-    for(int i=0; i<elements.size(); i++)
+    for (size_t i = 0; i < elements.size(); i++)
     {
         const auto& element=elements[i];
 

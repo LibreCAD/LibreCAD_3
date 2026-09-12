@@ -25,7 +25,7 @@ public:
 
         QWidget* viewport = ui->layerList->viewport();
 
-        QTest::mouseClick(viewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
+        QTest::mouseClick(viewport, Qt::LeftButton, Qt::NoModifier, QPoint(xPos, yPos));
     }
 
     void addLayer(lc::meta::Layer_CSPtr layer) {

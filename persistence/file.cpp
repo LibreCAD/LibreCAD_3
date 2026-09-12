@@ -23,7 +23,14 @@ std::map<std::string, std::string> File::getSupportedFileExtensions() {
 
 File::Type File::open(lc::storage::Document_SPtr document, const std::string& path, File::Library library) {
     auto builder = std::make_shared<operation::Builder>(document, "Open file");
-    File::Type version;
+    // Never leave this indeterminate.  Neither switch below is exhaustive --
+    // the inner one has no case for older revisions (AC1002/AC1003/AC1004,
+    // AC12/AC14/AC150/AC210, MC00) or newer ones (AC1032), and the outer one
+    // has no LIBOPENCAD case unless LIBOPENCAD_ENABLED is defined -- so an
+    // unmapped file used to return an uninitialised File::Type, which the
+    // caller then uses to choose the save format.  R12 is what the existing
+    // UNKNOWNV case already falls back to.
+    File::Type version = Type::LIBDXFRW_DXF_R12;
 
     switch(library) {
     case LIBDXFRW: {
@@ -63,6 +70,10 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
         case DRW::AC1027:
             version = Type::LIBDXFRW_DXF_R2013;
             break;
+        default:
+            // A revision libdxfrw recognises but this mapping does not.  Keep
+            // the R12 fallback rather than reporting a type we never set.
+            break;
         }
         break;
     }
@@ -75,6 +86,10 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
         break;
     }
 #endif
+    default:
+        // Includes LIBOPENCAD when built without LIBOPENCAD_ENABLED: nothing
+        // was read, so report the fallback rather than an unset value.
+        break;
     }
 
     builder->execute();
