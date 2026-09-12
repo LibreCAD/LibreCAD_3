@@ -3,6 +3,7 @@
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
+#include <set>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
@@ -856,11 +857,27 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     auto col = layer->color();
     lay.name = layer->name();
     lay.color = icol_inst.colorToInt(col);
-    auto wid = layer->lineWidth().width();
-    std::cout << wid;
-//    auto val = widthToInt();
 
-//    lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>();
+    // Issue #412 phase 3: (a) stop the stray `std::cout << wid;` that has
+    // been dumping the layer line width to stdout on every save since 2016.
+    // (b) actually emit the layer line weight — the conversion was commented
+    // out for a decade, so every saved layer defaulted to widthDefault.
+    auto wid = layer->lineWidth().width();
+    int lwIdx = widthToInt(wid);
+    if (lwIdx >= 0) {
+        lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>(lwIdx);
+    } else {
+        lay.lWeight = DRW_LW_Conv::widthDefault;
+    }
+
+    // Issue #412 phase 3: emit the layer's line pattern name (code 6) so the
+    // reader can match entities that reference it back to the layer LTYPE.
+    // Skip an empty/unset pattern; libdxfrw defaults to "CONTINUOUS".
+    auto lp = layer->linePattern();
+    if (lp != nullptr && !lp->name().empty()) {
+        lay.lineType = lp->name();
+    }
+
     lay.flags = layer->isFrozen() ? 0x01 : 0x00;
 
     dxfW->writeLayer(&lay);
@@ -917,26 +934,34 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 void DXFimpl::writePoint(const lc::entity::Point_CSPtr& p) {
     DRW_Point point;
     getEntityAttributes(&point, p);
+    // Issue #412 phase 2: propagate Z through — the lc::entity::Point IS a
+    // geo::Coordinate, so it has a real z() value the writer used to drop.
     point.basePoint.x = p->x();
     point.basePoint.y = p->y();
+    point.basePoint.z = p->z();
     dxfW->writePoint(&point);
 }
 
 void DXFimpl::writeLine(const lc::entity::Line_CSPtr& l) {
     DRW_Line line;
     getEntityAttributes(&line, l);
+    // Issue #412 phase 2: preserve Z on both endpoints.
     line.basePoint.x = l->start().x();
     line.basePoint.y = l->start().y();
+    line.basePoint.z = l->start().z();
     line.secPoint.x = l->end().x();
     line.secPoint.y = l->end().y();
+    line.secPoint.z = l->end().z();
     dxfW->writeLine(&line);
 }
 
 void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr& c) {
     DRW_Circle circle;
     getEntityAttributes(&circle, c);
+    // Issue #412 phase 2: preserve Z of center.
     circle.basePoint.x = c->center().x();
     circle.basePoint.y = c->center().y();
+    circle.basePoint.z = c->center().z();
     circle.radious = c->radius();
     dxfW->writeCircle(&circle);
 }
@@ -944,8 +969,10 @@ void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr& c) {
 void DXFimpl::writeArc(const lc::entity::Arc_CSPtr& a) {
     DRW_Arc arc;
     getEntityAttributes(&arc, a);
+    // Issue #412 phase 2: preserve Z of center.
     arc.basePoint.x = a->center().x();
     arc.basePoint.y = a->center().y();
+    arc.basePoint.z = a->center().z();
     arc.radious = a->radius();
     if (a->CCW()) {
         arc.staangle = a->startAngle();
@@ -960,10 +987,13 @@ void DXFimpl::writeArc(const lc::entity::Arc_CSPtr& a) {
 void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr& s) {
     DRW_Ellipse el;
     getEntityAttributes(&el, s);
+    // Issue #412 phase 2: preserve Z of both center and major axis point.
     el.basePoint.x = s->center().x();
     el.basePoint.y = s->center().y();
+    el.basePoint.z = s->center().z();
     el.secPoint.x = s->majorP().x();
     el.secPoint.y = s->majorP().y();
+    el.secPoint.z = s->majorP().z();
     el.ratio = 1/s->ratio();
     if (s->isReversed()) {
         el.staparam = s->endAngle();
@@ -1325,6 +1355,34 @@ void DXFimpl::writeLTypes() {
     ltype.path.push_back(12.7);
     ltype.path.push_back(-12.7);
     dxfW->writeLineType(&ltype);
+
+    // Issue #412 phase 3: emit every DxfLinePatternByValue registered on the
+    // document, not just the hardcoded set above.  Without this, entities
+    // referencing a user-imported LTYPE (very common when a supplier's DXF
+    // is opened and re-saved) point at an absent LTYPE table entry — the
+    // resulting file is structurally invalid DXF.  Skip names already
+    // covered by the hardcoded standard set to avoid duplicate table entries.
+    static const std::set<std::string> kBuiltin{
+        "CONTINUOUS", "ByLayer", "ByBlock",
+        "DOT", "DOTTINY", "DOT2", "DOTX2",
+        "DASHED", "DASHEDTINY", "DASHED2", "DASHEDX2",
+        "DASHDOT", "DASHDOTTINY", "DASHDOT2", "DASHDOTX2",
+        "DIVIDE", "DIVIDETINY", "DIVIDE2", "DIVIDEX2",
+        "BORDER", "BORDERTINY", "BORDER2", "BORDERX2",
+        "CENTER", "CENTERTINY", "CENTER2", "CENTERX2"};
+    for (const auto& lp : _document->linePatterns()) {
+        if (lp == nullptr) continue;
+        const std::string& name = lp->name();
+        if (name.empty() || kBuiltin.count(name)) continue;
+
+        DRW_LType user;
+        user.name = name;
+        user.desc = lp->description();
+        user.path = lp->path();
+        user.size = static_cast<int>(user.path.size());
+        user.length = lp->length();
+        dxfW->writeLineType(&user);
+    }
 }
 
 void DXFimpl::writeAppId() {
@@ -1333,13 +1391,254 @@ void DXFimpl::writeAppId() {
     dxfW->writeAppId(&ai);
 }
 
-void DXFimpl::writeDimension(const lc::entity::Dimension_CSPtr& d) {
+// Issue #412 phase 3: writeHeader was defaulted to empty; drawings saved by
+// LibreCAD carried no HEADER variables at all.  Some readers (AutoCAD in
+// strict mode, ezdxf pedantic mode) reject a file with no $ACADVER, and
+// downstream tools that key off $INSUNITS silently pick the wrong unit.
+// Emit a small viable set — the version tag matches whatever writeDXF
+// selected, the units default to Millimeter, measurement to Metric.
+void DXFimpl::writeHeader(DRW_Header& data) {
+    // $ACADVER identifies the DXF spec; libdxfrw's writer also writes it
+    // unconditionally, so this is belt-and-braces for readers that check the
+    // header variable rather than the file preamble.
+    data.addStr("$ACADVER", "AC1015", 1);
+    // Default to Metric with millimeter insertion units.  The document API
+    // doesn't currently expose a unit-of-measure field for the whole
+    // drawing, so hard-code the sensible default rather than the DXF
+    // spec-default of 0 (unitless).
+    data.addInt("$MEASUREMENT", 1, 70);       // 0 = English, 1 = Metric
+    data.addInt("$INSUNITS", 4, 70);          // 4 = Millimeter
 }
 
+// Issue #412 phase 1: populate the DRW_Dimension base header shared by all
+// five subtypes.  Kept out of the per-subtype writers because getEntityAttributes
+// needs the CADEntity pointer (which the Dimension base doesn't carry).
+void DXFimpl::writeDimensionCommon(DRW_Dimension* dim,
+                                   const lc::entity::CADEntity_CSPtr& entity,
+                                   const lc::entity::Dimension& d) {
+    getEntityAttributes(dim, entity);
+
+    dim->setDefPoint(DRW_Coord(d.definitionPoint().x(),
+                               d.definitionPoint().y(),
+                               d.definitionPoint().z()));
+    dim->setTextPoint(DRW_Coord(d.middleOfText().x(),
+                                d.middleOfText().y(),
+                                d.middleOfText().z()));
+    dim->setAlign(static_cast<int>(d.attachmentPoint()));
+    dim->setDir(d.textAngle());
+    dim->setTextLineFactor(d.lineSpacingFactor());
+    dim->setTextLineStyle(static_cast<int>(d.lineSpacingStyle()));
+    dim->setText(d.explicitValue());
+    // Style must be non-empty or the R2000+ writer path skips writing group
+    // 3 entirely, then downstream readers reject the dimension header.
+    dim->setStyle("STANDARD");
+}
+
+void DXFimpl::writeDimLinear(const lc::entity::DimLinear_CSPtr& d) {
+    DRW_DimLinear dim;
+    writeDimensionCommon(&dim, d, *d);
+    // DXF code 70 subtype: 0 = linear (rotated/horizontal/vertical).  Without
+    // setting this, libdxfrw's reader would treat every dim as linear anyway,
+    // but the writer's dispatch chain still keys off eType (set in ctor).
+    dim.type = 0;
+    dim.setDef1Point(DRW_Coord(d->definitionPoint2().x(),
+                               d->definitionPoint2().y(),
+                               d->definitionPoint2().z()));
+    dim.setDef2Point(DRW_Coord(d->definitionPoint3().x(),
+                               d->definitionPoint3().y(),
+                               d->definitionPoint3().z()));
+    dim.setAngle(d->angle());
+    dim.setOblique(d->oblique());
+    dxfW->writeDimension(&dim);
+}
+
+void DXFimpl::writeDimAligned(const lc::entity::DimAligned_CSPtr& d) {
+    DRW_DimAligned dim;
+    writeDimensionCommon(&dim, d, *d);
+    dim.type = 1;  // aligned
+    dim.setDef1Point(DRW_Coord(d->definitionPoint2().x(),
+                               d->definitionPoint2().y(),
+                               d->definitionPoint2().z()));
+    dim.setDef2Point(DRW_Coord(d->definitionPoint3().x(),
+                               d->definitionPoint3().y(),
+                               d->definitionPoint3().z()));
+    dxfW->writeDimension(&dim);
+}
+
+void DXFimpl::writeDimRadial(const lc::entity::DimRadial_CSPtr& d) {
+    DRW_DimRadial dim;
+    writeDimensionCommon(&dim, d, *d);
+    dim.type = 4;  // radius
+    // setDefPoint was called with definitionPoint() in the common helper.
+    // For radial dims, defPoint IS the center (see addDimRadial reader).
+    dim.setDiameterPoint(DRW_Coord(d->definitionPoint2().x(),
+                                   d->definitionPoint2().y(),
+                                   d->definitionPoint2().z()));
+    dim.setLeaderLength(d->leader());
+    dxfW->writeDimension(&dim);
+}
+
+void DXFimpl::writeDimDiametric(const lc::entity::DimDiametric_CSPtr& d) {
+    DRW_DimDiametric dim;
+    writeDimensionCommon(&dim, d, *d);
+    dim.type = 3;  // diameter
+    // For diametric dims the reader treats defPoint (10) as diameter2Point
+    // and getPt5/code 15 as diameter1Point.  The lc entity's
+    // definitionPoint()  is diameter1 (that's how addDimDiametric reads it),
+    // definitionPoint2()  is diameter2.  Match that pairing exactly.
+    dim.setDiameter1Point(DRW_Coord(d->definitionPoint().x(),
+                                    d->definitionPoint().y(),
+                                    d->definitionPoint().z()));
+    dim.setDiameter2Point(DRW_Coord(d->definitionPoint2().x(),
+                                    d->definitionPoint2().y(),
+                                    d->definitionPoint2().z()));
+    dim.setLeaderLength(d->leader());
+    dxfW->writeDimension(&dim);
+}
+
+void DXFimpl::writeDimAngular(const lc::entity::DimAngular_CSPtr& d) {
+    DRW_DimAngular dim;
+    writeDimensionCommon(&dim, d, *d);
+    dim.type = 2;  // angular (2-line)
+    dim.setFirstLine1(DRW_Coord(d->defLine11().x(),
+                                d->defLine11().y(),
+                                d->defLine11().z()));
+    dim.setFirstLine2(DRW_Coord(d->defLine12().x(),
+                                d->defLine12().y(),
+                                d->defLine12().z()));
+    dim.setSecondLine1(DRW_Coord(d->defLine21().x(),
+                                 d->defLine21().y(),
+                                 d->defLine21().z()));
+    dim.setSecondLine2(DRW_Coord(d->defLine22().x(),
+                                 d->defLine22().y(),
+                                 d->defLine22().z()));
+    // Angular's DimPoint (code 16, arcPoint) is used for arc placement;
+    // reuse definitionPoint() so the exported file has a plausible value.
+    dim.setDimPoint(DRW_Coord(d->definitionPoint().x(),
+                              d->definitionPoint().y(),
+                              d->definitionPoint().z()));
+    dxfW->writeDimension(&dim);
+}
+
+// Issue #412 phase 1: dispatched, but body was empty — LWPolylines vanished
+// from every save.  Mirror addLWPolyline's field mapping.
 void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p) {
+    DRW_LWPolyline pl;
+    getEntityAttributes(&pl, p);
+
+    pl.width = p->width();
+    pl.elevation = p->elevation();
+    pl.thickness = p->tickness();
+    pl.extPoint.x = p->extrusionDirection().x();
+    pl.extPoint.y = p->extrusionDirection().y();
+    pl.extPoint.z = p->extrusionDirection().z();
+    // DXF group 70 bit 0 = "closed"; addLWPolyline reads it back the same way.
+    pl.flags = p->closed() ? 1 : 0;
+
+    for (const auto& v : p->vertex()) {
+        auto vert = std::make_shared<DRW_Vertex2D>();
+        vert->x = v.location().x();
+        vert->y = v.location().y();
+        vert->stawidth = v.startWidth();
+        vert->endwidth = v.endWidth();
+        vert->bulge = v.bulge();
+        pl.vertlist.push_back(vert);
+    }
+    pl.vertexnum = pl.vertlist.size();
+
+    dxfW->writeLWPolyline(&pl);
 }
 
+// Issue #412 phase 1: dispatched, but body was empty — images vanished.
+// Matches libdxfrw's writeImage(ent, name) contract; name is used to key the
+// ImageDef object dictionary.
 void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
+    DRW_Image img;
+    getEntityAttributes(&img, i);
+
+    img.basePoint.x = i->base().x();
+    img.basePoint.y = i->base().y();
+    img.basePoint.z = i->base().z();
+    // secPoint holds the U-vector (per single pixel), vVector the V-vector;
+    // sizeu/sizev are the image size in pixels — mapped to width/height here
+    // because that's what the reader (linkImage) rebuilds the Image from.
+    img.secPoint.x = i->uv().x();
+    img.secPoint.y = i->uv().y();
+    img.secPoint.z = i->uv().z();
+    img.vVector.x = i->vv().x();
+    img.vVector.y = i->vv().y();
+    img.vVector.z = i->vv().z();
+    img.sizeu = i->width();
+    img.sizev = i->height();
+    img.brightness = static_cast<int>(i->brightness());
+    img.contrast   = static_cast<int>(i->contrast());
+    img.fade       = static_cast<int>(i->fade());
+
+    dxfW->writeImage(&img, i->name());
+}
+
+// Issue #412 phase 1: written from scratch — the reader ingests HATCH but
+// no writer existed, not even a declaration.  Only Line, Arc, Ellipse edge
+// types are emitted here; libdxfrw's writeHatch itself has no support for
+// SPLINE or POLYLINE boundary paths (code marked `//RLZ: TODO`), so trying
+// to emit them would just produce silently-ignored bytes.
+void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
+    DRW_Hatch hatch;
+    getEntityAttributes(&hatch, h);
+
+    hatch.name = h->getPatternName();
+    hatch.solid = h->isSolid() ? 1 : 0;
+    hatch.associative = 0;
+    hatch.hstyle = 0;
+    hatch.hpattern = 1;
+    hatch.doubleflag = 0;
+    hatch.angle = h->getAngle();
+    hatch.scale = h->getScale();
+    hatch.deflines = 0;
+
+    const auto& region = h->getRegion();
+    for (const auto& loop : region.loopList()) {
+        auto drwLoop = std::make_shared<DRW_HatchLoop>(0); // 0 = default (not polyline)
+        for (const auto& e : loop.entities()) {
+            if (auto ln = std::dynamic_pointer_cast<const lc::entity::Line>(e)) {
+                auto drwLn = std::make_shared<DRW_Line>();
+                drwLn->basePoint.x = ln->start().x();
+                drwLn->basePoint.y = ln->start().y();
+                drwLn->secPoint.x  = ln->end().x();
+                drwLn->secPoint.y  = ln->end().y();
+                drwLoop->objlist.push_back(drwLn);
+            } else if (auto ar = std::dynamic_pointer_cast<const lc::entity::Arc>(e)) {
+                auto drwAr = std::make_shared<DRW_Arc>();
+                drwAr->basePoint.x = ar->center().x();
+                drwAr->basePoint.y = ar->center().y();
+                drwAr->radious = ar->radius();
+                drwAr->staangle = ar->startAngle();
+                drwAr->endangle = ar->endAngle();
+                drwAr->isccw = ar->CCW() ? 1 : 0;
+                drwLoop->objlist.push_back(drwAr);
+            } else if (auto el = std::dynamic_pointer_cast<const lc::entity::Ellipse>(e)) {
+                auto drwEl = std::make_shared<DRW_Ellipse>();
+                drwEl->basePoint.x = el->center().x();
+                drwEl->basePoint.y = el->center().y();
+                drwEl->secPoint.x  = el->majorP().x();
+                drwEl->secPoint.y  = el->majorP().y();
+                drwEl->ratio = 1.0 / el->ratio();
+                drwEl->staparam = el->startAngle();
+                drwEl->endparam = el->endAngle();
+                drwEl->isccw = el->isReversed() ? 0 : 1;
+                drwLoop->objlist.push_back(drwEl);
+            }
+            // LWPolyline / Spline boundary types deliberately skipped —
+            // libdxfrw's writeHatch has no code path for them (TODO in
+            // upstream).  Silent-drop-inside-a-hatch matches the reader's
+            // own capability envelope; documented rather than silent because
+            // this is the export writer, not user-visible.
+        }
+        drwLoop->update();
+        hatch.appendLoop(drwLoop);
+    }
+
+    dxfW->writeHatch(&hatch);
 }
 
 void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
@@ -1349,14 +1648,29 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     std::string correctedText = t->text_value();
     std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
 
+    // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
+    tex.basePoint.z = t->insertion_point().z();
     tex.text = correctedText;
     tex.textgen = t->textgeneration();
     tex.height = t->height();
     tex.angle = t->angle() * 180 / M_PI;
     tex.alignH = DRW_Text::HAlign(t->halign());
     tex.alignV = DRW_Text::VAlign(t->valign());
+    // Issue #412 phase 2: text style was never written; downstream readers
+    // would fall back to "STANDARD" but any user-picked style silently reset.
+    // Empty style is invalid DXF, so keep the default fallback.
+    if (!t->style().empty()) {
+        tex.style = t->style();
+    }
+    // Issue #412 phase 2: alignment point (code 11) was defaulting to (0,0,0),
+    // which means the reader anchors non-left/non-baseline text at the origin
+    // instead of at the intended insertion point.  libdxfrw's writeText only
+    // emits code 11 when alignment is non-default, so seeding secPoint with
+    // the insertion point costs nothing when unused and fixes placement when
+    // it matters.
+    tex.secPoint = tex.basePoint;
 
     dxfW->writeText(&tex);
 }
@@ -1372,14 +1686,63 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
         correctedText.replace(index, 1, "\\P");
     }
 
+    // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
     tex.basePoint.y = t->insertion_point().y();
+    tex.basePoint.z = t->insertion_point().z();
     tex.text = correctedText;
-    tex.textgen = t->textgeneration();
     tex.height = t->height();
     tex.angle = t->angle() * 180 / M_PI;
-    tex.alignH = DRW_Text::HAlign(t->halign());
-    tex.alignV = DRW_Text::VAlign(t->valign());
+    if (!t->style().empty()) {
+        tex.style = t->style();
+    }
+
+    // Issue #412 phase 2: DXF group-code semantics differ between TEXT and
+    // MTEXT.  For MTEXT, code 71 is the ATTACHMENT POINT (1..9, TL..BR), not
+    // a text generation flag; code 72 is the DRAWING DIRECTION (1=LtR,
+    // 3=TtB, 5=byStyle), not horizontal alignment; code 73 is the LINE
+    // SPACING STYLE (1=at least, 2=exact), not vertical alignment.  The
+    // previous writer passed halign/valign/textgeneration straight through
+    // into 71/72/73 — reader-side addMText then reversed that with its
+    // %3 and /3 rowcode/colcode arithmetic, so on round-trip an MText's
+    // alignment was consistently garbled.  Compute the attachment point
+    // from HAlign * VAlign the way addMText decodes it.
+    int col;
+    switch (t->halign()) {
+        case lc::TextConst::HAlign::HALeft:   col = 1; break;
+        case lc::TextConst::HAlign::HACenter: col = 2; break;
+        case lc::TextConst::HAlign::HARight:  col = 3; break;
+        default:                              col = 1; break;
+    }
+    int row;
+    switch (t->valign()) {
+        case lc::TextConst::VAlign::VATop:    row = 1; break;
+        case lc::TextConst::VAlign::VAMiddle: row = 2; break;
+        case lc::TextConst::VAlign::VABottom: row = 3; break;
+        case lc::TextConst::VAlign::VABaseline: /* fall through */
+        default:                              row = 3; break;
+    }
+    tex.textgen = (row - 1) * 3 + col;   // MText attachment point, code 71
+
+    // Drawing direction encoding (code 72): 1=LtR, 3=TtB, 5=byStyle.
+    // lc::TextConst::DrawingDirection: None=0, Backward=1, UpsideDown=3.
+    // Reader's addMText maps 1->Backward, 3->UpsideDown, else->None.  Match
+    // that inverse here so round-trip is symmetric.
+    // libdxfrw types alignH/alignV as enums (DRW_Text::HAlign/VAlign) even on
+    // the DRW_MText path where the DXF semantics have nothing to do with
+    // TEXT alignment.  Cast is required — the integer we set here is what the
+    // writer emits verbatim as code 72 / code 73 for MTEXT.
+    switch (t->textgeneration()) {
+        case lc::TextConst::DrawingDirection::Backward:
+            tex.alignH = static_cast<DRW_Text::HAlign>(1); break;
+        case lc::TextConst::DrawingDirection::UpsideDown:
+            tex.alignH = static_cast<DRW_Text::HAlign>(3); break;
+        default:
+            tex.alignH = static_cast<DRW_Text::HAlign>(0); break;
+    }
+    // Line spacing style (code 73): 1=at least, 2=exact.  lc::entity::MText
+    // doesn't currently carry a spacing style so default to 1.
+    tex.alignV = static_cast<DRW_Text::VAlign>(1);
 
     dxfW->writeMText(&tex);
 }
@@ -1446,6 +1809,61 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
     if (insert != nullptr) {
         writeInsert(insert);
+        return;
+    }
+
+    // Issue #412 phase 1: the six kinds the writer used to drop.
+    // Point + Spline had complete writer bodies but were never dispatched;
+    // Hatch had no writer at all.  Dimensions must dispatch per subtype
+    // (not to the Dimension base) because the DXF group 70 subtype flag
+    // and the subtype-specific geometry live on the concrete class.
+    auto point = std::dynamic_pointer_cast<const lc::entity::Point>(entity);
+    if (point != nullptr) {
+        writePoint(point);
+        return;
+    }
+
+    auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+    if (spline != nullptr) {
+        writeSpline(spline);
+        return;
+    }
+
+    auto hatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity);
+    if (hatch != nullptr) {
+        writeHatch(hatch);
+        return;
+    }
+
+    // Per-subtype dimension dispatch — see writeDimensionCommon for why the
+    // base class Dimension is never dispatched directly.
+    auto dimLinear = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity);
+    if (dimLinear != nullptr) {
+        writeDimLinear(dimLinear);
+        return;
+    }
+
+    auto dimAligned = std::dynamic_pointer_cast<const lc::entity::DimAligned>(entity);
+    if (dimAligned != nullptr) {
+        writeDimAligned(dimAligned);
+        return;
+    }
+
+    auto dimRadial = std::dynamic_pointer_cast<const lc::entity::DimRadial>(entity);
+    if (dimRadial != nullptr) {
+        writeDimRadial(dimRadial);
+        return;
+    }
+
+    auto dimDiametric = std::dynamic_pointer_cast<const lc::entity::DimDiametric>(entity);
+    if (dimDiametric != nullptr) {
+        writeDimDiametric(dimDiametric);
+        return;
+    }
+
+    auto dimAngular = std::dynamic_pointer_cast<const lc::entity::DimAngular>(entity);
+    if (dimAngular != nullptr) {
+        writeDimAngular(dimAngular);
         return;
     }
 }

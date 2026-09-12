@@ -128,7 +128,7 @@ public:
     // WRITE FUNCTIONALITY
     bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
 
-    void writeHeader(DRW_Header& data) override {}
+    void writeHeader(DRW_Header& data) override;
 
     void writeBlocks() override;
 
@@ -168,11 +168,29 @@ public:
 
     void writeSpline(const lc::entity::Spline_CSPtr& s);
 
-    void writeDimension(const lc::entity::Dimension_CSPtr& d);
+    // Issue #412 phase 1: five per-subtype dimension writers plus a shared
+    // helper that populates the DRW_Dimension base fields.  Per-subtype
+    // dispatch is required because (a) getEntityAttributes() needs the
+    // CADEntity (which Dimension itself isn't), (b) each subtype has its
+    // own geometry, and (c) DXF group 70 must be set per subtype — otherwise
+    // every dimension reads back as linear.
+    void writeDimensionCommon(DRW_Dimension* dim,
+                              const lc::entity::CADEntity_CSPtr& entity,
+                              const lc::entity::Dimension& d);
+
+    void writeDimLinear(const lc::entity::DimLinear_CSPtr& d);
+    void writeDimAligned(const lc::entity::DimAligned_CSPtr& d);
+    void writeDimRadial(const lc::entity::DimRadial_CSPtr& d);
+    void writeDimDiametric(const lc::entity::DimDiametric_CSPtr& d);
+    void writeDimAngular(const lc::entity::DimAngular_CSPtr& d);
 
     void writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p);
 
     void writeImage(const lc::entity::Image_CSPtr& i);
+
+    // Issue #412 phase 1: previously no writer existed for Hatch — not even
+    // a declaration — so hatches vanished from any DXF save.
+    void writeHatch(const lc::entity::Hatch_CSPtr& h);
 
     void writeText(const lc::entity::Text_CSPtr& t);
 

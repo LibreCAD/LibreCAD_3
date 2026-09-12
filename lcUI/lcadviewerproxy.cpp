@@ -6,7 +6,10 @@ using namespace lc::ui;
 
 using namespace lc::ui;
 
-LCADViewerProxy::LCADViewerProxy(QWidget* parent=0) {
+// No default argument here: it belongs on the declaration in the header, and
+// repeating it in the definition turns this into a default constructor, which
+// Clang rejects outright ("addition of default argument on redeclaration").
+LCADViewerProxy::LCADViewerProxy(QWidget* parent) {
     auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);

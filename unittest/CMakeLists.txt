@@ -87,6 +87,15 @@ lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
 )
 
+# Issue #412 phase 0 — verify the DXF exporter actually writes what the
+# reader can consume.  Independent of the Python bindings (unlike the
+# WITH_PYTHONSCRIPT persistence round-trip test below); needs only libdxfrw
+# runtime.
+if(WITH_PERSISTENCE)
+    list(APPEND src persistence/dxfexporttest.cpp)
+    set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
+endif()
+
 # Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.
 # Phase 2 slice 2.3 — demoscript_test.cpp: verifies luacmdinterface/test.py
 # runs end-to-end against a real DocumentImpl (the plan's "primary exit
