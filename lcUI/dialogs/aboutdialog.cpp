@@ -56,7 +56,6 @@ QString getOsName(outputConfig& oc)
         return oc.lineFormat.arg("OS").arg("Linux");
     }
     QString out;
-    QString machine();
     out +=
         oc.lineFormat.arg("system name").arg(buffer.sysname) +
         oc.lineFormat.arg("release").arg(buffer.release) +

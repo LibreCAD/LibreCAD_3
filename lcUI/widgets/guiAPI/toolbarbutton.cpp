@@ -25,7 +25,9 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon,
     _checkable(_checkable)
 {
     this->setObjectName(buttonLabel);
-    if (tooltip == "") {
+    // tooltip is a const char*, so `tooltip == ""` compared addresses and was
+    // effectively never true; test the string itself, and tolerate nullptr.
+    if (tooltip == nullptr || *tooltip == '\0') {
         this->setToolTip(buttonLabel);
     }
     else {

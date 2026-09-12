@@ -286,7 +286,7 @@ void CustomizeToolbar::readData(rapidjson::Document& document) {
 
     while (currentTab < jsonTabs.Size()) {
         std::string tabLabel = jsonTabs[currentTab]["label"].GetString();
-        CustomizeParentTab* parentTab = parentTab = addParentTabManual(tabLabel);
+        CustomizeParentTab* parentTab = addParentTabManual(tabLabel);
 
         const rapidjson::Value& jsonGroups = jsonTabs[currentTab]["groups"];
         rapidjson::SizeType currentGroup = 0;

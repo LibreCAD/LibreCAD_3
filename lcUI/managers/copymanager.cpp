@@ -266,7 +266,7 @@ rapidjson::Value CopyManager::propertyValue(const std::string key, const lc::ent
     entityProp.AddMember("type", typeProp, document.GetAllocator());
     entityProp.AddMember("value", valueProp, document.GetAllocator());
 
-    return std::move(entityProp);
+    return entityProp;   // std::move here would defeat copy elision
 }
 
 void CopyManager::createOtherEntity(const std::string& entityName, const lc::entity::PropertiesMap& propertiesList, const rapidjson::Value& otherProperties) {

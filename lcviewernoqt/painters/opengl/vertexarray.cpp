@@ -1,5 +1,7 @@
 #include "vertexarray.h"
 
+#include <cstdint>   // uintptr_t, for the buffer-offset cast below
+
 using namespace lc::viewer::opengl;
 
 VertexArray::VertexArray()
@@ -28,7 +30,8 @@ void VertexArray::addBuffer(const VertexBuffer& vb,const VertexBufferLayout& lay
     {
         const auto& element=elements[i];
 
-        glVertexAttribPointer(i,element.count,element.type,element.normalized,layout.getStride(), (const void*)offset);
+        glVertexAttribPointer(i,element.count,element.type,element.normalized,layout.getStride(),
+                              reinterpret_cast<const void*>(static_cast<uintptr_t>(offset)));
         glEnableVertexAttribArray(i);
 
         offset+=element.count * VertexBufferElement::getSizeOfType(element.type);
