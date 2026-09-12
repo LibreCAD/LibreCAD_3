@@ -212,6 +212,27 @@ if(HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
     add_definitions("-Wno-missing-template-arg-list-after-template-kw")
 endif()
 
+# Lua 5.5 removed LUA_GCSETPAUSE and LUA_GCSETSTEPMUL in favour of the
+# parameterised LUA_GCPARAM.  kaguya still uses the old names, in exactly two
+# places (State::steppause and State::setstepmul in state.hpp) and nowhere
+# else.  lua_gc() is variadic, so expanding each removed constant to the pair
+# "LUA_GCPARAM, <5.5 parameter id>" rewrites the call into precisely the 5.5
+# spelling:
+#
+#   lua_gc(L, LUA_GCSETPAUSE, v)  ->  lua_gc(L, LUA_GCPARAM, LUA_GCPPAUSE, v)
+#
+# That is the real replacement API, not a way to quiet the error, so the two
+# functions keep working rather than silently doing something else.  Applied
+# before any add_subdirectory() so every target compiling a kaguya header sees
+# it.  Drop this once kaguya handles 5.5 upstream.
+find_package(Lua 5.3 REQUIRED)
+if(LUA_VERSION_STRING VERSION_GREATER_EQUAL "5.5")
+    message(STATUS "Lua ${LUA_VERSION_STRING}: mapping kaguya's removed GC constants onto LUA_GCPARAM")
+    add_compile_definitions(
+        "LUA_GCSETPAUSE=LUA_GCPARAM,LUA_GCPPAUSE"
+        "LUA_GCSETSTEPMUL=LUA_GCPARAM,LUA_GCPSTEPMUL")
+endif()
+
 #Add each LibreCAD component
 add_subdirectory("lckernel")
 
