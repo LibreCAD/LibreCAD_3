@@ -28,6 +28,14 @@ namespace {
 
 #ifdef LC_WITH_PYTHONSCRIPT
 
+struct ScriptDock::PyNamespace {
+    py::dict ns;
+    PyNamespace();
+    ~PyNamespace();
+    PyNamespace(const PyNamespace&) = delete;
+    PyNamespace& operator=(const PyNamespace&) = delete;
+};
+
 ScriptDock::PyNamespace::PyNamespace() {
     // Per phase-1's permanent-release GIL pattern: the main thread does
     // NOT hold the GIL between Python calls.  Acquire here to build the
