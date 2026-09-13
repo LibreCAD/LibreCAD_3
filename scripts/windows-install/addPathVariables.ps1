@@ -1,1 +1,6 @@
-[Environment]::SetEnvironmentVariable('Path', $env:Path + ';${{ env.Qt5_DIR }}\5.15.2\msvc2019_64;${{ github.workspace }}\LibreCAD_3\out\build\x64-Debug\lib;${{ env.Qt5_DIR }}\5.15.2\msvc2019_64\bin', 'User')
+if ([string]::IsNullOrWhiteSpace($env:QT_ROOT_DIR)) {
+    throw 'QT_ROOT_DIR must point to an installed Qt kit.'
+}
+
+$qtBin = Join-Path $env:QT_ROOT_DIR 'bin'
+[Environment]::SetEnvironmentVariable('Path', "$qtBin;$env:Path", 'User')

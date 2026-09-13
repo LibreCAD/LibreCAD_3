@@ -156,7 +156,9 @@ PythonInit::PythonInit() = default;
 // thread (permanent-release pattern), so any py::object dtor must acquire it
 // explicitly or crash on Py_DECREF.
 // -----------------------------------------------------------------------------
-struct PyNamespace::Impl {
+// pybind11 types have hidden visibility.  This private pImpl must match so
+// GCC does not try to expose a class containing a hidden py::dict member.
+struct LC_PYTHON_LOCAL PyNamespace::Impl {
     py::dict dict;
 };
 

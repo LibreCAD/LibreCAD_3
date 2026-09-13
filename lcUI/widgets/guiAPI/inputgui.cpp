@@ -1,5 +1,7 @@
 #include "inputgui.h"
 
+#include <QDataStream>
+#include <QIODevice>
 #include <QMimeData>
 #include <QClipboard>
 #include <QApplication>

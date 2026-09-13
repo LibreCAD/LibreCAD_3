@@ -141,20 +141,16 @@ lckernel/geometry/comparecoordinate.h
 )
 
 if(WITH_QT_UI)
-    find_package(Qt5Widgets)
-    find_package(Qt5Core)
-    find_package(Qt5Gui REQUIRED)
-    find_package(Qt5Test)
-    find_package(Qt5UiTools REQUIRED)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui Test UiTools Widgets)
 
     set(EXTRA_LIBS
             ${EXTRA_LIBS}
             lcui
-            Qt5::Core
-            Qt5::Gui
-            Qt5::Widgets
-            Qt5::UiTools
-            Qt5::Test)
+            Qt6::Core
+            Qt6::Gui
+            Qt6::Widgets
+            Qt6::UiTools
+            Qt6::Test)
     set(hdrs
             ${hdrs}
             ui/clicommandtest.h
@@ -249,4 +245,3 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
-

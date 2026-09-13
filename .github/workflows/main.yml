@@ -14,7 +14,9 @@ name: Librecad3 Builders
 jobs:
   linux:
     name: BuildLinux
-    runs-on: ubuntu-latest
+    # core26 must be crafted in an Ubuntu 26.04 environment.  Using the
+    # matching hosted runner avoids LXD downloading a nested base image.
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@main
@@ -34,8 +36,11 @@ jobs:
 
       - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
+      # if: always(): a later, unrelated createSnap.sh failure was otherwise
+      # skipping this upload of an AppImage that had already built fine.
       - name: Uploading AppImage
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: assets
           path: ${{ github.workspace }}/build/LibreCAD**AppImage
@@ -43,6 +48,7 @@ jobs:
 
       - name: Uploading snap
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           path: ${{ github.workspace }}/librecad**snap
           name: LibreCAD3.snap
@@ -69,23 +75,32 @@ jobs:
 
       - run: cd ${{ github.workspace }}/..
 
-      - name: Install Qt5
-        uses: jurplel/install-qt-action@v3
+      - name: Install Qt 6
+        uses: jurplel/install-qt-action@v4
         with:
-          version: 5.15.2
+          version: '6.8.3'
+          arch: win64_msvc2019_64
+          modules: 'qttools qtsvg'
 
-      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
-
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
-
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
-      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
-
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
-
-      - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
+      - name: Configure Qt 6
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:QT_ROOT_DIR)) {
+            throw 'install-qt-action did not provide QT_ROOT_DIR'
+          }
+          "QTDIR=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CMAKE_PREFIX_PATH=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "QT_QPA_PLATFORM_PLUGIN_PATH=$env:QT_ROOT_DIR\plugins\platforms" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "$env:QT_ROOT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - run: cd ${{ github.workspace }}
+
+      # buildLibrecadAndCreatePackage.bat's final step is `cpack -G NSIS`,
+      # which needs makensis.exe on PATH. Nothing installed NSIS before —
+      # this had simply never been reached, since every earlier Windows CI
+      # run failed at compile time long before packaging.
+      - name: Install NSIS
+        run: choco install nsis -y
 
       - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
 
