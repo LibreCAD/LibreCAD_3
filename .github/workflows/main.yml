@@ -29,6 +29,8 @@ jobs:
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
+        with:
+          use_lxd: true
 
       - run: cd ${{ github.workspace }}
 
@@ -73,21 +75,23 @@ jobs:
 
       - run: cd ${{ github.workspace }}/..
 
-      - name: Install Qt5
-        uses: jurplel/install-qt-action@v3
+      - name: Install Qt 6
+        uses: jurplel/install-qt-action@v4
         with:
-          version: 5.15.2
+          version: '6.8.3'
+          arch: win64_msvc2019_64
+          modules: 'qttools qtsvg'
 
-      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
-
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
-
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
-      - run: setx QTDIR "${{ env.Qt5_DIR }}\5.15.2\msvc2019_64"
-
-      - run: setx QT_QPA_PLATFORM_PLUGIN_PATH "${{ env.Qt5_DIR }}\plugins\platforms\"
-
-      - run: ${{ github.workspace }}/scripts/windows-install/addPathVariables.ps1
+      - name: Configure Qt 6
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:QT_ROOT_DIR)) {
+            throw 'install-qt-action did not provide QT_ROOT_DIR'
+          }
+          "QTDIR=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CMAKE_PREFIX_PATH=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "QT_QPA_PLATFORM_PLUGIN_PATH=$env:QT_ROOT_DIR\plugins\platforms" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "$env:QT_ROOT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - run: cd ${{ github.workspace }}
 
