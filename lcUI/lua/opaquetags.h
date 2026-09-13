@@ -6,6 +6,13 @@
 // strcmp so multi-TU literals with the same content match.
 //
 // Add new tags here as more UI types get exposed to script callbacks.
+//
+// Deliberately `constexpr` without `inline`: `inline` variables need C++17
+// (MSVC rejects them outright under this project's C++14 -- error C7525 --
+// where GCC/Clang had been silently accepting them as an extension). Plain
+// `constexpr` at namespace scope has internal linkage, so each TU gets its
+// own copy -- exactly what the strcmp-based comparison above is already
+// designed to tolerate, so this changes nothing observable.
 
 namespace lc {
 namespace ui {
@@ -14,14 +21,14 @@ namespace opaquetag {
 // api::Menu* — used by ContextMenuManager::operationContextCommands
 // when it fires the current operation's `contextMenuOptions(op, menu)`
 // method.  Encoder registered in guibridge.cpp's luaOpenGUIBridge.
-inline constexpr const char* Menu = "lc::ui::api::Menu*";
+constexpr const char* Menu = "lc::ui::api::Menu*";
 
 // CadMdiChild* — used by MainWindow's trigger* event slots (PR-9b) when
 // they build event payloads: every event Map holds a `widget` entry
 // pointing at &_cadMdiChild so Lua listeners (mouseMove, point,
 // keyPressed, ...) can pull the source widget out of the payload.
 // Encoder registered in guibridge.cpp's luaOpenGUIBridge.
-inline constexpr const char* CadMdiChild = "lc::ui::CadMdiChild*";
+constexpr const char* CadMdiChild = "lc::ui::CadMdiChild*";
 
 } // namespace opaquetag
 } // namespace ui

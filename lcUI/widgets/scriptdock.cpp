@@ -14,11 +14,10 @@
 #include <lcpython.h>   // PythonInit
 // Phase 5 PR-5.1 fixup: pyeventhooks.h include no longer needed here —
 // installEventHooks() moved to MainWindow ctor.
+namespace py = pybind11;
 #endif
 
 using namespace lc::ui::widgets;
-
-namespace py = pybind11;
 
 // Phase 3 PR-3.1 — the language combo entries are indexed by combo
 // row order to keep the isPythonSelected check trivial.
