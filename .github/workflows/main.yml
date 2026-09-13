@@ -34,8 +34,11 @@ jobs:
 
       - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
+      # if: always(): a later, unrelated createSnap.sh failure was otherwise
+      # skipping this upload of an AppImage that had already built fine.
       - name: Uploading AppImage
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: assets
           path: ${{ github.workspace }}/build/LibreCAD**AppImage
@@ -43,6 +46,7 @@ jobs:
 
       - name: Uploading snap
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           path: ${{ github.workspace }}/librecad**snap
           name: LibreCAD3.snap
