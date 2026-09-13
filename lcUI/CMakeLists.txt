@@ -213,6 +213,16 @@ dialogs/linepatternmanager.ui)
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
 
+# cadmdichild.h, luainterface.h and several widgets/guiAPI headers include
+# <lcscripting/...> unconditionally (lcscripting is a Lua/Python-neutral
+# layer, so this isn't behind WITH_PYTHONSCRIPT). This directory only ever
+# got the repo root on its include path incidentally, through
+# lcpythonscript's target_include_directories(... PUBLIC ...) when
+# WITH_PYTHONSCRIPT links it in -- so it silently broke the moment a build
+# turns Python scripting off, which is exactly what the Windows/Conan build
+# does. Same fix, same reason, as lcadluascript's identical line.
+include_directories("${CMAKE_SOURCE_DIR}")  # for <lcscripting/…>
+
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if(CMAKE_COMPILER_IS_GNUCXX)
