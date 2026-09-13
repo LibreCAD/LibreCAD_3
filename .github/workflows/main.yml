@@ -95,6 +95,13 @@ jobs:
 
       - run: cd ${{ github.workspace }}
 
+      # buildLibrecadAndCreatePackage.bat's final step is `cpack -G NSIS`,
+      # which needs makensis.exe on PATH. Nothing installed NSIS before —
+      # this had simply never been reached, since every earlier Windows CI
+      # run failed at compile time long before packaging.
+      - name: Install NSIS
+        run: choco install nsis -y
+
       - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
 
       - run: cd ${{ github.workspace }}
