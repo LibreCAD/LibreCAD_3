@@ -253,6 +253,20 @@ endif()
 # before any add_subdirectory() so every target compiling a kaguya header sees
 # it.  Drop this once kaguya handles 5.5 upstream.
 find_package(Lua 5.3 REQUIRED)
+# Same mismatch as Eigen3 above: Conan's toolchain sets
+# CMAKE_FIND_PACKAGE_PREFER_CONFIG ON, so this resolves via Conan's
+# lua-config.cmake (target lua::lua) rather than CMake's bundled
+# FindLua.cmake module, and the config package never sets the legacy
+# LUA_INCLUDE_DIR/LUA_LIBRARIES variables every subdirectory below links
+# against. That leaves them empty without erroring here -- find_package still
+# reports success -- so it surfaces later as a compile-time
+# "cannot open include file: 'lua.h'" instead of a configure-time error.
+# Verified end-to-end (configure, compile, link, run) against a real
+# Conan-generated lua-config.cmake before applying this.
+if(NOT LUA_INCLUDE_DIR AND TARGET lua::lua)
+    get_target_property(LUA_INCLUDE_DIR lua::lua INTERFACE_INCLUDE_DIRECTORIES)
+    set(LUA_LIBRARIES lua::lua)
+endif()
 if(LUA_VERSION_STRING VERSION_GREATER_EQUAL "5.5")
     message(STATUS "Lua ${LUA_VERSION_STRING}: mapping kaguya's removed GC constants onto LUA_GCPARAM")
     add_compile_definitions(
