@@ -14,7 +14,9 @@ name: Librecad3 Builders
 jobs:
   linux:
     name: BuildLinux
-    runs-on: ubuntu-latest
+    # core26 must be crafted in an Ubuntu 26.04 environment.  Using the
+    # matching hosted runner avoids LXD downloading a nested base image.
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@main
@@ -29,8 +31,6 @@ jobs:
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
-        with:
-          use_lxd: true
 
       - run: cd ${{ github.workspace }}
 
