@@ -1,7 +1,9 @@
 name: librecad
 version: '0.0.9'
 grade: stable
-base: core20
+# Core 26 is the current base supported by Snapcraft 9.  The prior core20
+# base requires the now-legacy Snapcraft 8 track.
+base: core26
 confinement: devmode
 summary: "librecad: is a 2D CAD"
 description: |
@@ -17,18 +19,26 @@ apps:
   librecad:
     command: usr/bin/librecad
     extensions:
-      - kde-neon
+      - gpu
+    plugs:
+      - desktop
+      - desktop-legacy
+      - home
+      - opengl
+      - wayland
+      - x11
 parts:
   librecad:
     plugin: cmake
-    build-snaps:
-      - kde-frameworks-5-core18-sdk
-      - kde-frameworks-5-core18
     source: .
     build-packages:
-      - qttools5-dev
-      - qttools5-dev-tools
-      - libqt5opengl5-dev
+      # Use the distribution's Qt 6 packages.  This keeps the build
+      # self-contained and avoids the retired Qt5/KDE content snaps.
+      - qt6-base-dev
+      - qt6-tools-dev
+      - qt6-tools-dev-tools
+      - qt6-svg-dev
+      - libqt6opengl6-dev
       # Phase 6 PR-6.4 — the stale liblua5.2-dev pin here has been out
       # of sync with the root CMakeLists' `find_package(Lua 5.3 EXACT
       # REQUIRED)` for years.  Fixed to 5.3.  Also added python3-dev
@@ -55,6 +65,12 @@ parts:
       - libglm-dev
       - cmake
     stage-packages:
+      # Bundle the Qt 6 runtime from the base archive rather than relying on
+      # the KDE Neon content snap, which does not support core26.
+      - qt6-base-dev
+      - qt6-svg-dev
+      - qt6-qpa-plugins
+      - qt6-gtk-platformtheme
       - libboost-dev
       - libboost-log-dev
       - libboost-program-options-dev
@@ -83,4 +99,3 @@ parts:
     #For 18.04
     #configflags:
     #  - "-DBUILD_SHARED_LIBS=On"
-

@@ -12,18 +12,9 @@ set(CMAKE_AUTORCC ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
-set(QT_USE_QTOPENGL TRUE)
-
-find_package(Qt5Widgets)
-find_package(Qt5Core)
-find_package(Qt5Designer)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5UiTools REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-
-SET(QT_USE_QTDESIGNER ON)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Svg UiTools Widgets)
 
 # HEADERS
 set(UI_hdrs
@@ -186,7 +177,7 @@ if(WITH_PYTHONSCRIPT)
     list(APPEND UI_hdrs python/pypluginloader.h)
 endif()
 
-QT5_WRAP_UI(UI_HEADERS
+qt_wrap_ui(UI_HEADERS
 mainwindow.ui
 widgets/clicommand.ui
 widgets/scriptdock.ui
@@ -210,8 +201,18 @@ dialogs/addlayerdialog.ui
 dialogs/addlinepatterndialog.ui
 dialogs/linepatternmanager.ui)
 
-qt5_add_resources(UI_RESOURCES
+qt_add_resources(UI_RESOURCES
 ui/resource.qrc)
+
+# cadmdichild.h, luainterface.h and several widgets/guiAPI headers include
+# <lcscripting/...> unconditionally (lcscripting is a Lua/Python-neutral
+# layer, so this isn't behind WITH_PYTHONSCRIPT). This directory only ever
+# got the repo root on its include path incidentally, through
+# lcpythonscript's target_include_directories(... PUBLIC ...) when
+# WITH_PYTHONSCRIPT links it in -- so it silently broke the moment a build
+# turns Python scripting off, which is exactly what the Windows/Conan build
+# does. Same fix, same reason, as lcadluascript's identical line.
+include_directories("${CMAKE_SOURCE_DIR}")  # for <lcscripting/…>
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -251,8 +252,7 @@ set(SEPARATE_BUILD OFF)
 find_package(GLEW REQUIRED)
 
 include_directories(
-    ${GLEW_INCLUDE_DIR}
-    ${QT_QTOPENGL_INCLUDE_DIR})
+    ${GLEW_INCLUDE_DIR})
 #--------------------------------------------------
 
 
@@ -285,12 +285,12 @@ set(EXTRA_LIBS
         persistence
         lckernel
         ${LUA_LIBRARIES}
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::UiTools
-        Qt5::OpenGL
-		Qt5::Svg
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::UiTools
+        Qt6::OpenGL
+		Qt6::Svg
         ${APR_LIBRARIES})
 
 # Phase 3 PR-3.1 — ScriptDock's Python leg needs lcpythonscript +
@@ -328,8 +328,6 @@ else()
     add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 endif()
 
-qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
-
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
 ${GLEW_LIBRARY})
 
@@ -356,4 +354,3 @@ endif()
 # the executable instead, which is where portable mode expects them.
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-

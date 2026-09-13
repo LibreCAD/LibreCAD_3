@@ -130,8 +130,8 @@ MainWindow::MainWindow()
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 
     /* Shortcuts */
-    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
-    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C), this);
+    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_V), this);
 
     connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
     connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);

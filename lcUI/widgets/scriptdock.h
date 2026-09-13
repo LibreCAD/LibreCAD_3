@@ -11,16 +11,6 @@
 
 #include <lclua.h>
 
-// Phase 3 PR-3.1 — the Python runtime holds a per-widget py::dict
-// namespace behind the LC_WITH_PYTHONSCRIPT build gate.  Widget dtor
-// tears the dict down under GIL (permanent-release GIL pattern from
-// phase 1).
-#ifdef LC_WITH_PYTHONSCRIPT
-#include <qt_keywords_push.h>
-#include <pybind11/pybind11.h>
-#include <qt_keywords_pop.h>
-#endif
-
 #include <memory>
 
 namespace Ui {
@@ -117,18 +107,9 @@ private:
     kaguya::State luaState;
 
 #ifdef LC_WITH_PYTHONSCRIPT
-    // RAII wrapper for the per-widget Python namespace.  Ctor
-    // initializes PythonInit + acquires GIL to build the py::dict;
-    // dtor acquires GIL before dropping the dict.  Held via
-    // unique_ptr so QWidget-managed destruction sequencing still
-    // works even though py::dict itself is not QObject-owned.
-    struct PyNamespace {
-        pybind11::dict ns;
-        PyNamespace();
-        ~PyNamespace();
-        PyNamespace(const PyNamespace&) = delete;
-        PyNamespace& operator=(const PyNamespace&) = delete;
-    };
+    // Defined in scriptdock.cpp to keep pybind11 types out of this Qt/MOC
+    // header.  Its destructor acquires the GIL before releasing its dict.
+    struct PyNamespace;
     std::unique_ptr<PyNamespace> _pyNamespace;
 #endif
 };

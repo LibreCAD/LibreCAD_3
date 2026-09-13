@@ -167,8 +167,24 @@ if(MSVC)
     #SET(Boost_USE_STATIC_LIBS ON)
     FIND_PACKAGE(Boost COMPONENTS log log_setup REQUIRED)
     find_package(Eigen3 REQUIRED)
-    include_directories("${EIGEN3_INCLUDE_DIR}")
-    include_directories("${EIGEN3_INCLUDE_DIR}")
+    # Conan's Eigen3Config.cmake exports the Eigen3::Eigen target and leaves the
+    # legacy FindEigen3 variable unset, so EIGEN3_INCLUDE_DIR was empty on the
+    # Windows/Conan build and cmake rejected the quoted empty string:
+    #
+    #   CMakeLists.txt:170 (include_directories):
+    #     include_directories given empty-string as include directory.
+    #
+    # The unquoted spelling earlier in this file fails more quietly: it expands
+    # to nothing, so Eigen's headers were never on the include path at all.
+    # Take the directory from whichever form the config actually provided.
+    if(NOT EIGEN3_INCLUDE_DIR AND TARGET Eigen3::Eigen)
+        get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+    endif()
+    if(EIGEN3_INCLUDE_DIR)
+        include_directories(${EIGEN3_INCLUDE_DIR})
+    else()
+        message(FATAL_ERROR "Eigen3 found but neither EIGEN3_INCLUDE_DIR nor Eigen3::Eigen yielded an include directory")
+    endif()
     message("${CMAKE_SOURCE_DIR}/include")
     include_directories("third_party/msvc_dirent")
 endif()
@@ -237,6 +253,20 @@ endif()
 # before any add_subdirectory() so every target compiling a kaguya header sees
 # it.  Drop this once kaguya handles 5.5 upstream.
 find_package(Lua 5.3 REQUIRED)
+# Same mismatch as Eigen3 above: Conan's toolchain sets
+# CMAKE_FIND_PACKAGE_PREFER_CONFIG ON, so this resolves via Conan's
+# lua-config.cmake (target lua::lua) rather than CMake's bundled
+# FindLua.cmake module, and the config package never sets the legacy
+# LUA_INCLUDE_DIR/LUA_LIBRARIES variables every subdirectory below links
+# against. That leaves them empty without erroring here -- find_package still
+# reports success -- so it surfaces later as a compile-time
+# "cannot open include file: 'lua.h'" instead of a configure-time error.
+# Verified end-to-end (configure, compile, link, run) against a real
+# Conan-generated lua-config.cmake before applying this.
+if(NOT LUA_INCLUDE_DIR AND TARGET lua::lua)
+    get_target_property(LUA_INCLUDE_DIR lua::lua INTERFACE_INCLUDE_DIRECTORIES)
+    set(LUA_LIBRARIES lua::lua)
+endif()
 if(LUA_VERSION_STRING VERSION_GREATER_EQUAL "5.5")
     message(STATUS "Lua ${LUA_VERSION_STRING}: mapping kaguya's removed GC constants onto LUA_GCPARAM")
     add_compile_definitions(

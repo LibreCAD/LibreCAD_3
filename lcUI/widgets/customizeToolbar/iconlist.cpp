@@ -1,5 +1,7 @@
 #include "iconlist.h"
 
+#include <QDataStream>
+#include <QIODevice>
 #include <QMimeData>
 #include <QDropEvent>
 #include "operationdropmodel.h"

@@ -34,8 +34,11 @@
 
 #if defined(_WIN32)
 #define LC_PYTHON_API __declspec(dllexport)
+#define LC_PYTHON_LOCAL
 #elif defined(__GNUC__)
 #define LC_PYTHON_API __attribute__((visibility("default")))
+#define LC_PYTHON_LOCAL __attribute__((visibility("hidden")))
 #else
 #define LC_PYTHON_API
+#define LC_PYTHON_LOCAL
 #endif

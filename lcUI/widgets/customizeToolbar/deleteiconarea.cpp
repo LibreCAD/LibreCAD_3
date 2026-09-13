@@ -1,5 +1,7 @@
 #include "deleteiconarea.h"
 
+#include <QDataStream>
+#include <QIODevice>
 #include <QMimeData>
 #include <QTableView>
 #include <iostream>

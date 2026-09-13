@@ -14,11 +14,10 @@
 #include <lcpython.h>   // PythonInit
 // Phase 5 PR-5.1 fixup: pyeventhooks.h include no longer needed here —
 // installEventHooks() moved to MainWindow ctor.
+namespace py = pybind11;
 #endif
 
 using namespace lc::ui::widgets;
-
-namespace py = pybind11;
 
 // Phase 3 PR-3.1 — the language combo entries are indexed by combo
 // row order to keep the isPythonSelected check trivial.
@@ -28,6 +27,14 @@ namespace {
 }
 
 #ifdef LC_WITH_PYTHONSCRIPT
+
+struct ScriptDock::PyNamespace {
+    py::dict ns;
+    PyNamespace();
+    ~PyNamespace();
+    PyNamespace(const PyNamespace&) = delete;
+    PyNamespace& operator=(const PyNamespace&) = delete;
+};
 
 ScriptDock::PyNamespace::PyNamespace() {
     // Per phase-1's permanent-release GIL pattern: the main thread does
