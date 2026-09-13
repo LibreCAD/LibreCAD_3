@@ -109,7 +109,7 @@ std::string LCLua::read(FILE* file, size_t len) {
     buf[n] = '\0';
 
     auto bufferStr = std::string(buf);
-    delete buf;
+    delete[] buf;   // allocated with new[]
 
     return bufferStr;
 }

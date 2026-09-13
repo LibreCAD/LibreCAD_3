@@ -25,9 +25,9 @@ using namespace lc::ui::widgets;
 CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     :
     QDialog(parent),
+    ui(new Ui::CustomizeToolbar),
     _toolbar(toolbar),
-    _saveOnClose(CloseMode::Ask),
-    ui(new Ui::CustomizeToolbar)
+    _saveOnClose(CloseMode::Ask)
 {
     ui->setupUi(this);
 
@@ -286,7 +286,7 @@ void CustomizeToolbar::readData(rapidjson::Document& document) {
 
     while (currentTab < jsonTabs.Size()) {
         std::string tabLabel = jsonTabs[currentTab]["label"].GetString();
-        CustomizeParentTab* parentTab = parentTab = addParentTabManual(tabLabel);
+        CustomizeParentTab* parentTab = addParentTabManual(tabLabel);
 
         const rapidjson::Value& jsonGroups = jsonTabs[currentTab]["groups"];
         rapidjson::SizeType currentGroup = 0;

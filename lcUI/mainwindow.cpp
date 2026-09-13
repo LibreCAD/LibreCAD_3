@@ -39,12 +39,12 @@ using namespace lc::ui;
 MainWindow::MainWindow()
     :
     ui(new Ui::MainWindow),
+    _layers(nullptr, this),
+    _cliCommand(this),
+    _toolbar(&_luaInterface, this),
     linePatternSelect(&_cadMdiChild, this, true, true),
     lineWidthSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
-    _cliCommand(this),
-    _toolbar(&_luaInterface, this),
-    _layers(nullptr, this),
     _copyManager(&_cadMdiChild)
 {
     ContextMenuManager::GetContextMenuManager(this);

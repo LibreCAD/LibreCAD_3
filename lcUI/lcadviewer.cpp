@@ -1,4 +1,5 @@
 #include "lcadviewer.h"
+#include "glewsupport.h"
 #include <QtGui>
 #include <QVBoxLayout>
 #include <iostream>
@@ -60,6 +61,9 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
         CASE(ApplicationSource);
         CASE(OtherSource);
         CASE(InvalidSource);
+        // AnySource/AnyType/AnySeverity are Qt's filter sentinels and
+        // Invalid* cannot arrive on a real message; nothing to name.
+        default: break;
     }
 #undef CASE
 
@@ -78,6 +82,9 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
         CASE(MarkerType);
         CASE(GroupPushType);
         CASE(GroupPopType);
+        // AnySource/AnyType/AnySeverity are Qt's filter sentinels and
+        // Invalid* cannot arrive on a real message; nothing to name.
+        default: break;
     }
 #undef CASE
 
@@ -96,6 +103,11 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
         break;
     case QOpenGLDebugMessage::LowSeverity:
         LOG_INFO << error.toStdString() << std::endl;
+        break;
+    default:
+        // AnySeverity is a filter sentinel and InvalidSeverity cannot arrive on
+        // a real message; log them at debug rather than dropping them silently.
+        LOG_DEBUG << error.toStdString() << std::endl;
         break;
     }
 }
@@ -123,14 +135,10 @@ void LCADViewer::initializeGL()
 
     if (CC != 0)
     {
-        GLenum err = glewInit();
+        std::string glewError;
 
-        if (err != GLEW_OK) {
-            LOG_ERROR << "GLEW Error: " << glewGetErrorString(err) << std::endl;
-            exit(1);
-        }
-        if (!GLEW_VERSION_2_1) {
-            LOG_ERROR << "OpenGL version 2.1 is not available" << std::endl;
+        if (!initialiseGlew(glewError)) {
+            LOG_ERROR << glewError << std::endl;
             exit(1);
         }
 
@@ -261,7 +269,10 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
 
     for(auto pair : imagemaps)
     {
-        _docCanvas->zoom(*pair.first, zoom, true, event->pos().x(), event->pos().y());
+        // pos() is deprecated; position() is QPointF, and zoom() takes
+        // integral device coordinates, so round back to a QPoint.
+        const QPoint wheelPos = event->position().toPoint();
+        _docCanvas->zoom(*pair.first, zoom, true, wheelPos.x(), wheelPos.y());
     }
 
     updateBackground();

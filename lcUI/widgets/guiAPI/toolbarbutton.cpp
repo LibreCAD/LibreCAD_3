@@ -20,12 +20,14 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon,
                              const char* tooltip, bool _checkable,
                              QWidget* parent, const char* fallbackDir)
     :
-    _label(buttonLabel),
     QPushButton("", parent),
+    _label(buttonLabel),
     _checkable(_checkable)
 {
     this->setObjectName(buttonLabel);
-    if (tooltip == "") {
+    // tooltip is a const char*, so `tooltip == ""` compared addresses and was
+    // effectively never true; test the string itself, and tolerate nullptr.
+    if (tooltip == nullptr || *tooltip == '\0') {
         this->setToolTip(buttonLabel);
     }
     else {
@@ -112,14 +114,14 @@ void ToolbarButton::removeCallback(const char* cb_name) {
 }
 
 void ToolbarButton::callbackCalled() {
-    for (int i = 0; i < callbacks.size(); i++) {
+    for (size_t i = 0; i < callbacks.size(); i++) {
         // Nil-safe: nil callback's invoke() is a graceful no-op returning Nil.
         callbacks[i].invoke();
     }
 }
 
 void ToolbarButton::callbackCalledToggle(bool enabled) {
-    for (int i = 0; i < callbacks.size(); i++) {
+    for (size_t i = 0; i < callbacks.size(); i++) {
         callbacks[i].call(enabled);
     }
 }

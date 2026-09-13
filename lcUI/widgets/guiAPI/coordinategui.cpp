@@ -9,9 +9,9 @@ using namespace lc::ui::api;
 CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     :
     InputGUI(label, parent),
-    _pointSelectionEnabled(false),
+    ui(new Ui::CoordinateGUI),
     mainWindow(nullptr),
-    ui(new Ui::CoordinateGUI)
+    _pointSelectionEnabled(false)
 {
     ui->setupUi(this);
     _type = "coordinate";
