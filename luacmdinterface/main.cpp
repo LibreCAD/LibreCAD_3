@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 
     /* try to guess from file extension the output type */
     if (fType.empty()) {
-        fType = boost::filesystem::extension(fOut);
+        fType = boost::filesystem::path(fOut).extension().string();
         fType = fType.substr(fType.find_first_of('.') + 1);
     }
 
