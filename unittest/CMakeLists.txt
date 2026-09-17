@@ -88,8 +88,19 @@ luacmdinterface/dispatch_test.cpp
 # reader can consume.  Independent of the Python bindings (unlike the
 # WITH_PYTHONSCRIPT persistence round-trip test below); needs only libdxfrw
 # runtime.
+#
+# dxfroundtriptest.cpp is the read-path counterpart: it guards the kernel
+# crashes that made File::open unusable on real DXF input (3-D segments,
+# empty hatch loops, fit-points-only splines) and File::save's bool result.
+#
+# Neither source includes a libdxfrw header, and neither adds a library.
+# persistence links libdxfrw PRIVATE on purpose (persistence/CMakeLists.txt) so
+# that its C++17 requirement never reaches lcunittest — linking it here would
+# raise the whole binary, kaguya scripting tests included, to C++17.  Keep it
+# that way: parse raw DXF group codes instead of pulling in the library.
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
+    list(APPEND src persistence/dxfroundtriptest.cpp)
     set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
 endif()
 

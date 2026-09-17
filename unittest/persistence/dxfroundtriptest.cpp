@@ -1,0 +1,504 @@
+// dxfroundtriptest.cpp — the `lc-test-vehicle` slice of the libdxfrw
+// integration plan.
+//
+// Purpose: guard the three kernel crashes that made `lc::persistence::File`
+// unusable on real DXF input, and the save-result plumbing that made every
+// write failure invisible.  Before the fixes these were not partial data loss
+// — they were `std::terminate` / `EXC_BAD_ACCESS` inside `File::open`, so 25
+// of the 43 files in the review corpus could not be opened at all.
+//
+//   * `geo::Area`'s two-coordinate constructor threw a bare `const char*`
+//     ("Points describe a volume, not a area.") whenever the two corners
+//     differed in x AND y AND z.  `lc::entity::Line::boundingBox`
+//     (lckernel/cad/primitive/line.cpp:149) hands it a segment's endpoints
+//     unguarded, and `LWPolyline::boundingBox` reaches it through the Line
+//     entities the polyline generates — so any 3-D segment aborted the
+//     program the moment `DocumentImpl::insertEntity` put it in the quad
+//     tree.  Because the throw was a `const char*`, `catch (const
+//     std::exception&)` never saw it.                       → 4c7e438b
+//   * `geo::Loop`'s constructor and `Region::boundingBox` indexed element 0
+//     of containers a DXF hatch may legally leave empty (91=1 93=0).
+//   * `Spline::calculateBoundingBox` indexed `controlPoints()[0]` on a
+//     fit-points-only SPLINE (72=0 73=0 74=n), which is legal DXF and which
+//     the pinned libdxfrw accepts.                          → 983ee034
+//   * `File::save` returned void and discarded `DXFimpl::writeDXF`'s result;
+//     an unsupported type was a silent no-op.               → 7b5cbc7b
+//
+// Discipline, identical to dxfexporttest.cpp: this file includes **no**
+// libdxfrw header.  `persistence` links libdxfrw PRIVATE precisely so that
+// its C++17 requirement does not propagate; linking it into `lcunittest`
+// would raise the whole binary — including the kaguya scripting tests, which
+// are gnu++14 and break on kaguya's missing FunctionSignature specialisation
+// for noexcept members.  Everything here goes through the public
+// `lc::persistence::File` surface and the kernel.
+
+#include <gtest/gtest.h>
+
+#include <cmath>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <boost/filesystem.hpp>
+
+#include <cad/const.h>
+
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
+
+#include <cad/meta/color.h>
+#include <cad/meta/layer.h>
+#include <cad/meta/metalinewidth.h>
+
+#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
+
+#include <cad/geometry/geoarea.h>
+#include <cad/geometry/geocoordinate.h>
+#include <cad/geometry/georegion.h>
+
+#include <cad/primitive/hatch.h>
+#include <cad/primitive/line.h>
+#include <cad/primitive/lwpolyline.h>
+#include <cad/primitive/spline.h>
+
+#include "persistence/file.h"
+
+namespace {
+
+std::string uniqueTmpDxf(const char* tag) {
+    return (boost::filesystem::temp_directory_path()
+            / (std::string("lc3-roundtrip-") + tag + "-"
+               + std::to_string(::getpid()) + ".dxf")).string();
+}
+
+std::shared_ptr<lc::storage::DocumentImpl> newDocument() {
+    return std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+}
+
+lc::meta::Layer_CSPtr defaultLayer() {
+    return std::make_shared<lc::meta::Layer>(
+        "0", lc::meta::MetaLineWidthByValue(0.25),
+        lc::Color(255, 255, 255, 255));
+}
+
+// Insert through exactly the path the DXF reader uses.  `DXFimpl` holds an
+// `EntityBuilder` appended to the `operation::Builder` that `File::open`
+// creates (persistence/libdxfrw/dxfimpl.cpp:72-75), and `File::open` ends
+// with `builder->execute()` (persistence/file.cpp:98).  Executing the builder
+// is what reaches `DocumentImpl::insertEntity` → `StorageManager` →
+// `QuadTree::insert` → `CADEntity::boundingBox()`, which is where all three
+// crashes lived.  Calling `boundingBox()` directly would not prove the open
+// path is safe.
+void insertThroughBuilder(
+    const std::shared_ptr<lc::storage::DocumentImpl>& doc,
+    const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
+    auto builder = std::make_shared<lc::operation::Builder>(doc, "insert");
+    auto entityBuilder = std::make_shared<lc::operation::EntityBuilder>(doc);
+    for (const auto& entity : entities) {
+        entityBuilder->appendEntity(entity);
+    }
+    builder->append(entityBuilder);
+    builder->execute();
+}
+
+// "No throw" alone is not a guard: an entity that is silently dropped also
+// fails to throw.  Every case below asserts the entity reached the document's
+// container as well.
+bool documentHolds(const std::shared_ptr<lc::storage::DocumentImpl>& doc,
+                   const lc::entity::CADEntity_CSPtr& entity) {
+    return doc->entityContainer().entityByID(entity->id()) != nullptr;
+}
+
+}  // namespace
+
+// The filed task: "LibreCAD 3 crashes opening DXFs with 3D segments".
+//
+// A LINE whose endpoints differ in x AND y AND z, and an LWPOLYLINE
+// containing such a segment, must both survive insertion, and the resulting
+// bounding box must be the axis-aligned box of the endpoints — including z,
+// which is the behaviour commit 4c7e438b chose when it deleted the throw
+// rather than projecting the pair onto a plane.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ThreeDimensionalSegmentInsertsWithoutThrowing) {
+    auto doc = newDocument();
+    auto layer = defaultLayer();
+
+    // Every axis differs — the exact predicate the deleted throw tested.
+    const lc::geo::Coordinate start(1.0, 2.0, 3.0);
+    const lc::geo::Coordinate end(7.0, 11.0, 13.0);
+    auto line = std::make_shared<lc::entity::Line>(start, end, layer);
+
+    // A polyline whose consecutive vertices differ on every axis reaches the
+    // same constructor through the Line entities LWPolyline generates
+    // (lckernel/cad/primitive/lwpolyline.cpp:195) and its boundingBox at :147.
+    std::vector<lc::entity::LWVertex2D> vertexes{
+        lc::entity::LWVertex2D(lc::geo::Coordinate(0.0, 0.0, 0.0)),
+        lc::entity::LWVertex2D(lc::geo::Coordinate(3.0, 4.0, 5.0)),
+        lc::entity::LWVertex2D(lc::geo::Coordinate(6.0, 1.0, 2.0))};
+    auto polyline = std::make_shared<lc::entity::LWPolyline>(
+        vertexes, /*width=*/0.0, /*elevation=*/0.0, /*thickness=*/0.0,
+        /*closed=*/false, lc::geo::Coordinate(0, 0, 1), layer);
+
+    ASSERT_NO_THROW(insertThroughBuilder(
+        doc, {line, polyline}))
+        << "A 3-D segment must not abort the insert path; before 4c7e438b "
+           "geo::Area threw a bare const char* from Line::boundingBox.";
+
+    // Not silently dropped.
+    EXPECT_TRUE(documentHolds(doc, line));
+    EXPECT_TRUE(documentHolds(doc, polyline));
+    EXPECT_EQ(doc->entityContainer().asVector().size(), 2u);
+
+    // The line's own box is the 3-D AABB of its endpoints.
+    const auto lineBox = line->boundingBox();
+    EXPECT_DOUBLE_EQ(lineBox.minP().x(), 1.0);
+    EXPECT_DOUBLE_EQ(lineBox.minP().y(), 2.0);
+    EXPECT_DOUBLE_EQ(lineBox.minP().z(), 3.0);
+    EXPECT_DOUBLE_EQ(lineBox.maxP().x(), 7.0);
+    EXPECT_DOUBLE_EQ(lineBox.maxP().y(), 11.0);
+    EXPECT_DOUBLE_EQ(lineBox.maxP().z(), 13.0);
+    EXPECT_DOUBLE_EQ(lineBox.width(), 6.0);
+    EXPECT_DOUBLE_EQ(lineBox.height(), 9.0);
+
+    // The polyline's box is assembled with geo::Area::merge, which is
+    // deliberately 2-D (geoarea.h:154-170 builds its corners from x and y
+    // only), so only x and y are asserted here.  Asserting z would pin an
+    // implementation detail of merge rather than the behaviour under test.
+    const auto polyBox = polyline->boundingBox();
+    EXPECT_DOUBLE_EQ(polyBox.minP().x(), 0.0);
+    EXPECT_DOUBLE_EQ(polyBox.minP().y(), 0.0);
+    EXPECT_DOUBLE_EQ(polyBox.maxP().x(), 6.0);
+    EXPECT_DOUBLE_EQ(polyBox.maxP().y(), 4.0);
+}
+
+// A HATCH boundary loop may declare zero edges (91=1 93=0), and LibreCAD
+// writes such loops itself today.  Before 983ee034, geo::Loop's constructor
+// read loop[0] on the empty vector and Region::boundingBox read _loopList[0]
+// on a region with no loops — two out-of-bounds reads on the open path.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, EmptyHatchLoopDoesNotCrash) {
+    auto doc = newDocument();
+    auto layer = defaultLayer();
+
+    // (a) A region carrying one loop that has no edges — geo::Loop's ctor.
+    auto emptyLoopHatch = std::make_shared<lc::entity::Hatch>(layer);
+    {
+        lc::geo::Region region;
+        region.addLoop(lc::geo::Loop(std::vector<lc::entity::CADEntity_CSPtr>{}));
+        ASSERT_EQ(region.numLoops(), 1u);
+        emptyLoopHatch->setRegion(region);
+    }
+    emptyLoopHatch->setPatternName("SOLID");
+    emptyLoopHatch->setSolid(1);
+
+    // (b) A hatch whose region has no loops at all — Region::boundingBox.
+    auto noLoopHatch = std::make_shared<lc::entity::Hatch>(layer);
+    noLoopHatch->setPatternName("SOLID");
+    noLoopHatch->setSolid(1);
+    ASSERT_EQ(noLoopHatch->getRegion().numLoops(), 0u);
+
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {emptyLoopHatch, noLoopHatch}));
+
+    EXPECT_TRUE(documentHolds(doc, emptyLoopHatch));
+    EXPECT_TRUE(documentHolds(doc, noLoopHatch));
+
+    // Both degenerate hatches fall back to the default, empty Area.
+    for (const auto& hatch : {emptyLoopHatch, noLoopHatch}) {
+        const auto box = hatch->boundingBox();
+        EXPECT_DOUBLE_EQ(box.minP().x(), 0.0);
+        EXPECT_DOUBLE_EQ(box.minP().y(), 0.0);
+        EXPECT_DOUBLE_EQ(box.maxP().x(), 0.0);
+        EXPECT_DOUBLE_EQ(box.maxP().y(), 0.0);
+        EXPECT_DOUBLE_EQ(box.width(), 0.0);
+        EXPECT_DOUBLE_EQ(box.height(), 0.0);
+    }
+}
+
+// A SPLINE may carry fit points and no control points (72=0 73=0 74=n).  That
+// is legal DXF, the pinned libdxfrw accepts it (isValidFitSplineLayout needs
+// only fitCount >= 2), and it reaches the kernel through the DXF reader.
+// Spline::calculateBoundingBox runs from the constructor, so before 983ee034
+// this crashed before the entity ever reached the document.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, FitPointsOnlySplineDoesNotCrash) {
+    auto doc = newDocument();
+    auto layer = defaultLayer();
+
+    const std::vector<lc::geo::Coordinate> noControlPoints;
+    const std::vector<double> noKnots;
+    const std::vector<lc::geo::Coordinate> fitPoints{
+        lc::geo::Coordinate(-2.0, 1.0, 0.0),
+        lc::geo::Coordinate(4.0, 7.0, 0.0),
+        lc::geo::Coordinate(9.0, -3.0, 0.0)};
+
+    std::shared_ptr<lc::entity::Spline> spline;
+    ASSERT_NO_THROW(
+        spline = std::make_shared<lc::entity::Spline>(
+            noControlPoints, noKnots, fitPoints,
+            /*degree=*/3, /*closed=*/false, /*fitTolerance=*/0.0,
+            /*startTangent=*/0.0, 0.0, 0.0,
+            /*endTangent=*/0.0, 0.0, 0.0,
+            /*normal=*/0.0, 0.0, 1.0,
+            static_cast<lc::geo::Spline::splineflag>(8) /*PLANAR*/,
+            layer));
+    ASSERT_NE(spline, nullptr);
+    ASSERT_TRUE(spline->controlPoints().empty());
+    ASSERT_EQ(spline->fitPoints().size(), 3u);
+
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {spline}));
+    EXPECT_TRUE(documentHolds(doc, spline));
+
+    // With no control points the box must cover the fit points, not collapse
+    // to the origin — a guard that merely returned an empty Area for this
+    // shape would hide the spline from every area query.
+    const auto box = spline->boundingBox();
+    EXPECT_DOUBLE_EQ(box.minP().x(), -2.0);
+    EXPECT_DOUBLE_EQ(box.minP().y(), -3.0);
+    EXPECT_DOUBLE_EQ(box.maxP().x(), 9.0);
+    EXPECT_DOUBLE_EQ(box.maxP().y(), 7.0);
+
+    // A spline with neither list is the remaining degenerate shape; it takes
+    // the empty-Area fallback and must still not crash.
+    std::shared_ptr<lc::entity::Spline> emptySpline;
+    ASSERT_NO_THROW(
+        emptySpline = std::make_shared<lc::entity::Spline>(
+            noControlPoints, noKnots, std::vector<lc::geo::Coordinate>{},
+            /*degree=*/3, /*closed=*/false, /*fitTolerance=*/0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+            static_cast<lc::geo::Spline::splineflag>(8), layer));
+    EXPECT_DOUBLE_EQ(emptySpline->boundingBox().width(), 0.0);
+    EXPECT_DOUBLE_EQ(emptySpline->boundingBox().height(), 0.0);
+}
+
+// `File::save` used to return void and throw `DXFimpl::writeDXF`'s result
+// away, and an unsupported `File::Type` fell through a silent `else`: the
+// user pressed Save, no file appeared, and nothing said so.  It now returns
+// bool (persistence/file.cpp:101-109).
+//
+// This case is the one guard here that the pre-fix tree fails at *compile*
+// time rather than at run time: against `static void save(...)` the
+// EXPECT_FALSE below is "invalid argument type 'void' to unary expression".
+// That is the strongest form the guard can take — the signature cannot
+// regress without this file failing to build.
+//
+// Two independent refusals are asserted, each paired with a control so that a
+// `save` that returned false unconditionally would not pass:
+//   * a *format* with no writer behind it (LIBOPENCAD_DWG, outside the
+//     libdxfrw range persistence/file.cpp:102 tests), and
+//   * a *document* the library itself rejects for the requested version —
+//     measured: an LWPOLYLINE at R12 gives "DRW::error 2, emit-failure: DXF
+//     output generation failed" and no file, while the same document at
+//     R2000, and a plain LINE at R12, both write.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, SaveReportsFailure) {
+    auto layer = defaultLayer();
+
+    auto lineDoc = newDocument();
+    insertThroughBuilder(lineDoc, {std::make_shared<lc::entity::Line>(
+        lc::geo::Coordinate(0.0, 0.0, 0.0),
+        lc::geo::Coordinate(10.0, 5.0, 0.0), layer)});
+
+    const std::vector<lc::entity::LWVertex2D> vertexes{
+        lc::entity::LWVertex2D(lc::geo::Coordinate(0.0, 0.0)),
+        lc::entity::LWVertex2D(lc::geo::Coordinate(5.0, 2.0)),
+        lc::entity::LWVertex2D(lc::geo::Coordinate(9.0, 0.0))};
+    auto makePolylineDoc = [&]() {
+        auto doc = newDocument();
+        insertThroughBuilder(doc, {std::make_shared<lc::entity::LWPolyline>(
+            vertexes, 0.0, 0.0, 0.0, /*closed=*/false,
+            lc::geo::Coordinate(0, 0, 1), layer)});
+        return doc;
+    };
+
+    // (a) A File::Type with no writer at all.
+    const std::string noWriterPath = uniqueTmpDxf("no-writer");
+    boost::filesystem::remove(noWriterPath);
+    EXPECT_FALSE(lc::persistence::File::save(
+        lineDoc, noWriterPath, lc::persistence::File::Type::LIBOPENCAD_DWG))
+        << "A File::Type with no writer must return false, not do nothing.";
+    EXPECT_FALSE(boost::filesystem::exists(noWriterPath))
+        << "A refused save must leave no file behind.";
+
+    // (b) A document the library refuses at the requested version.
+    //
+    // NOTE for whoever lands `lc-save-target-matrix` (R12 LWPOLYLINE →
+    // POLYLINE down-convert): this assertion is expected to flip to
+    // EXPECT_TRUE then.  Keep (a) and the controls; they are version
+    // independent.
+    const std::string refusedPath = uniqueTmpDxf("refused-r12");
+    boost::filesystem::remove(refusedPath);
+    EXPECT_FALSE(lc::persistence::File::save(
+        makePolylineDoc(), refusedPath,
+        lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "R12 cannot carry an LWPOLYLINE; save must say so.";
+    EXPECT_FALSE(boost::filesystem::exists(refusedPath))
+        << "A refused save must leave no file behind.";
+
+    // Control 1: the same document at a version that can carry it.
+    const std::string acceptedPath = uniqueTmpDxf("accepted-r2000");
+    boost::filesystem::remove(acceptedPath);
+    EXPECT_TRUE(lc::persistence::File::save(
+        makePolylineDoc(), acceptedPath,
+        lc::persistence::File::Type::LIBDXFRW_DXF_R2000))
+        << "The refusal must be attributable to the version, not the writer.";
+    EXPECT_TRUE(boost::filesystem::exists(acceptedPath));
+    EXPECT_GT(boost::filesystem::file_size(acceptedPath), 0u);
+
+    // Control 2: the same version with a document it can carry.
+    const std::string r12Path = uniqueTmpDxf("accepted-r12");
+    boost::filesystem::remove(r12Path);
+    EXPECT_TRUE(lc::persistence::File::save(
+        lineDoc, r12Path, lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "The refusal must be attributable to the entity, not to R12.";
+    EXPECT_TRUE(boost::filesystem::exists(r12Path));
+    EXPECT_GT(boost::filesystem::file_size(r12Path), 0u);
+
+    boost::filesystem::remove(acceptedPath);
+    boost::filesystem::remove(r12Path);
+}
+
+// The round trip the suite is named for: a 3-D segment must survive
+// open→save→open through the real `File` API, with its z intact.  This is the
+// first blocking test in the repository that calls `File::open` at all.
+//
+// A DXF file can legally contain records the kernel cannot represent: an ARC
+// with radius 0, a CIRCLE with a negative radius, or an LWPOLYLINE declaring
+// zero vertices. geo::Arc and geo::Circle throw std::runtime_error for those,
+// and the throw used to travel out through libdxfrw's callback and out of
+// File::open, which no caller guards -- so one bad record cost the whole file.
+// They must be skipped individually, and the rest of the file must still load.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, DegenerateRecordsAreSkippedNotFatal) {
+    const std::string path = uniqueTmpDxf("degenerate");
+    boost::filesystem::remove(path);
+
+    // Hand-written R12 ASCII: a zero-radius ARC, a negative-radius CIRCLE, an
+    // empty LWPOLYLINE, and one good LINE that must survive all three.
+    {
+        std::ofstream dxf(path);
+        dxf << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nARC\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n40\n0.0\n50\n0.0\n51\n90.0\n"
+            << "0\nCIRCLE\n8\n0\n10\n5.0\n20\n5.0\n30\n0.0\n40\n-5.0\n"
+            << "0\nLWPOLYLINE\n8\n0\n90\n0\n70\n0\n"
+            << "0\nLINE\n8\n0\n10\n1.0\n20\n2.0\n30\n0.0\n11\n7.0\n21\n11.0\n31\n0.0\n"
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, path, lc::persistence::File::Library::LIBDXFRW))
+        << "A degenerate record must not abort the open.";
+
+    bool foundLine = false;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+            foundLine = true;
+        }
+    }
+    EXPECT_TRUE(foundLine)
+        << "The good LINE must still be imported after the skipped records.";
+
+    boost::filesystem::remove(path);
+}
+
+// LWPolyline::generateEntities() walked off an empty vertex vector: begin() was
+// end(), and the closing segment read lastPoint->bulge() past the allocation.
+// A bulge between coincident points is the same class -- createArcBulge yields
+// a radius geo::Arc rejects -- and must degrade to the chord.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, DegenerateLwPolylinesInsertWithoutCrashing) {
+    auto doc = newDocument();
+
+    auto empty = std::make_shared<lc::entity::LWPolyline>(
+        std::vector<lc::entity::LWVertex2D>{}, 0., 0., 0., true,
+        lc::geo::Coordinate(0., 0., 1.), defaultLayer());
+
+    // One vertex, closed: there is no second point to close against.
+    auto single = std::make_shared<lc::entity::LWPolyline>(
+        std::vector<lc::entity::LWVertex2D>{
+            lc::entity::LWVertex2D(lc::geo::Coordinate(1., 1.), 0.5)},
+        0., 0., 0., true, lc::geo::Coordinate(0., 0., 1.), defaultLayer());
+
+    // Two coincident points with a bulge: createArcBulge computes a radius that
+    // geo::Arc rejects.
+    auto coincidentBulge = std::make_shared<lc::entity::LWPolyline>(
+        std::vector<lc::entity::LWVertex2D>{
+            lc::entity::LWVertex2D(lc::geo::Coordinate(4., 4.), 0.5),
+            lc::entity::LWVertex2D(lc::geo::Coordinate(4., 4.), 0.)},
+        0., 0., 0., false, lc::geo::Coordinate(0., 0., 1.), defaultLayer());
+
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {empty, single, coincidentBulge}));
+
+    EXPECT_TRUE(documentHolds(doc, empty));
+    EXPECT_TRUE(documentHolds(doc, single));
+    EXPECT_TRUE(documentHolds(doc, coincidentBulge));
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ThreeDimensionalSegmentSurvivesRoundTrip) {
+    const std::string path = uniqueTmpDxf("3d-line");
+    boost::filesystem::remove(path);
+
+    const lc::geo::Coordinate start(1.0, 2.0, 3.0);
+    const lc::geo::Coordinate end(7.0, 11.0, 13.0);
+
+    {
+        auto doc = newDocument();
+        auto line = std::make_shared<lc::entity::Line>(
+            start, end, defaultLayer());
+        // Guarded: on a pre-fix kernel the throw lands HERE, in setup, so an
+        // unguarded call would make this case a duplicate of
+        // ThreeDimensionalSegmentInsertsWithoutThrowing instead of a test of
+        // the read path below.
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {line}));
+        ASSERT_TRUE(lc::persistence::File::save(
+            doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R2000));
+    }
+
+    ASSERT_TRUE(boost::filesystem::exists(path));
+    ASSERT_GT(boost::filesystem::file_size(path), 0u);
+
+    auto reopened = newDocument();
+    // The read path: the reader builds the Line, the builder inserts it, and the
+    // quad tree asks for its box. On a pre-fix kernel this is where the throw
+    // would land for a file produced elsewhere; here the guarded setup above
+    // fails first, which is why that assertion is separate.
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+
+    const auto entities = reopened->entityContainer().asVector();
+    ASSERT_FALSE(entities.empty()) << "The reopened document is empty.";
+
+    bool found = false;
+    for (const auto& entity : entities) {
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+        if (line == nullptr) {
+            continue;
+        }
+        if (std::abs(line->start().x() - start.x()) < LCTOLERANCE &&
+            std::abs(line->start().y() - start.y()) < LCTOLERANCE &&
+            std::abs(line->start().z() - start.z()) < LCTOLERANCE &&
+            std::abs(line->end().x() - end.x()) < LCTOLERANCE &&
+            std::abs(line->end().y() - end.y()) < LCTOLERANCE &&
+            std::abs(line->end().z() - end.z()) < LCTOLERANCE) {
+            found = true;
+            // The box that used to abort, now computed on a document that
+            // came off disk.
+            const auto box = line->boundingBox();
+            EXPECT_DOUBLE_EQ(box.minP().z(), 3.0);
+            EXPECT_DOUBLE_EQ(box.maxP().z(), 13.0);
+            break;
+        }
+    }
+    EXPECT_TRUE(found)
+        << "The 3-D LINE did not survive save/open with its z intact.";
+
+    boost::filesystem::remove(path);
+}
