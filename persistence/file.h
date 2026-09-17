@@ -33,7 +33,12 @@ public:
 
     static Type open(lc::storage::Document_SPtr document, const std::string& path, Library library);
 
-    static void save(lc::storage::Document_SPtr document, const std::string& path, Type type);
+    /**
+     * Write the document to path in the given format.
+     * @return false if the format is not writable or the library refused the write;
+     *         nothing is written in that case.
+     */
+    static bool save(lc::storage::Document_SPtr document, const std::string& path, Type type);
 
     static std::map<Type, std::string> getAvailableFileTypes();
 

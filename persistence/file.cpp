@@ -100,11 +100,14 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
     return version;
 }
 
-void File::save(lc::storage::Document_SPtr document, const std::string& path, File::Type type) {
-    if(type >= LIBDXFRW_DXF_R12 && type <= LIBDXFRW_DXB_R2013) {
-        DXFimpl* F = new DXFimpl(std::move(document));
-        F->writeDXF(path, type);
+bool File::save(lc::storage::Document_SPtr document, const std::string& path, File::Type type) {
+    if(type < LIBDXFRW_DXF_R12 || type > LIBDXFRW_DXB_R2013) {
+        LOG_ERROR << "No writer for file type " << static_cast<int>(type) << "; " << path << " was not written";
+        return false;
     }
+
+    DXFimpl writer(std::move(document));
+    return writer.writeDXF(path, type);
 }
 
 std::map<File::Type, std::string> File::getAvailableFileTypes() {

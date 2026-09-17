@@ -70,6 +70,11 @@ public slots:
     void saveFile();
     void saveAsFile();
 
+    /**
+     * Show an error when a save was refused; no-op when it succeeded.
+     */
+    static void reportSaveFailure(bool saved, const std::string& path);
+
 signals:
 
     void keyPressed(QKeyEvent* event);

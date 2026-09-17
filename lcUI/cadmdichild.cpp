@@ -115,8 +115,25 @@ bool CadMdiChild::openFile() {
 }
 
 void CadMdiChild::saveFile() {
-    if (_filename == "")saveAsFile();
-    else lc::persistence::File::save(_document, _filename, _fileType);// @TODO Needs to fix it later
+    if (_filename == "") {
+        saveAsFile();
+        return;
+    }
+
+    reportSaveFailure(lc::persistence::File::save(_document, _filename, _fileType), _filename);
+}
+
+// A refused write leaves the target untouched, so the user must be told: the
+// document is still unsaved.
+void CadMdiChild::reportSaveFailure(bool saved, const std::string& path) {
+    if (saved) {
+        return;
+    }
+
+    QMessageBox::critical(nullptr, tr("Save error"),
+                          tr("%1 could not be written in the selected format. "
+                             "The file was not changed. See the log for details.")
+                          .arg(QString::fromStdString(path)));
 }
 
 void CadMdiChild::saveAsFile() {
@@ -165,7 +182,7 @@ void CadMdiChild::saveAsFile() {
     auto ext = fileInfo.suffix().toStdString();
     if(ext=="")file+=("."+lc::persistence::File::getExtensionForFileType(type)).c_str();
     _filename = file.toStdString();
-    lc::persistence::File::save(_document, _filename, type);
+    reportSaveFailure(lc::persistence::File::save(_document, _filename, type), _filename);
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {

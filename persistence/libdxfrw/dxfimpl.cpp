@@ -926,6 +926,14 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     bool isBinary = type >= lc::persistence::File::LIBDXFRW_DXB_R12 && type < lc::persistence::File::LIBDXFRW_DXB_R2013;
 
     bool success = dxfW->write(this, exportVersion, isBinary);
+
+    if (!success) {
+        const auto diagnostic = dxfW->getLastDiagnostic();
+        LOG_ERROR << "libdxfrw refused to write " << filename
+                  << " (DRW::error " << dxfW->getError()
+                  << ", " << diagnostic.code << ": " << diagnostic.message << ")";
+    }
+
     delete dxfW;
 
     return success;
