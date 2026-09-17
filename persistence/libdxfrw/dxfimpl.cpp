@@ -179,6 +179,16 @@ void DXFimpl::addLine(const DRW_Line& data) {
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
     LOG_WARNING << "addCircle";
+    // CircleBuilder::checkValues throws for a negative radius (and geo::Circle
+    // throws again).  The throw travels out through libdxfrw's callback and out
+    // of File::open, which no caller guards -- lcUI/cadmdichild.cpp:107 calls it
+    // bare -- so one bad record terminated the process.  Drop the record.
+    // The negated comparison also rejects NaN.
+    if (!(data.radious >= 0.0)) {
+        LOG_ERROR << "Skipping CIRCLE with unusable radius " << data.radious;
+        return;
+    }
+
     lc::builder::CircleBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
@@ -192,6 +202,15 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
 
 void DXFimpl::addArc(const DRW_Arc& data) {
     LOG_WARNING << "addArc";
+    // geo::Arc's constructor throws std::runtime_error("Invalid radius") for
+    // radius <= 0 (lckernel/cad/geometry/geoarc.cpp:14-16) and ArcBuilder does
+    // not check it, so an ARC with 40=0 aborted the whole open.  The negated
+    // comparison also rejects NaN.
+    if (!(data.radious > 0.0)) {
+        LOG_ERROR << "Skipping ARC with unusable radius " << data.radious;
+        return;
+    }
+
     lc::builder::ArcBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
@@ -621,6 +640,12 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 loopData.push_back(builder.build());
             } else if(k->eType == DRW::ETYPE::ARC) { //done
                 auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
+                // Same geo::Arc precondition as addArc: a hatch boundary may
+                // carry a zero-radius arc edge, which used to abort the open.
+                if (!(data->radious > 0.0)) {
+                    LOG_ERROR << "Skipping HATCH boundary ARC with unusable radius " << data->radious;
+                    continue;
+                }
                 lc::builder::ArcBuilder builder;
                 LOG_WARNING << data->staangle <<','<< data->endangle;
                 builder.setCenter(coord(data->basePoint));
