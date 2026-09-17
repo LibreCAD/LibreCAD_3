@@ -4,6 +4,11 @@ using namespace lc;
 using namespace geo;
 
 Loop::Loop(std::vector<entity::CADEntity_CSPtr> loop): _objList(loop) {
+    // A DXF hatch may declare a boundary loop with no edges, so an empty loop
+    // reaches this constructor; it keeps the default (empty) bounding box.
+    if (loop.empty()) {
+        return;
+    }
     //Calculate bounding box for entity
     _boundingBox =  loop[0]->boundingBox();
     //Merge box of each entities
@@ -49,6 +54,9 @@ bool Region::isPointInside(const geo::Coordinate& testPoint) const {
 }
 
 lc::geo::Area Region::boundingBox() const {
+    if (_loopList.empty()) {
+        return lc::geo::Area();
+    }
     lc::geo::Area boundingBox=_loopList[0].boundingBox();
     for(auto &x: _loopList) {
         boundingBox = boundingBox.merge(x.boundingBox());
