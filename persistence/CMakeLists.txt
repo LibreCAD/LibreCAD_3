@@ -22,9 +22,6 @@ set(persistence_hdrs
         generic/helpers.h
 )
 
-# LibbDXFRW
-find_package(libdxfrw REQUIRED)
-
 # Boost logging
 find_package(Boost REQUIRED COMPONENTS log)
 if (NOT MSVC)
@@ -68,14 +65,15 @@ if(WITH_LIBOPENCAD)
 	add_definitions(-DLIBOPENCAD_ENABLED)
 endif()
 
-if (MSVC)
-    include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
-endif()
 # DEBUGGING PATHS
 
 add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
 
-target_link_libraries(persistence lckernel ${Boost_LIBRARIES} libdxfrw::libdxfrw ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
+# PRIVATE: libdxfrw requires C++17, which would otherwise propagate to every
+# target linking persistence and break kaguya-based Lua bindings built as C++14.
+target_link_libraries(persistence
+    PUBLIC lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB}
+    PRIVATE libdxfrw::libdxfrw)
 
 # INSTALLATION
 install(TARGETS persistence

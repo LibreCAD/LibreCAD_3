@@ -28,21 +28,11 @@ python3-dev python3
 echo on
 echo "building LibreCAD"
 # `--init --recursive` fixed for lcadpythonscript/third_party/pybind11 and every
-# other submodule (kaguya, libopencad, tinyspline, nano-signal-slot).
+# other submodule (kaguya, libdxfrw, libopencad, tinyspline, nano-signal-slot).
 # Historically the CI called `git submodule update` which no-ops on a fresh
 # clone without the paths already registered as initialized — plan phase 1
 # slice 1.2 lists this as a CI dep fix.
 git submodule update --init --recursive
-
-[ -d libdxfrw ] || git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
-mkdir -p libdxfrw/release
-pushd libdxfrw/release
-echo "building dxfrw"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
-make -j 4
-echo "installing dxfrw"
-sudo make install
-popd
 
 echo "building LibreCAD"
 mkdir -p build

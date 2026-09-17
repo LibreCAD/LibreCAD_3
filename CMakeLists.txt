@@ -124,8 +124,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
  
     set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
 
-    set(LIBDXFRW_PATH "${CONAN_LIBDXFRW_ROOT}")
-    
 else()
     set(Boost_USE_STATIC_LIBS OFF)
     add_definitions(-DBOOST_ALL_DYN_LINK)
@@ -134,8 +132,6 @@ endif()
 if(MSVC)
     find_package(Eigen3 REQUIRED)
     include_directories(${EIGEN3_INCLUDE_DIR})
-    find_package(libdxfrw REQUIRED)
-    include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
     find_package(freetype REQUIRED)
     include_directories(${freetype_INCLUDE_DIR})
     find_package(glew REQUIRED)
@@ -317,6 +313,19 @@ if(WITH_PYTHONSCRIPT)
 endif()
 
 if(WITH_PERSISTENCE)
+    # libdxfrw is a submodule, built in-tree so every platform uses the same
+    # pinned revision. Cache entries so its option() calls keep these defaults.
+    set(LIBDXFRW_BUILD_DOC OFF CACHE BOOL "Build libdxfrw documentation")
+    set(LIBDXFRW_BUILD_DWG2DXF OFF CACHE BOOL "Build libdxfrw's dwg2dxf tool")
+    add_subdirectory("third_party/libdxfrw")
+    # Linked into the shared persistence library even when built static.
+    set_target_properties(dxfrw PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    # libdxfrw builds with -Werror; newer compilers than it is tested with
+    # (e.g. GCC 16) must not fail LibreCAD's build over its warnings.
+    if(NOT MSVC)
+        target_compile_options(dxfrw PRIVATE -Wno-error)
+    endif()
+    add_library(libdxfrw::libdxfrw ALIAS dxfrw)
     add_subdirectory("persistence")
     add_definitions(-DUSE_PERSISTENCE=1)
 else()

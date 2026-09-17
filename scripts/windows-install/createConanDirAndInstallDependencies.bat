@@ -6,8 +6,9 @@ conan profile detect --force
 if errorlevel 1 (popd & exit /b 1)
 
 REM CMake 4 removed compatibility with cmake_minimum_required(VERSION <3.5),
-REM and conan builds libdxfrw/2.2.0 from source, whose CMakeLists still asks
-REM for an older minimum.  The configure then fails with
+REM and conan builds some packages from source whose CMakeLists may still ask
+REM for an older minimum (libdxfrw/2.2.0 did, before it became a submodule).
+REM The configure then fails with
 REM
 REM   Compatibility with CMake < 3.5 has been removed from CMake.
 REM

@@ -1,5 +1,6 @@
 #include "file.h"
 #include "libdxfrw/dxfimpl.h"
+#include <cad/logger/logger.h>
 #ifdef LIBOPENCAD_ENABLED
 #include "libopencad_interface/libopencad.h"
 #endif
@@ -36,7 +37,10 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
     case LIBDXFRW: {
         DXFimpl F(document, builder);
         dxfRW R(path.c_str());
-        R.read(&F, true);
+        // Whatever was read before a failure is still loaded, as before.
+        if (!R.read(&F, true)) {
+            LOG_ERROR << "libdxfrw stopped reading " << path << " (DRW::error " << R.getError() << ")";
+        }
 
         /// @todo create better mapping
         switch(R.getVersion()) {

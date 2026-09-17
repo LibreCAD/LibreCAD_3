@@ -89,13 +89,3 @@ parts:
     #configflags:
     #  - "-DCMAKE_INSTALL_PREFIX=/usr"
     #  - "-DBUILD_SHARED_LIBS=On"
-  libdxfrw:
-    plugin: cmake
-    source: persistence/libdxfrw
-    cmake-parameters:
-      - "-DBUILD_SHARED_LIBS=ON"
-
-
-    #For 18.04
-    #configflags:
-    #  - "-DBUILD_SHARED_LIBS=On"

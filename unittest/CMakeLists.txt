@@ -17,9 +17,6 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-# LibbDXFRW
-find_package(libdxfrw REQUIRED)
-
 FIND_PACKAGE ( Threads REQUIRED )
 
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
