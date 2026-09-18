@@ -21,6 +21,10 @@
 #include "persistence/file.h"
 #include "persistence/format.h"
 
+#ifndef USE_DWG_IMPORT
+#define USE_DWG_IMPORT 0
+#endif
+
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(FormatTest, AdvertisedFileTypesAreUnchanged) {
     const std::map<lc::persistence::File::Type, std::string> expected{
@@ -54,10 +58,13 @@ TEST(FormatTest, ExtensionsAreUnchanged) {
     EXPECT_EQ(lc::persistence::File::getExtensionForFileType(
                   lc::persistence::File::LIBOPENCAD_DWG), "");
 
-    const std::map<std::string, std::string> expected{
-        {"dxf", "DXF files"},
-        {"dwg", "DWG files"},
-    };
+    // DWG is offered only when this build can read it. It used to be listed
+    // unconditionally, so the open dialog offered a format no shipped build
+    // could read and the user got an error for choosing it.
+    std::map<std::string, std::string> expected{{"dxf", "DXF files"}};
+    if (USE_DWG_IMPORT != 0) {
+        expected.emplace("dwg", "DWG files");
+    }
     EXPECT_EQ(lc::persistence::File::getSupportedFileExtensions(), expected);
 }
 
@@ -72,9 +79,15 @@ TEST(FormatTest, LibrariesPerFormatAreUnchanged) {
         << "The format is matched case-insensitively.";
     EXPECT_EQ(lc::persistence::File::getAvailableLibrariesForFormat("Dxf"), dxf);
 
-    // DWG answers with nothing unless a DWG reader is compiled in, and this
-    // build has none. PatternProvider dereferences begin() on this map.
-    EXPECT_TRUE(lc::persistence::File::getAvailableLibrariesForFormat("dwg").empty());
+    // DWG answers with nothing unless a DWG reader is compiled in.
+    // PatternProvider dereferences begin() on this map, which is why the empty
+    // case is pinned at all.
+    const auto dwgLibraries = lc::persistence::File::getAvailableLibrariesForFormat("dwg");
+    if (USE_DWG_IMPORT != 0) {
+        EXPECT_EQ(dwgLibraries, dxf) << "DWG is read through libdxfrw, like DXF.";
+    } else {
+        EXPECT_TRUE(dwgLibraries.empty());
+    }
     EXPECT_TRUE(lc::persistence::File::getAvailableLibrariesForFormat("png").empty());
     EXPECT_TRUE(lc::persistence::File::getAvailableLibrariesForFormat("").empty());
 }

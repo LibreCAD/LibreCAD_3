@@ -1,6 +1,17 @@
 #include "file.h"
+
+#include <algorithm>
+#include <fstream>
+
+#ifndef USE_DWG_IMPORT
+#define USE_DWG_IMPORT 0
+#endif
 #include "format.h"
 #include "libdxfrw/dxfimpl.h"
+
+#if USE_DWG_IMPORT
+#include <libdwgr.h>
+#endif
 #include <cad/logger/logger.h>
 
 using namespace lc::persistence;
@@ -36,6 +47,7 @@ const TypeVariant kTypeVariants[] = {
     {File::LIBDXFRW_DXB_R2010, "dxf.ac1024.binary"},
     {File::LIBDXFRW_DXB_R2013, "dxf.ac1027.binary"},
     {File::LIBOPENCAD_DWG, "dwg"},
+    {File::LIBDXFRW_DWG_IMPORT, "dwg.libdxfrw"},
 };
 
 const FormatVariant* variantFor(File::Type type) {
@@ -79,6 +91,25 @@ bool File::isLibdxfrwType(Type type) {
 bool File::isBinaryType(Type type) {
     const auto* variant = variantFor(type);
     return variant != nullptr && variant->binary && variant->writable;
+}
+
+std::string File::sniffFormat(const std::string& path) {
+    // DWG opens with its version string: "AC1015", "AC1032", and so on. A DXF
+    // opens either with a group code -- optional whitespace, then "0" -- or,
+    // when binary, with the sentinel "AutoCAD Binary DXF", which also starts
+    // with 'A'. So the test is the whole six-byte tag, not its first letter.
+    std::ifstream file(path, std::ios::binary);
+    char header[6] = {0, 0, 0, 0, 0, 0};
+    if (!file.read(header, sizeof(header))) {
+        return "dxf";
+    }
+
+    const std::string tag(header, sizeof(header));
+    const bool looksLikeDwg = tag.compare(0, 2, "AC") == 0
+                              && std::all_of(tag.begin() + 2, tag.end(),
+                                             [](char c) { return c >= '0' && c <= '9'; });
+
+    return looksLikeDwg ? "dwg" : "dxf";
 }
 
 File::Type File::typeForAcadVersion(const std::string& acadVersion, bool* recognised) {
@@ -128,9 +159,22 @@ std::string File::getExtensionForFileType(Type type) {
 }
 
 std::map<std::string, std::string> File::getSupportedFileExtensions() {
+    // What the open dialog offers: a format is listed when this build has a
+    // reader for at least one of its variants.
+    //
+    // DWG used to be listed unconditionally, so the dialog offered a format no
+    // shipped build could read and the user got an error for choosing it.
     std::map<std::string, std::string> types;
     for (const auto& format : formats()) {
-        types.insert(std::make_pair(format.id, format.label));
+        const auto& variants = formatVariants();
+        const bool readable = std::any_of(
+            variants.begin(), variants.end(), [&format](const FormatVariant& variant) {
+                return variant.formatId == format.id && variant.readable;
+            });
+
+        if (readable) {
+            types.insert(std::make_pair(format.id, format.label));
+        }
     }
 
     return types;
@@ -174,6 +218,46 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
     result.variantId = variantIdForType(Type::LIBDXFRW_DXF_R12);
 
     auto builder = std::make_shared<operation::Builder>(document, "Open file");
+
+    // The reader follows the file's contents, not its name: a DXF saved as .dwg
+    // and a DWG saved as .dxf are both ordinary occurrences, and choosing by
+    // extension makes either unopenable.
+    if (library == LIBDXFRW && sniffFormat(path) == "dwg") {
+#if USE_DWG_IMPORT
+        DXFimpl reader(document, builder);
+        dwgRW R(path.c_str());
+
+        result.ok = R.read(&reader, true);
+        if (!result.ok) {
+            LOG_ERROR << "libdxfrw stopped reading " << path
+                      << " as DWG (DRW::error " << R.getError() << ")";
+            result.diagnostics.push_back(Diagnostic{
+                Severity::Error, "dwg-read-failure", "This DWG file could not be read"});
+        }
+
+        builder->execute();
+        reader.buildDeferredInserts();
+
+        result.entitiesDelivered = reader.entitiesDelivered();
+        result.failures = reader.failures();
+        result.loss = reader.loss();
+        result.partial = !result.ok && result.entitiesDelivered > 0;
+        result.variantId = variantIdForType(Type::LIBDXFRW_DWG_IMPORT);
+        result.sourceVersionTag = reader.header().acadVersion;
+
+        // Nothing preserves a DWG's unmodelled records: the raw net is a DXF
+        // passthrough, and LibreCAD cannot write DWG at all, so there is
+        // nowhere to put them back.
+        return result;
+#else
+        LOG_ERROR << path << " is a DWG file; this build was not configured with DWG import";
+        result.variantId = variantIdForType(Type::LIBDXFRW_DWG_IMPORT);
+        result.diagnostics.push_back(Diagnostic{
+            Severity::Error, "dwg-not-enabled",
+            "This build cannot read DWG files"});
+        return result;
+#endif
+    }
 
     switch(library) {
     case LIBDXFRW: {

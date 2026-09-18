@@ -30,6 +30,22 @@ option(WITH_DOCUMENTATION "Build documentation" OFF)
 
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
+# DWG import through libdxfrw's own dwgRW, off by default.
+#
+# The reader works -- all eight of libdxfrw's DWG fixtures read cleanly into a
+# document -- but DWG is a format LibreCAD can read and cannot write, and the
+# consequences of offering it (a drawing that cannot be saved back where it came
+# from) deserve a release's worth of deliberate exposure before it is on for
+# everyone. Off means .dwg is not offered at all; the format table, the file
+# dialog and the sniffer all follow this one switch.
+option(WITH_DWG_IMPORT "Read DWG files through libdxfrw (experimental)" OFF)
+
+if(WITH_DWG_IMPORT)
+    add_definitions(-DUSE_DWG_IMPORT=1)
+else()
+    add_definitions(-DUSE_DWG_IMPORT=0)
+endif()
+
 # USE_PERSISTENCE has to be defined here, before any add_subdirectory().
 #
 # The Lua and Python bridges register lc.persistence behind `#if
@@ -209,6 +225,7 @@ message("***** LibreCAD *****")
 message("Version: ${VERSION_MAJOR}.${VERSION_MINOR}\n")
 message("Options:")
 message("  - Qt user interface: ${WITH_QT_UI}")
+message("  - Read DWG (experimental): ${WITH_DWG_IMPORT}")
 message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
 message("  - Python scripting support: ${WITH_PYTHONSCRIPT}")
 message("  - Unit tests: ${WITH_UNITTESTS}")

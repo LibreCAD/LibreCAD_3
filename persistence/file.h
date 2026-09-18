@@ -27,7 +27,11 @@ public:
         LIBDXFRW_DXB_R2007 = 11,
         LIBDXFRW_DXB_R2010 = 12,
         LIBDXFRW_DXB_R2013 = 13,
-        LIBOPENCAD_DWG = 14
+        LIBOPENCAD_DWG = 14,
+        // A DWG read through libdxfrw. Distinct from LIBOPENCAD_DWG so that a
+        // document knows which reader produced it -- and, through the format
+        // table, that it cannot be saved back as one.
+        LIBDXFRW_DWG_IMPORT = 15
     };
 
     // Wire values, like Type: kept although libopencad is gone. It was an
@@ -39,6 +43,18 @@ public:
         LIBDXFRW,
         LIBOPENCAD,
     };
+
+    /**
+     * Which format a file's *contents* are, whatever it is named: "dwg" or
+     * "dxf".
+     *
+     * A DXF saved as .dwg and a DWG saved as .dxf are both common enough to be
+     * unremarkable, and choosing the reader from the extension turns either
+     * into an unopenable file. DWG announces itself in its first six bytes; DXF
+     * begins with a group code, or with a sentinel that also starts with 'A',
+     * so the test has to be the whole tag rather than its first letter.
+     */
+    static std::string sniffFormat(const std::string& path);
 
     /**
      * Read a file into a document and report what happened.

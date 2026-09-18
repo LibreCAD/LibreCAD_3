@@ -104,12 +104,16 @@ if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfroundtriptest.cpp)
     list(APPEND src persistence/formattest.cpp)
     list(APPEND src persistence/documentsourcetest.cpp)
+    list(APPEND src persistence/dwgimporttest.cpp)
     set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
     # The read tests that need a real file on disk find it here.  Most cases
     # build their input in code -- a file that only restates three fit points
     # adds nothing and has to be maintained -- but the import oracle has to
     # count records in the same bytes the reader is given.
     add_compile_definitions(UNITTEST_FIXTURES_DIR="${CMAKE_CURRENT_LIST_DIR}/persistence/fixtures")
+    # The DWG fixtures are libdxfrw's own, so they arrive with the submodule
+    # rather than needing a corpus committed here.
+    add_compile_definitions(DWG_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/third_party/libdxfrw/tests/fixtures/dwg")
 endif()
 
 # Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.

@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+#ifndef USE_DWG_IMPORT
+#define USE_DWG_IMPORT 0
+#endif
+
 namespace lc {
 namespace persistence {
 
@@ -27,10 +31,19 @@ const std::vector<FormatVariant>& table() {
         {"dxf.ac1021.binary", "dxf", "DXF 2007 binary (libdxfrw)",  "AC1021", "dxf", "libdxfrw", true,  true, true, false},
         {"dxf.ac1024.binary", "dxf", "DXF 2010 binary (libdxfrw)",  "AC1024", "dxf", "libdxfrw", true,  true, true, false},
         {"dxf.ac1027.binary", "dxf", "DXF 2013 binary (libdxfrw)",  "AC1027", "dxf", "libdxfrw", true,  true, true, false},
-        // DWG is offered in the open dialog and has never had a reader in a
-        // default build: libopencad is optional, unmaintained and off. Phase 3
-        // turns this one readable; nothing else in the table has to move.
+        // Two rows for DWG, because two different things are meant by it.
+        //
+        // "dwg" is the historical one behind File::LIBOPENCAD_DWG: a reader
+        // that was optional, unmaintained, off in every shipped build, and is
+        // now gone. The row stays because the enumerator is a wire value.
+        //
+        // "dwg.libdxfrw" is the reader libdxfrw brings. It is readable only
+        // when the build asked for it -- WITH_DWG_IMPORT, off by default --
+        // and writable never: LibreCAD can read DWG and cannot write it, so a
+        // drawing opened from one has to be saved somewhere else, which is
+        // what DocumentSource uses `writable` to decide.
         {"dwg",               "dwg", "DWG (not supported)",         "",       "dwg", "",         true,  false, false, false},
+        {"dwg.libdxfrw",      "dwg", "DWG (read only)",             "",       "dwg", "libdxfrw", true,  USE_DWG_IMPORT != 0, false, true},
     };
 
     return variants;
@@ -39,9 +52,10 @@ const std::vector<FormatVariant>& table() {
 }  // namespace
 
 const std::vector<FormatInfo>& formats() {
-    // Both are listed whether or not a reader exists, because the open dialog
-    // offers both and has always done so; a DWG picked there is refused with a
-    // message rather than hidden.
+    // The catalogue of formats LibreCAD knows about, whether or not this build
+    // can read them -- every variant belongs to one of these. What the open
+    // dialog offers is a different question, answered by
+    // File::getSupportedFileExtensions() from the variants that are readable.
     static const std::vector<FormatInfo> known = {
         {"dxf", "DXF files"},
         {"dwg", "DWG files"},

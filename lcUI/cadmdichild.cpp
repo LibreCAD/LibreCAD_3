@@ -109,6 +109,23 @@ bool CadMdiChild::openFile() {
             _document, _filename, availableLibraries.begin()->first);
         _source = lc::persistence::sourceFromImport(_filename, result);
 
+        if (!result.ok && result.entitiesDelivered == 0) {
+            // Nothing arrived. Leaving the blank document behind would present
+            // an empty drawing as though the file had opened, and its name in
+            // the title bar makes Save offer to write over the original.
+            QString detail = tr("%1 could not be read.")
+                             .arg(QString::fromStdString(_filename));
+            if (!result.diagnostics.empty()) {
+                detail += " (" + QString::fromStdString(result.diagnostics.front().code) + ": "
+                          + QString::fromStdString(result.diagnostics.front().message) + ")";
+            }
+
+            QMessageBox::critical(nullptr, tr("Open error"), detail);
+            _filename = "";
+            _source = lc::persistence::DocumentSource();
+            return false;
+        }
+
         if (!result.ok) {
             // The document holds whatever arrived before the failure, which is
             // worth showing -- but the user has to know it is not the drawing.
