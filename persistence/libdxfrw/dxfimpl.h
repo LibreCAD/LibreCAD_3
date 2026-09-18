@@ -378,6 +378,10 @@ public:
     std::map<ID_DATATYPE, std::string> _dimensionBlocks;
     unsigned int _nextDimensionBlock{1};
 
+    /// Lowest n with no *D<n> block in the document, so minted dimension block
+    /// names cannot collide with the ones a drawing already carries.
+    unsigned int firstFreeDimensionBlockIndex() const;
+
     // UTILITIES FUNCTIONS
     lc::AngleFormat numberToAngleFormat(int num);
 

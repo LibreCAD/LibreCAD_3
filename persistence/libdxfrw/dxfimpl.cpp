@@ -4,6 +4,7 @@
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <set>
 
 #include <cad/primitive/circle.h>
@@ -2737,11 +2738,47 @@ void DXFimpl::writeBlockRecords() {
     }
 
     // A block needs its record. The names are minted from the same ordered walk
-    // writeBlocks() uses, so the two agree without either having run yet.
-    unsigned int next = 1;
+    // writeBlocks() uses, so the two agree without either having run yet -- both
+    // start from the same base, which is why the base is computed here and left
+    // in the member for writeBlocks() to pick up rather than recomputed there.
+    //
+    // The base has to clear the *D names the document already holds. A drawing
+    // read from any conforming file arrives with its own anonymous dimension
+    // blocks -- addBlock takes them in like any other -- and libdxfrw refuses a
+    // duplicate BLOCK_RECORD name, which fails the whole write. Starting at 1
+    // therefore lost the entire save, silently, for every drawing that had been
+    // through a dimension-bearing file once already, including one this
+    // application wrote a moment earlier.
+    _nextDimensionBlock = firstFreeDimensionBlockIndex();
+    unsigned int next = _nextDimensionBlock;
     for(std::size_t i = 0; i < allDimensions().size(); i++) {
         dxfW->writeBlockRecord("*D" + std::to_string(next++));
     }
+}
+
+/// The lowest n for which no block named *D<n> exists in the document.
+unsigned int DXFimpl::firstFreeDimensionBlockIndex() const {
+    unsigned int highest = 0;
+    for(const auto& block : _document->blocks()) {
+        const std::string& name = block->name();
+        if(name.size() < 3 || name[0] != '*' || (name[1] != 'D' && name[1] != 'd')) {
+            continue;
+        }
+        const std::string digits = name.substr(2);
+        if(digits.empty()
+           || digits.find_first_not_of("0123456789") != std::string::npos) {
+            continue;
+        }
+        try {
+            const unsigned long value = std::stoul(digits);
+            if(value > highest && value < std::numeric_limits<unsigned int>::max()) {
+                highest = static_cast<unsigned int>(value);
+            }
+        } catch(const std::exception&) {
+            // Out of range for unsigned long: not a name we could have minted.
+        }
+    }
+    return highest + 1;
 }
 
 std::vector<lc::entity::CADEntity_CSPtr> DXFimpl::allDimensions() const {
