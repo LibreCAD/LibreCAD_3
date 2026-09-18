@@ -30,6 +30,11 @@ public:
         LIBOPENCAD_DWG = 14
     };
 
+    // Wire values, like Type: kept although libopencad is gone. It was an
+    // optional, unmaintained, off-by-default DWG reader; the enumerator stays
+    // so a stored or scripted value keeps meaning what it meant, and asking for
+    // it now reports that this build has no reader rather than silently
+    // producing an empty document.
     enum Library {
         LIBDXFRW,
         LIBOPENCAD,

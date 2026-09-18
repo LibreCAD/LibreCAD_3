@@ -2,9 +2,6 @@
 #include "format.h"
 #include "libdxfrw/dxfimpl.h"
 #include <cad/logger/logger.h>
-#ifdef LIBOPENCAD_ENABLED
-#include "libopencad_interface/libopencad.h"
-#endif
 
 using namespace lc::persistence;
 
@@ -163,11 +160,6 @@ std::map<File::Library, std::string> File::getAvailableLibrariesForFormat(std::s
         if (variant.libraryId == "libdxfrw") {
             libraries.insert(std::make_pair(LIBDXFRW, variant.libraryId));
         }
-#ifdef LIBOPENCAD_ENABLED
-        else if (variant.libraryId == "libopencad") {
-            libraries.insert(std::make_pair(LIBOPENCAD, variant.libraryId));
-        }
-#endif
     }
 
     return libraries;
@@ -239,18 +231,9 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         return result;
     }
 
-#ifdef LIBOPENCAD_ENABLED
-    case LIBOPENCAD: {
-        lc::persistence::LibOpenCad opencad(document, builder);
-        opencad.open(path);
-        result.ok = true;
-        result.variantId = variantIdForType(Type::LIBOPENCAD_DWG);
-        break;
-    }
-#endif
     default:
-        // Includes LIBOPENCAD when built without LIBOPENCAD_ENABLED: nothing
-        // was read, and saying so beats reporting a successful empty import.
+        // LIBOPENCAD names a reader this build does not have: nothing was
+        // read, and saying so beats reporting a successful empty import.
         LOG_ERROR << "No reader for " << path;
         result.diagnostics.push_back(Diagnostic{
             Severity::Error, "no-reader", "This build has no reader for that format"});
