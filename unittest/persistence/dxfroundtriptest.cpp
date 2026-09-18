@@ -118,6 +118,43 @@ bool documentHolds(const std::shared_ptr<lc::storage::DocumentImpl>& doc,
     return doc->entityContainer().entityByID(entity->id()) != nullptr;
 }
 
+/** The document's entities by kernel kind. */
+std::map<std::string, std::size_t> entitiesInDocument(
+    const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+    std::map<std::string, std::size_t> census;
+
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+            census["Line"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
+            census["Circle"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
+            census["Arc"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
+            census["Ellipse"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+            census["Text"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            census["MText"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Point>(entity)) {
+            census["Point"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity)) {
+            census["LWPolyline"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+            census["Spline"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+            census["Hatch"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Insert>(entity)) {
+            census["Insert"]++;
+        } else {
+            census["(unclassified)"]++;
+        }
+    }
+
+    return census;
+}
+
+
 }  // namespace
 
 // The filed task: "LibreCAD 3 crashes opening DXFs with 3D segments".
@@ -576,6 +613,21 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
 
         EXPECT_EQ(isBinary, lc::persistence::File::isBinaryType(type))
             << advertised.second << " wrote the wrong encoding.";
+
+        // Writing is half of it. A binary target that produces a file nothing
+        // can read is not a save target, and the encodings must not disagree
+        // about what the drawing contains.
+        auto reopened = newDocument();
+        lc::persistence::ImportResult result;
+        ASSERT_NO_THROW(result = lc::persistence::File::importFile(
+            reopened, path, lc::persistence::File::Library::LIBDXFRW))
+            << advertised.second;
+
+        EXPECT_TRUE(result.ok) << advertised.second << " wrote a file it cannot read back.";
+        EXPECT_FALSE(result.partial) << advertised.second;
+        EXPECT_TRUE(result.failures.empty()) << advertised.second;
+        EXPECT_EQ(entitiesInDocument(reopened), entitiesInDocument(doc))
+            << advertised.second << " changed the drawing.";
 
         boost::filesystem::remove(path);
     }
@@ -1151,42 +1203,6 @@ std::map<std::string, std::size_t> recordsInFile(const std::string& path) {
     return census;
 }
 
-/** The document's entities by kernel kind. */
-std::map<std::string, std::size_t> entitiesInDocument(
-    const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
-    std::map<std::string, std::size_t> census;
-
-    for (const auto& entity : doc->entityContainer().asVector()) {
-        if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
-            census["Line"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
-            census["Circle"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
-            census["Arc"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
-            census["Ellipse"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
-            census["Text"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
-            census["MText"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Point>(entity)) {
-            census["Point"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity)) {
-            census["LWPolyline"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
-            census["Spline"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
-            census["Hatch"]++;
-        } else if (std::dynamic_pointer_cast<const lc::entity::Insert>(entity)) {
-            census["Insert"]++;
-        } else {
-            census["(unclassified)"]++;
-        }
-    }
-
-    return census;
-}
-
 std::string fixture(const char* name) {
     return std::string(UNITTEST_FIXTURES_DIR) + "/" + name;
 }
@@ -1553,5 +1569,72 @@ TEST(DxfRoundTripTest, GuardedReadsRecordNothingForGoodFiles) {
 
         EXPECT_TRUE(result.ok) << name;
         EXPECT_TRUE(result.failures.empty()) << name;
+    }
+}
+
+
+// Binary DXF is the same drawing, not a lossy sibling.
+//
+// The encodings differ in how a group code's value is laid out, which is
+// exactly the kind of difference that truncates or extends a string by one
+// character without anyone noticing -- the DXF text records were the suspected
+// case. TEXT and MTEXT are therefore compared character for character rather
+// than by presence.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, BinaryAndAsciiCarryTheSameText) {
+    auto layer = defaultLayer();
+    const std::string plain = "plain text";
+    const std::string multi = "multi line text";
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::Text>(
+            lc::geo::Coordinate(1.0, 9.0, 0.0), plain, 0.5, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VABaseline, layer),
+        std::make_shared<lc::entity::MText>(
+            lc::geo::Coordinate(1.0, 7.0, 0.0), multi, 0.5, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VABaseline, false, false, false, false, layer)}));
+
+    const struct {
+        lc::persistence::File::Type type;
+        const char* label;
+    } targets[] = {
+        {lc::persistence::File::LIBDXFRW_DXF_R2000, "R2000 ASCII"},
+        {lc::persistence::File::LIBDXFRW_DXB_R2000, "R2000 binary"},
+        {lc::persistence::File::LIBDXFRW_DXF_R2013, "R2013 ASCII"},
+        {lc::persistence::File::LIBDXFRW_DXB_R2013, "R2013 binary"},
+    };
+
+    for (const auto& target : targets) {
+        const std::string path = uniqueTmpDxf(target.label);
+        boost::filesystem::remove(path);
+
+        ASSERT_TRUE(lc::persistence::File::save(doc, path, target.type)) << target.label;
+
+        auto reopened = newDocument();
+        ASSERT_NO_THROW(lc::persistence::File::open(
+            reopened, path, lc::persistence::File::Library::LIBDXFRW)) << target.label;
+
+        int texts = 0;
+        int mtexts = 0;
+        for (const auto& entity : reopened->entityContainer().asVector()) {
+            if (auto mtext = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+                mtexts++;
+                EXPECT_EQ(mtext->text_value(), multi)
+                    << target.label << " changed the MTEXT, length "
+                    << mtext->text_value().size() << " instead of " << multi.size();
+            } else if (auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+                texts++;
+                EXPECT_EQ(text->text_value(), plain) << target.label;
+            }
+        }
+
+        EXPECT_EQ(texts, 1) << target.label;
+        EXPECT_EQ(mtexts, 1) << target.label;
+
+        boost::filesystem::remove(path);
     }
 }
