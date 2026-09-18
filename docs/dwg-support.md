@@ -22,9 +22,15 @@ the other at the same moment in its life.
 ## The evidence, as of the pinned libdxfrw
 
 The library tracks its own DWG format claims in
-`third_party/libdxfrw/metadata/qualified-format-status-v1.json`. At the pinned
+`third_party/libdxfrw/metadata/qualified-format-status-v1.json`, with each
+claim's subject in `qualified-format-claims-v1.json` beside it. At the pinned
 revision it records **15 claims: 11 `EXPERIMENTAL` and 4 `PENDING_NATIVE`. None
 is `PROMOTED`.**
+
+Every one of those 15 is `direction: "read"`. The ledger qualifies the DWG
+*reader*; it says nothing whatever about writing, promoted or not. That is a
+stronger position than "no write claim is promoted", not a weaker one -- there
+is no write claim to promote.
 
 Every `EXPERIMENTAL` claim carries the same two blockers:
 
@@ -35,16 +41,18 @@ The file's own transition rules allow `PENDING_NATIVE` → `PROMOTED`, but not
 `EXPERIMENTAL` → `PROMOTED`: a claim must clear its blockers before it can even
 be considered. The file's `freezeState` is `FROZEN`.
 
-So the library does not claim its DWG writing is qualified, and LibreCAD should
-not claim it either.
+So the library makes no qualified claim about DWG writing at all, and LibreCAD
+should not make one either.
 
 ## What would reopen this
 
 Three gates, all three, not any one:
 
-1. **The library promotes its write claims.** `claimStatus` shows `PROMOTED`
-   entries for the versions LibreCAD would offer, with native receipts
-   attached — not merely `PENDING_NATIVE`, and not with blockers outstanding.
+1. **The library makes, and promotes, write claims.** The ledger first has to
+   carry claims with `direction: "write"` -- today it carries none -- and
+   `claimStatus` then has to show them `PROMOTED` for the versions LibreCAD
+   would offer, with native receipts attached: not merely `PENDING_NATIVE`, and
+   not with blockers outstanding.
 
 2. **Round-trip evidence against software LibreCAD does not control.** A file
    LibreCAD wrote, opened by at least one independent implementation, with the

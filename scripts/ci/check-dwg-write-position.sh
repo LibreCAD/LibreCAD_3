@@ -15,9 +15,10 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 status_file="$root/third_party/libdxfrw/metadata/qualified-format-status-v1.json"
+claims_file="$root/third_party/libdxfrw/metadata/qualified-format-claims-v1.json"
 
-if [ ! -f "$status_file" ]; then
-    echo "error: $status_file is missing; is the libdxfrw submodule checked out?" >&2
+if [ ! -f "$status_file" ] || [ ! -f "$claims_file" ]; then
+    echo "error: the libdxfrw format ledger is missing; is the submodule checked out?" >&2
     exit 1
 fi
 
@@ -29,19 +30,40 @@ else
     writable=no
 fi
 
-promoted=$(python3 - "$status_file" <<'PY'
+promoted=$(python3 - "$status_file" "$claims_file" <<'PY'
 import json, sys, collections
+
 status = json.load(open(sys.argv[1]))
-counts = collections.Counter(claim["status"] for claim in status.get("claimStatus", []))
-for name in sorted(counts):
-    print(f"  {name}: {counts[name]}", file=sys.stderr)
+claims = json.load(open(sys.argv[2]))
+
+# The status file records a status per claim id and says nothing about what the
+# claim is for; the direction lives in the claims file. Counting every PROMOTED
+# entry watched the wrong thing: every claim in the ledger is direction "read",
+# so the gate could be tripped by the reader becoming qualified and could never
+# be moved by anything about writing -- the one thing it exists to watch.
+direction = {claim["id"]: claim.get("tuple", {}).get("direction")
+             for claim in claims.get("claims", [])}
+
+counts = collections.Counter()
+write_claims = 0
+for entry in status.get("claimStatus", []):
+    if direction.get(entry["claimId"]) != "write":
+        continue
+    write_claims += 1
+    counts[entry["status"]] += 1
+
+if write_claims == 0:
+    print("  the ledger carries no DWG write claim at all", file=sys.stderr)
+else:
+    for name in sorted(counts):
+        print(f"  {name}: {counts[name]}", file=sys.stderr)
 print(counts.get("PROMOTED", 0))
 PY
 )
 
 echo "libdxfrw DWG format claims:" >&2
 echo "LibreCAD offers a writable DWG variant: $writable"
-echo "libdxfrw claims promoted: $promoted"
+echo "libdxfrw DWG write claims promoted: $promoted"
 
 if [ "$writable" = "yes" ] && [ "$promoted" -eq 0 ]; then
     echo "error: LibreCAD offers DWG writing while libdxfrw promotes no DWG format claim." >&2
