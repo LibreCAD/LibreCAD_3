@@ -76,7 +76,11 @@ target_link_libraries(persistence
     PRIVATE libdxfrw::libdxfrw)
 
 # INSTALLATION
+# RUNTIME: on Windows a SHARED library's .dll is a RUNTIME artifact, so
+# without this the DLL is never installed and the installed application cannot
+# start. It belongs beside the executable.
 install(TARGETS persistence
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
