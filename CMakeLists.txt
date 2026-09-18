@@ -1,5 +1,11 @@
-# Bumped from 3.8 to 3.15 for pybind11 v3.x's CMake floor (phase 1 slice 1.2).
-cmake_minimum_required(VERSION 3.15...3.27)
+# 3.28 is the floor of the vendored libdxfrw, which this project adds with
+# add_subdirectory below; anything less fails there rather than here, naming a
+# third_party path instead of this line.  (Previously 3.15, for pybind11 v3.x's
+# CMake floor -- phase 1 slice 1.2 -- which this supersedes.)
+#
+# The upper bound stays at the floor deliberately.  Raising it to 3.30+ would
+# set CMP0167 NEW and remove the FindBoost module this project still relies on.
+cmake_minimum_required(VERSION 3.28)
 if (MSVC)
     project(LibreCAD3)
 else()
