@@ -949,29 +949,110 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 }
 
 void DXFimpl::addInsert(const DRW_Insert& data) {
-    LOG_TRACE << "addInsert";
-    lc::builder::InsertBuilder builder;
-    builder.setMetaInfo(getMetaInfo(data));
-    builder.setBlock(getBlock(data));
-    auto layer = getLayer(data);
-    builder.setLayer(layer);
-    builder.setCoordinate(coord(data.basePoint));
+    LOG_TRACE << "addInsert " << data.name;
 
-    auto block=_document->blockByName(data.name);
-    if (block==nullptr) {
-        // It requests block like V21_PAKNING , it is already defined or from other file??
-        // These blocks were not declared in loading file
-        block = std::make_shared<lc::meta::Block>(data.name, geo::Coordinate());
+    // Recorded, not built: see buildDeferredInserts().  Building here measured
+    // an empty block for the bounding box, and -- because the referenced block
+    // is not in the document during the read -- invented a second Block object
+    // with the same name for the entity to point at, which then never matched
+    // the real one by identity.
+    _pendingInserts.push_back(PendingInsert{
+        getMetaInfo(data),
+        getBlock(data),
+        getLayer(data),
+        coord(data.basePoint),
+        data.name});
+}
+
+void DXFimpl::buildDeferredInserts() {
+    if (_pendingInserts.empty()) {
+        return;
     }
-    _builder->append(std::make_shared<lc::operation::AddBlock>(_document, block));
 
-    // May need to check if the block already exists: not sure
-    _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, block));
+    std::vector<bool> built(_pendingInserts.size(), false);
+    // A block referenced but never defined -- an xref, or a truncated file --
+    // still gets an INSERT, pointing at an empty block of that name.  One per
+    // name: fabricating one per INSERT is how duplicate same-named blocks got
+    // into the document in the first place.
+    std::map<std::string, lc::meta::Block_CSPtr> fabricated;
+    size_t remaining = _pendingInserts.size();
 
-    builder.setDisplayBlock(block);
-    builder.setDocument(_document);
+    while (remaining > 0) {
+        // An INSERT of block T can only be measured once every INSERT *inside*
+        // T exists, or a nested block contributes nothing to the box.  Blocks
+        // nest arbitrarily deep, so this walks the dependency graph one layer
+        // at a time rather than assuming a depth.
+        std::vector<size_t> round;
+        for (size_t i = 0; i < _pendingInserts.size(); i++) {
+            if (built[i]) {
+                continue;
+            }
 
-    _entityBuilder->appendEntity(builder.build());
+            const auto& target = _pendingInserts[i].targetBlockName;
+            bool waiting = false;
+            for (size_t j = 0; j < _pendingInserts.size() && !waiting; j++) {
+                waiting = !built[j] && j != i
+                          && _pendingInserts[j].containerBlock != nullptr
+                          && _pendingInserts[j].containerBlock->name() == target;
+            }
+
+            if (!waiting) {
+                round.push_back(i);
+            }
+        }
+
+        if (round.empty()) {
+            // A block that inserts itself, directly or through a cycle. The
+            // file is malformed; build what is left in file order so the
+            // entities still appear, and accept the box a cycle allows.
+            LOG_WARNING << "Recursive block reference; building the remaining "
+                        << remaining << " INSERT(s) unordered";
+            for (size_t i = 0; i < _pendingInserts.size(); i++) {
+                if (!built[i]) {
+                    round.push_back(i);
+                }
+            }
+        }
+
+        auto builder = std::make_shared<lc::operation::Builder>(_document, "Insert blocks");
+        auto entityBuilder = std::make_shared<lc::operation::EntityBuilder>(_document);
+
+        for (const auto i : round) {
+            const auto& pending = _pendingInserts[i];
+            built[i] = true;
+            remaining--;
+
+            auto block = _document->blockByName(pending.targetBlockName);
+            if (block == nullptr) {
+                auto known = fabricated.find(pending.targetBlockName);
+                if (known != fabricated.end()) {
+                    block = known->second;
+                } else {
+                    LOG_WARNING << "INSERT references block " << pending.targetBlockName
+                                << ", which this file does not define; inserting it empty";
+                    block = std::make_shared<lc::meta::Block>(pending.targetBlockName,
+                                                             geo::Coordinate());
+                    fabricated[pending.targetBlockName] = block;
+                    builder->append(std::make_shared<lc::operation::AddBlock>(_document, block));
+                }
+            }
+
+            lc::builder::InsertBuilder insertBuilder;
+            insertBuilder.setMetaInfo(pending.metaInfo);
+            insertBuilder.setBlock(pending.containerBlock);
+            insertBuilder.setLayer(pending.layer);
+            insertBuilder.setCoordinate(pending.position);
+            insertBuilder.setDisplayBlock(block);
+            insertBuilder.setDocument(_document);
+
+            entityBuilder->appendEntity(insertBuilder.build());
+        }
+
+        builder->append(entityBuilder);
+        builder->execute();
+    }
+
+    _pendingInserts.clear();
 }
 
 /*********************************************

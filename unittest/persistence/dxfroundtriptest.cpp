@@ -63,6 +63,7 @@
 
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/line.h>
+#include <cad/primitive/insert.h>
 #include <cad/primitive/lwpolyline.h>
 #include <cad/primitive/spline.h>
 
@@ -784,6 +785,95 @@ TEST(DxfRoundTripTest, OpenRecordsTheDrawingsOwnRevision) {
                       doc, path, lc::persistence::File::Library::LIBDXFRW),
                   c.expected)
             << "$ACADVER " << (c.acadVersion ? c.acadVersion : "(absent)");
+
+        boost::filesystem::remove(path);
+    }
+}
+
+namespace {
+
+// BLOCKS containing `inner` and `outer` in the order given, plus one INSERT of
+// OUTER at (10,10) in ENTITIES. INNER holds a line from (0,0) to (5,5); OUTER
+// holds an INSERT of INNER at its own origin. The drawing is the same either
+// way round -- only the order the reader meets the definitions in differs, and
+// DWG systematically delivers the INSERT first.
+std::string nestedBlockDxf(bool innerFirst) {
+    const std::string inner =
+        "0\nBLOCK\n8\n0\n2\nINNER\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\nINNER\n1\n\n"
+        "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n5.0\n21\n5.0\n31\n0.0\n"
+        "0\nENDBLK\n8\n0\n";
+    const std::string outer =
+        "0\nBLOCK\n8\n0\n2\nOUTER\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\nOUTER\n1\n\n"
+        "0\nINSERT\n8\n0\n2\nINNER\n10\n0.0\n20\n0.0\n30\n0.0\n"
+        "0\nENDBLK\n8\n0\n";
+
+    return "0\nSECTION\n2\nBLOCKS\n" + (innerFirst ? inner + outer : outer + inner)
+           + "0\nENDSEC\n"
+           + "0\nSECTION\n2\nENTITIES\n"
+             "0\nINSERT\n8\n0\n2\nOUTER\n10\n10.0\n20\n10.0\n30\n0.0\n"
+             "0\nENDSEC\n0\nEOF\n";
+}
+
+}  // namespace
+
+// An INSERT's bounding box is the union of the boxes of the entities in the
+// block it displays. DXFimpl built the Insert inside the read callback, where
+// nothing has reached the document yet -- every entity the callbacks make is
+// queued in an operation::Builder that runs afterwards -- so the block always
+// measured empty and the box came out as a degenerate point at the insertion
+// point. Worse, blockByName() misses during the read too, so the entity was
+// pointed at a fabricated stand-in Block rather than the one the file defines,
+// and the "block gained an entity" event never matched it by identity.
+//
+// The nesting is not decoration: OUTER's box can only be right if the INSERT
+// inside it was built first, which is what forces the dependency ordering.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, InsertMeasuresTheBlockItDisplays) {
+    for (const bool innerFirst : {true, false}) {
+        const std::string path = uniqueTmpDxf(innerFirst ? "blocks-inner-first" : "blocks-insert-first");
+        boost::filesystem::remove(path);
+        {
+            std::ofstream dxf(path);
+            dxf << nestedBlockDxf(innerFirst);
+        }
+
+        auto doc = newDocument();
+        ASSERT_NO_THROW(lc::persistence::File::open(
+            doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+        // One INSERT of OUTER at (10,10); OUTER draws INNER at its origin;
+        // INNER draws (0,0)-(5,5). So the box is (10,10)-(15,15).
+        int inserts = 0;
+        for (const auto& entity : doc->entityContainer().asVector()) {
+            auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+            if (insert == nullptr) {
+                continue;
+            }
+
+            inserts++;
+            ASSERT_NE(insert->displayBlock(), nullptr);
+            EXPECT_EQ(insert->displayBlock()->name(), "OUTER");
+            // The block the INSERT points at must be the document's own, not a
+            // stand-in that happens to share its name.
+            EXPECT_EQ(insert->displayBlock(), doc->blockByName("OUTER"));
+
+            const auto box = insert->boundingBox();
+            EXPECT_DOUBLE_EQ(box.minP().x(), 10.0);
+            EXPECT_DOUBLE_EQ(box.minP().y(), 10.0);
+            EXPECT_DOUBLE_EQ(box.maxP().x(), 15.0);
+            EXPECT_DOUBLE_EQ(box.maxP().y(), 15.0);
+        }
+
+        EXPECT_EQ(inserts, 1) << (innerFirst ? "inner block first" : "INSERT before its block");
+
+        // Each block is defined once; no same-named stand-in survives.
+        std::map<std::string, int> byName;
+        for (const auto& block : doc->blocks()) {
+            byName[block->name()]++;
+        }
+        EXPECT_EQ(byName["INNER"], 1);
+        EXPECT_EQ(byName["OUTER"], 1);
 
         boost::filesystem::remove(path);
     }

@@ -108,6 +108,11 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
     // UNKNOWNV case already falls back to.
     File::Type version = Type::LIBDXFRW_DXF_R12;
 
+    // The DXF path has to run the queued operations while its reader is still
+    // alive, because the INSERTs it held back can only be built against a
+    // populated document.  Everything else executes once, at the end.
+    bool operationsExecuted = false;
+
     switch(library) {
     case LIBDXFRW: {
         DXFimpl F(document, builder);
@@ -116,6 +121,13 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
         if (!R.read(&F, true)) {
             LOG_ERROR << "libdxfrw stopped reading " << path << " (DRW::error " << R.getError() << ")";
         }
+
+        // Every INSERT in the file is built now: the blocks it references and
+        // their contents are in the document only after the read's operations
+        // have run, and an Insert measures its block when it is constructed.
+        builder->execute();
+        operationsExecuted = true;
+        F.buildDeferredInserts();
 
         // The revision comes from the drawing's own $ACADVER, captured by
         // DXFimpl::addHeader.  A file that carries none -- or that carries one
@@ -150,7 +162,10 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
         break;
     }
 
-    builder->execute();
+    if (!operationsExecuted) {
+        builder->execute();
+    }
+
     return version;
 }
 

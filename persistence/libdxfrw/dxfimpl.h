@@ -165,6 +165,23 @@ public:
 
     void endBlock() override;
 
+    /**
+     * Create the INSERT entities held back during the read.
+     *
+     * An INSERT's bounding box is the union of the boxes of the entities in
+     * the block it displays, computed once in Insert's constructor. During a
+     * read no entity has reached the document yet -- everything the callbacks
+     * build is queued in an operation::Builder that runs afterwards -- so an
+     * Insert built as it was read always measured an empty block and came out
+     * as a degenerate point at its own insertion point. Deferring the
+     * construction until the blocks and their contents are in the document is
+     * what makes the box right, and it is also what lets the INSERT reference
+     * the block the file actually defined instead of a fabricated stand-in.
+     *
+     * Called by File::open once the read's own operations have executed.
+     */
+    void buildDeferredInserts();
+
 
     // WRITE FUNCTIONALITY
     bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
@@ -282,6 +299,16 @@ public:
     lc::operation::EntityBuilder_SPtr _entityBuilder;
     lc::meta::Block_SPtr _currentBlock;
     DrawingHeader _header;
+
+    /** An INSERT read from the file, not yet turned into an entity. */
+    struct PendingInsert {
+        lc::meta::MetaInfo_SPtr metaInfo;
+        lc::meta::Block_CSPtr containerBlock;  //!< the block the INSERT sits in, null for model space
+        lc::meta::Layer_CSPtr layer;
+        lc::geo::Coordinate position;
+        std::string targetBlockName;           //!< the block the INSERT displays
+    };
+    std::vector<PendingInsert> _pendingInserts;
 
 private:
     /**
