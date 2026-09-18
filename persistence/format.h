@@ -125,6 +125,14 @@ const std::vector<FormatVariant>& formatVariants();
 /** The variant with this id, or nullptr when there is none. */
 const FormatVariant* formatVariantById(const std::string& id);
 
+/**
+ * A compact record of the libdxfrw API values LibreCAD's behaviour depends on:
+ * revision ordering, error codes, variant tags, and whether DRW_Interface still
+ * has pure virtuals. Pinned by a test, so an upstream renumbering is a failure
+ * here rather than a change in what LibreCAD reads.
+ */
+std::string libdxfrwApiFingerprint();
+
 /** Lower-case a format or variant id, for the case-insensitive lookups. */
 std::string normalisedFormatId(std::string id);
 

@@ -11,6 +11,7 @@ set(persistence_srcs
         format.cpp
 	patternLoader/patternProvider.cpp
         libdxfrw/dxfimpl.cpp
+        libdxfrw/apipins.cpp
         generic/helpers.cpp
 )
 

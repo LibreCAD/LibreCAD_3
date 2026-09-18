@@ -197,3 +197,22 @@ TEST(FormatTest, EveryTypeRoundTripsThroughItsVariantId) {
     EXPECT_EQ(untouched, lc::persistence::File::LIBDXFRW_DXF_R2000)
         << "A failed lookup must not have written to the output.";
 }
+
+// The libdxfrw values LibreCAD's behaviour rests on. The assertions themselves
+// are static_asserts in persistence/libdxfrw/apipins.cpp, where the library's
+// headers are already compiled at C++17 -- they now use inline variables, which
+// lcunittest cannot include at the gnu++14 that keeps kaguya building. What
+// arrives here is the fingerprint they produce, so an upstream renumbering
+// fails this test as well as that build.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(FormatTest, LibdxfrwApiIsUnchanged) {
+    EXPECT_EQ(lc::persistence::libdxfrwApiFingerprint(),
+              "version:UNKNOWNV=0,AC1009=10,AC1015=13,AC1027=17,AC1032=18;"
+              "error:NONE=0,OPEN=2,SECTION=13,CODE=14;"
+              "variant:STRING=0,INTEGER=1,DOUBLE=3,COORD=4;"
+              "interface:bare-abstract=1,dxfimpl-concrete=1")
+        << "libdxfrw's API moved. Check what LibreCAD compares against these "
+           "values before updating the string: the revision order drives the "
+           "R12 down-convert, and the variant tags guard a union read.";
+}
