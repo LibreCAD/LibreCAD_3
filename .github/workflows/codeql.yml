@@ -71,11 +71,8 @@ jobs:
     - name: Build libdxfrw
       if: matrix.language == 'cpp'
       run: |
-        mkdir -p build
-        pushd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
+        source "${{ github.workspace }}/scripts/ci/configure-build.sh"
         make -j 4 dxfrw
-        popd
 
     # Must run BEFORE the build: for compiled languages CodeQL builds its
     # database by tracing the compiler as the build runs.  With the build
@@ -105,10 +102,16 @@ jobs:
         git submodule update --init --recursive
 
         echo "building LibreCAD"
-        mkdir -p build
-        pushd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
-        make -j 4
+        source "${{ github.workspace }}/scripts/ci/configure-build.sh"
+        # Fail loudly if a libdxfrw translation unit compiles here: that means
+        # the configure arguments drifted between this step and the one before
+        # Initialize CodeQL, and third-party code is entering the database.
+        make -j 4 2>&1 | tee ../codeql-build.log
+        if grep -q "third_party/libdxfrw" ../codeql-build.log; then
+            echo "ERROR: libdxfrw compiled inside the traced build; configure arguments drifted." >&2
+            grep -m5 "third_party/libdxfrw" ../codeql-build.log >&2
+            exit 1
+        fi
         # install/fast, not install: the plain install target depends on `all`,
         # and lckernel regenerates build_constants.cpp on every make, so a
         # plain `sudo make install` recompiles inside sudo.  sudo strips LD_*
@@ -116,7 +119,6 @@ jobs:
         # anything compiled there is silently missing from the database.
         echo "installing LibreCAD"
         sudo make install/fast DESTDIR=AppDir
-        popd
 
         sudo apt-get -qq install clang-15 clang-tools-15
 
