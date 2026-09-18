@@ -19,8 +19,9 @@ else()
     set(BUILD_INFO "Release")
 endif()
 
-# DRW_VERSION is frozen at "0.6.3" upstream, so report what is actually built:
-# the package version plus the pinned submodule revision.
+# DRW_VERSION is a coarse upstream banner and changes only at release
+# boundaries, so report what is actually built instead: the package version
+# plus the pinned submodule revision.
 if(NOT DEFINED LIBDXFRW_BUILD_VERSION OR LIBDXFRW_BUILD_VERSION STREQUAL "")
     set(LIBDXFRW_BUILD_VERSION "unknown")
 endif()
