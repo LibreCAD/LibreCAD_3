@@ -69,6 +69,7 @@
 #include <cad/primitive/spline.h>
 
 #include "persistence/file.h"
+#include "persistence/readguard.h"
 
 namespace {
 
@@ -1490,4 +1491,67 @@ TEST(DxfRoundTripTest, ReadingAPatternedHatchReentersOpen) {
     EXPECT_EQ(hatch->getRegion().loopList().size(), 1u);
 
     boost::filesystem::remove(path);
+}
+
+// The read-callback guard.
+//
+// libdxfrw's read path is not a function-try-block the way its write path is,
+// so an exception from a callback leaves dxfRW::read() reporting
+// getError() == BAD_NONE -- the caller is told the file read cleanly while the
+// process is already unwinding. Every read callback now runs inside
+// runGuarded(), and DXFimpl records the record kind, handle, layer and block
+// before carrying on with the next record.
+//
+// The mechanism is tested here rather than through a poisoned file because
+// there is no longer a DXF record that reaches a throw: the three kernel
+// crashes are fixed and degenerate records are skipped before they reach a
+// constructor. That is exactly the ordering the plan insisted on -- this guard
+// must not land while those crashes are live, or it turns them into silent
+// holes. That every callback is actually wrapped is checked by
+// scripts/ci/check-read-callbacks.sh, which no test can do.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AReadCallbackThatThrowsIsRecordedNotFatal) {
+    std::string reason;
+
+    // The ordinary case.
+    EXPECT_FALSE(lc::persistence::runGuarded(
+        [] { throw std::runtime_error("bad line"); }, reason));
+    EXPECT_EQ(reason, "bad line");
+
+    // A bare const char*, which is what lc::geo::Area threw for years and what
+    // a `catch (const std::exception&)` walks straight past. This is the
+    // assertion that matters: the obvious handler would have been wrong.
+    reason.clear();
+    EXPECT_FALSE(lc::persistence::runGuarded(
+        [] { throw "points describe a volume, not a area."; }, reason));
+    EXPECT_EQ(reason, "points describe a volume, not a area.");
+
+    // Something else entirely still has to be survivable, with a reason the
+    // user can be shown.
+    reason.clear();
+    EXPECT_FALSE(lc::persistence::runGuarded([] { throw 42; }, reason));
+    EXPECT_FALSE(reason.empty());
+
+    // A callback that does not throw reports success and leaves reason alone.
+    reason = "untouched";
+    bool ran = false;
+    EXPECT_TRUE(lc::persistence::runGuarded([&] { ran = true; }, reason));
+    EXPECT_TRUE(ran);
+    EXPECT_EQ(reason, "untouched");
+}
+
+// And the whole corpus of fixtures still reads with nothing recorded: the guard
+// must not be quietly swallowing work that used to succeed.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, GuardedReadsRecordNothingForGoodFiles) {
+    for (const char* name : {"oracle_r2000.dxf", "oracle_r12.dxf"}) {
+        auto doc = newDocument();
+        const auto result = lc::persistence::File::importFile(
+            doc, fixture(name), lc::persistence::File::Library::LIBDXFRW);
+
+        EXPECT_TRUE(result.ok) << name;
+        EXPECT_TRUE(result.failures.empty()) << name;
+    }
 }

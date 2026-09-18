@@ -147,35 +147,63 @@ bool headerCoord(const DRW_Header& header, const std::string& key, DRW_Coord& ou
 // to record the file's revision, which it was instead guessing from the text
 // codec.
 void DXFimpl::addHeader(const DRW_Header* data) {
-    LOG_TRACE << "addHeader";
+    guarded("HEADER", nullptr, [&] {
+        LOG_TRACE << "addHeader";
 
-    if (data == nullptr) {
-        return;
+        if (data == nullptr) {
+            return;
+        }
+
+        headerStr(*data, "$ACADVER", _header.acadVersion);
+
+        if (headerInt(*data, "$INSUNITS", _header.insUnitsCode)) {
+            _header.units = numberToUnit(_header.insUnitsCode);
+        }
+
+        headerInt(*data, "$MEASUREMENT", _header.measurement);
+        headerDouble(*data, "$LTSCALE", _header.lineTypeScale);
+
+        // Extents are a pair or they are nothing: half a bounding box describes no
+        // region, and a consumer that trusted one half would read the other as the
+        // origin.
+        DRW_Coord extMin;
+        DRW_Coord extMax;
+        if (headerCoord(*data, "$EXTMIN", extMin) && headerCoord(*data, "$EXTMAX", extMax)) {
+            _header.extMin = coord(extMin);
+            _header.extMax = coord(extMax);
+            _header.hasExtents = true;
+        }
+
+        LOG_TRACE << "header $ACADVER=" << _header.acadVersion
+                  << " $INSUNITS=" << _header.insUnitsCode
+                  << " $MEASUREMENT=" << _header.measurement;
+    });
+}
+
+void DXFimpl::recordFailure(const char* recordKind, const DRW_Entity* entity, const char* reason) {
+    ImportFailure failure;
+    failure.recordKind = recordKind;
+    failure.reason = reason == nullptr ? "" : reason;
+
+    if (entity != nullptr) {
+        failure.handle = entity->handle;
+        failure.layer = entity->layer;
+
+        // The block it belongs to, by the name the drawing uses: the handle
+        // alone is no help to a user looking for what went missing.
+        const auto block = _handleBlock.find(entity->parentHandle);
+        if (block != _handleBlock.end() && block->second != nullptr) {
+            failure.block = block->second->name();
+        } else if (_currentBlock != nullptr) {
+            failure.block = _currentBlock->name();
+        }
     }
 
-    headerStr(*data, "$ACADVER", _header.acadVersion);
+    LOG_ERROR << "Could not import " << failure.recordKind
+              << " (handle " << failure.handle << ", layer " << failure.layer << "): "
+              << failure.reason;
 
-    if (headerInt(*data, "$INSUNITS", _header.insUnitsCode)) {
-        _header.units = numberToUnit(_header.insUnitsCode);
-    }
-
-    headerInt(*data, "$MEASUREMENT", _header.measurement);
-    headerDouble(*data, "$LTSCALE", _header.lineTypeScale);
-
-    // Extents are a pair or they are nothing: half a bounding box describes no
-    // region, and a consumer that trusted one half would read the other as the
-    // origin.
-    DRW_Coord extMin;
-    DRW_Coord extMax;
-    if (headerCoord(*data, "$EXTMIN", extMin) && headerCoord(*data, "$EXTMAX", extMax)) {
-        _header.extMin = coord(extMin);
-        _header.extMax = coord(extMax);
-        _header.hasExtents = true;
-    }
-
-    LOG_TRACE << "header $ACADVER=" << _header.acadVersion
-              << " $INSUNITS=" << _header.insUnitsCode
-              << " $MEASUREMENT=" << _header.measurement;
+    _failures.push_back(std::move(failure));
 }
 
 void DXFimpl::setBlock(const int handle) {
@@ -183,78 +211,84 @@ void DXFimpl::setBlock(const int handle) {
 }
 
 void DXFimpl::addViewport(const DRW_Viewport& data) {
-    LOG_TRACE << "addViewport ";
+    guarded("VIEWPORT", &data, [&] {
+        LOG_TRACE << "addViewport ";
+    });
 }
 
 void DXFimpl::addVport(const DRW_Vport& data) {
-    LOG_TRACE << "addVport ";
+    guarded("VPORT", nullptr, [&] {
+        LOG_TRACE << "addVport ";
+    });
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-    LOG_TRACE << "addBlock " << data.name;
+    guarded("BLOCK", &data, [&] {
+        LOG_TRACE << "addBlock " << data.name;
 
-    _currentBlock = nullptr;
+        _currentBlock = nullptr;
 
-    auto base = coord(data.basePoint);
+        auto base = coord(data.basePoint);
 
-    auto appData = data.appData;
-    auto it = appData.begin();
-    std::string appName;
+        auto appData = data.appData;
+        auto it = appData.begin();
+        std::string appName;
 
-    while(it != appData.end()) {
-        if(!it->empty()) {
-            appName = *(it->begin()->content.s);
+        while(it != appData.end()) {
+            if(!it->empty()) {
+                appName = *(it->begin()->content.s);
 
-            if(appName == APP_NAME) {
-                break;
+                if(appName == APP_NAME) {
+                    break;
+                }
             }
+
+            it++;
         }
 
-        it++;
-    }
+        if(it != appData.end() && it->size() >= 3) {
+            auto it2 = it->begin();
 
-    if(it != appData.end() && it->size() >= 3) {
-        auto it2 = it->begin();
+            it2++;
+            auto pluginName = *(it2->content.s);
 
-        it2++;
-        auto pluginName = *(it2->content.s);
-
-        it2++;
-        auto entityName = *(it2->content.s);
-
-        it2++;
-
-        std::map<std::string, std::string> params;
-        while(it2 != it->end()) {
-            auto key = *(it2->content.s);
+            it2++;
+            auto entityName = *(it2->content.s);
 
             it2++;
 
-            if(it2 == it->end()) {
-                break;
+            std::map<std::string, std::string> params;
+            while(it2 != it->end()) {
+                auto key = *(it2->content.s);
+
+                it2++;
+
+                if(it2 == it->end()) {
+                    break;
+                }
+
+                auto value = *(it2->content.s);
+                params[key] = value;
+                it2++;
             }
 
-            auto value = *(it2->content.s);
-            params[key] = value;
-            it2++;
+            // Under the drawing's own block name: the INSERTs that place this
+            // custom entity reference it by that name, and CustomEntityStorage's
+            // other constructor invents one, so every such INSERT used to end up
+            // pointing at a block nothing defined -- which is why no plugin was
+            // ever asked to rebuild a custom entity read back from a file.
+            _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(
+                data.name, pluginName, entityName, base, params);
         }
 
-        // Under the drawing's own block name: the INSERTs that place this
-        // custom entity reference it by that name, and CustomEntityStorage's
-        // other constructor invents one, so every such INSERT used to end up
-        // pointing at a block nothing defined -- which is why no plugin was
-        // ever asked to rebuild a custom entity read back from a file.
-        _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(
-            data.name, pluginName, entityName, base, params);
-    }
+        if(_currentBlock == nullptr) {
+            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base);
+        }
+        _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
-    if(_currentBlock == nullptr) {
-        _currentBlock = std::make_shared<lc::meta::Block>(data.name, base);
-    }
-    _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
-
-    // May need to check if the block already exists: not sure
-    _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, _currentBlock));
+        // May need to check if the block already exists: not sure
+        _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, _currentBlock));
+    });
 }
 
 void DXFimpl::endBlock() {
@@ -263,537 +297,575 @@ void DXFimpl::endBlock() {
 }
 
 void DXFimpl::addLine(const DRW_Line& data) {
-    LOG_TRACE << "addLine";
-    lc::builder::LineBuilder builder;
+    guarded("LINE", &data, [&] {
+        LOG_TRACE << "addLine";
+        lc::builder::LineBuilder builder;
 
-    builder.setMetaInfo(getMetaInfo(data));
-    builder.setBlock(getBlock(data));
-    builder.setLayer(getLayer(data));
-    builder.setStart(coord(data.basePoint));
-    builder.setEnd(coord(data.secPoint));
+        builder.setMetaInfo(getMetaInfo(data));
+        builder.setBlock(getBlock(data));
+        builder.setLayer(getLayer(data));
+        builder.setStart(coord(data.basePoint));
+        builder.setEnd(coord(data.secPoint));
 
-    LOG_TRACE << "Block:" << builder.block();
-    deliver(builder.build());
+        LOG_TRACE << "Block:" << builder.block();
+        deliver(builder.build());
+    });
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
-    LOG_TRACE << "addCircle";
-    // CircleBuilder::checkValues throws for a negative radius (and geo::Circle
-    // throws again).  The throw travels out through libdxfrw's callback and out
-    // of File::open, which no caller guards -- lcUI/cadmdichild.cpp:107 calls it
-    // bare -- so one bad record terminated the process.  Drop the record.
-    // The negated comparison also rejects NaN.
-    if (!(data.radious >= 0.0)) {
-        LOG_ERROR << "Skipping CIRCLE with unusable radius " << data.radious;
-        return;
-    }
+    guarded("CIRCLE", &data, [&] {
+        LOG_TRACE << "addCircle";
+        // CircleBuilder::checkValues throws for a negative radius (and geo::Circle
+        // throws again).  The throw travels out through libdxfrw's callback and out
+        // of File::open, which no caller guards -- lcUI/cadmdichild.cpp:107 calls it
+        // bare -- so one bad record terminated the process.  Drop the record.
+        // The negated comparison also rejects NaN.
+        if (!(data.radious >= 0.0)) {
+            LOG_ERROR << "Skipping CIRCLE with unusable radius " << data.radious;
+            return;
+        }
 
-    lc::builder::CircleBuilder builder;
+        lc::builder::CircleBuilder builder;
 
-    builder.setMetaInfo(getMetaInfo(data));
-    builder.setLayer(getLayer(data));
-    builder.setCenter(coord(data.basePoint));
-    builder.setRadius(data.radious);
-    builder.setBlock(getBlock(data));
+        builder.setMetaInfo(getMetaInfo(data));
+        builder.setLayer(getLayer(data));
+        builder.setCenter(coord(data.basePoint));
+        builder.setRadius(data.radious);
+        builder.setBlock(getBlock(data));
 
-    deliver(builder.build());
+        deliver(builder.build());
+    });
 }
 
 void DXFimpl::addArc(const DRW_Arc& data) {
-    LOG_TRACE << "addArc";
-    // geo::Arc's constructor throws std::runtime_error("Invalid radius") for
-    // radius <= 0 (lckernel/cad/geometry/geoarc.cpp:14-16) and ArcBuilder does
-    // not check it, so an ARC with 40=0 aborted the whole open.  The negated
-    // comparison also rejects NaN.
-    if (!(data.radious > 0.0)) {
-        LOG_ERROR << "Skipping ARC with unusable radius " << data.radious;
-        return;
-    }
+    guarded("ARC", &data, [&] {
+        LOG_TRACE << "addArc";
+        // geo::Arc's constructor throws std::runtime_error("Invalid radius") for
+        // radius <= 0 (lckernel/cad/geometry/geoarc.cpp:14-16) and ArcBuilder does
+        // not check it, so an ARC with 40=0 aborted the whole open.  The negated
+        // comparison also rejects NaN.
+        if (!(data.radious > 0.0)) {
+            LOG_ERROR << "Skipping ARC with unusable radius " << data.radious;
+            return;
+        }
 
-    lc::builder::ArcBuilder builder;
+        lc::builder::ArcBuilder builder;
 
-    builder.setMetaInfo(getMetaInfo(data));
-    builder.setLayer(getLayer(data));
-    builder.setBlock(getBlock(data));
-    builder.setCenter(coord(data.basePoint));
-    builder.setRadius(data.radious);
-    builder.setStartAngle(data.staangle);
-    builder.setEndAngle(data.endangle);
-    builder.setIsCCW((bool) data.isccw);
+        builder.setMetaInfo(getMetaInfo(data));
+        builder.setLayer(getLayer(data));
+        builder.setBlock(getBlock(data));
+        builder.setCenter(coord(data.basePoint));
+        builder.setRadius(data.radious);
+        builder.setStartAngle(data.staangle);
+        builder.setEndAngle(data.endangle);
+        builder.setIsCCW((bool) data.isccw);
 
-    deliver(builder.build());
+        deliver(builder.build());
+    });
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
-    LOG_TRACE << "addEllipse";
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
-    auto layer = getLayer(data);
+    guarded("ELLIPSE", &data, [&] {
+        LOG_TRACE << "addEllipse";
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+        auto layer = getLayer(data);
 
-    auto secPoint = coord(data.secPoint);
-    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data.basePoint),
-                     secPoint,
-                     secPoint.magnitude() * data.ratio,
-                     data.staparam,
-                     data.endparam,
-                     data.isccw,
-                     layer,
-                     mf,
-                     getBlock(data)
-                                                          );
+        auto secPoint = coord(data.secPoint);
+        auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data.basePoint),
+                         secPoint,
+                         secPoint.magnitude() * data.ratio,
+                         data.staparam,
+                         data.endparam,
+                         data.isccw,
+                         layer,
+                         mf,
+                         getBlock(data)
+                                                              );
 
-    deliver(lcEllipse);
+        deliver(lcEllipse);
+    });
 }
 
 void DXFimpl::addLayer(const DRW_Layer& data) {
-    LOG_TRACE << "addLayer " << data.name;
-    auto col = icol.intToColor(data.color);
+    guarded("LAYER", nullptr, [&] {
+        LOG_TRACE << "addLayer " << data.name;
+        auto col = icol.intToColor(data.color);
 
-    if (col == nullptr) {
-        col = icol.intToColor(255);
-    }
+        if (col == nullptr) {
+            col = icol.intToColor(255);
+        }
 
-    auto lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(data.lWeight);
+        auto lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(data.lWeight);
 
-    if (lw == nullptr) {
-        lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
-    }
+        if (lw == nullptr) {
+            lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
+        }
 
-    auto lp = _document->linePatternByName(data.lineType);
-    auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
+        auto lp = _document->linePatternByName(data.lineType);
+        auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
 
-    auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
-    // If a layer starts with a * it's a special layer we don't process yet
-    if(data.name == "0") {
-        auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
-        _builder->append(al);
-    }
-    else if (data.name.length() > 0 && (data.name.compare(0,1,"*") != 0)) {
-        auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-        _builder->append(al);
-    }
+        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
+        // If a layer starts with a * it's a special layer we don't process yet
+        if(data.name == "0") {
+            auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
+            _builder->append(al);
+        }
+        else if (data.name.length() > 0 && (data.name.compare(0,1,"*") != 0)) {
+            auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+            _builder->append(al);
+        }
+    });
 }
 
 void DXFimpl::addSpline(const DRW_Spline* data) {
-    LOG_TRACE << "addSpline";
-    auto layer = getLayer(*data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+    guarded("SPLINE", data, [&] {
+        LOG_TRACE << "addSpline";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
 
-    // The knot vector is stored as the file gives it. It used to be trimmed by
-    // one knot at each end, which made every imported spline unwritable: the
-    // library requires knotCount == controlCount + degree + 1 and refuses the
-    // whole file otherwise. Nothing consumed the trimmed form either --
-    // geo::Spline::populateCurve builds a clamped B-spline from the control
-    // points and never reads the stored knots.
-    auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
-                    data->knotslist,
-                    coords(data->fitlist),
-                    data->degree,
-                    false,
-                    data->tolfit,
-                    data->tgStart.x, data->tgStart.y, data->tgStart.z,
-                    data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
-                    data->normalVec.x, data->normalVec.y, data->normalVec.z,
-                    static_cast<lc::geo::Spline::splineflag>(data->flags),
-                    layer,
-                    mf,
-                    getBlock(*data)
-                                                        );
+        // The knot vector is stored as the file gives it. It used to be trimmed by
+        // one knot at each end, which made every imported spline unwritable: the
+        // library requires knotCount == controlCount + degree + 1 and refuses the
+        // whole file otherwise. Nothing consumed the trimmed form either --
+        // geo::Spline::populateCurve builds a clamped B-spline from the control
+        // points and never reads the stored knots.
+        auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
+                        data->knotslist,
+                        coords(data->fitlist),
+                        data->degree,
+                        false,
+                        data->tolfit,
+                        data->tgStart.x, data->tgStart.y, data->tgStart.z,
+                        data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
+                        data->normalVec.x, data->normalVec.y, data->normalVec.z,
+                        static_cast<lc::geo::Spline::splineflag>(data->flags),
+                        layer,
+                        mf,
+                        getBlock(*data)
+                                                            );
 
-    deliver(lcSpline);
+        deliver(lcSpline);
+    });
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
-    LOG_TRACE << "addText";
-    auto layer = getLayer(data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
-    auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
-                  data.text, data.height,
-                  data.angle * M_PI / 180, data.style,
-                  lc::TextConst::DrawingDirection(data.textgen),
-                  lc::TextConst::HAlign(data.alignH),
-                  lc::TextConst::VAlign(data.alignV),
-                  layer,
-                  mf,
-                  getBlock(data)
-                                                    );
+    guarded("TEXT", &data, [&] {
+        LOG_TRACE << "addText";
+        auto layer = getLayer(data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+        auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
+                      data.text, data.height,
+                      data.angle * M_PI / 180, data.style,
+                      lc::TextConst::DrawingDirection(data.textgen),
+                      lc::TextConst::HAlign(data.alignH),
+                      lc::TextConst::VAlign(data.alignV),
+                      layer,
+                      mf,
+                      getBlock(data)
+                                                        );
 
-    deliver(lcText);
+        deliver(lcText);
+    });
 }
 
 void DXFimpl::addPoint(const DRW_Point& data) {
-    LOG_TRACE << "addPoint";
-    auto layer = getLayer(data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
-    auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
-                   layer,
-                   mf,
-                   getBlock(data)
-                                                      );
+    guarded("POINT", &data, [&] {
+        LOG_TRACE << "addPoint";
+        auto layer = getLayer(data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+        auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
+                       layer,
+                       mf,
+                       getBlock(data)
+                                                          );
 
-    deliver(lcPoint);
+        deliver(lcPoint);
+    });
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
-    LOG_TRACE << "addDimAlign";
-    auto layer = getLayer(*data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
-    auto lcDimAligned = std::make_shared<lc::entity::DimAligned>(
-                            coord(data->getDefPoint()),
-                            coord(data->getTextPoint()),
-                            static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
-                            data->getDir(),
-                            data->getTextLineFactor(),
-                            static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
-                            data->getText(),
-                            coord(data->getDef1Point()),
-                            coord(data->getDef2Point()),
-                            layer,
-                            mf,
-                            getBlock(*data)
-                        );
+    guarded("DIMENSION (aligned)", data, [&] {
+        LOG_TRACE << "addDimAlign";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+        auto lcDimAligned = std::make_shared<lc::entity::DimAligned>(
+                                coord(data->getDefPoint()),
+                                coord(data->getTextPoint()),
+                                static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                                data->getDir(),
+                                data->getTextLineFactor(),
+                                static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                                data->getText(),
+                                coord(data->getDef1Point()),
+                                coord(data->getDef2Point()),
+                                layer,
+                                mf,
+                                getBlock(*data)
+                            );
 
-    deliver(lcDimAligned);
+        deliver(lcDimAligned);
+    });
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
-    LOG_TRACE << "addDimLinear";
-    auto layer = getLayer(*data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
-    auto lcDimLinear = std::make_shared<lc::entity::DimLinear>(
-                           coord(data->getDefPoint()),
-                           coord(data->getTextPoint()),
-                           static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
-                           data->getDir(),
-                           data->getTextLineFactor(),
-                           static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
-                           data->getText(),
-                           coord(data->getDef1Point()),
-                           coord(data->getDef2Point()),
-                           data->getAngle(),
-                           data->getOblique(),
-                           layer,
-                           mf,
-                           getBlock(*data)
-                       );
+    guarded("DIMENSION (linear)", data, [&] {
+        LOG_TRACE << "addDimLinear";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+        auto lcDimLinear = std::make_shared<lc::entity::DimLinear>(
+                               coord(data->getDefPoint()),
+                               coord(data->getTextPoint()),
+                               static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                               data->getDir(),
+                               data->getTextLineFactor(),
+                               static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                               data->getText(),
+                               coord(data->getDef1Point()),
+                               coord(data->getDef2Point()),
+                               data->getAngle(),
+                               data->getOblique(),
+                               layer,
+                               mf,
+                               getBlock(*data)
+                           );
 
-    deliver(lcDimLinear);
+        deliver(lcDimLinear);
+    });
 }
 
 void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
-    LOG_TRACE << "addDimRadial";
-    auto layer = getLayer(*data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
-    auto  lcDimRadial = std::make_shared<lc::entity::DimRadial>(
-                            coord(data->getCenterPoint()),
-                            coord(data->getTextPoint()),
-                            static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
-                            data->getDir(),
-                            data->getTextLineFactor(),
-                            static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
-                            data->getText(),
-                            coord(data->getDiameterPoint()),
-                            data->getLeaderLength(),
-                            layer,
-                            mf,
-                            getBlock(*data)
-                        );
+    guarded("DIMENSION (radial)", data, [&] {
+        LOG_TRACE << "addDimRadial";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+        auto  lcDimRadial = std::make_shared<lc::entity::DimRadial>(
+                                coord(data->getCenterPoint()),
+                                coord(data->getTextPoint()),
+                                static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                                data->getDir(),
+                                data->getTextLineFactor(),
+                                static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                                data->getText(),
+                                coord(data->getDiameterPoint()),
+                                data->getLeaderLength(),
+                                layer,
+                                mf,
+                                getBlock(*data)
+                            );
 
-    deliver(lcDimRadial);
+        deliver(lcDimRadial);
+    });
 }
 
 void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
-    LOG_TRACE << "addDimDiametric";
-    auto layer = getLayer(*data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
-    auto lcDimDiametric = std::make_shared<lc::entity::DimDiametric>(
-                              coord(data->getDiameter1Point()),
-                              coord(data->getTextPoint()),
-                              static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
-                              data->getDir(),
-                              data->getTextLineFactor(),
-                              static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
-                              data->getText(),
-                              coord(data->getDiameter2Point()),
-                              data->getLeaderLength(),
-                              layer,
-                              mf,
-                              getBlock(*data)
-                          );
+    guarded("DIMENSION (diametric)", data, [&] {
+        LOG_TRACE << "addDimDiametric";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+        auto lcDimDiametric = std::make_shared<lc::entity::DimDiametric>(
+                                  coord(data->getDiameter1Point()),
+                                  coord(data->getTextPoint()),
+                                  static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                                  data->getDir(),
+                                  data->getTextLineFactor(),
+                                  static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                                  data->getText(),
+                                  coord(data->getDiameter2Point()),
+                                  data->getLeaderLength(),
+                                  layer,
+                                  mf,
+                                  getBlock(*data)
+                              );
 
-    deliver(lcDimDiametric);
+        deliver(lcDimDiametric);
+    });
 }
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
-    LOG_TRACE << "addDimAngular";
-    auto layer = getLayer(*data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
-    auto lcDimAngular = std::make_shared<lc::entity::DimAngular>(
-                            coord(data->getDefPoint()),
-                            coord(data->getTextPoint()),
-                            static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
-                            data->getDir(),
-                            data->getTextLineFactor(),
-                            static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
-                            data->getText(),
-                            coord(data->getFirstLine1()),
-                            coord(data->getFirstLine2()),
-                            coord(data->getSecondLine1()),
-                            coord(data->getSecondLine2()),
-                            layer,
-                            mf,
-                            getBlock(*data)
-                        );
+    guarded("DIMENSION (angular)", data, [&] {
+        LOG_TRACE << "addDimAngular";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+        auto lcDimAngular = std::make_shared<lc::entity::DimAngular>(
+                                coord(data->getDefPoint()),
+                                coord(data->getTextPoint()),
+                                static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                                data->getDir(),
+                                data->getTextLineFactor(),
+                                static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                                data->getText(),
+                                coord(data->getFirstLine1()),
+                                coord(data->getFirstLine2()),
+                                coord(data->getSecondLine1()),
+                                coord(data->getSecondLine2()),
+                                layer,
+                                mf,
+                                getBlock(*data)
+                            );
 
-    deliver(lcDimAngular);
+        deliver(lcDimAngular);
+    });
 }
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
-    LOG_WARNING << "Dropping DIMENSION (3-point angular): no kernel entity for it";
-    recordLoss("DIMENSION (3-point angular)");
+    guarded("DIMENSION (3-point angular)", data, [&] {
+        LOG_WARNING << "Dropping DIMENSION (3-point angular): no kernel entity for it";
+        recordLoss("DIMENSION (3-point angular)");
+    });
 }
 
 void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
-    LOG_WARNING << "Dropping DIMENSION (ordinate): no kernel entity for it";
-    recordLoss("DIMENSION (ordinate)");
+    guarded("DIMENSION (ordinate)", data, [&] {
+        LOG_WARNING << "Dropping DIMENSION (ordinate): no kernel entity for it";
+        recordLoss("DIMENSION (ordinate)");
+    });
 }
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
-    LOG_TRACE << "addLWPolyline";
-    auto layer = getLayer(data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+    guarded("LWPOLYLINE", &data, [&] {
+        LOG_TRACE << "addLWPolyline";
+        auto layer = getLayer(data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
-    std::vector<lc::entity::LWVertex2D> points;
-    for (const auto& i : data.vertlist) {
-        points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
-    }
+        std::vector<lc::entity::LWVertex2D> points;
+        for (const auto& i : data.vertlist) {
+            points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
+        }
 
-    auto isCLosed = (unsigned int) data.flags & 0x01u;
-    auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
-                            points,
-                            data.width,
-                            data.elevation,
-                            data.thickness,
-                            isCLosed,
-                            coord(data.extPoint),
-                            layer,
-                            mf,
-                            getBlock(data)
-                        );
+        auto isCLosed = (unsigned int) data.flags & 0x01u;
+        auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
+                                points,
+                                data.width,
+                                data.elevation,
+                                data.thickness,
+                                isCLosed,
+                                coord(data.extPoint),
+                                layer,
+                                mf,
+                                getBlock(data)
+                            );
 
-    deliver(lcLWPolyline);
+        deliver(lcLWPolyline);
+    });
 }
 
 //Handle polyline as lwpolyline
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
-    LOG_TRACE << "addPolyline";
-    auto layer = getLayer(data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+    guarded("POLYLINE", &data, [&] {
+        LOG_TRACE << "addPolyline";
+        auto layer = getLayer(data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
-    std::vector<lc::entity::LWVertex2D> points;
-    for (const auto& i : data.vertlist) {
-        points.emplace_back(coord(i->basePoint), i->bulge, i->stawidth, i->endwidth);
-    }
+        std::vector<lc::entity::LWVertex2D> points;
+        for (const auto& i : data.vertlist) {
+            points.emplace_back(coord(i->basePoint), i->bulge, i->stawidth, i->endwidth);
+        }
 
-    auto isCLosed = (unsigned int) data.flags & 0x01u;
+        auto isCLosed = (unsigned int) data.flags & 0x01u;
 
-    auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
-                            points,
-                            0.0,
-                            0.0,
-                            0.0,
-                            isCLosed,
-                            coord(data.extPoint),
-                            layer,
-                            mf,
-                            getBlock(data)
-                        );
+        auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
+                                points,
+                                0.0,
+                                0.0,
+                                0.0,
+                                isCLosed,
+                                coord(data.extPoint),
+                                layer,
+                                mf,
+                                getBlock(data)
+                            );
 
-    deliver(lcLWPolyline);
+        deliver(lcLWPolyline);
+    });
 }
 
 void DXFimpl::addMText(const DRW_MText& data) {
-    LOG_TRACE << "addMText";
-    auto layer = getLayer(data);
-    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
-    lc::TextConst::HAlign halign;
-    lc::TextConst::VAlign valign;
-    //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
-    lc::TextConst::DrawingDirection drawingDir;
-    //lc::TextConst::LineSpacingStyle lineSpacingStyle;
+    guarded("MTEXT", &data, [&] {
+        LOG_TRACE << "addMText";
+        auto layer = getLayer(data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+        lc::TextConst::HAlign halign;
+        lc::TextConst::VAlign valign;
+        //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
+        lc::TextConst::DrawingDirection drawingDir;
+        //lc::TextConst::LineSpacingStyle lineSpacingStyle;
 
-    switch (data.textgen % 3) {
-    default:
-    case 1:
-        halign = lc::TextConst::HAlign::HALeft;
-        break;
-    case 2:
-        halign = lc::TextConst::HAlign::HACenter;
-        break;
-    case 0:
-        halign = lc::TextConst::HAlign::HARight;
-        break;
-    }
+        switch (data.textgen % 3) {
+        default:
+        case 1:
+            halign = lc::TextConst::HAlign::HALeft;
+            break;
+        case 2:
+            halign = lc::TextConst::HAlign::HACenter;
+            break;
+        case 0:
+            halign = lc::TextConst::HAlign::HARight;
+            break;
+        }
 
-    switch ((int)(std::ceil(data.textgen / 3.0))) {
-    default:
-    case 1:
-        valign = lc::TextConst::VAlign::VATop;
-        break;
-    case 2:
-        valign = lc::TextConst::VAlign::VAMiddle;
-        break;
-    case 3:
-        valign = lc::TextConst::VAlign::VABottom;
-        break;
-    }
+        switch ((int)(std::ceil(data.textgen / 3.0))) {
+        default:
+        case 1:
+            valign = lc::TextConst::VAlign::VATop;
+            break;
+        case 2:
+            valign = lc::TextConst::VAlign::VAMiddle;
+            break;
+        case 3:
+            valign = lc::TextConst::VAlign::VABottom;
+            break;
+        }
 
-    if (data.alignH == 1) {
-        drawingDir = lc::TextConst::DrawingDirection::Backward;
-    }
-    else if (data.alignH == 3) {
-        drawingDir = lc::TextConst::DrawingDirection::UpsideDown;
-    }
-    else {
-        drawingDir = lc::TextConst::DrawingDirection::None;
-    }
+        if (data.alignH == 1) {
+            drawingDir = lc::TextConst::DrawingDirection::Backward;
+        }
+        else if (data.alignH == 3) {
+            drawingDir = lc::TextConst::DrawingDirection::UpsideDown;
+        }
+        else {
+            drawingDir = lc::TextConst::DrawingDirection::None;
+        }
 
-    // Uncomment when line spacing style has been implemented
-    /*if (data.alignV == 1) {
-        lineSpacingStyle = lc::TextConst::LineSpacingStyle::AtLeast;
-    }
-    else {
-        lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
-    }*/
+        // Uncomment when line spacing style has been implemented
+        /*if (data.alignV == 1) {
+            lineSpacingStyle = lc::TextConst::LineSpacingStyle::AtLeast;
+        }
+        else {
+            lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
+        }*/
 
-    auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
-                  data.text, data.height,
-                  data.angle * M_PI / 180, data.style,
-                  lc::TextConst::DrawingDirection(drawingDir),
-                  lc::TextConst::HAlign(halign),
-                  lc::TextConst::VAlign(valign),
-                  false,
-                  false,
-                  false,
-                  false,
-                  layer,
-                  mf,
-                  getBlock(data)
-                                                    );
+        auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
+                      data.text, data.height,
+                      data.angle * M_PI / 180, data.style,
+                      lc::TextConst::DrawingDirection(drawingDir),
+                      lc::TextConst::HAlign(halign),
+                      lc::TextConst::VAlign(valign),
+                      false,
+                      false,
+                      false,
+                      false,
+                      layer,
+                      mf,
+                      getBlock(data)
+                                                        );
 
-    deliver(lcMText);
+        deliver(lcMText);
+    });
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
-    // Loop->objlist contains the 3 entities (copied) that define the hatch areas are the entities selected during hatch
-    // loopList seems to contain the same entities, why??
-    LOG_TRACE << "addHatch ";
-    auto layer = getLayer(*data);
-    auto mf = getMetaInfo(*data);
-    lc::geo::Region reg;
-    auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
-                   mf,
-                   getBlock(*data)
-                                                      );
-    lcHatch->setPatternName(data->name);
-    lcHatch->setSolid(data->solid);
-    LOG_TRACE << "name " << data->name;
-    LOG_TRACE << "solid " << data->solid;
-    if(!data->solid) {
-        //Load pattern from dxf
-        lcHatch->setPattern(lc::persistence::PatternProvider::Instance()->getPattern(data->name));
-    }
-    LOG_TRACE << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
-    //lcHatch->setHatchStyle(data->hstyle);
-    //lcHatch->setHatchPattern(data->hpattern);
-    LOG_TRACE << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
-    LOG_TRACE << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
-    lcHatch->setAngle(data->angle);
-    lcHatch->setScale(data->scale);
-    LOG_TRACE << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
-    for (auto x : data->looplist) {
-        std::vector<lc::entity::CADEntity_CSPtr> loopData;
-        for(auto k : x->objlist) {
-            if(k->eType == DRW::ETYPE::LWPOLYLINE) { //done
-                auto data = std::dynamic_pointer_cast<DRW_LWPolyline>(k);
-                LOG_TRACE << "Polyline";
-                std::vector<lc::entity::LWVertex2D> points;
-                for (const auto& i : data->vertlist) {
-                    points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
-                }
-                auto isCLosed = (unsigned int) data->flags & 0x01u;
-                auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
-                                        points,
-                                        data->width,
-                                        data->elevation,
-                                        data->thickness,
-                                        isCLosed,
-                                        coord(data->extPoint),
-                                        layer
-                                    );
-                loopData.push_back(lcLWPolyline);
-            } else if(k->eType == DRW::ETYPE::LINE) { //done
-                auto data = std::dynamic_pointer_cast<DRW_Line>(k);
-                LOG_TRACE << "line";
-                lc::builder::LineBuilder builder;
-                builder.setStart(coord(data->basePoint));
-                builder.setEnd(coord(data->secPoint));
-                builder.setLayer(layer);
-                loopData.push_back(builder.build());
-            } else if(k->eType == DRW::ETYPE::ARC) { //done
-                auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
-                // Same geo::Arc precondition as addArc: a hatch boundary may
-                // carry a zero-radius arc edge, which used to abort the open.
-                if (!(data->radious > 0.0)) {
-                    LOG_ERROR << "Skipping HATCH boundary ARC with unusable radius " << data->radious;
-                    continue;
-                }
-                lc::builder::ArcBuilder builder;
-                LOG_TRACE << data->staangle <<','<< data->endangle;
-                builder.setCenter(coord(data->basePoint));
-                builder.setRadius(data->radious);
-                builder.setStartAngle(data->staangle);
-                builder.setEndAngle(data->endangle);
-
-                builder.setIsCCW((bool) data->isccw);
-                builder.setLayer(layer);
-                loopData.push_back(builder.build());
-            } else if(k->eType == DRW::ETYPE::ELLIPSE) { //done
-                auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
-                auto secPoint = coord(data->secPoint);
-                auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
-                                 secPoint,
-                                 secPoint.magnitude() * data->ratio,
-                                 data->staparam,
-                                 data->endparam,
-                                 data->isccw,
-                                 layer
-                                                                      );
-                loopData.push_back(lcEllipse);
-            } else if(k->eType == DRW::ETYPE::SPLINE) {
-                auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
-                // Same as addSpline: keep the file's knot vector intact.
-                auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
-                                data->knotslist,
-                                coords(data->fitlist),
-                                data->degree,
-                                false,
-                                data->tolfit,
-                                data->tgStart.x, data->tgStart.y, data->tgStart.z,
-                                data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
-                                data->normalVec.x, data->normalVec.y, data->normalVec.z,
-                                static_cast<lc::geo::Spline::splineflag>(data->flags),
-                                layer,
-                                mf,
-                                getBlock(*data)
-                                                                    );
-                loopData.push_back(lcSpline);
-            }
+    guarded("HATCH", data, [&] {
+        // Loop->objlist contains the 3 entities (copied) that define the hatch areas are the entities selected during hatch
+        // loopList seems to contain the same entities, why??
+        LOG_TRACE << "addHatch ";
+        auto layer = getLayer(*data);
+        auto mf = getMetaInfo(*data);
+        lc::geo::Region reg;
+        auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
+                       mf,
+                       getBlock(*data)
+                                                          );
+        lcHatch->setPatternName(data->name);
+        lcHatch->setSolid(data->solid);
+        LOG_TRACE << "name " << data->name;
+        LOG_TRACE << "solid " << data->solid;
+        if(!data->solid) {
+            //Load pattern from dxf
+            lcHatch->setPattern(lc::persistence::PatternProvider::Instance()->getPattern(data->name));
         }
-        lc::geo::Loop loop(loopData);
-        reg.addLoop(loop);
-    }
-    lcHatch->setRegion(reg);
-    deliver(lcHatch);
+        LOG_TRACE << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
+        //lcHatch->setHatchStyle(data->hstyle);
+        //lcHatch->setHatchPattern(data->hpattern);
+        LOG_TRACE << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
+        LOG_TRACE << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
+        lcHatch->setAngle(data->angle);
+        lcHatch->setScale(data->scale);
+        LOG_TRACE << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
+        for (auto x : data->looplist) {
+            std::vector<lc::entity::CADEntity_CSPtr> loopData;
+            for(auto k : x->objlist) {
+                if(k->eType == DRW::ETYPE::LWPOLYLINE) { //done
+                    auto data = std::dynamic_pointer_cast<DRW_LWPolyline>(k);
+                    LOG_TRACE << "Polyline";
+                    std::vector<lc::entity::LWVertex2D> points;
+                    for (const auto& i : data->vertlist) {
+                        points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
+                    }
+                    auto isCLosed = (unsigned int) data->flags & 0x01u;
+                    auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
+                                            points,
+                                            data->width,
+                                            data->elevation,
+                                            data->thickness,
+                                            isCLosed,
+                                            coord(data->extPoint),
+                                            layer
+                                        );
+                    loopData.push_back(lcLWPolyline);
+                } else if(k->eType == DRW::ETYPE::LINE) { //done
+                    auto data = std::dynamic_pointer_cast<DRW_Line>(k);
+                    LOG_TRACE << "line";
+                    lc::builder::LineBuilder builder;
+                    builder.setStart(coord(data->basePoint));
+                    builder.setEnd(coord(data->secPoint));
+                    builder.setLayer(layer);
+                    loopData.push_back(builder.build());
+                } else if(k->eType == DRW::ETYPE::ARC) { //done
+                    auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
+                    // Same geo::Arc precondition as addArc: a hatch boundary may
+                    // carry a zero-radius arc edge, which used to abort the open.
+                    if (!(data->radious > 0.0)) {
+                        LOG_ERROR << "Skipping HATCH boundary ARC with unusable radius " << data->radious;
+                        continue;
+                    }
+                    lc::builder::ArcBuilder builder;
+                    LOG_TRACE << data->staangle <<','<< data->endangle;
+                    builder.setCenter(coord(data->basePoint));
+                    builder.setRadius(data->radious);
+                    builder.setStartAngle(data->staangle);
+                    builder.setEndAngle(data->endangle);
+
+                    builder.setIsCCW((bool) data->isccw);
+                    builder.setLayer(layer);
+                    loopData.push_back(builder.build());
+                } else if(k->eType == DRW::ETYPE::ELLIPSE) { //done
+                    auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
+                    auto secPoint = coord(data->secPoint);
+                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
+                                     secPoint,
+                                     secPoint.magnitude() * data->ratio,
+                                     data->staparam,
+                                     data->endparam,
+                                     data->isccw,
+                                     layer
+                                                                          );
+                    loopData.push_back(lcEllipse);
+                } else if(k->eType == DRW::ETYPE::SPLINE) {
+                    auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
+                    // Same as addSpline: keep the file's knot vector intact.
+                    auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
+                                    data->knotslist,
+                                    coords(data->fitlist),
+                                    data->degree,
+                                    false,
+                                    data->tolfit,
+                                    data->tgStart.x, data->tgStart.y, data->tgStart.z,
+                                    data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
+                                    data->normalVec.x, data->normalVec.y, data->normalVec.z,
+                                    static_cast<lc::geo::Spline::splineflag>(data->flags),
+                                    layer,
+                                    mf,
+                                    getBlock(*data)
+                                                                        );
+                    loopData.push_back(lcSpline);
+                }
+            }
+            lc::geo::Loop loop(loopData);
+            reg.addLoop(loop);
+        }
+        lcHatch->setRegion(reg);
+        deliver(lcHatch);
+    });
 }
 
 lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {
@@ -914,7 +986,9 @@ std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<std::shared_ptr<DRW
 }
 
 void DXFimpl::addLType(const DRW_LType& data) {
-    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::meta::DxfLinePatternByValue>(data.name, data.desc, data.path, data.length))->execute();
+    guarded("LTYPE", nullptr, [&] {
+        std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::meta::DxfLinePatternByValue>(data.name, data.desc, data.path, data.length))->execute();
+    });
 }
 
 /**
@@ -923,53 +997,59 @@ void DXFimpl::addLType(const DRW_LType& data) {
  * if linkImage isn't called as last, we miss a image during import
  */
 void DXFimpl::addImage(const DRW_Image* data) {
-    LOG_TRACE << "addImage";
-    imageMapCache.emplace_back(*data);
+    guarded("IMAGE", data, [&] {
+        LOG_TRACE << "addImage";
+        imageMapCache.emplace_back(*data);
+    });
 }
 
 void DXFimpl::linkImage(const DRW_ImageDef *data) {
-    LOG_TRACE << "linkImage";
-    for(auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
-        if (image->ref == data->handle) {
-            auto layer = _document->layerByName(image->layer);
+    guarded("IMAGEDEF", nullptr, [&] {
+        LOG_TRACE << "linkImage";
+        for(auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
+            if (image->ref == data->handle) {
+                auto layer = _document->layerByName(image->layer);
 
-            std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*image);
-            const lc::geo::Coordinate base(coord(image->basePoint));
-            const lc::geo::Coordinate uv(coord(image->secPoint));
-            const lc::geo::Coordinate vv(coord(image->vVector));
+                std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*image);
+                const lc::geo::Coordinate base(coord(image->basePoint));
+                const lc::geo::Coordinate uv(coord(image->secPoint));
+                const lc::geo::Coordinate vv(coord(image->vVector));
 
-            auto lcImage = std::make_shared<lc::entity::Image>(
-                               data->name,
-                               base, uv, vv,
-                               image->sizeu, image->sizev,
-                               image->brightness, image->contrast, image->fade,
-                               layer,
-                               mf,
-                               getBlock(*image)
-                           );
-            deliver(lcImage);
+                auto lcImage = std::make_shared<lc::entity::Image>(
+                                   data->name,
+                                   base, uv, vv,
+                                   image->sizeu, image->sizev,
+                                   image->brightness, image->contrast, image->fade,
+                                   layer,
+                                   mf,
+                                   getBlock(*image)
+                               );
+                deliver(lcImage);
 
-            image = imageMapCache.erase( image ) ; // advances iter
-        } else {
-            image++;
+                image = imageMapCache.erase( image ) ; // advances iter
+            } else {
+                image++;
+            }
         }
-    }
+    });
 }
 
 void DXFimpl::addInsert(const DRW_Insert& data) {
-    LOG_TRACE << "addInsert " << data.name;
+    guarded("INSERT", &data, [&] {
+        LOG_TRACE << "addInsert " << data.name;
 
-    // Recorded, not built: see buildDeferredInserts().  Building here measured
-    // an empty block for the bounding box, and -- because the referenced block
-    // is not in the document during the read -- invented a second Block object
-    // with the same name for the entity to point at, which then never matched
-    // the real one by identity.
-    _pendingInserts.push_back(PendingInsert{
-        getMetaInfo(data),
-        getBlock(data),
-        getLayer(data),
-        coord(data.basePoint),
-        data.name});
+        // Recorded, not built: see buildDeferredInserts().  Building here measured
+        // an empty block for the bounding box, and -- because the referenced block
+        // is not in the document during the read -- invented a second Block object
+        // with the same name for the entity to point at, which then never matched
+        // the real one by identity.
+        _pendingInserts.push_back(PendingInsert{
+            getMetaInfo(data),
+            getBlock(data),
+            getLayer(data),
+            coord(data.basePoint),
+            data.name});
+    });
 }
 
 void DXFimpl::buildDeferredInserts() {
@@ -1045,16 +1125,21 @@ void DXFimpl::buildDeferredInserts() {
                 }
             }
 
-            lc::builder::InsertBuilder insertBuilder;
-            insertBuilder.setMetaInfo(pending.metaInfo);
-            insertBuilder.setBlock(pending.containerBlock);
-            insertBuilder.setLayer(pending.layer);
-            insertBuilder.setCoordinate(pending.position);
-            insertBuilder.setDisplayBlock(block);
-            insertBuilder.setDocument(_document);
+            // Guarded for the same reason the callbacks are: this runs after
+            // the read, outside libdxfrw, so a throw here would leave
+            // File::open by a path nothing catches.
+            guarded("INSERT", nullptr, [&] {
+                lc::builder::InsertBuilder insertBuilder;
+                insertBuilder.setMetaInfo(pending.metaInfo);
+                insertBuilder.setBlock(pending.containerBlock);
+                insertBuilder.setLayer(pending.layer);
+                insertBuilder.setCoordinate(pending.position);
+                insertBuilder.setDisplayBlock(block);
+                insertBuilder.setDocument(_document);
 
-            _entitiesDelivered++;
-            entityBuilder->appendEntity(insertBuilder.build());
+                _entitiesDelivered++;
+                entityBuilder->appendEntity(insertBuilder.build());
+            });
         }
 
         builder->append(entityBuilder);

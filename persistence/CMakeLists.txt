@@ -19,6 +19,7 @@ set(persistence_srcs
 set(persistence_hdrs
         file.h
         format.h
+        readguard.h
         documentsource.h
 	patternLoader/patternProvider.h
         libdxfrw/dxfimpl.h

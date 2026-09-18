@@ -6,6 +6,7 @@
 #include <iostream>
 #include "../file.h"
 #include "../format.h"
+#include "../readguard.h"
 #include "../generic/helpers.h"
 
 #include <cad/storage/document.h>
@@ -78,6 +79,12 @@ public:
 
     // READ FUNCTIONALITY
     void addHeader(const DRW_Header* data) override;
+
+
+    /** The entities this read had to give up on, one entry each. */
+    const std::vector<ImportFailure>& failures() const {
+        return _failures;
+    }
 
     /**
      * What this read could not carry: one entry per DXF record kind LibreCAD
@@ -327,10 +334,38 @@ public:
     lc::meta::Block_SPtr _currentBlock;
     DrawingHeader _header;
     LossSummary _loss;
+    std::vector<ImportFailure> _failures;
     std::size_t _entitiesDelivered{0};
 
     void recordLoss(const char* recordKind) {
         _loss.droppedByType[recordKind]++;
+    }
+
+    /**
+     * Run one read callback, and survive it throwing.
+     *
+     * libdxfrw's read path is not a function-try-block the way its write path
+     * is, so an exception from a callback leaves dxfRW::read() with
+     * getError() == BAD_NONE: the caller is told the file read cleanly while
+     * the process is already unwinding. LibreCAD's own kernel throws from
+     * inside these callbacks -- geo::Arc for an unusable radius, geo::Area for
+     * a volume -- and one bad record used to end the program.
+     *
+     * The catch is on `...`, not on std::exception: geoarea.h threw a bare
+     * `const char*` for years, which a std::exception handler walks straight
+     * past.
+     *
+     * This could not land before the crashes were fixed. It converts a
+     * reproducible abort into a recorded skip, which is only an improvement
+     * once the aborts are understood -- otherwise it deletes the signal that
+     * found them.
+     */
+    template<typename Body>
+    void guarded(const char* recordKind, const DRW_Entity* entity, Body body) {
+        std::string reason;
+        if (!runGuarded(body, reason)) {
+            recordFailure(recordKind, entity, reason.c_str());
+        }
     }
 
     /**
@@ -356,6 +391,8 @@ public:
     std::vector<PendingInsert> _pendingInserts;
 
 private:
+    void recordFailure(const char* recordKind, const DRW_Entity* entity, const char* reason);
+
     /**
     * Return the MetaInfo object from a DRW_Entity.
     * This is useful because most/all entities will share the same basic properties

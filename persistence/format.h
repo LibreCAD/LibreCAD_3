@@ -90,6 +90,18 @@ struct LossSummary {
 };
 
 /**
+ * A record the reader has an entity for and still could not build, because
+ * something inside the callback threw.
+ */
+struct ImportFailure {
+    std::string recordKind;   //!< "LINE", "HATCH", ...
+    unsigned long handle{0};  //!< DXF code 5, as the file gives it
+    std::string layer;
+    std::string block;        //!< the block it sits in, empty for model space
+    std::string reason;
+};
+
+/**
  * The outcome of reading a file.
  *
  * `ok` and `partial` are separate because a failed read is not an empty one:
@@ -104,6 +116,8 @@ struct ImportResult {
     std::string variantId;         //!< the variant recorded for the file
     std::string sourceVersionTag;  //!< $ACADVER as the file states it, may be empty
     std::size_t entitiesDelivered{0};
+    /** Records the reader had an entity for, but could not build. */
+    std::vector<ImportFailure> failures;
     std::vector<Diagnostic> diagnostics;
     LossSummary loss;
 };

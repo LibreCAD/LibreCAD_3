@@ -28,6 +28,9 @@ jobs:
       # error message points nowhere near the edit.
       - run: ${{ github.workspace }}/scripts/ci/check-persistence-headers.sh
 
+      # And that no read callback can take the process down with it.
+      - run: ${{ github.workspace }}/scripts/ci/check-read-callbacks.sh
+
       - run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
 
       - run: cd ${{ github.workspace }}

@@ -18,9 +18,15 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 offenders=()
 
+# Comments may name these types -- explaining why a header must not depend on
+# them is the whole point of the rule -- so only code lines are checked.
+strip_comments() {
+    sed -e 's://.*::' -e 's:/\*.*\*/::' "$1" | grep -vE '^[[:space:]]*\*'
+}
+
 for header in "$root"/persistence/*.h; do
     [ -e "$header" ] || continue
-    if grep -Eq '(\bDRW_|\bdxfRW\b|\bDRW::)' "$header"; then
+    if strip_comments "$header" | grep -Eq '(\bDRW_|\bdxfRW\b|\bDRW::)'; then
         offenders+=("$header")
     fi
 done
@@ -29,7 +35,7 @@ if [ ${#offenders[@]} -ne 0 ]; then
     echo "error: libdxfrw types must not appear in the public persistence headers:" >&2
     for header in "${offenders[@]}"; do
         echo "  ${header#"$root"/}" >&2
-        grep -En '(\bDRW_|\bdxfRW\b|\bDRW::)' "$header" | sed 's/^/    /' >&2
+        strip_comments "$header" | grep -En '(\bDRW_|\bdxfRW\b|\bDRW::)' | sed 's/^/    /' >&2
     done
     exit 1
 fi

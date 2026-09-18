@@ -202,7 +202,18 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         const auto& header = reader.header();
         result.sourceVersionTag = header.acadVersion;
         result.entitiesDelivered = reader.entitiesDelivered();
+        result.failures = reader.failures();
         result.loss = reader.loss();
+
+        if (!result.failures.empty()) {
+            // Distinct from LossSummary: these are records LibreCAD has an
+            // entity for and still could not build. Each one is already logged
+            // with its handle and layer.
+            result.diagnostics.push_back(Diagnostic{
+                Severity::Warning, "entity-import-failed",
+                std::to_string(result.failures.size())
+                    + " entities could not be imported"});
+        }
         result.partial = !result.ok && result.entitiesDelivered > 0;
 
         // The revision comes from the drawing's own $ACADVER, captured by
