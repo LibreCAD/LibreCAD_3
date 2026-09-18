@@ -64,6 +64,7 @@
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/insert.h>
+#include <cad/primitive/mtext.h>
 #include <cad/primitive/lwpolyline.h>
 #include <cad/primitive/spline.h>
 
@@ -1093,5 +1094,213 @@ TEST(DxfRoundTripTest, AsciiRoundTripStaysAscii) {
 
         boost::filesystem::remove(source);
         boost::filesystem::remove(resaved);
+    }
+}
+
+#ifndef UNITTEST_FIXTURES_DIR
+#error "UNITTEST_FIXTURES_DIR must name unittest/persistence/fixtures (see unittest/CMakeLists.txt)"
+#endif
+
+namespace {
+
+/**
+ * The DXF records in a file's ENTITIES section, by type name.
+ *
+ * Counting the file itself is the point: every other case in this suite
+ * compares one import against another, which cannot see what the first import
+ * already lost. VERTEX and SEQEND are parts of the POLYLINE that precedes
+ * them, not records of their own.
+ */
+std::map<std::string, std::size_t> recordsInFile(const std::string& path) {
+    std::map<std::string, std::size_t> census;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    bool inEntities = false;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        if (code.find('0') == std::string::npos || code.find_first_not_of(" \t0") != std::string::npos) {
+            continue;  // not group code 0
+        }
+
+        if (value == "SECTION") {
+            std::string sectionCode;
+            std::string sectionName;
+            if (std::getline(file, sectionCode) && std::getline(file, sectionName)) {
+                while (!sectionName.empty() && (sectionName.back() == '\r' || sectionName.back() == ' ')) {
+                    sectionName.pop_back();
+                }
+                inEntities = sectionName == "ENTITIES";
+            }
+            continue;
+        }
+        if (value == "ENDSEC" || value == "EOF") {
+            inEntities = false;
+            continue;
+        }
+
+        if (inEntities && value != "VERTEX" && value != "SEQEND") {
+            census[value]++;
+        }
+    }
+
+    return census;
+}
+
+/** The document's entities by kernel kind. */
+std::map<std::string, std::size_t> entitiesInDocument(
+    const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+    std::map<std::string, std::size_t> census;
+
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+            census["Line"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
+            census["Circle"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
+            census["Arc"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
+            census["Ellipse"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+            census["Text"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            census["MText"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Point>(entity)) {
+            census["Point"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity)) {
+            census["LWPolyline"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+            census["Spline"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+            census["Hatch"]++;
+        } else if (std::dynamic_pointer_cast<const lc::entity::Insert>(entity)) {
+            census["Insert"]++;
+        } else {
+            census["(unclassified)"]++;
+        }
+    }
+
+    return census;
+}
+
+std::string fixture(const char* name) {
+    return std::string(UNITTEST_FIXTURES_DIR) + "/" + name;
+}
+
+}  // namespace
+
+// The absolute import oracle.
+//
+// Every other case here asserts that a second import agrees with the first,
+// which is satisfied by losing the same thing twice. This one compares the
+// document against the records in the file, and accounts for the difference
+// exactly: a record is either imported or on the list of kinds LibreCAD has no
+// entity for. Nothing may fall between the two.
+//
+// The known-loss list is meant to shrink. When addSolid or addRay stops being
+// an empty override this test fails and the table is updated -- which is the
+// notification, not an inconvenience.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AbsoluteImportOracle) {
+    const struct {
+        const char* name;
+        lc::persistence::File::Type expectedType;
+        std::map<std::string, std::size_t> records;   // what the file holds
+        std::map<std::string, std::size_t> imported;  // what the document holds
+        std::map<std::string, std::size_t> dropped;   // no kernel entity for these
+    } cases[] = {
+        {"oracle_r2000.dxf",
+         lc::persistence::File::LIBDXFRW_DXF_R2000,
+         {{"LINE", 2}, {"CIRCLE", 1}, {"ARC", 1}, {"LWPOLYLINE", 1}, {"TEXT", 1},
+          {"POINT", 1}, {"ELLIPSE", 1}, {"SOLID", 1}, {"3DFACE", 1}, {"RAY", 1},
+          {"XLINE", 1}},
+         {{"Line", 2}, {"Circle", 1}, {"Arc", 1}, {"LWPolyline", 1}, {"Text", 1},
+          {"Point", 1}, {"Ellipse", 1}},
+         {{"SOLID", 1}, {"3DFACE", 1}, {"RAY", 1}, {"XLINE", 1}}},
+        {"oracle_r12.dxf",
+         lc::persistence::File::LIBDXFRW_DXF_R12,
+         {{"LINE", 1}, {"CIRCLE", 1}, {"TEXT", 1}, {"POLYLINE", 1}},
+         // R12's POLYLINE arrives as the same kernel entity as an LWPOLYLINE.
+         {{"Line", 1}, {"Circle", 1}, {"Text", 1}, {"LWPolyline", 1}},
+         {}},
+    };
+
+    for (const auto& c : cases) {
+        const std::string path = fixture(c.name);
+        ASSERT_TRUE(boost::filesystem::exists(path)) << path;
+
+        // The fixture itself is part of the assertion: if it changes, the
+        // expected numbers below stop meaning anything.
+        EXPECT_EQ(recordsInFile(path), c.records) << c.name << ": the fixture changed.";
+
+        auto doc = newDocument();
+        lc::persistence::File::Type recorded = lc::persistence::File::LIBOPENCAD_DWG;
+        ASSERT_NO_THROW(recorded = lc::persistence::File::open(
+            doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+        // The fixture states its own revision in $ACADVER, so the recorded
+        // variant is checkable against the bytes rather than against another
+        // import.
+        EXPECT_EQ(recorded, c.expectedType) << c.name;
+        EXPECT_EQ(entitiesInDocument(doc), c.imported) << c.name;
+
+        std::size_t recordCount = 0;
+        for (const auto& record : c.records) {
+            recordCount += record.second;
+        }
+        std::size_t droppedCount = 0;
+        for (const auto& loss : c.dropped) {
+            droppedCount += loss.second;
+            EXPECT_GT(c.records.count(loss.first), 0u)
+                << c.name << ": " << loss.first << " is listed as lost but is not in the file.";
+        }
+
+        EXPECT_EQ(doc->entityContainer().asVector().size() + droppedCount, recordCount)
+            << c.name << ": every record must be imported or accounted for as a known loss.";
+    }
+}
+
+// Round-tripping must reach a fixed point. Comparing the first import with the
+// second is not enough on its own -- see AbsoluteImportOracle -- but a
+// difference between the second and the third is a writer that keeps changing
+// the drawing under a user who keeps pressing Save.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, RoundTripIsStable) {
+    for (const char* name : {"oracle_r2000.dxf", "oracle_r12.dxf"}) {
+        const std::string source = fixture(name);
+        ASSERT_TRUE(boost::filesystem::exists(source)) << source;
+
+        auto opened = newDocument();
+        const auto type = lc::persistence::File::open(
+            opened, source, lc::persistence::File::Library::LIBDXFRW);
+        const auto census0 = entitiesInDocument(opened);
+
+        std::map<std::string, std::size_t> census[2];
+        std::shared_ptr<lc::storage::DocumentImpl> carried = opened;
+
+        for (int hop = 0; hop < 2; hop++) {
+            const std::string path = uniqueTmpDxf(
+                (std::string("stable-") + name + "-" + std::to_string(hop)).c_str());
+            boost::filesystem::remove(path);
+
+            ASSERT_TRUE(lc::persistence::File::save(carried, path, type))
+                << name << " hop " << hop;
+
+            auto reopened = newDocument();
+            ASSERT_NO_THROW(lc::persistence::File::open(
+                reopened, path, lc::persistence::File::Library::LIBDXFRW));
+            census[hop] = entitiesInDocument(reopened);
+            carried = reopened;
+
+            boost::filesystem::remove(path);
+        }
+
+        EXPECT_EQ(census[0], census[1]) << name << ": saving twice must not keep changing it.";
+        EXPECT_EQ(census0, census[0]) << name << ": the first save must not lose anything.";
     }
 }
