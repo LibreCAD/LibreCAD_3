@@ -7,12 +7,48 @@
 
 using namespace lc::persistence;
 
-std::string File::getExtensionForFileType(Type type) {
-    std::string x;
-    if(type >= LIBDXFRW_DXF_R12 && type <= LIBDXFRW_DXB_R2013) {
-        x = "dxf";
+bool File::isLibdxfrwType(Type type) {
+    switch(type) {
+    case LIBDXFRW_DXF_R12:
+    case LIBDXFRW_DXF_R14:
+    case LIBDXFRW_DXF_R2000:
+    case LIBDXFRW_DXF_R2004:
+    case LIBDXFRW_DXF_R2007:
+    case LIBDXFRW_DXF_R2010:
+    case LIBDXFRW_DXF_R2013:
+    case LIBDXFRW_DXB_R12:
+    case LIBDXFRW_DXB_R14:
+    case LIBDXFRW_DXB_R2000:
+    case LIBDXFRW_DXB_R2004:
+    case LIBDXFRW_DXB_R2007:
+    case LIBDXFRW_DXB_R2010:
+    case LIBDXFRW_DXB_R2013:
+        return true;
+    case LIBOPENCAD_DWG:
+        return false;
     }
-    return x;
+
+    return false;
+}
+
+bool File::isBinaryType(Type type) {
+    switch(type) {
+    case LIBDXFRW_DXB_R12:
+    case LIBDXFRW_DXB_R14:
+    case LIBDXFRW_DXB_R2000:
+    case LIBDXFRW_DXB_R2004:
+    case LIBDXFRW_DXB_R2007:
+    case LIBDXFRW_DXB_R2010:
+    case LIBDXFRW_DXB_R2013:
+        return true;
+    default:
+        return false;
+    }
+}
+
+std::string File::getExtensionForFileType(Type type) {
+    // Every writable type is DXF; only the encoding differs.
+    return isLibdxfrwType(type) ? "dxf" : "";
 }
 
 std::map<std::string, std::string> File::getSupportedFileExtensions() {
@@ -101,7 +137,7 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
 }
 
 bool File::save(lc::storage::Document_SPtr document, const std::string& path, File::Type type) {
-    if(type < LIBDXFRW_DXF_R12 || type > LIBDXFRW_DXB_R2013) {
+    if(!isLibdxfrwType(type)) {
         LOG_ERROR << "No writer for file type " << static_cast<int>(type) << "; " << path << " was not written";
         return false;
     }
@@ -120,13 +156,13 @@ std::map<File::Type, std::string> File::getAvailableFileTypes() {
     types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R2000, "DXF 2000 (libdxfrw)"));
     types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R14, "DXF R14 (libdxfrw)"));
     types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R12, "DXF R12 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2013, "DXB 2013 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2010, "DXB 2010 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2007, "DXB 2007 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2004, "DXB 2004 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2000, "DXB 2000 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R14, "DXB R14 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R12, "DXB R12 (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2013, "DXF 2013 binary (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2010, "DXF 2010 binary (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2007, "DXF 2007 binary (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2004, "DXF 2004 binary (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2000, "DXF 2000 binary (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R14, "DXF R14 binary (libdxfrw)"));
+    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R12, "DXF R12 binary (libdxfrw)"));
 
     return types;
 }

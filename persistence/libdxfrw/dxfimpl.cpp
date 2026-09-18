@@ -944,7 +944,8 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         break;
     }
 
-    bool isBinary = type >= lc::persistence::File::LIBDXFRW_DXB_R12 && type < lc::persistence::File::LIBDXFRW_DXB_R2013;
+    // Was `< LIBDXFRW_DXB_R2013`, so the last binary target wrote ASCII.
+    const bool isBinary = lc::persistence::File::isBinaryType(type);
 
     bool success = dxfW->write(this, exportVersion, isBinary);
 

@@ -475,6 +475,50 @@ TEST(DxfRoundTripTest, CustomEntityBlockRoundTrip) {
     boost::filesystem::remove(path);
 }
 
+// Every type the Save As dialog offers must either produce a real file or
+// report failure -- and a type named "binary" must actually write binary.
+// LIBDXFRW_DXB_R2013 wrote ASCII because the encoding test was an exclusive
+// range that stopped one short of the last binary target.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
+    const char* kBinarySentinel = "AutoCAD Binary DXF";
+
+    for (const auto& advertised : lc::persistence::File::getAvailableFileTypes()) {
+        const auto type = advertised.first;
+        const std::string path = uniqueTmpDxf(
+            ("target-" + std::to_string(static_cast<int>(type))).c_str());
+        boost::filesystem::remove(path);
+
+        auto doc = newDocument();
+        auto line = std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(0.0, 0.0, 0.0), lc::geo::Coordinate(4.0, 3.0, 0.0),
+            defaultLayer());
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {line}));
+
+        const bool saved = lc::persistence::File::save(doc, path, type);
+
+        if (!saved) {
+            // A refusal must leave nothing behind, not a truncated file.
+            EXPECT_FALSE(boost::filesystem::exists(path))
+                << advertised.second << " reported failure but left a file.";
+            continue;
+        }
+
+        ASSERT_TRUE(boost::filesystem::exists(path)) << advertised.second;
+        ASSERT_GT(boost::filesystem::file_size(path), 0u) << advertised.second;
+
+        std::ifstream written(path, std::ios::binary);
+        const std::string head(
+            (std::istreambuf_iterator<char>(written)), std::istreambuf_iterator<char>());
+        const bool isBinary = head.find(kBinarySentinel) != std::string::npos;
+
+        EXPECT_EQ(isBinary, lc::persistence::File::isBinaryType(type))
+            << advertised.second << " wrote the wrong encoding.";
+
+        boost::filesystem::remove(path);
+    }
+}
+
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, DegenerateRecordsAreSkippedNotFatal) {
     const std::string path = uniqueTmpDxf("degenerate");
