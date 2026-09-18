@@ -1099,6 +1099,53 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     dxfW->writeLayer(&lay);
 }
 
+namespace {
+
+/**
+ * The entity kinds the target revision cannot carry, and how many the document
+ * holds, for the message a refused save owes the user.
+ *
+ * This runs only *after* libdxfrw has refused a write, never as a gate in front
+ * of one. The library decides what it can write -- there are more than thirty
+ * places where it can refuse -- and a second copy of those rules here would
+ * drift and start refusing saves the library would have accepted. Used this way
+ * the worst a stale entry costs is a vaguer message.
+ */
+std::map<std::string, std::size_t> unwritableKinds(
+    const std::shared_ptr<lc::storage::Document>& document, DRW::Version version) {
+    std::map<std::string, std::size_t> counts;
+
+    // Everything from R13 on carries every kind LibreCAD can write.
+    if (document == nullptr || version > DRW::AC1009) {
+        return counts;
+    }
+
+    const auto tally = [&counts](const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
+        for (const auto& entity : entities) {
+            // R12 has no record for these at all, and libdxfrw approximates
+            // none of them: src/libdxfrw.cpp rejects each below AC1015/AC1009.
+            if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+                counts["SPLINE"]++;
+            } else if (std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+                counts["MTEXT"]++;
+            } else if (std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+                counts["HATCH"]++;
+            } else if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) {
+                counts["IMAGE"]++;
+            }
+        }
+    };
+
+    tally(document->entityContainer().asVector());
+    for (const auto& block : document->blocks()) {
+        tally(document->entitiesByBlock(block).asVector());
+    }
+
+    return counts;
+}
+
+}  // namespace
+
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
 
@@ -1134,13 +1181,17 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     case lc::persistence::File::LIBDXFRW_DXB_R2013:
         exportVersion = DRW::AC1027;
         break;
-    default:
-        exportVersion = DRW::AC1024;
-        break;
+    case lc::persistence::File::LIBOPENCAD_DWG:
+        // File::save refuses this before we are called; there is no DXF
+        // revision to map it to.
+        LOG_ERROR << "No DXF revision for file type " << static_cast<int>(type);
+        return false;
     }
 
     // Was `< LIBDXFRW_DXB_R2013`, so the last binary target wrote ASCII.
     const bool isBinary = lc::persistence::File::isBinaryType(type);
+
+    _exportVersion = exportVersion;
 
     bool success = dxfW->write(this, exportVersion, isBinary);
 
@@ -1149,6 +1200,18 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         LOG_ERROR << "libdxfrw refused to write " << filename
                   << " (DRW::error " << dxfW->getError()
                   << ", " << diagnostic.code << ": " << diagnostic.message << ")";
+
+        // "It refused" is not something a user can act on. Name what this
+        // revision cannot hold, so the answer -- save as R2000 instead, or
+        // remove these -- is in the message.
+        const auto blocked = unwritableKinds(_document, exportVersion);
+        for (const auto& kind : blocked) {
+            LOG_ERROR << "  this revision cannot carry " << kind.second << " "
+                      << kind.first << (kind.second == 1 ? " entity" : " entities");
+        }
+        if (!blocked.empty()) {
+            LOG_ERROR << "  save as R2000 or newer to keep them";
+        }
     }
 
     delete dxfW;
@@ -1749,6 +1812,38 @@ void DXFimpl::writeDimAngular(const lc::entity::DimAngular_CSPtr& d) {
 // Issue #412 phase 1: dispatched, but body was empty — LWPolylines vanished
 // from every save.  Mirror addLWPolyline's field mapping.
 void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p) {
+    // LWPOLYLINE arrived with R13. Asking libdxfrw to write one at R12 is not a
+    // degraded polyline, it is a refused write -- and a refused write loses the
+    // whole file. R12's POLYLINE carries the same geometry, vertex widths and
+    // bulges included, and DXFimpl::addPolyline already reads one back into an
+    // LWPolyline, so the down-convert is a round trip rather than a loss.
+    if (_exportVersion <= DRW::AC1009) {
+        DRW_Polyline pl;
+        getEntityAttributes(&pl, p);
+
+        pl.thickness = p->tickness();
+        pl.basePoint.z = p->elevation();
+        pl.extPoint.x = p->extrusionDirection().x();
+        pl.extPoint.y = p->extrusionDirection().y();
+        pl.extPoint.z = p->extrusionDirection().z();
+        pl.flags = p->closed() ? 1 : 0;
+        pl.defstawidth = p->width();
+        pl.defendwidth = p->width();
+
+        for (const auto& v : p->vertex()) {
+            DRW_Vertex vertex(v.location().x(), v.location().y(), p->elevation(), v.bulge());
+            vertex.stawidth = v.startWidth();
+            vertex.endwidth = v.endWidth();
+            pl.addVertex(vertex);
+        }
+        pl.vertexcount = pl.vertlist.size();
+
+        if (!dxfW->writePolyline(&pl)) {
+            LOG_ERROR << "libdxfrw refused POLYLINE";
+        }
+        return;
+    }
+
     DRW_LWPolyline pl;
     getEntityAttributes(&pl, p);
 

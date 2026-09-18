@@ -319,6 +319,12 @@ private:
 
     dxfRW* dxfW;
 
+    /**
+     * The DXF revision the current write targets. R12 cannot carry several
+     * entity kinds, so the writers need to know what they are writing for.
+     */
+    DRW::Version _exportVersion{DRW::AC1024};
+
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
     lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;

@@ -332,18 +332,59 @@ TEST(DxfRoundTripTest, SaveReportsFailure) {
 
     // (b) A document the library refuses at the requested version.
     //
-    // NOTE for whoever lands `lc-save-target-matrix` (R12 LWPOLYLINE →
-    // POLYLINE down-convert): this assertion is expected to flip to
-    // EXPECT_TRUE then.  Keep (a) and the controls; they are version
-    // independent.
+    // It is no longer the LWPOLYLINE: `lc-save-target-matrix` writes those as
+    // R12's own POLYLINE, which carries the same geometry (see the round-trip
+    // assertion below).  A SPLINE has no R12 record at all and libdxfrw
+    // approximates none, so this is a genuine refusal rather than a missing
+    // conversion.
+    auto splineDoc = newDocument();
+    insertThroughBuilder(splineDoc, {std::make_shared<lc::entity::Spline>(
+        std::vector<lc::geo::Coordinate>{{0.0, 0.0}, {3.0, 8.0}, {7.0, -4.0}, {10.0, 0.0}},
+        std::vector<double>{0, 0, 0, 0, 1, 1, 1, 1},
+        std::vector<lc::geo::Coordinate>{},
+        3, false, 0.0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1,
+        lc::geo::Spline::splineflag::PERIODIC, layer)});
+
     const std::string refusedPath = uniqueTmpDxf("refused-r12");
     boost::filesystem::remove(refusedPath);
     EXPECT_FALSE(lc::persistence::File::save(
-        makePolylineDoc(), refusedPath,
-        lc::persistence::File::Type::LIBDXFRW_DXF_R12))
-        << "R12 cannot carry an LWPOLYLINE; save must say so.";
+        splineDoc, refusedPath, lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "R12 cannot carry a SPLINE; save must say so.";
     EXPECT_FALSE(boost::filesystem::exists(refusedPath))
         << "A refused save must leave no file behind.";
+
+    // (c) The LWPOLYLINE that used to be refused is now written as a POLYLINE
+    // and comes back as the same polyline.
+    const std::string downConvertedPath = uniqueTmpDxf("r12-polyline");
+    boost::filesystem::remove(downConvertedPath);
+    EXPECT_TRUE(lc::persistence::File::save(
+        makePolylineDoc(), downConvertedPath,
+        lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "R12 carries an LWPOLYLINE as POLYLINE; the save must not fail.";
+    {
+        std::ifstream written(downConvertedPath);
+        const std::string body((std::istreambuf_iterator<char>(written)),
+                               std::istreambuf_iterator<char>());
+        EXPECT_NE(body.find("\nPOLYLINE\n"), std::string::npos)
+            << "R12 must get a POLYLINE record.";
+        EXPECT_EQ(body.find("\nLWPOLYLINE\n"), std::string::npos)
+            << "R12 has no LWPOLYLINE record.";
+
+        auto reopened = newDocument();
+        ASSERT_NO_THROW(lc::persistence::File::open(
+            reopened, downConvertedPath, lc::persistence::File::Library::LIBDXFRW));
+        int polylines = 0;
+        for (const auto& entity : reopened->entityContainer().asVector()) {
+            if (auto pl = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity)) {
+                polylines++;
+                EXPECT_EQ(pl->vertex().size(), vertexes.size())
+                    << "The down-convert must keep every vertex.";
+            }
+        }
+        EXPECT_EQ(polylines, 1) << "The polyline must survive the down-convert.";
+    }
+    boost::filesystem::remove(downConvertedPath);
 
     // Control 1: the same document at a version that can carry it.
     const std::string acceptedPath = uniqueTmpDxf("accepted-r2000");
@@ -490,16 +531,34 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
             ("target-" + std::to_string(static_cast<int>(type))).c_str());
         boost::filesystem::remove(path);
 
+        // Representative rather than minimal: a lone LINE is carried by every
+        // revision back to R10, so it could not tell a working target from one
+        // that refuses the drawing.  The polyline is the interesting one --
+        // LWPOLYLINE arrived with R13, and the R12 targets have to write it as
+        // POLYLINE instead of refusing the file.
+        auto layer = defaultLayer();
         auto doc = newDocument();
-        auto line = std::make_shared<lc::entity::Line>(
-            lc::geo::Coordinate(0.0, 0.0, 0.0), lc::geo::Coordinate(4.0, 3.0, 0.0),
-            defaultLayer());
-        ASSERT_NO_THROW(insertThroughBuilder(doc, {line}));
+        std::vector<lc::entity::LWVertex2D> vertexes{
+            lc::entity::LWVertex2D(lc::geo::Coordinate(0.0, 0.0)),
+            lc::entity::LWVertex2D(lc::geo::Coordinate(5.0, 2.0), 0.4),
+            lc::entity::LWVertex2D(lc::geo::Coordinate(9.0, 0.0))};
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {
+            std::make_shared<lc::entity::Line>(
+                lc::geo::Coordinate(0.0, 0.0, 0.0), lc::geo::Coordinate(4.0, 3.0, 0.0), layer),
+            std::make_shared<lc::entity::Circle>(
+                lc::geo::Coordinate(2.0, 2.0, 0.0), 1.5, layer),
+            std::make_shared<lc::entity::LWPolyline>(
+                vertexes, 0.0, 0.0, 0.0, /*closed=*/false,
+                lc::geo::Coordinate(0, 0, 1), layer)}));
 
         const bool saved = lc::persistence::File::save(doc, path, type);
 
         if (!saved) {
-            // A refusal must leave nothing behind, not a truncated file.
+            // Only LIBOPENCAD_DWG may refuse: every DXF target must carry this
+            // drawing, R12 included.  A refusal must also leave nothing
+            // behind, not a truncated file.
+            EXPECT_EQ(type, lc::persistence::File::LIBOPENCAD_DWG)
+                << advertised.second << " refused a drawing it should carry.";
             EXPECT_FALSE(boost::filesystem::exists(path))
                 << advertised.second << " reported failure but left a file.";
             continue;
@@ -989,4 +1048,50 @@ TEST(DxfRoundTripTest, HatchBoundariesSurviveARoundTrip) {
     EXPECT_EQ(decomposedLoops, 1);
 
     boost::filesystem::remove(path);
+}
+
+
+// The encoding is a property of the file, not a preference: a user who opens an
+// ASCII DXF and presses Save must get an ASCII DXF back. File::open used to
+// answer AC1009 and AC1014 with the DXB_* variants, which write *binary*, so
+// saving an R12 or R14 drawing under the type its own open reported silently
+// changed the file's encoding. Nothing in the format required that -- it came
+// from reading the revision out of the text codec.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AsciiRoundTripStaysAscii) {
+    const char* kBinarySentinel = "AutoCAD Binary DXF";
+
+    for (const char* acadVersion : {"AC1009", "AC1014", "AC1015", "AC1027"}) {
+        const std::string source = uniqueTmpDxf((std::string("ascii-") + acadVersion).c_str());
+        const std::string resaved = uniqueTmpDxf((std::string("resaved-") + acadVersion).c_str());
+        boost::filesystem::remove(source);
+        boost::filesystem::remove(resaved);
+
+        {
+            std::ofstream dxf(source);
+            dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\n" << acadVersion << "\n0\nENDSEC\n"
+                << "0\nSECTION\n2\nENTITIES\n"
+                << "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n4.0\n21\n3.0\n31\n0.0\n"
+                << "0\nENDSEC\n0\nEOF\n";
+        }
+
+        auto doc = newDocument();
+        const auto recorded = lc::persistence::File::open(
+            doc, source, lc::persistence::File::Library::LIBDXFRW);
+
+        EXPECT_FALSE(lc::persistence::File::isBinaryType(recorded))
+            << acadVersion << " is an ASCII file; opening it must not record a binary target.";
+
+        ASSERT_TRUE(lc::persistence::File::save(doc, resaved, recorded)) << acadVersion;
+
+        std::ifstream written(resaved, std::ios::binary);
+        const std::string body((std::istreambuf_iterator<char>(written)),
+                               std::istreambuf_iterator<char>());
+        EXPECT_EQ(body.find(kBinarySentinel), std::string::npos)
+            << acadVersion << " came back binary after a plain Save.";
+
+        boost::filesystem::remove(source);
+        boost::filesystem::remove(resaved);
+    }
 }
