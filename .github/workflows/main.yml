@@ -121,6 +121,44 @@ jobs:
           path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
           name: assets
 
+  # BuildWindows has to install Qt, build every target and package an
+  # installer before it tells us anything, and it has not reached a build in a
+  # long time. This job answers the one question that gates the libdxfrw
+  # submodule on Windows -- does MSVC compile the library and the persistence
+  # layer that consumes it -- in a couple of minutes, without Qt, and fails the
+  # PR on its own if it cannot.
+  windows-persistence:
+    name: BuildWindowsPersistence
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
+
+      - run: ${{ github.workspace }}/scripts/windows-install/createConanDirAndInstallDependencies.bat
+
+      # No -G: the batch files deliberately let CMake pick the newest Visual
+      # Studio on the runner, and this job must exercise the same generator,
+      # because Release there enables whole-program optimisation -- which is
+      # what libdxfrw's /GL- and /Zc:inline- exist to counteract.
+      - name: Configure without the Qt UI
+        shell: cmd
+        run: |
+          cmake -S %CD% -B %CD%\build-persistence ^
+            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake ^
+            -DWITH_QT_UI=OFF -DWITH_UNITTESTS=OFF -DWITH_LUACMDINTERFACE=OFF ^
+            -DWITH_PYTHONSCRIPT=OFF -DWITH_RENDERING_UNITTESTS=OFF
+          if errorlevel 1 exit /b 1
+
+      - name: Build libdxfrw and persistence
+        shell: cmd
+        run: |
+          cmake --build %CD%\build-persistence --config Release --target dxfrw persistence
+          if errorlevel 1 exit /b 1
+
   UpdateAssets:
     if: github.repository_owner == 'LibreCAD'
     needs: [linux, windows]
