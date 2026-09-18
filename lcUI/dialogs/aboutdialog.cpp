@@ -11,7 +11,6 @@ using namespace lc::ui::dialog;
 
 #include <boost/version.hpp>
 
-#include <drw_base.h>
 extern "C"
 {
 #include "lua.h"
@@ -205,7 +204,7 @@ QString getExtInfo(outputConfig& oc) {
         oc.lineFormat.arg("Lua Version").arg(getLuaVersion()) +
         // Phase 6 PR-6.2 — new Python row.
         oc.lineFormat.arg("Python Version").arg(getPythonVersion()) +
-        oc.lineFormat.arg("libdxfrw Version").arg(DRW_VERSION) +
+        oc.lineFormat.arg("libdxfrw Version").arg(LIBDXFRW_BUILD_VERSION) +
         oc.lineFormat.arg("OpenGL Version").arg(getGLVersion()) +
         oc.lineFormat.arg("CMake Version").arg(CMAKE_VERSION)
         ;

@@ -19,6 +19,22 @@ else()
     set(BUILD_INFO "Release")
 endif()
 
+# DRW_VERSION is frozen at "0.6.3" upstream, so report what is actually built:
+# the package version plus the pinned submodule revision.
+if(NOT DEFINED LIBDXFRW_BUILD_VERSION OR LIBDXFRW_BUILD_VERSION STREQUAL "")
+    set(LIBDXFRW_BUILD_VERSION "unknown")
+endif()
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        OUTPUT_VARIABLE LIBDXFRW_GIT_COMMIT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        WORKING_DIRECTORY ${DIR}/../third_party/libdxfrw
+)
+if(LIBDXFRW_GIT_COMMIT)
+    set(LIBDXFRW_BUILD_VERSION "${LIBDXFRW_BUILD_VERSION} (${LIBDXFRW_GIT_COMMIT})")
+endif()
+
 configure_file(${DIR}/build_constants.cpp.in ${DIR}/build_constants.cpp)
 
 message(STATUS "Build date: ${BUILD_DATE}")
