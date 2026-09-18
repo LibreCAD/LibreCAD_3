@@ -62,6 +62,12 @@
 #include <cad/geometry/geocoordinate.h>
 #include <cad/geometry/georegion.h>
 
+#include <cad/primitive/dimension.h>
+#include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimaligned.h>
+#include <cad/primitive/dimradial.h>
+#include <cad/primitive/dimdiametric.h>
+#include <cad/primitive/dimangular.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/insert.h>
@@ -2201,4 +2207,150 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
         boost::filesystem::remove(source);
         boost::filesystem::remove(resaved);
     }
+}
+
+namespace {
+
+/** The block names a file's DIMENSION records point at, and the blocks it defines. */
+struct DimensionBlocks {
+    std::vector<std::string> referenced;  //!< group 2 on each DIMENSION, "" when absent
+    std::map<std::string, std::size_t> defined;  //!< block name -> entities inside it
+};
+
+DimensionBlocks dimensionBlocksIn(const std::string& path) {
+    DimensionBlocks found;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string section;
+    std::string record;
+    std::string openBlock;
+    bool dimensionNeedsName = false;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto start = code.find_first_not_of(" \t");
+        const std::string group = start == std::string::npos ? code : code.substr(start);
+
+        if (group == "0") {
+            if (dimensionNeedsName) {
+                found.referenced.push_back("");  // a DIMENSION that named no block
+                dimensionNeedsName = false;
+            }
+
+            record = value;
+            if (value == "ENDBLK") {
+                openBlock.clear();
+            } else if (value == "DIMENSION") {
+                dimensionNeedsName = true;
+            } else if (value != "BLOCK" && value != "SECTION" && value != "ENDSEC"
+                       && value != "EOF" && !openBlock.empty()) {
+                found.defined[openBlock]++;
+            }
+            continue;
+        }
+
+        if (group == "2") {
+            if (record == "SECTION") {
+                section = value;
+            } else if (record == "BLOCK") {
+                openBlock = value;
+                found.defined[value];  // defined, possibly empty
+            } else if (record == "DIMENSION" && dimensionNeedsName) {
+                found.referenced.push_back(value);
+                dimensionNeedsName = false;
+            }
+        }
+    }
+
+    if (dimensionNeedsName) {
+        found.referenced.push_back("");
+    }
+
+    return found;
+}
+
+}  // namespace
+
+// DXF group 2 on a DIMENSION names an anonymous block holding the lines,
+// arrowheads and text the dimension draws. LibreCAD wrote neither the group nor
+// the block, and that is not the harmless omission it looks like: a reader does
+// not necessarily regenerate the picture. ezdxf's audit *removes* a DIMENSION
+// without a valid geometry block -- so a drawing saved by LibreCAD lost its
+// dimensions outright when it passed through anything that audits on load.
+//
+// Measured with ezdxf 1.4.4 on a file from this same document: before, two
+// fixes reading "Removed DIMENSION without valid geometry block" and one entity
+// left in modelspace; after, zero such fixes and every dimension intact. That
+// check needs a Python package CI does not have, so what is asserted here is
+// the structure it was verifying: every DIMENSION names a block, and every
+// block it names exists and has geometry in it.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
+    auto layer = defaultLayer();
+    auto doc = newDocument();
+
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::DimLinear>(
+            lc::geo::Coordinate(25, 10, 0), lc::geo::Coordinate(25, 11, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(50, 0, 0), 0.0, 0.0, layer),
+        std::make_shared<lc::entity::DimAligned>(
+            lc::geo::Coordinate(25, -10, 0), lc::geo::Coordinate(25, -11, 0),
+            lc::TextConst::AttachmentPoint::Top_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(50, 0, 0), layer),
+        std::make_shared<lc::entity::DimRadial>(
+            lc::geo::Coordinate(100, 0, 0), lc::geo::Coordinate(105, 6, 0),
+            lc::TextConst::AttachmentPoint::Middle_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(110, 0, 0), 2.0, layer),
+        std::make_shared<lc::entity::DimDiametric>(
+            lc::geo::Coordinate(140, 0, 0), lc::geo::Coordinate(160, 6, 0),
+            lc::TextConst::AttachmentPoint::Middle_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(160, 0, 0), 2.0, layer),
+        std::make_shared<lc::entity::DimAngular>(
+            lc::geo::Coordinate(206, 4, 0), lc::geo::Coordinate(208, 6, 0),
+            lc::TextConst::AttachmentPoint::Middle_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(210, 0, 0),
+            lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(206, 8, 0), layer)}));
+
+    const std::string path = uniqueTmpDxf("dimension-blocks");
+    boost::filesystem::remove(path);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto blocks = dimensionBlocksIn(path);
+    ASSERT_EQ(blocks.referenced.size(), 5u) << "All five dimension kinds must be written.";
+
+    for (std::size_t i = 0; i < blocks.referenced.size(); i++) {
+        const auto& name = blocks.referenced[i];
+        ASSERT_FALSE(name.empty()) << "dimension " << i << " names no geometry block";
+        ASSERT_EQ(blocks.defined.count(name), 1u)
+            << "dimension " << i << " names block " << name << ", which the file does not define";
+        EXPECT_GT(blocks.defined.at(name), 0u)
+            << name << " is empty; a reader that honours it would draw nothing";
+    }
+
+    // And the drawing still reads back as itself: the geometry blocks are
+    // machinery, not five more things in the drawing.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+
+    int dimensions = 0;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Dimension>(entity)) {
+            dimensions++;
+        }
+    }
+    EXPECT_EQ(dimensions, 5) << "The dimensions themselves must survive the round trip.";
+
+    boost::filesystem::remove(path);
 }

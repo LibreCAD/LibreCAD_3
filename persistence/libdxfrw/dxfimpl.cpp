@@ -3,6 +3,7 @@
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
+#include <cmath>
 #include <set>
 
 #include <cad/primitive/circle.h>
@@ -11,6 +12,7 @@
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
 #include <cad/primitive/mtext.h>
+#include <cad/primitive/dimension.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
@@ -2084,6 +2086,14 @@ void DXFimpl::writeDimensionCommon(DRW_Dimension* dim,
     // Style must be non-empty or the R2000+ writer path skips writing group
     // 3 entirely, then downstream readers reject the dimension header.
     dim->setStyle("STANDARD");
+
+    // The block holding this dimension's drawn geometry, written by
+    // writeBlocks() before any entity is emitted. Without group 2 an auditing
+    // reader does not regenerate the picture -- it deletes the dimension.
+    const auto block = _dimensionBlocks.find(entity->id());
+    if (block != _dimensionBlocks.end()) {
+        dim->setName(block->second);
+    }
 }
 
 void DXFimpl::writeDimLinear(const lc::entity::DimLinear_CSPtr& d) {
@@ -2725,11 +2735,407 @@ void DXFimpl::writeBlockRecords() {
     for(const auto& block : _document->blocks()) {
         dxfW->writeBlockRecord(block->name());
     }
+
+    // A block needs its record. The names are minted from the same ordered walk
+    // writeBlocks() uses, so the two agree without either having run yet.
+    unsigned int next = 1;
+    for(std::size_t i = 0; i < allDimensions().size(); i++) {
+        dxfW->writeBlockRecord("*D" + std::to_string(next++));
+    }
+}
+
+std::vector<lc::entity::CADEntity_CSPtr> DXFimpl::allDimensions() const {
+    std::vector<lc::entity::CADEntity_CSPtr> dimensions;
+
+    const auto collect = [&dimensions](const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
+        for (const auto& entity : entities) {
+            if (std::dynamic_pointer_cast<const lc::entity::Dimension>(entity) != nullptr) {
+                dimensions.push_back(entity);
+            }
+        }
+    };
+
+    collect(_document->entityContainer().asVector());
+    for (const auto& block : _document->blocks()) {
+        collect(_document->entitiesByBlock(block).asVector());
+    }
+
+    return dimensions;
+}
+
+namespace {
+
+// DXF's own defaults for the parts of a dimension's appearance LibreCAD does
+// not model. $DIMASZ, $DIMEXE and $DIMEXO are style variables; LibreCAD has no
+// dimension style to read them from -- addDimStyle is a loss counter -- so the
+// spec defaults stand in, and the geometry is at least self-consistent.
+constexpr double kArrowSize = 0.18;
+constexpr double kExtensionBeyond = 0.18;   // $DIMEXE: past the dimension line
+constexpr double kExtensionOffset = 0.0625; // $DIMEXO: away from the measured point
+
+struct Vector2 {
+    double x{0.0};
+    double y{0.0};
+};
+
+Vector2 operator-(const Vector2& a, const Vector2& b) {
+    return {a.x - b.x, a.y - b.y};
+}
+
+Vector2 operator+(const Vector2& a, const Vector2& b) {
+    return {a.x + b.x, a.y + b.y};
+}
+
+Vector2 operator*(const Vector2& v, double scale) {
+    return {v.x * scale, v.y * scale};
+}
+
+double dot(const Vector2& a, const Vector2& b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+Vector2 normalised(const Vector2& v) {
+    const double length = std::sqrt(v.x * v.x + v.y * v.y);
+    return length > 0.0 ? Vector2{v.x / length, v.y / length} : Vector2{1.0, 0.0};
+}
+
+Vector2 flat(const lc::geo::Coordinate& c) {
+    return {c.x(), c.y()};
+}
+
+}  // namespace
+
+namespace {
+
+/** The text a dimension shows: its own override, or the measurement. */
+std::string dimensionText(const lc::entity::Dimension& dimension, double measured,
+                          const std::string& prefix) {
+    if (!dimension.explicitValue().empty()) {
+        return dimension.explicitValue();
+    }
+
+    char formatted[32];
+    std::snprintf(formatted, sizeof(formatted), "%g", measured);
+    return prefix + formatted;
+}
+
+}  // namespace
+
+std::string DXFimpl::beginDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                         std::string& layerName) {
+    const std::string name = "*D" + std::to_string(_nextDimensionBlock++);
+
+    DRW_Block block;
+    block.name = name;
+    block.basePoint = DRW_Coord(0.0, 0.0, 0.0);
+    // 1 = anonymous: machinery, not a block to offer the user in a list.
+    block.flags = 1;
+    if (!dxfW->writeBlock(&block)) {
+        LOG_ERROR << "libdxfrw refused the dimension block " << name;
+        return "";
+    }
+
+    layerName = entity->layer() != nullptr ? entity->layer()->name() : std::string("0");
+    return name;
+}
+
+void DXFimpl::writeDimensionLine(const std::string& layerName,
+                                 double fromX, double fromY, double toX, double toY) {
+    DRW_Line drw;
+    drw.layer = layerName;
+    drw.basePoint = DRW_Coord(fromX, fromY, 0.0);
+    drw.secPoint = DRW_Coord(toX, toY, 0.0);
+    dxfW->writeLine(&drw);
+}
+
+void DXFimpl::writeDimensionArrow(const std::string& layerName,
+                                  double tipX, double tipY, double dirX, double dirY) {
+    const double backX = tipX + dirX * kArrowSize;
+    const double backY = tipY + dirY * kArrowSize;
+    const double sideX = -dirY * kArrowSize * 0.5;
+    const double sideY = dirX * kArrowSize * 0.5;
+
+    DRW_Solid drw;
+    drw.layer = layerName;
+    drw.basePoint = DRW_Coord(tipX, tipY, 0.0);
+    drw.secPoint = DRW_Coord(backX + sideX, backY + sideY, 0.0);
+    // A DXF SOLID's corners run in a bow-tie, which is the same ordering
+    // addSolid reads back.
+    drw.thirdPoint = DRW_Coord(backX - sideX, backY - sideY, 0.0);
+    drw.fourPoint = drw.thirdPoint;
+    dxfW->writeSolid(&drw);
+}
+
+void DXFimpl::writeDimensionText(const std::string& layerName,
+                                 const lc::entity::Dimension& dimension,
+                                 const std::string& value) {
+    // A single space is DXF's way of saying "draw no text".
+    if (value == " ") {
+        return;
+    }
+
+    DRW_Text text;
+    text.layer = layerName;
+    text.basePoint = DRW_Coord(dimension.middleOfText().x(), dimension.middleOfText().y(), 0.0);
+    text.secPoint = text.basePoint;
+    text.height = kArrowSize * 2.0;
+    text.text = value;
+    text.angle = dimension.textAngle();
+    text.alignH = DRW_Text::HCenter;
+    text.alignV = DRW_Text::VMiddle;
+    text.style = "STANDARD";
+    dxfW->writeText(&text);
+}
+
+std::string DXFimpl::writeLeaderDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                               const lc::entity::Dimension& dimension,
+                                               double fromX, double fromY,
+                                               double toX, double toY,
+                                               bool arrowAtBothEnds,
+                                               const std::string& prefix) {
+    const Vector2 from{fromX, fromY};
+    const Vector2 to{toX, toY};
+
+    std::string layerName;
+    const std::string name = beginDimensionBlock(entity, layerName);
+    if (name.empty()) {
+        return "";
+    }
+
+    writeDimensionLine(layerName, from.x, from.y, to.x, to.y);
+
+    const Vector2 direction = normalised(to - from);
+    writeDimensionArrow(layerName, to.x, to.y, direction.x * -1.0, direction.y * -1.0);
+    if (arrowAtBothEnds) {
+        writeDimensionArrow(layerName, from.x, from.y, direction.x, direction.y);
+    }
+
+    const Vector2 span = to - from;
+    writeDimensionText(layerName, dimension,
+                       dimensionText(dimension, std::sqrt(dot(span, span)), prefix));
+
+    return name;
+}
+
+std::string DXFimpl::writeAngularDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                                const lc::entity::Dimension& dimension,
+                                                const lc::entity::DimAngular& angular) {
+    // The two measured lines meet at a vertex; the dimension draws an arc
+    // between them, through the point the dimension itself sits at.
+    const Vector2 firstStart = flat(angular.defLine11());
+    const Vector2 firstEnd = flat(angular.defLine12());
+    const Vector2 secondStart = flat(angular.defLine21());
+    const Vector2 secondEnd = flat(angular.defLine22());
+    const Vector2 through = flat(dimension.definitionPoint());
+
+    // The vertex is where the two lines cross. Solving it directly keeps this
+    // honest for lines that do not share an endpoint.
+    const Vector2 firstDir = normalised(firstEnd - firstStart);
+    const Vector2 secondDir = normalised(secondEnd - secondStart);
+    const double denominator = firstDir.x * secondDir.y - firstDir.y * secondDir.x;
+    if (std::abs(denominator) < 1e-12) {
+        // Parallel lines subtend no angle; there is no arc to draw.
+        return "";
+    }
+
+    const Vector2 between = secondStart - firstStart;
+    const double along = (between.x * secondDir.y - between.y * secondDir.x) / denominator;
+    const Vector2 vertex = firstStart + firstDir * along;
+
+    std::string layerName;
+    const std::string name = beginDimensionBlock(entity, layerName);
+    if (name.empty()) {
+        return "";
+    }
+
+    const Vector2 toArc = through - vertex;
+    const double radius = std::sqrt(dot(toArc, toArc));
+    if (radius <= 0.0) {
+        return name;
+    }
+
+    double startAngle = std::atan2(firstEnd.y - vertex.y, firstEnd.x - vertex.x);
+    double endAngle = std::atan2(secondEnd.y - vertex.y, secondEnd.x - vertex.x);
+
+    // Extension lines out to the arc, then the arc itself.
+    writeDimensionLine(layerName, firstEnd.x, firstEnd.y,
+                       vertex.x + std::cos(startAngle) * (radius + kExtensionBeyond),
+                       vertex.y + std::sin(startAngle) * (radius + kExtensionBeyond));
+    writeDimensionLine(layerName, secondEnd.x, secondEnd.y,
+                       vertex.x + std::cos(endAngle) * (radius + kExtensionBeyond),
+                       vertex.y + std::sin(endAngle) * (radius + kExtensionBeyond));
+
+    DRW_Arc arc;
+    arc.layer = layerName;
+    arc.basePoint = DRW_Coord(vertex.x, vertex.y, 0.0);
+    arc.radious = radius;
+    arc.staangle = startAngle;
+    arc.endangle = endAngle;
+    arc.isccw = 1;
+    dxfW->writeArc(&arc);
+
+    double swept = endAngle - startAngle;
+    while (swept < 0.0) {
+        swept += 2.0 * M_PI;
+    }
+
+    char formatted[32];
+    std::snprintf(formatted, sizeof(formatted), "%g", swept * 180.0 / M_PI);
+    writeDimensionText(layerName, dimension,
+                       dimension.explicitValue().empty()
+                           ? std::string(formatted) + "\xc2\xb0" : dimension.explicitValue());
+
+    return name;
+}
+
+std::string DXFimpl::writeDimensionBlock(const lc::entity::CADEntity_CSPtr& entity) {
+    const auto dimension = std::dynamic_pointer_cast<const lc::entity::Dimension>(entity);
+    if (dimension == nullptr) {
+        return "";
+    }
+
+    // The two measured points and the direction the dimension line runs in.
+    // For an aligned dimension that direction is the line between the points;
+    // for a linear one it is the dimension's own rotation, which is what makes
+    // a horizontal dimension over a sloped feature come out horizontal.
+    Vector2 first;
+    Vector2 second;
+    Vector2 along;
+
+    if (auto linear = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity)) {
+        first = flat(linear->definitionPoint2());
+        second = flat(linear->definitionPoint3());
+        along = {std::cos(linear->angle()), std::sin(linear->angle())};
+    } else if (auto aligned = std::dynamic_pointer_cast<const lc::entity::DimAligned>(entity)) {
+        first = flat(aligned->definitionPoint2());
+        second = flat(aligned->definitionPoint3());
+        along = normalised(second - first);
+    } else if (auto radial = std::dynamic_pointer_cast<const lc::entity::DimRadial>(entity)) {
+        // A leader from the centre out to the edge, with one arrowhead where it
+        // meets the circle.
+        return writeLeaderDimensionBlock(entity, *dimension,
+                                         radial->definitionPoint().x(), radial->definitionPoint().y(),
+                                         radial->definitionPoint2().x(), radial->definitionPoint2().y(),
+                                         false, "R");
+    } else if (auto diametric = std::dynamic_pointer_cast<const lc::entity::DimDiametric>(entity)) {
+        // A line right across the circle, arrowheads at both ends.
+        return writeLeaderDimensionBlock(entity, *dimension,
+                                         diametric->definitionPoint().x(), diametric->definitionPoint().y(),
+                                         diametric->definitionPoint2().x(), diametric->definitionPoint2().y(),
+                                         true, "");
+    } else if (auto angular = std::dynamic_pointer_cast<const lc::entity::DimAngular>(entity)) {
+        return writeAngularDimensionBlock(entity, *dimension, *angular);
+    } else {
+        return "";
+    }
+
+    const Vector2 onLine = flat(dimension->definitionPoint());
+    const Vector2 across = {-along.y, along.x};
+
+    // Where each measured point meets the dimension line: slide it along the
+    // perpendicular until it is level with the line.
+    const double offsetFirst = dot(onLine - first, across);
+    const double offsetSecond = dot(onLine - second, across);
+    const Vector2 footFirst = first + across * offsetFirst;
+    const Vector2 footSecond = second + across * offsetSecond;
+
+    const std::string name = "*D" + std::to_string(_nextDimensionBlock++);
+
+    DRW_Block block;
+    block.name = name;
+    block.basePoint = DRW_Coord(0.0, 0.0, 0.0);
+    // 1 = anonymous: this block is machinery, not something to offer the user
+    // in a block list.
+    block.flags = 1;
+    if (!dxfW->writeBlock(&block)) {
+        LOG_ERROR << "libdxfrw refused the dimension block " << name;
+        return "";
+    }
+
+    const auto layerName = entity->layer() != nullptr ? entity->layer()->name() : std::string("0");
+
+    const auto line = [&](const Vector2& from, const Vector2& to) {
+        DRW_Line drw;
+        drw.layer = layerName;
+        drw.basePoint = DRW_Coord(from.x, from.y, 0.0);
+        drw.secPoint = DRW_Coord(to.x, to.y, 0.0);
+        dxfW->writeLine(&drw);
+    };
+
+    // An arrowhead as a filled triangle, pointing at `tip` from `direction`.
+    const auto arrow = [&](const Vector2& tip, const Vector2& direction) {
+        const Vector2 back = tip + direction * kArrowSize;
+        const Vector2 side = {-direction.y * kArrowSize * 0.5, direction.x * kArrowSize * 0.5};
+
+        DRW_Solid drw;
+        drw.layer = layerName;
+        drw.basePoint = DRW_Coord(tip.x, tip.y, 0.0);
+        drw.secPoint = DRW_Coord(back.x + side.x, back.y + side.y, 0.0);
+        // A DXF SOLID's corners run in a bow-tie, so the third and fourth
+        // points are the far edge in reverse -- the same ordering addSolid
+        // reads back.
+        drw.thirdPoint = DRW_Coord(back.x - side.x, back.y - side.y, 0.0);
+        drw.fourPoint = drw.thirdPoint;
+        dxfW->writeSolid(&drw);
+    };
+
+    // Extension lines: they start just off the measured point and run a little
+    // past the dimension line, which is what makes them read as extensions
+    // rather than as part of the drawing.
+    const auto extension = [&](const Vector2& from, const Vector2& foot) {
+        const Vector2 direction = normalised(foot - from);
+        line(from + direction * kExtensionOffset, foot + direction * kExtensionBeyond);
+    };
+
+    extension(first, footFirst);
+    extension(second, footSecond);
+    line(footFirst, footSecond);
+
+    const Vector2 inward = normalised(footSecond - footFirst);
+    arrow(footFirst, inward);
+    arrow(footSecond, inward * -1.0);
+
+    // The measurement. An explicit value overrides it -- that is what DXF's
+    // group 1 means -- and otherwise it is the distance along the dimension
+    // line, which is the number the dimension exists to state.
+    std::string measurement = dimension->explicitValue();
+    if (measurement.empty()) {
+        const double measured = std::abs(dot(footSecond - footFirst, inward));
+        char formatted[32];
+        std::snprintf(formatted, sizeof(formatted), "%g", measured);
+        measurement = formatted;
+    }
+
+    if (measurement != " ") {  // a single space is DXF's "suppress the text"
+        DRW_Text text;
+        text.layer = layerName;
+        text.basePoint = DRW_Coord(dimension->middleOfText().x(), dimension->middleOfText().y(), 0.0);
+        text.secPoint = text.basePoint;
+        text.height = kArrowSize * 2.0;
+        text.text = measurement;
+        text.angle = dimension->textAngle();
+        text.alignH = DRW_Text::HCenter;
+        text.alignV = DRW_Text::VMiddle;
+        text.style = "STANDARD";
+        dxfW->writeText(&text);
+    }
+
+    return name;
 }
 
 void DXFimpl::writeBlocks() {
     for(const auto& block : _document->blocks()) {
         writeBlock(block);
+    }
+
+    // Then one anonymous block per dimension, holding the geometry it draws.
+    // This runs before writeEntities(), which is what lets the DIMENSION record
+    // name a block that already exists.
+    for(const auto& entity : allDimensions()) {
+        const auto name = writeDimensionBlock(entity);
+        if (!name.empty()) {
+            _dimensionBlocks[entity->id()] = name;
+        }
     }
 }
 

@@ -334,6 +334,50 @@ public:
 
     void writeBlock(const lc::meta::Block_CSPtr& block);
 
+    /**
+     * Emit the anonymous *D block that holds a dimension's drawn geometry.
+     *
+     * DXF group 2 on a DIMENSION names a block containing the lines, arrowheads
+     * and text that make up the picture. LibreCAD wrote no such block and no
+     * group 2, and that is not the harmless omission it looks like: ezdxf's
+     * audit **deletes** a DIMENSION that has no valid geometry block, so a
+     * drawing saved by LibreCAD lost its dimensions entirely when it passed
+     * through anything that audits on load.
+     *
+     * Returns the block name to put in group 2, or "" when the kind has no
+     * geometry this can build.
+     */
+    std::string writeDimensionBlock(const lc::entity::CADEntity_CSPtr& entity);
+
+    // Pieces shared by the per-kind geometry above. They take plain numbers
+    // rather than a geometry type so that this header keeps naming no DRW type
+    // beyond the ones DRW_Interface already forces on it.
+    std::string beginDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                    std::string& layerName);
+    void writeDimensionLine(const std::string& layerName,
+                            double fromX, double fromY, double toX, double toY);
+    void writeDimensionArrow(const std::string& layerName,
+                             double tipX, double tipY, double dirX, double dirY);
+    void writeDimensionText(const std::string& layerName,
+                            const lc::entity::Dimension& dimension, const std::string& value);
+
+    /** A dimension drawn as a single measured line: radial and diametric. */
+    std::string writeLeaderDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                          const lc::entity::Dimension& dimension,
+                                          double fromX, double fromY, double toX, double toY,
+                                          bool arrowAtBothEnds, const std::string& prefix);
+
+    std::string writeAngularDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                           const lc::entity::Dimension& dimension,
+                                           const lc::entity::DimAngular& angular);
+
+    /** Every dimension in the document, in one stable order. */
+    std::vector<lc::entity::CADEntity_CSPtr> allDimensions() const;
+
+    /** The *D block name assigned to each dimension, by entity id. */
+    std::map<ID_DATATYPE, std::string> _dimensionBlocks;
+    unsigned int _nextDimensionBlock{1};
+
     // UTILITIES FUNCTIONS
     lc::AngleFormat numberToAngleFormat(int num);
 
