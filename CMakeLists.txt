@@ -317,6 +317,16 @@ if(WITH_PERSISTENCE)
     # pinned revision. Cache entries so its option() calls keep these defaults.
     set(LIBDXFRW_BUILD_DOC OFF CACHE BOOL "Build libdxfrw documentation")
     set(LIBDXFRW_BUILD_DWG2DXF OFF CACHE BOOL "Build libdxfrw's dwg2dxf tool")
+    # Install the library itself (the AppImage and the snap need the .so) but
+    # none of its development files: LibreCAD is not a place to get libdxfrw's
+    # headers, pkg-config file or CMake package from.
+    set(LIBDXFRW_INSTALL_DEV OFF CACHE BOOL "Install libdxfrw's development files")
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/libdxfrw/CMakeLists.txt")
+        message(FATAL_ERROR
+            "third_party/libdxfrw is empty. This is a git submodule; run\n"
+            "  git submodule update --init --recursive\n"
+            "or configure with -DWITH_PERSISTENCE=OFF to build without DXF support.")
+    endif()
     add_subdirectory("third_party/libdxfrw")
     # Linked into the shared persistence library even when built static.
     set_target_properties(dxfrw PROPERTIES POSITION_INDEPENDENT_CODE ON)
