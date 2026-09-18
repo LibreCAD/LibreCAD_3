@@ -210,6 +210,10 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         builder->execute();
         reader.buildDeferredInserts();
 
+        // Whatever this build does not model rides on the document, so a later
+        // save can put it back exactly as it arrived.
+        reader.attachPreservedRecords();
+
         const auto& header = reader.header();
         result.sourceVersionTag = header.acadVersion;
         result.entitiesDelivered = reader.entitiesDelivered();

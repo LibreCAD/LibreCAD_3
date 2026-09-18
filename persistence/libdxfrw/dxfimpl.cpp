@@ -1194,6 +1194,38 @@ void DXFimpl::buildDeferredInserts() {
  * Write DXF Implementation BELOW
  *********************************************/
 
+void DXFimpl::writeObjects() {
+    if (_replay == nullptr) {
+        return;
+    }
+
+    // An IMAGE in the document makes the typed writer emit its own IMAGEDEF and
+    // IMAGEDEF_REACTOR. Replaying the source's as well leaves the file with two
+    // of each for one image, so the preserved copies give way to the regenerated
+    // ones -- measured: without this, sample_AC1015_ascii comes back with two
+    // reactors.
+    bool documentHasImages = false;
+    for (const auto& entity : _document->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) {
+            documentHasImages = true;
+            break;
+        }
+    }
+
+    for (const auto& object : _replay->objects) {
+        if (documentHasImages
+            && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR")) {
+            continue;
+        }
+
+        DRW_RawDxfObject copy = object;
+        if (!dxfW->writeRawDxfObject(&copy)) {
+            LOG_ERROR << "libdxfrw refused to re-emit a preserved " << object.name << " record";
+            return;
+        }
+    }
+}
+
 void DXFimpl::writeLayers() {
     auto layers = _document->allLayers();
     for(const auto& layer: layers) {
@@ -1232,6 +1264,53 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     lay.flags = layer->isFrozen() ? 0x01 : 0x00;
 
     dxfW->writeLayer(&lay);
+}
+
+void DXFimpl::attachPreservedRecords() {
+    if (_preserved.empty() && _preserved.classes.empty()) {
+        return;
+    }
+
+    auto preserved = std::make_shared<PreservedRecords>(_preserved);
+
+    // The revision comes from the records themselves: libdxfrw stamps each one
+    // with the version it was captured from, which is the only revision it can
+    // safely be replayed into.
+    for (const auto& object : preserved->objects) {
+        if (object.m_version != DRW::UNKNOWNV) {
+            preserved->version = object.m_version;
+            break;
+        }
+    }
+    if (preserved->version == DRW::UNKNOWNV) {
+        for (const auto& section : preserved->sections) {
+            if (section.m_version != DRW::UNKNOWNV) {
+                preserved->version = section.m_version;
+                break;
+            }
+        }
+    }
+    _document->addDocumentMetaType(preserved);
+
+    LOG_DEBUG << "Preserved " << preserved->objects.size() << " object(s), "
+              << preserved->entities.size() << " entity/entities and "
+              << preserved->sections.size() << " section(s) this build does not model";
+}
+
+/** The records a previous read of this document set aside, if any. */
+static std::shared_ptr<const lc::persistence::PreservedRecords> preservedOn(
+    const std::shared_ptr<lc::storage::Document>& document) {
+    if (document == nullptr) {
+        return nullptr;
+    }
+
+    const auto all = document->allMetaTypes();
+    const auto found = all.find(lc::persistence::PreservedRecords::kId);
+    if (found == all.end()) {
+        return nullptr;
+    }
+
+    return std::dynamic_pointer_cast<const lc::persistence::PreservedRecords>(found->second);
 }
 
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
@@ -1281,6 +1360,57 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 
     _exportVersion = exportVersion;
     _exportType = type;
+
+    // Put back whatever the read set aside, if this is the same revision it
+    // came from. A record valid in R2013 has no defined meaning in R12, and
+    // re-emitting it there would produce a file that claims to be R12 and is
+    // not -- so a down-convert drops them, and says how many.
+    _replay = preservedOn(_document);
+    if (_replay != nullptr) {
+        // Replay is only attempted where it is known to be faithful.
+        //
+        //  * Same revision: a record valid in R2013 has no defined meaning in
+        //    R12, and re-emitting it there would produce a file that claims to
+        //    be R12 and is not.
+        //  * ASCII target: these are replayed from the source spellings the
+        //    reader captured, and a binary write of them is refused by the
+        //    library -- which fails the whole file, so it must not be tried.
+        //  * Captured with those spellings: a record read from a binary DXF
+        //    has empty placeholders instead, and cannot be re-emitted verbatim.
+        const bool sameRevision = _replay->version == exportVersion;
+        const bool verbatimAvailable =
+            std::all_of(_replay->objects.begin(), _replay->objects.end(),
+                        [](const DRW_RawDxfObject& object) { return object.hasRawValues; });
+
+        if (!sameRevision || isBinary || !verbatimAvailable) {
+            const char* reason = !sameRevision ? "the revision differs from the one it was read as"
+                                 : isBinary ? "binary DXF cannot carry them"
+                                 : "they were read from a binary file and have no verbatim form";
+            LOG_WARNING << filename << " is being written without "
+                        << _replay->total() << " record(s) this build does not model: " << reason;
+            _loss.droppedByType["unmodelled records"] += _replay->total();
+            _replay = nullptr;
+        }
+    }
+
+    if (_replay != nullptr) {
+        // Every preserved handle is claimed before the write starts, so the
+        // handles the typed writers mint cannot collide with one being
+        // re-emitted verbatim.
+        for (const auto& object : _replay->objects) {
+            if (object.handle != 0) {
+                dxfW->reserveHandle(object.handle);
+            }
+        }
+        for (const auto& entity : _replay->entities) {
+            if (entity.handle != 0) {
+                dxfW->reserveHandle(entity.handle);
+            }
+        }
+
+        dxfW->setDxfClasses(_replay->classes);
+        dxfW->setRawDxfSections(_replay->sections);
+    }
 
     bool success = dxfW->write(this, exportVersion, isBinary);
 

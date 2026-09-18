@@ -7,6 +7,7 @@
 #include "../file.h"
 #include "../format.h"
 #include "../readguard.h"
+#include "preservedrecords.h"
 #include "../generic/helpers.h"
 
 #include <cad/storage/document.h>
@@ -151,6 +152,40 @@ public:
 
     void addComment(const char* comment) override {}
 
+    // Lossless passthrough. libdxfrw hands over every OBJECTS record, entity
+    // and whole section it does not model, plus the CLASSES entries that make
+    // them readable again. LibreCAD dropped all of it, so opening a drawing and
+    // saving it destroyed everything the file carried beyond the geometry --
+    // layouts, plot settings, table styles, dictionaries, another
+    // application's custom data -- while the drawing still looked right.
+    void addRawDxfObject(const DRW_RawDxfObject& data) override {
+        _preserved.objects.push_back(data);
+    }
+
+    void addRawDxfEntity(const DRW_RawDxfObject& data) override {
+        _preserved.entities.push_back(data);
+    }
+
+    void addRawDxfSection(const DRW_RawDxfSection& data) override {
+        _preserved.sections.push_back(data);
+    }
+
+    void addDxfClass(const DRW_Class& data) override {
+        _preserved.classes.push_back(data);
+    }
+
+    /** What this read is holding on to for the next save. */
+    const PreservedRecords& preserved() const {
+        return _preserved;
+    }
+
+    /**
+     * Hand the preserved records to the document, which is the only thing that
+     * survives from this read to the next save: File::save builds a fresh
+     * writer from a document and knows nothing about where it came from.
+     */
+    void attachPreservedRecords();
+
     void addLine(const DRW_Line& data) override;
 
     void addCircle(const DRW_Circle& data) override;
@@ -240,7 +275,7 @@ public:
 
     void writeAppId() override;
 
-    void writeObjects() override {}
+    void writeObjects() override;
 
     void addPlotSettings(const DRW_PlotSettings *data) override {}
 
@@ -334,6 +369,7 @@ public:
     lc::meta::Block_SPtr _currentBlock;
     DrawingHeader _header;
     LossSummary _loss;
+    PreservedRecords _preserved;
     std::vector<ImportFailure> _failures;
     std::size_t _entitiesDelivered{0};
     std::size_t _attributesAsText{0};
@@ -407,6 +443,9 @@ private:
      * entity kinds, so the writers need to know what they are writing for.
      */
     DRW::Version _exportVersion{DRW::AC1024};
+
+    /** The preserved records being replayed by the current write, if any. */
+    std::shared_ptr<const PreservedRecords> _replay;
 
     /** The target of the current write, for the format-capability check. */
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};

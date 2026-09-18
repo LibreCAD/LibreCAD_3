@@ -1822,3 +1822,158 @@ TEST(DxfRoundTripTest, AttributedInsertSurfacesItsValues) {
 
     boost::filesystem::remove(path);
 }
+
+namespace {
+
+/** Every record in one section of a DXF file, by type name. */
+std::map<std::string, std::size_t> recordsInSection(const std::string& path,
+                                                    const std::string& section) {
+    std::map<std::string, std::size_t> census;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    bool inSection = false;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        if (code.find_first_not_of(" \t0") != std::string::npos || code.find('0') == std::string::npos) {
+            continue;
+        }
+
+        if (value == "SECTION") {
+            std::string sectionCode;
+            std::string sectionName;
+            if (std::getline(file, sectionCode) && std::getline(file, sectionName)) {
+                while (!sectionName.empty()
+                       && (sectionName.back() == '\r' || sectionName.back() == ' ')) {
+                    sectionName.pop_back();
+                }
+                inSection = sectionName == section;
+            }
+            continue;
+        }
+        if (value == "ENDSEC" || value == "EOF") {
+            inSection = false;
+            continue;
+        }
+
+        if (inSection) {
+            census[value]++;
+        }
+    }
+
+    return census;
+}
+
+/** Every code-5 handle in a file, with how many times it appears. */
+std::map<std::string, std::size_t> handlesInFile(const std::string& path) {
+    std::map<std::string, std::size_t> handles;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto trimmed = code.find_first_not_of(" \t");
+        if (trimmed != std::string::npos && code.substr(trimmed) == "5") {
+            for (auto& c : value) {
+                c = static_cast<char>(::toupper(static_cast<unsigned char>(c)));
+            }
+            handles[value]++;
+        }
+    }
+
+    return handles;
+}
+
+}  // namespace
+
+// A DXF holds far more than geometry: layouts, plot settings, table styles,
+// dictionaries, and whatever a vertical application stored under its own class.
+// LibreCAD reads none of it and wrote none of it back, so opening a drawing and
+// pressing Save destroyed every one of those records -- silently, while the
+// drawing still looked right, which is what made it dangerous. Across the
+// review corpus that is 4,931 OBJECTS records over 25 files.
+//
+// libdxfrw hands them over verbatim and takes them back; nothing was asking.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
+    const std::string source = fixture("raw_objects.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+
+    const auto before = recordsInSection(source, "OBJECTS");
+    ASSERT_EQ(before.at("DICTIONARYVAR"), 1u) << "the fixture changed";
+    ASSERT_EQ(before.at("ACDBPLACEHOLDER"), 1u) << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("raw-objects");
+    boost::filesystem::remove(saved);
+    const auto written = lc::persistence::File::exportFile(doc, saved, type);
+    ASSERT_TRUE(written.ok);
+    ASSERT_TRUE(boost::filesystem::exists(saved));
+
+    auto after = recordsInSection(saved, "OBJECTS");
+    EXPECT_EQ(after["DICTIONARYVAR"], 1u) << "A record LibreCAD does not model was destroyed.";
+    EXPECT_EQ(after["ACDBPLACEHOLDER"], 1u) << "A record LibreCAD does not model was destroyed.";
+    EXPECT_GE(after["DICTIONARY"], before.at("DICTIONARY"))
+        << "The source's dictionaries must all still be there.";
+
+    // Handles are what every reference in the file is resolved through. Two
+    // records sharing one is a corrupt file, and re-emitting preserved handles
+    // beside freshly minted ones is exactly how that would happen.
+    for (const auto& handle : handlesInFile(saved)) {
+        EXPECT_EQ(handle.second, 1u) << "handle " << handle.first << " is used twice";
+    }
+
+    boost::filesystem::remove(saved);
+}
+
+// Replay is attempted only where it is faithful. A different revision, or a
+// binary target, and the records are dropped rather than written somewhere they
+// have no defined meaning -- and the count reaches the user either way.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, UnmodelledRecordsAreNotForcedIntoAnotherRevision) {
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(
+        doc, fixture("raw_objects.dxf"), lc::persistence::File::Library::LIBDXFRW).ok);
+
+    const struct {
+        lc::persistence::File::Type type;
+        const char* label;
+    } elsewhere[] = {
+        {lc::persistence::File::LIBDXFRW_DXF_R12, "an older revision"},
+        {lc::persistence::File::LIBDXFRW_DXF_R2013, "a newer revision"},
+        {lc::persistence::File::LIBDXFRW_DXB_R2000, "the same revision, binary"},
+    };
+
+    for (const auto& target : elsewhere) {
+        const std::string path = uniqueTmpDxf(target.label);
+        boost::filesystem::remove(path);
+
+        const auto written = lc::persistence::File::exportFile(doc, path, target.type);
+        ASSERT_TRUE(written.ok) << target.label << ": the drawing itself must still be written";
+        EXPECT_EQ(written.loss.droppedByType.count("unmodelled records"), 1u)
+            << target.label << ": dropping them silently is what this replaces";
+
+        if (!lc::persistence::File::isBinaryType(target.type)) {
+            const auto after = recordsInSection(path, "OBJECTS");
+            EXPECT_EQ(after.count("DICTIONARYVAR"), 0u)
+                << target.label << ": a record with no meaning here must not be written";
+        }
+
+        boost::filesystem::remove(path);
+    }
+}

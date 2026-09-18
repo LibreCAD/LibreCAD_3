@@ -13,6 +13,7 @@ set(persistence_srcs
 	patternLoader/patternProvider.cpp
         libdxfrw/dxfimpl.cpp
         libdxfrw/apipins.cpp
+        libdxfrw/preservedrecords.cpp
         generic/helpers.cpp
 )
 
@@ -23,6 +24,7 @@ set(persistence_hdrs
         documentsource.h
 	patternLoader/patternProvider.h
         libdxfrw/dxfimpl.h
+        libdxfrw/preservedrecords.h
         generic/helpers.h
 )
 
