@@ -878,3 +878,115 @@ TEST(DxfRoundTripTest, InsertMeasuresTheBlockItDisplays) {
         boost::filesystem::remove(path);
     }
 }
+
+// writeHatch only knew how to emit LINE, ARC and ELLIPSE boundary edges. A
+// loop made of an LWPOLYLINE or a SPLINE -- both of which addHatch reads back
+// -- produced a loop with no edges at all, so the hatch came back with empty
+// geo::Loops (the crash the kernel guards had to be taught to survive) or
+// vanished. libdxfrw itself writes both; nothing in LibreCAD asked it to.
+//
+// The three loops cover the boundary path rule that makes this more than a
+// transcription: DXF group 92 bit 1 declares the loop to *be* one polyline,
+// and dxfRW::writeHatch refuses -- losing the whole file, not just the hatch
+// -- if such a loop holds anything else. A polyline sharing its loop with
+// another edge must therefore go in decomposed.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, HatchBoundariesSurviveARoundTrip) {
+    const std::string path = uniqueTmpDxf("hatch-boundaries");
+    boost::filesystem::remove(path);
+
+    auto layer = defaultLayer();
+
+    // Loop 1: one closed polyline, one of whose segments bulges.
+    std::vector<lc::entity::LWVertex2D> square{
+        {lc::geo::Coordinate(0.0, 0.0), 0.0, 0.0, 0.0},
+        {lc::geo::Coordinate(10.0, 0.0), 0.5, 0.0, 0.0},
+        {lc::geo::Coordinate(10.0, 10.0), 0.0, 0.0, 0.0},
+        {lc::geo::Coordinate(0.0, 10.0), 0.0, 0.0, 0.0}};
+    auto polylineLoop = std::make_shared<lc::entity::LWPolyline>(
+        square, 0.0, 0.0, 0.0, true, lc::geo::Coordinate(0.0, 0.0, 1.0), layer);
+
+    // Loop 2: one spline.
+    auto spline = std::make_shared<lc::entity::Spline>(
+        std::vector<lc::geo::Coordinate>{{20.0, 0.0}, {23.0, 8.0}, {27.0, -4.0}, {30.0, 0.0}},
+        std::vector<double>{0, 0, 0, 0, 1, 1, 1, 1},
+        std::vector<lc::geo::Coordinate>{},
+        3, false, 0.0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1,
+        lc::geo::Spline::splineflag::PERIODIC, layer);
+
+    // Loop 3: a polyline that shares its loop with a plain line.
+    std::vector<lc::entity::LWVertex2D> leg{
+        {lc::geo::Coordinate(40.0, 0.0), 0.0, 0.0, 0.0},
+        {lc::geo::Coordinate(50.0, 0.0), 0.0, 0.0, 0.0}};
+    auto mixedPolyline = std::make_shared<lc::entity::LWPolyline>(
+        leg, 0.0, 0.0, 0.0, false, lc::geo::Coordinate(0.0, 0.0, 1.0), layer);
+    lc::builder::LineBuilder lineBuilder;
+    lineBuilder.setStart(lc::geo::Coordinate(50.0, 0.0));
+    lineBuilder.setEnd(lc::geo::Coordinate(40.0, 0.0));
+    lineBuilder.setLayer(layer);
+
+    lc::geo::Region region;
+    region.addLoop(lc::geo::Loop({polylineLoop}));
+    region.addLoop(lc::geo::Loop({spline}));
+    region.addLoop(lc::geo::Loop({mixedPolyline, lineBuilder.build()}));
+
+    auto hatch = std::make_shared<lc::entity::Hatch>(layer);
+    hatch->setPatternName("SOLID");
+    hatch->setSolid(true);
+    hatch->setAngle(0.0);
+    hatch->setScale(1.0);
+    hatch->setRegion(region);
+
+    auto doc = newDocument();
+    insertThroughBuilder(doc, {hatch});
+    ASSERT_TRUE(lc::persistence::File::save(doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000))
+        << "The hatch must be writable at all.";
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+
+    lc::entity::Hatch_CSPtr reloaded;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto found = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+            reloaded = found;
+        }
+    }
+    ASSERT_NE(reloaded, nullptr) << "The hatch did not survive the round trip.";
+
+    const auto& loops = reloaded->getRegion().loopList();
+    ASSERT_EQ(loops.size(), 3u) << "Every boundary loop must come back.";
+
+    int polylineLoops = 0;
+    int splineLoops = 0;
+    int decomposedLoops = 0;
+    for (const auto& loop : loops) {
+        const auto& entities = loop.entities();
+        EXPECT_FALSE(entities.empty()) << "A boundary loop with no edges is not a boundary.";
+
+        if (entities.size() == 1
+            && std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entities.front())) {
+            polylineLoops++;
+        } else if (entities.size() == 1
+                   && std::dynamic_pointer_cast<const lc::entity::Spline>(entities.front())) {
+            splineLoops++;
+        } else {
+            // The mixed loop: the polyline's one segment plus the line, as two
+            // LINE edges.
+            decomposedLoops++;
+            EXPECT_EQ(entities.size(), 2u);
+            for (const auto& edge : entities) {
+                EXPECT_NE(std::dynamic_pointer_cast<const lc::entity::Line>(edge), nullptr)
+                    << "A polyline sharing a loop must arrive as plain edges.";
+            }
+        }
+    }
+
+    EXPECT_EQ(polylineLoops, 1) << "The all-polyline loop must stay a polyline boundary.";
+    EXPECT_EQ(splineLoops, 1) << "The spline boundary must survive.";
+    EXPECT_EQ(decomposedLoops, 1);
+
+    boost::filesystem::remove(path);
+}

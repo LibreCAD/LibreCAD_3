@@ -1808,6 +1808,119 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
 // types are emitted here; libdxfrw's writeHatch itself has no support for
 // SPLINE or POLYLINE boundary paths (code marked `//RLZ: TODO`), so trying
 // to emit them would just produce silently-ignored bytes.
+namespace {
+
+// One DXF boundary edge for a kernel entity, or null when the kind has no edge
+// representation. Boundary edges carry geometry only: no layer, colour or
+// line type, which is why these are built bare rather than through
+// getEntityAttributes().
+std::shared_ptr<DRW_Entity> hatchEdge(const lc::entity::CADEntity_CSPtr& entity) {
+    if (auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+        auto edge = std::make_shared<DRW_Line>();
+        edge->basePoint.x = line->start().x();
+        edge->basePoint.y = line->start().y();
+        edge->secPoint.x = line->end().x();
+        edge->secPoint.y = line->end().y();
+        return edge;
+    }
+
+    if (auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
+        auto edge = std::make_shared<DRW_Arc>();
+        edge->basePoint.x = arc->center().x();
+        edge->basePoint.y = arc->center().y();
+        edge->radious = arc->radius();
+        edge->staangle = arc->startAngle();
+        edge->endangle = arc->endAngle();
+        edge->isccw = arc->CCW() ? 1 : 0;
+        return edge;
+    }
+
+    if (auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
+        auto edge = std::make_shared<DRW_Ellipse>();
+        edge->basePoint.x = ellipse->center().x();
+        edge->basePoint.y = ellipse->center().y();
+        edge->secPoint.x = ellipse->majorP().x();
+        edge->secPoint.y = ellipse->majorP().y();
+        edge->ratio = 1.0 / ellipse->ratio();
+        edge->staparam = ellipse->startAngle();
+        edge->endparam = ellipse->endAngle();
+        edge->isccw = ellipse->isReversed() ? 0 : 1;
+        return edge;
+    }
+
+    if (auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+        auto edge = std::make_shared<DRW_Spline>();
+        edge->degree = spline->degree();
+        edge->flags = spline->flags();
+        edge->knotslist = spline->knotPoints();
+        edge->tgStart = DRW_Coord(spline->startTanX(), spline->startTanY(), spline->startTanZ());
+        edge->tgEnd = DRW_Coord(spline->endTanX(), spline->endTanY(), spline->endTanZ());
+
+        for (const auto& cp : spline->controlPoints()) {
+            edge->controllist.push_back(std::make_shared<DRW_Coord>(cp.x(), cp.y(), cp.z()));
+        }
+        for (const auto& fp : spline->fitPoints()) {
+            edge->fitlist.push_back(std::make_shared<DRW_Coord>(fp.x(), fp.y(), fp.z()));
+        }
+
+        edge->nknots = edge->knotslist.size();
+        edge->ncontrol = edge->controllist.size();
+        edge->nfit = edge->fitlist.size();
+        return edge;
+    }
+
+    return nullptr;
+}
+
+/** The polyline boundary for a loop that is one LWPolyline and nothing else. */
+std::shared_ptr<DRW_LWPolyline> hatchPolyline(const lc::entity::LWPolyline_CSPtr& polyline) {
+    auto boundary = std::make_shared<DRW_LWPolyline>();
+    // DXF group 70 bit 0 = closed, as writeLWPolyline and addHatch both read it.
+    boundary->flags = polyline->closed() ? 1 : 0;
+    boundary->elevation = polyline->elevation();
+    boundary->thickness = polyline->tickness();
+    boundary->width = polyline->width();
+
+    for (const auto& vertex : polyline->vertex()) {
+        auto vert = std::make_shared<DRW_Vertex2D>();
+        vert->x = vertex.location().x();
+        vert->y = vertex.location().y();
+        vert->bulge = vertex.bulge();
+        vert->stawidth = vertex.startWidth();
+        vert->endwidth = vertex.endWidth();
+        boundary->vertlist.push_back(vert);
+    }
+    boundary->vertexnum = boundary->vertlist.size();
+
+    return boundary;
+}
+
+/**
+ * Add one boundary entity to a loop as edges.
+ *
+ * A polyline is decomposed into the segments it draws, because DXF only allows
+ * one in a loop of its own -- see writeHatch.
+ */
+void appendHatchEdges(DRW_HatchLoop& loop, const lc::entity::CADEntity_CSPtr& entity) {
+    if (auto polyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity)) {
+        for (const auto& segment : polyline->asEntities()) {
+            if (auto edge = hatchEdge(segment)) {
+                loop.objlist.push_back(edge);
+            }
+        }
+        return;
+    }
+
+    if (auto edge = hatchEdge(entity)) {
+        loop.objlist.push_back(edge);
+        return;
+    }
+
+    LOG_WARNING << "Dropping a hatch boundary edge with no DXF representation";
+}
+
+}  // namespace
+
 void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     DRW_Hatch hatch;
     getEntityAttributes(&hatch, h);
@@ -1824,47 +1937,50 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
 
     const auto& region = h->getRegion();
     for (const auto& loop : region.loopList()) {
-        auto drwLoop = std::make_shared<DRW_HatchLoop>(0); // 0 = default (not polyline)
-        for (const auto& e : loop.entities()) {
-            if (auto ln = std::dynamic_pointer_cast<const lc::entity::Line>(e)) {
-                auto drwLn = std::make_shared<DRW_Line>();
-                drwLn->basePoint.x = ln->start().x();
-                drwLn->basePoint.y = ln->start().y();
-                drwLn->secPoint.x  = ln->end().x();
-                drwLn->secPoint.y  = ln->end().y();
-                drwLoop->objlist.push_back(drwLn);
-            } else if (auto ar = std::dynamic_pointer_cast<const lc::entity::Arc>(e)) {
-                auto drwAr = std::make_shared<DRW_Arc>();
-                drwAr->basePoint.x = ar->center().x();
-                drwAr->basePoint.y = ar->center().y();
-                drwAr->radious = ar->radius();
-                drwAr->staangle = ar->startAngle();
-                drwAr->endangle = ar->endAngle();
-                drwAr->isccw = ar->CCW() ? 1 : 0;
-                drwLoop->objlist.push_back(drwAr);
-            } else if (auto el = std::dynamic_pointer_cast<const lc::entity::Ellipse>(e)) {
-                auto drwEl = std::make_shared<DRW_Ellipse>();
-                drwEl->basePoint.x = el->center().x();
-                drwEl->basePoint.y = el->center().y();
-                drwEl->secPoint.x  = el->majorP().x();
-                drwEl->secPoint.y  = el->majorP().y();
-                drwEl->ratio = 1.0 / el->ratio();
-                drwEl->staparam = el->startAngle();
-                drwEl->endparam = el->endAngle();
-                drwEl->isccw = el->isReversed() ? 0 : 1;
-                drwLoop->objlist.push_back(drwEl);
-            }
-            // LWPolyline / Spline boundary types deliberately skipped —
-            // libdxfrw's writeHatch has no code path for them (TODO in
-            // upstream).  Silent-drop-inside-a-hatch matches the reader's
-            // own capability envelope; documented rather than silent because
-            // this is the export writer, not user-visible.
+        const auto& entities = loop.entities();
+
+        // DXF says a polyline boundary path is the whole path: group 92 bit 1
+        // means "this loop is one polyline", and libdxfrw enforces it --
+        // dxfRW::writeHatch refuses a hatch whose bit-1 loop does not hold
+        // exactly one DRW_LWPolyline, and a refused write loses the entire
+        // file, not just the hatch. So the bit is set only for a loop that is
+        // one polyline; anywhere else the polyline goes in as its segments.
+        lc::entity::LWPolyline_CSPtr wholeLoopPolyline;
+        if (entities.size() == 1) {
+            wholeLoopPolyline =
+                std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entities.front());
         }
+
+        auto drwLoop = std::make_shared<DRW_HatchLoop>(wholeLoopPolyline ? 2 : 0);
+        if (wholeLoopPolyline) {
+            drwLoop->objlist.push_back(hatchPolyline(wholeLoopPolyline));
+        } else {
+            for (const auto& entity : entities) {
+                appendHatchEdges(*drwLoop, entity);
+            }
+        }
+
+        // A loop with no edges is not a boundary: it reloads as an empty
+        // geo::Loop, which is what the kernel guards had to be taught to
+        // survive. Dropping it keeps the rest of the hatch.
+        if (drwLoop->objlist.empty()) {
+            LOG_WARNING << "Dropping a hatch boundary loop that produced no edges";
+            continue;
+        }
+
         drwLoop->update();
         hatch.appendLoop(drwLoop);
     }
 
-    dxfW->writeHatch(&hatch);
+    if (hatch.looplist.empty()) {
+        LOG_WARNING << "Dropping HATCH " << hatch.name << ": no boundary survived";
+        return;
+    }
+    hatch.loopsnum = hatch.looplist.size();
+
+    if (!dxfW->writeHatch(&hatch)) {
+        LOG_ERROR << "libdxfrw refused HATCH " << hatch.name;
+    }
 }
 
 void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
