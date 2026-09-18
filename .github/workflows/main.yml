@@ -64,9 +64,6 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install Visual Studio 2019 with tools
-        run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
-
       - run: cd ${{ github.workspace }}
 
       - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
@@ -79,8 +76,15 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
-          arch: win64_msvc2019_64
-          modules: 'qttools qtsvg'
+          # win64_msvc2019_64 exists only up to Qt 6.7.3; 6.8+ ships
+          # win64_msvc2022_64, so this step could never find a package.
+          arch: win64_msvc2022_64
+          # No modules line. In Qt 6 the essentials -- qtsvg and qttools among
+          # them -- ship inside the base package for the architecture, and are
+          # not add-on modules aqtinstall can be asked for separately. Asking
+          # anyway fails the install outright:
+          #   ERROR: The packages ['qtsvg', 'qttools'] were not found while
+          #   parsing XML of package information!
 
       - name: Configure Qt 6
         shell: pwsh
