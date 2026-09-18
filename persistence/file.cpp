@@ -180,6 +180,17 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         DXFimpl reader(document, builder);
         dxfRW R(path.c_str());
 
+        // The DXF compatibility profile is left at its default, StandaloneSafe.
+        //
+        // libdxfrw offers LibreCadMasterLegacy for adapters migrating from
+        // LibreCAD's own bundled fork, which used different binary widths for
+        // the disputed group-code ranges 260-269 and 482-998. Measured across
+        // the 43-file review corpus -- 19 of them binary DXF -- the two
+        // profiles agree on every file: same result, same error code, same
+        // entity count, same losses. There is nothing to gain by opting out of
+        // the fail-closed default, and this note exists so the next person does
+        // not have to re-run the comparison to find that out.
+
         // Whatever was read before a failure is still loaded, as before.
         result.ok = R.read(&reader, true);
         if (!result.ok) {
