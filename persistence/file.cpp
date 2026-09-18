@@ -93,6 +93,21 @@ bool File::isBinaryType(Type type) {
     return variant != nullptr && variant->binary && variant->writable;
 }
 
+namespace {
+
+// 0 means "leave libdxfrw's own default alone", which is a million objects.
+std::size_t g_dwgReadObjectBudget = 0;
+
+}  // namespace
+
+void File::setDwgReadObjectBudget(std::size_t maxObjects) {
+    g_dwgReadObjectBudget = maxObjects;
+}
+
+std::size_t File::dwgReadObjectBudget() {
+    return g_dwgReadObjectBudget;
+}
+
 std::string File::sniffFormat(const std::string& path) {
     // DWG opens with its version string: "AC1015", "AC1032", and so on. A DXF
     // opens either with a group code -- optional whitespace, then "0" -- or,
@@ -226,13 +241,31 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
 #if USE_DWG_IMPORT
         DXFimpl reader(document, builder);
         dwgRW R(path.c_str());
+        if (g_dwgReadObjectBudget > 0) {
+            R.setDwgReadObjectBudget(g_dwgReadObjectBudget);
+        }
 
         result.ok = R.read(&reader, true);
         if (!result.ok) {
+            const auto diagnostic = R.getLastDiagnostic();
             LOG_ERROR << "libdxfrw stopped reading " << path
-                      << " as DWG (DRW::error " << R.getError() << ")";
-            result.diagnostics.push_back(Diagnostic{
-                Severity::Error, "dwg-read-failure", "This DWG file could not be read"});
+                      << " as DWG (DRW::error " << R.getError()
+                      << ", " << diagnostic.code << ": " << diagnostic.message << ")";
+
+            // A file that asks for more than the budget allows is a different
+            // answer from a file that is malformed, and the user can act on it:
+            // raise the budget, or distrust the file.
+            if (diagnostic.cause == DRW::OperationCause::ResourceLimit) {
+                result.diagnostics.push_back(Diagnostic{
+                    Severity::Error, "dwg-object-budget",
+                    "This DWG asks to read more objects than the configured budget allows"});
+            } else {
+                result.diagnostics.push_back(Diagnostic{
+                    Severity::Error,
+                    diagnostic.code.empty() ? std::string("dwg-read-failure") : diagnostic.code,
+                    diagnostic.message.empty()
+                        ? "This DWG file could not be read" : diagnostic.message});
+            }
         }
 
         builder->execute();

@@ -129,6 +129,57 @@ jobs:
           path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
           name: assets
 
+  # DWG reading is off by default, so nothing else in CI exercises it. This job
+  # turns it on and reads libdxfrw's own DWG fixtures under AddressSanitizer and
+  # UndefinedBehaviorSanitizer.
+  #
+  # A DWG is a container of self-describing offsets and lengths, and the reader
+  # walks them; the failure mode of a corrupt one is a bad read, not a wrong
+  # number, which is exactly what a sanitizer sees and a test does not. Locally
+  # the same sweep over the eight fixtures plus a 48-file mutation corpus
+  # (bit flips and truncations of a libdxfrw-written base) reports zero
+  # findings and zero abnormal exits; the mutants are not committed here --
+  # they belong upstream, with the reader.
+  dwg-sanitizers:
+    name: ReadDwgUnderSanitizers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libboost-all-dev libeigen3-dev \
+            rapidjson-dev libgtest-dev libglew-dev libglfw3-dev
+
+      # -Wno-error because the third-party submodules are built with -Werror and
+      # warn under the sanitizers' instrumentation; their warnings are not what
+      # this job is looking for.
+      - name: Configure with DWG import and the sanitizers
+        run: |
+          cmake -S . -B build-asan -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DWITH_DWG_IMPORT=ON -DWITH_QT_UI=OFF -DWITH_PYTHONSCRIPT=OFF \
+            -DWITH_LUACMDINTERFACE=OFF -DWITH_RENDERING_UNITTESTS=OFF \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -Wno-error" \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -Wno-error" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build the tests
+        run: cmake --build build-asan --target lcunittest
+
+      # halt_on_error: a sanitizer finding must fail the job, not be logged and
+      # walked past.
+      - name: Read the DWG fixtures
+        env:
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ./build-asan/bin/lcunittest --gtest_filter='DwgImportTest.*'
+
   # BuildWindows has to install Qt, build every target and package an
   # installer before it tells us anything, and it has not reached a build in a
   # long time. This job answers the one question that gates the libdxfrw

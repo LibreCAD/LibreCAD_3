@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include <cad/storage/document.h>
 
 #include "format.h"
@@ -43,6 +45,18 @@ public:
         LIBDXFRW,
         LIBOPENCAD,
     };
+
+    /**
+     * Bound how much a single DWG read may do.
+     *
+     * A DWG is a container of self-describing objects, and a corrupt or hostile
+     * one can claim to hold far more than it does. The budget is what turns
+     * that from an allocation failure somewhere deep in a parser into a refusal
+     * with a reason. libdxfrw defaults to a million objects; a host embedding
+     * LibreCAD on a small machine may want less.
+     */
+    static void setDwgReadObjectBudget(std::size_t maxObjects);
+    static std::size_t dwgReadObjectBudget();
 
     /**
      * Which format a file's *contents* are, whatever it is named: "dwg" or
