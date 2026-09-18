@@ -328,8 +328,17 @@ else()
     add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 endif()
 
-target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
+target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})
+
+# Boost.System has been header-only since Boost 1.69, and 1.92 ships no
+# libboost_system at all -- a literal -lboost_system here failed the final link
+# with "library 'boost_system' not found".  Link the imported target when Boost
+# defines one, which covers both the old real library and the modern stub, and
+# nothing otherwise.
+if(TARGET Boost::system)
+    target_link_libraries(librecad Boost::system)
+endif()
 
 if (MSVC)
     target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
