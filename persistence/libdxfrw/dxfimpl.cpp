@@ -267,7 +267,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
     builder.setEnd(coord(data.secPoint));
 
     LOG_TRACE << "Block:" << builder.block();
-    _entityBuilder->appendEntity(builder.build());
+    deliver(builder.build());
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
@@ -290,7 +290,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
     builder.setRadius(data.radious);
     builder.setBlock(getBlock(data));
 
-    _entityBuilder->appendEntity(builder.build());
+    deliver(builder.build());
 }
 
 void DXFimpl::addArc(const DRW_Arc& data) {
@@ -315,7 +315,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
     builder.setEndAngle(data.endangle);
     builder.setIsCCW((bool) data.isccw);
 
-    _entityBuilder->appendEntity(builder.build());
+    deliver(builder.build());
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
@@ -335,7 +335,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
                      getBlock(data)
                                                           );
 
-    _entityBuilder->appendEntity(lcEllipse);
+    deliver(lcEllipse);
 }
 
 void DXFimpl::addLayer(const DRW_Layer& data) {
@@ -393,7 +393,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                     getBlock(*data)
                                                         );
 
-    _entityBuilder->appendEntity(lcSpline);
+    deliver(lcSpline);
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
@@ -411,7 +411,7 @@ void DXFimpl::addText(const DRW_Text& data) {
                   getBlock(data)
                                                     );
 
-    _entityBuilder->appendEntity(lcText);
+    deliver(lcText);
 }
 
 void DXFimpl::addPoint(const DRW_Point& data) {
@@ -424,7 +424,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
                    getBlock(data)
                                                       );
 
-    _entityBuilder->appendEntity(lcPoint);
+    deliver(lcPoint);
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
@@ -446,7 +446,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
                             getBlock(*data)
                         );
 
-    _entityBuilder->appendEntity(lcDimAligned);
+    deliver(lcDimAligned);
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
@@ -470,7 +470,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
                            getBlock(*data)
                        );
 
-    _entityBuilder->appendEntity(lcDimLinear);
+    deliver(lcDimLinear);
 }
 
 void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
@@ -492,7 +492,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
                             getBlock(*data)
                         );
 
-    _entityBuilder->appendEntity(lcDimRadial);
+    deliver(lcDimRadial);
 }
 
 void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
@@ -514,7 +514,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
                               getBlock(*data)
                           );
 
-    _entityBuilder->appendEntity(lcDimDiametric);
+    deliver(lcDimDiametric);
 }
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
@@ -538,15 +538,17 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
                             getBlock(*data)
                         );
 
-    _entityBuilder->appendEntity(lcDimAngular);
+    deliver(lcDimAngular);
 }
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
     LOG_WARNING << "Dropping DIMENSION (3-point angular): no kernel entity for it";
+    recordLoss("DIMENSION (3-point angular)");
 }
 
 void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
     LOG_WARNING << "Dropping DIMENSION (ordinate): no kernel entity for it";
+    recordLoss("DIMENSION (ordinate)");
 }
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
@@ -572,7 +574,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
                             getBlock(data)
                         );
 
-    _entityBuilder->appendEntity(lcLWPolyline);
+    deliver(lcLWPolyline);
 }
 
 //Handle polyline as lwpolyline
@@ -600,7 +602,7 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
                             getBlock(data)
                         );
 
-    _entityBuilder->appendEntity(lcLWPolyline);
+    deliver(lcLWPolyline);
 }
 
 void DXFimpl::addMText(const DRW_MText& data) {
@@ -672,7 +674,7 @@ void DXFimpl::addMText(const DRW_MText& data) {
                   getBlock(data)
                                                     );
 
-    _entityBuilder->appendEntity(lcMText);
+    deliver(lcMText);
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
@@ -785,7 +787,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         reg.addLoop(loop);
     }
     lcHatch->setRegion(reg);
-    _entityBuilder->appendEntity(lcHatch);
+    deliver(lcHatch);
 }
 
 lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {
@@ -939,7 +941,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                                mf,
                                getBlock(*image)
                            );
-            _entityBuilder->appendEntity(lcImage);
+            deliver(lcImage);
 
             image = imageMapCache.erase( image ) ; // advances iter
         } else {
@@ -1045,6 +1047,7 @@ void DXFimpl::buildDeferredInserts() {
             insertBuilder.setDisplayBlock(block);
             insertBuilder.setDocument(_document);
 
+            _entitiesDelivered++;
             entityBuilder->appendEntity(insertBuilder.build());
         }
 

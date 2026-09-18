@@ -1261,6 +1261,14 @@ TEST(DxfRoundTripTest, AbsoluteImportOracle) {
 
         EXPECT_EQ(doc->entityContainer().asVector().size() + droppedCount, recordCount)
             << c.name << ": every record must be imported or accounted for as a known loss.";
+
+        // And the importer must say the same thing on its own, without this
+        // table: a loss LibreCAD does not report is one the user cannot know
+        // about.
+        auto reported = newDocument();
+        const auto result = lc::persistence::File::importFile(
+            reported, path, lc::persistence::File::Library::LIBDXFRW);
+        EXPECT_EQ(result.loss.droppedByType, c.dropped) << c.name;
     }
 }
 
@@ -1303,4 +1311,183 @@ TEST(DxfRoundTripTest, RoundTripIsStable) {
         EXPECT_EQ(census[0], census[1]) << name << ": saving twice must not keep changing it.";
         EXPECT_EQ(census0, census[0]) << name << ": the first save must not lose anything.";
     }
+}
+
+
+// The import result is what the layers above persistence act on: whether to
+// enable Save, what to put in the title bar, what to tell the user. Each field
+// is measured against a file chosen to produce it.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ImportResultDescribesACleanRead) {
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, fixture("oracle_r2000.dxf"), lc::persistence::File::Library::LIBDXFRW);
+
+    EXPECT_TRUE(result.ok);
+    EXPECT_FALSE(result.partial) << "A clean read is not a partial one.";
+    EXPECT_EQ(result.variantId, "dxf.ac1015.ascii");
+    EXPECT_EQ(result.sourceVersionTag, "AC1015") << "The file's own $ACADVER, not a guess at it.";
+    EXPECT_EQ(result.entitiesDelivered, 8u);
+    EXPECT_TRUE(result.diagnostics.empty()) << "Nothing went wrong; nothing should be reported.";
+
+    // The kinds LibreCAD has no entity for are counted rather than dropped in
+    // silence.
+    EXPECT_EQ(result.loss.total(), 4u);
+    EXPECT_FALSE(result.loss.empty());
+}
+
+// A failed read is not an empty one. libdxfrw stops where it fails and
+// LibreCAD keeps what arrived before that point -- a drawing the user can see,
+// and must not be allowed to silently save back over the original. That is the
+// case File::open could not express at all: it returned a revision and nothing
+// else.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ImportResultDescribesAPartialRead) {
+    const std::string path = uniqueTmpDxf("partial");
+    boost::filesystem::remove(path);
+    {
+        // Two complete LINEs, then a record that stops mid-way: no ENDSEC, no
+        // EOF, no closing group codes.
+        std::ofstream dxf(path);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n1.0\n21\n1.0\n31\n0.0\n"
+            << "0\nLINE\n8\n0\n10\n2.0\n20\n2.0\n30\n0.0\n11\n3.0\n21\n3.0\n31\n0.0\n"
+            << "0\nLINE\n8\n0\n10\n4.0\n";
+    }
+
+    auto doc = newDocument();
+    lc::persistence::ImportResult result;
+    ASSERT_NO_THROW(result = lc::persistence::File::importFile(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    EXPECT_FALSE(result.ok);
+    EXPECT_TRUE(result.partial) << "Entities arrived before the failure; that is a partial read.";
+    EXPECT_EQ(result.entitiesDelivered, 2u) << "The two complete records must be kept.";
+    EXPECT_EQ(doc->entityContainer().asVector().size(), 2u);
+    EXPECT_EQ(result.sourceVersionTag, "AC1015")
+        << "The revision was read before the failure and must survive it.";
+    ASSERT_FALSE(result.diagnostics.empty());
+    EXPECT_EQ(result.diagnostics.front().severity, lc::persistence::Severity::Error);
+    EXPECT_FALSE(result.diagnostics.front().code.empty())
+        << "A diagnostic without a code cannot be matched on.";
+
+    boost::filesystem::remove(path);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ImportResultDescribesAnUnopenableFile) {
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, uniqueTmpDxf("does-not-exist"), lc::persistence::File::Library::LIBDXFRW);
+
+    EXPECT_FALSE(result.ok);
+    EXPECT_FALSE(result.partial) << "Nothing arrived, so there is nothing partial about it.";
+    EXPECT_EQ(result.entitiesDelivered, 0u);
+    EXPECT_TRUE(result.sourceVersionTag.empty());
+    ASSERT_FALSE(result.diagnostics.empty());
+    EXPECT_EQ(result.diagnostics.front().severity, lc::persistence::Severity::Error);
+
+    // Even with nothing read, the recorded variant is definite: a caller that
+    // ignores `ok` must not read an uninitialised save target.
+    EXPECT_FALSE(result.variantId.empty());
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ExportResultDescribesARefusal) {
+    auto layer = defaultLayer();
+    auto doc = newDocument();
+    insertThroughBuilder(doc, {std::make_shared<lc::entity::Spline>(
+        std::vector<lc::geo::Coordinate>{{0.0, 0.0}, {3.0, 8.0}, {7.0, -4.0}, {10.0, 0.0}},
+        std::vector<double>{0, 0, 0, 0, 1, 1, 1, 1},
+        std::vector<lc::geo::Coordinate>{},
+        3, false, 0.0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1,
+        lc::geo::Spline::splineflag::PERIODIC, layer)});
+
+    const std::string refused = uniqueTmpDxf("export-refused");
+    boost::filesystem::remove(refused);
+    const auto failure = lc::persistence::File::exportFile(
+        doc, refused, lc::persistence::File::LIBDXFRW_DXF_R12);
+    EXPECT_FALSE(failure.ok);
+    EXPECT_EQ(failure.variantId, "dxf.ac1009.ascii") << "The refusal names what was attempted.";
+    ASSERT_FALSE(failure.diagnostics.empty());
+    EXPECT_EQ(failure.diagnostics.front().severity, lc::persistence::Severity::Error);
+    EXPECT_FALSE(boost::filesystem::exists(refused));
+
+    const std::string written = uniqueTmpDxf("export-ok");
+    boost::filesystem::remove(written);
+    const auto success = lc::persistence::File::exportFile(
+        doc, written, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    EXPECT_TRUE(success.ok);
+    EXPECT_EQ(success.variantId, "dxf.ac1015.ascii");
+    EXPECT_TRUE(success.diagnostics.empty());
+
+    // A type with no writer at all is a different failure with its own code.
+    const auto noWriter = lc::persistence::File::exportFile(
+        doc, uniqueTmpDxf("export-no-writer"), lc::persistence::File::LIBOPENCAD_DWG);
+    EXPECT_FALSE(noWriter.ok);
+    ASSERT_FALSE(noWriter.diagnostics.empty());
+    EXPECT_EQ(noWriter.diagnostics.front().code, "no-writer");
+
+    boost::filesystem::remove(written);
+}
+
+// File::open is re-entrant, and has been for as long as hatches have had
+// patterns: reading a non-solid HATCH calls PatternProvider, which opens the
+// pattern's own DXF through File::open while the outer read is still in
+// progress. Anything File::open keeps in a member, a static, or a shared
+// builder has to survive that, which is why importFile builds its reader and
+// its operation::Builder per call.
+//
+// It is also the caller that reaches getAvailableLibrariesForFormat's empty-map
+// case first if DXF ever loses its reader.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ReadingAPatternedHatchReentersOpen) {
+    const std::string path = uniqueTmpDxf("patterned-hatch");
+    boost::filesystem::remove(path);
+    {
+        // A square boundary of four LINE edges, hatched with a named pattern
+        // that ships in res/hatch -- so the nested read has a real file.
+        std::ofstream dxf(path);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nHATCH\n8\n0\n100\nAcDbHatch\n10\n0.0\n20\n0.0\n30\n0.0\n"
+            << "210\n0.0\n220\n0.0\n230\n1.0\n"
+            << "2\nANSI31\n70\n0\n71\n0\n91\n1\n"
+            << "92\n0\n93\n4\n"
+            << "72\n1\n10\n0.0\n20\n0.0\n11\n10.0\n21\n0.0\n"
+            << "72\n1\n10\n10.0\n20\n0.0\n11\n10.0\n21\n10.0\n"
+            << "72\n1\n10\n10.0\n20\n10.0\n11\n0.0\n21\n10.0\n"
+            << "72\n1\n10\n0.0\n20\n10.0\n11\n0.0\n21\n0.0\n"
+            << "97\n0\n"
+            << "75\n0\n76\n1\n52\n0.0\n41\n1.0\n77\n0\n78\n0\n47\n0.1\n98\n0\n"
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    lc::persistence::ImportResult result;
+    ASSERT_NO_THROW(result = lc::persistence::File::importFile(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    EXPECT_TRUE(result.ok) << "The nested read must not disturb the outer one.";
+    EXPECT_FALSE(result.partial);
+    EXPECT_EQ(result.entitiesDelivered, 1u)
+        << "The pattern's own entities belong to the pattern, not to this drawing.";
+
+    lc::entity::Hatch_CSPtr hatch;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto found = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+            hatch = found;
+        }
+    }
+    ASSERT_NE(hatch, nullptr);
+    EXPECT_EQ(hatch->getPatternName(), "ANSI31");
+    EXPECT_FALSE(hatch->isSolid());
+    EXPECT_EQ(hatch->getRegion().loopList().size(), 1u);
+
+    boost::filesystem::remove(path);
 }

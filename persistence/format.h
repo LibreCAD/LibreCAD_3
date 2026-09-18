@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -40,6 +42,78 @@ struct FormatVariant {
 struct FormatInfo {
     std::string id;     //!< "dxf"
     std::string label;  //!< "DXF files"
+};
+
+/** How much a diagnostic matters. */
+enum class Severity {
+    Info,
+    Warning,
+    Error,
+};
+
+/**
+ * Something worth telling the user about a read or a write.
+ *
+ * `code` is a short stable token meant to be matched on -- "unsupported-version",
+ * "emit-failure" -- and is copied from libdxfrw's own diagnostic where one
+ * exists, so the string is stable across the library's own refactors even
+ * though its type never crosses this header.
+ */
+struct Diagnostic {
+    Severity severity;
+    std::string code;
+    std::string message;
+};
+
+/**
+ * What a read or a write could not carry.
+ *
+ * LibreCAD has no entity for several things DXF can hold -- RAY, XLINE, SOLID,
+ * 3DFACE, TRACE, LEADER -- and its reader has always dropped them in silence.
+ * Counting them is what turns "the drawing looks wrong" into a list.
+ */
+struct LossSummary {
+    std::map<std::string, std::size_t> droppedByType;
+    std::vector<std::string> notes;
+
+    bool empty() const {
+        return droppedByType.empty() && notes.empty();
+    }
+
+    std::size_t total() const {
+        std::size_t sum = 0;
+        for (const auto& dropped : droppedByType) {
+            sum += dropped.second;
+        }
+        return sum;
+    }
+};
+
+/**
+ * The outcome of reading a file.
+ *
+ * `ok` and `partial` are separate because a failed read is not an empty one:
+ * libdxfrw stops where it fails and LibreCAD keeps what arrived before that
+ * point, which is a drawing the user can see and must not be allowed to
+ * silently save back over the original. That case is ok=false, partial=true,
+ * entitiesDelivered > 0.
+ */
+struct ImportResult {
+    bool ok{false};
+    bool partial{false};
+    std::string variantId;         //!< the variant recorded for the file
+    std::string sourceVersionTag;  //!< $ACADVER as the file states it, may be empty
+    std::size_t entitiesDelivered{0};
+    std::vector<Diagnostic> diagnostics;
+    LossSummary loss;
+};
+
+/** The outcome of writing a file. Nothing is written when ok is false. */
+struct ExportResult {
+    bool ok{false};
+    std::string variantId;
+    std::vector<Diagnostic> diagnostics;
+    LossSummary loss;
 };
 
 /** Every format LibreCAD offers, whether or not a reader is compiled in. */

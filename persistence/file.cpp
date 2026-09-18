@@ -173,45 +173,52 @@ std::map<File::Library, std::string> File::getAvailableLibrariesForFormat(std::s
     return libraries;
 }
 
-File::Type File::open(lc::storage::Document_SPtr document, const std::string& path, File::Library library) {
-    auto builder = std::make_shared<operation::Builder>(document, "Open file");
-    // Never leave this indeterminate.  Neither switch below is exhaustive --
-    // the inner one has no case for older revisions (AC1002/AC1003/AC1004,
-    // AC12/AC14/AC150/AC210, MC00) or newer ones (AC1032), and the outer one
-    // has no LIBOPENCAD case unless LIBOPENCAD_ENABLED is defined -- so an
-    // unmapped file used to return an uninitialised File::Type, which the
-    // caller then uses to choose the save format.  R12 is what the existing
-    // UNKNOWNV case already falls back to.
-    File::Type version = Type::LIBDXFRW_DXF_R12;
+ImportResult File::importFile(lc::storage::Document_SPtr document,
+                              const std::string& path, File::Library library) {
+    ImportResult result;
+    // Never leave the recorded variant indeterminate: R12 is the fallback the
+    // absent-$ACADVER case documents, and it is what a caller that ignores
+    // `ok` would otherwise read uninitialised.
+    result.variantId = variantIdForType(Type::LIBDXFRW_DXF_R12);
 
-    // The DXF path has to run the queued operations while its reader is still
-    // alive, because the INSERTs it held back can only be built against a
-    // populated document.  Everything else executes once, at the end.
-    bool operationsExecuted = false;
+    auto builder = std::make_shared<operation::Builder>(document, "Open file");
 
     switch(library) {
     case LIBDXFRW: {
-        DXFimpl F(document, builder);
+        DXFimpl reader(document, builder);
         dxfRW R(path.c_str());
+
         // Whatever was read before a failure is still loaded, as before.
-        if (!R.read(&F, true)) {
-            LOG_ERROR << "libdxfrw stopped reading " << path << " (DRW::error " << R.getError() << ")";
+        result.ok = R.read(&reader, true);
+        if (!result.ok) {
+            const auto diagnostic = R.getLastDiagnostic();
+            LOG_ERROR << "libdxfrw stopped reading " << path << " (DRW::error " << R.getError()
+                      << ", " << diagnostic.code << ": " << diagnostic.message << ")";
+            result.diagnostics.push_back(Diagnostic{
+                Severity::Error,
+                diagnostic.code.empty() ? std::string("read-failure") : diagnostic.code,
+                diagnostic.message.empty()
+                    ? "libdxfrw stopped reading the file" : diagnostic.message});
         }
 
         // Every INSERT in the file is built now: the blocks it references and
         // their contents are in the document only after the read's operations
         // have run, and an Insert measures its block when it is constructed.
         builder->execute();
-        operationsExecuted = true;
-        F.buildDeferredInserts();
+        reader.buildDeferredInserts();
+
+        const auto& header = reader.header();
+        result.sourceVersionTag = header.acadVersion;
+        result.entitiesDelivered = reader.entitiesDelivered();
+        result.loss = reader.loss();
+        result.partial = !result.ok && result.entitiesDelivered > 0;
 
         // The revision comes from the drawing's own $ACADVER, captured by
         // DXFimpl::addHeader.  A file that carries none -- or that carries one
         // no revision table knows -- falls back to R12, the only revision
         // every reader accepts.
-        const auto& header = F.header();
         bool recognised = false;
-        version = typeForAcadVersion(header.acadVersion, &recognised);
+        result.variantId = variantIdForType(typeForAcadVersion(header.acadVersion, &recognised));
 
         if (header.acadVersion.empty()) {
             LOG_DEBUG << path << " carries no $ACADVER; recording R12";
@@ -219,40 +226,76 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
             LOG_WARNING << "unsupported-version: " << path << " reports $ACADVER "
                         << header.acadVersion << ", which this build does not know; "
                         << "recording R12";
+            result.diagnostics.push_back(Diagnostic{
+                Severity::Warning, "unsupported-version",
+                "This build does not know DXF revision " + header.acadVersion});
         }
 
-        break;
+        for (const auto& dropped : result.loss.droppedByType) {
+            LOG_WARNING << "Dropped " << dropped.second << " " << dropped.first
+                        << " record(s): LibreCAD has no entity for them";
+        }
+
+        return result;
     }
 
 #ifdef LIBOPENCAD_ENABLED
     case LIBOPENCAD: {
         lc::persistence::LibOpenCad opencad(document, builder);
         opencad.open(path);
-        version = Type::LIBOPENCAD_DWG;
+        result.ok = true;
+        result.variantId = variantIdForType(Type::LIBOPENCAD_DWG);
         break;
     }
 #endif
     default:
         // Includes LIBOPENCAD when built without LIBOPENCAD_ENABLED: nothing
-        // was read, so report the fallback rather than an unset value.
+        // was read, and saying so beats reporting a successful empty import.
+        LOG_ERROR << "No reader for " << path;
+        result.diagnostics.push_back(Diagnostic{
+            Severity::Error, "no-reader", "This build has no reader for that format"});
         break;
     }
 
-    if (!operationsExecuted) {
-        builder->execute();
-    }
+    builder->execute();
 
-    return version;
+    return result;
 }
 
-bool File::save(lc::storage::Document_SPtr document, const std::string& path, File::Type type) {
+File::Type File::open(lc::storage::Document_SPtr document, const std::string& path, File::Library library) {
+    const auto result = importFile(std::move(document), path, library);
+
+    Type type = Type::LIBDXFRW_DXF_R12;
+    typeForVariantId(result.variantId, type);
+
+    return type;
+}
+
+ExportResult File::exportFile(lc::storage::Document_SPtr document,
+                              const std::string& path, File::Type type) {
+    ExportResult result;
+    result.variantId = variantIdForType(type);
+
     if(!isLibdxfrwType(type)) {
         LOG_ERROR << "No writer for file type " << static_cast<int>(type) << "; " << path << " was not written";
-        return false;
+        result.diagnostics.push_back(Diagnostic{
+            Severity::Error, "no-writer", "This build has no writer for that format"});
+        return result;
     }
 
     DXFimpl writer(std::move(document));
-    return writer.writeDXF(path, type);
+    result.ok = writer.writeDXF(path, type);
+    result.loss = writer.loss();
+    if (!result.ok) {
+        result.diagnostics.push_back(Diagnostic{
+            Severity::Error, "emit-failure", "The file could not be written at this revision"});
+    }
+
+    return result;
+}
+
+bool File::save(lc::storage::Document_SPtr document, const std::string& path, File::Type type) {
+    return exportFile(std::move(document), path, type).ok;
 }
 
 

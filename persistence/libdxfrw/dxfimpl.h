@@ -5,6 +5,7 @@
 #include <drw_base.h>
 #include <iostream>
 #include "../file.h"
+#include "../format.h"
 #include "../generic/helpers.h"
 
 #include <cad/storage/document.h>
@@ -79,6 +80,20 @@ public:
     void addHeader(const DRW_Header* data) override;
 
     /**
+     * What this read could not carry: one entry per DXF record kind LibreCAD
+     * has no entity for. These callbacks have always been empty overrides; the
+     * only change is that the drop is now counted rather than invisible.
+     */
+    const LossSummary& loss() const {
+        return _loss;
+    }
+
+    /** How many entities the reader handed to the document. */
+    std::size_t entitiesDelivered() const {
+        return _entitiesDelivered;
+    }
+
+    /**
      * What addHeader captured. Empty/defaulted when the drawing has no HEADER
      * section, which is legal DXF and which three files in the review corpus
      * do.
@@ -95,21 +110,33 @@ public:
 
     void addAppId(const DRW_AppId& data) override {}
 
-    void addRay(const DRW_Ray& data) override {}
+    void addRay(const DRW_Ray& data) override {
+        recordLoss("RAY");
+    }
 
-    void addXline(const DRW_Xline& data) override {}
+    void addXline(const DRW_Xline& data) override {
+        recordLoss("XLINE");
+    }
 
     void addKnot(const DRW_Entity& data) override {}
 
     void addInsert(const DRW_Insert& data) override;
 
-    void addTrace(const DRW_Trace& data) override {}
+    void addTrace(const DRW_Trace& data) override {
+        recordLoss("TRACE");
+    }
 
-    void add3dFace(const DRW_3Dface& data) override {}
+    void add3dFace(const DRW_3Dface& data) override {
+        recordLoss("3DFACE");
+    }
 
-    void addSolid(const DRW_Solid& data) override {}
+    void addSolid(const DRW_Solid& data) override {
+        recordLoss("SOLID");
+    }
 
-    void addLeader(const DRW_Leader* data) override {}
+    void addLeader(const DRW_Leader* data) override {
+        recordLoss("LEADER");
+    }
 
     void addViewport(const DRW_Viewport& data) override;
 
@@ -299,6 +326,24 @@ public:
     lc::operation::EntityBuilder_SPtr _entityBuilder;
     lc::meta::Block_SPtr _currentBlock;
     DrawingHeader _header;
+    LossSummary _loss;
+    std::size_t _entitiesDelivered{0};
+
+    void recordLoss(const char* recordKind) {
+        _loss.droppedByType[recordKind]++;
+    }
+
+    /**
+     * Hand one entity to the document, and count it.
+     *
+     * The count is of what the *reader* produced, which is not the same as what
+     * the document ends up holding: a block's contents live in the block, not
+     * the entity container. Importers report the former.
+     */
+    void deliver(const lc::entity::CADEntity_CSPtr& entity) {
+        _entitiesDelivered++;
+        _entityBuilder->appendEntity(entity);
+    }
 
     /** An INSERT read from the file, not yet turned into an entity. */
     struct PendingInsert {

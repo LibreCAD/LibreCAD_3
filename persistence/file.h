@@ -2,6 +2,8 @@
 
 #include <cad/storage/document.h>
 
+#include "format.h"
+
 namespace lc {
 namespace persistence {
 class File {
@@ -33,6 +35,28 @@ public:
         LIBOPENCAD,
     };
 
+    /**
+     * Read a file into a document and report what happened.
+     *
+     * Whatever arrived before a failure is loaded, as it always has been, and
+     * the result says so: ok=false with partial=true and a non-zero
+     * entitiesDelivered is a drawing the user can see but must not silently
+     * save back over its original.
+     */
+    static ImportResult importFile(lc::storage::Document_SPtr document,
+                                   const std::string& path, Library library);
+
+    /**
+     * Write the document and report what happened, including what the target
+     * revision could not carry.
+     */
+    static ExportResult exportFile(lc::storage::Document_SPtr document,
+                                   const std::string& path, Type type);
+
+    /**
+     * The revision recorded for the file. A shim over importFile, kept because
+     * every existing caller -- lcUI, the bindings, PatternProvider -- uses it.
+     */
     static Type open(lc::storage::Document_SPtr document, const std::string& path, Library library);
 
     /**
