@@ -36,6 +36,7 @@
 
 #include <cmath>
 #include <fstream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -50,8 +51,10 @@
 #include <cad/meta/color.h>
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
+#include <cad/meta/customentitystorage.h>
 
 #include <cad/operations/builder.h>
+#include <cad/operations/blockops.h>
 #include <cad/operations/entitybuilder.h>
 
 #include <cad/geometry/geoarea.h>
@@ -374,6 +377,104 @@ TEST(DxfRoundTripTest, SaveReportsFailure) {
 // and the throw used to travel out through libdxfrw's callback and out of
 // File::open, which no caller guards -- so one bad record cost the whole file.
 // They must be skipped individually, and the rest of the file must still load.
+// A spline read from a file must be writable again. The reader used to trim the
+// first and last knot, leaving knotCount != controlCount + degree + 1, which the
+// library refuses -- so the SECOND save produced no file at all and the drawing
+// could not be saved after being opened.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, SplineSurvivesReopenAndResave) {
+    const std::string first = uniqueTmpDxf("spline-1");
+    const std::string second = uniqueTmpDxf("spline-2");
+    boost::filesystem::remove(first);
+    boost::filesystem::remove(second);
+
+    const std::vector<lc::geo::Coordinate> controlPoints{
+        lc::geo::Coordinate(0.0, 0.0, 0.0), lc::geo::Coordinate(3.0, 5.0, 0.0),
+        lc::geo::Coordinate(7.0, -2.0, 0.0), lc::geo::Coordinate(11.0, 4.0, 0.0)};
+    // Clamped cubic: controlCount + degree + 1 == 8.
+    const std::vector<double> knots{0., 0., 0., 0., 1., 1., 1., 1.};
+
+    {
+        auto doc = newDocument();
+        auto spline = std::make_shared<lc::entity::Spline>(
+            controlPoints, knots, std::vector<lc::geo::Coordinate>{},
+            /*degree=*/3, /*closed=*/false, /*fitTolerance=*/0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+            static_cast<lc::geo::Spline::splineflag>(8), defaultLayer());
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {spline}));
+        ASSERT_TRUE(lc::persistence::File::save(
+            doc, first, lc::persistence::File::Type::LIBDXFRW_DXF_R2000));
+    }
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, first, lc::persistence::File::Library::LIBDXFRW));
+
+    lc::entity::Spline_CSPtr readBack;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto sp = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+            readBack = sp;
+        }
+    }
+    ASSERT_NE(readBack, nullptr) << "The spline did not survive the first read.";
+    EXPECT_EQ(readBack->degree(), 3u);
+    EXPECT_EQ(readBack->controlPoints().size(), controlPoints.size());
+    EXPECT_EQ(readBack->knotPoints().size(), knots.size())
+        << "The knot vector was trimmed on read; the re-save below cannot succeed.";
+
+    // The regression: this is the save that used to produce nothing.
+    EXPECT_TRUE(lc::persistence::File::save(
+        reopened, second, lc::persistence::File::Type::LIBDXFRW_DXF_R2000));
+    EXPECT_TRUE(boost::filesystem::exists(second));
+    EXPECT_GT(boost::filesystem::file_size(second), 0u);
+
+    boost::filesystem::remove(first);
+    boost::filesystem::remove(second);
+}
+
+// A block carrying custom-entity metadata is written as a 102 application group.
+// Without its closing marker the group is unbalanced, dxfRW::writeAppData fails,
+// and the whole file is abandoned -- no file, no message.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, CustomEntityBlockRoundTrip) {
+    const std::string path = uniqueTmpDxf("custom-entity");
+    boost::filesystem::remove(path);
+
+    {
+        auto doc = newDocument();
+        auto storage = std::make_shared<lc::meta::CustomEntityStorage>(
+            "testplugin", "testentity", lc::geo::Coordinate(0.0, 0.0, 0.0),
+            std::map<std::string, std::string>{{"width", "42"}});
+        auto builder = std::make_shared<lc::operation::Builder>(doc, "add block");
+        builder->append(std::make_shared<lc::operation::AddBlock>(doc, storage));
+        builder->execute();
+
+        ASSERT_TRUE(lc::persistence::File::save(
+            doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R2000))
+            << "Saving a document with a custom entity produced no file.";
+    }
+
+    ASSERT_TRUE(boost::filesystem::exists(path));
+    ASSERT_GT(boost::filesystem::file_size(path), 0u);
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+
+    lc::meta::CustomEntityStorage_CSPtr found;
+    for (const auto& block : reopened->blocks()) {
+        if (auto ce = std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block)) {
+            found = ce;
+        }
+    }
+    ASSERT_NE(found, nullptr) << "The custom entity block did not survive the round trip.";
+    EXPECT_EQ(found->pluginName(), "testplugin");
+    EXPECT_EQ(found->entityName(), "testentity");
+    EXPECT_EQ(found->param("width"), "42");
+
+    boost::filesystem::remove(path);
+}
+
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, DegenerateRecordsAreSkippedNotFatal) {
     const std::string path = uniqueTmpDxf("degenerate");

@@ -279,14 +279,14 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
     auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
 
-    // http://discourse.mcneel.com/t/creating-on-nurbscurve-from-control-points-and-knot-vector/12928/3
-    auto knotList = data->knotslist;
-    if (knotList.size()>=2) {
-        knotList.erase(knotList.begin());
-        knotList.pop_back();
-    }
+    // The knot vector is stored as the file gives it. It used to be trimmed by
+    // one knot at each end, which made every imported spline unwritable: the
+    // library requires knotCount == controlCount + degree + 1 and refuses the
+    // whole file otherwise. Nothing consumed the trimmed form either --
+    // geo::Spline::populateCurve builds a clamped B-spline from the control
+    // points and never reads the stored knots.
     auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
-                    knotList,
+                    data->knotslist,
                     coords(data->fitlist),
                     data->degree,
                     false,
@@ -670,13 +670,9 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 loopData.push_back(lcEllipse);
             } else if(k->eType == DRW::ETYPE::SPLINE) {
                 auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
-                auto knotList = data->knotslist;
-                if (knotList.size()>=2) {
-                    knotList.erase(knotList.begin());
-                    knotList.pop_back();
-                }
+                // Same as addSpline: keep the file's knot vector intact.
                 auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
-                                knotList,
+                                data->knotslist,
                                 coords(data->fitlist),
                                 data->degree,
                                 false,
@@ -1933,6 +1929,11 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
             list.emplace_back(DRW_Variant(470, data.first));
             list.emplace_back(DRW_Variant(471, data.second));
         }
+
+        // Close the application group. dxfRW::writeAppData requires balanced
+        // 102 markers and fails the whole write without this, so a document
+        // holding a custom entity produced no file at all.
+        list.emplace_back(DRW_Variant(APP_NAME_CODE, std::string("}")));
 
         drwBlock.appData.push_back(list);
     }
