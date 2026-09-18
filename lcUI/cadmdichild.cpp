@@ -163,11 +163,40 @@ void CadMdiChild::saveFile() {
         return;
     }
 
-    reportSaveFailure(lc::persistence::File::save(_document, decision.path, type), decision.path);
+    reportSaveResult(lc::persistence::File::exportFile(_document, decision.path, type),
+                     decision.path);
 }
 
 // A refused write leaves the target untouched, so the user must be told: the
-// document is still unsaved.
+// document is still unsaved. A write that succeeded without records the chosen
+// revision cannot carry is a different message -- the file is there, and is not
+// the whole drawing.
+void CadMdiChild::reportSaveResult(const lc::persistence::ExportResult& result,
+                                   const std::string& path) {
+    if (!result.ok) {
+        reportSaveFailure(false, path);
+        return;
+    }
+
+    if (result.loss.empty()) {
+        return;
+    }
+
+    QString kinds;
+    for (const auto& dropped : result.loss.droppedByType) {
+        if (!kinds.isEmpty()) {
+            kinds += ", ";
+        }
+        kinds += QString::number(static_cast<qulonglong>(dropped.second)) + " "
+                 + QString::fromStdString(dropped.first);
+    }
+
+    QMessageBox::warning(nullptr, tr("Save"),
+                         tr("%1 was written without %2: the chosen DXF revision cannot "
+                            "carry them. Save as DXF 2000 or newer to keep them.")
+                         .arg(QString::fromStdString(path)).arg(kinds));
+}
+
 void CadMdiChild::reportSaveFailure(bool saved, const std::string& path) {
     if (saved) {
         return;
@@ -237,7 +266,7 @@ void CadMdiChild::saveAsFile() {
     _filename = file.toStdString();
 
     const auto result = lc::persistence::File::exportFile(_document, _filename, type);
-    reportSaveFailure(result.ok, _filename);
+    reportSaveResult(result, _filename);
 
     if (result.ok) {
         // The document now *is* this file, completely: a later Save writes

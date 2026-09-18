@@ -66,8 +66,12 @@ public:
 
     /**
      * Write the document to path in the given format.
-     * @return false if the format is not writable or the library refused the write;
-     *         nothing is written in that case.
+     *
+     * @return true only when the *whole* drawing was written. False means
+     *         either that nothing was written -- no writer for the format, or
+     *         the library refused -- or that the file exists without records
+     *         this revision cannot carry. exportFile distinguishes the two and
+     *         names what was left out.
      */
     static bool save(lc::storage::Document_SPtr document, const std::string& path, Type type);
 

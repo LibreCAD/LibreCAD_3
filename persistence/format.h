@@ -147,6 +147,26 @@ const FormatVariant* formatVariantById(const std::string& id);
  */
 std::string libdxfrwApiFingerprint();
 
+/**
+ * Whether a variant can carry a kind of DXF record at all.
+ *
+ * This is a statement about the *format*, not about one entity's contents:
+ * SPLINE, MTEXT, HATCH and IMAGE do not exist before R13, so no R12 file can
+ * hold one however well-formed it is. libdxfrw refuses them, and a refusal
+ * fails the whole write -- the user loses the drawing, not the record.
+ *
+ * Deliberately narrow. libdxfrw validates each entity's payload in more than
+ * thirty places, and mirroring those checks here would mean two copies of the
+ * same rules drifting apart until LibreCAD starts refusing to write files the
+ * library would have accepted. What a revision contains is fixed by the format
+ * and does not drift.
+ *
+ * `recordKind` is the DXF record name: "SPLINE", "MTEXT", "HATCH", "IMAGE".
+ * An unknown kind is assumed carriable, so a new entity type is written and
+ * judged by the library rather than silently dropped here.
+ */
+bool variantCarriesRecord(const std::string& variantId, const std::string& recordKind);
+
 /** Lower-case a format or variant id, for the case-insensitive lookups. */
 std::string normalisedFormatId(std::string id);
 

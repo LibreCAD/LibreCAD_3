@@ -291,16 +291,38 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
     DXFimpl writer(std::move(document));
     result.ok = writer.writeDXF(path, type);
     result.loss = writer.loss();
+
     if (!result.ok) {
         result.diagnostics.push_back(Diagnostic{
             Severity::Error, "emit-failure", "The file could not be written at this revision"});
+    } else if (!result.loss.empty()) {
+        // The file exists and holds the rest of the drawing. Saying so is the
+        // point: before this, one such entity meant no file at all.
+        std::string kinds;
+        for (const auto& dropped : result.loss.droppedByType) {
+            if (!kinds.empty()) {
+                kinds += ", ";
+            }
+            kinds += std::to_string(dropped.second) + " " + dropped.first;
+        }
+
+        LOG_WARNING << path << " was written without " << kinds
+                    << ": this revision cannot carry them. Save as R2000 or newer to keep them.";
+        result.diagnostics.push_back(Diagnostic{
+            Severity::Warning, "record-not-in-revision",
+            "Written without " + kinds + ": this revision cannot carry them"});
     }
 
     return result;
 }
 
 bool File::save(lc::storage::Document_SPtr document, const std::string& path, File::Type type) {
-    return exportFile(std::move(document), path, type).ok;
+    const auto result = exportFile(std::move(document), path, type);
+
+    // True means "the whole drawing was written". A save that had to leave
+    // records behind is not that, and a caller holding only a bool must not be
+    // told otherwise -- exportFile says which records, and how many.
+    return result.ok && result.loss.empty();
 }
 
 

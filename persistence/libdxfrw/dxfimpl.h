@@ -407,6 +407,9 @@ private:
      */
     DRW::Version _exportVersion{DRW::AC1024};
 
+    /** The target of the current write, for the format-capability check. */
+    lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
+
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
     lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;

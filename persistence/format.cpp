@@ -63,6 +63,26 @@ const FormatVariant* formatVariantById(const std::string& id) {
     return found == variants.end() ? nullptr : &*found;
 }
 
+bool variantCarriesRecord(const std::string& variantId, const std::string& recordKind) {
+    const auto* variant = formatVariantById(variantId);
+    if (variant == nullptr) {
+        return false;
+    }
+
+    // Everything from R13 on carries every record LibreCAD can write.
+    // AC1006 and AC1009 are the two pre-R13 tags in the table.
+    const bool preR13 = variant->versionTag == "AC1006" || variant->versionTag == "AC1009";
+    if (!preR13) {
+        return true;
+    }
+
+    // LWPOLYLINE is absent too, but it is not on this list: DXFimpl writes R12's
+    // own POLYLINE for it, which carries the same geometry. A record is only
+    // listed here when there is nothing to convert it into.
+    return !(recordKind == "SPLINE" || recordKind == "MTEXT"
+             || recordKind == "HATCH" || recordKind == "IMAGE");
+}
+
 std::string normalisedFormatId(std::string id) {
     std::transform(id.begin(), id.end(), id.begin(), ::tolower);
     return id;

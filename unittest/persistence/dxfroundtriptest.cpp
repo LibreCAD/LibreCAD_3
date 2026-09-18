@@ -69,6 +69,7 @@
 #include <cad/primitive/spline.h>
 
 #include "persistence/file.h"
+#include "persistence/format.h"
 #include "persistence/readguard.h"
 
 namespace {
@@ -369,29 +370,51 @@ TEST(DxfRoundTripTest, SaveReportsFailure) {
     EXPECT_FALSE(boost::filesystem::exists(noWriterPath))
         << "A refused save must leave no file behind.";
 
-    // (b) A document the library refuses at the requested version.
+    // (b) A document holding a record the target revision has no room for.
     //
-    // It is no longer the LWPOLYLINE: `lc-save-target-matrix` writes those as
-    // R12's own POLYLINE, which carries the same geometry (see the round-trip
-    // assertion below).  A SPLINE has no R12 record at all and libdxfrw
-    // approximates none, so this is a genuine refusal rather than a missing
-    // conversion.
+    // It is not the LWPOLYLINE: those are written as R12's own POLYLINE, which
+    // carries the same geometry (see the round trip below).  A SPLINE has no
+    // R12 record at all -- but that is a reason to lose the spline, not the
+    // drawing.  save() returns false because the whole drawing was not
+    // written, and the file holds everything else.
     auto splineDoc = newDocument();
-    insertThroughBuilder(splineDoc, {std::make_shared<lc::entity::Spline>(
-        std::vector<lc::geo::Coordinate>{{0.0, 0.0}, {3.0, 8.0}, {7.0, -4.0}, {10.0, 0.0}},
-        std::vector<double>{0, 0, 0, 0, 1, 1, 1, 1},
-        std::vector<lc::geo::Coordinate>{},
-        3, false, 0.0,
-        0, 0, 0, 0, 0, 0, 0, 0, 1,
-        lc::geo::Spline::splineflag::PERIODIC, layer)});
+    insertThroughBuilder(splineDoc, {
+        std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(0.0, 0.0, 0.0), lc::geo::Coordinate(10.0, 5.0, 0.0), layer),
+        std::make_shared<lc::entity::Spline>(
+            std::vector<lc::geo::Coordinate>{{0.0, 0.0}, {3.0, 8.0}, {7.0, -4.0}, {10.0, 0.0}},
+            std::vector<double>{0, 0, 0, 0, 1, 1, 1, 1},
+            std::vector<lc::geo::Coordinate>{},
+            3, false, 0.0,
+            0, 0, 0, 0, 0, 0, 0, 0, 1,
+            lc::geo::Spline::splineflag::PERIODIC, layer)});
 
-    const std::string refusedPath = uniqueTmpDxf("refused-r12");
-    boost::filesystem::remove(refusedPath);
+    const std::string lossyPath = uniqueTmpDxf("lossy-r12");
+    boost::filesystem::remove(lossyPath);
     EXPECT_FALSE(lc::persistence::File::save(
-        splineDoc, refusedPath, lc::persistence::File::Type::LIBDXFRW_DXF_R12))
-        << "R12 cannot carry a SPLINE; save must say so.";
-    EXPECT_FALSE(boost::filesystem::exists(refusedPath))
-        << "A refused save must leave no file behind.";
+        splineDoc, lossyPath, lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "R12 cannot carry a SPLINE, so this is not a complete save.";
+    ASSERT_TRUE(boost::filesystem::exists(lossyPath))
+        << "The rest of the drawing must still be written.";
+
+    {
+        auto reopened = newDocument();
+        ASSERT_NO_THROW(lc::persistence::File::open(
+            reopened, lossyPath, lc::persistence::File::Library::LIBDXFRW));
+        int lines = 0;
+        int splines = 0;
+        for (const auto& entity : reopened->entityContainer().asVector()) {
+            if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+                lines++;
+            }
+            if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+                splines++;
+            }
+        }
+        EXPECT_EQ(lines, 1) << "Losing one record must not cost the others.";
+        EXPECT_EQ(splines, 0) << "R12 has no SPLINE record.";
+    }
+    boost::filesystem::remove(lossyPath);
 
     // (c) The LWPOLYLINE that used to be refused is now written as a POLYLINE
     // and comes back as the same polyline.
@@ -1413,7 +1436,97 @@ TEST(DxfRoundTripTest, ImportResultDescribesAnUnopenableFile) {
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-TEST(DxfRoundTripTest, ExportResultDescribesARefusal) {
+TEST(DxfRoundTripTest, ExportResultDescribesWhatItLeftBehind) {
+    auto layer = defaultLayer();
+    auto doc = newDocument();
+    insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(0.0, 0.0, 0.0), lc::geo::Coordinate(10.0, 5.0, 0.0), layer),
+        std::make_shared<lc::entity::Spline>(
+            std::vector<lc::geo::Coordinate>{{0.0, 0.0}, {3.0, 8.0}, {7.0, -4.0}, {10.0, 0.0}},
+            std::vector<double>{0, 0, 0, 0, 1, 1, 1, 1},
+            std::vector<lc::geo::Coordinate>{},
+            3, false, 0.0,
+            0, 0, 0, 0, 0, 0, 0, 0, 1,
+            lc::geo::Spline::splineflag::PERIODIC, layer)});
+
+    // R12: the file is written, the spline is named as left behind.
+    const std::string lossy = uniqueTmpDxf("export-lossy");
+    boost::filesystem::remove(lossy);
+    const auto left = lc::persistence::File::exportFile(
+        doc, lossy, lc::persistence::File::LIBDXFRW_DXF_R12);
+    EXPECT_TRUE(left.ok) << "The file was written; that is not a failure.";
+    EXPECT_EQ(left.variantId, "dxf.ac1009.ascii");
+    EXPECT_EQ(left.loss.droppedByType.at("SPLINE"), 1u);
+    ASSERT_FALSE(left.diagnostics.empty());
+    EXPECT_EQ(left.diagnostics.front().severity, lc::persistence::Severity::Warning);
+    EXPECT_EQ(left.diagnostics.front().code, "record-not-in-revision");
+    EXPECT_TRUE(boost::filesystem::exists(lossy));
+    boost::filesystem::remove(lossy);
+
+    // R2000: nothing to leave behind.
+    const std::string whole = uniqueTmpDxf("export-whole");
+    boost::filesystem::remove(whole);
+    const auto complete = lc::persistence::File::exportFile(
+        doc, whole, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    EXPECT_TRUE(complete.ok);
+    EXPECT_TRUE(complete.loss.empty());
+    EXPECT_TRUE(complete.diagnostics.empty());
+    boost::filesystem::remove(whole);
+
+    // A type with no writer at all is a different failure, with its own code
+    // and no file.
+    const std::string refused = uniqueTmpDxf("export-no-writer");
+    boost::filesystem::remove(refused);
+    const auto noWriter = lc::persistence::File::exportFile(
+        doc, refused, lc::persistence::File::LIBOPENCAD_DWG);
+    EXPECT_FALSE(noWriter.ok);
+    ASSERT_FALSE(noWriter.diagnostics.empty());
+    EXPECT_EQ(noWriter.diagnostics.front().code, "no-writer");
+    EXPECT_FALSE(boost::filesystem::exists(refused));
+}
+
+// The skip and the report must come from one rule.
+//
+// Two copies -- one deciding what to leave out, one explaining what was left
+// out -- drift, and then LibreCAD either writes a record it said it dropped or
+// reports a loss that never happened. Both paths ask variantCarriesRecord, and
+// this feeds the same entity to both.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, WhatIsSkippedIsWhatIsReported) {
+    const char* const preR13[] = {"dxf.ac1009.ascii", "dxf.ac1009.binary"};
+    const char* const r13AndLater[] = {
+        "dxf.ac1014.ascii", "dxf.ac1015.ascii", "dxf.ac1018.ascii",
+        "dxf.ac1021.ascii", "dxf.ac1024.ascii", "dxf.ac1027.ascii",
+        "dxf.ac1027.binary"};
+    const char* const absentBeforeR13[] = {"SPLINE", "MTEXT", "HATCH", "IMAGE"};
+
+    for (const char* variantId : preR13) {
+        for (const char* kind : absentBeforeR13) {
+            EXPECT_FALSE(lc::persistence::variantCarriesRecord(variantId, kind))
+                << variantId << " cannot carry " << kind;
+        }
+        // Not on the list: R12 has no LWPOLYLINE either, but LibreCAD writes
+        // POLYLINE for it rather than dropping it.
+        EXPECT_TRUE(lc::persistence::variantCarriesRecord(variantId, "LWPOLYLINE"));
+        EXPECT_TRUE(lc::persistence::variantCarriesRecord(variantId, "LINE"));
+    }
+
+    for (const char* variantId : r13AndLater) {
+        for (const char* kind : absentBeforeR13) {
+            EXPECT_TRUE(lc::persistence::variantCarriesRecord(variantId, kind))
+                << variantId << " carries " << kind;
+        }
+    }
+
+    // An unknown record kind is carried, not dropped: a new entity type is the
+    // library's to judge, and silently dropping it here would be invisible.
+    EXPECT_TRUE(lc::persistence::variantCarriesRecord("dxf.ac1009.ascii", "WIPEOUT"));
+    // An unknown variant carries nothing, because nothing is known about it.
+    EXPECT_FALSE(lc::persistence::variantCarriesRecord("dxf.nope", "LINE"));
+
+    // And the rule as applied: the same spline, at both revisions.
     auto layer = defaultLayer();
     auto doc = newDocument();
     insertThroughBuilder(doc, {std::make_shared<lc::entity::Spline>(
@@ -1424,32 +1537,21 @@ TEST(DxfRoundTripTest, ExportResultDescribesARefusal) {
         0, 0, 0, 0, 0, 0, 0, 0, 1,
         lc::geo::Spline::splineflag::PERIODIC, layer)});
 
-    const std::string refused = uniqueTmpDxf("export-refused");
-    boost::filesystem::remove(refused);
-    const auto failure = lc::persistence::File::exportFile(
-        doc, refused, lc::persistence::File::LIBDXFRW_DXF_R12);
-    EXPECT_FALSE(failure.ok);
-    EXPECT_EQ(failure.variantId, "dxf.ac1009.ascii") << "The refusal names what was attempted.";
-    ASSERT_FALSE(failure.diagnostics.empty());
-    EXPECT_EQ(failure.diagnostics.front().severity, lc::persistence::Severity::Error);
-    EXPECT_FALSE(boost::filesystem::exists(refused));
+    const std::string r12 = uniqueTmpDxf("mirror-r12");
+    const std::string r2000 = uniqueTmpDxf("mirror-r2000");
+    boost::filesystem::remove(r12);
+    boost::filesystem::remove(r2000);
 
-    const std::string written = uniqueTmpDxf("export-ok");
-    boost::filesystem::remove(written);
-    const auto success = lc::persistence::File::exportFile(
-        doc, written, lc::persistence::File::LIBDXFRW_DXF_R2000);
-    EXPECT_TRUE(success.ok);
-    EXPECT_EQ(success.variantId, "dxf.ac1015.ascii");
-    EXPECT_TRUE(success.diagnostics.empty());
+    const auto dropped = lc::persistence::File::exportFile(
+        doc, r12, lc::persistence::File::LIBDXFRW_DXF_R12);
+    const auto kept = lc::persistence::File::exportFile(
+        doc, r2000, lc::persistence::File::LIBDXFRW_DXF_R2000);
 
-    // A type with no writer at all is a different failure with its own code.
-    const auto noWriter = lc::persistence::File::exportFile(
-        doc, uniqueTmpDxf("export-no-writer"), lc::persistence::File::LIBOPENCAD_DWG);
-    EXPECT_FALSE(noWriter.ok);
-    ASSERT_FALSE(noWriter.diagnostics.empty());
-    EXPECT_EQ(noWriter.diagnostics.front().code, "no-writer");
+    EXPECT_EQ(dropped.loss.droppedByType.count("SPLINE"), 1u);
+    EXPECT_TRUE(kept.loss.empty());
 
-    boost::filesystem::remove(written);
+    boost::filesystem::remove(r12);
+    boost::filesystem::remove(r2000);
 }
 
 // File::open is re-entrant, and has been for as long as hatches have had

@@ -1193,53 +1193,6 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     dxfW->writeLayer(&lay);
 }
 
-namespace {
-
-/**
- * The entity kinds the target revision cannot carry, and how many the document
- * holds, for the message a refused save owes the user.
- *
- * This runs only *after* libdxfrw has refused a write, never as a gate in front
- * of one. The library decides what it can write -- there are more than thirty
- * places where it can refuse -- and a second copy of those rules here would
- * drift and start refusing saves the library would have accepted. Used this way
- * the worst a stale entry costs is a vaguer message.
- */
-std::map<std::string, std::size_t> unwritableKinds(
-    const std::shared_ptr<lc::storage::Document>& document, DRW::Version version) {
-    std::map<std::string, std::size_t> counts;
-
-    // Everything from R13 on carries every kind LibreCAD can write.
-    if (document == nullptr || version > DRW::AC1009) {
-        return counts;
-    }
-
-    const auto tally = [&counts](const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
-        for (const auto& entity : entities) {
-            // R12 has no record for these at all, and libdxfrw approximates
-            // none of them: src/libdxfrw.cpp rejects each below AC1015/AC1009.
-            if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
-                counts["SPLINE"]++;
-            } else if (std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
-                counts["MTEXT"]++;
-            } else if (std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
-                counts["HATCH"]++;
-            } else if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) {
-                counts["IMAGE"]++;
-            }
-        }
-    };
-
-    tally(document->entityContainer().asVector());
-    for (const auto& block : document->blocks()) {
-        tally(document->entitiesByBlock(block).asVector());
-    }
-
-    return counts;
-}
-
-}  // namespace
-
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
 
@@ -1286,6 +1239,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     const bool isBinary = lc::persistence::File::isBinaryType(type);
 
     _exportVersion = exportVersion;
+    _exportType = type;
 
     bool success = dxfW->write(this, exportVersion, isBinary);
 
@@ -1295,17 +1249,9 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                   << " (DRW::error " << dxfW->getError()
                   << ", " << diagnostic.code << ": " << diagnostic.message << ")";
 
-        // "It refused" is not something a user can act on. Name what this
-        // revision cannot hold, so the answer -- save as R2000 instead, or
-        // remove these -- is in the message.
-        const auto blocked = unwritableKinds(_document, exportVersion);
-        for (const auto& kind : blocked) {
-            LOG_ERROR << "  this revision cannot carry " << kind.second << " "
-                      << kind.first << (kind.second == 1 ? " entity" : " entities");
-        }
-        if (!blocked.empty()) {
-            LOG_ERROR << "  save as R2000 or newer to keep them";
-        }
+        // Records this revision cannot carry no longer reach the library at
+        // all -- writeEntity skips and counts them -- so a refusal here is
+        // about the payload of one entity, which only libdxfrw can judge.
     }
 
     delete dxfW;
@@ -2288,7 +2234,41 @@ void DXFimpl::writeEntities() {
     }
 }
 
+/**
+ * The DXF record an entity is written as, or "" when LibreCAD has no writer.
+ *
+ * Only the kinds a revision can refuse are named: everything else is carried by
+ * every revision LibreCAD writes, so asking about it would be noise.
+ */
+static std::string recordKindOf(const lc::entity::CADEntity_CSPtr& entity) {
+    if (std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+        return "SPLINE";
+    }
+    if (std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+        return "MTEXT";
+    }
+    if (std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+        return "HATCH";
+    }
+    if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) {
+        return "IMAGE";
+    }
+
+    return "";
+}
+
 void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
+    // A revision that cannot hold this record is not a reason to lose the
+    // drawing. libdxfrw refuses such an entity and the refusal fails the whole
+    // write, so offering it one is the difference between a file missing one
+    // spline and no file at all. Skipped here, counted, and reported.
+    const auto recordKind = recordKindOf(entity);
+    if (!recordKind.empty()
+        && !variantCarriesRecord(File::variantIdForType(_exportType), recordKind)) {
+        _loss.droppedByType[recordKind]++;
+        return;
+    }
+
     auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
     if (line != nullptr) {
         writeLine(line);

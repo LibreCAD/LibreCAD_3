@@ -74,6 +74,9 @@ public slots:
     /**
      * Show an error when a save was refused; no-op when it succeeded.
      */
+    static void reportSaveResult(const lc::persistence::ExportResult& result,
+                                 const std::string& path);
+
     static void reportSaveFailure(bool saved, const std::string& path);
 
 signals:
