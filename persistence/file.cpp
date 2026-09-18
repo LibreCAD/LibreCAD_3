@@ -46,6 +46,45 @@ bool File::isBinaryType(Type type) {
     }
 }
 
+File::Type File::typeForAcadVersion(const std::string& acadVersion, bool* recognised) {
+    // $ACADVER is the drawing's own statement of its revision, and the only
+    // one available: dxfRW::getVersion() reports the *text codec* bucket
+    // (intern/drw_textcodec.cpp), which collapses R2010 and R2013 onto R2007
+    // and, for a file carrying no header at all, returns its constructor's
+    // default of AC1021 -- so a plain R12 body used to be recorded as R2007.
+    static const std::map<std::string, Type> byAcadVersion = {
+        // Everything through R12 shares the one variant we can write for it.
+        {"MC0.0", LIBDXFRW_DXF_R12},
+        {"AC1.2", LIBDXFRW_DXF_R12},
+        {"AC1.40", LIBDXFRW_DXF_R12},
+        {"AC1.50", LIBDXFRW_DXF_R12},
+        {"AC2.10", LIBDXFRW_DXF_R12},
+        {"AC2.21", LIBDXFRW_DXF_R12},
+        {"AC2.22", LIBDXFRW_DXF_R12},
+        {"AC1001", LIBDXFRW_DXF_R12},
+        {"AC1002", LIBDXFRW_DXF_R12},
+        {"AC1003", LIBDXFRW_DXF_R12},
+        {"AC1004", LIBDXFRW_DXF_R12},
+        {"AC1006", LIBDXFRW_DXF_R12},
+        {"AC1009", LIBDXFRW_DXF_R12},  // R11/R12
+        {"AC1012", LIBDXFRW_DXF_R14},  // R13: no variant of its own, round up
+        {"AC1014", LIBDXFRW_DXF_R14},
+        {"AC1015", LIBDXFRW_DXF_R2000},
+        {"AC1018", LIBDXFRW_DXF_R2004},
+        {"AC1021", LIBDXFRW_DXF_R2007},
+        {"AC1024", LIBDXFRW_DXF_R2010},
+        {"AC1027", LIBDXFRW_DXF_R2013},
+        {"AC1032", LIBDXFRW_DXF_R2013},  // R2018: newest we can write
+    };
+
+    const auto it = byAcadVersion.find(acadVersion);
+    const bool known = it != byAcadVersion.end();
+    if (recognised != nullptr) {
+        *recognised = known;
+    }
+    return known ? it->second : LIBDXFRW_DXF_R12;
+}
+
 std::string File::getExtensionForFileType(Type type) {
     // Every writable type is DXF; only the encoding differs.
     return isLibdxfrwType(type) ? "dxf" : "";
@@ -78,43 +117,22 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
             LOG_ERROR << "libdxfrw stopped reading " << path << " (DRW::error " << R.getError() << ")";
         }
 
-        /// @todo create better mapping
-        switch(R.getVersion()) {
-        case DRW::UNKNOWNV: /// @todo handle this
-            version = Type::LIBDXFRW_DXF_R12; /// @todo not supported ?
-            break;
-        case DRW::AC1006:
-            version = Type::LIBDXFRW_DXF_R12;
-            break;
-        case DRW::AC1009:
-            version = Type::LIBDXFRW_DXB_R12; //This one is correct
-            break;
-        case DRW::AC1012:
-            version = Type::LIBDXFRW_DXF_R12;
-            break;
-        case DRW::AC1014:
-            version = Type::LIBDXFRW_DXB_R14;
-            break;
-        case DRW::AC1015:
-            version = Type::LIBDXFRW_DXF_R2000;
-            break;
-        case DRW::AC1018:
-            version = Type::LIBDXFRW_DXF_R2004;
-            break;
-        case DRW::AC1021:
-            version = Type::LIBDXFRW_DXF_R2007;
-            break;
-        case DRW::AC1024:
-            version = Type::LIBDXFRW_DXF_R2010;
-            break;
-        case DRW::AC1027:
-            version = Type::LIBDXFRW_DXF_R2013;
-            break;
-        default:
-            // A revision libdxfrw recognises but this mapping does not.  Keep
-            // the R12 fallback rather than reporting a type we never set.
-            break;
+        // The revision comes from the drawing's own $ACADVER, captured by
+        // DXFimpl::addHeader.  A file that carries none -- or that carries one
+        // no revision table knows -- falls back to R12, the only revision
+        // every reader accepts.
+        const auto& header = F.header();
+        bool recognised = false;
+        version = typeForAcadVersion(header.acadVersion, &recognised);
+
+        if (header.acadVersion.empty()) {
+            LOG_DEBUG << path << " carries no $ACADVER; recording R12";
+        } else if (!recognised) {
+            LOG_WARNING << "unsupported-version: " << path << " reports $ACADVER "
+                        << header.acadVersion << ", which this build does not know; "
+                        << "recording R12";
         }
+
         break;
     }
 

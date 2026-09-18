@@ -54,6 +54,22 @@ public:
      */
     static bool isBinaryType(Type type);
 
+    /**
+     * Map a drawing's $ACADVER string ("AC1015") to the variant LibreCAD
+     * records for it, which is also the format Save will reuse.
+     *
+     * Not every revision has a variant of its own: R13 (AC1012) and anything
+     * newer than R2013 are clamped to the nearest one libdxfrw can write.
+     * Clamping up is safe -- it only widens what a later save may emit -- so
+     * an unwritable revision is rounded up, and a revision newer than
+     * everything we can write is rounded down to the newest we have.
+     *
+     * An empty or unrecognised string yields the R12 fallback, which is the
+     * only revision every reader accepts, and sets *recognised to false.
+     */
+    static Type typeForAcadVersion(const std::string& acadVersion,
+                                   bool* recognised = nullptr);
+
     static std::map<Type, std::string> getAvailableFileTypes();
 
     static std::map<Library, std::string> getAvailableLibrariesForFormat(std::string format);

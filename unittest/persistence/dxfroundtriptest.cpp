@@ -703,3 +703,88 @@ TEST(DxfRoundTripTest, ModelSpaceNameIsCaseInsensitive) {
 
     boost::filesystem::remove(path);
 }
+
+// File::open used to take the revision from dxfRW::getVersion(), which is the
+// *text codec* bucket rather than the drawing's revision: it collapses R2004
+// onto R2000 and R2010/R2013 onto R2007, maps AC1009 and AC1014 onto binary
+// save targets, and -- because DRW_TextCodec's constructor defaults to AC1021
+// -- reports R2007 for a file with no header at all. 33 of the 43 files in the
+// review corpus were recorded as the wrong revision, 8 of them as a binary
+// target, and that recorded value is what Save reuses.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AcadVersionMapsToVariant) {
+    const struct {
+        const char* acadVersion;
+        lc::persistence::File::Type expected;
+        bool recognised;
+    } cases[] = {
+        {"AC1006", lc::persistence::File::LIBDXFRW_DXF_R12, true},
+        {"AC1009", lc::persistence::File::LIBDXFRW_DXF_R12, true},
+        {"AC1012", lc::persistence::File::LIBDXFRW_DXF_R14, true},   // R13 rounds up
+        {"AC1014", lc::persistence::File::LIBDXFRW_DXF_R14, true},
+        {"AC1015", lc::persistence::File::LIBDXFRW_DXF_R2000, true},
+        {"AC1018", lc::persistence::File::LIBDXFRW_DXF_R2004, true},
+        {"AC1021", lc::persistence::File::LIBDXFRW_DXF_R2007, true},
+        {"AC1024", lc::persistence::File::LIBDXFRW_DXF_R2010, true},
+        {"AC1027", lc::persistence::File::LIBDXFRW_DXF_R2013, true},
+        {"AC1032", lc::persistence::File::LIBDXFRW_DXF_R2013, true}, // R2018 rounds down
+        {"AC9999", lc::persistence::File::LIBDXFRW_DXF_R12, false},  // unsupported-version
+        {"", lc::persistence::File::LIBDXFRW_DXF_R12, false},        // no $ACADVER
+    };
+
+    for (const auto& c : cases) {
+        bool recognised = true;
+        EXPECT_EQ(lc::persistence::File::typeForAcadVersion(c.acadVersion, &recognised),
+                  c.expected) << "$ACADVER " << c.acadVersion;
+        EXPECT_EQ(recognised, c.recognised) << "$ACADVER " << c.acadVersion;
+        EXPECT_FALSE(lc::persistence::File::isBinaryType(
+            lc::persistence::File::typeForAcadVersion(c.acadVersion)))
+            << "Reading a file must never select a binary save target: " << c.acadVersion;
+    }
+}
+
+// The same mapping, reached the way the application reaches it: through a real
+// file.  This is what the empty addHeader override cost -- the revision was
+// there in the HEADER section the whole time and nothing read it.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, OpenRecordsTheDrawingsOwnRevision) {
+    const struct {
+        const char* acadVersion;   // nullptr = write no HEADER section at all
+        lc::persistence::File::Type expected;
+    } cases[] = {
+        {"AC1009", lc::persistence::File::LIBDXFRW_DXF_R12},
+        {"AC1015", lc::persistence::File::LIBDXFRW_DXF_R2000},
+        {"AC1018", lc::persistence::File::LIBDXFRW_DXF_R2004},
+        {"AC1024", lc::persistence::File::LIBDXFRW_DXF_R2010},
+        {"AC1027", lc::persistence::File::LIBDXFRW_DXF_R2013},
+        {nullptr, lc::persistence::File::LIBDXFRW_DXF_R12},
+    };
+
+    for (const auto& c : cases) {
+        const std::string path = uniqueTmpDxf(c.acadVersion ? c.acadVersion : "noheader");
+        boost::filesystem::remove(path);
+        {
+            std::ofstream dxf(path);
+            if (c.acadVersion != nullptr) {
+                dxf << "0\nSECTION\n2\nHEADER\n"
+                    << "9\n$ACADVER\n1\n" << c.acadVersion << "\n"
+                    << "9\n$INSUNITS\n70\n4\n"
+                    << "9\n$MEASUREMENT\n70\n1\n"
+                    << "0\nENDSEC\n";
+            }
+            dxf << "0\nSECTION\n2\nENTITIES\n"
+                << "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n1.0\n21\n1.0\n31\n0.0\n"
+                << "0\nENDSEC\n0\nEOF\n";
+        }
+
+        auto doc = newDocument();
+        EXPECT_EQ(lc::persistence::File::open(
+                      doc, path, lc::persistence::File::Library::LIBDXFRW),
+                  c.expected)
+            << "$ACADVER " << (c.acadVersion ? c.acadVersion : "(absent)");
+
+        boost::filesystem::remove(path);
+    }
+}

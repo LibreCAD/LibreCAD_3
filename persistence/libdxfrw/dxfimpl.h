@@ -36,6 +36,38 @@ static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 
 namespace lc {
 namespace persistence {
+
+/**
+ * The header variables LibreCAD reads from a drawing, captured in one pass by
+ * DXFimpl::addHeader.
+ *
+ * These live here rather than on the document because lckernel has no notion
+ * of a drawing header: it has no units, no extents and no global line-type
+ * scale.  Keeping them on the importer means the information survives the read
+ * -- File::open already uses acadVersion to decide the recorded variant -- and
+ * gives the phase 2 ImportResult something to carry instead of re-reading the
+ * file.
+ */
+struct DrawingHeader {
+    /** $ACADVER exactly as the drawing writes it; empty when it carries none. */
+    std::string acadVersion;
+
+    /** $INSUNITS as the raw DXF code, and as the kernel's enum. */
+    int insUnitsCode{0};
+    lc::Units units{lc::Units::None};
+
+    /** $MEASUREMENT: 0 = imperial (English), 1 = metric. */
+    int measurement{0};
+
+    /** $LTSCALE, the global line-type scale. */
+    double lineTypeScale{1.0};
+
+    /** $EXTMIN/$EXTMAX. Both are present or neither is. */
+    bool hasExtents{false};
+    lc::geo::Coordinate extMin;
+    lc::geo::Coordinate extMax;
+};
+
 class DXFimpl : public DRW_Interface {
 public:
 
@@ -44,7 +76,16 @@ public:
     DXFimpl(std::shared_ptr<lc::storage::Document> document) : _document(document) {}
 
     // READ FUNCTIONALITY
-    void addHeader(const DRW_Header* data) override {}
+    void addHeader(const DRW_Header* data) override;
+
+    /**
+     * What addHeader captured. Empty/defaulted when the drawing has no HEADER
+     * section, which is legal DXF and which three files in the review corpus
+     * do.
+     */
+    const DrawingHeader& header() const {
+        return _header;
+    }
 
     void addDimStyle(const DRW_Dimstyle& data) override {}
 
@@ -240,6 +281,7 @@ public:
     lc::operation::Builder_SPtr _builder;
     lc::operation::EntityBuilder_SPtr _entityBuilder;
     lc::meta::Block_SPtr _currentBlock;
+    DrawingHeader _header;
 
 private:
     /**

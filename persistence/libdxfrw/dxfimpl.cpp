@@ -85,6 +85,99 @@ inline int DXFimpl::widthToInt(double wid) const {
     return -1;
 }
 
+namespace {
+
+/**
+ * Read a header variable without consuming it.
+ *
+ * DRW_Header::getStr() and friends delete the variant and erase the entry, and
+ * they are non-const, so they cannot be used on the const header a callback is
+ * handed. Reading `vars` directly leaves the header intact for anyone else who
+ * looks at it. The '$'-less spelling is tried too, exactly as the library's own
+ * lookup does: DWG headers store the names without it.
+ */
+const DRW_Variant* headerVar(const DRW_Header& header, const std::string& key) {
+    auto it = header.vars.find(key);
+    if (it == header.vars.end()) {
+        it = header.vars.find(!key.empty() && key[0] == '$' ? key.substr(1) : "$" + key);
+    }
+    return it == header.vars.end() ? nullptr : it->second;
+}
+
+bool headerStr(const DRW_Header& header, const std::string& key, std::string& out) {
+    const DRW_Variant* var = headerVar(header, key);
+    if (var == nullptr || var->type() != DRW_Variant::STRING || var->content.s == nullptr) {
+        return false;
+    }
+    out = *var->content.s;
+    return true;
+}
+
+bool headerInt(const DRW_Header& header, const std::string& key, int& out) {
+    const DRW_Variant* var = headerVar(header, key);
+    if (var == nullptr || var->type() != DRW_Variant::INTEGER) {
+        return false;
+    }
+    out = var->content.i;
+    return true;
+}
+
+bool headerDouble(const DRW_Header& header, const std::string& key, double& out) {
+    const DRW_Variant* var = headerVar(header, key);
+    if (var == nullptr || var->type() != DRW_Variant::DOUBLE) {
+        return false;
+    }
+    out = var->content.d;
+    return true;
+}
+
+bool headerCoord(const DRW_Header& header, const std::string& key, DRW_Coord& out) {
+    const DRW_Variant* var = headerVar(header, key);
+    if (var == nullptr || var->type() != DRW_Variant::COORD || var->content.v == nullptr) {
+        return false;
+    }
+    out = *var->content.v;
+    return true;
+}
+
+}  // namespace
+
+// Until now this was an empty override, so everything the HEADER section says
+// about the drawing was discarded -- including the one thing File::open needed
+// to record the file's revision, which it was instead guessing from the text
+// codec.
+void DXFimpl::addHeader(const DRW_Header* data) {
+    LOG_TRACE << "addHeader";
+
+    if (data == nullptr) {
+        return;
+    }
+
+    headerStr(*data, "$ACADVER", _header.acadVersion);
+
+    if (headerInt(*data, "$INSUNITS", _header.insUnitsCode)) {
+        _header.units = numberToUnit(_header.insUnitsCode);
+    }
+
+    headerInt(*data, "$MEASUREMENT", _header.measurement);
+    headerDouble(*data, "$LTSCALE", _header.lineTypeScale);
+
+    // Extents are a pair or they are nothing: half a bounding box describes no
+    // region, and a consumer that trusted one half would read the other as the
+    // origin.
+    DRW_Coord extMin;
+    DRW_Coord extMax;
+    if (headerCoord(*data, "$EXTMIN", extMin) && headerCoord(*data, "$EXTMAX", extMax)) {
+        _header.extMin = coord(extMin);
+        _header.extMax = coord(extMax);
+        _header.hasExtents = true;
+    }
+
+    LOG_TRACE << "header $ACADVER=" << _header.acadVersion
+              << " $INSUNITS=" << _header.insUnitsCode
+              << " $MEASUREMENT=" << _header.measurement;
+}
+
 void DXFimpl::setBlock(const int handle) {
     LOG_TRACE << "setBlock " << handle;
 }
@@ -1449,10 +1542,11 @@ void DXFimpl::writeAppId() {
 // Emit a small viable set — the version tag matches whatever writeDXF
 // selected, the units default to Millimeter, measurement to Metric.
 void DXFimpl::writeHeader(DRW_Header& data) {
-    // $ACADVER identifies the DXF spec; libdxfrw's writer also writes it
-    // unconditionally, so this is belt-and-braces for readers that check the
-    // header variable rather than the file preamble.
-    data.addStr("$ACADVER", "AC1015", 1);
+    // No $ACADVER here. DRW_Header::write() emits it from the version the
+    // write is actually targeted at, and then consumes whatever we stored
+    // under that key and discards it (src/drw_header.cpp:134-167) -- so a
+    // value set here could never reach the file, and the "AC1015" that used to
+    // sit here could only mislead the next reader of this function.
     // Default to Metric with millimeter insertion units.  The document API
     // doesn't currently expose a unit-of-measure field for the whole
     // drawing, so hard-code the sensible default rather than the DXF
