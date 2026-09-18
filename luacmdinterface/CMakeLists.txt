@@ -21,7 +21,12 @@ else ()
 endif ()
 
 # Boost
-find_package(Boost COMPONENTS program_options filesystem system log date_time thread log_setup REQUIRED)
+# No "system" component: Boost.System has been header-only since Boost 1.69
+# and BoostConfig.cmake ships no boost_system component package, so asking
+# for it REQUIRED is a hard configure error on a modern Boost -- "Could not
+# find a package configuration file provided by boost_system". Everything
+# that needs it gets it through the components that depend on it.
+find_package(Boost COMPONENTS program_options filesystem log date_time thread log_setup REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})

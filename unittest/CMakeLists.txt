@@ -206,7 +206,8 @@ if(WITH_RENDERING_UNITTESTS)
 
     # Boost
     set(Boost_USE_MULTITHREADED ON)
-    find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
+    # See luacmdinterface/CMakeLists.txt: no "system" component.
+    find_package(Boost COMPONENTS program_options filesystem log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 
