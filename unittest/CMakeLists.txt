@@ -82,6 +82,7 @@ lckernel/primitive/testellipse.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
+lckernel/logger/loggertest.cpp
 )
 
 # Issue #412 phase 0 — verify the DXF exporter actually writes what the

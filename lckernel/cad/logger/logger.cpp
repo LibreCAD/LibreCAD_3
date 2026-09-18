@@ -32,28 +32,9 @@ namespace keywords = boost::log::keywords;
 //Making Supports to console,plain logs
 typedef sinks::synchronous_sink<sinks::text_ostream_backend> text_sink;
 
-template< typename CharT, typename TraitsT >
-inline std::basic_ostream< CharT, TraitsT >& operator<< (
-    std::basic_ostream< CharT, TraitsT >& strm, lc::log::SeverityLevel lvl) {
-    static const char* const str[] = {
-        "TRACE",
-        "DEBUG",
-        "INFO",
-        "WARNING",
-        "ERROR",
-    };
-
-    if (static_cast< std::size_t >(lvl) < (sizeof(str) / sizeof(*str))) {
-        strm << str[lvl];
-    } else {
-        strm << static_cast< int >(lvl);
-    }
-
-    return strm;
-}
-
 namespace lc {
 namespace log {
+
 Logger* Logger::Instance() {
     if (!instance) {
         instance = new Logger;
@@ -80,6 +61,9 @@ void Logger::enableFileSink() {
                          ]
                          << expr::format_named_scope("Scope", keywords::format = "%n", keywords::iteration = expr::reverse) << "]"
                          << expr::smessage);
+    //Everything from DEBUG up is recorded in full; per-record tracing is not.
+    pSink->set_filter(
+        expr::attr<SeverityLevel>("Severity").or_default(LOG_SEVERITY_INFO) > LOG_SEVERITY_TRACE);
 }
 void Logger::enableConsoleSink() {
     //Second sink.. brief ;; to file
