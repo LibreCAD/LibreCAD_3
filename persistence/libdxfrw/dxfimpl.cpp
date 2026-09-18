@@ -1266,6 +1266,38 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     dxfW->writeLayer(&lay);
 }
 
+/// The DXF revision a writable DXF/DXB target names, or UNKNOWNV for a target
+/// that is not one -- the same mapping writeDXF() applies, kept next to the one
+/// other place that needs it.
+static DRW::Version dxfRevisionForType(lc::persistence::File::Type type) {
+    switch (type) {
+    case lc::persistence::File::LIBDXFRW_DXF_R12:
+    case lc::persistence::File::LIBDXFRW_DXB_R12:
+        return DRW::AC1009;
+    case lc::persistence::File::LIBDXFRW_DXF_R14:
+    case lc::persistence::File::LIBDXFRW_DXB_R14:
+        return DRW::AC1014;
+    case lc::persistence::File::LIBDXFRW_DXF_R2000:
+    case lc::persistence::File::LIBDXFRW_DXB_R2000:
+        return DRW::AC1015;
+    case lc::persistence::File::LIBDXFRW_DXF_R2004:
+    case lc::persistence::File::LIBDXFRW_DXB_R2004:
+        return DRW::AC1018;
+    case lc::persistence::File::LIBDXFRW_DXF_R2007:
+    case lc::persistence::File::LIBDXFRW_DXB_R2007:
+        return DRW::AC1021;
+    case lc::persistence::File::LIBDXFRW_DXF_R2010:
+    case lc::persistence::File::LIBDXFRW_DXB_R2010:
+        return DRW::AC1024;
+    case lc::persistence::File::LIBDXFRW_DXF_R2013:
+    case lc::persistence::File::LIBDXFRW_DXB_R2013:
+        return DRW::AC1027;
+    case lc::persistence::File::LIBOPENCAD_DWG:
+        return DRW::UNKNOWNV;
+    }
+    return DRW::UNKNOWNV;
+}
+
 void DXFimpl::attachPreservedRecords() {
     if (_preserved.empty() && _preserved.classes.empty()) {
         return;
@@ -1276,10 +1308,23 @@ void DXFimpl::attachPreservedRecords() {
     // The revision comes from the records themselves: libdxfrw stamps each one
     // with the version it was captured from, which is the only revision it can
     // safely be replayed into.
+    // Every kind is asked, not just objects and sections: libdxfrw stamps raw
+    // entities too, and a capture can be made of nothing else. Leaving those
+    // out left the version at UNKNOWNV, which matches no export target, so the
+    // replay was skipped even for a save straight back into the revision the
+    // file was read as -- the records were dropped and the drop was reported.
     for (const auto& object : preserved->objects) {
         if (object.m_version != DRW::UNKNOWNV) {
             preserved->version = object.m_version;
             break;
+        }
+    }
+    if (preserved->version == DRW::UNKNOWNV) {
+        for (const auto& entity : preserved->entities) {
+            if (entity.m_version != DRW::UNKNOWNV) {
+                preserved->version = entity.m_version;
+                break;
+            }
         }
     }
     if (preserved->version == DRW::UNKNOWNV) {
@@ -1288,6 +1333,17 @@ void DXFimpl::attachPreservedRecords() {
                 preserved->version = section.m_version;
                 break;
             }
+        }
+    }
+    // Nothing carried one -- a classes-only capture, or a build of libdxfrw
+    // that does not stamp them. The revision the header stated is the next best
+    // answer, and it is the revision the file was read as.
+    if (preserved->version == DRW::UNKNOWNV && !_header.acadVersion.empty()) {
+        bool recognised = false;
+        const lc::persistence::File::Type headerType =
+            lc::persistence::File::typeForAcadVersion(_header.acadVersion, &recognised);
+        if (recognised) {
+            preserved->version = dxfRevisionForType(headerType);
         }
     }
     _document->addDocumentMetaType(preserved);
@@ -2406,6 +2462,25 @@ void DXFimpl::writeEntities() {
         }
 
         writeEntity(e);
+    }
+
+    // The ENTITIES-section records LibreCAD has no model for, put back verbatim
+    // after the entities it does model -- the same thing writeObjects() does for
+    // the OBJECTS section. Without this they were captured on read, counted in
+    // PreservedRecords::total() and had their handles reserved so the typed
+    // writers would not reuse them, and were then silently absent from the
+    // file: the write behaved as though they were being re-emitted while
+    // dropping them. GEOPOSITIONMARKER, SECTIONOBJECT, ACAD_PROXY_ENTITY and
+    // every other unmodelled 0-record in ENTITIES arrives here.
+    if (_replay != nullptr) {
+        for (const auto& entity : _replay->entities) {
+            DRW_RawDxfObject copy = entity;
+            if (!dxfW->writeRawDxfObject(&copy)) {
+                LOG_ERROR << "libdxfrw refused to re-emit a preserved "
+                          << entity.name << " record";
+                return;
+            }
+        }
     }
 }
 

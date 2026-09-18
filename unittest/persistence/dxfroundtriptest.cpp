@@ -1902,6 +1902,49 @@ std::map<std::string, std::size_t> handlesInFile(const std::string& path) {
 // libdxfrw hands them over verbatim and takes them back; nothing was asking.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+// The ENTITIES half of the same promise. These are a separate code path from
+// the OBJECTS records above -- they arrive through addRawDxfEntity and are
+// replayed from writeEntities() -- and they were dropped silently while their
+// handles were still being reserved, so the write looked like it was putting
+// them back.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
+    const std::string source = fixture("raw_entities.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+
+    const auto before = recordsInSection(source, "ENTITIES");
+    ASSERT_EQ(before.at("GEOPOSITIONMARKER"), 1u) << "the fixture changed";
+    ASSERT_EQ(before.at("LINE"), 1u) << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("raw-entities");
+    boost::filesystem::remove(saved);
+    const auto written = lc::persistence::File::exportFile(doc, saved, type);
+    ASSERT_TRUE(written.ok);
+    ASSERT_TRUE(boost::filesystem::exists(saved));
+
+    auto after = recordsInSection(saved, "ENTITIES");
+    EXPECT_EQ(after["GEOPOSITIONMARKER"], 1u)
+        << "An ENTITIES record LibreCAD does not model was destroyed by a save.";
+    EXPECT_EQ(after["LINE"], 1u) << "The modelled entity must still be there too.";
+
+    // Same invariant the OBJECTS case pins: a preserved handle re-emitted beside
+    // freshly minted ones must not collide.
+    for (const auto& handle : handlesInFile(saved)) {
+        EXPECT_EQ(handle.second, 1u) << "handle " << handle.first << " is used twice";
+    }
+
+    boost::filesystem::remove(saved);
+}
+
 TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
     const std::string source = fixture("raw_objects.dxf");
     ASSERT_TRUE(boost::filesystem::exists(source));
