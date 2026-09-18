@@ -30,6 +30,20 @@ option(WITH_DOCUMENTATION "Build documentation" OFF)
 
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
+# USE_PERSISTENCE has to be defined here, before any add_subdirectory().
+#
+# The Lua and Python bridges register lc.persistence behind `#if
+# USE_PERSISTENCE`, and both are configured (lines ~279 and ~283) long before
+# the persistence subdirectory is. Defining it down there meant the bridges
+# compiled with it undefined, `#if USE_PERSISTENCE` was 0, and neither language
+# ever had lc.persistence -- while still compiling the bridge and linking the
+# library, so nothing looked wrong.
+if(WITH_PERSISTENCE)
+    add_definitions(-DUSE_PERSISTENCE=1)
+else()
+    add_definitions(-DUSE_PERSISTENCE=0)
+endif()
+
 # Define compiler warnings
 if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
@@ -334,9 +348,6 @@ if(WITH_PERSISTENCE)
     endif()
     add_library(libdxfrw::libdxfrw ALIAS dxfrw)
     add_subdirectory("persistence")
-    add_definitions(-DUSE_PERSISTENCE=1)
-else()
-    add_definitions(-DUSE_PERSISTENCE=0)
 endif()
 
 add_subdirectory("lcviewernoqt")
