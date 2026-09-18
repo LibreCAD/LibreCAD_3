@@ -239,7 +239,13 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             it2++;
         }
 
-        _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(pluginName, entityName, base, params);
+        // Under the drawing's own block name: the INSERTs that place this
+        // custom entity reference it by that name, and CustomEntityStorage's
+        // other constructor invents one, so every such INSERT used to end up
+        // pointing at a block nothing defined -- which is why no plugin was
+        // ever asked to rebuild a custom entity read back from a file.
+        _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(
+            data.name, pluginName, entityName, base, params);
     }
 
     if(_currentBlock == nullptr) {
