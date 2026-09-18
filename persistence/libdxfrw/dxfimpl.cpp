@@ -449,11 +449,11 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
 }
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
-    LOG_WARNING << "addDimAngular3P";
+    LOG_WARNING << "Dropping DIMENSION (3-point angular): no kernel entity for it";
 }
 
 void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
-    LOG_WARNING << "addOrdinate";
+    LOG_WARNING << "Dropping DIMENSION (ordinate): no kernel entity for it";
 }
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
@@ -704,11 +704,32 @@ lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {
         block = _currentBlock;
     }
     if(block) {
-        if(block->name()==DEFAULT_VIEWPORT) {
+        // DXF symbol-table names are case-insensitive, and writers disagree:
+        // AutoCAD writes *Model_Space, ODA's converter writes *MODEL_SPACE for
+        // R13 and R14. An exact comparison treated those files' model space as
+        // an ordinary named block, so every model-space entity landed inside a
+        // block and the drawing opened empty.
+        if(isModelSpaceName(block->name())) {
             return nullptr;
         }
+
+        // Paper space is deliberately left alone. LibreCAD 3 has no layout
+        // concept, so *Paper_Space stays an ordinary block: its entities are
+        // preserved and reachable, but they do not join the model-space
+        // drawing, where they would overlay it at layout coordinates. When
+        // layouts arrive, this is the place that decides.
     }
     return block;
+}
+
+bool DXFimpl::isModelSpaceName(const std::string& name) {
+    static const std::string modelSpace = DEFAULT_VIEWPORT;
+    return name.size() == modelSpace.size()
+           && std::equal(name.begin(), name.end(), modelSpace.begin(),
+                         [](char a, char b) {
+                             return std::tolower(static_cast<unsigned char>(a))
+                                    == std::tolower(static_cast<unsigned char>(b));
+                         });
 }
 
 lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {

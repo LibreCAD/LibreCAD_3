@@ -254,6 +254,12 @@ private:
 
     lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;
 
+    /**
+     * DXF symbol-table names are case-insensitive; writers spell model space
+     * both *Model_Space and *MODEL_SPACE.
+     */
+    static bool isModelSpaceName(const std::string& name);
+
     // this function adds layer too if not found: issue with some files
     lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data) const;
 

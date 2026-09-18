@@ -647,3 +647,59 @@ TEST(DxfRoundTripTest, ThreeDimensionalSegmentSurvivesRoundTrip) {
 
     boost::filesystem::remove(path);
 }
+
+// DXF symbol-table names are case-insensitive, and writers disagree on how to
+// spell model space: AutoCAD writes `*Model_Space`, ODA's File Converter
+// writes `*MODEL_SPACE` for R13 and R14.  `DXFimpl::getBlock` compared the
+// block name to `DEFAULT_VIEWPORT` exactly, so with the uppercase spelling
+// model space was treated as an ordinary named block: every entity in the
+// drawing was filed inside that block and the document's own container came
+// back empty.  The two ODA sample files in the review corpus opened with 0
+// entities for exactly this reason.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ModelSpaceNameIsCaseInsensitive) {
+    const std::string path = uniqueTmpDxf("modelspace-case");
+    boost::filesystem::remove(path);
+
+    // Model space spelled the way ODA spells it, plus a genuinely named block:
+    // the LINE must land in the document, the CIRCLE must stay in NOTSPACE.
+    {
+        std::ofstream dxf(path);
+        dxf << "0\nSECTION\n2\nBLOCKS\n"
+            << "0\nBLOCK\n8\n0\n2\n*MODEL_SPACE\n70\n0\n"
+            << "10\n0.0\n20\n0.0\n30\n0.0\n3\n*MODEL_SPACE\n1\n\n"
+            << "0\nLINE\n8\n0\n10\n1.0\n20\n2.0\n30\n0.0\n11\n7.0\n21\n11.0\n31\n0.0\n"
+            << "0\nENDBLK\n8\n0\n"
+            << "0\nBLOCK\n8\n0\n2\nNOTSPACE\n70\n0\n"
+            << "10\n0.0\n20\n0.0\n30\n0.0\n3\nNOTSPACE\n1\n\n"
+            << "0\nCIRCLE\n8\n0\n10\n5.0\n20\n5.0\n30\n0.0\n40\n3.0\n"
+            << "0\nENDBLK\n8\n0\n"
+            << "0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    bool foundLine = false;
+    bool foundCircle = false;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+            foundLine = true;
+            EXPECT_EQ(entity->block(), nullptr)
+                << "A *MODEL_SPACE entity belongs to the drawing, not to a block.";
+        }
+        if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
+            foundCircle = true;
+        }
+    }
+
+    EXPECT_TRUE(foundLine)
+        << "The entity inside *MODEL_SPACE must reach the document container.";
+    EXPECT_FALSE(foundCircle)
+        << "An entity inside a named block must stay in that block.";
+
+    boost::filesystem::remove(path);
+}
