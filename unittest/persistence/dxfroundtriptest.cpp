@@ -1259,9 +1259,12 @@ TEST(DxfRoundTripTest, AbsoluteImportOracle) {
          {{"LINE", 2}, {"CIRCLE", 1}, {"ARC", 1}, {"LWPOLYLINE", 1}, {"TEXT", 1},
           {"POINT", 1}, {"ELLIPSE", 1}, {"SOLID", 1}, {"3DFACE", 1}, {"RAY", 1},
           {"XLINE", 1}},
+         // A SOLID is a filled quadrilateral, and arrives as the solid-filled
+         // Hatch that draws the same thing. 3DFACE, RAY and XLINE have no
+         // LibreCAD equivalent at all and are still counted as losses.
          {{"Line", 2}, {"Circle", 1}, {"Arc", 1}, {"LWPolyline", 1}, {"Text", 1},
-          {"Point", 1}, {"Ellipse", 1}},
-         {{"SOLID", 1}, {"3DFACE", 1}, {"RAY", 1}, {"XLINE", 1}}},
+          {"Point", 1}, {"Ellipse", 1}, {"Hatch", 1}},
+         {{"3DFACE", 1}, {"RAY", 1}, {"XLINE", 1}}},
         {"oracle_r12.dxf",
          lc::persistence::File::LIBDXFRW_DXF_R12,
          {{"LINE", 1}, {"CIRCLE", 1}, {"TEXT", 1}, {"POLYLINE", 1}},
@@ -1369,13 +1372,15 @@ TEST(DxfRoundTripTest, ImportResultDescribesACleanRead) {
     EXPECT_FALSE(result.partial) << "A clean read is not a partial one.";
     EXPECT_EQ(result.variantId, "dxf.ac1015.ascii");
     EXPECT_EQ(result.sourceVersionTag, "AC1015") << "The file's own $ACADVER, not a guess at it.";
-    EXPECT_EQ(result.entitiesDelivered, 8u);
+    EXPECT_EQ(result.entitiesDelivered, 9u);
     EXPECT_TRUE(result.diagnostics.empty()) << "Nothing went wrong; nothing should be reported.";
 
-    // The kinds LibreCAD has no entity for are counted rather than dropped in
-    // silence.
-    EXPECT_EQ(result.loss.total(), 4u);
+    // The kinds LibreCAD has no entity for -- 3DFACE, RAY, XLINE -- are counted
+    // rather than dropped in silence. The fixture's SOLID is not among them: it
+    // arrives as the solid Hatch that draws the same thing.
+    EXPECT_EQ(result.loss.total(), 3u);
     EXPECT_FALSE(result.loss.empty());
+    EXPECT_EQ(result.loss.droppedByType.count("SOLID"), 0u);
 }
 
 // A failed read is not an empty one. libdxfrw stops where it fails and
@@ -2018,5 +2023,182 @@ TEST(DxfRoundTripTest, UnmodelledRecordsAreNotForcedIntoAnotherRevision) {
         }
 
         boost::filesystem::remove(path);
+    }
+}
+
+// A SOLID is a filled triangle or quadrilateral, and LibreCAD had no entity for
+// one: 33 of them in a single corpus file, dropped. It has a solid-filled
+// Hatch, which draws the same thing.
+//
+// The corner order is the part worth a test. DXF numbers a SOLID's points 10,
+// 11, 12, 13 in a bow-tie, so the boundary runs first, second, fourth, third.
+// Taking them in numeric order yields a crossed quadrilateral -- still four
+// edges, still one loop, still every count a census would check, and visibly
+// wrong on screen.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, SolidArrivesAsTheShapeItDraws) {
+    const std::string path = uniqueTmpDxf("solid");
+    boost::filesystem::remove(path);
+    {
+        // A unit square: (0,0) (10,0) as the first edge, then (0,10) (10,10) in
+        // DXF's third/fourth slots.
+        std::ofstream dxf(path);
+        dxf << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nSOLID\n8\n0\n"
+            << "10\n0.0\n20\n0.0\n30\n0.0\n"
+            << "11\n10.0\n21\n0.0\n31\n0.0\n"
+            << "12\n0.0\n22\n10.0\n32\n0.0\n"
+            << "13\n10.0\n23\n10.0\n33\n0.0\n"
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, path, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+    EXPECT_EQ(result.loss.droppedByType.count("SOLID"), 0u) << "The SOLID was dropped again.";
+
+    lc::entity::Hatch_CSPtr hatch;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto found = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+            hatch = found;
+        }
+    }
+    ASSERT_NE(hatch, nullptr) << "A SOLID must arrive as something drawable.";
+    EXPECT_TRUE(hatch->isSolid());
+    ASSERT_EQ(hatch->getRegion().loopList().size(), 1u);
+
+    const auto& edges = hatch->getRegion().loopList().front().entities();
+    ASSERT_EQ(edges.size(), 4u);
+
+    // first -> second -> fourth -> third -> first, which is the square. In
+    // numeric order it would be first -> second -> third -> fourth, whose
+    // second edge runs diagonally from (10,0) to (0,10).
+    const lc::geo::Coordinate expected[4][2] = {
+        {{0.0, 0.0}, {10.0, 0.0}},
+        {{10.0, 0.0}, {10.0, 10.0}},
+        {{10.0, 10.0}, {0.0, 10.0}},
+        {{0.0, 10.0}, {0.0, 0.0}},
+    };
+
+    for (std::size_t i = 0; i < 4; i++) {
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(edges[i]);
+        ASSERT_NE(line, nullptr) << "edge " << i;
+        EXPECT_DOUBLE_EQ(line->start().x(), expected[i][0].x()) << "edge " << i;
+        EXPECT_DOUBLE_EQ(line->start().y(), expected[i][0].y()) << "edge " << i;
+        EXPECT_DOUBLE_EQ(line->end().x(), expected[i][1].x()) << "edge " << i;
+        EXPECT_DOUBLE_EQ(line->end().y(), expected[i][1].y()) << "edge " << i;
+    }
+
+    boost::filesystem::remove(path);
+}
+
+// A triangular SOLID repeats its last corner, which would otherwise become a
+// zero-length edge and a degenerate boundary.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TriangularSolidLosesItsRepeatedCorner) {
+    const std::string path = uniqueTmpDxf("solid-triangle");
+    boost::filesystem::remove(path);
+    {
+        std::ofstream dxf(path);
+        dxf << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nSOLID\n8\n0\n"
+            << "10\n0.0\n20\n0.0\n30\n0.0\n"
+            << "11\n10.0\n21\n0.0\n31\n0.0\n"
+            << "12\n5.0\n22\n8.0\n32\n0.0\n"
+            << "13\n5.0\n23\n8.0\n33\n0.0\n"
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(
+        doc, path, lc::persistence::File::Library::LIBDXFRW).ok);
+
+    lc::entity::Hatch_CSPtr hatch;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto found = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) {
+            hatch = found;
+        }
+    }
+    ASSERT_NE(hatch, nullptr);
+    ASSERT_EQ(hatch->getRegion().loopList().size(), 1u);
+    EXPECT_EQ(hatch->getRegion().loopList().front().entities().size(), 3u)
+        << "A triangle has three edges, not four with one of zero length.";
+
+    boost::filesystem::remove(path);
+}
+
+// A drawing's units are a property of the drawing, and lckernel has nowhere to
+// keep them: no units, no measurement system, no global line-type scale. So a
+// drawing in inches was read, written back as millimetres, and silently
+// rescaled for whoever opened it next -- with nothing on screen to say
+// LibreCAD had done it.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
+    const struct {
+        int insUnits;
+        int measurement;
+        const char* what;
+    } cases[] = {
+        {1, 0, "inches, imperial"},
+        {4, 1, "millimetres, metric"},
+        {6, 1, "metres, metric"},
+    };
+
+    for (const auto& c : cases) {
+        const std::string source = uniqueTmpDxf(c.what);
+        const std::string resaved = uniqueTmpDxf((std::string(c.what) + "-again").c_str());
+        boost::filesystem::remove(source);
+        boost::filesystem::remove(resaved);
+
+        {
+            std::ofstream dxf(source);
+            dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n"
+                << "9\n$INSUNITS\n70\n" << c.insUnits << "\n"
+                << "9\n$MEASUREMENT\n70\n" << c.measurement << "\n"
+                << "0\nENDSEC\n"
+                << "0\nSECTION\n2\nENTITIES\n"
+                << "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n1.0\n21\n1.0\n31\n0.0\n"
+                << "0\nENDSEC\n0\nEOF\n";
+        }
+
+        auto doc = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(
+            doc, source, lc::persistence::File::Library::LIBDXFRW).ok) << c.what;
+        ASSERT_TRUE(lc::persistence::File::save(
+            doc, resaved, lc::persistence::File::LIBDXFRW_DXF_R2000)) << c.what;
+
+        // Read the header back out of the file rather than through the
+        // importer, so this cannot pass by agreeing with itself.
+        std::ifstream written(resaved);
+        std::string code;
+        std::string value;
+        std::string pending;
+        int insUnits = -1;
+        int measurement = -1;
+        while (std::getline(written, code) && std::getline(written, value)) {
+            while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+                value.pop_back();
+            }
+            const auto trimmed = code.find_first_not_of(" \t");
+            const std::string groupCode = trimmed == std::string::npos ? code : code.substr(trimmed);
+
+            if (groupCode == "9") {
+                pending = value;
+            } else if (groupCode == "70" && pending == "$INSUNITS") {
+                insUnits = std::stoi(value);
+            } else if (groupCode == "70" && pending == "$MEASUREMENT") {
+                measurement = std::stoi(value);
+            }
+        }
+
+        EXPECT_EQ(insUnits, c.insUnits) << c.what << ": the drawing was rescaled by saving it";
+        EXPECT_EQ(measurement, c.measurement) << c.what;
+
+        boost::filesystem::remove(source);
+        boost::filesystem::remove(resaved);
     }
 }

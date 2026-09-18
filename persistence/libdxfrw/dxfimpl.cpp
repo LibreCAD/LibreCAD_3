@@ -296,6 +296,68 @@ void DXFimpl::endBlock() {
     _currentBlock = nullptr;
 }
 
+void DXFimpl::addSolid(const DRW_Solid& data) {
+    guarded("SOLID", &data, [&] {
+        LOG_TRACE << "addSolid";
+
+        // A SOLID is a filled triangle or quadrilateral. LibreCAD has no filled
+        // polygon, but it has a solid-filled Hatch, which draws the same thing
+        // -- so a record that used to be counted and dropped now arrives as
+        // what it depicts.
+        //
+        // The corner order is the part worth getting right: DXF numbers a
+        // SOLID's points 10, 11, 12, 13 in a bow-tie, so the boundary runs
+        // first -> second -> fourth -> third. Taking them in numeric order
+        // draws a crossed quadrilateral instead of the filled one.
+        const auto first = coord(data.basePoint);
+        const auto second = coord(data.secPoint);
+        const auto third = coord(data.thirdPoint);
+        const auto fourth = coord(data.fourPoint);
+
+        std::vector<lc::geo::Coordinate> corners{first, second, fourth, third};
+
+        // A triangular SOLID repeats its last corner; a zero-length edge would
+        // make a degenerate boundary, so collapse the repeat instead.
+        if (third.x() == fourth.x() && third.y() == fourth.y() && third.z() == fourth.z()) {
+            corners.pop_back();
+        }
+
+        auto layer = getLayer(data);
+        std::vector<lc::entity::CADEntity_CSPtr> boundary;
+        for (std::size_t i = 0; i < corners.size(); i++) {
+            const auto& from = corners[i];
+            const auto& to = corners[(i + 1) % corners.size()];
+            if (from.x() == to.x() && from.y() == to.y() && from.z() == to.z()) {
+                continue;  // a degenerate edge is no edge
+            }
+
+            lc::builder::LineBuilder edge;
+            edge.setStart(from);
+            edge.setEnd(to);
+            edge.setLayer(layer);
+            boundary.push_back(edge.build());
+        }
+
+        if (boundary.size() < 3) {
+            LOG_WARNING << "Skipping SOLID with fewer than three distinct corners";
+            recordLoss("SOLID");
+            return;
+        }
+
+        lc::geo::Region region;
+        region.addLoop(lc::geo::Loop(boundary));
+
+        auto hatch = std::make_shared<lc::entity::Hatch>(layer, getMetaInfo(data), getBlock(data));
+        hatch->setPatternName("SOLID");
+        hatch->setSolid(true);
+        hatch->setAngle(0.0);
+        hatch->setScale(1.0);
+        hatch->setRegion(region);
+
+        deliver(hatch);
+    });
+}
+
 void DXFimpl::addLine(const DRW_Line& data) {
     guarded("LINE", &data, [&] {
         LOG_TRACE << "addLine";
@@ -1299,11 +1361,19 @@ static DRW::Version dxfRevisionForType(lc::persistence::File::Type type) {
 }
 
 void DXFimpl::attachPreservedRecords() {
-    if (_preserved.empty() && _preserved.classes.empty()) {
+    // The header travels even when there is nothing else to carry: a drawing's
+    // units are worth keeping on their own.
+    const bool hasHeader = !_header.acadVersion.empty() || _header.insUnitsCode != 0
+                           || _header.measurement != 0;
+    if (_preserved.empty() && _preserved.classes.empty() && !hasHeader) {
         return;
     }
 
     auto preserved = std::make_shared<PreservedRecords>(_preserved);
+    preserved->hasHeader = hasHeader;
+    preserved->insUnitsCode = _header.insUnitsCode;
+    preserved->measurement = _header.measurement;
+    preserved->lineTypeScale = _header.lineTypeScale;
 
     // The revision comes from the records themselves: libdxfrw stamps each one
     // with the version it was captured from, which is the only revision it can
@@ -1422,6 +1492,14 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     // re-emitting it there would produce a file that claims to be R12 and is
     // not -- so a down-convert drops them, and says how many.
     _replay = preservedOn(_document);
+    if (_replay != nullptr && _replay->total() == 0) {
+        // Carries only the header, which is revision independent and handled by
+        // writeHeader. Nothing to replay, and nothing to report as unreplayed:
+        // a zero-count entry in the loss summary is still a loss to every
+        // caller that checks whether the summary is empty.
+        _replay = nullptr;
+    }
+
     if (_replay != nullptr) {
         // Replay is only attempted where it is known to be faithful.
         //
@@ -1957,6 +2035,20 @@ void DXFimpl::writeAppId() {
 // Emit a small viable set — the version tag matches whatever writeDXF
 // selected, the units default to Millimeter, measurement to Metric.
 void DXFimpl::writeHeader(DRW_Header& data) {
+    // Put back what the drawing said, if it said anything. lckernel has nowhere
+    // to keep units, so without this a drawing in inches is read and written
+    // back as millimetres -- and the next person to open it sees it rescaled,
+    // with nothing to indicate that LibreCAD did it.
+    const auto preserved = preservedOn(_document);
+    if (preserved != nullptr && preserved->hasHeader) {
+        data.addInt("$MEASUREMENT", preserved->measurement, 70);
+        data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+        if (preserved->lineTypeScale > 0.0) {
+            data.addDouble("$LTSCALE", preserved->lineTypeScale, 40);
+        }
+        return;
+    }
+
     // No $ACADVER here. DRW_Header::write() emits it from the version the
     // write is actually targeted at, and then consumes whatever we stored
     // under that key and discards it (src/drw_header.cpp:134-167) -- so a

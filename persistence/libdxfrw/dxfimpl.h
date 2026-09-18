@@ -110,11 +110,18 @@ public:
         return _header;
     }
 
-    void addDimStyle(const DRW_Dimstyle& data) override {}
+    void addDimStyle(const DRW_Dimstyle& data) override {
+        recordLoss("DIMSTYLE");
+    }
 
     void addVport(const DRW_Vport& data) override;
 
-    void addTextStyle(const DRW_Textstyle& data) override {}
+    // LibreCAD has no text style or dimension style model: a drawing's fonts
+    // and dimension appearance are not represented anywhere it could put them.
+    // Counting is what is honest until it does.
+    void addTextStyle(const DRW_Textstyle& data) override {
+        recordLoss("STYLE");
+    }
 
     void addAppId(const DRW_AppId& data) override {}
 
@@ -138,9 +145,7 @@ public:
         recordLoss("3DFACE");
     }
 
-    void addSolid(const DRW_Solid& data) override {
-        recordLoss("SOLID");
-    }
+    void addSolid(const DRW_Solid& data) override;
 
     void addLeader(const DRW_Leader* data) override {
         recordLoss("LEADER");

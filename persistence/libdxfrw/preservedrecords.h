@@ -68,6 +68,21 @@ public:
     std::vector<DRW_Class> classes;
 
     /**
+     * Header variables the drawing set and LibreCAD cannot otherwise remember.
+     *
+     * lckernel has no units, no global line-type scale and no measurement
+     * system, so a drawing in inches was read, written back as millimetres and
+     * silently rescaled by whoever opened it next. These travel with the
+     * document for the same reason the records above do, and unlike them they
+     * are revision independent -- a drawing's units do not change because it is
+     * saved as an older DXF.
+     */
+    bool hasHeader{false};
+    int insUnitsCode{0};
+    int measurement{0};
+    double lineTypeScale{1.0};
+
+    /**
      * The revision these came from.
      *
      * Replay is only safe into the same revision: a record valid in R2013 has
