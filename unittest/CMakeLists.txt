@@ -102,6 +102,7 @@ lckernel/logger/loggertest.cpp
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
     list(APPEND src persistence/dxfroundtriptest.cpp)
+    list(APPEND src persistence/formattest.cpp)
     set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
     # The read tests that need a real file on disk find it here.  Most cases
     # build their input in code -- a file that only restates three fit points
