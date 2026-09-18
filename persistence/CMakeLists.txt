@@ -9,6 +9,7 @@ message("***** LibreCAD persistence *****")
 set(persistence_srcs
         file.cpp
         format.cpp
+        documentsource.cpp
 	patternLoader/patternProvider.cpp
         libdxfrw/dxfimpl.cpp
         libdxfrw/apipins.cpp
@@ -18,6 +19,7 @@ set(persistence_srcs
 set(persistence_hdrs
         file.h
         format.h
+        documentsource.h
 	patternLoader/patternProvider.h
         libdxfrw/dxfimpl.h
         generic/helpers.h
