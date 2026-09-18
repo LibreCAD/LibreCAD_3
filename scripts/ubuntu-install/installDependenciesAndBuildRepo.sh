@@ -47,7 +47,7 @@ make -j 4
 # green. CORE_SUITES is every suite in the files always built regardless of
 # WITH_QT_UI/WITH_PYTHONSCRIPT; it blocks. Everything else still runs, for
 # visibility, guarded by `|| echo` so it can't take the build down.
-CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DocumentSourceTest.*:DxfExportTest.*:DxfRoundTripTest.*:EIGEN.*:EntityBuilderTest.*:FormatTest.*:IntersectTest.*:LayerOps.*:LoggerTest.*:MathTest.*:Maths.*:Matrix.*:QM.*:SPLINE.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
+CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DocumentSourceTest.*:DxfExportTest.*:DxfRoundTripTest.*:EIGEN.*:EntityBuilderTest.*:FormatTest.*:IntersectTest.*:LayerOps.*:LoggerTest.*:LuaFixture.*:MathTest.*:Maths.*:Matrix.*:QM.*:SPLINE.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
 
 if [ -x ./bin/lcunittest ]; then
     echo "running lcunittest (core suites — blocking)"

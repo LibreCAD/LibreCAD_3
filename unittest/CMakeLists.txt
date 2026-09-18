@@ -137,6 +137,10 @@ if(WITH_PYTHONSCRIPT)
         # 5.5 that Homebrew defaults to — see the GC-constant mapping in the
         # top-level CMakeLists.txt.
         scripting/customentitymanager_test.cpp
+        # Lua-side parity for the persistence result types (phase 2
+        # bind-new-persistence-api). Same requirements: lcluascript, kaguya
+        # and a real Lua runtime.
+        scripting/luapersistence_test.cpp
         )
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
