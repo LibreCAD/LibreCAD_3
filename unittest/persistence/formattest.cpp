@@ -13,11 +13,13 @@
 // out of lcunittest, kaguya scripting tests included.
 
 #include <map>
+#include <set>
 #include <string>
 
 #include <gtest/gtest.h>
 
 #include "persistence/file.h"
+#include "persistence/format.h"
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(FormatTest, AdvertisedFileTypesAreUnchanged) {
@@ -115,4 +117,83 @@ TEST(FormatTest, TypePredicatesAreUnchanged) {
     // The enumerator values themselves are persisted in settings and scripts.
     EXPECT_EQ(static_cast<int>(lc::persistence::File::LIBDXFRW_DXF_R12), 0);
     EXPECT_EQ(static_cast<int>(lc::persistence::File::LIBOPENCAD_DWG), 14);
+}
+
+// The table behind those helpers, checked for the properties the helpers rely
+// on rather than for its contents: a duplicate id would make
+// formatVariantById() answer with whichever came first, and a writable variant
+// with no extension or no library is a Save target nothing can carry out.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(FormatTest, VariantTableIsWellFormed) {
+    std::set<std::string> ids;
+    std::set<std::string> knownFormats;
+    for (const auto& format : lc::persistence::formats()) {
+        EXPECT_FALSE(format.id.empty());
+        EXPECT_FALSE(format.label.empty());
+        knownFormats.insert(format.id);
+    }
+
+    for (const auto& variant : lc::persistence::formatVariants()) {
+        EXPECT_FALSE(variant.id.empty());
+        EXPECT_TRUE(ids.insert(variant.id).second) << variant.id << " is in the table twice.";
+        EXPECT_EQ(lc::persistence::formatVariantById(variant.id), &variant) << variant.id;
+        EXPECT_EQ(knownFormats.count(variant.formatId), 1u)
+            << variant.id << " belongs to a format nothing lists.";
+        EXPECT_FALSE(variant.label.empty()) << variant.id;
+
+        if (variant.writable) {
+            EXPECT_FALSE(variant.extension.empty()) << variant.id << " can be saved to nothing.";
+            EXPECT_FALSE(variant.libraryId.empty()) << variant.id << " has no writer.";
+            EXPECT_TRUE(variant.readable) << variant.id << " could be written but never reopened.";
+        }
+        if (!variant.versionTag.empty()) {
+            EXPECT_EQ(variant.versionTag.substr(0, 2), "AC") << variant.id;
+        }
+    }
+
+    EXPECT_EQ(lc::persistence::formatVariantById("dxf.nope"), nullptr);
+    EXPECT_EQ(lc::persistence::formatVariantById(""), nullptr);
+}
+
+// File::Type is a wire value that scripts and saved settings hold; the variant
+// id is what everything above persistence should hold instead. The two must
+// agree in both directions, or the next layer up gets a different answer
+// depending on which one it asked with.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(FormatTest, EveryTypeRoundTripsThroughItsVariantId) {
+    const lc::persistence::File::Type all[] = {
+        lc::persistence::File::LIBDXFRW_DXF_R12, lc::persistence::File::LIBDXFRW_DXF_R14,
+        lc::persistence::File::LIBDXFRW_DXF_R2000, lc::persistence::File::LIBDXFRW_DXF_R2004,
+        lc::persistence::File::LIBDXFRW_DXF_R2007, lc::persistence::File::LIBDXFRW_DXF_R2010,
+        lc::persistence::File::LIBDXFRW_DXF_R2013, lc::persistence::File::LIBDXFRW_DXB_R12,
+        lc::persistence::File::LIBDXFRW_DXB_R14, lc::persistence::File::LIBDXFRW_DXB_R2000,
+        lc::persistence::File::LIBDXFRW_DXB_R2004, lc::persistence::File::LIBDXFRW_DXB_R2007,
+        lc::persistence::File::LIBDXFRW_DXB_R2010, lc::persistence::File::LIBDXFRW_DXB_R2013,
+        lc::persistence::File::LIBOPENCAD_DWG,
+    };
+
+    for (const auto type : all) {
+        const auto id = lc::persistence::File::variantIdForType(type);
+        ASSERT_FALSE(id.empty()) << "type " << static_cast<int>(type) << " has no variant.";
+
+        const auto* variant = lc::persistence::formatVariantById(id);
+        ASSERT_NE(variant, nullptr) << id;
+
+        // The two predicates must agree with the variant they name.
+        EXPECT_EQ(lc::persistence::File::isBinaryType(type), variant->binary && variant->writable)
+            << id;
+        EXPECT_EQ(lc::persistence::File::isLibdxfrwType(type), variant->libraryId == "libdxfrw")
+            << id;
+
+        lc::persistence::File::Type back = lc::persistence::File::LIBOPENCAD_DWG;
+        EXPECT_TRUE(lc::persistence::File::typeForVariantId(id, back)) << id;
+        EXPECT_EQ(back, type) << id;
+    }
+
+    lc::persistence::File::Type untouched = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    EXPECT_FALSE(lc::persistence::File::typeForVariantId("dxf.nope", untouched));
+    EXPECT_EQ(untouched, lc::persistence::File::LIBDXFRW_DXF_R2000)
+        << "A failed lookup must not have written to the output.";
 }

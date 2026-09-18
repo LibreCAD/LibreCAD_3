@@ -70,6 +70,19 @@ public:
     static Type typeForAcadVersion(const std::string& acadVersion,
                                    bool* recognised = nullptr);
 
+    /**
+     * The stable variant id for a Type ("dxf.ac1015.ascii"), or "" for a Type
+     * with no variant. Type is a wire value whose name cannot be corrected;
+     * this is what everything above persistence should be holding instead.
+     */
+    static std::string variantIdForType(Type type);
+
+    /**
+     * The Type for a variant id. Returns false and leaves `type` alone when
+     * the id is not one this build knows.
+     */
+    static bool typeForVariantId(const std::string& id, Type& type);
+
     static std::map<Type, std::string> getAvailableFileTypes();
 
     static std::map<Library, std::string> getAvailableLibrariesForFormat(std::string format);

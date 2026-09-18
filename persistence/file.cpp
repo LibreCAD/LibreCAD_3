@@ -1,4 +1,5 @@
 #include "file.h"
+#include "format.h"
 #include "libdxfrw/dxfimpl.h"
 #include <cad/logger/logger.h>
 #ifdef LIBOPENCAD_ENABLED
@@ -7,43 +8,80 @@
 
 using namespace lc::persistence;
 
-bool File::isLibdxfrwType(Type type) {
-    switch(type) {
-    case LIBDXFRW_DXF_R12:
-    case LIBDXFRW_DXF_R14:
-    case LIBDXFRW_DXF_R2000:
-    case LIBDXFRW_DXF_R2004:
-    case LIBDXFRW_DXF_R2007:
-    case LIBDXFRW_DXF_R2010:
-    case LIBDXFRW_DXF_R2013:
-    case LIBDXFRW_DXB_R12:
-    case LIBDXFRW_DXB_R14:
-    case LIBDXFRW_DXB_R2000:
-    case LIBDXFRW_DXB_R2004:
-    case LIBDXFRW_DXB_R2007:
-    case LIBDXFRW_DXB_R2010:
-    case LIBDXFRW_DXB_R2013:
-        return true;
-    case LIBOPENCAD_DWG:
-        return false;
+namespace {
+
+/**
+ * Which format variant each File::Type names.
+ *
+ * File::Type is a wire value -- scripts and saved settings hold the integers --
+ * so it stays, and this is the only place that has to know what each one meant.
+ * Everything else about a target (its label, extension, encoding and which
+ * library writes it) lives once, in persistence/format.cpp.
+ */
+struct TypeVariant {
+    File::Type type;
+    const char* variantId;
+};
+
+const TypeVariant kTypeVariants[] = {
+    {File::LIBDXFRW_DXF_R12, "dxf.ac1009.ascii"},
+    {File::LIBDXFRW_DXF_R14, "dxf.ac1014.ascii"},
+    {File::LIBDXFRW_DXF_R2000, "dxf.ac1015.ascii"},
+    {File::LIBDXFRW_DXF_R2004, "dxf.ac1018.ascii"},
+    {File::LIBDXFRW_DXF_R2007, "dxf.ac1021.ascii"},
+    {File::LIBDXFRW_DXF_R2010, "dxf.ac1024.ascii"},
+    {File::LIBDXFRW_DXF_R2013, "dxf.ac1027.ascii"},
+    {File::LIBDXFRW_DXB_R12, "dxf.ac1009.binary"},
+    {File::LIBDXFRW_DXB_R14, "dxf.ac1014.binary"},
+    {File::LIBDXFRW_DXB_R2000, "dxf.ac1015.binary"},
+    {File::LIBDXFRW_DXB_R2004, "dxf.ac1018.binary"},
+    {File::LIBDXFRW_DXB_R2007, "dxf.ac1021.binary"},
+    {File::LIBDXFRW_DXB_R2010, "dxf.ac1024.binary"},
+    {File::LIBDXFRW_DXB_R2013, "dxf.ac1027.binary"},
+    {File::LIBOPENCAD_DWG, "dwg"},
+};
+
+const FormatVariant* variantFor(File::Type type) {
+    for (const auto& pair : kTypeVariants) {
+        if (pair.type == type) {
+            return formatVariantById(pair.variantId);
+        }
+    }
+
+    return nullptr;
+}
+
+}  // namespace
+
+std::string File::variantIdForType(Type type) {
+    for (const auto& pair : kTypeVariants) {
+        if (pair.type == type) {
+            return pair.variantId;
+        }
+    }
+
+    return "";
+}
+
+bool File::typeForVariantId(const std::string& id, Type& type) {
+    for (const auto& pair : kTypeVariants) {
+        if (id == pair.variantId) {
+            type = pair.type;
+            return true;
+        }
     }
 
     return false;
 }
 
+bool File::isLibdxfrwType(Type type) {
+    const auto* variant = variantFor(type);
+    return variant != nullptr && variant->libraryId == "libdxfrw";
+}
+
 bool File::isBinaryType(Type type) {
-    switch(type) {
-    case LIBDXFRW_DXB_R12:
-    case LIBDXFRW_DXB_R14:
-    case LIBDXFRW_DXB_R2000:
-    case LIBDXFRW_DXB_R2004:
-    case LIBDXFRW_DXB_R2007:
-    case LIBDXFRW_DXB_R2010:
-    case LIBDXFRW_DXB_R2013:
-        return true;
-    default:
-        return false;
-    }
+    const auto* variant = variantFor(type);
+    return variant != nullptr && variant->binary && variant->writable;
 }
 
 File::Type File::typeForAcadVersion(const std::string& acadVersion, bool* recognised) {
@@ -86,15 +124,53 @@ File::Type File::typeForAcadVersion(const std::string& acadVersion, bool* recogn
 }
 
 std::string File::getExtensionForFileType(Type type) {
-    // Every writable type is DXF; only the encoding differs.
-    return isLibdxfrwType(type) ? "dxf" : "";
+    // The extension of a *save target*: a type with no writer has none to
+    // offer, which is what every caller of this does with the answer.
+    const auto* variant = variantFor(type);
+    return variant != nullptr && variant->writable ? variant->extension : "";
 }
 
 std::map<std::string, std::string> File::getSupportedFileExtensions() {
     std::map<std::string, std::string> types;
-    types.insert(std::pair<std::string, std::string>("dxf","DXF files"));
-    types.insert(std::pair<std::string, std::string>("dwg","DWG files"));
+    for (const auto& format : formats()) {
+        types.insert(std::make_pair(format.id, format.label));
+    }
+
     return types;
+}
+
+std::map<File::Type, std::string> File::getAvailableFileTypes() {
+    std::map<File::Type, std::string> types;
+    for (const auto& pair : kTypeVariants) {
+        const auto* variant = formatVariantById(pair.variantId);
+        if (variant != nullptr && variant->writable) {
+            types.insert(std::make_pair(pair.type, variant->label));
+        }
+    }
+
+    return types;
+}
+
+std::map<File::Library, std::string> File::getAvailableLibrariesForFormat(std::string format) {
+    format = normalisedFormatId(std::move(format));
+
+    std::map<File::Library, std::string> libraries;
+    for (const auto& variant : formatVariants()) {
+        if (variant.formatId != format || !variant.readable) {
+            continue;
+        }
+
+        if (variant.libraryId == "libdxfrw") {
+            libraries.insert(std::make_pair(LIBDXFRW, variant.libraryId));
+        }
+#ifdef LIBOPENCAD_ENABLED
+        else if (variant.libraryId == "libopencad") {
+            libraries.insert(std::make_pair(LIBOPENCAD, variant.libraryId));
+        }
+#endif
+    }
+
+    return libraries;
 }
 
 File::Type File::open(lc::storage::Document_SPtr document, const std::string& path, File::Library library) {
@@ -179,40 +255,4 @@ bool File::save(lc::storage::Document_SPtr document, const std::string& path, Fi
     return writer.writeDXF(path, type);
 }
 
-std::map<File::Type, std::string> File::getAvailableFileTypes() {
-    std::map<File::Type, std::string> types;
 
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R2013, "DXF 2013 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R2010, "DXF 2010 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R2007, "DXF 2007 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R2004, "DXF 2004 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R2000, "DXF 2000 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R14, "DXF R14 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXF_R12, "DXF R12 (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2013, "DXF 2013 binary (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2010, "DXF 2010 binary (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2007, "DXF 2007 binary (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2004, "DXF 2004 binary (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R2000, "DXF 2000 binary (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R14, "DXF R14 binary (libdxfrw)"));
-    types.insert(std::pair<File::Type, std::string>(LIBDXFRW_DXB_R12, "DXF R12 binary (libdxfrw)"));
-
-    return types;
-}
-
-std::map<File::Library, std::string> File::getAvailableLibrariesForFormat(std::string format) {
-    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-
-    std::map<File::Library, std::string> libraries;
-
-    if(format == "dxf") {
-        libraries.insert(std::pair<File::Library, std::string>(LIBDXFRW, "libdxfrw"));
-    }
-    if(format == "dwg") {
-#ifdef LIBOPENCAD_ENABLED
-        libraries.insert(std::pair<File::Library, std::string>(LIBOPENCAD, "libopencad"));
-#endif
-    }
-
-    return libraries;
-}
