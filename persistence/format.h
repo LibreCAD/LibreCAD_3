@@ -76,8 +76,12 @@ struct LossSummary {
     std::map<std::string, std::size_t> droppedByType;
     std::vector<std::string> notes;
 
+    // Counts, not key presence. A `droppedByType[kind] += 0` -- which is what a
+    // drop path that ran but had nothing to drop produces -- used to make a
+    // clean save report itself as lossy, right down to a warning reading
+    // "without 0 unmodelled records" and File::save() returning false.
     bool empty() const {
-        return droppedByType.empty() && notes.empty();
+        return total() == 0 && notes.empty();
     }
 
     std::size_t total() const {

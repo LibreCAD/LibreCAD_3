@@ -1388,7 +1388,11 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                                  : "they were read from a binary file and have no verbatim form";
             LOG_WARNING << filename << " is being written without "
                         << _replay->total() << " record(s) this build does not model: " << reason;
-            _loss.droppedByType["unmodelled records"] += _replay->total();
+            // Only when something is actually dropped: an entry of zero used to
+            // be reported to the user as a partial save.
+            if(const std::size_t dropped = _replay->total(); dropped > 0) {
+                _loss.droppedByType["unmodelled records"] += dropped;
+            }
             _replay = nullptr;
         }
     }
