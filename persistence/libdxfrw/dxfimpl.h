@@ -336,6 +336,7 @@ public:
     LossSummary _loss;
     std::vector<ImportFailure> _failures;
     std::size_t _entitiesDelivered{0};
+    std::size_t _attributesAsText{0};
 
     void recordLoss(const char* recordKind) {
         _loss.droppedByType[recordKind]++;

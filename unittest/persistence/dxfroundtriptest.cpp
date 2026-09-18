@@ -34,6 +34,7 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <map>
@@ -1739,4 +1740,85 @@ TEST(DxfRoundTripTest, BinaryAndAsciiCarryTheSameText) {
 
         boost::filesystem::remove(path);
     }
+}
+
+// A block's attributes are the values filled into its placeholders -- a title
+// block's drawing number, a door's width. They were dropped in silence, so an
+// attributed drawing came back with its labels missing and looked merely wrong
+// rather than incomplete.
+//
+// LibreCAD has no attribute model: nothing ties a value to the INSERT it
+// belongs to, or keeps its tag. What it has is text at a position, which is
+// what an ATTRIB draws. So the values arrive as Text, the tag does not survive,
+// and the import says so rather than leaving it to be discovered on the next
+// save. This test pins that bargain in both directions -- what is kept and what
+// is not -- so that a later attribute model changes a stated contract rather
+// than an accident.
+//
+// The fixture is authored here, not taken from a corpus file, so the expected
+// tags and values are known independently of any reader.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AttributedInsertSurfacesItsValues) {
+    auto doc = newDocument();
+    lc::persistence::ImportResult result;
+    ASSERT_NO_THROW(result = lc::persistence::File::importFile(
+        doc, fixture("attributed_insert.dxf"), lc::persistence::File::Library::LIBDXFRW));
+
+    ASSERT_TRUE(result.ok);
+
+    std::vector<std::string> values;
+    int inserts = 0;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+            values.push_back(text->text_value());
+        }
+        if (std::dynamic_pointer_cast<const lc::entity::Insert>(entity)) {
+            inserts++;
+        }
+    }
+    std::sort(values.begin(), values.end());
+
+    EXPECT_EQ(inserts, 1);
+    ASSERT_EQ(values.size(), 2u) << "Both visible attributes must arrive.";
+    EXPECT_EQ(values[0], "C");
+    EXPECT_EQ(values[1], "LC-2026-014");
+
+    // The invisible one is not drawn by AutoCAD either, so it is counted rather
+    // than placed on the drawing.
+    EXPECT_EQ(result.loss.droppedByType.at("ATTRIB (invisible)"), 1u);
+
+    // And the user is told what the import could not model, once.
+    ASSERT_EQ(result.loss.notes.size(), 1u);
+    EXPECT_NE(result.loss.notes.front().find("tags are not kept"), std::string::npos)
+        << result.loss.notes.front();
+
+    // Round trip: the values survive, as text. The tags do not -- that is the
+    // half LibreCAD cannot yet carry, and asserting it keeps the claim honest.
+    const std::string path = uniqueTmpDxf("attributed");
+    boost::filesystem::remove(path);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+
+    std::vector<std::string> again;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+            again.push_back(text->text_value());
+        }
+    }
+    std::sort(again.begin(), again.end());
+    EXPECT_EQ(again, values) << "The attribute values must survive a save and reopen.";
+
+    std::ifstream written(path);
+    const std::string body((std::istreambuf_iterator<char>(written)),
+                           std::istreambuf_iterator<char>());
+    EXPECT_EQ(body.find("\nATTRIB\n"), std::string::npos)
+        << "Without an attribute model there is nothing to write an ATTRIB from; "
+           "they go back as TEXT, which is what the import note warns about.";
+
+    boost::filesystem::remove(path);
 }

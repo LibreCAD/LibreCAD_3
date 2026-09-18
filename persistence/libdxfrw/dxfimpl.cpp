@@ -1049,6 +1049,47 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
             getLayer(data),
             coord(data.basePoint),
             data.name});
+
+        // ATTRIBs are the values filled into a block's placeholders -- a title
+        // block's drawing number, a door's width -- and were dropped in
+        // silence, so those drawings came back with their labels missing and
+        // looked merely wrong rather than incomplete.
+        //
+        // LibreCAD has no attribute model: nothing ties a value to the INSERT
+        // it belongs to, or remembers its tag. What it does have is text at a
+        // position, which is what an ATTRIB draws, so each visible one arrives
+        // as a Text. The tag does not survive, and a later save writes TEXT
+        // rather than ATTRIB -- the note records that rather than leaving the
+        // user to discover it on the next round trip.
+        for (const auto& attrib : data.attlist) {
+            if (attrib == nullptr) {
+                continue;
+            }
+
+            // Bit 0 = invisible: AutoCAD does not draw these, so neither do we.
+            if ((attrib->attribFlags & 1u) != 0u) {
+                recordLoss("ATTRIB (invisible)");
+                continue;
+            }
+
+            deliver(std::make_shared<lc::entity::Text>(
+                coord(attrib->basePoint),
+                attrib->text, attrib->height,
+                attrib->angle * M_PI / 180, attrib->style,
+                lc::TextConst::DrawingDirection(attrib->textgen),
+                lc::TextConst::HAlign(attrib->alignH),
+                lc::TextConst::VAlign(attrib->alignV),
+                getLayer(*attrib),
+                getMetaInfo(*attrib),
+                getBlock(data)));
+
+            if (_attributesAsText++ == 0) {
+                _loss.notes.push_back(
+                    "Block attributes were imported as plain text: LibreCAD has no "
+                    "attribute model, so their tags are not kept and a save writes "
+                    "them as TEXT.");
+            }
+        }
     });
 }
 
