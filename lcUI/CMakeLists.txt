@@ -318,6 +318,7 @@ endif()
 if(WITH_UNITTESTS)
     add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
     set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
+    target_compile_options(lcui PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
@@ -327,6 +328,11 @@ else()
     set(UI_icon "${CMAKE_SOURCE_DIR}/res/librecad.rc")
     add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 endif()
+
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(librecad PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})

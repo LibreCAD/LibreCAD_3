@@ -107,6 +107,11 @@ else()
 endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
+
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(lcluascript PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel lcscripting)
 
 if(WITH_PERSISTENCE)

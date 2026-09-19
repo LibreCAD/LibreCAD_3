@@ -66,6 +66,11 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
+
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(luacmdinterface PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_link_libraries(luacmdinterface
         ${CMAKE_THREAD_LIBS_INIT}
         ${Boost_LIBRARIES}

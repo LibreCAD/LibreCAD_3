@@ -248,18 +248,18 @@ endif()
 # an upstream revision. Applied before any add_subdirectory(), for the same
 # reason as the GC-constant mapping below: every target that compiles a kaguya
 # header has to see it. Drop this once kaguya includes <cstdint> upstream.
-# Added to CMAKE_CXX_FLAGS rather than through add_compile_options, because
-# this must reach C++ compilations only and nothing else. The tree also builds
-# C (tinyspline at -std=c89), where forcing a C++ header fails outright --
-# "'cstdint' file not found" on GCC and Clang, and STL1003 "Unexpected
-# compiler, expected C++ compiler" on MSVC. A $<COMPILE_LANGUAGE:CXX> genex
-# reads like the right tool but does not scope reliably under the Visual Studio
-# generators; CMAKE_CXX_FLAGS is language-scoped by construction, on every
-# generator.
+# Applied per target, by the targets that actually compile kaguya headers --
+# see LIBDXFRW_KAGUYA_CSTDINT below. Every project-wide form was tried first
+# and each reached a C compilation, which fails outright: the tree builds C as
+# well (tinyspline at -std=c89), giving "'cstdint' file not found" on GCC and
+# Clang, and STL1003 "Unexpected compiler, expected C++ compiler" on MSVC.
+# Neither add_compile_options($<COMPILE_LANGUAGE:CXX>:...) nor CMAKE_CXX_FLAGS
+# scopes to C++ under the Visual Studio generators, which put both at project
+# level in a .vcxproj that mixes .c and .cpp.
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /FIcstdint")
+    set(LIBDXFRW_KAGUYA_CSTDINT /FIcstdint)
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cstdint")
+    set(LIBDXFRW_KAGUYA_CSTDINT -include cstdint)
 endif()
 
 # Lua 5.5 removed LUA_GCSETPAUSE and LUA_GCSETSTEPMUL in favour of the
