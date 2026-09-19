@@ -14,7 +14,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Svg UiTools Widgets)
+# OpenGLWidgets is asked for explicitly: Qt6 split QOpenGLWidget out of
+# QtWidgets into its own module, and lcadviewer.h derives from it. It has been
+# resolving through another component's transitive link, which is luck rather
+# than a dependency.
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Svg UiTools Widgets)
 
 # HEADERS
 set(UI_hdrs
@@ -290,6 +294,7 @@ set(EXTRA_LIBS
         Qt6::Widgets
         Qt6::UiTools
         Qt6::OpenGL
+        Qt6::OpenGLWidgets
 		Qt6::Svg
         ${APR_LIBRARIES})
 

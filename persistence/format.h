@@ -21,9 +21,9 @@ namespace persistence {
  * "DXB" was supposed to mean.
  *
  * This header deliberately names no libdxfrw type and includes nothing from
- * it: `persistence` links the library PRIVATE so that its C++17 requirement
- * cannot reach lcluascript and lcpythonscript, which are built as gnu++14 and
- * break on kaguya. It must stay compilable on its own at that standard.
+ * it: `persistence` links the library PRIVATE, so a consumer never has to find
+ * libdxfrw's include path to use the format table. It must stay compilable on
+ * its own.
  */
 struct FormatVariant {
     std::string id;          //!< stable wire name, e.g. "dxf.ac1015.ascii"

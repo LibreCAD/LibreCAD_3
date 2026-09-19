@@ -92,14 +92,25 @@ Ubuntu/Mint
 ===========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev python3-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
+apt-get install cmake qt6-base-dev qt6-tools-dev qt6-tools-dev-tools libqt6opengl6-dev qt6-svg-dev \
+  liblua5.3-dev python3-dev python3 git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev \
+  libboost-all-dev libboost-program-options-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev \
+  libgtk-3-dev libglew-dev rapidjson-dev libbz2-dev libglfw3-dev libglm-dev
 ```
+
+This is the same set `scripts/ubuntu-install/installDependenciesAndBuildRepo.sh`
+installs, which is what CI uses; if the two drift apart, that script is the one
+that is tested.
 
 You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
 
-### Ubuntu 14.xx
-GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
-http://askubuntu.com/a/456849
+Toolchain
+=========
+
+The project builds as **C++17** (`CMAKE_CXX_STANDARD 17`) against **Qt6**. In
+practice that means GCC 8 or newer, Clang 7 or newer, or MSVC 2019 16.8 or
+newer -- and a Qt6 that provides Core, Gui, OpenGL, OpenGLWidgets, Svg,
+UiTools, Widgets and Test.
 
 ### AppImage packaging (phase 6 PR-6.3)
 The Ubuntu build script (`scripts/ubuntu-install/createAppImage.sh`)

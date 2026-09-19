@@ -8,10 +8,9 @@
 // upstream would not fail to compile -- it would change what LibreCAD reads
 // and writes.
 //
-// This lives in persistence rather than in the test suite on purpose. The
-// library's headers now use C++17 inline variables, so including them from
-// lcunittest -- which is gnu++14 so that kaguya keeps compiling -- warns under
-// Clang and GCC and fails outright under MSVC. Here they are already compiled
+// This lives in persistence rather than in the test suite on purpose:
+// lcunittest does not link libdxfrw and cannot reach its headers, by design
+// (persistence links it PRIVATE). Here they are already compiled
 // at C++17, the static_asserts fail the *build* rather than a test run, and the
 // fingerprint below gives the test suite something to compare without naming a
 // single DRW type.

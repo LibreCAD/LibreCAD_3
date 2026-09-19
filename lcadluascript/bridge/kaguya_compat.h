@@ -27,6 +27,13 @@
 
 #include <kaguya/include/kaguya/state.hpp>
 
+// Guarded, because below C++17 `Ret (T::*)(Args...) noexcept` names the same
+// type as `Ret (T::*)(Args...)` -- so these would not add specialisations,
+// they would redefine kaguya's own, and the header would not compile at all.
+// The guard makes the file say what it is for rather than depending on the
+// project's standard staying where it is.
+#if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+
 namespace kaguya {
 namespace util {
 
@@ -64,3 +71,5 @@ struct FunctionSignature<Ret(Args...) noexcept> {
 
 }  // namespace util
 }  // namespace kaguya
+
+#endif  // C++17 or newer
