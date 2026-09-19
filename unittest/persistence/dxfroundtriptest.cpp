@@ -1903,6 +1903,43 @@ std::map<std::string, std::size_t> handlesInFile(const std::string& path) {
     return handles;
 }
 
+/** The code-5 handle and code-330 owner of each named record, last one wins. */
+struct RecordIdentity {
+    std::string handle;
+    std::string owner;
+};
+std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) {
+    std::map<std::string, RecordIdentity> identities;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto trimmed = code.find_first_not_of(" \t");
+        const std::string group = trimmed == std::string::npos ? code : code.substr(trimmed);
+
+        for (auto& c : value) {
+            c = static_cast<char>(::toupper(static_cast<unsigned char>(c)));
+        }
+
+        if (group == "0") {
+            record = value;
+        } else if (record.empty()) {
+            continue;
+        } else if (group == "5") {
+            identities[record].handle = value;
+        } else if (group == "330" && identities[record].owner.empty()) {
+            identities[record].owner = value;
+        }
+    }
+
+    return identities;
+}
+
 }  // namespace
 
 // A DXF holds far more than geometry: layouts, plot settings, table styles,
@@ -2107,6 +2144,72 @@ TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
     for (const auto& handle : handlesInFile(saved)) {
         EXPECT_EQ(handle.second, 1u) << "handle " << handle.first << " is used twice";
     }
+
+    boost::filesystem::remove(saved);
+}
+
+// Reserving a preserved handle stops the allocator minting it again. It does
+// not stop the codec writing its own fixed structural handles -- the table
+// heads, LAYER "0", the *Model_Space block, the root dictionary -- because
+// those go out as literals whatever is reserved. A preserved record that
+// arrived carrying one of them was re-emitted under the same code 5 as the
+// codec's record, so the file went out with two objects claiming one identity
+// and every reference to it ambiguous, and the save reported success.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
+    const std::string source = fixture("raw_objects_low_handles.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+
+    // The fixture is raw_objects.dxf with its three preserved handles moved
+    // onto codec literals: 1F is BLOCK_RECORD *Model_Space, 10 is LAYER "0",
+    // 12 is APPID "ACAD".
+    const auto sourceHandles = handlesInFile(source);
+    ASSERT_EQ(sourceHandles.count("10"), 1u) << "the fixture changed";
+    ASSERT_EQ(sourceHandles.at("10"), 1u) << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("low-handles");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, type).ok);
+
+    for (const auto& handle : handlesInFile(saved)) {
+        EXPECT_EQ(handle.second, 1u)
+            << "handle " << handle.first << " is used twice: a preserved record "
+            << "kept a handle the codec writes itself";
+    }
+
+    // The records are still there, and still point at each other: remapping is
+    // only correct if every reference moved with the handle it names.
+    const auto after = recordsInSection(saved, "OBJECTS");
+    EXPECT_EQ(after.count("DICTIONARYVAR"), 1u)
+        << "a record LibreCAD does not model was destroyed";
+    EXPECT_EQ(after.count("ACDBPLACEHOLDER"), 1u)
+        << "a record LibreCAD does not model was destroyed";
+
+    const auto identities = identitiesInFile(saved);
+    ASSERT_EQ(identities.count("DICTIONARYVAR"), 1u);
+    ASSERT_EQ(identities.count("ACDBPLACEHOLDER"), 1u);
+
+    // Both were owned by the fixture's own DICTIONARY. Whatever handle that
+    // dictionary ended up with, the two 330s must still name it and each
+    // other's -- a remap is only correct if every reference moved with the
+    // handle it names.
+    EXPECT_EQ(identities.at("DICTIONARYVAR").owner,
+              identities.at("ACDBPLACEHOLDER").owner)
+        << "the two preserved records no longer agree on their owner";
+    EXPECT_NE(identities.at("DICTIONARYVAR").owner, "")
+        << "the preserved records lost their owner";
+    EXPECT_NE(identities.at("DICTIONARYVAR").handle,
+              identities.at("ACDBPLACEHOLDER").handle)
+        << "two preserved records were given one handle";
 
     boost::filesystem::remove(saved);
 }

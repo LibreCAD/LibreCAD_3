@@ -1453,6 +1453,17 @@ static std::shared_ptr<const lc::persistence::PreservedRecords> preservedOn(
     return std::dynamic_pointer_cast<const lc::persistence::PreservedRecords>(found->second);
 }
 
+namespace {
+
+/// The first code-5 handle libdxfrw's allocator will mint. Everything the DXF
+/// codec writes as a fixed structural literal -- table heads, LAYER "0", the
+/// *Model_Space and *Paper_Space blocks, the root dictionary -- is below it,
+/// which is what makes it a sound test for "this handle may be written twice".
+/// See HandleAllocator::m_next in third_party/libdxfrw/src/handle_allocator.h.
+constexpr std::uint32_t kFirstMintedHandle = 0x30;
+
+}  // namespace
+
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
 
@@ -1561,15 +1572,56 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         // Every preserved handle is claimed before the write starts, so the
         // handles the typed writers mint cannot collide with one being
         // re-emitted verbatim.
-        for (const auto& object : _replay->objects) {
-            if (object.handle != 0) {
-                dxfW->reserveHandle(object.handle);
+        //
+        // Reserving is not enough on its own. It constrains only the handles
+        // the allocator mints; the codec also writes a fixed set of structural
+        // handles as literals -- the table heads, layer "0", the *Model_Space
+        // and *Paper_Space blocks, the root dictionary -- and those go out
+        // whatever we reserve. A preserved record that arrived carrying one of
+        // them was re-emitted under the same code 5 as the codec's own record,
+        // so the file went out with two objects claiming one identity and every
+        // 330/350 reference to it ambiguous. The save reported success. Four of
+        // 146 ordinary ASCII DXFs in a real corpus came out that way.
+        //
+        // The whole fixed set is below 0x30, which the allocator documents as
+        // the first handle it will ever mint, so that is the test: anything
+        // below it gets a fresh handle and the codec rewrites every reference
+        // along with the record's own code 5. A handle below 0x30 that would
+        // not actually have collided is moved too, which costs nothing -- the
+        // identity of a preserved record is only ever reached through those
+        // references.
+        std::map<std::uint32_t, std::uint32_t> remap;
+        const auto claim = [&](std::uint32_t handle) {
+            if (handle == 0 || handle >= kFirstMintedHandle) {
+                if (handle != 0) {
+                    dxfW->reserveHandle(handle);
+                }
+                return;
             }
+            if (remap.count(handle) != 0) {
+                return;
+            }
+            // highWaterHandle(), not allocHandle(): write() resets the handles
+            // minted by the previous attempt, and one taken here would be
+            // forgotten and minted again during the write -- which just moves
+            // the collision. A reservation is what survives the reset.
+            const std::uint32_t fresh = dxfW->highWaterHandle();
+            if (dxfW->reserveHandle(fresh)) {
+                remap[handle] = fresh;
+            }
+        };
+
+        for (const auto& object : _replay->objects) {
+            claim(object.handle);
         }
         for (const auto& entity : _replay->entities) {
-            if (entity.handle != 0) {
-                dxfW->reserveHandle(entity.handle);
-            }
+            claim(entity.handle);
+        }
+
+        if (!remap.empty()) {
+            LOG_INFO << "remapping " << remap.size()
+                     << " preserved handle(s) away from the codec's own structural handles";
+            dxfW->setHandleRemap(remap);
         }
 
         dxfW->setDxfClasses(_replay->classes);
