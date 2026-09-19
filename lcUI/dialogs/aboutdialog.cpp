@@ -113,19 +113,17 @@ QString getOsName(outputConfig& oc)
 #endif
 
 QString getAdditionalOSInfo(outputConfig& oc) { //From Qt
+    // The QSysInfo calls below were guarded on Qt 5.4 or newer, which lcUI
+    // has long since left behind -- the else branch returned an empty string
+    // and could not be reached.
     return
-#if QT_VERSION >= 0x050400
         oc.lineFormat.arg("System").arg(QSysInfo::prettyProductName()) +
         oc.lineFormat.arg("Build Architecture").arg(QSysInfo::buildCpuArchitecture()) +
         oc.lineFormat.arg("Current Architecture").arg(QSysInfo::currentCpuArchitecture()) +
         oc.lineFormat.arg("Kernel Type").arg(QSysInfo::kernelType()) +
         oc.lineFormat.arg("Kernel Version").arg(QSysInfo::kernelVersion()) +
         oc.lineFormat.arg("Product Type").arg(QSysInfo::productType()) +
-        oc.lineFormat.arg("Product Version").arg(QSysInfo::productVersion())
-#else
-        QString()
-#endif
-        ;
+        oc.lineFormat.arg("Product Version").arg(QSysInfo::productVersion());
 }
 
 // LCAD info
