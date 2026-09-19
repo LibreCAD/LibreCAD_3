@@ -41,7 +41,19 @@ set -euo pipefail
 # So run the pack as root and both symptoms go away together.  `env PATH=`
 # because sudo replaces PATH from secure_path, and snapcraft lives in
 # /snap/bin.
-sudo -E env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap
+# sudo drops -E on this host ("preserving the entire environment is not
+# supported"), so PATH is passed explicitly: sudo replaces it from secure_path
+# and snapcraft lives in /snap/bin.
+if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap; then
+    # "Stage package not found in part 'librecad': <name>" names whichever
+    # package an unordered set yielded first, which says nothing about why.
+    # These three lines say whether apt could see the archive at all, which is
+    # the difference between a wrong name and an unreachable component.
+    echo "--- snapcraft pack failed; what apt can see from here ---"
+    apt-cache policy libqt6svg6 python3 || true
+    grep -rhE "^(deb|Suites:|Components:|URIs:)" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null || true
+    exit 1
+fi
 
 # The pack ran as root, so the snap belongs to root; the upload step reads it
 # as the runner user.

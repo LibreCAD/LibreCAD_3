@@ -63,38 +63,42 @@ parts:
       - libglm-dev
       - cmake
     stage-packages:
-      # Bundle the Qt 6 runtime from the base archive rather than relying on
-      # the KDE Neon content snap, which does not support core26.
+      # Runtime packages, not the -dev ones that were here before. These are
+      # exactly the packages that own the libraries linuxdeploy copies into the
+      # AppImage when it walks this binary's dependencies, which is the only
+      # list that is known to be complete -- the snap's own missing-library
+      # lint never ran, because the pack died before staging.
       #
-      # Under devmode the process still runs in the snap's own mount
-      # namespace, so a library the binary links and this list does not carry
-      # is simply absent -- the snap installs and then will not start, which
-      # no build step catches.
-      - qt6-base-dev
-      - qt6-svg-dev
+      # Under devmode the process still runs in the snap's own mount namespace,
+      # so a library named here and nowhere else is simply absent: the snap
+      # installs and then will not start, and no build step catches it.
+      #
+      # The versioned names track core26's contents. They are fixed for the
+      # life of the base; a base bump has to revisit them.
+      - libqt6core6t64
+      - libqt6gui6
+      - libqt6widgets6
+      - libqt6opengl6
+      - libqt6openglwidgets6
+      - libqt6svg6
+      - libqt6uitools6
+      - libqt6dbus6
       - qt6-qpa-plugins
+      - qt6-svg-plugins
       - qt6-gtk-platformtheme
       # The app plugs wayland; without this only the xcb platform plugin is
       # deployed, so a Wayland session falls back to XWayland silently.
       - qt6-wayland
-      # librecad links libQt6UiTools.so.6 (lcUI/CMakeLists.txt puts
-      # Qt6::UiTools in EXTRA_LIBS unconditionally) and liblua5.3.so.0
-      # (find_package(Lua 5.3 REQUIRED) resolves to the shared object).  Both
-      # were build-packages only, and nothing staged pulls either in --
-      # linuxdeploy's dependency walk over the same binary copies both into
-      # the AppImage, which is how they were found.
-      - libqt6uitools6
       - liblua5.3-0
-      - libboost-log-dev
-      - libboost-program-options-dev
       - libglew2.2
-      # Phase 6 PR-6.4 — stage python3 so the packaged snap has a
-      # runtime interpreter that lcadpythonscript's embedded pybind11
-      # can link against.  Without this, the snap builds cleanly (the
-      # build-packages libpython dev headers satisfy the build) but
-      # the installed snap fails at runtime with "cannot find
-      # libpython3.X.so".
+      - libboost-log1.90.0
+      - libboost-filesystem1.90.0
+      - libboost-thread1.90.0
+      - libboost-program-options1.90.0
+      # lcadpythonscript's embedded interpreter links libpython and needs a
+      # standard library to start at all.
       - python3
+      - libpython3.14
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
