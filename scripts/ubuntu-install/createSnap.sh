@@ -5,34 +5,46 @@ set -euo pipefail
 # avoids a nested LXD image download, which GitHub-hosted runners can block.
 # `pack` is the explicit Snapcraft 9 command, and a fixed output name makes
 # the install step depend on success.
-# Snapcraft installs the base and every content default-provider as a
-# build-snap.  In --destructive-mode it does that on the host by shelling out
-# to plain `snap install`, with no sudo (craft-parts snaps.py: the argv is
-# ["snap", "install", name]) -- and as the unprivileged CI user that call is
-# denied.  craft-parts discards snapd's stdout and stderr, so all that reaches
-# the log is its own generic line:
 #
-#   Error installing snap 'mesa-2604' from channel 'latest/stable'.
+# --destructive-mode builds on the host instead of in a container, which means
+# snapcraft itself has to do the things a container would have done as root:
+# install the base and every content default-provider as a build-snap, and
+# fetch the part's stage-packages through apt.  Neither works as the
+# unprivileged CI user, and neither says so.
 #
-# which reads like a store outage and is not one: both snaps are published and
-# current.  The first line of the same log is the real clue, emitted whenever
+#   * Build-snaps go through a plain `snap install` with no sudo, and
+#     craft-parts discards snapd's stdout and stderr, so all that reaches the
+#     log is its own generic line:
+#
+#       Error installing snap 'mesa-2604' from channel 'latest/stable'.
+#
+#     which reads like a store outage and is not one -- both snaps are
+#     published and current.
+#
+#   * Stage-packages go through craft_parts.packages.deb, whose
+#     refresh_packages_list() returns early with
+#
+#       Packages list not refreshed, not running as superuser.
+#
+#     and then fails on the first name it cannot resolve out of an unordered
+#     set:
+#
+#       Stage package not found in part 'librecad': python3
+#
+#     which reads like a missing dependency and is not one.
+#
+# The first line of the same log is the real clue, emitted whenever
 # --destructive-mode runs with euid != 0:
 #
 #   Running in destructive mode as a non-super user is not recommended
 #
-# Installing them here with sudo makes snapcraft skip its own attempt -- it
-# only installs a build-snap when one is absent -- and any genuine failure
-# then prints snapd's actual error instead of the swallowed one.
-#
-# Which snap trips first depends on what the runner already has: observed
-# 'core26' on two runs and 'mesa-2604' on a third, so neither is assumed.
-# `snap install` fails on an already-installed snap, hence the guard.
-for build_snap in core26 mesa-2604; do
-    if ! snap list "$build_snap" >/dev/null 2>&1; then
-        sudo snap install "$build_snap"
-    fi
-done
+# So run the pack as root and both symptoms go away together.  `env PATH=`
+# because sudo replaces PATH from secure_path, and snapcraft lives in
+# /snap/bin.
+sudo -E env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap
 
-snapcraft pack --destructive-mode --output librecad.snap
+# The pack ran as root, so the snap belongs to root; the upload step reads it
+# as the runner user.
+sudo chown "$(id -u):$(id -g)" librecad.snap
 
 sudo snap install ./librecad.snap --devmode --dangerous
