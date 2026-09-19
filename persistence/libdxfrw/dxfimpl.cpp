@@ -1616,16 +1616,35 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         // not actually have collided is moved too, which costs nothing -- the
         // identity of a preserved record is only ever reached through those
         // references.
+        // Two passes, and the order is the point. A fresh handle comes from the
+        // top of the reserved range, so every handle being kept verbatim has
+        // to be reserved before any is handed out -- otherwise a record early
+        // in the walk is moved onto a handle a record later in the walk holds
+        // for itself, and the file goes out with the collision this is here to
+        // prevent.
         std::map<std::uint32_t, std::uint32_t> remap;
+        std::vector<std::uint32_t> needFresh;
         const auto claim = [&](std::uint32_t handle) {
-            if (handle == 0 || handle >= kFirstMintedHandle) {
-                if (handle != 0) {
-                    dxfW->reserveHandle(handle);
-                }
+            if (handle == 0) {
                 return;
             }
-            if (remap.count(handle) != 0) {
+            if (handle >= kFirstMintedHandle) {
+                dxfW->reserveHandle(handle);
                 return;
+            }
+            needFresh.push_back(handle);
+        };
+
+        for (const auto& object : _replay->objects) {
+            claim(object.handle);
+        }
+        for (const auto& entity : _replay->entities) {
+            claim(entity.handle);
+        }
+
+        for (const std::uint32_t handle : needFresh) {
+            if (remap.count(handle) != 0) {
+                continue;
             }
             // highWaterHandle(), not allocHandle(): write() resets the handles
             // minted by the previous attempt, and one taken here would be
@@ -1635,13 +1654,6 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
             if (dxfW->reserveHandle(fresh)) {
                 remap[handle] = fresh;
             }
-        };
-
-        for (const auto& object : _replay->objects) {
-            claim(object.handle);
-        }
-        for (const auto& entity : _replay->entities) {
-            claim(entity.handle);
         }
 
         if (!remap.empty()) {

@@ -2326,6 +2326,49 @@ TEST(DxfRoundTripTest, ALayoutThatCannotBeKeptIsReported) {
     boost::filesystem::remove(saved);
 }
 
+// The handle a moved record is moved *to* has to be clear of the handles other
+// preserved records are keeping. Handing them out during the same walk that
+// reserves the verbatim ones moves a record early in the file onto a handle a
+// record later in the file holds for itself -- which is the collision the move
+// exists to prevent, inflicted on a different pair.
+//
+// The fixture is built for it: the first record carries a handle below the
+// codec's range so it has to move, and the second carries 0x30, the first
+// handle the allocator will ever hand out.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AMovedHandleDoesNotLandOnAnotherPreservedRecord) {
+    const std::string source = fixture("raw_objects_first_minted.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    const auto sourceHandles = handlesInFile(source);
+    ASSERT_EQ(sourceHandles.count("10"), 1u) << "the fixture changed";
+    ASSERT_EQ(sourceHandles.count("30"), 1u) << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("first-minted");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, type).ok);
+
+    for (const auto& handle : handlesInFile(saved)) {
+        EXPECT_EQ(handle.second, 1u)
+            << "handle " << handle.first << " is used twice: a moved record "
+            << "landed on one another preserved record was keeping";
+    }
+
+    const auto after = recordsInSection(saved, "OBJECTS");
+    EXPECT_EQ(after.count("DICTIONARYVAR"), 1u) << "a preserved record was destroyed";
+    EXPECT_EQ(after.count("ACDBPLACEHOLDER"), 1u) << "a preserved record was destroyed";
+
+    boost::filesystem::remove(saved);
+}
+
 // Replay is attempted only where it is faithful. A different revision, or a
 // binary target, and the records are dropped rather than written somewhere they
 // have no defined meaning -- and the count reaches the user either way.
@@ -2803,4 +2846,5 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
 
     boost::filesystem::remove(path);
 }
+
 
