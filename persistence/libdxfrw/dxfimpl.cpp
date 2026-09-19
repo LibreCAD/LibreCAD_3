@@ -1385,19 +1385,21 @@ constexpr std::uint32_t kRootDictionaryHandle = 0xC;
 }  // namespace
 
 void DXFimpl::addDictionary(const DRW_Dictionary& data) {
-    // Only the root. Every other dictionary comes through addRawDxfObject and
-    // is re-emitted verbatim; what is missing is the entry in the root that
-    // named it.
-    if (data.handle != kRootDictionaryHandle && data.parentHandle != 0) {
-        return;
-    }
-
-    for (const auto& entry : data.m_entries) {
-        if (entry.m_handle == 0 || entry.m_name.empty()) {
-            continue;
+    guarded("DICTIONARY", nullptr, [&] {
+        // Only the root. Every other dictionary comes through addRawDxfObject
+        // and is re-emitted verbatim; what is missing is the entry in the root
+        // that named it.
+        if (data.handle != kRootDictionaryHandle && data.parentHandle != 0) {
+            return;
         }
-        _preserved.rootDictEntries.emplace_back(entry.m_name, entry.m_handle);
-    }
+
+        for (const auto& entry : data.m_entries) {
+            if (entry.m_handle == 0 || entry.m_name.empty()) {
+                continue;
+            }
+            _preserved.rootDictEntries.emplace_back(entry.m_name, entry.m_handle);
+        }
+    });
 }
 
 void DXFimpl::attachPreservedRecords() {
