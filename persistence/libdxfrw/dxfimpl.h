@@ -200,6 +200,18 @@ public:
         _preserved.classes.push_back(data);
     }
 
+    /**
+     * The root dictionary is the other half of the passthrough contract.
+     *
+     * libdxfrw routes every named dictionary into the raw net and regenerates
+     * the root itself, holding only ACAD_GROUP. Nothing then points at the
+     * preserved ones: they go into the file as orphans, which readers prune --
+     * along with the materials, visual styles and detail-view styles hanging
+     * off them. Keeping the entries here is what lets the save put back the
+     * names for the ones it really does re-emit.
+     */
+    void addDictionary(const DRW_Dictionary& data) override;
+
     /** What this read is holding on to for the next save. */
     const PreservedRecords& preserved() const {
         return _preserved;

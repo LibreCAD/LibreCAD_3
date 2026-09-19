@@ -2214,6 +2214,85 @@ TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
     boost::filesystem::remove(saved);
 }
 
+/** The names a DXF's root NamedObjectsDictionary (handle C) lists. */
+std::set<std::string> rootDictNames(const std::string& path) {
+    std::set<std::string> names;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+    bool inRoot = false;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto trimmed = code.find_first_not_of(" \t");
+        const std::string group = trimmed == std::string::npos ? code : code.substr(trimmed);
+
+        if (group == "0") {
+            if (inRoot) {
+                break;  // the root dictionary ended
+            }
+            record = value;
+        } else if (record == "DICTIONARY" && group == "5") {
+            std::string handle = value;
+            for (auto& c : handle) {
+                c = static_cast<char>(::toupper(static_cast<unsigned char>(c)));
+            }
+            inRoot = handle == "C";
+        } else if (inRoot && group == "3") {
+            names.insert(value);
+        }
+    }
+
+    return names;
+}
+
+// libdxfrw routes every named dictionary through the raw net and regenerates
+// the root holding only ACAD_GROUP, so a preserved dictionary went into the
+// file with nothing naming it. Readers prune orphans, and everything hanging
+// off them goes too. Splicing the source's entries back is the other half of
+// that contract -- but only for the dictionaries this save really does
+// re-emit: naming one whose own children are missing hands the reader a
+// dangling reference, which is worse than leaving it detached.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, PreservedDictionariesAreNamedFromTheRootAgain) {
+    const std::string source = fixture("root_dict_entries.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    ASSERT_EQ(rootDictNames(source), (std::set<std::string>{"LC_REACHABLE", "LC_DANGLING"}))
+        << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("root-dict");
+    boost::filesystem::remove(saved);
+    const auto written = lc::persistence::File::exportFile(doc, saved, type);
+    ASSERT_TRUE(written.ok);
+
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("LC_REACHABLE"), 1u)
+        << "the dictionary this save re-emitted is still an orphan";
+    EXPECT_EQ(names.count("LC_DANGLING"), 0u)
+        << "a dictionary whose own entry is missing was named from the root anyway";
+    EXPECT_EQ(names.count("ACAD_GROUP"), 1u)
+        << "the codec's own entry was displaced";
+
+    // And the one that could not be re-attached is reported rather than left
+    // to be discovered by whoever opens the file next.
+    EXPECT_EQ(written.loss.droppedByType.count("unreferenced dictionaries"), 1u)
+        << "a dictionary was left detached without saying so";
+
+    boost::filesystem::remove(saved);
+}
+
 // Replay is attempted only where it is faithful. A different revision, or a
 // binary target, and the records are dropped rather than written somewhere they
 // have no defined meaning -- and the count reaches the user either way.
@@ -2691,3 +2770,4 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
 
     boost::filesystem::remove(path);
 }
+

@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <functional>
+#include <map>
 #include <set>
 
 #include <cad/primitive/circle.h>
@@ -1374,6 +1376,30 @@ static DRW::Version dxfRevisionForType(lc::persistence::File::Type type) {
     return DRW::UNKNOWNV;
 }
 
+namespace {
+
+/// The handle libdxfrw's DXF codec always regenerates the root
+/// NamedObjectsDictionary at.
+constexpr std::uint32_t kRootDictionaryHandle = 0xC;
+
+}  // namespace
+
+void DXFimpl::addDictionary(const DRW_Dictionary& data) {
+    // Only the root. Every other dictionary comes through addRawDxfObject and
+    // is re-emitted verbatim; what is missing is the entry in the root that
+    // named it.
+    if (data.handle != kRootDictionaryHandle && data.parentHandle != 0) {
+        return;
+    }
+
+    for (const auto& entry : data.m_entries) {
+        if (entry.m_handle == 0 || entry.m_name.empty()) {
+            continue;
+        }
+        _preserved.rootDictEntries.emplace_back(entry.m_name, entry.m_handle);
+    }
+}
+
 void DXFimpl::attachPreservedRecords() {
     // The header travels even when there is nothing else to carry: a drawing's
     // units are worth keeping on their own.
@@ -1622,6 +1648,96 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
             LOG_INFO << "remapping " << remap.size()
                      << " preserved handle(s) away from the codec's own structural handles";
             dxfW->setHandleRemap(remap);
+        }
+
+        // Put the root dictionary's entries back, for the dictionaries this
+        // save really does re-emit.
+        //
+        // libdxfrw regenerates the root NamedObjectsDictionary holding only
+        // ACAD_GROUP and routes every other named dictionary through the raw
+        // net, so without this the preserved dictionaries land in the file
+        // with nothing naming them. Readers treat them as orphans and delete
+        // them -- and with them the materials, visual styles and detail-view
+        // styles that hang off them. On a corpus of real drawings the root
+        // went from nineteen entries to one, every time, and the save said
+        // nothing.
+        //
+        // An entry is only spliced when everything it reaches is re-emitted.
+        // Naming a dictionary whose own children are missing is worse than
+        // leaving it detached: ACAD_LAYOUT is in the raw net but LAYOUT
+        // objects are not, so re-attaching it hands the reader a dictionary
+        // pointing at handles that either belong to something else now or do
+        // not exist, and at least one reader refuses the file outright.
+        std::vector<std::pair<std::string, std::string>> rootEntries;
+        std::size_t detached = 0;
+        if (!_replay->rootDictEntries.empty()) {
+            std::map<std::uint32_t, const DRW_RawDxfObject*> emitted;
+            for (const auto& object : _replay->objects) {
+                if (object.handle != 0) {
+                    emitted[object.handle] = &object;
+                }
+            }
+
+            std::set<std::uint32_t> walking;
+            const std::function<bool(std::uint32_t)> wholeSubtreeSurvives =
+                [&](std::uint32_t handle) -> bool {
+                    const auto found = emitted.find(handle);
+                    if (found == emitted.end()) {
+                        return false;
+                    }
+                    if (!walking.insert(handle).second) {
+                        return true;  // already on this path; not a reason to refuse
+                    }
+                    bool survives = true;
+                    for (const auto& group : found->second->groups) {
+                        // 350 and 360 are what a dictionary names its entries
+                        // with. Owners (330) and reactors are left out on
+                        // purpose: they point back at the root, which the
+                        // codec regenerates rather than re-emits.
+                        if (group.code() != 350 && group.code() != 360) {
+                            continue;
+                        }
+                        if (group.type() != DRW_Variant::STRING || group.content.s == nullptr) {
+                            continue;
+                        }
+                        std::uint32_t child = 0;
+                        try {
+                            child = static_cast<std::uint32_t>(
+                                std::stoul(*group.content.s, nullptr, 16));
+                        } catch (const std::exception&) {
+                            continue;  // not a handle; nothing to resolve
+                        }
+                        if (child != 0 && !wholeSubtreeSurvives(child)) {
+                            survives = false;
+                            break;
+                        }
+                    }
+                    walking.erase(handle);
+                    return survives;
+                };
+
+            for (const auto& entry : _replay->rootDictEntries) {
+                if (!wholeSubtreeSurvives(entry.second)) {
+                    detached++;
+                    continue;
+                }
+                const auto moved = remap.find(entry.second);
+                const std::uint32_t handle =
+                    moved == remap.end() ? entry.second : moved->second;
+                rootEntries.emplace_back(entry.first, dxfW->toHexStrHandle(handle));
+            }
+
+            if (!rootEntries.empty()) {
+                dxfW->setRootDictEntries(rootEntries);
+            }
+            if (detached > 0) {
+                // Written, but with nothing naming them: a reader is entitled
+                // to prune them. Saying so is the difference between a save
+                // the user can act on and one that looks complete.
+                LOG_WARNING << filename << " carries " << detached
+                            << " dictionary/dictionaries this build cannot re-attach to the root";
+                _loss.droppedByType["unreferenced dictionaries"] += detached;
+            }
         }
 
         dxfW->setDxfClasses(_replay->classes);

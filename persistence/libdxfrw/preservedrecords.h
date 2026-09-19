@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <drw_base.h>
@@ -66,6 +68,17 @@ public:
 
     /** CLASSES entries, needed for the records above to be readable again. */
     std::vector<DRW_Class> classes;
+
+    /**
+     * The source root NamedObjectsDictionary's entries, name and item handle.
+     *
+     * libdxfrw regenerates the root dictionary at its fixed handle and routes
+     * every other named dictionary through the raw net above, which leaves
+     * them in the file with nothing pointing at them. This is the half of the
+     * contract the caller keeps: the entries that named them, so a save can
+     * splice back the ones whose targets it actually re-emits.
+     */
+    std::vector<std::pair<std::string, std::uint32_t>> rootDictEntries;
 
     /**
      * Header variables the drawing set and LibreCAD cannot otherwise remember.
