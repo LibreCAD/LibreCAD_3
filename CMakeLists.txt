@@ -171,11 +171,15 @@ if(MSVC)
     find_package(glew REQUIRED)
     include_directories(${glew_INCLUDE_DIR})
     find_package(glm REQUIRED)
-    include_directories(${glm_INCLUDE_DIR})
+	include_directories(${glm_INCLUDE_DIR})
     add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " /w /wd4710 /wd4711 /wd4668 /wd5045 /wd9002 /wd4365 /wd4242")
-    SET(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} " /w /wd4710 /wd4711")
+    # Keep inherited toolchain flags as one string.  set(VAR ${VAR} "...")
+    # creates a CMake list and inserts a semicolon into options such as /EHsc,
+    # which MSVC then rejects as /EH;.  Do not use /w here: it conflicts with
+    # the toolchain's /W1, and warning C9002 cannot be disabled with /wd.
+    string(APPEND CMAKE_CXX_FLAGS " /wd4710 /wd4711 /wd4668 /wd5045 /wd4365 /wd4242")
+    string(APPEND CMAKE_C_FLAGS " /wd4710 /wd4711")
     # Kaguya uses a pointer to a local variable (in object.hpp file) to store class conversions.
 	# When used in different modules, the variable doesn't have the same address, preventing to mix kernel and UI bindings
 	add_definitions("-DKAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1")
