@@ -163,6 +163,7 @@ jobs:
         run: |
           cmake -S . -B build-asan -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DWITH_DWG_IMPORT=ON -DWITH_QT_UI=OFF -DWITH_PYTHONSCRIPT=OFF \
             -DWITH_LUACMDINTERFACE=OFF -DWITH_RENDERING_UNITTESTS=OFF \
             -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -Wno-error" \
