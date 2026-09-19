@@ -64,17 +64,21 @@ set -euo pipefail
 #
 # So give apt a plain-amd64 view of the same mirror: same URIs, same keyring,
 # same suites, with only the architecture spelled out.
-# Unconditionally, and deliberately so. The first attempt guarded this on
-# "does a *_binary-amd64_Packages list already exist", which is always true on
-# this image and says nothing: the runner carries third-party repositories
-# (Microsoft's is published under dists/resolute/) whose names match that
-# pattern while the Ubuntu suites remain amd64v3-only. Writing the source every
-# time costs one apt-get update and cannot be fooled by a neighbour's filename.
+# The URI has to differ from the one ubuntu.sources already uses. An earlier
+# attempt pointed this at the same mirror+file: and apt discarded it as a
+# duplicate --
+#
+#   W: Target Packages (main/binary-amd64/Packages) is configured multiple
+#      times in .../librecad-plain-amd64.sources:1 and .../ubuntu.sources:1
+#
+# -- fetching the target once, in its amd64v3 form, and leaving no plain-amd64
+# list on disk at all. A distinct URI makes it a distinct target, so apt
+# downloads the binary-amd64 index alongside the variant one.
 . /etc/os-release
 sudo tee /etc/apt/sources.list.d/librecad-plain-amd64.sources >/dev/null <<SOURCE
 Types: deb
-URIs: mirror+file:/etc/apt/apt-mirrors.txt
-Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates ${VERSION_CODENAME}-security
+URIs: http://archive.ubuntu.com/ubuntu
+Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates
 Components: main universe restricted multiverse
 Architectures: amd64
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
@@ -83,7 +87,7 @@ sudo apt-get update
 
 # And say whether it worked, because the failure mode is silent.
 echo "Ubuntu plain-amd64 indexes now present:"
-ls /var/lib/apt/lists/ | grep -E "apt-mirrors.*_binary-amd64_Packages" || \
+ls /var/lib/apt/lists/ | grep -E "_binary-amd64_Packages" | grep -v -E "microsoft|google" || \
     echo "  NONE -- the stage-package resolve below will find nothing"
 
 if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap; then
@@ -109,7 +113,11 @@ if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.s
     echo "--- snapcraft's own execution log ---"
     # The glob has to be expanded as root, or the unprivileged shell resolves
     # it against a directory it cannot read and tail gets the literal pattern.
-    sudo sh -c 'tail -120 /root/.local/state/snapcraft/log/*.log' 2>/dev/null || true
+    # Filtered, not tailed: the tail of that log is hundreds of identical
+    # "configured multiple times" warnings, which crowd out the one line that
+    # matters.
+    sudo sh -c 'grep -hiE "error|not found|traceback|exception|Fetching|Installing" \
+        /root/.local/state/snapcraft/log/*.log | tail -40' 2>/dev/null || true
     exit 1
 fi
 
