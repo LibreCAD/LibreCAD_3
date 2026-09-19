@@ -78,6 +78,18 @@ public:
 
     DXFimpl(std::shared_ptr<lc::storage::Document> document) : _document(document) {}
 
+    /**
+     * Tell the reader the file is a DWG.
+     *
+     * The DWG reader never fills in DRW_Block::flags, so a DWG's anonymous
+     * blocks arrive looking exactly like user blocks. Saying so up front lets
+     * addBlock fall back to the *D<n> naming convention for that one source,
+     * without loosening the test for DXF, where the flag is real.
+     */
+    void setSourceIsDwg(bool isDwg) {
+        _sourceIsDwg = isDwg;
+    }
+
     // READ FUNCTIONALITY
     void addHeader(const DRW_Header* data) override;
 
@@ -162,6 +174,28 @@ public:
 
     void addViewport(const DRW_Viewport& data) override;
 
+    /**
+     * A layout is the page a drawing is printed from: its paper size, its
+     * viewports, its title block. LibreCAD models none of it, and libdxfrw
+     * parses LAYOUT and PLOTSETTINGS into typed objects rather than offering
+     * them to the raw passthrough net -- so unlike a record this build has
+     * never heard of, they cannot be kept verbatim and put back. Every save
+     * destroys them.
+     *
+     * They are counted here because that is the only place this build sees
+     * them at all: the writer is built from a document and has no idea they
+     * existed. Counting is not keeping, but it is the difference between a
+     * user who knows their layouts are gone and one who finds out later.
+     *
+     * The real fix belongs upstream, where processLayout and processPlotSettings
+     * need the addRawDxfObject call their siblings processScale, processSun and
+     * processDictionaryVar already make.
+     */
+    void addLayout(const DRW_Layout& data) override {
+        (void)data;
+        recordLoss("LAYOUT");
+    }
+
     void linkImage(const DRW_ImageDef* data) override;
 
     void addComment(const char* comment) override {}
@@ -187,6 +221,18 @@ public:
     void addDxfClass(const DRW_Class& data) override {
         _preserved.classes.push_back(data);
     }
+
+    /**
+     * The root dictionary is the other half of the passthrough contract.
+     *
+     * libdxfrw routes every named dictionary into the raw net and regenerates
+     * the root itself, holding only ACAD_GROUP. Nothing then points at the
+     * preserved ones: they go into the file as orphans, which readers prune --
+     * along with the materials, visual styles and detail-view styles hanging
+     * off them. Keeping the entries here is what lets the save put back the
+     * names for the ones it really does re-emit.
+     */
+    void addDictionary(const DRW_Dictionary& data) override;
 
     /** What this read is holding on to for the next save. */
     const PreservedRecords& preserved() const {
@@ -291,7 +337,10 @@ public:
 
     void writeObjects() override;
 
-    void addPlotSettings(const DRW_PlotSettings *data) override {}
+    void addPlotSettings(const DRW_PlotSettings *data) override {
+        (void)data;
+        recordLoss("PLOTSETTINGS");
+    }
 
     void getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_CSPtr& entity);
 
@@ -385,6 +434,20 @@ public:
 
     /** The *D block name assigned to each dimension, by entity id. */
     std::map<ID_DATATYPE, std::string> _dimensionBlocks;
+
+    /// Whether this read has already seen a DICTIONARY in the OBJECTS
+    /// section. libdxfrw identifies the root partly by position -- the DXF
+    /// specification puts the named object dictionary first -- and the two
+    /// have to agree on which record that is.
+    bool _seenDictionary{false};
+
+    /// Whether the document being read came from a DWG. The DWG reader leaves
+    /// DRW_Block::flags at zero, so the anonymous bit a DXF carries is simply
+    /// not there and the naming convention has to stand in for it.
+    bool _sourceIsDwg{false};
+
+    static bool isAnonymousDimensionBlockName(const std::string& name);
+    static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
     unsigned int _nextDimensionBlock{1};
 
 

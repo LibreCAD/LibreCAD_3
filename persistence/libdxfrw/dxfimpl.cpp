@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <functional>
+#include <map>
 #include <set>
 
 #include <cad/primitive/circle.h>
@@ -285,7 +287,18 @@ void DXFimpl::addBlock(const DRW_Block& data) {
         }
 
         if(_currentBlock == nullptr) {
-            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base);
+            // Bit 1 of BLOCK's code 70: the source generated this block itself.
+            // The writer regenerates the dimension geometry blocks and has to
+            // leave the rest alone, and this flag is the only honest way to
+            // tell them apart -- the *D<n> naming convention is a convention,
+            // not a guarantee.
+            //
+            // The DWG reader does not fill flags in, so a DWG's own anonymous
+            // blocks arrive unmarked; _sourceIsDwg stands in for the bit there,
+            // where the convention is all there is.
+            const bool anonymous = (data.flags & 1) != 0
+                || (_sourceIsDwg && isAnonymousDimensionBlockName(data.name));
+            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base, anonymous);
         }
         _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
@@ -1363,6 +1376,67 @@ static DRW::Version dxfRevisionForType(lc::persistence::File::Type type) {
     return DRW::UNKNOWNV;
 }
 
+namespace {
+
+/// The handle libdxfrw's DXF codec always regenerates the root
+/// NamedObjectsDictionary at.
+constexpr std::uint32_t kRootDictionaryHandle = 0xC;
+
+/// And the ACAD_GROUP dictionary beside it, which the codec also regenerates
+/// and fills from setGroups().
+constexpr std::uint32_t kGroupDictionaryHandle = 0xD;
+
+}  // namespace
+
+void DXFimpl::addDictionary(const DRW_Dictionary& data) {
+    guarded("DICTIONARY", nullptr, [&] {
+        // libdxfrw calls this for every DICTIONARY, root or not, and separately
+        // routes the non-root ones into the raw net. Only the root's entries
+        // are wanted here: every other dictionary is re-emitted verbatim,
+        // carrying its own entries with it, and what is missing is the entry in
+        // the root that named it.
+        //
+        // So the test has to be the same test libdxfrw uses, or the two
+        // disagree about one dictionary and its children get named twice --
+        // once by the preserved dictionary and once, directly, from the
+        // regenerated root. Asking only whether an owner group was present is
+        // what libdxfrw used to do and stopped doing, because code 330 is
+        // optional on a DICTIONARY: an owner-less dictionary that is not the
+        // root is ordinary, and 284 of 1840 real drawings hold one.
+        const bool firstInObjects = !_seenDictionary;
+        _seenDictionary = true;
+
+        // ACAD_GROUP is regenerated too, and its entries name groups rather
+        // than children of the root.
+        if (data.handle == kGroupDictionaryHandle) {
+            return;
+        }
+
+        const bool root = data.handle == kRootDictionaryHandle
+                          || (firstInObjects && data.parentHandle == 0);
+        if (!root) {
+            return;
+        }
+
+        for (const auto& entry : data.m_entries) {
+            if (entry.m_handle == 0 || entry.m_name.empty()) {
+                continue;
+            }
+            // The codec writes its own entries for the dictionaries it
+            // regenerates. Carrying the source's copy across would put a
+            // second ACAD_GROUP key in the root -- and, since the codec does
+            // not route handle D into the raw net, it could never be spliced
+            // anyway, so it would be counted as a loss on every ordinary
+            // drawing.
+            if (entry.m_handle == kRootDictionaryHandle
+                || entry.m_handle == kGroupDictionaryHandle) {
+                continue;
+            }
+            _preserved.rootDictEntries.emplace_back(entry.m_name, entry.m_handle);
+        }
+    });
+}
+
 void DXFimpl::attachPreservedRecords() {
     // The header travels even when there is nothing else to carry: a drawing's
     // units are worth keeping on their own.
@@ -1441,6 +1515,17 @@ static std::shared_ptr<const lc::persistence::PreservedRecords> preservedOn(
 
     return std::dynamic_pointer_cast<const lc::persistence::PreservedRecords>(found->second);
 }
+
+namespace {
+
+/// The first code-5 handle libdxfrw's allocator will mint. Everything the DXF
+/// codec writes as a fixed structural literal -- table heads, LAYER "0", the
+/// *Model_Space and *Paper_Space blocks, the root dictionary -- is below it,
+/// which is what makes it a sound test for "this handle may be written twice".
+/// See HandleAllocator::m_next in third_party/libdxfrw/src/handle_allocator.h.
+constexpr std::uint32_t kFirstMintedHandle = 0x30;
+
+}  // namespace
 
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
@@ -1550,14 +1635,168 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         // Every preserved handle is claimed before the write starts, so the
         // handles the typed writers mint cannot collide with one being
         // re-emitted verbatim.
-        for (const auto& object : _replay->objects) {
-            if (object.handle != 0) {
-                dxfW->reserveHandle(object.handle);
+        //
+        // Reserving is not enough on its own. It constrains only the handles
+        // the allocator mints; the codec also writes a fixed set of structural
+        // handles as literals -- the table heads, layer "0", the *Model_Space
+        // and *Paper_Space blocks, the root dictionary -- and those go out
+        // whatever we reserve. A preserved record that arrived carrying one of
+        // them was re-emitted under the same code 5 as the codec's own record,
+        // so the file went out with two objects claiming one identity and every
+        // 330/350 reference to it ambiguous. The save reported success. Four of
+        // 146 ordinary ASCII DXFs in a real corpus came out that way.
+        //
+        // The whole fixed set is below 0x30, which the allocator documents as
+        // the first handle it will ever mint, so that is the test: anything
+        // below it gets a fresh handle and the codec rewrites every reference
+        // along with the record's own code 5. A handle below 0x30 that would
+        // not actually have collided is moved too, which costs nothing -- the
+        // identity of a preserved record is only ever reached through those
+        // references.
+        // Two passes, and the order is the point. A fresh handle comes from the
+        // top of the reserved range, so every handle being kept verbatim has
+        // to be reserved before any is handed out -- otherwise a record early
+        // in the walk is moved onto a handle a record later in the walk holds
+        // for itself, and the file goes out with the collision this is here to
+        // prevent.
+        std::map<std::uint32_t, std::uint32_t> remap;
+        std::vector<std::uint32_t> needFresh;
+        const auto claim = [&](std::uint32_t handle) {
+            if (handle == 0) {
+                return;
             }
+            if (handle >= kFirstMintedHandle) {
+                dxfW->reserveHandle(handle);
+                return;
+            }
+            needFresh.push_back(handle);
+        };
+
+        for (const auto& object : _replay->objects) {
+            claim(object.handle);
         }
         for (const auto& entity : _replay->entities) {
-            if (entity.handle != 0) {
-                dxfW->reserveHandle(entity.handle);
+            claim(entity.handle);
+        }
+
+        for (const std::uint32_t handle : needFresh) {
+            if (remap.count(handle) != 0) {
+                continue;
+            }
+            // highWaterHandle(), not allocHandle(): write() resets the handles
+            // minted by the previous attempt, and one taken here would be
+            // forgotten and minted again during the write -- which just moves
+            // the collision. A reservation is what survives the reset.
+            const std::uint32_t fresh = dxfW->highWaterHandle();
+            if (dxfW->reserveHandle(fresh)) {
+                remap[handle] = fresh;
+            }
+        }
+
+        if (!remap.empty()) {
+            LOG_INFO << "remapping " << remap.size()
+                     << " preserved handle(s) away from the codec's own structural handles";
+            dxfW->setHandleRemap(remap);
+        }
+
+        // Put the root dictionary's entries back, for the dictionaries this
+        // save really does re-emit.
+        //
+        // libdxfrw regenerates the root NamedObjectsDictionary holding only
+        // ACAD_GROUP and routes every other named dictionary through the raw
+        // net, so without this the preserved dictionaries land in the file
+        // with nothing naming them. Readers treat them as orphans and delete
+        // them -- and with them the materials, visual styles and detail-view
+        // styles that hang off them. On a corpus of real drawings the root
+        // went from nineteen entries to one, every time, and the save said
+        // nothing.
+        //
+        // An entry is only spliced when everything it reaches is re-emitted.
+        // Naming a dictionary whose own children are missing is worse than
+        // leaving it detached: ACAD_LAYOUT is in the raw net but LAYOUT
+        // objects are not, so re-attaching it hands the reader a dictionary
+        // pointing at handles that either belong to something else now or do
+        // not exist, and at least one reader refuses the file outright.
+        std::vector<std::pair<std::string, std::string>> rootEntries;
+        std::size_t detached = 0;
+        if (!_replay->rootDictEntries.empty()) {
+            std::map<std::uint32_t, const DRW_RawDxfObject*> emitted;
+            for (const auto& object : _replay->objects) {
+                if (object.handle != 0) {
+                    emitted[object.handle] = &object;
+                }
+            }
+
+            // Answers are remembered, not just cycle-guarded. Dictionaries
+            // form a graph, not a tree -- several of them name the same
+            // material or visual style -- and re-walking each shared subtree
+            // once per path that reaches it is exponential in the depth.
+            std::set<std::uint32_t> walking;
+            std::map<std::uint32_t, bool> settled;
+            const std::function<bool(std::uint32_t)> wholeSubtreeSurvives =
+                [&](std::uint32_t handle) -> bool {
+                    const auto remembered = settled.find(handle);
+                    if (remembered != settled.end()) {
+                        return remembered->second;
+                    }
+                    const auto found = emitted.find(handle);
+                    if (found == emitted.end()) {
+                        settled[handle] = false;
+                        return false;
+                    }
+                    if (!walking.insert(handle).second) {
+                        return true;  // already on this path; not a reason to refuse
+                    }
+                    bool survives = true;
+                    for (const auto& group : found->second->groups) {
+                        // 350 and 360 are what a dictionary names its entries
+                        // with. Owners (330) and reactors are left out on
+                        // purpose: they point back at the root, which the
+                        // codec regenerates rather than re-emits.
+                        if (group.code() != 350 && group.code() != 360) {
+                            continue;
+                        }
+                        if (group.type() != DRW_Variant::STRING || group.content.s == nullptr) {
+                            continue;
+                        }
+                        std::uint32_t child = 0;
+                        try {
+                            child = static_cast<std::uint32_t>(
+                                std::stoul(*group.content.s, nullptr, 16));
+                        } catch (const std::exception&) {
+                            continue;  // not a handle; nothing to resolve
+                        }
+                        if (child != 0 && !wholeSubtreeSurvives(child)) {
+                            survives = false;
+                            break;
+                        }
+                    }
+                    walking.erase(handle);
+                    settled[handle] = survives;
+                    return survives;
+                };
+
+            for (const auto& entry : _replay->rootDictEntries) {
+                if (!wholeSubtreeSurvives(entry.second)) {
+                    detached++;
+                    continue;
+                }
+                const auto moved = remap.find(entry.second);
+                const std::uint32_t handle =
+                    moved == remap.end() ? entry.second : moved->second;
+                rootEntries.emplace_back(entry.first, dxfW->toHexStrHandle(handle));
+            }
+
+            if (!rootEntries.empty()) {
+                dxfW->setRootDictEntries(rootEntries);
+            }
+            if (detached > 0) {
+                // Written, but with nothing naming them: a reader is entitled
+                // to prune them. Saying so is the difference between a save
+                // the user can act on and one that looks complete.
+                LOG_WARNING << filename << " carries " << detached
+                            << " dictionary/dictionaries this build cannot re-attach to the root";
+                _loss.droppedByType["unreferenced dictionaries"] += detached;
             }
         }
 
@@ -2757,15 +2996,30 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     }
 }
 
-/// Whether a block name is a writer-generated anonymous dimension block, *D<n>.
-/// These hold the geometry a dimension is drawn with. LibreCAD models
-/// dimensions natively and mints these again on every write, so the ones a
-/// source file carries are not data to preserve.
-static bool isAnonymousDimensionBlock(const std::string& name) {
+/// Whether a block name follows the *D<n> convention writers use for the
+/// anonymous blocks that hold a dimension's geometry.
+///
+/// A name alone does not make a block regenerable -- see
+/// isRegeneratedDimensionBlock() -- but it is what the minting loop must not
+/// collide with, so the two callers need the test on its own as well.
+bool DXFimpl::isAnonymousDimensionBlockName(const std::string& name) {
     if(name.size() < 3 || name[0] != '*' || (name[1] != 'D' && name[1] != 'd')) {
         return false;
     }
     return name.find_first_not_of("0123456789", 2) == std::string::npos;
+}
+
+/// Whether this writer will mint a replacement for the given block, and may
+/// therefore leave it out.
+///
+/// Both halves matter. Without the name test an anonymous block of some other
+/// kind -- a *U<n> group, a hatch's boundary -- would be dropped with nothing
+/// to take its place. Without the anonymous flag, a block that merely looks
+/// like a dimension block is deleted along with everything in it: the drawing
+/// opens, the INSERT that placed it now points at freshly minted dimension
+/// geometry, and it draws arrowheads where the user put a circle.
+bool DXFimpl::isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block) {
+    return block->anonymous() && isAnonymousDimensionBlockName(block->name());
 }
 
 void DXFimpl::writeBlockRecords() {
@@ -2776,7 +3030,7 @@ void DXFimpl::writeBlockRecords() {
         // collides with the minted names -- libdxfrw refuses a duplicate
         // BLOCK_RECORD and the whole save is refused -- and keeping them would
         // grow the drawing by a block per dimension on every save-and-reopen.
-        if(isAnonymousDimensionBlock(block->name())) {
+        if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
         dxfW->writeBlockRecord(block->name());
@@ -2787,14 +3041,27 @@ void DXFimpl::writeBlockRecords() {
     // start from the same base, which is why the base is computed here and left
     // in the member for writeBlocks() to pick up rather than recomputed there.
     //
-    // The base has to clear the *D names the document already holds. A drawing
-    // read from any conforming file arrives with its own anonymous dimension
-    // blocks -- addBlock takes them in like any other -- and libdxfrw refuses a
-    // duplicate BLOCK_RECORD name, which fails the whole write. Starting at 1
-    // therefore lost the entire save, silently, for every drawing that had been
-    // through a dimension-bearing file once already, including one this
-    // application wrote a moment earlier.
+    // The base has to clear every *D name that survived the loop above.
+    // libdxfrw refuses a duplicate BLOCK_RECORD name and fails the whole write,
+    // so a minted name landing on a kept block loses the entire save, silently.
+    // The blocks this writer regenerates are gone by here and cannot collide;
+    // it is the ones it deliberately kept -- user content under a *D name, an
+    // anonymous block from a file this build does not model -- that the count
+    // has to start above.
     _nextDimensionBlock = 1;
+    for(const auto& block : _document->blocks()) {
+        if(isRegeneratedDimensionBlock(block) || !isAnonymousDimensionBlockName(block->name())) {
+            continue;
+        }
+        try {
+            const unsigned long used = std::stoul(block->name().substr(2));
+            if(used >= _nextDimensionBlock) {
+                _nextDimensionBlock = static_cast<unsigned int>(used) + 1;
+            }
+        } catch(const std::exception&) {
+            // A suffix too long to be a number cannot be one this writer mints.
+        }
+    }
     unsigned int next = _nextDimensionBlock;
     for(std::size_t i = 0; i < allDimensions().size(); i++) {
         dxfW->writeBlockRecord("*D" + std::to_string(next++));
@@ -3190,23 +3457,27 @@ std::string DXFimpl::writeDimensionBlock(const lc::entity::CADEntity_CSPtr& enti
 }
 
 void DXFimpl::writeBlocks() {
-    for(const auto& block : _document->blocks()) {
-        // Left out for the same reason as in writeBlockRecords(): the record
-        // pass skipped these, so a block written here would have no record.
-        if(isAnonymousDimensionBlock(block->name())) {
-            continue;
-        }
-        writeBlock(block);
-    }
-
-    // Then one anonymous block per dimension, holding the geometry it draws.
-    // This runs before writeEntities(), which is what lets the DIMENSION record
-    // name a block that already exists.
+    // One anonymous block per dimension first, holding the geometry it draws.
+    // writeDimension() names that block from _dimensionBlocks, so the map has
+    // to be complete before anything writes a DIMENSION -- and a dimension
+    // inside a user block is written by the loop below, not by writeEntities().
+    // Minting after the user blocks left those dimensions with no group-2 name
+    // and the block they owned unreferenced: geometry in the file that nothing
+    // drew, and a dimension the reader had to guess at.
     for(const auto& entity : allDimensions()) {
         const auto name = writeDimensionBlock(entity);
         if (!name.empty()) {
             _dimensionBlocks[entity->id()] = name;
         }
+    }
+
+    for(const auto& block : _document->blocks()) {
+        // Left out for the same reason as in writeBlockRecords(): the record
+        // pass skipped these, so a block written here would have no record.
+        if(isRegeneratedDimensionBlock(block)) {
+            continue;
+        }
+        writeBlock(block);
     }
 }
 
@@ -3214,6 +3485,11 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     DRW_Block drwBlock;
 
     drwBlock.name = block->name();
+    // Code 70 bit 1. A kept anonymous block that goes out unmarked is
+    // indistinguishable from user content on the next read, so it would be
+    // kept forever -- and one that really is user content must not acquire the
+    // mark and be dropped on the next save.
+    drwBlock.flags = block->anonymous() ? 1 : 0;
     drwBlock.basePoint.x = block->base().x();
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();

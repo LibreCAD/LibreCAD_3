@@ -1903,6 +1903,43 @@ std::map<std::string, std::size_t> handlesInFile(const std::string& path) {
     return handles;
 }
 
+/** The code-5 handle and code-330 owner of each named record, last one wins. */
+struct RecordIdentity {
+    std::string handle;
+    std::string owner;
+};
+std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) {
+    std::map<std::string, RecordIdentity> identities;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto trimmed = code.find_first_not_of(" \t");
+        const std::string group = trimmed == std::string::npos ? code : code.substr(trimmed);
+
+        for (auto& c : value) {
+            c = static_cast<char>(::toupper(static_cast<unsigned char>(c)));
+        }
+
+        if (group == "0") {
+            record = value;
+        } else if (record.empty()) {
+            continue;
+        } else if (group == "5") {
+            identities[record].handle = value;
+        } else if (group == "330" && identities[record].owner.empty()) {
+            identities[record].owner = value;
+        }
+    }
+
+    return identities;
+}
+
 }  // namespace
 
 // A DXF holds far more than geometry: layouts, plot settings, table styles,
@@ -1980,6 +2017,67 @@ TEST(DxfRoundTripTest, ADimensionDoesNotCostTheWholeR12File) {
     }
 }
 
+// A save through a symlink has to land on the file the link points at. The
+// writer publishes through a temporary and renameat(), which replaces the name
+// it is handed -- so without resolving first, saving to drawing.dxf -> the real
+// file turned the link into a regular file, left the real file holding the old
+// drawing, and reported success. The user's next open of the real path showed
+// none of their edits.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
+    // boost::filesystem throughout, which is what the rest of this file uses
+    // -- mixing it with std::filesystem in one translation unit buys nothing.
+    // The link variable is not called "link" because <unistd.h> already has
+    // one, and `link.string()` then resolves to a member of a function type.
+    const boost::filesystem::path directory =
+        boost::filesystem::temp_directory_path()
+        / ("libdxfrw-link-save-" + std::to_string(::getpid()));
+    boost::system::error_code ignored;
+    boost::filesystem::remove_all(directory, ignored);
+    boost::filesystem::create_directories(directory, ignored);
+
+    const boost::filesystem::path real = directory / "real.dxf";
+    const boost::filesystem::path linkPath = directory / "link.dxf";
+    {
+        std::ofstream seed(real.string());
+        seed << "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n";
+    }
+    boost::system::error_code linked;
+    boost::filesystem::create_symlink(real, linkPath, linked);
+    if (linked) {
+        GTEST_SKIP() << "symlinks unavailable here";
+    }
+
+    auto doc = newDocument();
+    auto builder = std::make_shared<lc::operation::Builder>(doc, "seed");
+    auto entities = std::make_shared<lc::operation::EntityBuilder>(doc);
+    lc::builder::LineBuilder line;
+    line.setLayer(doc->layerByName("0"));
+    line.setStart({0.0, 0.0});
+    line.setEnd({42.0, 0.0});
+    entities->appendEntity(line.build());
+    builder->append(entities);
+    builder->execute();
+
+    const auto written = lc::persistence::File::exportFile(
+        doc, linkPath.string(), lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(written.ok);
+
+    EXPECT_TRUE(boost::filesystem::is_symlink(boost::filesystem::symlink_status(linkPath)))
+        << "the link itself was replaced by a regular file";
+
+    // The drawing has to be in the file the link points at, not beside it.
+    auto reopened = newDocument();
+    const auto reread = lc::persistence::File::importFile(
+        reopened, real.string(), lc::persistence::File::LIBDXFRW);
+    ASSERT_TRUE(reread.ok);
+    EXPECT_EQ(reopened->entityContainer().asVector().size(), 1u)
+        << "the real file did not receive the save";
+
+    boost::filesystem::remove_all(directory, ignored);
+}
+
 TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
     const std::string source = fixture("raw_entities.dxf");
     ASSERT_TRUE(boost::filesystem::exists(source));
@@ -2050,6 +2148,271 @@ TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
     for (const auto& handle : handlesInFile(saved)) {
         EXPECT_EQ(handle.second, 1u) << "handle " << handle.first << " is used twice";
     }
+
+    boost::filesystem::remove(saved);
+}
+
+// Reserving a preserved handle stops the allocator minting it again. It does
+// not stop the codec writing its own fixed structural handles -- the table
+// heads, LAYER "0", the *Model_Space block, the root dictionary -- because
+// those go out as literals whatever is reserved. A preserved record that
+// arrived carrying one of them was re-emitted under the same code 5 as the
+// codec's record, so the file went out with two objects claiming one identity
+// and every reference to it ambiguous, and the save reported success.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
+    const std::string source = fixture("raw_objects_low_handles.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+
+    // The fixture is raw_objects.dxf with its three preserved handles moved
+    // onto codec literals: 1F is BLOCK_RECORD *Model_Space, 10 is LAYER "0",
+    // 12 is APPID "ACAD".
+    const auto sourceHandles = handlesInFile(source);
+    ASSERT_EQ(sourceHandles.count("10"), 1u) << "the fixture changed";
+    ASSERT_EQ(sourceHandles.at("10"), 1u) << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("low-handles");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, type).ok);
+
+    for (const auto& handle : handlesInFile(saved)) {
+        EXPECT_EQ(handle.second, 1u)
+            << "handle " << handle.first << " is used twice: a preserved record "
+            << "kept a handle the codec writes itself";
+    }
+
+    // The records are still there, and still point at each other: remapping is
+    // only correct if every reference moved with the handle it names.
+    const auto after = recordsInSection(saved, "OBJECTS");
+    EXPECT_EQ(after.count("DICTIONARYVAR"), 1u)
+        << "a record LibreCAD does not model was destroyed";
+    EXPECT_EQ(after.count("ACDBPLACEHOLDER"), 1u)
+        << "a record LibreCAD does not model was destroyed";
+
+    const auto identities = identitiesInFile(saved);
+    ASSERT_EQ(identities.count("DICTIONARYVAR"), 1u);
+    ASSERT_EQ(identities.count("ACDBPLACEHOLDER"), 1u);
+
+    // Both were owned by the fixture's own DICTIONARY. Whatever handle that
+    // dictionary ended up with, the two 330s must still name it and each
+    // other's -- a remap is only correct if every reference moved with the
+    // handle it names.
+    EXPECT_EQ(identities.at("DICTIONARYVAR").owner,
+              identities.at("ACDBPLACEHOLDER").owner)
+        << "the two preserved records no longer agree on their owner";
+    EXPECT_NE(identities.at("DICTIONARYVAR").owner, "")
+        << "the preserved records lost their owner";
+    EXPECT_NE(identities.at("DICTIONARYVAR").handle,
+              identities.at("ACDBPLACEHOLDER").handle)
+        << "two preserved records were given one handle";
+
+    boost::filesystem::remove(saved);
+}
+
+/** The names a DXF's root NamedObjectsDictionary (handle C) lists. */
+std::set<std::string> rootDictNames(const std::string& path) {
+    std::set<std::string> names;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+    bool inRoot = false;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto trimmed = code.find_first_not_of(" \t");
+        const std::string group = trimmed == std::string::npos ? code : code.substr(trimmed);
+
+        if (group == "0") {
+            if (inRoot) {
+                break;  // the root dictionary ended
+            }
+            record = value;
+        } else if (record == "DICTIONARY" && group == "5") {
+            std::string handle = value;
+            for (auto& c : handle) {
+                c = static_cast<char>(::toupper(static_cast<unsigned char>(c)));
+            }
+            inRoot = handle == "C";
+        } else if (inRoot && group == "3") {
+            names.insert(value);
+        }
+    }
+
+    return names;
+}
+
+// libdxfrw routes every named dictionary through the raw net and regenerates
+// the root holding only ACAD_GROUP, so a preserved dictionary went into the
+// file with nothing naming it. Readers prune orphans, and everything hanging
+// off them goes too. Splicing the source's entries back is the other half of
+// that contract -- but only for the dictionaries this save really does
+// re-emit: naming one whose own children are missing hands the reader a
+// dangling reference, which is worse than leaving it detached.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+// Code 330 is optional on a DICTIONARY, so "carried no owner group" does not
+// mean "is the root" -- 284 of 1840 real drawings hold an owner-less
+// dictionary that is nothing of the kind. libdxfrw decides by handle and by
+// position, and this side has to decide the same way: a dictionary the library
+// preserves is re-emitted carrying its own entries, so harvesting those entries
+// here as well names its children a second time, directly from the regenerated
+// root, and the child's own owner points at only one of the two.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnOwnerLessDictionaryIsNotMistakenForTheRoot) {
+    const std::string source = fixture("root_dict_owner_less.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    ASSERT_EQ(rootDictNames(source), (std::set<std::string>{"ACAD_MYAPP"}))
+        << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("owner-less-dict");
+    boost::filesystem::remove(saved);
+    const auto written = lc::persistence::File::exportFile(doc, saved, type);
+    ASSERT_TRUE(written.ok);
+
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("ACAD_MYAPP"), 1u)
+        << "the dictionary the root really did name is an orphan";
+    EXPECT_EQ(names.count("LC_CHILD"), 0u)
+        << "an owner-less dictionary was harvested as the root, so its child "
+        << "is named from the root as well as from the dictionary that owns it";
+
+    // The codec writes its own ACAD_GROUP entry; the source's copy of it must
+    // not be carried across on top, nor counted as a dictionary left detached.
+    EXPECT_EQ(names.count("ACAD_GROUP"), 1u);
+    EXPECT_EQ(written.loss.droppedByType.count("unreferenced dictionaries"), 0u)
+        << "nothing here is unreachable, so nothing should be reported as such";
+
+    boost::filesystem::remove(saved);
+}
+
+TEST(DxfRoundTripTest, PreservedDictionariesAreNamedFromTheRootAgain) {
+    const std::string source = fixture("root_dict_entries.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    ASSERT_EQ(rootDictNames(source), (std::set<std::string>{"LC_REACHABLE", "LC_DANGLING"}))
+        << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("root-dict");
+    boost::filesystem::remove(saved);
+    const auto written = lc::persistence::File::exportFile(doc, saved, type);
+    ASSERT_TRUE(written.ok);
+
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("LC_REACHABLE"), 1u)
+        << "the dictionary this save re-emitted is still an orphan";
+    EXPECT_EQ(names.count("LC_DANGLING"), 0u)
+        << "a dictionary whose own entry is missing was named from the root anyway";
+    EXPECT_EQ(names.count("ACAD_GROUP"), 1u)
+        << "the codec's own entry was displaced";
+
+    // And the one that could not be re-attached is reported rather than left
+    // to be discovered by whoever opens the file next.
+    EXPECT_EQ(written.loss.droppedByType.count("unreferenced dictionaries"), 1u)
+        << "a dictionary was left detached without saying so";
+
+    boost::filesystem::remove(saved);
+}
+
+// A layout is the page a drawing prints from. LibreCAD models none of it, and
+// libdxfrw parses LAYOUT and PLOTSETTINGS into typed objects instead of handing
+// them to the raw passthrough net, so unlike a record this build has never
+// heard of they cannot be kept verbatim and put back -- every save destroys
+// them. They were also not counted, so the user was told nothing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ALayoutThatCannotBeKeptIsReported) {
+    const std::string source = fixture("layout_object.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    ASSERT_EQ(recordsInSection(source, "OBJECTS").count("LAYOUT"), 1u)
+        << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    EXPECT_EQ(result.loss.droppedByType.count("LAYOUT"), 1u)
+        << "the layout was dropped without saying so";
+
+    // And it really is gone from the save, which is what the count is about.
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+    const std::string saved = uniqueTmpDxf("layout");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, type).ok);
+    EXPECT_EQ(recordsInSection(saved, "OBJECTS").count("LAYOUT"), 0u)
+        << "the layout survived after all -- the count is now wrong";
+
+    boost::filesystem::remove(saved);
+}
+
+// The handle a moved record is moved *to* has to be clear of the handles other
+// preserved records are keeping. Handing them out during the same walk that
+// reserves the verbatim ones moves a record early in the file onto a handle a
+// record later in the file holds for itself -- which is the collision the move
+// exists to prevent, inflicted on a different pair.
+//
+// The fixture is built for it: the first record carries a handle below the
+// codec's range so it has to move, and the second carries 0x30, the first
+// handle the allocator will ever hand out.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AMovedHandleDoesNotLandOnAnotherPreservedRecord) {
+    const std::string source = fixture("raw_objects_first_minted.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    const auto sourceHandles = handlesInFile(source);
+    ASSERT_EQ(sourceHandles.count("10"), 1u) << "the fixture changed";
+    ASSERT_EQ(sourceHandles.count("30"), 1u) << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("first-minted");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, type).ok);
+
+    for (const auto& handle : handlesInFile(saved)) {
+        EXPECT_EQ(handle.second, 1u)
+            << "handle " << handle.first << " is used twice: a moved record "
+            << "landed on one another preserved record was keeping";
+    }
+
+    const auto after = recordsInSection(saved, "OBJECTS");
+    EXPECT_EQ(after.count("DICTIONARYVAR"), 1u) << "a preserved record was destroyed";
+    EXPECT_EQ(after.count("ACDBPLACEHOLDER"), 1u) << "a preserved record was destroyed";
 
     boost::filesystem::remove(saved);
 }
@@ -2349,9 +2712,106 @@ DimensionBlocks dimensionBlocksIn(const std::string& path) {
 // block it names exists and has geometry in it.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+// A block named like a dimension block is not necessarily one. The writer
+// regenerates the anonymous *D<n> blocks that hold dimension geometry, and used
+// to decide which those were from the name alone -- so a block a file carried
+// under a *D name was deleted with everything in it, and the INSERT that placed
+// it was left pointing at whichever dimension's geometry got minted over the
+// name. The drawing opened, looked plausible, and drew arrowheads where the
+// user had put a circle.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ABlockNamedLikeADimensionBlockIsNotDeleted) {
+    const std::string source = uniqueTmpDxf("dimname-source");
+    const std::string saved = uniqueTmpDxf("dimname-saved");
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+
+    // *D1 holds a CIRCLE and carries no code-70 flag: user content, by the only
+    // signal the file offers. *D9 is flagged anonymous, as a real dimension
+    // block is. An INSERT places *D1 out at (50,50).
+    {
+        std::ofstream dxf(source);
+        dxf << "0\nSECTION\n2\nBLOCKS\n"
+            << "0\nBLOCK\n8\n0\n2\n*D1\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*D1\n"
+            << "0\nCIRCLE\n8\n0\n10\n1.0\n20\n2.0\n30\n0.0\n40\n3.0\n"
+            << "0\nENDBLK\n8\n0\n"
+            << "0\nBLOCK\n8\n0\n2\n*D9\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*D9\n"
+            << "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n5.0\n21\n0.0\n31\n0.0\n"
+            << "0\nENDBLK\n8\n0\n"
+            << "0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nINSERT\n8\n0\n2\n*D1\n10\n50.0\n20\n50.0\n30\n0.0\n"
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+
+    // A dimension of our own, so the writer really does mint a *D name.
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::DimLinear>(
+            lc::geo::Coordinate(25, 10, 0), lc::geo::Coordinate(25, 11, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(50, 0, 0), 0.0, 0.0,
+            defaultLayer())}));
+
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto blocks = dimensionBlocksIn(saved);
+
+    // The user's block is still there, still holding its circle -- and the
+    // dimension was given a name of its own rather than this one.
+    ASSERT_EQ(blocks.defined.count("*D1"), 1u) << "the user block *D1 was deleted";
+    EXPECT_GT(blocks.defined.at("*D1"), 0u) << "the CIRCLE in user block *D1 was dropped";
+    ASSERT_EQ(blocks.referenced.size(), 1u);
+    EXPECT_NE(blocks.referenced[0], "*D1")
+        << "the dimension took over the user's block name";
+
+    // The flagged one is machinery: regenerated, so not carried over.
+    EXPECT_EQ(blocks.defined.count("*D9"), 0u)
+        << "an anonymous dimension block was carried over as well as regenerated";
+
+    // And the circle survived the round trip as a drawing, not just as text.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    int circles = 0;
+    for (const auto& block : reopened->blocks()) {
+        if (block->name() != "*D1") {
+            continue;
+        }
+        for (const auto& entity : reopened->entitiesByBlock(block).asVector()) {
+            if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
+                circles++;
+            }
+        }
+    }
+    EXPECT_EQ(circles, 1) << "the circle did not come back";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
 TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
     auto layer = defaultLayer();
     auto doc = newDocument();
+
+    // One of the six lives inside a user block. That one used to come out
+    // nameless: the geometry blocks were minted after the user blocks were
+    // written, so by the time this DIMENSION was emitted there was no name to
+    // put in its group 2 -- and the block minted for it a moment later sat in
+    // the file with nothing pointing at it.
+    auto enclosing = std::make_shared<lc::meta::Block>(
+        "DIMENSION_HOLDER", lc::geo::Coordinate(0.0, 0.0, 0.0));
+    {
+        auto blockBuilder = std::make_shared<lc::operation::Builder>(doc, "add block");
+        blockBuilder->append(std::make_shared<lc::operation::AddBlock>(doc, enclosing));
+        blockBuilder->execute();
+    }
 
     ASSERT_NO_THROW(insertThroughBuilder(doc, {
         std::make_shared<lc::entity::DimLinear>(
@@ -2379,7 +2839,13 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
             lc::TextConst::AttachmentPoint::Middle_center, 0.0, 1.0,
             lc::TextConst::LineSpacingStyle::AtLeast, "",
             lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(210, 0, 0),
-            lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(206, 8, 0), layer)}));
+            lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(206, 8, 0), layer),
+        std::make_shared<lc::entity::DimLinear>(
+            lc::geo::Coordinate(25, 30, 0), lc::geo::Coordinate(25, 31, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(0, 20, 0), lc::geo::Coordinate(50, 20, 0), 0.0, 0.0,
+            layer, nullptr, enclosing)}));
 
     const std::string path = uniqueTmpDxf("dimension-blocks");
     boost::filesystem::remove(path);
@@ -2387,7 +2853,8 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
         doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
 
     const auto blocks = dimensionBlocksIn(path);
-    ASSERT_EQ(blocks.referenced.size(), 5u) << "All five dimension kinds must be written.";
+    ASSERT_EQ(blocks.referenced.size(), 6u)
+        << "All five dimension kinds must be written, plus the one inside a block.";
 
     for (std::size_t i = 0; i < blocks.referenced.size(); i++) {
         const auto& name = blocks.referenced[i];
@@ -2412,5 +2879,22 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
     }
     EXPECT_EQ(dimensions, 5) << "The dimensions themselves must survive the round trip.";
 
+    int inBlock = 0;
+    for (const auto& block : reopened->blocks()) {
+        if (block->name() != "DIMENSION_HOLDER") {
+            continue;
+        }
+        for (const auto& entity : reopened->entitiesByBlock(block).asVector()) {
+            if (std::dynamic_pointer_cast<const lc::entity::Dimension>(entity)) {
+                inBlock++;
+            }
+        }
+    }
+    EXPECT_EQ(inBlock, 1) << "The dimension inside a block must survive too.";
+
     boost::filesystem::remove(path);
 }
+
+
+
+// TEMPORARY corpus probe.
