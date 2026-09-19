@@ -1980,6 +1980,63 @@ TEST(DxfRoundTripTest, ADimensionDoesNotCostTheWholeR12File) {
     }
 }
 
+// A save through a symlink has to land on the file the link points at. The
+// writer publishes through a temporary and renameat(), which replaces the name
+// it is handed -- so without resolving first, saving to drawing.dxf -> the real
+// file turned the link into a regular file, left the real file holding the old
+// drawing, and reported success. The user's next open of the real path showed
+// none of their edits.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
+    const std::filesystem::path directory =
+        std::filesystem::temp_directory_path()
+        / ("libdxfrw-link-save-" + std::to_string(::getpid()));
+    std::error_code ignored;
+    std::filesystem::remove_all(directory, ignored);
+    std::filesystem::create_directories(directory, ignored);
+
+    const std::filesystem::path real = directory / "real.dxf";
+    const std::filesystem::path link = directory / "link.dxf";
+    {
+        std::ofstream seed(real);
+        seed << "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n";
+    }
+    std::error_code linked;
+    std::filesystem::create_symlink(real, link, linked);
+    if (linked) {
+        GTEST_SKIP() << "symlinks unavailable here";
+    }
+
+    auto doc = newDocument();
+    auto builder = std::make_shared<lc::operation::Builder>(doc, "seed");
+    auto entities = std::make_shared<lc::operation::EntityBuilder>(doc);
+    lc::builder::LineBuilder line;
+    line.setLayer(doc->layerByName("0"));
+    line.setStart({0.0, 0.0});
+    line.setEnd({42.0, 0.0});
+    entities->appendEntity(line.build());
+    builder->append(entities);
+    builder->execute();
+
+    const auto written = lc::persistence::File::exportFile(
+        doc, link.string(), lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(written.ok);
+
+    EXPECT_TRUE(std::filesystem::is_symlink(std::filesystem::symlink_status(link)))
+        << "the link itself was replaced by a regular file";
+
+    // The drawing has to be in the file the link points at, not beside it.
+    auto reopened = newDocument();
+    const auto reread = lc::persistence::File::importFile(
+        reopened, real.string(), lc::persistence::File::LIBDXFRW);
+    ASSERT_TRUE(reread.ok);
+    EXPECT_EQ(reopened->entityContainer().asVector().size(), 1u)
+        << "the real file did not receive the save";
+
+    std::filesystem::remove_all(directory, ignored);
+}
+
 TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
     const std::string source = fixture("raw_entities.dxf");
     ASSERT_TRUE(boost::filesystem::exists(source));

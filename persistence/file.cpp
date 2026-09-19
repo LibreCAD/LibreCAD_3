@@ -1,5 +1,7 @@
 #include "file.h"
 
+#include <filesystem>
+
 #include <algorithm>
 #include <fstream>
 
@@ -409,8 +411,33 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
         return result;
     }
 
+    // Resolve a symlinked destination to what it points at, so the write lands
+    // on the file the user is actually editing. The writer publishes through a
+    // temporary and renameat(), which replaces the *name* it is given -- so a
+    // path like drawing.dxf -> /shared/drawing.dxf would be turned into a
+    // regular file while the shared original kept the old contents, and the
+    // save would report success. Resolving here keeps the writer's own
+    // hardening intact: it still never inherits a mode through a link, because
+    // by the time it looks, the path is not a link.
+    //
+    // weakly_canonical, not canonical: the destination need not exist yet, and
+    // a save to a new file must still work. A broken link resolves to its
+    // target name, which is what creating through the link would have done.
+    std::string destination = path;
+    std::error_code linkError;
+    if (std::filesystem::is_symlink(std::filesystem::symlink_status(path, linkError))
+        && !linkError) {
+        const std::filesystem::path resolved =
+            std::filesystem::weakly_canonical(path, linkError);
+        if (!linkError && !resolved.empty()) {
+            LOG_INFO << path << " is a link to " << resolved.string()
+                     << "; writing through it";
+            destination = resolved.string();
+        }
+    }
+
     DXFimpl writer(std::move(document));
-    result.ok = writer.writeDXF(path, type);
+    result.ok = writer.writeDXF(destination, type);
     result.loss = writer.loss();
 
     if (!result.ok) {
