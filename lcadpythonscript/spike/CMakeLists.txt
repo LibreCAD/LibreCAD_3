@@ -11,7 +11,7 @@
 #
 # This spike is DELETED or promoted into the slice 1.12 gtest suite after the
 # policy is validated. Nothing in the rest of the tree depends on it.
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(HOLDER_SPIKE CXX)
 
 option(WITH_PYTHONSCRIPT_SPIKE "Build the Day-1 holder-policy spike" ON)
