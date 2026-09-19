@@ -4,7 +4,18 @@
 set -e
 
 sudo apt update
-sudo apt upgrade -y
+# No `apt upgrade`. It used to be here, and it upgraded every package on the
+# runner image before building a CAD application: seventy-odd packages of
+# Firefox, PHP and friends, none of them a dependency of anything below. It
+# cost minutes per run and it took the build down whenever any one of them was
+# mid-transition in the archive -- most recently
+#
+#   Errors were encountered while processing:
+#    /tmp/apt-dpkg-install-.../11-firefox_1%3a1snap1-0ubuntu9.1_amd64v3.deb
+#   Error: Sub-process /usr/bin/dpkg returned an error code (1)
+#
+# which failed BuildLinux with the tree untouched. `apt install` below pulls
+# and upgrades what this build actually needs.
 # `python3-dev` added for lcadpythonscript (WITH_PYTHONSCRIPT=ON) — phase 1 slice 1.2.
 sudo apt install -y -qq cmake qt6-base-dev qt6-tools-dev qt6-tools-dev-tools libqt6opengl6-dev liblua5.3-dev git gcc \
 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-all-dev libboost-program-options-dev \
