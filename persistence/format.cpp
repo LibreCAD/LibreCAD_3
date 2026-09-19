@@ -94,7 +94,8 @@ bool variantCarriesRecord(const std::string& variantId, const std::string& recor
     // own POLYLINE for it, which carries the same geometry. A record is only
     // listed here when there is nothing to convert it into.
     return !(recordKind == "SPLINE" || recordKind == "MTEXT"
-             || recordKind == "HATCH" || recordKind == "IMAGE");
+             || recordKind == "HATCH" || recordKind == "IMAGE"
+             || recordKind == "DIMENSION");
 }
 
 std::string normalisedFormatId(std::string id) {

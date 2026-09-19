@@ -64,6 +64,7 @@
 
 #include <cad/primitive/dimension.h>
 #include <cad/primitive/dimlinear.h>
+#include <cad/builders/dimlinear.h>
 #include <cad/primitive/dimaligned.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/dimdiametric.h>
@@ -1512,7 +1513,8 @@ TEST(DxfRoundTripTest, WhatIsSkippedIsWhatIsReported) {
         "dxf.ac1014.ascii", "dxf.ac1015.ascii", "dxf.ac1018.ascii",
         "dxf.ac1021.ascii", "dxf.ac1024.ascii", "dxf.ac1027.ascii",
         "dxf.ac1027.binary"};
-    const char* const absentBeforeR13[] = {"SPLINE", "MTEXT", "HATCH", "IMAGE"};
+    const char* const absentBeforeR13[] = {"SPLINE", "MTEXT", "HATCH", "IMAGE",
+                                           "DIMENSION"};
 
     for (const char* variantId : preR13) {
         for (const char* kind : absentBeforeR13) {
@@ -1920,6 +1922,64 @@ std::map<std::string, std::size_t> handlesInFile(const std::string& path) {
 // them back.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+// A drawing with a dimension has to remain saveable at R12. libdxfrw's
+// writeDimension refuses the record for AC1009 and fails the whole emit, so
+// before DIMENSION was named as absent-before-R13 the save produced no file at
+// all -- File > Save on an R12 drawing, since the save reuses the source
+// revision. The dimension is dropped, which R12 forces, but the drawing is
+// written and the drop is reported.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ADimensionDoesNotCostTheWholeR12File) {
+    auto doc = newDocument();
+    auto builder = std::make_shared<lc::operation::Builder>(doc, "seed");
+    auto entities = std::make_shared<lc::operation::EntityBuilder>(doc);
+
+    lc::builder::LineBuilder line;
+    line.setLayer(doc->layerByName("0"));
+    line.setStart({0.0, 0.0});
+    line.setEnd({100.0, 0.0});
+    entities->appendEntity(line.build());
+
+    lc::builder::DimLinearBuilder dimension;
+    dimension.setLayer(doc->layerByName("0"));
+    dimension.setDefinitionPoint({0.0, 0.0});
+    dimension.setDefinitionPoint2({0.0, 20.0});
+    dimension.setDefinitionPoint3({100.0, 20.0});
+    dimension.setMiddleOfText({50.0, 25.0});
+    dimension.setOblique(0.0);
+    dimension.setAngle(0.0);
+    entities->appendEntity(dimension.build());
+
+    builder->append(entities);
+    builder->execute();
+
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R12,
+                            lc::persistence::File::LIBDXFRW_DXB_R12}) {
+        const std::string saved = uniqueTmpDxf("r12-dimension");
+        boost::filesystem::remove(saved);
+
+        const auto written = lc::persistence::File::exportFile(doc, saved, type);
+        EXPECT_TRUE(written.ok)
+            << "a dimension must not cost the whole R12 file";
+        EXPECT_TRUE(boost::filesystem::exists(saved)) << "no file was written";
+        EXPECT_EQ(written.loss.droppedByType.count("DIMENSION"), 1u)
+            << "the dropped dimension has to be reported, not silent";
+
+        // And nothing anonymous is left behind referencing a record that was
+        // never written.
+        if (type == lc::persistence::File::LIBDXFRW_DXF_R12
+            && boost::filesystem::exists(saved)) {
+            const auto blocks = recordsInSection(saved, "BLOCKS");
+            for (const auto& block : blocks) {
+                EXPECT_NE(block.first.rfind("*D", 0), 0u)
+                    << "orphan anonymous dimension block " << block.first;
+            }
+        }
+        boost::filesystem::remove(saved);
+    }
+}
+
 TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
     const std::string source = fixture("raw_entities.dxf");
     ASSERT_TRUE(boost::filesystem::exists(source));
