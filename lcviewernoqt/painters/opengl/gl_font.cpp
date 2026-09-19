@@ -1,8 +1,93 @@
 #include "gl_font.h"
-#include <codecvt>
-#include <locale>
+#include <cstddef>
 #include <string>
+#include <vector>
 using namespace lc::viewer::opengl;
+
+
+namespace {
+
+/// Decode UTF-8 into Unicode code points.
+///
+/// This replaces std::wstring_convert with std::codecvt_utf8_utf16, which
+/// C++17 deprecates. It was also the wrong tool for the job three times over:
+/// it yields UTF-16, so anything outside the basic multilingual plane arrived
+/// as a surrogate pair and indexed the glyph map by half a character; it
+/// throws std::range_error on malformed input, from inside a draw call; and
+/// getTextExtend then cast each unit through `unsigned char`, truncating every
+/// code point to its low eight bits, so every non-ASCII string was measured
+/// against the wrong glyphs.
+///
+/// A malformed sequence becomes U+FFFD, which is what a text renderer wants:
+/// the replacement glyph, not an exception. Overlong encodings, surrogate
+/// halves and out-of-range values are malformed too -- they must not be
+/// trusted as map indices just because they decoded arithmetically.
+std::vector<unsigned int> decodeUtf8(const std::string& text) {
+    constexpr unsigned int kReplacement = 0xFFFDu;
+    std::vector<unsigned int> points;
+    points.reserve(text.size());
+
+    for (std::size_t i = 0; i < text.size();) {
+        const unsigned char lead = static_cast<unsigned char>(text[i]);
+
+        if (lead < 0x80u) {
+            points.push_back(lead);
+            ++i;
+            continue;
+        }
+
+        unsigned int point = 0;
+        std::size_t continuations = 0;
+        unsigned int smallest = 0;
+
+        if ((lead & 0xE0u) == 0xC0u) {
+            point = lead & 0x1Fu;
+            continuations = 1;
+            smallest = 0x80u;
+        } else if ((lead & 0xF0u) == 0xE0u) {
+            point = lead & 0x0Fu;
+            continuations = 2;
+            smallest = 0x800u;
+        } else if ((lead & 0xF8u) == 0xF0u) {
+            point = lead & 0x07u;
+            continuations = 3;
+            smallest = 0x10000u;
+        } else {
+            // A continuation byte or a 5/6-byte lead: not a start of anything.
+            points.push_back(kReplacement);
+            ++i;
+            continue;
+        }
+
+        bool complete = i + continuations < text.size();
+        if (complete) {
+            for (std::size_t k = 1; k <= continuations; k++) {
+                const unsigned char next = static_cast<unsigned char>(text[i + k]);
+                if ((next & 0xC0u) != 0x80u) {
+                    complete = false;
+                    break;
+                }
+                point = (point << 6) | (next & 0x3Fu);
+            }
+        }
+
+        if (!complete || point < smallest || point > 0x10FFFFu
+            || (point >= 0xD800u && point <= 0xDFFFu)) {
+            points.push_back(kReplacement);
+            // Advance one byte, not the whole sequence: the bytes after a bad
+            // lead may themselves start a good one.
+            ++i;
+            continue;
+        }
+
+        points.push_back(point);
+        i += continuations + 1;
+    }
+
+    return points;
+}
+
+}  // namespace
 
 GL_Font::GL_Font()
 {
@@ -143,18 +228,19 @@ void GL_Font::renderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
 
     glActiveTexture(GL_TEXTURE0);
 
-    // converting to std::wstring
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring w_text = converter.from_bytes(text);
-
     // Iterate through all characters
-    std::wstring::const_iterator c;
-    for (c = w_text.begin(); c != w_text.end(); c++)
+    for (const unsigned int point : decodeUtf8(text))
     {
-        it=_characters.find(*c);
+        it=_characters.find(point);
 
         if(it==_characters.end())
             it=_characters.find(' ');
+
+        // The space fallback is itself only a guess: a font loaded without one
+        // leaves nothing to draw, and dereferencing end() here would be a
+        // crash inside a draw call.
+        if(it==_characters.end())
+            continue;
 
         //compute the MVP matrix ( received -V ,-P  .. already have -M)
         glm::mat4 mvp=proj * view * model;
@@ -189,42 +275,39 @@ GL_Text_Extend GL_Font::getTextExtend(std::string text, int font_size)
 {
     std::map<unsigned int, Character>::iterator it;
 
-    // converting to std::wstring
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring w_text = converter.from_bytes(text);
-
-    // Iterate through all characters
-    std::wstring::const_iterator c;
+    const std::vector<unsigned int> points = decodeUtf8(text);
 
     int total_adv_x=0;
     int total_adv_y=0;
-    int bear_x;
-    int bear_y;
-    int height;
-    int width;
+    int bear_x=0;
+    int bear_y=0;
+    int height=0;
+    int width=0;
 
-    c = w_text.begin();
-    unsigned int v=(unsigned int)((unsigned char)(*c));
+    // The measurement used to prime itself from the first character before
+    // checking that the font had one, so an empty string dereferenced end()
+    // and so did any string starting with an unmapped character. The loop
+    // below seeds itself from the first glyph it actually finds instead.
+    bool seeded=false;
+    int max_y=0;
 
-    it=_characters.find(v);
-
-    total_adv_x=((it->second).x_advance >> 6 );
-    total_adv_y=0;
-    bear_x=((it->second).x_bearing);
-    bear_y=((it->second).y_bearing);
-    height=((it->second).height);
-    width=((it->second).width);
-
-    int max_y=bear_y+height;
-
-    for (c = w_text.begin(); c != w_text.end(); c++)
+    for (const unsigned int point : points)
     {
-        unsigned int v=(unsigned int)((unsigned char)(*c));
-
-        it=_characters.find(v);
+        it=_characters.find(point);
 
         if(it==_characters.end())
             it=_characters.find(' ');
+
+        if(it==_characters.end())
+            continue;
+
+        if(!seeded)
+        {
+            bear_x=((it->second).x_bearing);
+            bear_y=((it->second).y_bearing);
+            max_y=((it->second).y_bearing)+((it->second).height);
+            seeded=true;
+        }
 
         total_adv_x =total_adv_x + ((it->second).x_advance >> 6 );
 

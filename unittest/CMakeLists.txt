@@ -95,10 +95,9 @@ lckernel/logger/loggertest.cpp
 # empty hatch loops, fit-points-only splines) and File::save's bool result.
 #
 # Neither source includes a libdxfrw header, and neither adds a library.
-# persistence links libdxfrw PRIVATE on purpose (persistence/CMakeLists.txt) so
-# that its C++17 requirement never reaches lcunittest — linking it here would
-# raise the whole binary, kaguya scripting tests included, to C++17.  Keep it
-# that way: parse raw DXF group codes instead of pulling in the library.
+# persistence links libdxfrw PRIVATE on purpose (persistence/CMakeLists.txt),
+# so lcunittest has no way to reach its headers and no reason to.  Keep it that
+# way: parse raw DXF group codes instead of pulling in the library.
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
     list(APPEND src persistence/dxfroundtriptest.cpp)

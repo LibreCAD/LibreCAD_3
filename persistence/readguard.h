@@ -27,8 +27,8 @@ namespace persistence {
  * the signal that finds them.
  *
  * It lives in its own header, naming no libdxfrw type, so that the behaviour
- * can be tested from lcunittest -- which is gnu++14 and cannot include
- * libdxfrw's C++17 headers at all.
+ * can be tested from lcunittest, which does not link libdxfrw and so has no
+ * way to reach its headers.
  *
  * @return true when the body completed; false when it threw, with `reason` set.
  */

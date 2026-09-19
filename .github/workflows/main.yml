@@ -23,8 +23,8 @@ jobs:
         with:
           submodules: 'recursive'
 
-      # Cheap and first: a libdxfrw type in a public persistence header breaks
-      # the Lua and Python targets, which are built as gnu++14, in a way whose
+      # Cheap and first: a libdxfrw type in a public persistence header forces
+      # every consumer of persistence to find libdxfrw's include path, and the
       # error message points nowhere near the edit.
       - run: ${{ github.workspace }}/scripts/ci/check-persistence-headers.sh
 

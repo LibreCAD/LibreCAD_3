@@ -183,7 +183,7 @@ endif()
 
 # Set C++ version
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if (NOT MSVC)
     set(Boost_USE_MULTITHREADED ON)

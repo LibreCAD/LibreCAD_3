@@ -213,8 +213,8 @@ TEST(FormatTest, EveryTypeRoundTripsThroughItsVariantId) {
 
 // The libdxfrw values LibreCAD's behaviour rests on. The assertions themselves
 // are static_asserts in persistence/libdxfrw/apipins.cpp, where the library's
-// headers are already compiled at C++17 -- they now use inline variables, which
-// lcunittest cannot include at the gnu++14 that keeps kaguya building. What
+// headers are on the include path -- lcunittest does not link libdxfrw and so
+// cannot reach them, which is the point of linking it PRIVATE. What
 // arrives here is the fingerprint they produce, so an upstream renumbering
 // fails this test as well as that build.
 //

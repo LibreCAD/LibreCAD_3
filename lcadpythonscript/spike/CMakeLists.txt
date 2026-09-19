@@ -25,7 +25,7 @@ if(NOT DEFINED LIBRECAD_ROOT)
         "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---- lckernel (compiled here as a mini-library, avoiding the top-level

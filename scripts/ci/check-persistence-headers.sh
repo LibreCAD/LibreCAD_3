@@ -3,10 +3,8 @@
 # The public persistence headers must name no libdxfrw type.
 #
 # persistence links libdxfrw PRIVATE (persistence/CMakeLists.txt) so that the
-# library's C++17 requirement stops there.  persistence/file.h is included
-# transitively by lcluascript and lcpythonscript, which are built as gnu++14 and
-# fail on kaguya's missing FunctionSignature specialisation for noexcept members
-# the moment the standard is raised.  A DRW_* or dxfRW name in one of these
+# dependency stops there.  persistence/file.h is included transitively by
+# lcluascript and lcpythonscript.  A DRW_* or dxfRW name in one of these
 # headers would force every consumer to find libdxfrw's include path, and then
 # to compile as C++17 -- a breakage that shows up far from the edit that caused
 # it, in a target nobody was touching.

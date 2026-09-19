@@ -28,7 +28,7 @@
 // libdxfrw header.  `persistence` links libdxfrw PRIVATE precisely so that
 // its C++17 requirement does not propagate; linking it into `lcunittest`
 // would raise the whole binary — including the kaguya scripting tests, which
-// are gnu++14 and break on kaguya's missing FunctionSignature specialisation
+// do not link libdxfrw and cannot reach its headers
 // for noexcept members.  Everything here goes through the public
 // `lc::persistence::File` surface and the kernel.
 

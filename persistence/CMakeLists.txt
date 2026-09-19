@@ -61,8 +61,10 @@ endif ()
 
 add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
 
-# PRIVATE: libdxfrw requires C++17, which would otherwise propagate to every
-# target linking persistence and break kaguya-based Lua bindings built as C++14.
+# PRIVATE: encapsulation, not standards. The whole tree is C++17 now, so
+# libdxfrw's exported cxx_std_17 no longer forces anything on anyone -- but a
+# consumer of persistence still has no business finding DRW_ types on its
+# include path. scripts/ci/check-persistence-headers.sh enforces the other half.
 target_link_libraries(persistence
     PUBLIC lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES}
     PRIVATE libdxfrw::libdxfrw)
