@@ -1,7 +1,11 @@
 #pragma once
 
-// The project's entry point to kaguya. Include this rather than kaguya's own
-// headers from anything that registers a Lua binding.
+// kaguya, plus the specialisations C++17 needs it to have.
+//
+// The lcadluascript bridge headers all come through here. Fourteen other
+// translation units under lcUI, unittest and luacmdinterface still include
+// kaguya directly; that is fine while none of them binds a noexcept member
+// function, and this is the header to route them through when one does.
 //
 // C++17 made noexcept part of a function's type. kaguya specialises
 // util::FunctionSignature on the shapes it knows -- `Ret (T::*)(Args...)`,
