@@ -5,6 +5,7 @@
 
 #include <QComboBox>
 #include <QFileInfo>
+#include <QMessageBox>
 
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <qt_keywords_push.h>
@@ -28,7 +29,7 @@ namespace {
 
 #ifdef LC_WITH_PYTHONSCRIPT
 
-struct ScriptDock::PyNamespace {
+struct LC_PYTHON_LOCAL ScriptDock::PyNamespace {
     py::dict ns;
     PyNamespace();
     ~PyNamespace();
@@ -174,7 +175,12 @@ void ScriptDock::on_open_clicked() {
     if(!fileName.isEmpty()) {
         QFile file(fileName);
 
-        file.open(QFile::ReadOnly | QFile::Text);
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Open File"),
+                                 tr("Could not open '%1': %2")
+                                     .arg(fileName, file.errorString()));
+            return;
+        }
         QTextStream stream(&file);
 
         ui->luaInput->setPlainText(stream.readAll());
@@ -207,7 +213,12 @@ void ScriptDock::on_save_clicked() {
     if(!fileName.isEmpty()) {
         QFile file(fileName);
 
-        file.open(QFile::WriteOnly | QFile::Text);
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Save File"),
+                                 tr("Could not write '%1': %2")
+                                     .arg(fileName, file.errorString()));
+            return;
+        }
         QTextStream stream(&file);
 
         stream << ui->luaInput->toPlainText();

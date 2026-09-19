@@ -15,7 +15,10 @@ CheckBoxGUI::CheckBoxGUI(std::string label, bool checked, QWidget* parent)
     _checkBox->setChecked(checked);
 
     qobject_cast<QHBoxLayout*>(this->layout())->insertStretch(0);
-    connect(_checkBox, &QCheckBox::stateChanged, this, &CheckBoxGUI::callbackCalled);
+    connect(_checkBox, &QCheckBox::checkStateChanged, this,
+            [this](Qt::CheckState state) {
+                callbackCalled(static_cast<int>(state));
+            });
 }
 
 void CheckBoxGUI::setLabel(const std::string& newLabel) {
