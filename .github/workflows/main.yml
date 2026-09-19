@@ -225,7 +225,24 @@ jobs:
           if errorlevel 1 exit /b 1
 
   UpdateAssets:
-    if: github.repository_owner == 'LibreCAD'
+    # Publishing the "Continuous Build" release belongs to pushes on the
+    # default branch, not to pull-request validation. A pull_request run gets a
+    # read-only GITHUB_TOKEN, so moving the `latest` tag fails:
+    #
+    #   Could not create new tag "refs/tags/latest"
+    #   (Resource not accessible by integration)
+    #   ##[error]Resource not accessible by integration
+    #
+    # Nobody saw this because the job `needs: [linux, windows]` and the linux
+    # job had been failing at createSnap.sh, so it was skipped on every run.
+    # With that fixed it runs on every PR and fails for a reason that has
+    # nothing to do with the PR -- turning an otherwise green branch red.
+    #
+    # workflow_dispatch is kept: it is maintainer-initiated and its token can
+    # write, so a manual refresh of the continuous build still works.
+    if: >-
+      github.repository_owner == 'LibreCAD'
+      && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: [linux, windows]
     runs-on: ubuntu-latest
     steps:
