@@ -435,6 +435,12 @@ public:
     /** The *D block name assigned to each dimension, by entity id. */
     std::map<ID_DATATYPE, std::string> _dimensionBlocks;
 
+    /// Whether this read has already seen a DICTIONARY in the OBJECTS
+    /// section. libdxfrw identifies the root partly by position -- the DXF
+    /// specification puts the named object dictionary first -- and the two
+    /// have to agree on which record that is.
+    bool _seenDictionary{false};
+
     /// Whether the document being read came from a DWG. The DWG reader leaves
     /// DRW_Block::flags at zero, so the anonymous bit a DXF carries is simply
     /// not there and the naming convention has to stand in for it.

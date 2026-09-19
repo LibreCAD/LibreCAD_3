@@ -2261,6 +2261,50 @@ std::set<std::string> rootDictNames(const std::string& path) {
 // dangling reference, which is worse than leaving it detached.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+// Code 330 is optional on a DICTIONARY, so "carried no owner group" does not
+// mean "is the root" -- 284 of 1840 real drawings hold an owner-less
+// dictionary that is nothing of the kind. libdxfrw decides by handle and by
+// position, and this side has to decide the same way: a dictionary the library
+// preserves is re-emitted carrying its own entries, so harvesting those entries
+// here as well names its children a second time, directly from the regenerated
+// root, and the child's own owner points at only one of the two.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnOwnerLessDictionaryIsNotMistakenForTheRoot) {
+    const std::string source = fixture("root_dict_owner_less.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    ASSERT_EQ(rootDictNames(source), (std::set<std::string>{"ACAD_MYAPP"}))
+        << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+
+    const std::string saved = uniqueTmpDxf("owner-less-dict");
+    boost::filesystem::remove(saved);
+    const auto written = lc::persistence::File::exportFile(doc, saved, type);
+    ASSERT_TRUE(written.ok);
+
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("ACAD_MYAPP"), 1u)
+        << "the dictionary the root really did name is an orphan";
+    EXPECT_EQ(names.count("LC_CHILD"), 0u)
+        << "an owner-less dictionary was harvested as the root, so its child "
+        << "is named from the root as well as from the dictionary that owns it";
+
+    // The codec writes its own ACAD_GROUP entry; the source's copy of it must
+    // not be carried across on top, nor counted as a dictionary left detached.
+    EXPECT_EQ(names.count("ACAD_GROUP"), 1u);
+    EXPECT_EQ(written.loss.droppedByType.count("unreferenced dictionaries"), 0u)
+        << "nothing here is unreachable, so nothing should be reported as such";
+
+    boost::filesystem::remove(saved);
+}
+
 TEST(DxfRoundTripTest, PreservedDictionariesAreNamedFromTheRootAgain) {
     const std::string source = fixture("root_dict_entries.dxf");
     ASSERT_TRUE(boost::filesystem::exists(source));
@@ -2853,34 +2897,3 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
 
 
 // TEMPORARY corpus probe.
-TEST(CorpusProbe, RoundTrip) {
-    const char* list = ::getenv("LC_CORPUS_LIST");
-    const char* outDir = ::getenv("LC_CORPUS_OUT");
-    if (list == nullptr || outDir == nullptr) {
-        GTEST_SKIP();
-    }
-    std::ifstream files(list);
-    std::string path;
-    while (std::getline(files, path)) {
-        if (path.empty()) continue;
-        auto doc = newDocument();
-        lc::persistence::ImportResult in;
-        try {
-            in = lc::persistence::File::importFile(
-                doc, path, lc::persistence::File::Library::LIBDXFRW);
-        } catch (...) { std::cout << "THROW-IN\t" << path << "\n"; continue; }
-        if (!in.ok) { std::cout << "BADIN\t" << path << "\n"; continue; }
-        lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
-        if (!lc::persistence::File::typeForVariantId(in.variantId, type)) {
-            std::cout << "BADVAR\t" << path << "\n"; continue;
-        }
-        const std::string base = boost::filesystem::path(path).filename().string();
-        const std::string saved = std::string(outDir) + "/" + base;
-        lc::persistence::ExportResult out;
-        try {
-            out = lc::persistence::File::exportFile(doc, saved, type);
-        } catch (...) { std::cout << "THROW-OUT\t" << path << "\n"; continue; }
-        std::cout << (out.ok ? "OK\t" : "BADOUT\t") << base
-                  << "\tloss=" << out.loss.total() << "\n";
-    }
-}

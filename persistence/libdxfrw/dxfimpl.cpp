@@ -1382,19 +1382,54 @@ namespace {
 /// NamedObjectsDictionary at.
 constexpr std::uint32_t kRootDictionaryHandle = 0xC;
 
+/// And the ACAD_GROUP dictionary beside it, which the codec also regenerates
+/// and fills from setGroups().
+constexpr std::uint32_t kGroupDictionaryHandle = 0xD;
+
 }  // namespace
 
 void DXFimpl::addDictionary(const DRW_Dictionary& data) {
     guarded("DICTIONARY", nullptr, [&] {
-        // Only the root. Every other dictionary comes through addRawDxfObject
-        // and is re-emitted verbatim; what is missing is the entry in the root
-        // that named it.
-        if (data.handle != kRootDictionaryHandle && data.parentHandle != 0) {
+        // libdxfrw calls this for every DICTIONARY, root or not, and separately
+        // routes the non-root ones into the raw net. Only the root's entries
+        // are wanted here: every other dictionary is re-emitted verbatim,
+        // carrying its own entries with it, and what is missing is the entry in
+        // the root that named it.
+        //
+        // So the test has to be the same test libdxfrw uses, or the two
+        // disagree about one dictionary and its children get named twice --
+        // once by the preserved dictionary and once, directly, from the
+        // regenerated root. Asking only whether an owner group was present is
+        // what libdxfrw used to do and stopped doing, because code 330 is
+        // optional on a DICTIONARY: an owner-less dictionary that is not the
+        // root is ordinary, and 284 of 1840 real drawings hold one.
+        const bool firstInObjects = !_seenDictionary;
+        _seenDictionary = true;
+
+        // ACAD_GROUP is regenerated too, and its entries name groups rather
+        // than children of the root.
+        if (data.handle == kGroupDictionaryHandle) {
+            return;
+        }
+
+        const bool root = data.handle == kRootDictionaryHandle
+                          || (firstInObjects && data.parentHandle == 0);
+        if (!root) {
             return;
         }
 
         for (const auto& entry : data.m_entries) {
             if (entry.m_handle == 0 || entry.m_name.empty()) {
+                continue;
+            }
+            // The codec writes its own entries for the dictionaries it
+            // regenerates. Carrying the source's copy across would put a
+            // second ACAD_GROUP key in the root -- and, since the codec does
+            // not route handle D into the raw net, it could never be spliced
+            // anyway, so it would be counted as a loss on every ordinary
+            // drawing.
+            if (entry.m_handle == kRootDictionaryHandle
+                || entry.m_handle == kGroupDictionaryHandle) {
                 continue;
             }
             _preserved.rootDictEntries.emplace_back(entry.m_name, entry.m_handle);
@@ -1692,11 +1727,21 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                 }
             }
 
+            // Answers are remembered, not just cycle-guarded. Dictionaries
+            // form a graph, not a tree -- several of them name the same
+            // material or visual style -- and re-walking each shared subtree
+            // once per path that reaches it is exponential in the depth.
             std::set<std::uint32_t> walking;
+            std::map<std::uint32_t, bool> settled;
             const std::function<bool(std::uint32_t)> wholeSubtreeSurvives =
                 [&](std::uint32_t handle) -> bool {
+                    const auto remembered = settled.find(handle);
+                    if (remembered != settled.end()) {
+                        return remembered->second;
+                    }
                     const auto found = emitted.find(handle);
                     if (found == emitted.end()) {
+                        settled[handle] = false;
                         return false;
                     }
                     if (!walking.insert(handle).second) {
@@ -1727,6 +1772,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                         }
                     }
                     walking.erase(handle);
+                    settled[handle] = survives;
                     return survives;
                 };
 
