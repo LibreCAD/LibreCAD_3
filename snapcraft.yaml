@@ -38,7 +38,6 @@ parts:
       - qt6-tools-dev
       - qt6-tools-dev-tools
       - qt6-svg-dev
-      - libqt6opengl6-dev
       # Phase 6 PR-6.4 — the stale liblua5.2-dev pin here has been out
       # of sync with the root CMakeLists' `find_package(Lua 5.3 EXACT
       # REQUIRED)` for years.  Fixed to 5.3.  Also added python3-dev
@@ -53,7 +52,6 @@ parts:
       - libboost-dev
       - libboost-log-dev
       - libboost-program-options-dev
-      - qt6-svg-dev
       - libgtest-dev
       - libeigen3-dev
       - libcurl4-gnutls-dev
@@ -67,11 +65,26 @@ parts:
     stage-packages:
       # Bundle the Qt 6 runtime from the base archive rather than relying on
       # the KDE Neon content snap, which does not support core26.
+      #
+      # Under devmode the process still runs in the snap's own mount
+      # namespace, so a library the binary links and this list does not carry
+      # is simply absent -- the snap installs and then will not start, which
+      # no build step catches.
       - qt6-base-dev
       - qt6-svg-dev
       - qt6-qpa-plugins
       - qt6-gtk-platformtheme
-      - libboost-dev
+      # The app plugs wayland; without this only the xcb platform plugin is
+      # deployed, so a Wayland session falls back to XWayland silently.
+      - qt6-wayland
+      # librecad links libQt6UiTools.so.6 (lcUI/CMakeLists.txt puts
+      # Qt6::UiTools in EXTRA_LIBS unconditionally) and liblua5.3.so.0
+      # (find_package(Lua 5.3 REQUIRED) resolves to the shared object).  Both
+      # were build-packages only, and nothing staged pulls either in --
+      # linuxdeploy's dependency walk over the same binary copies both into
+      # the AppImage, which is how they were found.
+      - libqt6uitools6
+      - liblua5.3-0
       - libboost-log-dev
       - libboost-program-options-dev
       - libglew2.2
