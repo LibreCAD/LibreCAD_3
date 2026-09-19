@@ -49,9 +49,23 @@ if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.s
     # package an unordered set yielded first, which says nothing about why.
     # These three lines say whether apt could see the archive at all, which is
     # the difference between a wrong name and an unreachable component.
-    echo "--- snapcraft pack failed; what apt can see from here ---"
-    apt-cache policy libqt6svg6 python3 || true
-    grep -rhE "^(deb|Suites:|Components:|URIs:)" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null || true
+    # "Stage package not found in part 'librecad': <name>" names whichever
+    # package an unordered set yielded first, which says nothing about why --
+    # and two different names have now been reported for packages that both
+    # exist in the archive, which points at the staging cache seeing nothing
+    # rather than at a wrong name. These dumps separate the two.
+    echo "--- snapcraft pack failed ---"
+    echo "--- apt, as this shell sees it ---"
+    apt-cache policy libqt6svg6 python3 libpython3.14 || true
+    echo "--- apt sources, in full ---"
+    cat /etc/apt/sources.list 2>/dev/null || true
+    cat /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list 2>/dev/null || true
+    echo "--- apt architecture ---"
+    apt-config dump 2>/dev/null | grep -iE "^APT::Architecture" || true
+    echo "--- package lists apt has actually fetched ---"
+    ls /var/lib/apt/lists/ 2>/dev/null | grep -i packages | head -20 || true
+    echo "--- snapcraft's own execution log ---"
+    sudo tail -120 /root/.local/state/snapcraft/log/*.log 2>/dev/null || true
     exit 1
 fi
 
