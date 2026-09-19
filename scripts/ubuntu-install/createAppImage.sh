@@ -1,31 +1,28 @@
-
 # Phase 6 PR-6.3 — Ubuntu AppImage packaging notes.
 #
-# The AppImage is built via linuxdeploy + the Qt plugin.  When the
-# librecad binary is linked against libpython3.X.so (WITH_PYTHONSCRIPT=ON
-# on the build machine — see installDependenciesAndBuildRepo.sh which
-# installs python3-dev), linuxdeploy automatically bundles that shared
-# library into the AppImage.
+# The AppImage is built via linuxdeploy + the Qt plugin.  The librecad binary
+# is linked against libpython3.X.so — installDependenciesAndBuildRepo.sh
+# installs python3-dev and configures with the default WITH_PYTHONSCRIPT=ON —
+# so linuxdeploy bundles that shared library automatically.
 #
-# HOWEVER: the CPython STANDARD LIBRARY (~30 MB of .py files under
-# /usr/lib/python3.X/) is not a shared-library dependency and is NOT
-# bundled.  A user running the AppImage on a system without a matching
-# Python 3.X installation will get import errors on `import os`
-# (etc.) when Python scripts try to use stdlib modules.
+# The CPython STANDARD LIBRARY is not a shared-library dependency, so
+# linuxdeploy does not bundle it, and an embedded interpreter without one does
+# not fail softly.  lcUI/mainwindow.cpp constructs the interpreter during
+# MainWindow construction, unconditionally, and CPython that cannot find its
+# stdlib calls Py_FatalError:
 #
-# TWO acceptable resolutions per the phase-6 sub-plan (choose one for
-# each release):
-#   (a) Ship the AppImage with WITH_PYTHONSCRIPT=OFF for now and
-#       document the Lua-only scripting limitation for AppImage
-#       distribution.  Users wanting Python can build from source.
-#   (b) Add a full linuxdeploy-plugin-python step that bundles libpython
-#       + a subset of stdlib (~30-50 MB extra AppImage size).
+#   Fatal Python error: init_fs_encoding: failed to get the Python codec of
+#   the filesystem encoding
+#   ModuleNotFoundError: No module named 'encodings'
 #
-# This script currently takes path (a) implicitly — no linuxdeploy
-# python plugin is invoked.  The librecad binary in the AppImage
-# still contains lcadpythonscript, so scripts that avoid stdlib
-# imports will work; the practical limitation is stdlib.  Future
-# work (deferred per sub-plan): add the linuxdeploy python plugin.
+# which aborts the process before any C++ around it can react.  The AppImage
+# therefore started only on machines that happened to have a matching CPython
+# installed under /usr — which is the one thing an AppImage is supposed not to
+# need.
+#
+# So the stdlib is copied in below and PYTHONHOME is pointed at it.  This is
+# path (b) of the phase-6 sub-plan; the header used to claim path (a) (ship
+# with WITH_PYTHONSCRIPT=OFF) while the build had Python on the whole time.
 echo "Begin AppImage building"
 cd build
 export QTDEPLOY=linuxdeploy-x86_64.AppImage
@@ -38,6 +35,38 @@ chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
 
 cp -v ../lcUI/ui/icons/librecad.svg AppDir/
 cp -v ../desktop/librecad.desktop AppDir/
+
+# The interpreter's own library, and the environment that lets it find it.
+# linuxdeploy's AppRun sources every script in apprun-hooks/ before exec, which
+# is the same mechanism its Qt plugin uses to set QT_PLUGIN_PATH.
+PYTHON_TAG=$(python3 -c 'import sys; print("python%d.%d" % sys.version_info[:2])')
+PYTHON_STDLIB=$(python3 -c 'import sysconfig; print(sysconfig.get_path("stdlib"))')
+if [ -d "$PYTHON_STDLIB" ]; then
+    echo "Bundling $PYTHON_STDLIB as usr/lib/$PYTHON_TAG"
+    mkdir -p "AppDir/usr/lib/$PYTHON_TAG"
+    cp -a "$PYTHON_STDLIB/." "AppDir/usr/lib/$PYTHON_TAG/"
+    # The test package and the bytecode caches are most of the size and none
+    # of the use; idlelib and tkinter need a Tk that is not bundled either.
+    rm -rf "AppDir/usr/lib/$PYTHON_TAG/test" \
+           "AppDir/usr/lib/$PYTHON_TAG/idlelib" \
+           "AppDir/usr/lib/$PYTHON_TAG/tkinter"
+    find "AppDir/usr/lib/$PYTHON_TAG" -name __pycache__ -type d -prune -exec rm -rf {} +
+
+    mkdir -p AppDir/apprun-hooks
+    cat > AppDir/apprun-hooks/python-hook.sh <<'HOOK'
+# Point the embedded interpreter at the stdlib bundled beside it, so it does
+# not go looking in the host's /usr and abort when there is nothing there.
+#
+# APPDIR is exported by the AppImage runtime; this_dir is what linuxdeploy's
+# own AppRun wrapper sets, and is what is there when someone extracts the
+# AppDir and runs it directly.
+export PYTHONHOME="${APPDIR:-$this_dir}/usr"
+export PYTHONDONTWRITEBYTECODE=1
+HOOK
+else
+    echo "WARNING: no CPython stdlib found at $PYTHON_STDLIB;" \
+         "the AppImage will abort at startup on a host without one"
+fi
 #sudo cp ../AppImage/librecad.* AppDir/
 
 sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib \
