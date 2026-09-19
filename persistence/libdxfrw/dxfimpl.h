@@ -174,6 +174,28 @@ public:
 
     void addViewport(const DRW_Viewport& data) override;
 
+    /**
+     * A layout is the page a drawing is printed from: its paper size, its
+     * viewports, its title block. LibreCAD models none of it, and libdxfrw
+     * parses LAYOUT and PLOTSETTINGS into typed objects rather than offering
+     * them to the raw passthrough net -- so unlike a record this build has
+     * never heard of, they cannot be kept verbatim and put back. Every save
+     * destroys them.
+     *
+     * They are counted here because that is the only place this build sees
+     * them at all: the writer is built from a document and has no idea they
+     * existed. Counting is not keeping, but it is the difference between a
+     * user who knows their layouts are gone and one who finds out later.
+     *
+     * The real fix belongs upstream, where processLayout and processPlotSettings
+     * need the addRawDxfObject call their siblings processScale, processSun and
+     * processDictionaryVar already make.
+     */
+    void addLayout(const DRW_Layout& data) override {
+        (void)data;
+        recordLoss("LAYOUT");
+    }
+
     void linkImage(const DRW_ImageDef* data) override;
 
     void addComment(const char* comment) override {}
@@ -315,7 +337,10 @@ public:
 
     void writeObjects() override;
 
-    void addPlotSettings(const DRW_PlotSettings *data) override {}
+    void addPlotSettings(const DRW_PlotSettings *data) override {
+        (void)data;
+        recordLoss("PLOTSETTINGS");
+    }
 
     void getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_CSPtr& entity);
 

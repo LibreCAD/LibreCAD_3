@@ -2293,6 +2293,39 @@ TEST(DxfRoundTripTest, PreservedDictionariesAreNamedFromTheRootAgain) {
     boost::filesystem::remove(saved);
 }
 
+// A layout is the page a drawing prints from. LibreCAD models none of it, and
+// libdxfrw parses LAYOUT and PLOTSETTINGS into typed objects instead of handing
+// them to the raw passthrough net, so unlike a record this build has never
+// heard of they cannot be kept verbatim and put back -- every save destroys
+// them. They were also not counted, so the user was told nothing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ALayoutThatCannotBeKeptIsReported) {
+    const std::string source = fixture("layout_object.dxf");
+    ASSERT_TRUE(boost::filesystem::exists(source));
+    ASSERT_EQ(recordsInSection(source, "OBJECTS").count("LAYOUT"), 1u)
+        << "the fixture changed";
+
+    auto doc = newDocument();
+    const auto result = lc::persistence::File::importFile(
+        doc, source, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+
+    EXPECT_EQ(result.loss.droppedByType.count("LAYOUT"), 1u)
+        << "the layout was dropped without saying so";
+
+    // And it really is gone from the save, which is what the count is about.
+    lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+    ASSERT_TRUE(lc::persistence::File::typeForVariantId(result.variantId, type));
+    const std::string saved = uniqueTmpDxf("layout");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, type).ok);
+    EXPECT_EQ(recordsInSection(saved, "OBJECTS").count("LAYOUT"), 0u)
+        << "the layout survived after all -- the count is now wrong";
+
+    boost::filesystem::remove(saved);
+}
+
 // Replay is attempted only where it is faithful. A different revision, or a
 // binary target, and the records are dropped rather than written somewhere they
 // have no defined meaning -- and the count reaches the user either way.
