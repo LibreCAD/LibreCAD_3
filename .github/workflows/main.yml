@@ -152,9 +152,13 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
+          # Modelled on the CodeQL job's list, which is known to configure and
+          # build this tree. lcviewernoqt is added unconditionally, so its
+          # dependencies are required even with the UI, Lua and Python off.
           sudo apt-get install -y cmake ninja-build libboost-all-dev libeigen3-dev \
             rapidjson-dev libgtest-dev libglew-dev libglfw3-dev liblua5.4-dev \
-            libfreetype-dev libpng-dev libbz2-dev
+            libfreetype-dev libpng-dev libbz2-dev libglm-dev \
+            libcurl4-gnutls-dev libgtk-3-dev freeglut3-dev
 
       # -Wno-error because the third-party submodules are built with -Werror and
       # warn under the sanitizers' instrumentation; their warnings are not what
