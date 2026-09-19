@@ -2624,6 +2624,13 @@ static std::string recordKindOf(const lc::entity::CADEntity_CSPtr& entity) {
     if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) {
         return "IMAGE";
     }
+    // R12 has no DIMENSION: libdxfrw's writeDimension refuses the record for
+    // AC1009 and fails the whole emit, so without naming it here a drawing
+    // holding a single dimension could not be saved to R12 at all -- no file,
+    // and nothing in the result to say why.
+    if (std::dynamic_pointer_cast<const lc::entity::Dimension>(entity)) {
+        return "DIMENSION";
+    }
 
     return "";
 }
@@ -2797,6 +2804,14 @@ void DXFimpl::writeBlockRecords() {
 
 std::vector<lc::entity::CADEntity_CSPtr> DXFimpl::allDimensions() const {
     std::vector<lc::entity::CADEntity_CSPtr> dimensions;
+
+    // Both callers use this to mint the anonymous *D blocks a DIMENSION draws
+    // itself with. A revision that cannot carry DIMENSION gets none: the
+    // records are skipped and reported as loss, so minting blocks for them
+    // would leave the file holding anonymous blocks nothing references.
+    if (_exportVersion <= DRW::AC1009) {
+        return dimensions;
+    }
 
     const auto collect = [&dimensions](const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
         for (const auto& entity : entities) {
