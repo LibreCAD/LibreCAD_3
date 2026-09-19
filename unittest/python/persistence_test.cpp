@@ -146,3 +146,96 @@ TEST(PersistenceTest, EnumsAndHelpersRegistered) {
         "assert isinstance(ext, str) and len(ext) > 0\n",
         ns), "");
 }
+
+// The result types, from Python.
+//
+// `lc.persistence.File.open` answers a read with a revision and nothing else,
+// which is enough for a script that only wants to load one known-good file and
+// no use at all to one walking a directory: it cannot tell a complete drawing
+// from the readable half of a broken one. importFile gives it the same facts
+// LibreCAD itself now acts on.
+TEST(PersistenceTest, ImportResultFromPython) {
+    const std::string dxfPath = uniqueTmpDxf();
+    boost::filesystem::remove(dxfPath);
+
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+
+    lc::python::LCPython lcpy;
+    auto ns = lcpy.makeNamespace();
+    lcpy.setDocument(ns, doc);
+    ns.set("dxf_path", dxfPath);
+
+    const std::string build = R"PY(
+layer = lc.meta.Layer('rw', lc.meta.MetaLineWidthByValue(1.0),
+                      lc.Color(255, 255, 255, 255), None, False)
+lc.operation.AddLayer.new(document, layer).execute()
+
+eb = lc.operation.EntityBuilder.new(document)
+lb = lc.builder.LineBuilder()
+lb.setLayer(layer)
+lb.setStartPoint(lc.geo.Coordinate(0.0, 0.0))
+lb.setEndPoint(lc.geo.Coordinate(4.0, 3.0))
+eb.appendEntity(lb.build())
+eb.execute()
+
+export = lc.persistence.File.exportFile(document, dxf_path,
+                                        lc.persistence.File.Type.LIBDXFRW_DXF_R2000)
+assert export.ok is True, 'export should have succeeded'
+assert export.variantId == 'dxf.ac1015.ascii', export.variantId
+assert list(export.diagnostics) == []
+)PY";
+    ASSERT_EQ(lcpy.runString(build.c_str(), ns), "") << "building and exporting failed";
+
+    auto sm2  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc2 = std::make_shared<lc::storage::DocumentImpl>(sm2);
+    auto ns2 = lcpy.makeNamespace();
+    lcpy.setDocument(ns2, doc2);
+    ns2.set("dxf_path", dxfPath);
+    ns2.set("missing_path", dxfPath + ".missing");
+
+    const std::string read = R"PY(
+result = lc.persistence.File.importFile(document, dxf_path,
+                                        lc.persistence.File.Library.LIBDXFRW)
+
+assert result.ok is True, 'a file we just wrote must read back'
+assert result.partial is False
+assert result.variantId == 'dxf.ac1015.ascii', result.variantId
+assert result.sourceVersionTag == 'AC1015', result.sourceVersionTag
+assert result.entitiesDelivered >= 1, result.entitiesDelivered
+assert list(result.diagnostics) == []
+assert result.loss.empty() is True
+assert result.loss.total() == 0
+
+# The variant table is readable too, so a script can offer the same choices
+# the Save dialog does without hard-coding them.
+variants = lc.persistence.formatVariants()
+assert len(variants) >= 14
+ascii_2000 = lc.persistence.formatVariantById('dxf.ac1015.ascii')
+assert ascii_2000 is not None
+assert ascii_2000.writable is True
+assert ascii_2000.binary is False
+assert ascii_2000.versionTag == 'AC1015'
+assert lc.persistence.formatVariantById('dxf.nope') is None
+
+assert lc.persistence.File.variantIdForType(
+    lc.persistence.File.Type.LIBDXFRW_DXF_R2000) == 'dxf.ac1015.ascii'
+assert lc.persistence.File.typeForVariantId('dxf.ac1015.ascii') == \
+    lc.persistence.File.Type.LIBDXFRW_DXF_R2000
+assert lc.persistence.File.typeForVariantId('dxf.nope') is None
+
+# A file that is not there is reported, not raised, and not confused with an
+# empty drawing.
+missing = lc.persistence.File.importFile(document, missing_path,
+                                         lc.persistence.File.Library.LIBDXFRW)
+assert missing.ok is False
+assert missing.partial is False
+assert missing.entitiesDelivered == 0
+assert len(missing.diagnostics) >= 1
+assert missing.diagnostics[0].severity == lc.persistence.Severity.Error
+assert missing.diagnostics[0].code != ''
+)PY";
+    ASSERT_EQ(lcpy.runString(read.c_str(), ns2), "") << "reading back failed";
+
+    boost::filesystem::remove(dxfPath);
+}

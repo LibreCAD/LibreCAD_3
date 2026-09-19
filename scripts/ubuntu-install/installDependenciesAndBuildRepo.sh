@@ -28,21 +28,11 @@ python3-dev python3
 echo on
 echo "building LibreCAD"
 # `--init --recursive` fixed for lcadpythonscript/third_party/pybind11 and every
-# other submodule (kaguya, libopencad, tinyspline, nano-signal-slot).
+# other submodule (kaguya, libdxfrw, tinyspline, nano-signal-slot).
 # Historically the CI called `git submodule update` which no-ops on a fresh
 # clone without the paths already registered as initialized — plan phase 1
 # slice 1.2 lists this as a CI dep fix.
 git submodule update --init --recursive
-
-[ -d libdxfrw ] || git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
-mkdir -p libdxfrw/release
-pushd libdxfrw/release
-echo "building dxfrw"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
-make -j 4
-echo "installing dxfrw"
-sudo make install
-popd
 
 echo "building LibreCAD"
 mkdir -p build
@@ -57,7 +47,7 @@ make -j 4
 # green. CORE_SUITES is every suite in the files always built regardless of
 # WITH_QT_UI/WITH_PYTHONSCRIPT; it blocks. Everything else still runs, for
 # visibility, guarded by `|| echo` so it can't take the build down.
-CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DxfExportTest.*:EIGEN.*:EntityBuilderTest.*:IntersectTest.*:LayerOps.*:MathTest.*:Maths.*:Matrix.*:QM.*:SPLINE.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
+CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityDxfRoundTrip.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DocumentSourceTest.*:DxfExportTest.*:DwgImportTest.*:DxfRoundTripTest.*:EIGEN.*:EntityBuilderTest.*:FormatTest.*:IntersectTest.*:LayerOps.*:LoggerTest.*:LuaFixture.*:MathTest.*:Maths.*:Matrix.*:QM.*:SPLINE.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
 
 if [ -x ./bin/lcunittest ]; then
     echo "running lcunittest (core suites — blocking)"

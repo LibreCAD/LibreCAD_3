@@ -39,7 +39,6 @@ chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
 cp -v ../lcUI/ui/icons/librecad.svg AppDir/
 cp -v ../desktop/librecad.desktop AppDir/
 #sudo cp ../AppImage/librecad.* AppDir/
-#sudo cp /usr/local/lib/libdxfrw.so.1 AppDir/usr/lib
 
 sudo LD_LIBRARY_PATH=AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib \
 VERSION=`git describe ` ./$QTDEPLOY --appdir AppDir \

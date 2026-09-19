@@ -17,9 +17,6 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-# LibbDXFRW
-find_package(libdxfrw REQUIRED)
-
 FIND_PACKAGE ( Threads REQUIRED )
 
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
@@ -85,15 +82,38 @@ lckernel/primitive/testellipse.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
+lckernel/logger/loggertest.cpp
 )
 
 # Issue #412 phase 0 — verify the DXF exporter actually writes what the
 # reader can consume.  Independent of the Python bindings (unlike the
 # WITH_PYTHONSCRIPT persistence round-trip test below); needs only libdxfrw
 # runtime.
+#
+# dxfroundtriptest.cpp is the read-path counterpart: it guards the kernel
+# crashes that made File::open unusable on real DXF input (3-D segments,
+# empty hatch loops, fit-points-only splines) and File::save's bool result.
+#
+# Neither source includes a libdxfrw header, and neither adds a library.
+# persistence links libdxfrw PRIVATE on purpose (persistence/CMakeLists.txt) so
+# that its C++17 requirement never reaches lcunittest — linking it here would
+# raise the whole binary, kaguya scripting tests included, to C++17.  Keep it
+# that way: parse raw DXF group codes instead of pulling in the library.
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
+    list(APPEND src persistence/dxfroundtriptest.cpp)
+    list(APPEND src persistence/formattest.cpp)
+    list(APPEND src persistence/documentsourcetest.cpp)
+    list(APPEND src persistence/dwgimporttest.cpp)
     set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
+    # The read tests that need a real file on disk find it here.  Most cases
+    # build their input in code -- a file that only restates three fit points
+    # adds nothing and has to be maintained -- but the import oracle has to
+    # count records in the same bytes the reader is given.
+    add_compile_definitions(UNITTEST_FIXTURES_DIR="${CMAKE_CURRENT_LIST_DIR}/persistence/fixtures")
+    # The DWG fixtures are libdxfrw's own, so they arrive with the submodule
+    # rather than needing a corpus committed here.
+    add_compile_definitions(DWG_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/third_party/libdxfrw/tests/fixtures/dwg")
 endif()
 
 # Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.
@@ -121,6 +141,10 @@ if(WITH_PYTHONSCRIPT)
         # 5.5 that Homebrew defaults to — see the GC-constant mapping in the
         # top-level CMakeLists.txt.
         scripting/customentitymanager_test.cpp
+        # Lua-side parity for the persistence result types (phase 2
+        # bind-new-persistence-api). Same requirements: lcluascript, kaguya
+        # and a real Lua runtime.
+        scripting/luapersistence_test.cpp
         )
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
@@ -206,7 +230,8 @@ if(WITH_RENDERING_UNITTESTS)
 
     # Boost
     set(Boost_USE_MULTITHREADED ON)
-    find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
+    # See luacmdinterface/CMakeLists.txt: no "system" component.
+    find_package(Boost COMPONENTS program_options filesystem log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 
@@ -244,4 +269,9 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 # Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
 include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
+
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})

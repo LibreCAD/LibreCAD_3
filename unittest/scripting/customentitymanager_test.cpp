@@ -926,46 +926,21 @@ TEST(CustomEntityDxfRoundTrip, PluginReconstructsEntityFromDxfAppData) {
     namespace py = pybind11;
 
     // -------------------------------------------------------------------------
-    // KNOWN BLOCKER — upstream libdxfrw bug (task_e20ba02a).
+    // This was skipped for years on an upstream libdxfrw bug: the exit
+    // condition of the app-data loop in DRW_Entity::parseDxfGroups() tested the
+    // function's own entry parameters -- always 102 and always "{" -- instead of
+    // freshly read values, so the loop consuming codes 410/411/470/471 never
+    // ran and a custom entity came back as a plain Block.
     //
-    // Coordinator's orchestrated review of PR-6.1 sub-piece 3b confirmed
-    // via independent execution (real arm64 libdxfrw build from clean
-    // sibling-repo git-archive + pure-C++ harness through the production
-    // path) that the DXF READ side is broken for custom entities:
-    //   * WRITE side is correct — app-data codes 102/410/411/470/471
-    //     genuinely land in the file.
-    //   * READ side is broken — `displayBlock()` comes back as a plain
-    //     `Block`, not a `CustomEntityStorage`.  `waitingCustomEntities()`
-    //     is empty.  `NewWaitingCustomEntityEvent` never fires for a
-    //     DXF-reloaded custom entity.
+    // The pinned libdxfrw reads them, which DxfRoundTripTest's own
+    // CustomEntityBlockRoundTrip proves at the persistence level: plugin name,
+    // entity name and custom params all survive. What this test adds is the
+    // half that has never executed -- the manager dispatching
+    // NewWaitingCustomEntityEvent to the registered plugin, and the plugin
+    // reconstructing the entity from those params.
     //
-    // Root cause: `DRW_Entity::parseDxfGroups()` in
-    // libdxfrw/src/drw_entities.cpp has a dead loop.  Its exit condition
-    // checks the function's own ENTRY parameters (always 102 and always
-    // "{") instead of freshly-read values, so the loop that consumes the
-    // 410/411/470/471 records never runs.  ~7-year-old upstream bug
-    // (commit 778d1d2, 2019-04-24); confirmed present on both local
-    // master AND the LibreCAD_3 branch CI clones.
-    //
-    // This test is CORRECTLY WRITTEN — its `fired_count == 1` assertion
-    // would fail in CI because the manager never dispatches (the
-    // NewWaitingCustomEntityEvent never fires).  Do NOT weaken any
-    // assertion to work around the upstream bug.  The moment libdxfrw
-    // is fixed, this test will pass and prove the phase-6 exit
-    // criterion; until then, it's the canonical demonstration of the
-    // custom-entity persistence break.
-    //
-    // Marked as GTEST_SKIP with a link to the tracked task so CI runs
-    // stay green while the upstream fix is decided (patched libdxfrw
-    // pin, adjust the exit criterion, or wait — user decision, not
-    // resolvable at either the agent or coordinator level).
-    GTEST_SKIP()
-        << "BLOCKED by upstream libdxfrw bug (task_e20ba02a): "
-           "DRW_Entity::parseDxfGroups() has a dead loop that never "
-           "reads app-data codes 410/411/470/471, so custom-entity "
-           "DXF reload is broken.  This test is correct as written and "
-           "will pass when libdxfrw is fixed.  See test-file comment "
-           "above for the full evidence trail.";
+    // No assertion here was weakened to make it run.
+    // -------------------------------------------------------------------------
 
     // -------------------------------------------------------------------------
     // Setup: install the `lc.register_plugin` hook to forward into

@@ -5,6 +5,9 @@
 #include <drw_base.h>
 #include <iostream>
 #include "../file.h"
+#include "../format.h"
+#include "../readguard.h"
+#include "preservedrecords.h"
 #include "../generic/helpers.h"
 
 #include <cad/storage/document.h>
@@ -36,6 +39,38 @@ static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 
 namespace lc {
 namespace persistence {
+
+/**
+ * The header variables LibreCAD reads from a drawing, captured in one pass by
+ * DXFimpl::addHeader.
+ *
+ * These live here rather than on the document because lckernel has no notion
+ * of a drawing header: it has no units, no extents and no global line-type
+ * scale.  Keeping them on the importer means the information survives the read
+ * -- File::open already uses acadVersion to decide the recorded variant -- and
+ * gives the phase 2 ImportResult something to carry instead of re-reading the
+ * file.
+ */
+struct DrawingHeader {
+    /** $ACADVER exactly as the drawing writes it; empty when it carries none. */
+    std::string acadVersion;
+
+    /** $INSUNITS as the raw DXF code, and as the kernel's enum. */
+    int insUnitsCode{0};
+    lc::Units units{lc::Units::None};
+
+    /** $MEASUREMENT: 0 = imperial (English), 1 = metric. */
+    int measurement{0};
+
+    /** $LTSCALE, the global line-type scale. */
+    double lineTypeScale{1.0};
+
+    /** $EXTMIN/$EXTMAX. Both are present or neither is. */
+    bool hasExtents{false};
+    lc::geo::Coordinate extMin;
+    lc::geo::Coordinate extMax;
+};
+
 class DXFimpl : public DRW_Interface {
 public:
 
@@ -44,37 +79,126 @@ public:
     DXFimpl(std::shared_ptr<lc::storage::Document> document) : _document(document) {}
 
     // READ FUNCTIONALITY
-    void addHeader(const DRW_Header* data) override {}
+    void addHeader(const DRW_Header* data) override;
 
-    void addDimStyle(const DRW_Dimstyle& data) override {}
+
+    /** The entities this read had to give up on, one entry each. */
+    const std::vector<ImportFailure>& failures() const {
+        return _failures;
+    }
+
+    /**
+     * What this read could not carry: one entry per DXF record kind LibreCAD
+     * has no entity for. These callbacks have always been empty overrides; the
+     * only change is that the drop is now counted rather than invisible.
+     */
+    const LossSummary& loss() const {
+        return _loss;
+    }
+
+    /** How many entities the reader handed to the document. */
+    std::size_t entitiesDelivered() const {
+        return _entitiesDelivered;
+    }
+
+    /**
+     * What addHeader captured. Empty/defaulted when the drawing has no HEADER
+     * section, which is legal DXF and which three files in the review corpus
+     * do.
+     */
+    const DrawingHeader& header() const {
+        return _header;
+    }
+
+    // Not counted as loss. Every conforming DXF carries a DIMSTYLE table with
+    // at least the default "Standard" entry -- including every file this
+    // application writes -- so counting it made the "records that were not
+    // imported" dialog fire on essentially every open, reporting loss where
+    // there was none and devaluing the dialog for the records it exists for.
+    // LibreCAD still has no dimension-style model; the honest place to say so
+    // is a note, not a per-open modal.
+    void addDimStyle(const DRW_Dimstyle& data) override {
+        (void)data;
+    }
 
     void addVport(const DRW_Vport& data) override;
 
-    void addTextStyle(const DRW_Textstyle& data) override {}
+    // Not counted as loss, for the same reason as addDimStyle above: a STYLE
+    // table with a default "Standard" entry is boilerplate every DXF carries.
+    // LibreCAD has no text style model -- a drawing's fonts are not represented
+    // anywhere it could put them -- but that is a standing limitation, not
+    // something a particular file lost.
+    void addTextStyle(const DRW_Textstyle& data) override {
+        (void)data;
+    }
 
     void addAppId(const DRW_AppId& data) override {}
 
-    void addRay(const DRW_Ray& data) override {}
+    void addRay(const DRW_Ray& data) override {
+        recordLoss("RAY");
+    }
 
-    void addXline(const DRW_Xline& data) override {}
+    void addXline(const DRW_Xline& data) override {
+        recordLoss("XLINE");
+    }
 
     void addKnot(const DRW_Entity& data) override {}
 
     void addInsert(const DRW_Insert& data) override;
 
-    void addTrace(const DRW_Trace& data) override {}
+    void addTrace(const DRW_Trace& data) override {
+        recordLoss("TRACE");
+    }
 
-    void add3dFace(const DRW_3Dface& data) override {}
+    void add3dFace(const DRW_3Dface& data) override {
+        recordLoss("3DFACE");
+    }
 
-    void addSolid(const DRW_Solid& data) override {}
+    void addSolid(const DRW_Solid& data) override;
 
-    void addLeader(const DRW_Leader* data) override {}
+    void addLeader(const DRW_Leader* data) override {
+        recordLoss("LEADER");
+    }
 
     void addViewport(const DRW_Viewport& data) override;
 
     void linkImage(const DRW_ImageDef* data) override;
 
     void addComment(const char* comment) override {}
+
+    // Lossless passthrough. libdxfrw hands over every OBJECTS record, entity
+    // and whole section it does not model, plus the CLASSES entries that make
+    // them readable again. LibreCAD dropped all of it, so opening a drawing and
+    // saving it destroyed everything the file carried beyond the geometry --
+    // layouts, plot settings, table styles, dictionaries, another
+    // application's custom data -- while the drawing still looked right.
+    void addRawDxfObject(const DRW_RawDxfObject& data) override {
+        _preserved.objects.push_back(data);
+    }
+
+    void addRawDxfEntity(const DRW_RawDxfObject& data) override {
+        _preserved.entities.push_back(data);
+    }
+
+    void addRawDxfSection(const DRW_RawDxfSection& data) override {
+        _preserved.sections.push_back(data);
+    }
+
+    void addDxfClass(const DRW_Class& data) override {
+        _preserved.classes.push_back(data);
+    }
+
+    /** What this read is holding on to for the next save. */
+    const PreservedRecords& preserved() const {
+        return _preserved;
+    }
+
+    /**
+     * Hand the preserved records to the document, which is the only thing that
+     * survives from this read to the next save: File::save builds a fresh
+     * writer from a document and knows nothing about where it came from.
+     */
+    void attachPreservedRecords();
 
     void addLine(const DRW_Line& data) override;
 
@@ -124,6 +248,23 @@ public:
 
     void endBlock() override;
 
+    /**
+     * Create the INSERT entities held back during the read.
+     *
+     * An INSERT's bounding box is the union of the boxes of the entities in
+     * the block it displays, computed once in Insert's constructor. During a
+     * read no entity has reached the document yet -- everything the callbacks
+     * build is queued in an operation::Builder that runs afterwards -- so an
+     * Insert built as it was read always measured an empty block and came out
+     * as a degenerate point at its own insertion point. Deferring the
+     * construction until the blocks and their contents are in the document is
+     * what makes the box right, and it is also what lets the INSERT reference
+     * the block the file actually defined instead of a fabricated stand-in.
+     *
+     * Called by File::open once the read's own operations have executed.
+     */
+    void buildDeferredInserts();
+
 
     // WRITE FUNCTIONALITY
     bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
@@ -148,7 +289,7 @@ public:
 
     void writeAppId() override;
 
-    void writeObjects() override {}
+    void writeObjects() override;
 
     void addPlotSettings(const DRW_PlotSettings *data) override {}
 
@@ -202,6 +343,51 @@ public:
 
     void writeBlock(const lc::meta::Block_CSPtr& block);
 
+    /**
+     * Emit the anonymous *D block that holds a dimension's drawn geometry.
+     *
+     * DXF group 2 on a DIMENSION names a block containing the lines, arrowheads
+     * and text that make up the picture. LibreCAD wrote no such block and no
+     * group 2, and that is not the harmless omission it looks like: ezdxf's
+     * audit **deletes** a DIMENSION that has no valid geometry block, so a
+     * drawing saved by LibreCAD lost its dimensions entirely when it passed
+     * through anything that audits on load.
+     *
+     * Returns the block name to put in group 2, or "" when the kind has no
+     * geometry this can build.
+     */
+    std::string writeDimensionBlock(const lc::entity::CADEntity_CSPtr& entity);
+
+    // Pieces shared by the per-kind geometry above. They take plain numbers
+    // rather than a geometry type so that this header keeps naming no DRW type
+    // beyond the ones DRW_Interface already forces on it.
+    std::string beginDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                    std::string& layerName);
+    void writeDimensionLine(const std::string& layerName,
+                            double fromX, double fromY, double toX, double toY);
+    void writeDimensionArrow(const std::string& layerName,
+                             double tipX, double tipY, double dirX, double dirY);
+    void writeDimensionText(const std::string& layerName,
+                            const lc::entity::Dimension& dimension, const std::string& value);
+
+    /** A dimension drawn as a single measured line: radial and diametric. */
+    std::string writeLeaderDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                          const lc::entity::Dimension& dimension,
+                                          double fromX, double fromY, double toX, double toY,
+                                          bool arrowAtBothEnds, const std::string& prefix);
+
+    std::string writeAngularDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                           const lc::entity::Dimension& dimension,
+                                           const lc::entity::DimAngular& angular);
+
+    /** Every dimension in the document, in one stable order. */
+    std::vector<lc::entity::CADEntity_CSPtr> allDimensions() const;
+
+    /** The *D block name assigned to each dimension, by entity id. */
+    std::map<ID_DATATYPE, std::string> _dimensionBlocks;
+    unsigned int _nextDimensionBlock{1};
+
+
     // UTILITIES FUNCTIONS
     lc::AngleFormat numberToAngleFormat(int num);
 
@@ -240,8 +426,69 @@ public:
     lc::operation::Builder_SPtr _builder;
     lc::operation::EntityBuilder_SPtr _entityBuilder;
     lc::meta::Block_SPtr _currentBlock;
+    DrawingHeader _header;
+    LossSummary _loss;
+    PreservedRecords _preserved;
+    std::vector<ImportFailure> _failures;
+    std::size_t _entitiesDelivered{0};
+    std::size_t _attributesAsText{0};
+
+    void recordLoss(const char* recordKind) {
+        _loss.droppedByType[recordKind]++;
+    }
+
+    /**
+     * Run one read callback, and survive it throwing.
+     *
+     * libdxfrw's read path is not a function-try-block the way its write path
+     * is, so an exception from a callback leaves dxfRW::read() with
+     * getError() == BAD_NONE: the caller is told the file read cleanly while
+     * the process is already unwinding. LibreCAD's own kernel throws from
+     * inside these callbacks -- geo::Arc for an unusable radius, geo::Area for
+     * a volume -- and one bad record used to end the program.
+     *
+     * The catch is on `...`, not on std::exception: geoarea.h threw a bare
+     * `const char*` for years, which a std::exception handler walks straight
+     * past.
+     *
+     * This could not land before the crashes were fixed. It converts a
+     * reproducible abort into a recorded skip, which is only an improvement
+     * once the aborts are understood -- otherwise it deletes the signal that
+     * found them.
+     */
+    template<typename Body>
+    void guarded(const char* recordKind, const DRW_Entity* entity, Body body) {
+        std::string reason;
+        if (!runGuarded(body, reason)) {
+            recordFailure(recordKind, entity, reason.c_str());
+        }
+    }
+
+    /**
+     * Hand one entity to the document, and count it.
+     *
+     * The count is of what the *reader* produced, which is not the same as what
+     * the document ends up holding: a block's contents live in the block, not
+     * the entity container. Importers report the former.
+     */
+    void deliver(const lc::entity::CADEntity_CSPtr& entity) {
+        _entitiesDelivered++;
+        _entityBuilder->appendEntity(entity);
+    }
+
+    /** An INSERT read from the file, not yet turned into an entity. */
+    struct PendingInsert {
+        lc::meta::MetaInfo_SPtr metaInfo;
+        lc::meta::Block_CSPtr containerBlock;  //!< the block the INSERT sits in, null for model space
+        lc::meta::Layer_CSPtr layer;
+        lc::geo::Coordinate position;
+        std::string targetBlockName;           //!< the block the INSERT displays
+    };
+    std::vector<PendingInsert> _pendingInserts;
 
 private:
+    void recordFailure(const char* recordKind, const DRW_Entity* entity, const char* reason);
+
     /**
     * Return the MetaInfo object from a DRW_Entity.
     * This is useful because most/all entities will share the same basic properties
@@ -250,9 +497,27 @@ private:
 
     dxfRW* dxfW;
 
+    /**
+     * The DXF revision the current write targets. R12 cannot carry several
+     * entity kinds, so the writers need to know what they are writing for.
+     */
+    DRW::Version _exportVersion{DRW::AC1024};
+
+    /** The preserved records being replayed by the current write, if any. */
+    std::shared_ptr<const PreservedRecords> _replay;
+
+    /** The target of the current write, for the format-capability check. */
+    lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
+
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
     lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;
+
+    /**
+     * DXF symbol-table names are case-insensitive; writers spell model space
+     * both *Model_Space and *MODEL_SPACE.
+     */
+    static bool isModelSpaceName(const std::string& name);
 
     // this function adds layer too if not found: issue with some files
     lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data) const;

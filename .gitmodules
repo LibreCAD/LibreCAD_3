@@ -1,9 +1,6 @@
 [submodule "lckernel/nano-signal-slot"]
 	path = lckernel/nano-signal-slot
 	url = https://github.com/feragon/nano-signal-slot
-[submodule "persistence/libopencad"]
-	path = persistence/libopencad
-	url = https://github.com/sandyre/libopencad.git
 [submodule "third_party/kaguya"]
 	path = third_party/kaguya
 	url = https://github.com/satoren/kaguya.git
@@ -17,3 +14,7 @@
 	# Pinned to v3.1.0 (2026-08 latest v3.x). v3 keeps C++14 support; pybind11's Python
 	# floor is 3.8, LibreCAD requires 3.9 as a project choice. See docs in
 	# librecad3-python-scripting-2026-08-09.md.
+[submodule "third_party/libdxfrw"]
+	path = third_party/libdxfrw
+	url = https://github.com/LibreCAD/libdxfrw.git
+	branch = master

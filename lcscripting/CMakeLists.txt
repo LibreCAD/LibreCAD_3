@@ -69,4 +69,5 @@ target_link_libraries(lcscripting lckernel)
 install(TARGETS lcscripting
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )

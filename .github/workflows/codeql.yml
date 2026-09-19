@@ -62,25 +62,17 @@ jobs:
         python3-dev python3
         sudo rm -rf /usr/local/lib/android
 
-    # libdxfrw is a dependency, not part of this project, so it is built here
-    # -- BEFORE Initialize CodeQL -- and into RUNNER_TEMP rather than the
-    # workspace.  Building it inside the traced window would put third-party
-    # translation units into the C++ database and report their findings as
-    # alerts on this repository, at paths that do not exist in this repository
-    # and so can be neither reviewed nor fixed here.  LibreCAD picks the
-    # library up from the /usr install, not from the source tree, so the
-    # location does not matter to the build.
+    # libdxfrw is a third-party submodule, so its target is built here --
+    # BEFORE Initialize CodeQL -- in the same build directory and with the same
+    # configure arguments as the Building step.  That step then finds it up to
+    # date and never recompiles it inside the traced window, which would put
+    # third-party translation units into the C++ database and report their
+    # findings as alerts on this repository.
     - name: Build libdxfrw
       if: matrix.language == 'cpp'
       run: |
-        git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw "$RUNNER_TEMP/libdxfrw"
-        mkdir -p "$RUNNER_TEMP/libdxfrw/release"
-        pushd "$RUNNER_TEMP/libdxfrw/release"
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
-        make -j 4
-        echo "installing dxfrw"
-        sudo make install
-        popd
+        source "${{ github.workspace }}/scripts/ci/configure-build.sh"
+        make -j 4 dxfrw
 
     # Must run BEFORE the build: for compiled languages CodeQL builds its
     # database by tracing the compiler as the build runs.  With the build
@@ -110,10 +102,16 @@ jobs:
         git submodule update --init --recursive
 
         echo "building LibreCAD"
-        mkdir build
-        pushd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
-        make -j 4
+        source "${{ github.workspace }}/scripts/ci/configure-build.sh"
+        # Fail loudly if a libdxfrw translation unit compiles here: that means
+        # the configure arguments drifted between this step and the one before
+        # Initialize CodeQL, and third-party code is entering the database.
+        make -j 4 2>&1 | tee ../codeql-build.log
+        if grep -q "third_party/libdxfrw" ../codeql-build.log; then
+            echo "ERROR: libdxfrw compiled inside the traced build; configure arguments drifted." >&2
+            grep -m5 "third_party/libdxfrw" ../codeql-build.log >&2
+            exit 1
+        fi
         # install/fast, not install: the plain install target depends on `all`,
         # and lckernel regenerates build_constants.cpp on every make, so a
         # plain `sudo make install` recompiles inside sudo.  sudo strips LD_*
@@ -121,7 +119,6 @@ jobs:
         # anything compiled there is silently missing from the database.
         echo "installing LibreCAD"
         sudo make install/fast DESTDIR=AppDir
-        popd
 
         sudo apt-get -qq install clang-15 clang-tools-15
 

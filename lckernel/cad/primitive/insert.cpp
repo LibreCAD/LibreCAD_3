@@ -1,5 +1,7 @@
 #include "insert.h"
 
+#include <set>
+
 using namespace lc;
 using namespace entity;
 
@@ -40,9 +42,15 @@ const geo::Coordinate& Insert::position() const {
     return _position;
 }
 
+// The box of an INSERT is measured around its position, and the copy
+// constructor measures it at the position it is copying.  Moving the copy
+// afterwards therefore leaves the box where the original was: a nested INSERT
+// reported its inner block's box unshifted, and the enclosing INSERT -- whose
+// own box is the union of its block's moved entities -- inherited that error.
 CADEntity_CSPtr Insert::move(const geo::Coordinate& offset) const {
     auto newEntity = std::make_shared<Insert>(shared_from_this(), true);
     newEntity->_position = _position + offset;
+    newEntity->calculateBoundingBox();
 
     return newEntity;
 }
@@ -50,6 +58,7 @@ CADEntity_CSPtr Insert::move(const geo::Coordinate& offset) const {
 CADEntity_CSPtr Insert::copy(const geo::Coordinate& offset) const {
     auto newEntity = std::make_shared<Insert>(shared_from_this());
     newEntity->_position = _position + offset;
+    newEntity->calculateBoundingBox();
 
     return newEntity;
 }
@@ -103,6 +112,7 @@ entity::CADEntity_CSPtr entity::Insert::setDragPoints(std::map<unsigned int, lc:
     try {
         auto newEntity = std::make_shared<Insert>(shared_from_this(), true);
         newEntity->_position = dragPoints.at(0);
+        newEntity->calculateBoundingBox();
 
         return newEntity;
     }
@@ -138,6 +148,32 @@ const storage::Document_SPtr& Insert::document() const {
 }
 
 void Insert::calculateBoundingBox() {
+    // A block whose contents insert it again -- directly, or round a longer
+    // cycle -- would recurse forever here: move() below constructs a fresh
+    // Insert, and an Insert's constructor calls this. Such files are real
+    // (damaged drawings, and the output of flattening an xref), and libdxfrw
+    // parses them without complaint, so the recursion was reachable from an
+    // ordinary File::open and took the whole application down with it.
+    //
+    // The re-entrant level gets the position-only box, which is the same answer
+    // an empty block gets and the best available: the extent of a cycle is not
+    // defined.
+    static thread_local std::set<const meta::Block*> active;
+    const meta::Block* const guard = _displayBlock.get();
+    if(guard != nullptr && !active.insert(guard).second) {
+        _boundingBox = geo::Area(_position, _position);
+        return;
+    }
+    struct Release {
+        std::set<const meta::Block*>& set;
+        const meta::Block* key;
+        ~Release() {
+            if(key != nullptr) {
+                set.erase(key);
+            }
+        }
+    } release{active, guard};
+
     auto entities = _document->entitiesByBlock(_displayBlock).asVector();
 
     if(entities.empty()) {

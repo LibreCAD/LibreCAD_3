@@ -1,0 +1,30 @@
+name: DwgWritePosition
+
+# Nightly, and on any change to the pieces it checks.
+#
+# LibreCAD 3 reads DWG and does not write it (docs/dwg-support.md). That rests
+# on a claim libdxfrw makes about its own DWG writing, in a file that lives in a
+# submodule and can change without anyone here noticing. This job is how the day
+# it changes becomes visible, rather than something discovered years later.
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  push:
+    paths:
+      - 'persistence/format.cpp'
+      - 'docs/dwg-support.md'
+      - 'scripts/ci/check-dwg-write-position.sh'
+      - '.github/workflows/dwg-position.yml'
+  workflow_dispatch:
+
+jobs:
+  position:
+    name: CheckDwgWritePosition
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - run: ${{ github.workspace }}/scripts/ci/check-dwg-write-position.sh
