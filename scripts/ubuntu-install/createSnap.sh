@@ -64,11 +64,14 @@ set -euo pipefail
 #
 # So give apt a plain-amd64 view of the same mirror: same URIs, same keyring,
 # same suites, with only the architecture spelled out.
+# Unconditionally, and deliberately so. The first attempt guarded this on
+# "does a *_binary-amd64_Packages list already exist", which is always true on
+# this image and says nothing: the runner carries third-party repositories
+# (Microsoft's is published under dists/resolute/) whose names match that
+# pattern while the Ubuntu suites remain amd64v3-only. Writing the source every
+# time costs one apt-get update and cannot be fooled by a neighbour's filename.
 . /etc/os-release
-if ! ls /var/lib/apt/lists/*_dists_"${VERSION_CODENAME}"_main_binary-amd64_Packages \
-        >/dev/null 2>&1; then
-    echo "Adding a plain-amd64 apt source: only ${VERSION_CODENAME} amd64v3 indexes are present"
-    sudo tee /etc/apt/sources.list.d/librecad-plain-amd64.sources >/dev/null <<SOURCE
+sudo tee /etc/apt/sources.list.d/librecad-plain-amd64.sources >/dev/null <<SOURCE
 Types: deb
 URIs: mirror+file:/etc/apt/apt-mirrors.txt
 Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates ${VERSION_CODENAME}-security
@@ -76,8 +79,12 @@ Components: main universe restricted multiverse
 Architectures: amd64
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 SOURCE
-    sudo apt-get update
-fi
+sudo apt-get update
+
+# And say whether it worked, because the failure mode is silent.
+echo "Ubuntu plain-amd64 indexes now present:"
+ls /var/lib/apt/lists/ | grep -E "apt-mirrors.*_binary-amd64_Packages" || \
+    echo "  NONE -- the stage-package resolve below will find nothing"
 
 if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap; then
     # "Stage package not found in part 'librecad': <name>" names whichever
