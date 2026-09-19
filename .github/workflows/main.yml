@@ -153,7 +153,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build libboost-all-dev libeigen3-dev \
-            rapidjson-dev libgtest-dev libglew-dev libglfw3-dev liblua5.4-dev
+            rapidjson-dev libgtest-dev libglew-dev libglfw3-dev liblua5.4-dev \
+            libfreetype-dev libpng-dev libbz2-dev
 
       # -Wno-error because the third-party submodules are built with -Werror and
       # warn under the sanitizers' instrumentation; their warnings are not what
