@@ -2406,6 +2406,90 @@ DimensionBlocks dimensionBlocksIn(const std::string& path) {
 // block it names exists and has geometry in it.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+// A block named like a dimension block is not necessarily one. The writer
+// regenerates the anonymous *D<n> blocks that hold dimension geometry, and used
+// to decide which those were from the name alone -- so a block a file carried
+// under a *D name was deleted with everything in it, and the INSERT that placed
+// it was left pointing at whichever dimension's geometry got minted over the
+// name. The drawing opened, looked plausible, and drew arrowheads where the
+// user had put a circle.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ABlockNamedLikeADimensionBlockIsNotDeleted) {
+    const std::string source = uniqueTmpDxf("dimname-source");
+    const std::string saved = uniqueTmpDxf("dimname-saved");
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+
+    // *D1 holds a CIRCLE and carries no code-70 flag: user content, by the only
+    // signal the file offers. *D9 is flagged anonymous, as a real dimension
+    // block is. An INSERT places *D1 out at (50,50).
+    {
+        std::ofstream dxf(source);
+        dxf << "0\nSECTION\n2\nBLOCKS\n"
+            << "0\nBLOCK\n8\n0\n2\n*D1\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*D1\n"
+            << "0\nCIRCLE\n8\n0\n10\n1.0\n20\n2.0\n30\n0.0\n40\n3.0\n"
+            << "0\nENDBLK\n8\n0\n"
+            << "0\nBLOCK\n8\n0\n2\n*D9\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*D9\n"
+            << "0\nLINE\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n11\n5.0\n21\n0.0\n31\n0.0\n"
+            << "0\nENDBLK\n8\n0\n"
+            << "0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nINSERT\n8\n0\n2\n*D1\n10\n50.0\n20\n50.0\n30\n0.0\n"
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+
+    // A dimension of our own, so the writer really does mint a *D name.
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::DimLinear>(
+            lc::geo::Coordinate(25, 10, 0), lc::geo::Coordinate(25, 11, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(50, 0, 0), 0.0, 0.0,
+            defaultLayer())}));
+
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto blocks = dimensionBlocksIn(saved);
+
+    // The user's block is still there, still holding its circle -- and the
+    // dimension was given a name of its own rather than this one.
+    ASSERT_EQ(blocks.defined.count("*D1"), 1u) << "the user block *D1 was deleted";
+    EXPECT_GT(blocks.defined.at("*D1"), 0u) << "the CIRCLE in user block *D1 was dropped";
+    ASSERT_EQ(blocks.referenced.size(), 1u);
+    EXPECT_NE(blocks.referenced[0], "*D1")
+        << "the dimension took over the user's block name";
+
+    // The flagged one is machinery: regenerated, so not carried over.
+    EXPECT_EQ(blocks.defined.count("*D9"), 0u)
+        << "an anonymous dimension block was carried over as well as regenerated";
+
+    // And the circle survived the round trip as a drawing, not just as text.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    int circles = 0;
+    for (const auto& block : reopened->blocks()) {
+        if (block->name() != "*D1") {
+            continue;
+        }
+        for (const auto& entity : reopened->entitiesByBlock(block).asVector()) {
+            if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
+                circles++;
+            }
+        }
+    }
+    EXPECT_EQ(circles, 1) << "the circle did not come back";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
 TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
     auto layer = defaultLayer();
     auto doc = newDocument();

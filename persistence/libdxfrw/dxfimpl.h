@@ -78,6 +78,18 @@ public:
 
     DXFimpl(std::shared_ptr<lc::storage::Document> document) : _document(document) {}
 
+    /**
+     * Tell the reader the file is a DWG.
+     *
+     * The DWG reader never fills in DRW_Block::flags, so a DWG's anonymous
+     * blocks arrive looking exactly like user blocks. Saying so up front lets
+     * addBlock fall back to the *D<n> naming convention for that one source,
+     * without loosening the test for DXF, where the flag is real.
+     */
+    void setSourceIsDwg(bool isDwg) {
+        _sourceIsDwg = isDwg;
+    }
+
     // READ FUNCTIONALITY
     void addHeader(const DRW_Header* data) override;
 
@@ -385,6 +397,14 @@ public:
 
     /** The *D block name assigned to each dimension, by entity id. */
     std::map<ID_DATATYPE, std::string> _dimensionBlocks;
+
+    /// Whether the document being read came from a DWG. The DWG reader leaves
+    /// DRW_Block::flags at zero, so the anonymous bit a DXF carries is simply
+    /// not there and the naming convention has to stand in for it.
+    bool _sourceIsDwg{false};
+
+    static bool isAnonymousDimensionBlockName(const std::string& name);
+    static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
     unsigned int _nextDimensionBlock{1};
 
 

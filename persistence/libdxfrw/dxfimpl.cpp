@@ -285,7 +285,18 @@ void DXFimpl::addBlock(const DRW_Block& data) {
         }
 
         if(_currentBlock == nullptr) {
-            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base);
+            // Bit 1 of BLOCK's code 70: the source generated this block itself.
+            // The writer regenerates the dimension geometry blocks and has to
+            // leave the rest alone, and this flag is the only honest way to
+            // tell them apart -- the *D<n> naming convention is a convention,
+            // not a guarantee.
+            //
+            // The DWG reader does not fill flags in, so a DWG's own anonymous
+            // blocks arrive unmarked; _sourceIsDwg stands in for the bit there,
+            // where the convention is all there is.
+            const bool anonymous = (data.flags & 1) != 0
+                || (_sourceIsDwg && isAnonymousDimensionBlockName(data.name));
+            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base, anonymous);
         }
         _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
@@ -2757,15 +2768,30 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     }
 }
 
-/// Whether a block name is a writer-generated anonymous dimension block, *D<n>.
-/// These hold the geometry a dimension is drawn with. LibreCAD models
-/// dimensions natively and mints these again on every write, so the ones a
-/// source file carries are not data to preserve.
-static bool isAnonymousDimensionBlock(const std::string& name) {
+/// Whether a block name follows the *D<n> convention writers use for the
+/// anonymous blocks that hold a dimension's geometry.
+///
+/// A name alone does not make a block regenerable -- see
+/// isRegeneratedDimensionBlock() -- but it is what the minting loop must not
+/// collide with, so the two callers need the test on its own as well.
+bool DXFimpl::isAnonymousDimensionBlockName(const std::string& name) {
     if(name.size() < 3 || name[0] != '*' || (name[1] != 'D' && name[1] != 'd')) {
         return false;
     }
     return name.find_first_not_of("0123456789", 2) == std::string::npos;
+}
+
+/// Whether this writer will mint a replacement for the given block, and may
+/// therefore leave it out.
+///
+/// Both halves matter. Without the name test an anonymous block of some other
+/// kind -- a *U<n> group, a hatch's boundary -- would be dropped with nothing
+/// to take its place. Without the anonymous flag, a block that merely looks
+/// like a dimension block is deleted along with everything in it: the drawing
+/// opens, the INSERT that placed it now points at freshly minted dimension
+/// geometry, and it draws arrowheads where the user put a circle.
+bool DXFimpl::isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block) {
+    return block->anonymous() && isAnonymousDimensionBlockName(block->name());
 }
 
 void DXFimpl::writeBlockRecords() {
@@ -2776,7 +2802,7 @@ void DXFimpl::writeBlockRecords() {
         // collides with the minted names -- libdxfrw refuses a duplicate
         // BLOCK_RECORD and the whole save is refused -- and keeping them would
         // grow the drawing by a block per dimension on every save-and-reopen.
-        if(isAnonymousDimensionBlock(block->name())) {
+        if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
         dxfW->writeBlockRecord(block->name());
@@ -2787,14 +2813,27 @@ void DXFimpl::writeBlockRecords() {
     // start from the same base, which is why the base is computed here and left
     // in the member for writeBlocks() to pick up rather than recomputed there.
     //
-    // The base has to clear the *D names the document already holds. A drawing
-    // read from any conforming file arrives with its own anonymous dimension
-    // blocks -- addBlock takes them in like any other -- and libdxfrw refuses a
-    // duplicate BLOCK_RECORD name, which fails the whole write. Starting at 1
-    // therefore lost the entire save, silently, for every drawing that had been
-    // through a dimension-bearing file once already, including one this
-    // application wrote a moment earlier.
+    // The base has to clear every *D name that survived the loop above.
+    // libdxfrw refuses a duplicate BLOCK_RECORD name and fails the whole write,
+    // so a minted name landing on a kept block loses the entire save, silently.
+    // The blocks this writer regenerates are gone by here and cannot collide;
+    // it is the ones it deliberately kept -- user content under a *D name, an
+    // anonymous block from a file this build does not model -- that the count
+    // has to start above.
     _nextDimensionBlock = 1;
+    for(const auto& block : _document->blocks()) {
+        if(isRegeneratedDimensionBlock(block) || !isAnonymousDimensionBlockName(block->name())) {
+            continue;
+        }
+        try {
+            const unsigned long used = std::stoul(block->name().substr(2));
+            if(used >= _nextDimensionBlock) {
+                _nextDimensionBlock = static_cast<unsigned int>(used) + 1;
+            }
+        } catch(const std::exception&) {
+            // A suffix too long to be a number cannot be one this writer mints.
+        }
+    }
     unsigned int next = _nextDimensionBlock;
     for(std::size_t i = 0; i < allDimensions().size(); i++) {
         dxfW->writeBlockRecord("*D" + std::to_string(next++));
@@ -3207,7 +3246,7 @@ void DXFimpl::writeBlocks() {
     for(const auto& block : _document->blocks()) {
         // Left out for the same reason as in writeBlockRecords(): the record
         // pass skipped these, so a block written here would have no record.
-        if(isAnonymousDimensionBlock(block->name())) {
+        if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
         writeBlock(block);
@@ -3218,6 +3257,11 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     DRW_Block drwBlock;
 
     drwBlock.name = block->name();
+    // Code 70 bit 1. A kept anonymous block that goes out unmarked is
+    // indistinguishable from user content on the next read, so it would be
+    // kept forever -- and one that really is user content must not acquire the
+    // mark and be dropped on the next save.
+    drwBlock.flags = block->anonymous() ? 1 : 0;
     drwBlock.basePoint.x = block->base().x();
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();

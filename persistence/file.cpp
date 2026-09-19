@@ -242,6 +242,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
     if (library == LIBDXFRW && sniffFormat(path) == "dwg") {
 #if USE_DWG_IMPORT
         DXFimpl reader(document, builder);
+        reader.setSourceIsDwg(true);
         dwgRW R(path.c_str());
         if (g_dwgReadObjectBudget > 0) {
             R.setDwgReadObjectBudget(g_dwgReadObjectBudget);
