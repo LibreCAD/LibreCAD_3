@@ -1371,6 +1371,7 @@ static DRW::Version dxfRevisionForType(lc::persistence::File::Type type) {
     case lc::persistence::File::LIBDXFRW_DXB_R2013:
         return DRW::AC1027;
     case lc::persistence::File::LIBOPENCAD_DWG:
+    case lc::persistence::File::LIBDXFRW_DWG_IMPORT:
         return DRW::UNKNOWNV;
     }
     return DRW::UNKNOWNV;
@@ -1566,12 +1567,12 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         exportVersion = DRW::AC1027;
         break;
     case lc::persistence::File::LIBOPENCAD_DWG:
+    case lc::persistence::File::LIBDXFRW_DWG_IMPORT:
         // Neither is a writable target: LibreCAD reads DWG and does not write
         // it. LIBOPENCAD_DWG is refused by File::save before this is reached,
-        // but LIBDXFRW_DWG_IMPORT is not -- File::exportFile gates on the
-        // variant's library being libdxfrw, which is true of it -- so refusing
-        // here is what stops a DWG-labelled file being written at whatever
-        // revision an uninitialised read happened to name.
+        // but LIBDXFRW_DWG_IMPORT can reach File::exportFile because its
+        // library is libdxfrw. Refuse both here rather than letting a
+        // DWG-labelled file claim an arbitrary DXF revision.
         LOG_ERROR << "No DXF revision for file type " << static_cast<int>(type);
         return false;
     }
