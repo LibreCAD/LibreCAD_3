@@ -424,9 +424,11 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
     // weakly_canonical, not canonical: the destination need not exist yet, and
     // a save to a new file must still work. A broken link resolves to its
     // target name, which is what creating through the link would have done.
-    // boost::filesystem, not std::filesystem: this project is built at C++14,
-    // where <filesystem> declares nothing. Boost is already a hard dependency
-    // and lcpersistence already links it for patternProvider.
+    // boost::filesystem rather than std::filesystem. The original reason was
+    // that the tree was C++14, where <filesystem> declares nothing; that is no
+    // longer true, but Boost is a hard dependency either way, lcpersistence
+    // already links it for patternProvider, and weakly_canonical behaves the
+    // same in both. Nothing is gained by swapping it now.
     std::string destination = path;
     boost::system::error_code linkError;
     if (boost::filesystem::is_symlink(boost::filesystem::symlink_status(path, linkError))

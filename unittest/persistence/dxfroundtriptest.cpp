@@ -2026,9 +2026,10 @@ TEST(DxfRoundTripTest, ADimensionDoesNotCostTheWholeR12File) {
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
-    // boost::filesystem throughout: this project is built at C++14, where
-    // <filesystem> declares nothing. The link variable is not called "link"
-    // because <unistd.h> already has one.
+    // boost::filesystem throughout, which is what the rest of this file uses
+    // -- mixing it with std::filesystem in one translation unit buys nothing.
+    // The link variable is not called "link" because <unistd.h> already has
+    // one, and `link.string()` then resolves to a member of a function type.
     const boost::filesystem::path directory =
         boost::filesystem::temp_directory_path()
         / ("libdxfrw-link-save-" + std::to_string(::getpid()));
