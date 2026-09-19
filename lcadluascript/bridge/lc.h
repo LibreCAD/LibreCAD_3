@@ -1,5 +1,5 @@
 #pragma once
 
-#include <kaguya/include/kaguya/state.hpp>
+#include "kaguya_compat.h"
 
 void import_lc_namespace(kaguya::State& state);

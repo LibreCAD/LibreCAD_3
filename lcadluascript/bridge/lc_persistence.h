@@ -5,6 +5,6 @@
 // lc::persistence::File::open/save so headless Lua scripts can do
 // non-interactive DXF/DWG I/O — no gap vs Python parity.
 
-#include <kaguya/include/kaguya/state.hpp>
+#include "kaguya_compat.h"
 
 void import_lc_persistence_namespace(kaguya::State& state);
