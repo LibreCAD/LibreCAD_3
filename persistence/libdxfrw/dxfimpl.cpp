@@ -1446,7 +1446,10 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     dxfW = new dxfRW(filename.c_str());
 
     //Default setting
-    DRW::Version exportVersion;
+    // Initialised: the switch below is exhaustive over the DXF and DXB targets,
+    // but a DWG enumerator reaches it too, and reading this uninitialised was
+    // undefined behaviour that landed on a build-dependent revision.
+    DRW::Version exportVersion = DRW::UNKNOWNV;
 
     switch(type) {
     case lc::persistence::File::LIBDXFRW_DXF_R12:
@@ -1478,9 +1481,18 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         exportVersion = DRW::AC1027;
         break;
     case lc::persistence::File::LIBOPENCAD_DWG:
-        // File::save refuses this before we are called; there is no DXF
-        // revision to map it to.
+        // Neither is a writable target: LibreCAD reads DWG and does not write
+        // it. LIBOPENCAD_DWG is refused by File::save before this is reached,
+        // but LIBDXFRW_DWG_IMPORT is not -- File::exportFile gates on the
+        // variant's library being libdxfrw, which is true of it -- so refusing
+        // here is what stops a DWG-labelled file being written at whatever
+        // revision an uninitialised read happened to name.
         LOG_ERROR << "No DXF revision for file type " << static_cast<int>(type);
+        return false;
+    }
+
+    if(exportVersion == DRW::UNKNOWNV) {
+        LOG_ERROR << "Unhandled file type " << static_cast<int>(type);
         return false;
     }
 
@@ -2434,6 +2446,7 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
         // survive. Dropping it keeps the rest of the hatch.
         if (drwLoop->objlist.empty()) {
             LOG_WARNING << "Dropping a hatch boundary loop that produced no edges";
+            _loss.droppedByType["HATCH boundary loop"]++;
             continue;
         }
 
@@ -2442,13 +2455,18 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     }
 
     if (hatch.looplist.empty()) {
+        // Counted, not just logged. Every other record this writer leaves out
+        // reaches the user through the export result, and a hatch that vanishes
+        // from a saved drawing is not less worth saying.
         LOG_WARNING << "Dropping HATCH " << hatch.name << ": no boundary survived";
+        _loss.droppedByType["HATCH"]++;
         return;
     }
     hatch.loopsnum = hatch.looplist.size();
 
     if (!dxfW->writeHatch(&hatch)) {
         LOG_ERROR << "libdxfrw refused HATCH " << hatch.name;
+        _loss.droppedByType["HATCH"]++;
     }
 }
 
@@ -2732,8 +2750,28 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     }
 }
 
+/// Whether a block name is a writer-generated anonymous dimension block, *D<n>.
+/// These hold the geometry a dimension is drawn with. LibreCAD models
+/// dimensions natively and mints these again on every write, so the ones a
+/// source file carries are not data to preserve.
+static bool isAnonymousDimensionBlock(const std::string& name) {
+    if(name.size() < 3 || name[0] != '*' || (name[1] != 'D' && name[1] != 'd')) {
+        return false;
+    }
+    return name.find_first_not_of("0123456789", 2) == std::string::npos;
+}
+
 void DXFimpl::writeBlockRecords() {
     for(const auto& block : _document->blocks()) {
+        // Anonymous dimension blocks are geometry a writer draws a dimension
+        // with, not anything a user made. This writer mints its own below, so
+        // the ones carried in from the source file are left out: emitting them
+        // collides with the minted names -- libdxfrw refuses a duplicate
+        // BLOCK_RECORD and the whole save is refused -- and keeping them would
+        // grow the drawing by a block per dimension on every save-and-reopen.
+        if(isAnonymousDimensionBlock(block->name())) {
+            continue;
+        }
         dxfW->writeBlockRecord(block->name());
     }
 
@@ -2749,37 +2787,13 @@ void DXFimpl::writeBlockRecords() {
     // therefore lost the entire save, silently, for every drawing that had been
     // through a dimension-bearing file once already, including one this
     // application wrote a moment earlier.
-    _nextDimensionBlock = firstFreeDimensionBlockIndex();
+    _nextDimensionBlock = 1;
     unsigned int next = _nextDimensionBlock;
     for(std::size_t i = 0; i < allDimensions().size(); i++) {
         dxfW->writeBlockRecord("*D" + std::to_string(next++));
     }
 }
 
-/// The lowest n for which no block named *D<n> exists in the document.
-unsigned int DXFimpl::firstFreeDimensionBlockIndex() const {
-    unsigned int highest = 0;
-    for(const auto& block : _document->blocks()) {
-        const std::string& name = block->name();
-        if(name.size() < 3 || name[0] != '*' || (name[1] != 'D' && name[1] != 'd')) {
-            continue;
-        }
-        const std::string digits = name.substr(2);
-        if(digits.empty()
-           || digits.find_first_not_of("0123456789") != std::string::npos) {
-            continue;
-        }
-        try {
-            const unsigned long value = std::stoul(digits);
-            if(value > highest && value < std::numeric_limits<unsigned int>::max()) {
-                highest = static_cast<unsigned int>(value);
-            }
-        } catch(const std::exception&) {
-            // Out of range for unsigned long: not a name we could have minted.
-        }
-    }
-    return highest + 1;
-}
 
 std::vector<lc::entity::CADEntity_CSPtr> DXFimpl::allDimensions() const {
     std::vector<lc::entity::CADEntity_CSPtr> dimensions;
@@ -3162,6 +3176,11 @@ std::string DXFimpl::writeDimensionBlock(const lc::entity::CADEntity_CSPtr& enti
 
 void DXFimpl::writeBlocks() {
     for(const auto& block : _document->blocks()) {
+        // Left out for the same reason as in writeBlockRecords(): the record
+        // pass skipped these, so a block written here would have no record.
+        if(isAnonymousDimensionBlock(block->name())) {
+            continue;
+        }
         writeBlock(block);
     }
 

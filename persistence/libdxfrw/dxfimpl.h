@@ -110,17 +110,26 @@ public:
         return _header;
     }
 
+    // Not counted as loss. Every conforming DXF carries a DIMSTYLE table with
+    // at least the default "Standard" entry -- including every file this
+    // application writes -- so counting it made the "records that were not
+    // imported" dialog fire on essentially every open, reporting loss where
+    // there was none and devaluing the dialog for the records it exists for.
+    // LibreCAD still has no dimension-style model; the honest place to say so
+    // is a note, not a per-open modal.
     void addDimStyle(const DRW_Dimstyle& data) override {
-        recordLoss("DIMSTYLE");
+        (void)data;
     }
 
     void addVport(const DRW_Vport& data) override;
 
-    // LibreCAD has no text style or dimension style model: a drawing's fonts
-    // and dimension appearance are not represented anywhere it could put them.
-    // Counting is what is honest until it does.
+    // Not counted as loss, for the same reason as addDimStyle above: a STYLE
+    // table with a default "Standard" entry is boilerplate every DXF carries.
+    // LibreCAD has no text style model -- a drawing's fonts are not represented
+    // anywhere it could put them -- but that is a standing limitation, not
+    // something a particular file lost.
     void addTextStyle(const DRW_Textstyle& data) override {
-        recordLoss("STYLE");
+        (void)data;
     }
 
     void addAppId(const DRW_AppId& data) override {}
@@ -378,9 +387,6 @@ public:
     std::map<ID_DATATYPE, std::string> _dimensionBlocks;
     unsigned int _nextDimensionBlock{1};
 
-    /// Lowest n with no *D<n> block in the document, so minted dimension block
-    /// names cannot collide with the ones a drawing already carries.
-    unsigned int firstFreeDimensionBlockIndex() const;
 
     // UTILITIES FUNCTIONS
     lc::AngleFormat numberToAngleFormat(int num);
