@@ -2410,6 +2410,19 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
     auto layer = defaultLayer();
     auto doc = newDocument();
 
+    // One of the six lives inside a user block. That one used to come out
+    // nameless: the geometry blocks were minted after the user blocks were
+    // written, so by the time this DIMENSION was emitted there was no name to
+    // put in its group 2 -- and the block minted for it a moment later sat in
+    // the file with nothing pointing at it.
+    auto enclosing = std::make_shared<lc::meta::Block>(
+        "DIMENSION_HOLDER", lc::geo::Coordinate(0.0, 0.0, 0.0));
+    {
+        auto blockBuilder = std::make_shared<lc::operation::Builder>(doc, "add block");
+        blockBuilder->append(std::make_shared<lc::operation::AddBlock>(doc, enclosing));
+        blockBuilder->execute();
+    }
+
     ASSERT_NO_THROW(insertThroughBuilder(doc, {
         std::make_shared<lc::entity::DimLinear>(
             lc::geo::Coordinate(25, 10, 0), lc::geo::Coordinate(25, 11, 0),
@@ -2436,7 +2449,13 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
             lc::TextConst::AttachmentPoint::Middle_center, 0.0, 1.0,
             lc::TextConst::LineSpacingStyle::AtLeast, "",
             lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(210, 0, 0),
-            lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(206, 8, 0), layer)}));
+            lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(206, 8, 0), layer),
+        std::make_shared<lc::entity::DimLinear>(
+            lc::geo::Coordinate(25, 30, 0), lc::geo::Coordinate(25, 31, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(0, 20, 0), lc::geo::Coordinate(50, 20, 0), 0.0, 0.0,
+            layer, nullptr, enclosing)}));
 
     const std::string path = uniqueTmpDxf("dimension-blocks");
     boost::filesystem::remove(path);
@@ -2444,7 +2463,8 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
         doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
 
     const auto blocks = dimensionBlocksIn(path);
-    ASSERT_EQ(blocks.referenced.size(), 5u) << "All five dimension kinds must be written.";
+    ASSERT_EQ(blocks.referenced.size(), 6u)
+        << "All five dimension kinds must be written, plus the one inside a block.";
 
     for (std::size_t i = 0; i < blocks.referenced.size(); i++) {
         const auto& name = blocks.referenced[i];
@@ -2468,6 +2488,19 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
         }
     }
     EXPECT_EQ(dimensions, 5) << "The dimensions themselves must survive the round trip.";
+
+    int inBlock = 0;
+    for (const auto& block : reopened->blocks()) {
+        if (block->name() != "DIMENSION_HOLDER") {
+            continue;
+        }
+        for (const auto& entity : reopened->entitiesByBlock(block).asVector()) {
+            if (std::dynamic_pointer_cast<const lc::entity::Dimension>(entity)) {
+                inBlock++;
+            }
+        }
+    }
+    EXPECT_EQ(inBlock, 1) << "The dimension inside a block must survive too.";
 
     boost::filesystem::remove(path);
 }

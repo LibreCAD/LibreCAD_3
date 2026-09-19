@@ -3190,6 +3190,20 @@ std::string DXFimpl::writeDimensionBlock(const lc::entity::CADEntity_CSPtr& enti
 }
 
 void DXFimpl::writeBlocks() {
+    // One anonymous block per dimension first, holding the geometry it draws.
+    // writeDimension() names that block from _dimensionBlocks, so the map has
+    // to be complete before anything writes a DIMENSION -- and a dimension
+    // inside a user block is written by the loop below, not by writeEntities().
+    // Minting after the user blocks left those dimensions with no group-2 name
+    // and the block they owned unreferenced: geometry in the file that nothing
+    // drew, and a dimension the reader had to guess at.
+    for(const auto& entity : allDimensions()) {
+        const auto name = writeDimensionBlock(entity);
+        if (!name.empty()) {
+            _dimensionBlocks[entity->id()] = name;
+        }
+    }
+
     for(const auto& block : _document->blocks()) {
         // Left out for the same reason as in writeBlockRecords(): the record
         // pass skipped these, so a block written here would have no record.
@@ -3197,16 +3211,6 @@ void DXFimpl::writeBlocks() {
             continue;
         }
         writeBlock(block);
-    }
-
-    // Then one anonymous block per dimension, holding the geometry it draws.
-    // This runs before writeEntities(), which is what lets the DIMENSION record
-    // name a block that already exists.
-    for(const auto& entity : allDimensions()) {
-        const auto name = writeDimensionBlock(entity);
-        if (!name.empty()) {
-            _dimensionBlocks[entity->id()] = name;
-        }
     }
 }
 
