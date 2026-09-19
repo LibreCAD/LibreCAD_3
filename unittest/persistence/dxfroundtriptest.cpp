@@ -2026,21 +2026,24 @@ TEST(DxfRoundTripTest, ADimensionDoesNotCostTheWholeR12File) {
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
-    const std::filesystem::path directory =
-        std::filesystem::temp_directory_path()
+    // boost::filesystem throughout: this project is built at C++14, where
+    // <filesystem> declares nothing. The link variable is not called "link"
+    // because <unistd.h> already has one.
+    const boost::filesystem::path directory =
+        boost::filesystem::temp_directory_path()
         / ("libdxfrw-link-save-" + std::to_string(::getpid()));
-    std::error_code ignored;
-    std::filesystem::remove_all(directory, ignored);
-    std::filesystem::create_directories(directory, ignored);
+    boost::system::error_code ignored;
+    boost::filesystem::remove_all(directory, ignored);
+    boost::filesystem::create_directories(directory, ignored);
 
-    const std::filesystem::path real = directory / "real.dxf";
-    const std::filesystem::path link = directory / "link.dxf";
+    const boost::filesystem::path real = directory / "real.dxf";
+    const boost::filesystem::path linkPath = directory / "link.dxf";
     {
-        std::ofstream seed(real);
+        std::ofstream seed(real.string());
         seed << "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n";
     }
-    std::error_code linked;
-    std::filesystem::create_symlink(real, link, linked);
+    boost::system::error_code linked;
+    boost::filesystem::create_symlink(real, linkPath, linked);
     if (linked) {
         GTEST_SKIP() << "symlinks unavailable here";
     }
@@ -2057,10 +2060,10 @@ TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
     builder->execute();
 
     const auto written = lc::persistence::File::exportFile(
-        doc, link.string(), lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, linkPath.string(), lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(written.ok);
 
-    EXPECT_TRUE(std::filesystem::is_symlink(std::filesystem::symlink_status(link)))
+    EXPECT_TRUE(boost::filesystem::is_symlink(boost::filesystem::symlink_status(linkPath)))
         << "the link itself was replaced by a regular file";
 
     // The drawing has to be in the file the link points at, not beside it.
@@ -2071,7 +2074,7 @@ TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
     EXPECT_EQ(reopened->entityContainer().asVector().size(), 1u)
         << "the real file did not receive the save";
 
-    std::filesystem::remove_all(directory, ignored);
+    boost::filesystem::remove_all(directory, ignored);
 }
 
 TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
@@ -2848,3 +2851,36 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
 }
 
 
+
+// TEMPORARY corpus probe.
+TEST(CorpusProbe, RoundTrip) {
+    const char* list = ::getenv("LC_CORPUS_LIST");
+    const char* outDir = ::getenv("LC_CORPUS_OUT");
+    if (list == nullptr || outDir == nullptr) {
+        GTEST_SKIP();
+    }
+    std::ifstream files(list);
+    std::string path;
+    while (std::getline(files, path)) {
+        if (path.empty()) continue;
+        auto doc = newDocument();
+        lc::persistence::ImportResult in;
+        try {
+            in = lc::persistence::File::importFile(
+                doc, path, lc::persistence::File::Library::LIBDXFRW);
+        } catch (...) { std::cout << "THROW-IN\t" << path << "\n"; continue; }
+        if (!in.ok) { std::cout << "BADIN\t" << path << "\n"; continue; }
+        lc::persistence::File::Type type = lc::persistence::File::LIBDXFRW_DXF_R2000;
+        if (!lc::persistence::File::typeForVariantId(in.variantId, type)) {
+            std::cout << "BADVAR\t" << path << "\n"; continue;
+        }
+        const std::string base = boost::filesystem::path(path).filename().string();
+        const std::string saved = std::string(outDir) + "/" + base;
+        lc::persistence::ExportResult out;
+        try {
+            out = lc::persistence::File::exportFile(doc, saved, type);
+        } catch (...) { std::cout << "THROW-OUT\t" << path << "\n"; continue; }
+        std::cout << (out.ok ? "OK\t" : "BADOUT\t") << base
+                  << "\tloss=" << out.loss.total() << "\n";
+    }
+}

@@ -1,6 +1,6 @@
 #include "file.h"
 
-#include <filesystem>
+#include <boost/filesystem.hpp>
 
 #include <algorithm>
 #include <fstream>
@@ -424,12 +424,15 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
     // weakly_canonical, not canonical: the destination need not exist yet, and
     // a save to a new file must still work. A broken link resolves to its
     // target name, which is what creating through the link would have done.
+    // boost::filesystem, not std::filesystem: this project is built at C++14,
+    // where <filesystem> declares nothing. Boost is already a hard dependency
+    // and lcpersistence already links it for patternProvider.
     std::string destination = path;
-    std::error_code linkError;
-    if (std::filesystem::is_symlink(std::filesystem::symlink_status(path, linkError))
+    boost::system::error_code linkError;
+    if (boost::filesystem::is_symlink(boost::filesystem::symlink_status(path, linkError))
         && !linkError) {
-        const std::filesystem::path resolved =
-            std::filesystem::weakly_canonical(path, linkError);
+        const boost::filesystem::path resolved =
+            boost::filesystem::weakly_canonical(path, linkError);
         if (!linkError && !resolved.empty()) {
             LOG_INFO << path << " is a link to " << resolved.string()
                      << "; writing through it";
