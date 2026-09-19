@@ -102,6 +102,22 @@ parts:
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
+      # Point the Python lookup at the host, where python3-dev put the
+      # headers. Without this the build fails at
+      #
+      #   CMake Error: Could NOT find Python
+      #     (missing: Python_INCLUDE_DIRS Development.Embed)
+      #     (found suitable version "3.14.4", minimum required is "3.9")
+      #
+      # which reads as "no Python" and is the opposite: there are two. The
+      # staged python3 lands in the part's install prefix, which is on
+      # CMAKE_PREFIX_PATH, so FindPython finds that interpreter first and then
+      # looks for Python.h beside it -- and stage-packages are a runtime set,
+      # so there are no headers there. python3-dev is a build-package and sits
+      # in /usr. Naming the interpreter anchors the whole search on the prefix
+      # that has both halves.
+      - "-DPython_EXECUTABLE=/usr/bin/python3"
+      - "-DPython_FIND_STRATEGY=LOCATION"
     #For 18.04
     #configflags:
     #  - "-DCMAKE_INSTALL_PREFIX=/usr"
