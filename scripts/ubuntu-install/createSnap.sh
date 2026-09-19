@@ -44,6 +44,41 @@ set -euo pipefail
 # sudo drops -E on this host ("preserving the entire environment is not
 # supported"), so PATH is passed explicitly: sudo replaces it from secure_path
 # and snapcraft lives in /snap/bin.
+# One more thing has to be true before the pack can resolve anything at all.
+# This runner's apt is configured for the x86-64-v3 micro-architecture variant:
+#
+#   APT::Architecture "amd64";
+#   APT::Architecture-Variants "amd64v3";
+#
+# and its Ubuntu sources carry no Architectures: line, so every Ubuntu index on
+# disk is binary-amd64v3 and there is no binary-amd64 index for those suites at
+# all. Host apt copes, because the variant setting tells it to. snapcraft's
+# staging cache is a separate apt rootdir resolving for plain amd64; it finds
+# no index it can use, and reports the first name out of an unordered set:
+#
+#   Stage package not found in part 'librecad': <whichever came first>
+#
+# which reads like a typo in snapcraft.yaml and is not one. Three runs named
+# three different packages -- python3, qt6-svg-dev, libpython3.14 -- and every
+# one of them was installed on that very host at the time.
+#
+# So give apt a plain-amd64 view of the same mirror: same URIs, same keyring,
+# same suites, with only the architecture spelled out.
+. /etc/os-release
+if ! ls /var/lib/apt/lists/*_dists_"${VERSION_CODENAME}"_main_binary-amd64_Packages \
+        >/dev/null 2>&1; then
+    echo "Adding a plain-amd64 apt source: only ${VERSION_CODENAME} amd64v3 indexes are present"
+    sudo tee /etc/apt/sources.list.d/librecad-plain-amd64.sources >/dev/null <<SOURCE
+Types: deb
+URIs: mirror+file:/etc/apt/apt-mirrors.txt
+Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates ${VERSION_CODENAME}-security
+Components: main universe restricted multiverse
+Architectures: amd64
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+SOURCE
+    sudo apt-get update
+fi
+
 if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap; then
     # "Stage package not found in part 'librecad': <name>" names whichever
     # package an unordered set yielded first, which says nothing about why.
@@ -65,7 +100,9 @@ if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.s
     echo "--- package lists apt has actually fetched ---"
     ls /var/lib/apt/lists/ 2>/dev/null | grep -i packages | head -20 || true
     echo "--- snapcraft's own execution log ---"
-    sudo tail -120 /root/.local/state/snapcraft/log/*.log 2>/dev/null || true
+    # The glob has to be expanded as root, or the unprivileged shell resolves
+    # it against a directory it cannot read and tail gets the literal pattern.
+    sudo sh -c 'tail -120 /root/.local/state/snapcraft/log/*.log' 2>/dev/null || true
     exit 1
 fi
 
