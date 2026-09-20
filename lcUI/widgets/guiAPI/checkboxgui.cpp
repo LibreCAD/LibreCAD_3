@@ -1,6 +1,7 @@
 #include "checkboxgui.h"
 
 #include <QHBoxLayout>
+#include <QtGlobal>
 
 using namespace lc::ui::api;
 
@@ -15,10 +16,14 @@ CheckBoxGUI::CheckBoxGUI(std::string label, bool checked, QWidget* parent)
     _checkBox->setChecked(checked);
 
     qobject_cast<QHBoxLayout*>(this->layout())->insertStretch(0);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
     connect(_checkBox, &QCheckBox::checkStateChanged, this,
             [this](Qt::CheckState state) {
                 callbackCalled(static_cast<int>(state));
             });
+#else
+    connect(_checkBox, &QCheckBox::stateChanged, this, &CheckBoxGUI::callbackCalled);
+#endif
 }
 
 void CheckBoxGUI::setLabel(const std::string& newLabel) {
