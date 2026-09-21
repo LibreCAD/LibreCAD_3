@@ -1940,7 +1940,98 @@ std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) 
     return identities;
 }
 
+
+/** Every group of one record kind, as (code -> values) in file order. */
+std::map<int, std::vector<std::string>> groupsOfRecord(const std::string& path,
+                                                      const std::string& recordName) {
+    std::map<int, std::vector<std::string>> groups;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto start = code.find_first_not_of(" \t");
+        const std::string group = start == std::string::npos ? code : code.substr(start);
+
+        if (group == "0") {
+            record = value;
+            continue;
+        }
+        if (record != recordName) {
+            continue;
+        }
+        try {
+            groups[std::stoi(group)].push_back(value);
+        } catch (const std::exception&) {
+            // not a numeric group code; nothing to record
+        }
+    }
+
+    return groups;
+}
+
 }  // namespace
+
+// Three group codes that every MTEXT LibreCAD_3 writes got wrong, and that no
+// test looked at because the round trip reads them back through the same
+// mistaken assumptions that wrote them. These assertions read the file.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextIsWrittenWithValidGroupCodes) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::MText>(
+            lc::geo::Coordinate(1.0, 1.0, 0.0), "text", 100.0, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VATop, false, false, false, false,
+            defaultLayer())}));
+
+    const std::string saved = uniqueTmpDxf("mtext-codes");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    // 41 is the reference rectangle width. It used to come out as 1.0 --
+    // DRW_Text's constructor default, emitted unconditionally -- which tells
+    // every conforming reader to wrap this 100-unit-high text at one drawing
+    // unit. Zero means "no reference rectangle".
+    ASSERT_EQ(groups.count(41), 1u) << "libdxfrw always emits code 41";
+    ASSERT_EQ(groups.at(41).size(), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(41).front()), 0.0)
+        << "a one-unit wrap column was declared on every MTEXT ever written";
+
+    // 72 is the drawing direction: 1, 3 or 5 are the defined values. It used
+    // to come out as 0 for every MText the dialog creates.
+    ASSERT_EQ(groups.count(72), 1u);
+    const int direction = std::stoi(groups.at(72).front());
+    EXPECT_TRUE(direction == 1 || direction == 3 || direction == 5)
+        << "code 72 = " << direction << " is not a defined drawing direction";
+    EXPECT_EQ(direction, 5) << "a default MText means 'by style'";
+
+    // And reopening must not reinterpret that as a mirrored MText, which is
+    // what writing 1 here would have done.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    lc::entity::MText_CSPtr readBack;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto m = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            readBack = m;
+        }
+    }
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_EQ(readBack->textgeneration(), lc::TextConst::DrawingDirection::None)
+        << "the drawing direction changed by being written and read";
+
+    boost::filesystem::remove(saved);
+}
+
 
 // A DXF holds far more than geometry: layouts, plot settings, table styles,
 // dictionaries, and whatever a vertical application stored under its own class.
