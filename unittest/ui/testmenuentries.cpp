@@ -13,6 +13,7 @@
 #include <cad/operations/layerops.h>
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
+#include <cad/primitive/dimangular.h>
 #include <cad/primitive/line.h>
 
 #include "uitests.h"
@@ -218,3 +219,46 @@ TEST(MenuEntriesTest, ContinueDrawsAnArcOnFromTheLastLineOrArc) {
     EXPECT_TRUE(near(next->endP(), lc::geo::Coordinate(10, 20)));
 }
 
+// Dimension > ANG2LN: click on two lines, then where the arc goes.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MenuEntriesTest, AngularDimensionFromTwoLinesPickedByClicking) {
+    QApplication app(argc, argv);
+    auto* window = new lc::ui::MainWindow();
+    const auto layer = window->cadMdiChild()->activeLayer();
+    addLine(*window, {2, 2}, {12, 2}, layer);
+    addLine(*window, {2, 2}, {2, 12}, layer);
+    addLine(*window, {40, 40}, {50, 45}, layer);
+
+    trigger(*window, "actionANG2LN");
+    window->triggerCoordinateEntered(lc::geo::Coordinate(7, 2.5));
+    window->triggerCoordinateEntered(lc::geo::Coordinate(2.5, 7));
+    window->triggerCoordinateEntered(lc::geo::Coordinate(5, 5));
+
+    auto dimension = lastOf<lc::entity::DimAngular>(*window);
+    ASSERT_NE(dimension, nullptr);
+    EXPECT_EQ(dimension->definitionPoint(), lc::geo::Coordinate(2, 2));
+    EXPECT_EQ(dimension->defLine11(), lc::geo::Coordinate(2, 2));
+    EXPECT_EQ(dimension->defLine12(), lc::geo::Coordinate(12, 2));
+    EXPECT_EQ(dimension->defLine21(), lc::geo::Coordinate(2, 2));
+    EXPECT_EQ(dimension->defLine22(), lc::geo::Coordinate(2, 12));
+    EXPECT_EQ(dimension->middleOfText(), lc::geo::Coordinate(5, 5));
+}
+
+// Two lines already selected are the two lines: only the arc is asked for.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MenuEntriesTest, AngularDimensionFromTwoSelectedLines) {
+    QApplication app(argc, argv);
+    auto* window = new lc::ui::MainWindow();
+    const auto layer = window->cadMdiChild()->activeLayer();
+    addLine(*window, {0, 0}, {10, 0}, layer);
+    addLine(*window, {10, 10}, {20, 20}, layer);
+
+    trigger(*window, "actionSelect_All");
+    trigger(*window, "actionANG2LN");
+    window->triggerCoordinateEntered(lc::geo::Coordinate(8, 1));
+
+    auto dimension = lastOf<lc::entity::DimAngular>(*window);
+    ASSERT_NE(dimension, nullptr);
+    EXPECT_EQ(dimension->definitionPoint(), lc::geo::Coordinate(0, 0));
+    EXPECT_EQ(dimension->middleOfText(), lc::geo::Coordinate(8, 1));
+}

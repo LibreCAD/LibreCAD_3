@@ -101,3 +101,19 @@ assert(tangentArc({0, 0}, {1, 0}, {-5, 0}) == nil, 'nor straight back')
 assert(tangentArc({0, 0}, {1, 0}, {0, 0}) == nil, 'nor back at the start')
 )LUA"), "");
 }
+
+// Dimension > ANG2LN: the vertex of the angle between two lines.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, TwoLinesMeetWhereTheirLinesCross) {
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/dimangularoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local cross = DimAngularOperations.lineIntersection
+local x, y = cross({0, 0}, {10, 0}, {5, 5}, {5, -3})
+assert(x == 5 and y == 0, 'segments that cross')
+x, y = cross({0, 0}, {1, 0}, {3, 1}, {3, 2})
+assert(x == 3 and y == 0, 'segments that do not reach each other still have lines that cross')
+assert(cross({0, 0}, {10, 0}, {0, 1}, {10, 1}) == nil, 'parallel lines do not')
+assert(cross({0, 0}, {10, 0}, {20, 0}, {30, 0}) == nil, 'nor do lines along the same line')
+)LUA"), "");
+}
