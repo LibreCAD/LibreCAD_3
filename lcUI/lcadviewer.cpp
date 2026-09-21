@@ -32,7 +32,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
 
     QSurfaceFormat format;
     format.setMajorVersion(3);
-    format.setMinorVersion(0);
+    format.setMinorVersion(2);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
