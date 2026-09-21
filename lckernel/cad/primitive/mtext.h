@@ -29,6 +29,10 @@ namespace lc {
             * @param MTextConst::DrawingDirection textgeneration, MText drawing direction
             * @param MTextConst::HAlign halign, Horizontal alignment
             * @param MTextConst::VAlign valign, Vertical alignment
+            * @param double width, reference rectangle width, 0 for none
+            * @param MTextConst::MTextDrawingDirection drawingDirection, DXF group 72
+            * @param double lineSpacingFactor, multiple of the single-line spacing
+            * @param MTextConst::LineSpacingStyle lineSpacingStyle, DXF group 73
             * @param Layer_CSPtr layer, Layer of the entity
             * @param metatypes metatypes of the cad entity
             */
@@ -44,6 +48,10 @@ namespace lc {
                 bool strikethrough,
                 bool bold,
                 bool italic,
+                double width,
+                const TextConst::MTextDrawingDirection drawingDirection,
+                double lineSpacingFactor,
+                const TextConst::LineSpacingStyle lineSpacingStyle,
                 meta::Layer_CSPtr layer,
                 meta::MetaInfo_CSPtr metaInfo = nullptr,
                 meta::Block_CSPtr block = nullptr
@@ -60,6 +68,21 @@ namespace lc {
             const bool _bold;
             const bool _italic;
 
+            /// DXF group 41: the width of the reference rectangle text wraps
+            /// inside.  0 means there is none -- the value every MText this
+            /// build creates carries, because nothing here wraps yet.
+            const double _width;
+
+            /// DXF group 72.  Not TextBase::_textgeneration, which is TEXT's
+            /// group-71 mirroring flag and has no MTEXT meaning.
+            const TextConst::MTextDrawingDirection _drawingDirection;
+
+            /// DXF group 44: a multiple of the single-line spacing, 0.25 to 4.
+            const double _lineSpacingFactor;
+
+            /// DXF group 73.
+            const TextConst::LineSpacingStyle _lineSpacingStyle;
+
             bool underlined() const {
                 return _underlined;
             }
@@ -74,6 +97,22 @@ namespace lc {
 
             bool italic() const {
                 return _italic;
+            }
+
+            double width() const {
+                return _width;
+            }
+
+            TextConst::MTextDrawingDirection drawingDirection() const {
+                return _drawingDirection;
+            }
+
+            double lineSpacingFactor() const {
+                return _lineSpacingFactor;
+            }
+
+            TextConst::LineSpacingStyle lineSpacingStyle() const {
+                return _lineSpacingStyle;
             }
 
             /**

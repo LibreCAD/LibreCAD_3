@@ -1712,7 +1712,10 @@ TEST(DxfRoundTripTest, BinaryAndAsciiCarryTheSameText) {
         std::make_shared<lc::entity::MText>(
             lc::geo::Coordinate(1.0, 7.0, 0.0), multi, 0.5, 0.0, "STANDARD",
             lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
-            lc::TextConst::VAlign::VABaseline, false, false, false, false, layer)}));
+            lc::TextConst::VAlign::VABaseline, false, false, false, false,
+            /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+            layer)}));
 
     const struct {
         lc::persistence::File::Type type;
@@ -1940,7 +1943,240 @@ std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) 
     return identities;
 }
 
+
+/** Every group of one record kind, as (code -> values) in file order. */
+std::map<int, std::vector<std::string>> groupsOfRecord(const std::string& path,
+                                                      const std::string& recordName) {
+    std::map<int, std::vector<std::string>> groups;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto start = code.find_first_not_of(" \t");
+        const std::string group = start == std::string::npos ? code : code.substr(start);
+
+        if (group == "0") {
+            record = value;
+            continue;
+        }
+        if (record != recordName) {
+            continue;
+        }
+        try {
+            groups[std::stoi(group)].push_back(value);
+        } catch (const std::exception&) {
+            // not a numeric group code; nothing to record
+        }
+    }
+
+    return groups;
+}
+
 }  // namespace
+
+// Three group codes that every MTEXT LibreCAD_3 writes got wrong, and that no
+// test looked at because the round trip reads them back through the same
+// mistaken assumptions that wrote them. These assertions read the file.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextIsWrittenWithValidGroupCodes) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::MText>(
+            lc::geo::Coordinate(1.0, 1.0, 0.0), "text", 100.0, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+            defaultLayer())}));
+
+    const std::string saved = uniqueTmpDxf("mtext-codes");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    // 41 is the reference rectangle width. It used to come out as 1.0 --
+    // DRW_Text's constructor default, emitted unconditionally -- which tells
+    // every conforming reader to wrap this 100-unit-high text at one drawing
+    // unit. Zero means "no reference rectangle".
+    ASSERT_EQ(groups.count(41), 1u) << "libdxfrw always emits code 41";
+    ASSERT_EQ(groups.at(41).size(), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(41).front()), 0.0)
+        << "a one-unit wrap column was declared on every MTEXT ever written";
+
+    // 72 is the drawing direction: 1, 3 or 5 are the defined values. It used
+    // to come out as 0 for every MText the dialog creates.
+    ASSERT_EQ(groups.count(72), 1u);
+    const int direction = std::stoi(groups.at(72).front());
+    EXPECT_TRUE(direction == 1 || direction == 3 || direction == 5)
+        << "code 72 = " << direction << " is not a defined drawing direction";
+    EXPECT_EQ(direction, 5) << "a default MText means 'by style'";
+
+    // And reopening must not reinterpret that as a mirrored MText, which is
+    // what writing 1 here would have done.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    lc::entity::MText_CSPtr readBack;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto m = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            readBack = m;
+        }
+    }
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_EQ(readBack->textgeneration(), lc::TextConst::DrawingDirection::None)
+        << "the drawing direction changed by being written and read";
+
+    boost::filesystem::remove(saved);
+}
+
+namespace {
+
+/// The single MText in a document, or null.
+lc::entity::MText_CSPtr onlyMText(
+    const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+    lc::entity::MText_CSPtr found;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto m = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            found = m;
+        }
+    }
+    return found;
+}
+
+/// A one-MTEXT ENTITIES section, with whatever trailing groups are passed.
+void writeOneMText(const std::string& path, const std::string& tail) {
+    std::ofstream dxf(path);
+    dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+        << "0\nSECTION\n2\nENTITIES\n"
+        << "0\nMTEXT\n8\n0\n"
+        << "10\n1.0\n20\n2.0\n30\n0.0\n"
+        << "40\n2.5\n"
+        << "1\ntext\n"
+        << "71\n1\n"
+        << tail
+        << "0\nENDSEC\n0\nEOF\n";
+}
+
+}  // namespace
+
+// Codes 41, 44, 72 and 73 arrived on every MTEXT libdxfrw handed over and were
+// read by nothing: the entity had nowhere to keep them, so a file's reference
+// rectangle and line spacing were discarded on open and replaced by a default
+// on the next save.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextReadsItsWidthSpacingAndDirection) {
+    const std::string path = uniqueTmpDxf("mtext-fields");
+    boost::filesystem::remove(path);
+    writeOneMText(path, "41\n250.0\n72\n3\n73\n2\n44\n1.75\n");
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr) << "the MTEXT did not arrive";
+
+    EXPECT_DOUBLE_EQ(mtext->width(), 250.0) << "group 41, the reference rectangle";
+    EXPECT_EQ(mtext->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::TopToBottom) << "group 72";
+    EXPECT_DOUBLE_EQ(mtext->lineSpacingFactor(), 1.75) << "group 44";
+    EXPECT_EQ(mtext->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::Exact)
+        << "group 73 -- the enum numbers these 0 and 1, the file numbers them 1 and 2";
+
+    boost::filesystem::remove(path);
+}
+
+// Real files do not stay inside the defined values. Across 150 drawings here,
+// 456 of 877 MTEXT records carry group 72 = 2, which is not one of the three
+// directions the specification defines, and 269 carry group 73 = 0, which is
+// neither of its two styles. A cast would turn those into an entity claiming a
+// direction no renderer has, so they take the documented default instead.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextWithUndefinedGroupCodesTakesTheDefaults) {
+    const std::string path = uniqueTmpDxf("mtext-undefined");
+    boost::filesystem::remove(path);
+    // 72 = 2 and 73 = 0 are the values the corpus actually carries; 44 = 9.0 is
+    // outside the documented 0.25 to 4.
+    writeOneMText(path, "41\n100.0\n72\n2\n73\n0\n44\n9.0\n");
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr) << "the MTEXT did not arrive";
+
+    EXPECT_EQ(mtext->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::ByStyle)
+        << "an undefined group 72 must not become an undefined direction";
+    EXPECT_EQ(mtext->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::AtLeast)
+        << "an undefined group 73 takes the DXF default";
+    EXPECT_DOUBLE_EQ(mtext->lineSpacingFactor(), 1.0)
+        << "a spacing factor outside 0.25 to 4 takes the DXF default";
+    EXPECT_DOUBLE_EQ(mtext->width(), 100.0) << "group 41 was in range and stands";
+
+    boost::filesystem::remove(path);
+}
+
+// And the write side: what the entity carries is what the file says. Before
+// this the writer emitted three constants -- 0, 5 and 1 -- so a drawing opened
+// and saved came back with its reference rectangle and spacing replaced.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextWritesTheWidthAndSpacingItCarries) {
+    const std::string source = uniqueTmpDxf("mtext-fields-source");
+    boost::filesystem::remove(source);
+    writeOneMText(source, "41\n250.0\n72\n3\n73\n2\n44\n1.75\n");
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    ASSERT_NE(onlyMText(doc), nullptr);
+
+    const std::string saved = uniqueTmpDxf("mtext-fields-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    ASSERT_EQ(groups.count(41), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(41).front()), 250.0)
+        << "the reference rectangle was replaced on save";
+    ASSERT_EQ(groups.count(72), 1u);
+    EXPECT_EQ(std::stoi(groups.at(72).front()), 3) << "the drawing direction was replaced";
+    ASSERT_EQ(groups.count(73), 1u);
+    EXPECT_EQ(std::stoi(groups.at(73).front()), 2) << "the line spacing style was replaced";
+    ASSERT_EQ(groups.count(44), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(44).front()), 1.75)
+        << "the line spacing factor was replaced";
+
+    // The whole point: open, save, open again and nothing moved.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    auto readBack = onlyMText(reopened);
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_DOUBLE_EQ(readBack->width(), 250.0);
+    EXPECT_EQ(readBack->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::TopToBottom);
+    EXPECT_DOUBLE_EQ(readBack->lineSpacingFactor(), 1.75);
+    EXPECT_EQ(readBack->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::Exact);
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
 
 // A DXF holds far more than geometry: layouts, plot settings, table styles,
 // dictionaries, and whatever a vertical application stored under its own class.

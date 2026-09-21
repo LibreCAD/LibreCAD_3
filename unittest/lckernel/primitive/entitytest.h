@@ -19,6 +19,8 @@
 #include <cad/operations/entitybuilder.h>
 #include <cad/storage/document.h>
 #include <cad/storage/undomanager.h>
+#include <cad/primitive/mtext.h>
+#include <cad/builders/mtext.h>
 
 class entitytest {
 public:
@@ -559,4 +561,111 @@ TEST(entitytest, EllipseScale) {
     EXPECT_DOUBLE_EQ(1000.0, round(a.EllipseScale()[3]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[3]->endAngle()));
+}
+// ---------------------------------------------------------------------------
+// MText's DXF-carried fields survive every transform.
+//
+// An MText is immutable, so move, copy, rotate, scale, modify, setDragPoints
+// and setProperties each build a fresh one from a positional argument list.
+// Four such lists already existed and none of them was checked, which is how
+// the width and the spacing a file was read with could be silently replaced by
+// a default the moment anyone dragged the text.  Deliberately distinct values:
+// a width of 250 and a spacing factor of 1.75 cannot be swapped for each other
+// without this failing.
+// ---------------------------------------------------------------------------
+
+namespace {
+
+inline lc::entity::MText_CSPtr mtextWithDxfFields() {
+    auto layer = std::make_shared<lc::meta::Layer>();
+
+    return std::make_shared<lc::entity::MText>(
+        lc::geo::Coordinate(10.0, 20.0), "one\ntwo", /*height=*/5.0,
+        /*angle=*/0.0, /*style=*/"STANDARD",
+        lc::TextConst::DrawingDirection::None,
+        lc::TextConst::HAlign::HALeft,
+        lc::TextConst::VAlign::VATop,
+        /*underlined=*/false, /*strikethrough=*/false,
+        /*bold=*/false, /*italic=*/false,
+        /*width=*/250.0,
+        lc::TextConst::MTextDrawingDirection::TopToBottom,
+        /*lineSpacingFactor=*/1.75,
+        lc::TextConst::LineSpacingStyle::Exact,
+        layer);
+}
+
+inline void expectDxfFieldsKept(const lc::entity::CADEntity_CSPtr& entity,
+                                const char* what) {
+    auto mtext = std::dynamic_pointer_cast<const lc::entity::MText>(entity);
+    ASSERT_NE(mtext, nullptr) << what << " did not return an MText";
+
+    EXPECT_DOUBLE_EQ(mtext->width(), 250.0) << what << " lost the width";
+    EXPECT_EQ(mtext->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::TopToBottom)
+        << what << " lost the drawing direction";
+    EXPECT_DOUBLE_EQ(mtext->lineSpacingFactor(), 1.75)
+        << what << " lost the line spacing factor";
+    EXPECT_EQ(mtext->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::Exact)
+        << what << " lost the line spacing style";
+}
+
+}  // namespace
+
+TEST(entitytest, MTextKeepsItsDxfFieldsThroughEveryTransform) {
+    auto mtext = mtextWithDxfFields();
+
+    expectDxfFieldsKept(mtext->move(lc::geo::Coordinate(1.0, 1.0)), "move");
+    expectDxfFieldsKept(mtext->copy(lc::geo::Coordinate(1.0, 1.0)), "copy");
+    expectDxfFieldsKept(mtext->rotate(lc::geo::Coordinate(0.0, 0.0), 0.5), "rotate");
+    expectDxfFieldsKept(mtext->scale(lc::geo::Coordinate(0.0, 0.0),
+                                     lc::geo::Coordinate(2.0, 2.0)), "scale");
+    expectDxfFieldsKept(mtext->modify(mtext->layer(), mtext->metaInfo(),
+                                      mtext->block()), "modify");
+
+    std::map<unsigned int, lc::geo::Coordinate> dragged;
+    dragged[0] = lc::geo::Coordinate(3.0, 4.0);
+    expectDxfFieldsKept(mtext->setDragPoints(dragged), "setDragPoints");
+
+    // setProperties rebuilds from its own locals, so it is the one most likely
+    // to quietly drop a field that is not in the property map.
+    lc::entity::PropertiesMap properties;
+    properties["bold"] = true;
+    expectDxfFieldsKept(mtext->setProperties(properties), "setProperties");
+}
+
+// The builder is the route every script, the text dialog and the Lua
+// operation take, and MTextBuilder::copy is what the dialog uses to hand a
+// built MText to the placement step.
+TEST(entitytest, AnMTextBuilderCarriesTheDxfFields) {
+    auto original = mtextWithDxfFields();
+
+    lc::builder::MTextBuilder builder;
+    builder.copy(original);
+    auto rebuilt = builder.build();
+
+    EXPECT_DOUBLE_EQ(rebuilt->width(), 250.0);
+    EXPECT_EQ(rebuilt->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::TopToBottom);
+    EXPECT_DOUBLE_EQ(rebuilt->lineSpacingFactor(), 1.75);
+    EXPECT_EQ(rebuilt->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::Exact);
+}
+
+// What a fresh builder means, which is what every MText the UI creates gets:
+// no reference rectangle (0, not libdxfrw's DRW_Text default of 1), single
+// spacing, and the style's own direction.
+TEST(entitytest, AFreshMTextBuilderMeansNoReferenceRectangle) {
+    auto layer = std::make_shared<lc::meta::Layer>();
+
+    lc::builder::MTextBuilder builder;
+    builder.setInsertionPoint(lc::geo::Coordinate(0.0, 0.0));
+    builder.setTextValue("text");
+    builder.setHeight(100.0);
+    builder.setLayer(layer);
+    auto mtext = builder.build();
+
+    EXPECT_DOUBLE_EQ(mtext->width(), 0.0);
+    EXPECT_DOUBLE_EQ(mtext->lineSpacingFactor(), 1.0);
+    EXPECT_EQ(mtext->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::AtLeast);
+    EXPECT_EQ(mtext->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::ByStyle);
 }
