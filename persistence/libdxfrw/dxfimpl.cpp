@@ -1,5 +1,6 @@
 #include "dxfimpl.h"
 #include "../generic/helpers.h"
+#include "mtextcodec.h"
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
@@ -531,8 +532,10 @@ void DXFimpl::addText(const DRW_Text& data) {
         LOG_TRACE << "addText";
         auto layer = getLayer(data);
         std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+        // A TEXT record carries no escape language -- only the %% forms it
+        // shares with MTEXT, which LibreCAD has never decoded either.
         auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
-                      data.text, data.height,
+                      lc::persistence::textToPlain(data.text), data.height,
                       data.angle * M_PI / 180, data.style,
                       lc::TextConst::DrawingDirection(data.textgen),
                       lc::TextConst::HAlign(data.alignH),
@@ -813,7 +816,7 @@ void DXFimpl::addMText(const DRW_MText& data) {
         }*/
 
         auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
-                      data.text, data.height,
+                      lc::persistence::mtextToPlain(data.text), data.height,
                       data.angle * M_PI / 180, data.style,
                       lc::TextConst::DrawingDirection(drawingDir),
                       lc::TextConst::HAlign(halign),
@@ -2714,8 +2717,13 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     DRW_Text tex;
     getEntityAttributes(&tex, t);
 
+    // A TEXT record is one line and has no way to say otherwise. The line
+    // this replaces substituted a lone backslash for each newline, which
+    // escapes nothing and leaves a stray `\` in the drawing; a space at least
+    // reads as the word break the newline stood for. A drawing that needs real
+    // line breaks needs an MTEXT.
     std::string correctedText = t->text_value();
-    std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
+    std::replace(correctedText.begin(), correctedText.end(), '\n', ' ');
 
     // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
@@ -2748,12 +2756,12 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     DRW_MText tex;
     getEntityAttributes(&tex, t);
 
-    std::string correctedText = t->text_value();
-    size_t index = 0;
-    while (correctedText.find('\n', index) != std::string::npos) {
-        index = correctedText.find('\n');
-        correctedText.replace(index, 1, "\\P");
-    }
+    // Escape first, then break lines: plainToMText doubles a user's backslash
+    // before it can be mistaken for the one in a \P this same call wrote. The
+    // loop this replaces did neither -- it substituted \P for each newline and
+    // left every other backslash alone, so a path like C:\Path went out as a
+    // paragraph break in any conforming reader.
+    const std::string correctedText = lc::persistence::plainToMText(t->text_value());
 
     // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
