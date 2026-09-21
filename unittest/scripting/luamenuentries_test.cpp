@@ -6,12 +6,19 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 #include <lua.hpp>
 
 #include <lclua.h>
+
+#include <cad/meta/layer.h>
+#include <cad/operations/layerops.h>
+#include <cad/primitive/dimordinate.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 
 namespace {
 
@@ -116,4 +123,120 @@ assert(x == 3 and y == 0, 'segments that do not reach each other still have line
 assert(cross({0, 0}, {10, 0}, {0, 1}, {10, 1}) == nil, 'parallel lines do not')
 assert(cross({0, 0}, {10, 0}, {20, 0}, {30, 0}) == nil, 'nor do lines along the same line')
 )LUA"), "");
+}
+
+namespace {
+
+/// A document with the layer "0", handed to the Lua state as `document`, with
+/// the kernel bindings the ordinate needs.
+std::shared_ptr<lc::storage::DocumentImpl> withDocument(lc::lua::LCLua& lcLua) {
+    lcLua.importLCKernel();
+
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    std::make_shared<lc::operation::AddLayer>(
+        document, std::make_shared<lc::meta::Layer>("0"))->execute();
+    lcLua.setDocument(document);
+    return document;
+}
+
+}  // namespace
+
+// The Ordinate entry's arithmetic is the one exception to the rule above: it
+// lives in the kernel, as DimOrdinateBuilder::dimAuto next to the dimAuto of
+// the aligned and radial builders, so that a script in either language places
+// an ordinate the way the operation does. This is it, reached from Lua.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, TheOrdinateLeaderPicksTheAxis) {
+    auto document = withDocument(*lcLua);
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local b = lc.builder.DimOrdinateBuilder()
+b:setLayer(document:layerByName('0'))
+b:setDefinitionPoint(lc.geo.Coordinate(10, 20))
+
+b:dimAuto(lc.geo.Coordinate(35, 70), lc.geo.Coordinate(36, 90))
+local up = b:build()
+assert(up:xType(), 'a leader running up measures X')
+assert(up:value() == 25, 'the X ordinate is measured from the datum')
+assert(up:featurePoint():y() == 70 and up:leaderEndPoint():x() == 36, 'the points did not stick')
+
+b:dimAuto(lc.geo.Coordinate(35, 70), lc.geo.Coordinate(-5, 69))
+local aside = b:build()
+assert(not aside:xType(), 'a leader running sideways measures Y')
+assert(aside:value() == 50, 'the Y ordinate is measured from the datum')
+
+assert(lc.builder.DimOrdinateBuilder.measuresX(lc.geo.Coordinate(0, 0), lc.geo.Coordinate(1, 1)),
+       'a leader at 45 degrees measures X')
+)LUA"), "");
+}
+
+// And the operation behind the entry, driven the way the canvas drives it.
+// Only the application it talks to is stubbed; the builder, the entity and
+// the document it lands in are the real ones.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, OrdinateCreatesAnOrdinateDimension) {
+    auto document = withDocument(*lcLua);
+    ASSERT_NO_FATAL_FAILURE(loadOperation("actions/operations.lua"));
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/createOperations.lua"));
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/dimordinateoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+function message() end
+local function nothing() end
+luaInterface = {registerEvent = nothing, deleteEvent = nothing, triggerEvent = nothing}
+
+local shown = nil
+local temporary = {
+    addEntity = function(_, entity) shown = entity end,
+    removeEntity = function() shown = nil end,
+}
+local child = {
+    document = function() return document end,
+    activeLayer = function() return document:layerByName('0') end,
+    metaInfoManager = function() return {metaInfo = nothing} end,
+    activeViewport = nothing,
+    tempEntities = function() return temporary end,
+}
+local cli = {returnText = nothing, commandActive = nothing}
+mainWindow = {cadMdiChild = function() return child end, cliCommand = function() return cli end}
+
+local op = DimOrdinateOperations()
+op:onEvent('mouseMove', {position = lc.geo.Coordinate(3, 4)})
+assert(shown == nil, 'a preview before there was a feature to measure')
+
+op:onEvent('point', {position = lc.geo.Coordinate(30, 20)})
+op:onEvent('mouseMove', {position = lc.geo.Coordinate(31, 60)})
+assert(shown ~= nil and shown:xType(), 'the preview of a leader running up measures X')
+op:onEvent('mouseMove', {position = lc.geo.Coordinate(70, 22)})
+assert(shown ~= nil and not shown:xType(), 'the preview of a leader running sideways measures Y')
+
+op:onEvent('text', {text = 't'})
+op:onEvent('text', {text = 'X <>'})
+op:onEvent('point', {position = lc.geo.Coordinate(32, 50)})
+assert(op.finished, 'the operation is still running')
+assert(shown == nil, 'the preview was left behind')
+)LUA"), "");
+
+    std::vector<lc::entity::DimOrdinate_CSPtr> ordinates;
+    for (const auto& entity : document->entityContainer().asVector()) {
+        if (auto ordinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity)) {
+            ordinates.push_back(ordinate);
+        }
+    }
+    ASSERT_EQ(ordinates.size(), 1u) << "the operation did not add one ordinate dimension";
+
+    const auto& ordinate = ordinates.front();
+    EXPECT_TRUE(ordinate->xType());
+    EXPECT_DOUBLE_EQ(ordinate->value(), 30.0);
+    EXPECT_EQ(ordinate->explicitValue(), "X <>");
+    EXPECT_DOUBLE_EQ(ordinate->definitionPoint().x(), 0.0);
+    EXPECT_DOUBLE_EQ(ordinate->definitionPoint().y(), 0.0);
+    EXPECT_DOUBLE_EQ(ordinate->featurePoint().x(), 30.0);
+    EXPECT_DOUBLE_EQ(ordinate->featurePoint().y(), 20.0);
+    EXPECT_DOUBLE_EQ(ordinate->leaderEndPoint().x(), 32.0);
+    EXPECT_DOUBLE_EQ(ordinate->leaderEndPoint().y(), 50.0);
+    EXPECT_DOUBLE_EQ(ordinate->middleOfText().y(), 50.0);
+    ASSERT_NE(ordinate->layer(), nullptr);
+    EXPECT_EQ(ordinate->layer()->name(), "0");
 }

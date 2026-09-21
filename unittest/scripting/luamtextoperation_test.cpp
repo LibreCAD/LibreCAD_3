@@ -231,7 +231,6 @@ TEST_F(LuaMTextOperationFixture, EveryMenuEntryTheUiDefinesIsConnected) {
 -- existed.  Each wants an operation written for it or removing from the .ui.
 -- The list is checked to be exact, so it can only get shorter.
 local knownDead = {
-    actionOrdinate = true,
 }
 
 local native = {}
