@@ -148,7 +148,17 @@ if(WITH_PYTHONSCRIPT)
         # and a real Lua runtime.
         scripting/luapersistence_test.cpp
         scripting/luatextbuilder_test.cpp
+        # The Lua createActions/actions operations: the typed-text decoding
+        # that makes MTextOperations more than a copy of TextOperations, plus
+        # the two cross-file references every operation makes -- a menu action
+        # mainwindow.ui must define, and an icon resource.qrc must alias.
+        scripting/luamtextoperation_test.cpp
         )
+    # The operation .lua files, mainwindow.ui and resource.qrc are read from
+    # the source tree: nothing compiles them together, so a name that stopped
+    # matching in one of them is silent until the application starts.
+    add_compile_definitions(LCUILUA_SOURCE_DIR="${CMAKE_SOURCE_DIR}/lcUILua")
+    add_compile_definitions(LCUI_SOURCE_DIR="${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
     include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")  # Phase 6 PR-6.1
