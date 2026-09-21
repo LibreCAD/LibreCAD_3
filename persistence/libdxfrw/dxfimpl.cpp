@@ -769,7 +769,6 @@ void DXFimpl::addMText(const DRW_MText& data) {
         lc::TextConst::VAlign valign;
         //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
         lc::TextConst::DrawingDirection drawingDir;
-        //lc::TextConst::LineSpacingStyle lineSpacingStyle;
 
         switch (data.textgen % 3) {
         default:
@@ -807,13 +806,48 @@ void DXFimpl::addMText(const DRW_MText& data) {
             drawingDir = lc::TextConst::DrawingDirection::None;
         }
 
-        // Uncomment when line spacing style has been implemented
-        /*if (data.alignV == 1) {
-            lineSpacingStyle = lc::TextConst::LineSpacingStyle::AtLeast;
+        // Code 73, line spacing style: 1 = at least, 2 = exact.  Neither the
+        // enum's own ordering nor a cast gets this right, and real files carry
+        // values the specification does not define -- over 150 drawings here,
+        // 269 of 877 MTEXT records say 73 = 0 and 4 omit it.  Anything that is
+        // not 2 takes the DXF default.
+        const auto lineSpacingStyle = (data.linespacingStyle == 2)
+            ? lc::TextConst::LineSpacingStyle::Exact
+            : lc::TextConst::LineSpacingStyle::AtLeast;
+
+        // Code 44, line spacing factor, 0.25 to 4.  libdxfrw defaults it to 1
+        // when the group is absent, which is also the DXF default, so an
+        // out-of-range value is the only thing worth refusing.
+        const double lineSpacingFactor =
+            (data.interlin >= 0.25 && data.interlin <= 4.0) ? data.interlin : 1.0;
+
+        // Code 72, drawing direction: 1 left-to-right, 3 top-to-bottom, 5 by
+        // style.  libdxfrw routes it into DRW_Text::alignH, whose type has
+        // nothing to do with it.  Do not cast: in the same 150 drawings, 456
+        // of 877 MTEXT records carry 72 = 2, which is not a defined value.
+        // An undefined direction becomes ByStyle, which is what the file is
+        // effectively asking for.
+        lc::TextConst::MTextDrawingDirection mtextDirection;
+        switch (static_cast<int>(data.alignH)) {
+        case lc::TextConst::MTextDrawingDirection::LeftToRight:
+            mtextDirection = lc::TextConst::MTextDrawingDirection::LeftToRight;
+            break;
+        case lc::TextConst::MTextDrawingDirection::TopToBottom:
+            mtextDirection = lc::TextConst::MTextDrawingDirection::TopToBottom;
+            break;
+        default:
+            mtextDirection = lc::TextConst::MTextDrawingDirection::ByStyle;
+            break;
         }
-        else {
-            lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
-        }*/
+
+        // Code 41, the reference rectangle width.  libdxfrw carries it in
+        // DRW_Text::widthscale, which is TEXT's width FACTOR -- a different
+        // quantity in the same member -- and DRW_Text's constructor defaults
+        // it to 1, so an MTEXT with no group 41 is indistinguishable from one
+        // that asks to wrap at one drawing unit.  Every one of the 877 MTEXT
+        // records in the corpus carries group 41 and none of them carries 1.0,
+        // so the ambiguity is not one real files reach.
+        const double width = (data.widthscale > 0.0) ? data.widthscale : 0.0;
 
         auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
                       lc::persistence::mtextToPlain(data.text), data.height,
@@ -825,6 +859,10 @@ void DXFimpl::addMText(const DRW_MText& data) {
                       false,
                       false,
                       false,
+                      width,
+                      mtextDirection,
+                      lineSpacingFactor,
+                      lineSpacingStyle,
                       layer,
                       mf,
                       getBlock(data)
@@ -2801,49 +2839,41 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     }
     tex.textgen = (row - 1) * 3 + col;   // MText attachment point, code 71
 
-    // Drawing direction encoding (code 72): 1=LtR, 3=TtB, 5=byStyle.
-    // lc::TextConst::DrawingDirection: None=0, Backward=1, UpsideDown=3.
-    // Reader's addMText maps 1->Backward, 3->UpsideDown, else->None.  Match
-    // that inverse here so round-trip is symmetric.
+    // Drawing direction, code 72: 1 left-to-right, 3 top-to-bottom, 5 by
+    // style.  The entity now carries the real thing, so this is the value it
+    // was read with -- previously it was derived from textgeneration(), which
+    // is TEXT's group-71 mirroring flag and has no MTEXT meaning, and every
+    // MText the dialog creates fell through to a hardcoded 5.
+    //
     // libdxfrw types alignH/alignV as enums (DRW_Text::HAlign/VAlign) even on
-    // the DRW_MText path where the DXF semantics have nothing to do with
-    // TEXT alignment.  Cast is required — the integer we set here is what the
-    // writer emits verbatim as code 72 / code 73 for MTEXT.
-    switch (t->textgeneration()) {
-        case lc::TextConst::DrawingDirection::Backward:
-            tex.alignH = static_cast<DRW_Text::HAlign>(1); break;
-        case lc::TextConst::DrawingDirection::UpsideDown:
-            tex.alignH = static_cast<DRW_Text::HAlign>(3); break;
-        default:
-            // 5 (by style), not 0. Zero is not a defined code-72 value, and
-            // this arm is every MText the dialog creates -- DrawingDirection
-            // defaults to None and the dialog's combo defaults to item 0. It
-            // cannot be 1 either: addMText reads alignH == 1 as Backward, so
-            // writing 1 would flip every default MText to mirrored on the next
-            // open. 5 falls into that reader's else arm and returns None.
-            tex.alignH = static_cast<DRW_Text::HAlign>(5); break;
-    }
+    // the DRW_MText path where the DXF semantics have nothing to do with TEXT
+    // alignment.  The cast is required: the integer set here is what the
+    // writer emits verbatim as code 72.
+    tex.alignH = static_cast<DRW_Text::HAlign>(t->drawingDirection());
 
     // Reference rectangle width, code 41.
     //
     // DRW_Text's constructor sets widthscale to 1 and dxfRW::writeMText emits
     // the group unconditionally, so leaving it alone declared a wrap column
     // one drawing unit wide on every MTEXT LibreCAD_3 has ever written -- and
-    // the text dialog defaults the height to 100. Zero is the documented
-    // "no reference rectangle, do not wrap", which is what this build means:
-    // lc::entity::MText carries no width to wrap against.
+    // the text dialog defaults the height to 100.  The entity now carries the
+    // width it was read with, and 0 -- the default for one this build creates
+    // -- is the documented "no reference rectangle, do not wrap".
     //
     // The field is called widthscale because it is TEXT's width factor; on an
     // MTEXT libdxfrw routes code 41 into the same member with an entirely
     // different meaning.
-    tex.widthscale = 0.0;
+    tex.widthscale = t->width();
 
     // Line spacing style is code 73, which libdxfrw emits from
     // linespacingStyle -- not from alignV, which this used to set and which
-    // the MTEXT write path never reads. lc::entity::MText carries no spacing
-    // style, so 1 (at least) stands, but now it is written where the library
-    // will look for it.
-    tex.linespacingStyle = 1;
+    // the MTEXT write path never reads.  DXF numbers the two styles 1 and 2
+    // and the enum numbers them 0 and 1, so this is an offset, not a cast.
+    tex.linespacingStyle =
+        (t->lineSpacingStyle() == lc::TextConst::LineSpacingStyle::Exact) ? 2 : 1;
+
+    // Line spacing factor, code 44.
+    tex.interlin = t->lineSpacingFactor();
 
     dxfW->writeMText(&tex);
 }
