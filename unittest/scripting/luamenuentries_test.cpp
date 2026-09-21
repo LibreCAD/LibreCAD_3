@@ -1,0 +1,77 @@
+// The geometry behind menu entries that used to be connected to nothing.
+//
+// Each operation keeps the arithmetic that turns what the user clicked into
+// an entity in a plain function on its class, so it can be checked here in a
+// bare Lua state without the application those operations otherwise need.
+
+#include <memory>
+#include <string>
+
+#include <gtest/gtest.h>
+
+#include <lua.hpp>
+
+#include <lclua.h>
+
+namespace {
+
+struct LuaMenuEntriesFixture : public ::testing::Test {
+    void SetUp() override {
+        L = luaL_newstate();
+        lcLua = std::make_shared<lc::lua::LCLua>(L);
+        lcLua->addLuaLibs();
+    }
+
+    void TearDown() override {
+        lcLua.reset();
+        lua_close(L);
+    }
+
+    void loadOperation(const std::string& relativePath) {
+        const std::string path = std::string(LCUILUA_SOURCE_DIR) + "/" + relativePath;
+        ASSERT_EQ(lcLua->runString(("dofile('" + path + "')").c_str()), "")
+            << "could not load " << path;
+    }
+
+    lua_State* L{nullptr};
+    std::shared_ptr<lc::lua::LCLua> lcLua;
+};
+
+}  // namespace
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, FourPointsGiveTheAxisParallelEllipseThroughThem) {
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/ellipseoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local through = EllipseOperations.axisParallelEllipseThrough
+local function on(cx, cy, a, b, t)
+    return {cx + a * math.cos(t), cy + b * math.sin(t)}
+end
+local function near(a, b) return math.abs(a - b) < 1e-6 * math.max(1, math.abs(b)) end
+
+local x, y, alongX, alongY = through({on(10, 20, 5, 3, 0.3), on(10, 20, 5, 3, 1.9),
+                                      on(10, 20, 5, 3, 3.5), on(10, 20, 5, 3, 5.0)})
+assert(near(x, 10) and near(y, 20) and near(alongX, 5) and near(alongY, 3), 'a wide ellipse')
+
+x, y, alongX, alongY = through({on(1e5, -2e5, 2, 700, 0.1), on(1e5, -2e5, 2, 700, 2),
+                                on(1e5, -2e5, 2, 700, 3), on(1e5, -2e5, 2, 700, 4.4)})
+assert(near(x, 1e5) and near(y, -2e5) and near(alongX, 2) and near(alongY, 700),
+       'a tall, thin ellipse far from the origin')
+)LUA"), "");
+}
+
+// Through the corners of a rectangle there is a whole family of such
+// ellipses, and through points on a line or on a hyperbola there is none.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, FourPointsWithNoSingleEllipseGiveNothing) {
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/ellipseoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local through = EllipseOperations.axisParallelEllipseThrough
+assert(through({{0, 0}, {4, 0}, {4, 2}, {0, 2}}) == nil, 'the corners of a rectangle')
+assert(through({{0, 0}, {1, 1}, {2, 2}, {3, 3}}) == nil, 'points on a line')
+assert(through({{0, 0}, {1, 0}, {0, 1}, {5, 5}}) == nil, 'points on a hyperbola')
+assert(through({{1, 1}, {1, 1}, {1, 1}, {1, 1}}) == nil, 'one point four times')
+)LUA"), "");
+}
