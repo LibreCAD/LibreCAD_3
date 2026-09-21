@@ -51,9 +51,15 @@ TextDialog::TextDialog(lc::ui::MainWindow* mainWindowIn, QWidget* parent)
     connect(boldCheckbox, &QCheckBox::toggled, this, &TextDialog::boldToggled);
     connect(italicCheckbox, &QCheckBox::toggled, this, &TextDialog::italicToggled);
 
-    drawingDirectionComboBox->addItem("None", lc::TextConst::DrawingDirection::None);
-    drawingDirectionComboBox->addItem("Backward", lc::TextConst::DrawingDirection::Backward);
-    drawingDirectionComboBox->addItem("Upside Down", lc::TextConst::DrawingDirection::UpsideDown);
+    // This dialog only ever builds an MText, and MTEXT's drawing direction is
+    // group 72 -- left to right, top to bottom, or take it from the style.
+    // The three items here used to be None / Backward / Upside Down, which is
+    // TEXT's group-71 mirroring flag: a value MTEXT has no group for, so
+    // whichever one was picked made no difference to the file.  "By style"
+    // first, so the default index still means the default direction.
+    drawingDirectionComboBox->addItem("By Style", lc::TextConst::MTextDrawingDirection::ByStyle);
+    drawingDirectionComboBox->addItem("Left to Right", lc::TextConst::MTextDrawingDirection::LeftToRight);
+    drawingDirectionComboBox->addItem("Top to Bottom", lc::TextConst::MTextDrawingDirection::TopToBottom);
 
     std::vector<std::string> fontList = _mainWindow->cadMdiChild()->viewer()->docCanvas()->getFontList();
     for (const std::string& font : fontList) {
@@ -114,7 +120,9 @@ void TextDialog::okButtonClicked() {
     textBuilder.setTextFont(fontComboBox->itemData(fontComboBox->currentIndex()).toString().toStdString());
     textBuilder.setHeight(heightSpinBox->value());
     textBuilder.setAngle(angleSpinBox->value() * 3.1416/180);
-    textBuilder.setDrawingDirection((lc::TextConst::DrawingDirection)drawingDirectionComboBox->itemData(drawingDirectionComboBox->currentIndex()).toInt());
+    textBuilder.setMTextDrawingDirection(
+        (lc::TextConst::MTextDrawingDirection)drawingDirectionComboBox->itemData(
+            drawingDirectionComboBox->currentIndex()).toInt());
     textBuilder.setHorizontalAlign(halign);
     textBuilder.setVerticalAlign(valign);
     textBuilder.setUnderlined(underlineCheckBox->isChecked());
