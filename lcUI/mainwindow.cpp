@@ -6,7 +6,17 @@
 #include "propertyeditor.h"
 #include "managers/contextmenumanager.h"
 
+#include <QKeySequence>
 #include <QStandardPaths>
+#include <cmath>
+#include <random>
+
+#include <cad/base/metainfo.h>
+#include <cad/meta/metacolor.h>
+#include <cad/operations/entitybuilder.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/circle.h>
+#include <cad/primitive/line.h>
 
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/entitygui.h"
@@ -128,13 +138,6 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
-
-    /* Shortcuts */
-    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C), this);
-    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_V), this);
-
-    connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
-    connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);
 
     this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
 }
@@ -361,6 +364,20 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
     QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
     QObject::connect(findMenuItemByObjectName("actionAuto_Scale"), &QAction::triggered, this, &MainWindow::autoScale);
+    QObject::connect(findMenuItemByObjectName("actionCut"), &QAction::triggered, this, [this]() { cutSelectedEntities(_cadMdiChild.selection()); });
+    QObject::connect(findMenuItemByObjectName("actionCopy"), &QAction::triggered, this, [this]() { copySelectedEntities(_cadMdiChild.selection()); });
+    QObject::connect(findMenuItemByObjectName("actionPaste"), &QAction::triggered, this, &MainWindow::pasteEvent);
+
+    // Create connections
+    QObject::connect(findMenuItemByObjectName("actionAdd_Random_Lines"), &QAction::triggered, this, &MainWindow::addRandomLines);
+    QObject::connect(findMenuItemByObjectName("actionAdd_Random_Circles"), &QAction::triggered, this, &MainWindow::addRandomCircles);
+    QObject::connect(findMenuItemByObjectName("actionAdd_Random_Arc"), &QAction::triggered, this, &MainWindow::addRandomArcs);
+
+    // initMenuAPI rebuilds every menu entry from its text and object name
+    // only, so a shortcut has to be given to the rebuilt entry.
+    findMenuItemByObjectName("actionCut")->setShortcut(QKeySequence::Cut);
+    findMenuItemByObjectName("actionCopy")->setShortcut(QKeySequence::Copy);
+    findMenuItemByObjectName("actionPaste")->setShortcut(QKeySequence::Paste);
 }
 
 void MainWindow::runLastOperation() {
@@ -823,6 +840,72 @@ void MainWindow::autoScale() {
     _cadMdiChild.viewer()->update();
 };
 
+namespace {
+/// Seeded once per process, so each click adds a different drawing.
+std::mt19937& randomEngine() {
+    static std::mt19937 engine{std::random_device{}()};
+    return engine;
+}
+
+double randomBetween(double low, double high) {
+    return std::uniform_real_distribution<double>(low, high)(randomEngine());
+}
+
+/// Half the extent the Add Random entries spread their entities over.
+const double randomExtent = 4000.;
+}
+
+void MainWindow::addRandomEntities(int count,
+                                   const std::function<lc::entity::CADEntity_CSPtr(const lc::meta::Layer_CSPtr&,
+                                                                                    const lc::meta::MetaInfo_CSPtr&,
+                                                                                    const lc::meta::Block_CSPtr&)>& make) {
+    auto builder = std::make_shared<lc::operation::EntityBuilder>(_cadMdiChild.document());
+    const auto layer = _cadMdiChild.activeLayer();
+    const auto viewport = _cadMdiChild.activeViewport();
+
+    for (int i = 0; i < count; i++) {
+        lc::meta::MetaInfo_CSPtr metaInfo;
+        if (randomBetween(0., 3.) < 1.) {
+            metaInfo = lc::meta::MetaInfo::create()->add(std::make_shared<const lc::meta::MetaColorByValue>(
+                randomBetween(0., 1.), randomBetween(0., 1.), randomBetween(0., 1.)));
+        }
+        builder->appendEntity(make(layer, metaInfo, viewport));
+    }
+
+    builder->execute();
+    _cadMdiChild.viewer()->update();
+}
+
+void MainWindow::addRandomLines() {
+    addRandomEntities(1000, [](const lc::meta::Layer_CSPtr& layer, const lc::meta::MetaInfo_CSPtr& metaInfo,
+                               const lc::meta::Block_CSPtr& viewport) {
+        const lc::geo::Coordinate start(randomBetween(-randomExtent, randomExtent),
+                                        randomBetween(-randomExtent, randomExtent));
+        const lc::geo::Coordinate end = start + lc::geo::Coordinate(randomBetween(-50., 50.), randomBetween(-50., 50.));
+        return std::make_shared<const lc::entity::Line>(start, end, layer, metaInfo, viewport);
+    });
+}
+
+void MainWindow::addRandomCircles() {
+    addRandomEntities(1000, [](const lc::meta::Layer_CSPtr& layer, const lc::meta::MetaInfo_CSPtr& metaInfo,
+                               const lc::meta::Block_CSPtr& viewport) {
+        const lc::geo::Coordinate center(randomBetween(-randomExtent, randomExtent),
+                                         randomBetween(-randomExtent, randomExtent));
+        return std::make_shared<const lc::entity::Circle>(center, randomBetween(1., 150.), layer, metaInfo, viewport);
+    });
+}
+
+void MainWindow::addRandomArcs() {
+    addRandomEntities(1000, [](const lc::meta::Layer_CSPtr& layer, const lc::meta::MetaInfo_CSPtr& metaInfo,
+                               const lc::meta::Block_CSPtr& viewport) {
+        const lc::geo::Coordinate center(randomBetween(-randomExtent, randomExtent),
+                                         randomBetween(-randomExtent, randomExtent));
+        return std::make_shared<const lc::entity::Arc>(center, randomBetween(1., 150.),
+                                                       randomBetween(0., 2. * M_PI), randomBetween(0., 2. * M_PI),
+                                                       randomBetween(0., 1.) < .5, layer, metaInfo, viewport);
+    });
+}
+
 void MainWindow::runCustomizeToolbar() {
     _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
     connect(_customizeToolbar, &widgets::CustomizeToolbar::customizeWidgetClosed, this, &MainWindow::writeSettings);
@@ -904,8 +987,31 @@ void MainWindow::copySelectedEntities(const std::vector<lc::entity::CADEntity_CS
     _copyManager.copyEntitiesToClipboard(cadEntities);
 }
 
+void MainWindow::cutSelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities) {
+    _copyManager.cutEntitiesToClipboard(cadEntities);
+    _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    _cadMdiChild.viewer()->update();
+}
+
 void MainWindow::pasteEvent() {
-    _copyManager.pasteEvent();
+    if (_copyManager.pasteableEntities().empty()) {
+        _cliCommand.write("Nothing to paste");
+        return;
+    }
+    runOperationByName("PasteOperation");
+}
+
+std::vector<lc::entity::CADEntity_CSPtr> MainWindow::clipboardEntities() const {
+    return _copyManager.pasteableEntities();
+}
+
+lc::geo::Coordinate MainWindow::clipboardBasePoint() const {
+    return _copyManager.basePoint();
+}
+
+void MainWindow::pasteClipboard(const lc::geo::Coordinate& offset) {
+    _copyManager.paste(offset);
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::saveDockLayout() {

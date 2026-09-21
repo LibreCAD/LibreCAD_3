@@ -37,6 +37,7 @@
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimension.h>
 #include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimordinate.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/image.h>
@@ -214,7 +215,7 @@ void import_py_lc_entity_namespace(py::module_& m_lc,
         .def("rotate",       &lc::entity::Point::rotate)
         .def("scale",        &lc::entity::Point::scale);
 
-    // Dimension family — DimAligned/DimAngular/DimDiametric/DimLinear/DimRadial.
+    // Dimension family — DimAligned/DimAngular/DimDiametric/DimLinear/DimOrdinate/DimRadial.
     py::classh<lc::entity::DimAligned,
                lc::entity::CADEntity, lc::entity::Dimension,
                lc::Visitable, lc::entity::Draggable>(m_entity, "DimAligned")
@@ -286,6 +287,25 @@ void import_py_lc_entity_namespace(py::module_& m_lc,
         .def("rotate",           &lc::entity::DimLinear::rotate)
         .def("scale",            &lc::entity::DimLinear::scale)
         .def("setDragPoints",    &lc::entity::DimLinear::setDragPoints);
+
+    py::classh<lc::entity::DimOrdinate,
+               lc::entity::CADEntity, lc::entity::Dimension,
+               lc::Visitable, lc::entity::Draggable>(m_entity, "DimOrdinate")
+        .def("accept",         &lc::entity::DimOrdinate::accept)
+        .def("boundingBox",    &lc::entity::DimOrdinate::boundingBox)
+        .def("copy",           &lc::entity::DimOrdinate::copy)
+        .def("dispatch",       &lc::entity::DimOrdinate::dispatch)
+        .def("dragPoints",     &lc::entity::DimOrdinate::dragPoints)
+        .def("featurePoint",   &lc::entity::DimOrdinate::featurePoint)
+        .def("leaderEndPoint", &lc::entity::DimOrdinate::leaderEndPoint)
+        .def("mirror",         &lc::entity::DimOrdinate::mirror)
+        .def("modify",         &lc::entity::DimOrdinate::modify)
+        .def("move",           &lc::entity::DimOrdinate::move)
+        .def("rotate",         &lc::entity::DimOrdinate::rotate)
+        .def("scale",          &lc::entity::DimOrdinate::scale)
+        .def("setDragPoints",  &lc::entity::DimOrdinate::setDragPoints)
+        .def("value",          &lc::entity::DimOrdinate::value)
+        .def("xType",          &lc::entity::DimOrdinate::xType);
 
     py::classh<lc::entity::DimRadial,
                lc::entity::CADEntity, lc::entity::Dimension,
@@ -522,6 +542,7 @@ void import_py_lc_entity_namespace(py::module_& m_lc,
         .def("visit", py::overload_cast<lc::entity::DimAngular_CSPtr>(&lc::EntityDispatch::visit))
         .def("visit", py::overload_cast<lc::entity::DimDiametric_CSPtr>(&lc::EntityDispatch::visit))
         .def("visit", py::overload_cast<lc::entity::DimLinear_CSPtr>(&lc::EntityDispatch::visit))
+        .def("visit", py::overload_cast<lc::entity::DimOrdinate_CSPtr>(&lc::EntityDispatch::visit))
         .def("visit", py::overload_cast<lc::entity::DimRadial_CSPtr>(&lc::EntityDispatch::visit))
         .def("visit", py::overload_cast<lc::entity::LWPolyline_CSPtr>(&lc::EntityDispatch::visit))
         .def("visit", py::overload_cast<lc::entity::Image_CSPtr>(&lc::EntityDispatch::visit));

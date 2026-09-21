@@ -69,6 +69,7 @@
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimangular.h>
+#include <cad/primitive/dimordinate.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/insert.h>
@@ -3232,7 +3233,7 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
     auto layer = defaultLayer();
     auto doc = newDocument();
 
-    // One of the six lives inside a user block. That one used to come out
+    // One of the seven lives inside a user block. That one used to come out
     // nameless: the geometry blocks were minted after the user blocks were
     // written, so by the time this DIMENSION was emitted there was no name to
     // put in its group 2 -- and the block minted for it a moment later sat in
@@ -3272,6 +3273,11 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
             lc::TextConst::LineSpacingStyle::AtLeast, "",
             lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(210, 0, 0),
             lc::geo::Coordinate(200, 0, 0), lc::geo::Coordinate(206, 8, 0), layer),
+        std::make_shared<lc::entity::DimOrdinate>(
+            lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(250, 30, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "",
+            lc::geo::Coordinate(250, 0, 0), lc::geo::Coordinate(250, 30, 0), true, layer),
         std::make_shared<lc::entity::DimLinear>(
             lc::geo::Coordinate(25, 30, 0), lc::geo::Coordinate(25, 31, 0),
             lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
@@ -3285,8 +3291,8 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
         doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
 
     const auto blocks = dimensionBlocksIn(path);
-    ASSERT_EQ(blocks.referenced.size(), 6u)
-        << "All five dimension kinds must be written, plus the one inside a block.";
+    ASSERT_EQ(blocks.referenced.size(), 7u)
+        << "All six dimension kinds must be written, plus the one inside a block.";
 
     for (std::size_t i = 0; i < blocks.referenced.size(); i++) {
         const auto& name = blocks.referenced[i];
@@ -3298,7 +3304,7 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
     }
 
     // And the drawing still reads back as itself: the geometry blocks are
-    // machinery, not five more things in the drawing.
+    // machinery, not six more things in the drawing.
     auto reopened = newDocument();
     ASSERT_NO_THROW(lc::persistence::File::open(
         reopened, path, lc::persistence::File::Library::LIBDXFRW));
@@ -3309,7 +3315,7 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
             dimensions++;
         }
     }
-    EXPECT_EQ(dimensions, 5) << "The dimensions themselves must survive the round trip.";
+    EXPECT_EQ(dimensions, 6) << "The dimensions themselves must survive the round trip.";
 
     int inBlock = 0;
     for (const auto& block : reopened->blocks()) {
@@ -3729,4 +3735,138 @@ TEST(DxfRoundTripTest, TheR12TextLinesKeepTheLineSpacingFactor) {
 
         boost::filesystem::remove(path);
     }
+}
+
+namespace {
+
+/// The text of every TEXT record in the BLOCKS section, in file order.
+std::vector<std::string> textInBlocks(const std::string& path) {
+    std::vector<std::string> texts;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string section;
+    std::string record;
+
+    auto trim = [](std::string& text) {
+        while (!text.empty() && (text.back() == '\r' || text.back() == ' ')) {
+            text.pop_back();
+        }
+        while (!text.empty() && (text.front() == ' ' || text.front() == '\t')) {
+            text.erase(text.begin());
+        }
+    };
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        trim(code);
+        trim(value);
+        if (code == "0") {
+            record = value;
+        } else if (code == "2" && record == "SECTION") {
+            section = value;
+        } else if (code == "1" && record == "TEXT" && section == "BLOCKS") {
+            texts.push_back(value);
+        }
+    }
+
+    return texts;
+}
+
+}  // namespace
+
+// An ordinate dimension used to be dropped on the way in -- counted as loss,
+// but gone all the same -- and there was no way to write one. Both kinds now
+// make the trip out and back: the points, which axis is measured, and the text
+// the user asked for, with the geometry block every DIMENSION needs.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnOrdinateDimensionSurvivesARoundTrip) {
+    auto layer = defaultLayer();
+    auto doc = newDocument();
+
+    // The datum is off the origin, so a writer that loses group 10 shows.
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::DimOrdinate>(
+            lc::geo::Coordinate(5, 7, 0), lc::geo::Coordinate(27, 45, 0),
+            lc::TextConst::AttachmentPoint::Bottom_center, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "<>",
+            lc::geo::Coordinate(25, 10, 0), lc::geo::Coordinate(27, 45, 0), true, layer),
+        std::make_shared<lc::entity::DimOrdinate>(
+            lc::geo::Coordinate(5, 7, 0), lc::geo::Coordinate(-60, 12, 0),
+            lc::TextConst::AttachmentPoint::Middle_right, 0.0, 1.0,
+            lc::TextConst::LineSpacingStyle::AtLeast, "Y = <>",
+            lc::geo::Coordinate(25, 4, 0), lc::geo::Coordinate(-60, 12, 0), false, layer)}));
+
+    const std::string path = uniqueTmpDxf("ordinate");
+    boost::filesystem::remove(path);
+    const auto written = lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(written.ok);
+    EXPECT_TRUE(written.loss.empty()) << "an ordinate was left out of the file";
+
+    // Group 70: subtype 6, bit 5 because the block is this dimension's own,
+    // and bit 6 on the one that measures X.
+    const auto records = recordsOfType(path, "DIMENSION");
+    ASSERT_EQ(records.size(), 2u);
+    std::vector<std::string> types;
+    for (const auto& record : records) {
+        ASSERT_EQ(record.count(70), 1u);
+        types.push_back(record.at(70));
+    }
+    std::sort(types.begin(), types.end());
+    EXPECT_EQ(types, (std::vector<std::string>{"102", "38"}));
+
+    // Each names a geometry block, and the block has something in it.
+    const auto blocks = dimensionBlocksIn(path);
+    ASSERT_EQ(blocks.referenced.size(), 2u);
+    for (const auto& name : blocks.referenced) {
+        ASSERT_FALSE(name.empty()) << "an ordinate names no geometry block";
+        ASSERT_EQ(blocks.defined.count(name), 1u) << name << " is named but not defined";
+        EXPECT_GT(blocks.defined.at(name), 0u) << name << " is empty";
+    }
+
+    // The text in those blocks is the ordinate, unsigned, with "<>" standing
+    // for it rather than written out.
+    auto texts = textInBlocks(path);
+    std::sort(texts.begin(), texts.end());
+    EXPECT_EQ(texts, (std::vector<std::string>{"20", "Y = 3"}));
+
+    auto reopened = newDocument();
+    const auto read = lc::persistence::File::importFile(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(read.ok);
+    EXPECT_EQ(read.loss.droppedByType.count("DIMENSION (ordinate)"), 0u)
+        << "the ordinates were dropped on the way back in";
+    EXPECT_TRUE(read.loss.empty());
+
+    lc::entity::DimOrdinate_CSPtr measuringX;
+    lc::entity::DimOrdinate_CSPtr measuringY;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto ordinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity)) {
+            (ordinate->xType() ? measuringX : measuringY) = ordinate;
+        }
+    }
+    ASSERT_NE(measuringX, nullptr) << "the ordinate measuring X did not come back";
+    ASSERT_NE(measuringY, nullptr) << "the ordinate measuring Y did not come back";
+
+    EXPECT_DOUBLE_EQ(measuringX->definitionPoint().x(), 5.0);
+    EXPECT_DOUBLE_EQ(measuringX->definitionPoint().y(), 7.0);
+    EXPECT_DOUBLE_EQ(measuringX->featurePoint().x(), 25.0);
+    EXPECT_DOUBLE_EQ(measuringX->featurePoint().y(), 10.0);
+    EXPECT_DOUBLE_EQ(measuringX->leaderEndPoint().x(), 27.0);
+    EXPECT_DOUBLE_EQ(measuringX->leaderEndPoint().y(), 45.0);
+    EXPECT_DOUBLE_EQ(measuringX->middleOfText().y(), 45.0);
+    EXPECT_EQ(measuringX->attachmentPoint(), lc::TextConst::AttachmentPoint::Bottom_center);
+    EXPECT_EQ(measuringX->explicitValue(), "<>");
+    EXPECT_DOUBLE_EQ(measuringX->value(), 20.0);
+
+    EXPECT_DOUBLE_EQ(measuringY->featurePoint().y(), 4.0);
+    EXPECT_DOUBLE_EQ(measuringY->leaderEndPoint().x(), -60.0);
+    EXPECT_EQ(measuringY->attachmentPoint(), lc::TextConst::AttachmentPoint::Middle_right);
+    EXPECT_EQ(measuringY->explicitValue(), "Y = <>");
+    EXPECT_DOUBLE_EQ(measuringY->value(), -3.0);
+    ASSERT_NE(measuringY->layer(), nullptr);
+    EXPECT_EQ(measuringY->layer()->name(), "0");
+
+    boost::filesystem::remove(path);
 }

@@ -25,6 +25,7 @@
 #include "drawitems/lcdimlinear.h"
 #include "drawitems/lcdimaligned.h"
 #include "drawitems/lcdimangular.h"
+#include "drawitems/lcdimordinate.h"
 #include "drawitems/lclwpolyline.h"
 #include "drawitems/lcvspline.h"
 #include "drawitems/lcimage.h"
@@ -751,6 +752,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
 
     if (dimAngular != nullptr) {
         return std::make_shared<LCDimAngular>(dimAngular);
+    }
+
+    // Add 'DimOrdinate'
+    auto dimOrdinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity);
+
+    if (dimOrdinate != nullptr) {
+        return std::make_shared<LCDimOrdinate>(dimOrdinate);
     }
 
     // Add 'LWPolyline'

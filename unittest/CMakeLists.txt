@@ -73,6 +73,7 @@ lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lcviewernoqt/mtextdrawtest.cpp
 lcviewernoqt/mtextlayouttest.cpp
+lcviewernoqt/dimordinatedrawtest.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
@@ -81,6 +82,7 @@ lckernel/operations/layerops.cpp
 lckernel/dochelpers/documentlist.cpp
 lckernel/geometry/testgeoellipse.cpp
 lckernel/primitive/testellipse.cpp
+lckernel/primitive/dimordinatetest.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
@@ -151,8 +153,12 @@ if(WITH_PYTHONSCRIPT)
         # The Lua createActions/actions operations: the typed-text decoding
         # that makes MTextOperations more than a copy of TextOperations, plus
         # the two cross-file references every operation makes -- a menu action
-        # mainwindow.ui must define, and an icon resource.qrc must alias.
+        # mainwindow.ui must define, and an icon resource.qrc must alias --
+        # and the other direction: every menu entry is connected to something.
         scripting/luamtextoperation_test.cpp
+        # The geometry of the operations behind menu entries that used to
+        # be connected to nothing.
+        scripting/luamenuentries_test.cpp
         )
     # The operation .lua files, mainwindow.ui and resource.qrc are read from
     # the source tree: nothing compiles them together, so a name that stopped
@@ -211,6 +217,9 @@ if(WITH_QT_UI)
             ui/testlinewidthselect.cpp
             ui/testmainwindow.cpp
             ui/testwindowmanager.cpp
+            # Menu entries MainWindow connects natively: Cut, Copy, Paste
+            # and the Add Random entries.
+            ui/testmenuentries.cpp
             ui/gui/testmenuitem.cpp
             ui/gui/testmenu.cpp
             ui/gui/testtoolbartab.cpp

@@ -187,9 +187,28 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              &lc::ui::MainWindow::copySelectedEntities,
              py::arg("entities"),
              "Copy the given entities to the clipboard.")
+        .def("cutSelectedEntities",
+             &lc::ui::MainWindow::cutSelectedEntities,
+             py::arg("entities"),
+             "Copy the given entities to the clipboard and remove them "
+             "from the drawing, as one undo step.")
         .def("pasteEvent",
              &lc::ui::MainWindow::pasteEvent,
-             "Paste clipboard entities into the active document.")
+             "Paste clipboard entities into the active document: start "
+             "PasteOperation, which asks for the insertion point.")
+        .def("clipboardEntities",
+             &lc::ui::MainWindow::clipboardEntities,
+             "The clipboard entities a paste into this window adds "
+             "copies of.")
+        .def("clipboardBasePoint",
+             &lc::ui::MainWindow::clipboardBasePoint,
+             "The point of the clipboard entities that a paste puts "
+             "at the insertion point.")
+        .def("pasteClipboard",
+             &lc::ui::MainWindow::pasteClipboard,
+             py::arg("offset"),
+             "Add copies of the clipboard entities, moved by offset, as "
+             "one undo step.")
         // addMenu has 2 overloads — bind both via lambdas so pybind11
         // resolves by arg type without ambiguity.
         .def("addMenu",

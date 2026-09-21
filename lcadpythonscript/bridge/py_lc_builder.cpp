@@ -18,6 +18,7 @@
 #include <cad/builders/dimdiametric.h>
 #include <cad/builders/dimension.h>
 #include <cad/builders/dimlinear.h>
+#include <cad/builders/dimordinate.h>
 #include <cad/builders/dimradial.h>
 #include <cad/builders/ellipse.h>
 #include <cad/builders/insert.h>
@@ -191,6 +192,18 @@ void import_py_lc_builder_namespace(py::module_& m_builder) {
         .def("setDefinitionPoint2",&lc::builder::DimLinearBuilder::setDefinitionPoint2)
         .def("setDefinitionPoint3",&lc::builder::DimLinearBuilder::setDefinitionPoint3)
         .def("setOblique",         &lc::builder::DimLinearBuilder::setOblique);
+
+    py::class_<lc::builder::DimOrdinateBuilder, lc::builder::DimensionBuilder>(m_builder, "DimOrdinateBuilder")
+        .def(py::init<>())
+        .def("build",             &lc::builder::DimOrdinateBuilder::build)
+        .def("dimAuto",           &lc::builder::DimOrdinateBuilder::dimAuto)
+        .def("featurePoint",      &lc::builder::DimOrdinateBuilder::featurePoint)
+        .def("leaderEndPoint",    &lc::builder::DimOrdinateBuilder::leaderEndPoint)
+        .def_static("measuresX",  &lc::builder::DimOrdinateBuilder::measuresX)
+        .def("setFeaturePoint",   &lc::builder::DimOrdinateBuilder::setFeaturePoint)
+        .def("setLeaderEndPoint", &lc::builder::DimOrdinateBuilder::setLeaderEndPoint)
+        .def("setXType",          &lc::builder::DimOrdinateBuilder::setXType)
+        .def("xType",             &lc::builder::DimOrdinateBuilder::xType);
 
     py::class_<lc::builder::DimRadialBuilder, lc::builder::DimensionBuilder>(m_builder, "DimRadialBuilder")
         .def(py::init<>())

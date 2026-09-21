@@ -8,8 +8,9 @@ EllipseOperations = {
     description = "Ellipse Operation",
     menu_actions = {
         default = "actionEllipse_Axis",
-        arc = "actionEllipse_Axis",
-        foci = "actionEllipse_FociPoints"
+        arc = "actionEllipse_Arc",
+        foci = "actionEllipse_FociPoints",
+        fourpoints = "actionEllipse_4Points"
     }
 }
 EllipseOperations.__index = EllipseOperations
@@ -51,6 +52,122 @@ function EllipseOperations:_init_foci()
     message("<b>Ellipse</b>")
     message("Provide first foci point:")
     self.step = "EllipseFociPoints"
+end
+
+function EllipseOperations:_init_fourpoints()
+    message("<b>Ellipse</b>")
+    message("Provide first point:")
+    self.fourPoints = {}
+    mainWindow:cliCommand():returnText(false) -- no text options here, so let the user type coordinates
+    self.step = "EllipseFourPoints"
+end
+
+-- The ellipse with its axes parallel to X and Y through four points
+-- ({x, y} pairs), as its center x, y and its semi-axes along X and along Y.
+-- Nil when there is none, or when there is more than one, as there is
+-- through the corners of a rectangle.
+--
+-- The ellipse is A u^2 + C v^2 + D u + E v = 1, in u, v measured from the
+-- points' centroid and scaled to about 1.  The centroid of points on an
+-- ellipse is inside it, so the ellipse cannot pass through u = v = 0, which
+-- is what lets the right-hand side be 1.
+function EllipseOperations.axisParallelEllipseThrough(points)
+    local cx, cy = 0, 0
+    for _, p in ipairs(points) do
+        cx, cy = cx + p[1] / 4, cy + p[2] / 4
+    end
+    local scale = 0
+    for _, p in ipairs(points) do
+        scale = math.max(scale, math.abs(p[1] - cx), math.abs(p[2] - cy))
+    end
+    if scale == 0 then
+        return nil
+    end
+
+    local m = {}
+    for i, p in ipairs(points) do
+        local u, v = (p[1] - cx) / scale, (p[2] - cy) / scale
+        m[i] = {u * u, v * v, u, v, 1}
+    end
+
+    -- Gauss-Jordan elimination with partial pivoting.
+    for col = 1, 4 do
+        local pivot = col
+        for row = col + 1, 4 do
+            if math.abs(m[row][col]) > math.abs(m[pivot][col]) then
+                pivot = row
+            end
+        end
+        if math.abs(m[pivot][col]) < 1e-9 then
+            return nil
+        end
+        m[col], m[pivot] = m[pivot], m[col]
+        for row = 1, 4 do
+            if row ~= col then
+                local f = m[row][col] / m[col][col]
+                for k = col, 5 do
+                    m[row][k] = m[row][k] - f * m[col][k]
+                end
+            end
+        end
+    end
+    local A, C = m[1][5] / m[1][1], m[2][5] / m[2][2]
+    local D, E = m[3][5] / m[3][3], m[4][5] / m[4][4]
+    if A <= 0 or C <= 0 then
+        return nil
+    end
+
+    -- A (u - u0)^2 + C (v - v0)^2 = F
+    local u0, v0 = -D / (2 * A), -E / (2 * C)
+    local F = 1 + A * u0 * u0 + C * v0 * v0
+    return cx + u0 * scale, cy + v0 * scale, math.sqrt(F / A) * scale, math.sqrt(F / C) * scale
+end
+
+function EllipseOperations:setFromFourPoints(points)
+    local xy = {}
+    for i, p in ipairs(points) do
+        xy[i] = {p:x(), p:y()}
+    end
+    local x, y, alongX, alongY = EllipseOperations.axisParallelEllipseThrough(xy)
+    if x == nil then
+        return false
+    end
+
+    self.builder:setCenter(lc.geo.Coordinate(x, y))
+    if alongX >= alongY then
+        self.builder:setMajorPoint(lc.geo.Coordinate(alongX, 0))
+        self.builder:setMinorRadius(alongY)
+    else
+        self.builder:setMajorPoint(lc.geo.Coordinate(0, alongY))
+        self.builder:setMinorRadius(alongX)
+    end
+    return true
+end
+
+function EllipseOperations:EllipseFourPoints(eventName, data)
+    if eventName ~= "point" and eventName ~= "mouseMove" then
+        return
+    end
+
+    local points = {}
+    for i, p in ipairs(self.fourPoints) do
+        points[i] = p
+    end
+    points[#points + 1] = data["position"]
+
+    if #points < 4 then
+        if eventName == "point" then
+            self.fourPoints = points
+            message(({"Provide second point:", "Provide third point:", "Provide fourth point:"})[#points])
+        end
+    elseif self:setFromFourPoints(points) then
+        if eventName == "point" then
+            self:createEntity()
+        end
+    elseif eventName == "point" then
+        message("No single ellipse with axes parallel to X and Y passes through these points")
+        message("Provide another fourth point:")
+    end
 end
 
 function EllipseOperations:EllipsewithAxisEnd(eventName, data)

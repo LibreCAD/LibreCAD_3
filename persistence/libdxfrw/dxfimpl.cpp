@@ -22,6 +22,7 @@
 #include <cad/primitive/dimlinear.h>
 #include <cad/primitive/dimaligned.h>
 #include <cad/primitive/dimangular.h>
+#include <cad/primitive/dimordinate.h>
 #include <cad/primitive/point.h>
 #include <cad/primitive/spline.h>
 #include <cad/primitive/lwpolyline.h>
@@ -697,8 +698,29 @@ void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
 
 void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
     guarded("DIMENSION (ordinate)", data, [&] {
-        LOG_WARNING << "Dropping DIMENSION (ordinate): no kernel entity for it";
-        recordLoss("DIMENSION (ordinate)");
+        LOG_TRACE << "addDimOrdinate";
+        auto layer = getLayer(*data);
+        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
+        // Which axis is measured is bit 6 of group 70, which libdxfrw keeps
+        // as read and has no accessor for. Its DWG reader sets the same bit
+        // from the DWG's own flag, so this covers both.
+        auto lcDimOrdinate = std::make_shared<lc::entity::DimOrdinate>(
+                                 coord(data->getOriginPoint()),
+                                 coord(data->getTextPoint()),
+                                 static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                                 data->getDir(),
+                                 data->getTextLineFactor(),
+                                 static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                                 data->getText(),
+                                 coord(data->getFirstLine()),
+                                 coord(data->getSecondLine()),
+                                 (data->type & 64) != 0,
+                                 layer,
+                                 mf,
+                                 getBlock(*data)
+                             );
+
+        deliver(lcDimOrdinate);
     });
 }
 
@@ -2493,6 +2515,21 @@ void DXFimpl::writeDimAngular(const lc::entity::DimAngular_CSPtr& d) {
     dxfW->writeDimension(&dim);
 }
 
+void DXFimpl::writeDimOrdinate(const lc::entity::DimOrdinate_CSPtr& d) {
+    DRW_DimOrdinate dim;
+    writeDimensionCommon(&dim, d, *d);
+    // Bit 6 of group 70 is the axis: set, the ordinate measures X. The
+    // subtype, 6, is added by writeDimension, which keeps the high bits.
+    dim.type = d->xType() ? 64 : 0;
+    dim.setFirstLine(DRW_Coord(d->featurePoint().x(),
+                               d->featurePoint().y(),
+                               d->featurePoint().z()));
+    dim.setSecondLine(DRW_Coord(d->leaderEndPoint().x(),
+                                d->leaderEndPoint().y(),
+                                d->leaderEndPoint().z()));
+    dxfW->writeDimension(&dim);
+}
+
 // Issue #412 phase 1: dispatched, but body was empty — LWPolylines vanished
 // from every save.  Mirror addLWPolyline's field mapping.
 void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p) {
@@ -3210,6 +3247,12 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
         writeDimAngular(dimAngular);
         return;
     }
+
+    auto dimOrdinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity);
+    if (dimOrdinate != nullptr) {
+        writeDimOrdinate(dimOrdinate);
+        return;
+    }
 }
 
 /// Whether a block name follows the *D<n> convention writers use for the
@@ -3356,16 +3399,29 @@ Vector2 flat(const lc::geo::Coordinate& c) {
 
 namespace {
 
-/** The text a dimension shows: its own override, or the measurement. */
+/**
+ * The text a dimension shows: its own override, or the measurement.
+ *
+ * "<>" in the override stands for the measurement, as it does in DXF group 1.
+ * It is also what LibreCAD's dimension builders start with, so written out
+ * as it is, a dimension drawn in LibreCAD said "<>" to whoever opened the file.
+ */
 std::string dimensionText(const lc::entity::Dimension& dimension, double measured,
                           const std::string& prefix) {
-    if (!dimension.explicitValue().empty()) {
-        return dimension.explicitValue();
-    }
-
     char formatted[32];
     std::snprintf(formatted, sizeof(formatted), "%g", measured);
-    return prefix + formatted;
+    const std::string measurement = prefix + formatted;
+
+    std::string text = dimension.explicitValue();
+    if (text.empty()) {
+        return measurement;
+    }
+
+    const auto placeholder = text.find("<>");
+    if (placeholder != std::string::npos) {
+        text.replace(placeholder, 2, measurement);
+    }
+    return text;
 }
 
 }  // namespace
@@ -3537,6 +3593,69 @@ std::string DXFimpl::writeAngularDimensionBlock(const lc::entity::CADEntity_CSPt
     return name;
 }
 
+std::string DXFimpl::writeOrdinateDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                                 const lc::entity::DimOrdinate& ordinate) {
+    // The leader leaves the feature at right angles to the measured axis --
+    // vertically for an X ordinate -- and, when its end is off to the side,
+    // jogs across to it over the middle third: the picture LibreCAD draws.
+    const Vector2 feature = flat(ordinate.featurePoint());
+    const Vector2 leaderEnd = flat(ordinate.leaderEndPoint());
+    const Vector2 alongAxis = ordinate.xType() ? Vector2{0.0, 1.0} : Vector2{1.0, 0.0};
+    const Vector2 asideAxis = ordinate.xType() ? Vector2{1.0, 0.0} : Vector2{0.0, 1.0};
+    const double along = dot(leaderEnd - feature, alongAxis);
+    const double aside = dot(leaderEnd - feature, asideAxis);
+
+    std::string layerName;
+    const std::string name = beginDimensionBlock(entity, layerName);
+    if (name.empty()) {
+        return "";
+    }
+
+    // Like an extension line, the leader starts just off the feature.
+    Vector2 start = feature;
+    if (std::abs(along) / 3.0 > kExtensionOffset) {
+        start = feature + alongAxis * (along < 0.0 ? -kExtensionOffset : kExtensionOffset);
+    }
+
+    if (std::abs(aside) > 1e-9) {
+        const Vector2 firstBend = feature + alongAxis * (along / 3.0);
+        const Vector2 secondBend = feature + alongAxis * (along * 2.0 / 3.0) + asideAxis * aside;
+        writeDimensionLine(layerName, start.x, start.y, firstBend.x, firstBend.y);
+        writeDimensionLine(layerName, firstBend.x, firstBend.y, secondBend.x, secondBend.y);
+        writeDimensionLine(layerName, secondBend.x, secondBend.y, leaderEnd.x, leaderEnd.y);
+    } else {
+        writeDimensionLine(layerName, start.x, start.y, leaderEnd.x, leaderEnd.y);
+    }
+
+    // Without its sign, as AutoCAD writes an ordinate.
+    const std::string value = dimensionText(ordinate, std::abs(ordinate.value()), "");
+    if (value == " ") {  // a single space is DXF's "suppress the text"
+        return name;
+    }
+
+    // Placed the way groups 71 and 11 say, which for an ordinate LibreCAD
+    // drew is past the end of the leader: the attachment point names the point
+    // of the text that sits at the text position, 1 to 9 across and then down.
+    static const DRW_Text::HAlign across[] = {DRW_Text::HLeft, DRW_Text::HCenter, DRW_Text::HRight};
+    static const DRW_Text::VAlign down[] = {DRW_Text::VTop, DRW_Text::VMiddle, DRW_Text::VBottom};
+    const int attachment = static_cast<int>(ordinate.attachmentPoint());
+    const bool known = attachment >= 1 && attachment <= 9;
+
+    DRW_Text text;
+    text.layer = layerName;
+    text.basePoint = DRW_Coord(ordinate.middleOfText().x(), ordinate.middleOfText().y(), 0.0);
+    text.secPoint = text.basePoint;
+    text.height = kArrowSize * 2.0;
+    text.text = value;
+    text.angle = ordinate.textAngle() * 180.0 / M_PI;
+    text.alignH = known ? across[(attachment - 1) % 3] : DRW_Text::HCenter;
+    text.alignV = known ? down[(attachment - 1) / 3] : DRW_Text::VMiddle;
+    text.style = "STANDARD";
+    dxfW->writeText(&text);
+
+    return name;
+}
+
 std::string DXFimpl::writeDimensionBlock(const lc::entity::CADEntity_CSPtr& entity) {
     const auto dimension = std::dynamic_pointer_cast<const lc::entity::Dimension>(entity);
     if (dimension == nullptr) {
@@ -3574,6 +3693,8 @@ std::string DXFimpl::writeDimensionBlock(const lc::entity::CADEntity_CSPtr& enti
                                          true, "");
     } else if (auto angular = std::dynamic_pointer_cast<const lc::entity::DimAngular>(entity)) {
         return writeAngularDimensionBlock(entity, *dimension, *angular);
+    } else if (auto ordinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity)) {
+        return writeOrdinateDimensionBlock(entity, *ordinate);
     } else {
         return "";
     }

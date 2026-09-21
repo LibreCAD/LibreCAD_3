@@ -13,6 +13,7 @@ ArcOperations = {
         sea = "actionStart_End_Angle_3",
         ser = "actionStart_End_Radius_2",
         sec = "actionStart_End_Center_2",
+        continue = "actionContinue",
     },
     context_transitions = {
         ArcWithSCE = {"ArcWithSCA", "ArcWithSCL"},
@@ -112,6 +113,112 @@ function ArcOperations:_init_sec()
     message("<b>Arc - Start End Center</b>")
     message("Provide Start Point:")
 	self.step = "ArcWithSEC"
+end
+
+-- The arc that starts at start ({x, y}), leaving it along direction ({x, y},
+-- any length), and ends at finish ({x, y}): its center {x, y}, radius, start
+-- and end angles, and whether it turns counterclockwise.  Nil when finish lies
+-- on the line through start along direction, where the arc would be a line.
+function ArcOperations.tangentArc(start, direction, finish)
+    local length = math.sqrt(direction[1] ^ 2 + direction[2] ^ 2)
+    if length == 0 then
+        return nil
+    end
+    local tx, ty = direction[1] / length, direction[2] / length
+    local dx, dy = finish[1] - start[1], finish[2] - start[2]
+    local chord = math.sqrt(dx * dx + dy * dy)
+    local cross = tx * dy - ty * dx
+    if chord == 0 or math.abs(cross) < 1e-9 * chord then
+        return nil
+    end
+
+    -- The chord makes angle a with the direction, so sin a = cross / chord,
+    -- and the radius is chord / (2 |sin a|).  The center is that far from
+    -- start, square to the direction, on the side the arc turns to.
+    local radius = chord * chord / (2 * math.abs(cross))
+    local ccw = cross > 0
+    local nx, ny = -ty, tx
+    if not ccw then
+        nx, ny = ty, -tx
+    end
+    local center = {start[1] + radius * nx, start[2] + radius * ny}
+    local startAngle = math.atan(start[2] - center[2], start[1] - center[1])
+    local endAngle = math.atan(finish[2] - center[2], finish[1] - center[1])
+    return center, radius, startAngle, endAngle, ccw
+end
+
+-- Where the last line or arc drawn ends, and the direction it leaves that
+-- point in, as {x, y} pairs; nil when the drawing has neither.  IDs only grow,
+-- so the line or arc with the largest one is the last drawn, and after an
+-- undo it is the one before.
+function ArcOperations.lastLineOrArcEnd()
+    local entities = mainWindow:cadMdiChild():document():entityContainer():asVector(32767)
+    local last, lastID = nil, -1
+    for _, entity in ipairs(entities) do
+        if entity:id() > lastID then
+            local line = lc.entity.Line.cast(entity)
+            local arc = lc.entity.Arc.cast(entity)
+            if line ~= nil or arc ~= nil then
+                last, lastID = line or arc, entity:id()
+            end
+        end
+    end
+    if last == nil then
+        return nil
+    end
+
+    local line = lc.entity.Line.cast(last)
+    if line ~= nil then
+        local from, to = line:start(), line["end"](line)
+        return {to:x(), to:y()}, {to:x() - from:x(), to:y() - from:y()}
+    end
+
+    -- An arc leaves its end square to the radius there: turned a quarter
+    -- counterclockwise from it when the arc runs counterclockwise.
+    local arc = lc.entity.Arc.cast(last)
+    local center, finish = arc:center(), arc:endP()
+    local rx, ry = finish:x() - center:x(), finish:y() - center:y()
+    if arc:CCW() then
+        return {finish:x(), finish:y()}, {-ry, rx}
+    end
+    return {finish:x(), finish:y()}, {ry, -rx}
+end
+
+function ArcOperations:_init_continue()
+    message("<b>Arc - Continue</b>")
+    self.continueStart, self.continueDirection = ArcOperations.lastLineOrArcEnd()
+    if self.continueStart == nil then
+        message("Draw a line or an arc to continue from first")
+        self:close()
+        return
+    end
+    message("Provide End Point:")
+    self.step = "ArcContinue"
+end
+
+function ArcOperations:ArcContinue(eventName, data)
+    if eventName ~= "point" and eventName ~= "mouseMove" then
+        return
+    end
+
+    local finish = data["position"]
+    local center, radius, startAngle, endAngle, ccw =
+        ArcOperations.tangentArc(self.continueStart, self.continueDirection, {finish:x(), finish:y()})
+    if center == nil then
+        if eventName == "point" then
+            message("The end point is straight ahead: provide another End Point:")
+        end
+        return
+    end
+
+    self.builder:setCenter(lc.geo.Coordinate(center[1], center[2]))
+    self.builder:setRadius(radius)
+    self.builder:setStartAngle(startAngle)
+    self.builder:setEndAngle(endAngle)
+    self.builder:setIsCCW(ccw)
+    if eventName == "point" then
+        self:createEntity()
+    end
 end
 
 function ArcOperations:ArcWith3Points(eventName, data)
