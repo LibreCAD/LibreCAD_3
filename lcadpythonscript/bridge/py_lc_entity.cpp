@@ -416,7 +416,13 @@ void import_py_lc_entity_namespace(py::module_& m_lc,
         .def("move",          &lc::entity::MText::move)
         .def("rotate",        &lc::entity::MText::rotate)
         .def("scale",         &lc::entity::MText::scale)
-        .def("setDragPoints", &lc::entity::MText::setDragPoints);
+        .def("setDragPoints", &lc::entity::MText::setDragPoints)
+        // The four flags that make an MText an MText. A script could construct
+        // one and had no way to ask whether it was bold.
+        .def("underlined",    &lc::entity::MText::underlined)
+        .def("strikethrough", &lc::entity::MText::strikethrough)
+        .def("bold",          &lc::entity::MText::bold)
+        .def("italic",        &lc::entity::MText::italic);
 
     py::classh<lc::entity::Image,
                lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>(m_entity, "Image")

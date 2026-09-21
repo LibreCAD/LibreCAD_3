@@ -5,6 +5,7 @@
 // shared_ptr<const T> — the builders themselves never cross as shared_ptr.
 // This is the "no shared_ptr exposure" carve-out of plan decision 1.
 
+#include <cad/primitive/textconst.h>
 #include "py_lc_builder.h"
 
 #include <pybind11/stl.h>
@@ -392,7 +393,17 @@ void import_py_lc_builder_namespace(py::module_& m_builder) {
         .def("height",           &lc::builder::TextBaseBuilder::height)
         .def("setHeight",        &lc::builder::TextBaseBuilder::setHeight)
         .def("angle",            &lc::builder::TextBaseBuilder::angle)
-        .def("setAngle",         &lc::builder::TextBaseBuilder::setAngle);
+        .def("setAngle",         &lc::builder::TextBaseBuilder::setAngle)
+        // Style, drawing direction and the two alignments were declared on the
+        // builder and reachable from nothing.
+        .def("textStyle", &lc::builder::TextBaseBuilder::textStyle)
+        .def("setTextFont", &lc::builder::TextBaseBuilder::setTextFont)
+        .def("drawingDirection", &lc::builder::TextBaseBuilder::drawingDirection)
+        .def("setDrawingDirection", &lc::builder::TextBaseBuilder::setDrawingDirection)
+        .def("horizontalAlign", &lc::builder::TextBaseBuilder::horizontalAlign)
+        .def("setHorizontalAlign", &lc::builder::TextBaseBuilder::setHorizontalAlign)
+        .def("verticalAlign", &lc::builder::TextBaseBuilder::verticalAlign)
+        .def("setVerticalAlign", &lc::builder::TextBaseBuilder::setVerticalAlign);
 
     py::class_<lc::builder::TextBuilder, lc::builder::TextBaseBuilder>(m_builder, "TextBuilder")
         .def(py::init<>())
@@ -402,7 +413,41 @@ void import_py_lc_builder_namespace(py::module_& m_builder) {
     py::class_<lc::builder::MTextBuilder, lc::builder::TextBaseBuilder>(m_builder, "MTextBuilder")
         .def(py::init<>())
         .def("build", &lc::builder::MTextBuilder::build)
-        .def("copy",  &lc::builder::MTextBuilder::copy);
+        .def("copy",  &lc::builder::MTextBuilder::copy)
+        // The four flags that make an MText an MText rather than a Text. They
+        // round-trip through the builder and the property editor and were
+        // reachable from neither script language.
+        .def("underlined", &lc::builder::MTextBuilder::underlined)
+        .def("setUnderlined", &lc::builder::MTextBuilder::setUnderlined)
+        .def("strikethrough", &lc::builder::MTextBuilder::strikethrough)
+        .def("setStrikethrough", &lc::builder::MTextBuilder::setStrikethrough)
+        .def("bold", &lc::builder::MTextBuilder::bold)
+        .def("setBold", &lc::builder::MTextBuilder::setBold)
+        .def("italic", &lc::builder::MTextBuilder::italic)
+        .def("setItalic", &lc::builder::MTextBuilder::setItalic);
+
+    // The alignment vocabulary itself. Without it a script can call
+    // set_horizontal_align and has no name for what to pass.
+    py::class_<lc::TextConst> textConst(m_builder, "TextConst");
+    py::enum_<lc::TextConst::VAlign>(textConst, "VAlign")
+        .value("VABaseline", lc::TextConst::VABaseline)
+        .value("VABottom", lc::TextConst::VABottom)
+        .value("VAMiddle", lc::TextConst::VAMiddle)
+        .value("VATop", lc::TextConst::VATop)
+        .export_values();
+    py::enum_<lc::TextConst::HAlign>(textConst, "HAlign")
+        .value("HALeft", lc::TextConst::HALeft)
+        .value("HACenter", lc::TextConst::HACenter)
+        .value("HARight", lc::TextConst::HARight)
+        .value("HAAligned", lc::TextConst::HAAligned)
+        .value("HAMiddle", lc::TextConst::HAMiddle)
+        .value("HAFit", lc::TextConst::HAFit)
+        .export_values();
+    py::enum_<lc::TextConst::DrawingDirection>(textConst, "DrawingDirection")
+        .value("NoneDirection", lc::TextConst::None)
+        .value("Backward", lc::TextConst::Backward)
+        .value("UpsideDown", lc::TextConst::UpsideDown)
+        .export_values();
 }
 
 } // namespace python

@@ -144,6 +144,7 @@ if(WITH_PYTHONSCRIPT)
         # bind-new-persistence-api). Same requirements: lcluascript, kaguya
         # and a real Lua runtime.
         scripting/luapersistence_test.cpp
+        scripting/luatextbuilder_test.cpp
         )
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers

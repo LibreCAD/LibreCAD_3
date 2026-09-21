@@ -344,6 +344,12 @@ void import_lc_entity_namespace(kaguya::State& state) {
         .addFunction("rotate", &lc::entity::MText::rotate)
         .addFunction("scale", &lc::entity::MText::scale)
         .addFunction("setDragPoints", &lc::entity::MText::setDragPoints)
+        // The four flags that make an MText an MText. A script could construct
+        // one and had no way to ask whether it was bold.
+        .addFunction("underlined", &lc::entity::MText::underlined)
+        .addFunction("strikethrough", &lc::entity::MText::strikethrough)
+        .addFunction("bold", &lc::entity::MText::bold)
+        .addFunction("italic", &lc::entity::MText::italic)
     );
 
     state["lc"]["entity"]["Image"].setClass(kaguya::UserdataMetatable<lc::entity::Image, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>>()
