@@ -52,6 +52,22 @@ public:
     };
 
     /**
+    * MTEXT drawing direction, DXF group 72.
+    *
+    * The enumerators ARE the group codes, so encoding one is a cast rather
+    * than a table.  Note this is a different thing from DrawingDirection
+    * above, which is TEXT's group-71 generation flag -- MTEXT has no
+    * mirroring flag, and a writer that puts one in group 72 is writing a
+    * value no reader is defined to understand.
+    */
+    enum
+    MTextDrawingDirection {
+        LeftToRight = 1,
+        TopToBottom = 3,
+        ByStyle = 5     /**< Take the direction from the text style. */
+    };
+
+    /**
     * Line spacing style for MTexts.
     */
     enum

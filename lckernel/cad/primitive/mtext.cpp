@@ -17,6 +17,10 @@ MText::MText(geo::Coordinate insertion_point,
     bool strikethrough,
     bool bold,
     bool italic,
+    double width,
+    const TextConst::MTextDrawingDirection drawingDirection,
+    double lineSpacingFactor,
+    const TextConst::LineSpacingStyle lineSpacingStyle,
     meta::Layer_CSPtr layer,
     meta::MetaInfo_CSPtr metaInfo,
     meta::Block_CSPtr block) :
@@ -25,7 +29,11 @@ MText::MText(geo::Coordinate insertion_point,
     _underlined(underlined),
     _strikethrough(strikethrough),
     _bold(bold),
-    _italic(italic)
+    _italic(italic),
+    _width(width),
+    _drawingDirection(drawingDirection),
+    _lineSpacingFactor(lineSpacingFactor),
+    _lineSpacingStyle(lineSpacingStyle)
 {
 }
 
@@ -36,7 +44,11 @@ MText::MText(const builder::MTextBuilder& builder)
     _underlined(builder.underlined()),
     _strikethrough(builder.strikethrough()),
     _bold(builder.bold()),
-    _italic(builder.italic())
+    _italic(builder.italic()),
+    _width(builder.width()),
+    _drawingDirection(builder.mtextDrawingDirection()),
+    _lineSpacingFactor(builder.lineSpacingFactor()),
+    _lineSpacingStyle(builder.lineSpacingStyle())
 {
 }
 
@@ -46,7 +58,11 @@ MText::MText(const MText_CSPtr& other, bool sameID) :
     _underlined(other->_underlined),
     _strikethrough(other->_strikethrough),
     _bold(other->_bold),
-    _italic(other->_italic)
+    _italic(other->_italic),
+    _width(other->_width),
+    _drawingDirection(other->_drawingDirection),
+    _lineSpacingFactor(other->_lineSpacingFactor),
+    _lineSpacingStyle(other->_lineSpacingStyle)
 {
 }
 
@@ -63,6 +79,10 @@ CADEntity_CSPtr MText::move(const geo::Coordinate& offset) const {
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer()
         , metaInfo(), block()
         );
@@ -84,6 +104,10 @@ CADEntity_CSPtr MText::copy(const geo::Coordinate& offset) const {
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer()
         , metaInfo(), block());
     newMText->setID(this->id());
@@ -104,6 +128,10 @@ CADEntity_CSPtr MText::rotate(const geo::Coordinate& rotation_center, double rot
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer()
         , metaInfo(), block());
     return newMText;
@@ -123,6 +151,10 @@ CADEntity_CSPtr MText::scale(const geo::Coordinate& scale_center, const geo::Coo
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         this->layer()
         , metaInfo(), block());
     newMText->setID(this->id());
@@ -152,6 +184,10 @@ CADEntity_CSPtr MText::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer,
         metaInfo,
         block
@@ -183,6 +219,10 @@ CADEntity_CSPtr MText::setDragPoints(std::map<unsigned int, lc::geo::Coordinate>
             strikethrough(),
             bold(),
             italic(),
+            width(),
+            drawingDirection(),
+            lineSpacingFactor(),
+            lineSpacingStyle(),
             layer(),
             metaInfo(), block()
             );
@@ -235,7 +275,10 @@ CADEntity_CSPtr MText::setProperties(const PropertiesMap& propertiesMap) const {
         }
     }
 
-    auto textEntity = std::make_shared<MText>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), underlinedp, strikethroughp, boldp, italicp, layer(), metaInfo(), block());
+    auto textEntity = std::make_shared<MText>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(),
+        underlinedp, strikethroughp, boldp, italicp,
+        width(), drawingDirection(), lineSpacingFactor(), lineSpacingStyle(),
+        layer(), metaInfo(), block());
     textEntity->setID(this->id());
     return textEntity;
 }
