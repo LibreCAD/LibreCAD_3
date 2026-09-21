@@ -3,6 +3,10 @@
 #include <iostream>
 #include <memory>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
+#include <cad/primitive/textconst.h>
+#include <cmath>
 
 using namespace lc;
 using namespace entity;
@@ -776,4 +780,66 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     }
 
     return ellipses;
+}
+// Rotating a text turns it. Rotate used to move the insertion point and pass
+// the angle through unchanged, so the text orbited the rotation centre while
+// every glyph kept pointing the way it started.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextRotationTest, RotatingATextTurnsIt) {
+    auto layer = std::make_shared<Layer>();
+    const auto text = std::make_shared<Text>(
+        geo::Coordinate(10.0, 0.0, 0.0), "turn", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, layer);
+
+    const auto turned = std::dynamic_pointer_cast<const Text>(
+        text->rotate(geo::Coordinate(0.0, 0.0, 0.0), M_PI / 2.0));
+    ASSERT_NE(turned, nullptr);
+    EXPECT_DOUBLE_EQ(turned->angle(), M_PI / 2.0) << "the glyphs did not turn";
+    EXPECT_NEAR(turned->insertion_point().x(), 0.0, 1e-9);
+    EXPECT_NEAR(turned->insertion_point().y(), 10.0, 1e-9);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextRotationTest, RotatingAnMTextTurnsIt) {
+    auto layer = std::make_shared<Layer>();
+    const auto text = std::make_shared<MText>(
+        geo::Coordinate(10.0, 0.0, 0.0), "turn", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, false, false, false, false, layer);
+
+    const auto turned = std::dynamic_pointer_cast<const MText>(
+        text->rotate(geo::Coordinate(0.0, 0.0, 0.0), M_PI / 2.0));
+    ASSERT_NE(turned, nullptr);
+    EXPECT_DOUBLE_EQ(turned->angle(), M_PI / 2.0) << "the glyphs did not turn";
+}
+
+// Every other transform keeps the entity's id; rotate was the one that did
+// not, so the storage layer saw a new entity rather than a changed one. And a
+// copy is a new entity, so it must NOT inherit one -- Line, Circle and Arc all
+// agree, and Text and MText had the two the wrong way round.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextRotationTest, TransformsAgreeWithEveryOtherEntityOnIdentity) {
+    auto layer = std::make_shared<Layer>();
+    const auto text = std::make_shared<Text>(
+        geo::Coordinate(1.0, 1.0, 0.0), "id", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, layer);
+    const auto mtext = std::make_shared<MText>(
+        geo::Coordinate(1.0, 1.0, 0.0), "id", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, false, false, false, false, layer);
+
+    const geo::Coordinate origin(0.0, 0.0, 0.0);
+    const geo::Coordinate offset(5.0, 5.0, 0.0);
+
+    EXPECT_EQ(text->rotate(origin, 1.0)->id(), text->id()) << "rotate keeps identity";
+    EXPECT_EQ(text->move(offset)->id(), text->id()) << "move keeps identity";
+    EXPECT_NE(text->copy(offset)->id(), text->id()) << "a copy is a new entity";
+
+    EXPECT_EQ(mtext->rotate(origin, 1.0)->id(), mtext->id());
+    EXPECT_EQ(mtext->move(offset)->id(), mtext->id());
+    EXPECT_NE(mtext->copy(offset)->id(), mtext->id());
 }

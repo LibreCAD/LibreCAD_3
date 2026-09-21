@@ -71,6 +71,9 @@ CADEntity_CSPtr MText::move(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr MText::copy(const geo::Coordinate& offset) const {
+    // A copy is a NEW entity and must not inherit an id. Line, Circle and Arc
+    // all leave it unset here and set it in move; Text and MText had the two
+    // the wrong way round.
     auto newMText = std::make_shared<MText>(
         this->_insertion_point + offset,
         this->_text_value,
@@ -86,16 +89,22 @@ CADEntity_CSPtr MText::copy(const geo::Coordinate& offset) const {
         this->_italic,
         layer()
         , metaInfo(), block());
-    newMText->setID(this->id());
     return newMText;
 }
 
 CADEntity_CSPtr MText::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
+    // The angle turns with the block. Passing _angle through rotated the
+    // insertion point and left the glyphs pointing the way they were, so the
+    // text orbited the centre without ever facing a different direction.
+    //
+    // And the identity is preserved, as it is in move, scale and modify --
+    // rotate was the one transform that did not, so the storage layer saw a
+    // new entity rather than a changed one.
     auto newMText = std::make_shared<MText>(
         this->_insertion_point.rotate(rotation_center, rotation_angle),
         this->_text_value,
         this->_height,
-        this->_angle,
+        this->_angle + rotation_angle,
         this->_style,
         this->_textgeneration,
         this->_halign,
@@ -106,6 +115,7 @@ CADEntity_CSPtr MText::rotate(const geo::Coordinate& rotation_center, double rot
         this->_italic,
         layer()
         , metaInfo(), block());
+    newMText->setID(this->id());
     return newMText;
 }
 
