@@ -3328,5 +3328,238 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
 }
 
 
+namespace {
 
-// TEMPORARY corpus probe.
+/// Every record of one type in ENTITIES, in file order, as code -> first value.
+std::vector<std::map<int, std::string>> recordsOfType(const std::string& path,
+                                                      const std::string& wanted) {
+    std::vector<std::map<int, std::string>> records;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    bool inEntities = false;
+    bool collecting = false;
+
+    auto trim = [](std::string& text) {
+        while (!text.empty() && (text.back() == '\r' || text.back() == ' ')) {
+            text.pop_back();
+        }
+        while (!text.empty() && (text.front() == ' ' || text.front() == '\t')) {
+            text.erase(text.begin());
+        }
+    };
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        trim(code);
+        trim(value);
+
+        if (code == "0") {
+            collecting = false;
+            if (value == "SECTION") {
+                std::string sectionCode;
+                std::string sectionName;
+                if (std::getline(file, sectionCode) && std::getline(file, sectionName)) {
+                    trim(sectionName);
+                    inEntities = sectionName == "ENTITIES";
+                }
+                continue;
+            }
+            if (value == "ENDSEC" || value == "EOF") {
+                inEntities = false;
+                continue;
+            }
+            if (inEntities && value == wanted) {
+                records.emplace_back();
+                collecting = true;
+            }
+            continue;
+        }
+
+        if (!collecting) {
+            continue;
+        }
+        try {
+            records.back().emplace(std::stoi(code), value);
+        } catch (const std::exception&) {
+            // A group code this scanner cannot read is not what it is looking for.
+        }
+    }
+
+    return records;
+}
+
+lc::entity::MText_CSPtr threeLineMText(double angle,
+                                       lc::TextConst::VAlign valign) {
+    return std::make_shared<lc::entity::MText>(
+        lc::geo::Coordinate(10.0, 100.0, 0.0), "one\ntwo\nthree", /*height=*/3.0,
+        angle, /*style=*/"STANDARD",
+        lc::TextConst::DrawingDirection::None,
+        lc::TextConst::HAlign::HALeft, valign,
+        false, false, false, false,
+        /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+        defaultLayer());
+}
+
+}  // namespace
+
+// R12 has no MTEXT, so libdxfrw refuses the record and the whole emit fails
+// with it -- which is why writeEntity dropped the entity before offering it.
+// Dropping loses the words as well as the block. R12 has had TEXT since the
+// beginning, and a TEXT holds one line, so a three-line note becomes three
+// records rather than nothing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextBecomesOneTextPerLineAtR12) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(
+        0.0, lc::TextConst::VAlign::VATop)}));
+
+    const std::string path = uniqueTmpDxf("mtext-r12");
+    boost::filesystem::remove(path);
+    const auto written = lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12);
+    ASSERT_TRUE(written.ok) << "the file must still be written";
+
+    const auto census = recordsInFile(path);
+    EXPECT_EQ(census.count("MTEXT"), 0u) << "R12 cannot hold an MTEXT";
+    ASSERT_EQ(census.count("TEXT"), 1u) << "the lines were dropped, not converted";
+    EXPECT_EQ(census.at("TEXT"), 3u) << "one TEXT per line";
+
+    const auto texts = recordsOfType(path, "TEXT");
+    ASSERT_EQ(texts.size(), 3u);
+    EXPECT_EQ(texts[0].at(1), "one");
+    EXPECT_EQ(texts[1].at(1), "two");
+    EXPECT_EQ(texts[2].at(1), "three");
+
+    // Reopening gives three Texts back. Nothing claims they are an MText
+    // again -- R12 cannot say that, and pretending otherwise would be worse.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+    std::size_t texts_back = 0;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+            texts_back++;
+        }
+    }
+    EXPECT_EQ(texts_back, 3u);
+
+    boost::filesystem::remove(path);
+}
+
+// A TEXT has no line spacing, so the spacing has to become geometry. Each line
+// carries the block's own alignment, which is what lets the anchors be stepped
+// by one pitch: the alignment decides only where the FIRST line's anchor goes.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TheR12TextLinesStackWhereTheBlockHadThem) {
+    const double pitch = 3.0 * lc::TextConst::MTextLinePitchRatio;
+
+    struct {
+        lc::TextConst::VAlign valign;
+        double firstLineY;
+        const char* label;
+    } cases[] = {
+        // Top-aligned: the block hangs below its anchor, so line one is at it.
+        {lc::TextConst::VAlign::VATop, 100.0, "top"},
+        // Bottom-aligned: the block stands on its anchor, so line one is two
+        // pitches above it.
+        {lc::TextConst::VAlign::VABottom, 100.0 + 2 * pitch, "bottom"},
+        // Middle: half the block above, half below.
+        {lc::TextConst::VAlign::VAMiddle, 100.0 + pitch, "middle"},
+    };
+
+    for (const auto& item : cases) {
+        auto doc = newDocument();
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(0.0, item.valign)}))
+            << item.label;
+
+        const std::string path = uniqueTmpDxf("mtext-r12-stack");
+        boost::filesystem::remove(path);
+        ASSERT_TRUE(lc::persistence::File::exportFile(
+            doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok) << item.label;
+
+        const auto texts = recordsOfType(path, "TEXT");
+        ASSERT_EQ(texts.size(), 3u) << item.label;
+
+        for (std::size_t i = 0; i < texts.size(); i++) {
+            ASSERT_EQ(texts[i].count(10), 1u) << item.label;
+            ASSERT_EQ(texts[i].count(20), 1u) << item.label;
+            EXPECT_NEAR(std::stod(texts[i].at(10)), 10.0, 1e-9)
+                << item.label << " line " << i << " moved sideways";
+            EXPECT_NEAR(std::stod(texts[i].at(20)),
+                        item.firstLineY - static_cast<double>(i) * pitch, 1e-9)
+                << item.label << " line " << i << " is not one pitch below the last";
+        }
+
+        boost::filesystem::remove(path);
+    }
+}
+
+// The lines stack along the text's own up direction, not along world Y: turn
+// the MText a quarter turn and they must step sideways with it.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TheR12TextLinesTurnWithTheMText) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(
+        M_PI / 2, lc::TextConst::VAlign::VATop)}));
+
+    const std::string path = uniqueTmpDxf("mtext-r12-rotated");
+    boost::filesystem::remove(path);
+    ASSERT_TRUE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok);
+
+    const auto texts = recordsOfType(path, "TEXT");
+    ASSERT_EQ(texts.size(), 3u);
+
+    const double pitch = 3.0 * lc::TextConst::MTextLinePitchRatio;
+    for (std::size_t i = 0; i < texts.size(); i++) {
+        // Turned a quarter turn, "down the page" is +x in world terms.
+        EXPECT_NEAR(std::stod(texts[i].at(10)),
+                    10.0 + static_cast<double>(i) * pitch, 1e-9)
+            << "line " << i << " did not turn with the block";
+        EXPECT_NEAR(std::stod(texts[i].at(20)), 100.0, 1e-9)
+            << "line " << i << " stepped down the page instead of across it";
+        EXPECT_NEAR(std::stod(texts[i].at(50)), 90.0, 1e-9)
+            << "line " << i << " was not rotated";
+    }
+
+    boost::filesystem::remove(path);
+}
+
+// Converting is still a loss, and a save that loses something has to say what.
+// The note carries it: there is no dropped count to report, and reporting only
+// counts printed "written without :" with the explanation missing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnR12SaveSaysTheMultilineTextWasConverted) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(
+        0.0, lc::TextConst::VAlign::VATop)}));
+
+    const std::string path = uniqueTmpDxf("mtext-r12-reported");
+    boost::filesystem::remove(path);
+    const auto written = lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12);
+
+    EXPECT_TRUE(written.ok);
+    EXPECT_EQ(written.loss.droppedByType.count("MTEXT"), 0u)
+        << "nothing was dropped; it was written another way";
+    ASSERT_EQ(written.loss.notes.size(), 1u) << "the conversion was not reported";
+    EXPECT_NE(written.loss.notes.front().find("one TEXT record per line"),
+              std::string::npos) << written.loss.notes.front();
+
+    ASSERT_FALSE(written.diagnostics.empty()) << "a note that reaches no caller is not a report";
+    EXPECT_EQ(written.diagnostics.front().code, "record-converted");
+    EXPECT_NE(written.diagnostics.front().message.find("TEXT record per line"),
+              std::string::npos) << written.diagnostics.front().message;
+
+    // And the bool overload still says the drawing was not written whole.
+    EXPECT_FALSE(lc::persistence::File::save(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "an MTEXT that came out as TEXT is not a lossless save";
+
+    boost::filesystem::remove(path);
+}

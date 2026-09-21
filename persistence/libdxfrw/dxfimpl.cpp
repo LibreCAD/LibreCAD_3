@@ -2937,6 +2937,88 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     dxfW->writeMText(&tex);
 }
 
+void DXFimpl::writeMTextAsTextLines(const lc::entity::MText_CSPtr& t) {
+    // One TEXT per line.  A TEXT record holds one line and has no line
+    // spacing, so the spacing has to become geometry: each line gets its own
+    // insertion point, stepped along the text's own "up" so a rotated MText
+    // still reads as a rotated block.
+    //
+    // Every line carries the block's alignment, which is what makes the
+    // placement work without repeating the renderer's layout: a reader anchors
+    // each TEXT by that alignment, so stepping the anchors by one pitch puts
+    // the lines where the block had them.  Where the FIRST line's anchor goes
+    // is the only thing the alignment changes.
+    std::vector<std::string> lines;
+    {
+        const std::string& text = t->text_value();
+        std::string current;
+        for (const char c : text) {
+            if (c == '\n') {
+                lines.push_back(current);
+                current.clear();
+            } else if (c != '\r') {
+                current += c;
+            }
+        }
+        lines.push_back(current);
+    }
+
+    const auto count = static_cast<double>(lines.size());
+    const double pitch = t->height() * lc::TextConst::MTextLinePitchRatio;
+
+    // In pitches above the block's anchor.
+    double firstLine = 0.0;
+    switch (t->valign()) {
+    case lc::TextConst::VAlign::VATop:
+        firstLine = 0.0;               // the block hangs below its anchor
+        break;
+    case lc::TextConst::VAlign::VAMiddle:
+        firstLine = (count - 1.0) / 2.0;
+        break;
+    case lc::TextConst::VAlign::VABottom:
+    case lc::TextConst::VAlign::VABaseline:
+    default:
+        firstLine = count - 1.0;       // the block stands on its anchor
+        break;
+    }
+
+    // The text's own up direction, so the lines stack along the MText's
+    // rotation rather than along world Y.
+    const double upX = -std::sin(t->angle());
+    const double upY = std::cos(t->angle());
+
+    for (std::size_t i = 0; i < lines.size(); i++) {
+        const double pitches = firstLine - static_cast<double>(i);
+
+        DRW_Text tex;
+        getEntityAttributes(&tex, t);
+
+        tex.basePoint.x = t->insertion_point().x() + upX * pitches * pitch;
+        tex.basePoint.y = t->insertion_point().y() + upY * pitches * pitch;
+        tex.basePoint.z = t->insertion_point().z();
+        tex.text = lines[i];
+        tex.height = t->height();
+        tex.angle = t->angle() * 180 / M_PI;
+        tex.alignH = DRW_Text::HAlign(t->halign());
+        tex.alignV = DRW_Text::VAlign(t->valign());
+        if (!t->style().empty()) {
+            tex.style = t->style();
+        }
+        // See writeText: libdxfrw only emits code 11 for a non-default
+        // alignment, and without it such text anchors at the origin.
+        tex.secPoint = tex.basePoint;
+
+        dxfW->writeText(&tex);
+    }
+
+    if (_mtextsAsText++ == 0) {
+        _loss.notes.push_back(
+            "Multiline text was written as one TEXT record per line: this "
+            "revision has no MTEXT. The words and their placement are kept; "
+            "the block, its reference width and its line spacing are not.");
+    }
+}
+
 void DXFimpl::writeEntities() {
     for(const auto& e :_document->entityContainer().asVector()) {
         if(e->block() != nullptr) {
@@ -3004,6 +3086,14 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     const auto recordKind = recordKindOf(entity);
     if (!recordKind.empty()
         && !variantCarriesRecord(File::variantIdForType(_exportType), recordKind)) {
+        // MTEXT is the one of these that can be said another way. R12 has no
+        // MTEXT and has had TEXT since the beginning, so a multiline note
+        // becomes one TEXT per line rather than nothing at all -- losing the
+        // block is not a reason to lose the words.
+        if (auto mtext = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            writeMTextAsTextLines(mtext);
+            return;
+        }
         _loss.droppedByType[recordKind]++;
         return;
     }

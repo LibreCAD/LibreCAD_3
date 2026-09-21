@@ -460,11 +460,27 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
             kinds += std::to_string(dropped.second) + " " + dropped.first;
         }
 
-        LOG_WARNING << path << " was written without " << kinds
-                    << ": this revision cannot carry them. Save as R2000 or newer to keep them.";
+        // A loss can also be a record written as something else -- MTEXT as
+        // TEXT at R12 -- which has no dropped count and says so in a note.
+        // Reporting only the counts printed "written without :" for one of
+        // those, and dropped the explanation the note carried.
+        std::string detail;
+        if (!kinds.empty()) {
+            detail = "Written without " + kinds + ": this revision cannot carry them";
+        }
+        for (const auto& note : result.loss.notes) {
+            if (!detail.empty()) {
+                detail += " ";
+            }
+            detail += note;
+        }
+
+        LOG_WARNING << path << ": " << detail
+                    << (kinds.empty() ? "" : " Save as R2000 or newer to keep them.");
         result.diagnostics.push_back(Diagnostic{
-            Severity::Warning, "record-not-in-revision",
-            "Written without " + kinds + ": this revision cannot carry them"});
+            Severity::Warning,
+            kinds.empty() ? "record-converted" : "record-not-in-revision",
+            detail});
     }
 
     return result;
