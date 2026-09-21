@@ -1,4 +1,5 @@
 #include "text.h"
+#include "textblockbox.h"
 #include "textbase.h"
 
 
@@ -108,12 +109,17 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
 }
 
 const geo::Area Text::boundingBox() const {
-    /// @todo Fix this
-    // Rough bounding box
-    // Assume that the font has char max. width equal to height
-    // Assume single line
-    double width = this->_height * (this->_text_value).size() / 2;
-    return geo::Area(this->_insertion_point - geo::Coordinate(width, width), this->_insertion_point + geo::Coordinate(width, width));
+    // An estimate: the kernel has no font, so nothing here can measure a
+    // string. What it does account for, and the square it replaces did not,
+    // is  the alignment the block hangs from, and the rotation.
+    //
+    // The old box was `height * text.size() / 2` in BOTH axes, centred on the
+    // insertion point -- a square, sized from a byte count, ignoring every
+    // one of those. It is what the quadtree indexes, so selection, snapping
+    // and zoom-to-fit were all asking the wrong shape.
+    return textBlockBoundingBox(this->_insertion_point, this->_text_value,
+                                this->_height, this->_angle,
+                                this->_halign, this->_valign, false);
 }
 
 CADEntity_CSPtr Text::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

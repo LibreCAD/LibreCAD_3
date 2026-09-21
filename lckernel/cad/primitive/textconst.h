@@ -5,6 +5,24 @@ namespace lc {
 struct TextConst {
 public:
     /**
+    * DXF's line pitch for MTEXT: one line sits 5/3 of the nominal text height
+    * below the last, before the line-spacing factor of group 44 is applied.
+    *
+    * It lives here because both the kernel (to size a text's bounding box) and
+    * the viewer (to place the lines) have to agree on it, and the kernel is the
+    * layer they share.
+    */
+    static constexpr double MTextLinePitchRatio = 5.0 / 3.0;
+
+    /**
+    * A rough glyph width as a fraction of the text height.
+    *
+    * The kernel has no font: lcviewernoqt links lckernel and not the other way
+    * round, so nothing here can measure a string. Anything in the kernel that
+    * needs a width -- a bounding box, and nothing else so far -- is estimating.
+    */
+    static constexpr double NominalGlyphWidthRatio = 0.5;
+    /**
     * Vertical alignments.
     */
     enum
