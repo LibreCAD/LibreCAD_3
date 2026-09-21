@@ -868,6 +868,18 @@ void DXFimpl::addMText(const DRW_MText& data) {
                       getBlock(data)
                                                         );
 
+        // MTEXT columns and background fill are XDATA, not AcDbMText group
+        // codes, and libdxfrw has already captured them into extData. Keep
+        // them on the document's shelf so a save can hand them back: this is
+        // the one place the adapter carries something it does not model, and
+        // nothing here interprets a single variant.
+        if (!data.extData.empty()) {
+            PreservedRecords::MTextExtendedData carried;
+            carried.text = lcMText->text_value();
+            carried.data = data.extData;
+            _preserved.mtextExtendedData.emplace(lcMText->id(), std::move(carried));
+        }
+
         deliver(lcMText);
     });
 }
@@ -1633,7 +1645,12 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     // came from. A record valid in R2013 has no defined meaning in R12, and
     // re-emitting it there would produce a file that claims to be R12 and is
     // not -- so a down-convert drops them, and says how many.
-    _replay = preservedOn(_document);
+    // The shelf itself, before any of the replay gating below: extended entity
+    // data is written from typed variants and is carried by every revision, so
+    // none of the reasons a raw record cannot be replayed apply to it.
+    _shelf = preservedOn(_document);
+
+    _replay = _shelf;
     if (_replay != nullptr && _replay->total() == 0) {
         // Carries only the header, which is revision independent and handled by
         // writeHeader. Nothing to replay, and nothing to report as unreplayed:
@@ -2790,6 +2807,46 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     dxfW->writeText(&tex);
 }
 
+std::vector<std::shared_ptr<DRW_Variant>> DXFimpl::extendedDataFor(
+    const lc::entity::MText_CSPtr& t) const {
+    if (_shelf == nullptr) {
+        return {};
+    }
+
+    const auto found = _shelf->mtextExtendedData.find(t->id());
+    if (found == _shelf->mtextExtendedData.end()) {
+        return {};
+    }
+
+    // An edited MText is a different text, and a column layout describing the
+    // text that used to be there is worse than no column layout: the reader
+    // would lay the new words out to the old measurements. The captured text
+    // is what decides -- the entity is immutable, so an edit is a new entity
+    // with a new id in the ordinary case, but setProperties keeps the id.
+    if (found->second.text != t->text_value()) {
+        return {};
+    }
+
+    // Handle references cannot be replayed. A 1005 points at another record by
+    // its code 5, and every handle in this file was either minted fresh or
+    // moved by the reservation pass, so the handle the variant carries names
+    // whatever now happens to hold it -- or nothing. Linked columns are the
+    // case that reaches this (ACAD_MTEXT_COLUMNS lists its continuation MTEXTs
+    // by handle); static columns carry 1000, 1070 and 1040 only and come
+    // through. A dangling reference is worse than a lost one, so the whole
+    // capture is dropped rather than half of it.
+    for (const auto& variant : found->second.data) {
+        if (variant == nullptr) {
+            return {};
+        }
+        if (variant->code() == 1005) {
+            return {};
+        }
+    }
+
+    return found->second.data;
+}
+
 void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     DRW_MText tex;
     getEntityAttributes(&tex, t);
@@ -2874,6 +2931,8 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
 
     // Line spacing factor, code 44.
     tex.interlin = t->lineSpacingFactor();
+
+    tex.extData = extendedDataFor(t);
 
     dxfW->writeMText(&tex);
 }

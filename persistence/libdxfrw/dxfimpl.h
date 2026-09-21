@@ -384,6 +384,16 @@ public:
 
     void writeText(const lc::entity::Text_CSPtr& t);
 
+    /**
+     * The extended entity data to write back on an MText, if any.
+     *
+     * Empty unless this MText came from a file in this session, still
+     * holds the text it was read with, and carries nothing that names
+     * another record by handle.
+     */
+    std::vector<std::shared_ptr<DRW_Variant>> extendedDataFor(
+        const lc::entity::MText_CSPtr& t) const;
+
     void writeMText(const lc::entity::MText_CSPtr& t);
 
     void writeInsert(const lc::entity::Insert_CSPtr& i);
@@ -568,6 +578,19 @@ private:
 
     /** The preserved records being replayed by the current write, if any. */
     std::shared_ptr<const PreservedRecords> _replay;
+
+    /**
+     * The same shelf, but not subject to the replay gating above.
+     *
+     * Raw records can only be replayed into the revision they were read
+     * as, from an ASCII source, with their verbatim spellings; extended
+     * entity data has none of those constraints -- the library writes it
+     * from typed variants, and XDATA is carried by every revision
+     * LibreCAD writes. Sharing `_replay` would have thrown it away
+     * whenever a raw record could not be replayed, which is a different
+     * question.
+     */
+    std::shared_ptr<const PreservedRecords> _shelf;
 
     /** The target of the current write, for the format-capability check. */
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
