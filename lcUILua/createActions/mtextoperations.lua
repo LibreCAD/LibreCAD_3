@@ -1,6 +1,27 @@
+-- The MText creation operation.
+--
+-- Issue #361 asks whether this operation is worth keeping, since it was a
+-- verbatim copy of textoperations.lua and "if mtext is only to be created by
+-- the text dialog (and not the commandline or tool) then we can simplify the
+-- lua operation".  It is kept, for two reasons:
+--
+--   * The dialog does not replace it.  TextDialog::okButtonClicked starts
+--     THIS operation (runOperationByName("MTextOperations")) and then hands it
+--     the built entity via copyEntity, so the operation is what places the
+--     insertion point on the dialog route too.  Simplifying it away would
+--     break the dialog, not just the command line.
+--   * MTEXT on the command line was the only route to an MText that does not
+--     open a modal dialog, and it had no toolbar button and no menu entry.
+--     Both are added here rather than removed.
+
 MTextOperations = {
     name = "MTextOperations",
     command_line = "MTEXT",
+    icon = "mtext.svg",
+    description = "Multiline Text",
+    menu_actions = {
+        default = "actionMText_Operation"
+    },
     context_transitions = {
         enterTextValue = {"enterInsertionPoint", "enterHeight", "enterAngle"},
         enterInsertionPoint = {"enterTextValue", "enterHeight", "enterAngle"},
@@ -91,16 +112,16 @@ end
 
 function MTextOperations:determineNextStep()
     if(self.textValue == nil) then
-        message("Enter text value")
+        message("Enter mtext value")
         self.step = "enterTextValue"
     elseif(self.insertionPoint == nil) then
         message("Enter insertion point")
         self.step = "enterInsertionPoint"
     elseif(self.height == nil) then
-        message("Enter height of text")
+        message("Enter height of mtext")
         self.step = "enterHeight"
     elseif(self.angle == nil) then
-        message("Enter angle of text (in degrees)")
+        message("Enter angle of mtext (in degrees)")
         self.step = "enterAngle"
     else
         message("Done")
