@@ -15,6 +15,34 @@ public:
     static constexpr double MTextLinePitchRatio = 5.0 / 3.0;
 
     /**
+    * The range DXF documents for the line spacing factor, group 44.
+    */
+    static constexpr double MinLineSpacingFactor = 0.25;
+    static constexpr double MaxLineSpacingFactor = 4.0;
+
+    /**
+    * How far one line of MTEXT sits below the last.
+    *
+    * Every consumer has to get the same answer from the same text or they
+    * disagree about where the drawing is: the viewer places the lines, the
+    * kernel sizes the box the quadtree indexes, and the DXF writer turns the
+    * spacing into geometry when a revision has no MTEXT. Three copies of this
+    * arithmetic is three chances to drift, so there is one.
+    *
+    * A factor outside the range DXF documents means the DXF default -- the
+    * same answer DXFimpl::addMText gives an out-of-range file value. Only the
+    * reader validates, and a script can set the field directly: a factor of 0
+    * would otherwise stack every line on the first.
+    */
+    static constexpr double mtextLinePitch(double height, double lineSpacingFactor) {
+        return height * MTextLinePitchRatio
+               * ((lineSpacingFactor >= MinLineSpacingFactor
+                   && lineSpacingFactor <= MaxLineSpacingFactor)
+                      ? lineSpacingFactor
+                      : 1.0);
+    }
+
+    /**
     * A rough glyph width as a fraction of the text height.
     *
     * The kernel has no font: lcviewernoqt links lckernel and not the other way

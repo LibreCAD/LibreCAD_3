@@ -27,6 +27,7 @@ namespace entity {
  * @param angle          rotation about the insertion point, radians
  * @param halign         lc::TextConst::HAlign
  * @param valign         lc::TextConst::VAlign
+ * @param lineSpacingFactor DXF group 44; 1.0 for a TEXT, which has no such thing
  * @param multiLine      true for MTEXT: lines break and the block grows down
  */
 geo::Area textBlockBoundingBox(const geo::Coordinate& insertionPoint,
@@ -35,6 +36,7 @@ geo::Area textBlockBoundingBox(const geo::Coordinate& insertionPoint,
                                double angle,
                                int halign,
                                int valign,
+                               double lineSpacingFactor,
                                bool multiLine);
 
 }  // namespace entity

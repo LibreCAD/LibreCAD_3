@@ -2964,7 +2964,11 @@ void DXFimpl::writeMTextAsTextLines(const lc::entity::MText_CSPtr& t) {
     }
 
     const auto count = static_cast<double>(lines.size());
-    const double pitch = t->height() * lc::TextConst::MTextLinePitchRatio;
+    // Including group 44: here the spacing IS the geometry, so a text that asks
+    // for double spacing must come out of R12 double spaced. Ignoring the
+    // factor collapsed every one of them to single spacing.
+    const double pitch =
+        lc::TextConst::mtextLinePitch(t->height(), t->lineSpacingFactor());
 
     // In pitches above the block's anchor.
     double firstLine = 0.0;

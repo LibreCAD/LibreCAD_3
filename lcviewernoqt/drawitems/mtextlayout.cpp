@@ -9,29 +9,17 @@ namespace viewer {
 
 namespace {
 
-/// DXF puts one line of MTEXT 5/3 of the nominal height below the last.
-constexpr double kMTextLinePitchRatio = 5.0 / 3.0;
-
 /// The descender allowance the single-line renderer has always applied.
 /// Preserved exactly so no existing single-line MText shifts on screen.
 constexpr double kDescenderAllowance = 0.2;
 
-/// The range DXF documents for the line spacing factor, group 44.
-constexpr double kMinLineSpacingFactor = 0.25;
-constexpr double kMaxLineSpacingFactor = 4.0;
-
 }  // namespace
 
 double mtextLinePitch(double height, double lineSpacingFactor) {
-    // DXF documents group 44 as 0.25 to 4. Outside that range means the DXF
-    // default, the same answer DXFimpl::addMText gives an out-of-range file
-    // value -- and the one that matters, since only the reader validates: a
-    // script setting the field directly could otherwise ask for a factor of 0
-    // and stack every line on the first.
-    const bool usable = lineSpacingFactor >= kMinLineSpacingFactor
-                        && lineSpacingFactor <= kMaxLineSpacingFactor;
-    const double factor = usable ? lineSpacingFactor : 1.0;
-    return height * kMTextLinePitchRatio * factor;
+    // The kernel owns this, because the box it sizes and the lines placed here
+    // have to land in the same place. See lc::TextConst::mtextLinePitch for
+    // what it does with a factor DXF does not allow.
+    return lc::TextConst::mtextLinePitch(height, lineSpacingFactor);
 }
 
 std::vector<std::string> splitTextLines(const std::string& text) {

@@ -3691,3 +3691,42 @@ TEST(DxfRoundTripTest, AnImportedMTextBecomesOneTextPerLineAtR12) {
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
 }
+
+// At R12 the spacing IS the geometry -- there is no group 44 on a TEXT -- so a
+// text that asks for double spacing has to come out double spaced. The
+// splitter was written before the entity carried a factor and stepped by the
+// bare 5/3 pitch, which collapsed every wide-spaced MTEXT to single spacing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TheR12TextLinesKeepTheLineSpacingFactor) {
+    for (const double factor : {1.0, 1.75, 3.0}) {
+        auto doc = newDocument();
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {
+            std::make_shared<lc::entity::MText>(
+                lc::geo::Coordinate(10.0, 100.0, 0.0), "one\ntwo\nthree",
+                /*height=*/3.0, /*angle=*/0.0, "STANDARD",
+                lc::TextConst::DrawingDirection::None,
+                lc::TextConst::HAlign::HALeft, lc::TextConst::VAlign::VATop,
+                false, false, false, false,
+                /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+                factor, lc::TextConst::LineSpacingStyle::AtLeast,
+                defaultLayer())})) << factor;
+
+        const std::string path = uniqueTmpDxf("mtext-r12-factor");
+        boost::filesystem::remove(path);
+        ASSERT_TRUE(lc::persistence::File::exportFile(
+            doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok) << factor;
+
+        const auto texts = recordsOfType(path, "TEXT");
+        ASSERT_EQ(texts.size(), 3u) << factor;
+
+        const double pitch = lc::TextConst::mtextLinePitch(3.0, factor);
+        for (std::size_t i = 0; i < texts.size(); i++) {
+            EXPECT_NEAR(std::stod(texts[i].at(20)),
+                        100.0 - static_cast<double>(i) * pitch, 1e-9)
+                << "a factor of " << factor << " did not reach line " << i;
+        }
+
+        boost::filesystem::remove(path);
+    }
+}

@@ -961,3 +961,58 @@ TEST(TextBoundingBoxTest, AnEmptyTextIsNotDegenerate) {
         layer)->boundingBox();
     EXPECT_NEAR(box.height(), 10.0, 1e-9) << "an empty line still has a height";
 }
+
+// The box and the drawing have to agree about the line pitch. The renderer
+// applies group 44; if the box does not, a text asking for wide spacing gets a
+// box up to four times too short -- and this box is what the quadtree indexes,
+// so selection, snapping and zoom-to-fit would all stop short of the drawing.
+// Neither half of this could be seen alone: the box predates the field, and
+// the field predates the box.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, TheBoxGrowsWithTheLineSpacingFactor) {
+    auto layer = std::make_shared<Layer>();
+    const auto boxFor = [&layer](double factor) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "one\ntwo\nthree", 2.5, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+            TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+            factor, TextConst::LineSpacingStyle::AtLeast, layer)->boundingBox();
+    };
+
+    const double single = boxFor(1.0).height();
+    const double doubled = boxFor(2.0).height();
+
+    EXPECT_GT(doubled, single) << "the factor never reached the box";
+
+    // Three lines: the block is one line tall plus two pitches, and only the
+    // pitches scale. It must match lc::TextConst::mtextLinePitch exactly,
+    // because that is what the renderer places the lines with.
+    const double pitch1 = TextConst::mtextLinePitch(2.5, 1.0);
+    const double pitch2 = TextConst::mtextLinePitch(2.5, 2.0);
+    EXPECT_DOUBLE_EQ(doubled - single, 2.0 * (pitch2 - pitch1));
+}
+
+// And a factor DXF does not allow takes the documented default, in the box as
+// well as in the renderer -- otherwise the two disagree for exactly the inputs
+// nobody validates.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AnImpossibleFactorGivesTheBoxSingleSpacing) {
+    auto layer = std::make_shared<Layer>();
+    const auto heightFor = [&layer](double factor) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "one\ntwo", 2.5, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+            TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+            factor, TextConst::LineSpacingStyle::AtLeast, layer)->boundingBox().height();
+    };
+
+    const double single = heightFor(1.0);
+    for (const double impossible : {0.0, -1.0, 0.1, 9.0}) {
+        EXPECT_DOUBLE_EQ(heightFor(impossible), single)
+            << "a factor of " << impossible << " is not one DXF allows";
+    }
+}

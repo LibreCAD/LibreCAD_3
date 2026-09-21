@@ -183,7 +183,8 @@ const geo::Area MText::boundingBox() const {
     // and zoom-to-fit were all asking the wrong shape.
     return textBlockBoundingBox(this->_insertion_point, this->_text_value,
                                 this->_height, this->_angle,
-                                this->_halign, this->_valign, true);
+                                this->_halign, this->_valign,
+                                this->_lineSpacingFactor, true);
 }
 
 CADEntity_CSPtr MText::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

@@ -36,6 +36,7 @@ geo::Area textBlockBoundingBox(const geo::Coordinate& insertionPoint,
                                double angle,
                                int halign,
                                int valign,
+                               double lineSpacingFactor,
                                bool multiLine) {
     std::size_t lineCount = 1;
     std::size_t widest = 0;
@@ -57,7 +58,12 @@ geo::Area textBlockBoundingBox(const geo::Coordinate& insertionPoint,
 
     const double width =
         static_cast<double>(widest) * height * TextConst::NominalGlyphWidthRatio;
-    const double pitch = height * TextConst::MTextLinePitchRatio;
+    // The same pitch the viewer places the lines at, including group 44. A box
+    // computed without the factor is up to four times too short for a text
+    // that asks for wide spacing, and this box is what the quadtree indexes --
+    // so selection, snapping and zoom-to-fit would all stop short of the
+    // drawing.
+    const double pitch = TextConst::mtextLinePitch(height, lineSpacingFactor);
     const double blockHeight =
         height + pitch * static_cast<double>(lineCount - 1);
 
