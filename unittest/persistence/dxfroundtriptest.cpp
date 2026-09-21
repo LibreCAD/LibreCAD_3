@@ -3563,3 +3563,131 @@ TEST(DxfRoundTripTest, AnR12SaveSaysTheMultilineTextWasConverted) {
 
     boost::filesystem::remove(path);
 }
+
+// ---------------------------------------------------------------------------
+// Where the separate MText changes meet.
+//
+// Each of the changes below was written on its own and could only be tested on
+// its own. These are the cases that need two of them at once, which is to say
+// the cases nobody could write until now -- and they are the ones a user
+// actually performs: open a drawing somebody else made, and save it.
+// ---------------------------------------------------------------------------
+
+// Decoding the escape language and keeping the column layout have to agree
+// about what "the text" is. The layout is only replayed when the MText still
+// holds the words it was read with, and that comparison is made against the
+// DECODED text on both sides -- so a `\P` in the source must not look like an
+// edit and cost the drawing its columns.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnImportedMTextKeepsBothItsLineBreaksAndItsColumns) {
+    const std::string source = uniqueTmpDxf("mtext-breaks-and-columns");
+    boost::filesystem::remove(source);
+    {
+        std::ofstream dxf(source);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nMTEXT\n8\n0\n"
+            << "10\n1.0\n20\n2.0\n30\n0.0\n"
+            << "40\n2.5\n41\n100.0\n"
+            << "1\none\\Ptwo\\Pthree\n"
+            << "71\n1\n72\n5\n73\n1\n44\n1.0\n"
+            << kColumnXData
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr);
+    EXPECT_EQ(mtext->text_value(), "one\ntwo\nthree")
+        << "the escape language was not decoded";
+
+    const std::string saved = uniqueTmpDxf("mtext-breaks-and-columns-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    // The text goes back out escaped...
+    ASSERT_EQ(groups.count(1), 1u);
+    EXPECT_EQ(groups.at(1).front(), "one\\Ptwo\\Pthree")
+        << "the line breaks were not written back as paragraph breaks";
+
+    // ...and the columns are still there beside it. If the staleness check
+    // compared the encoded text against the decoded text, this MText would
+    // look edited and the layout would have been dropped.
+    ASSERT_EQ(groups.count(1001), 1u)
+        << "decoding the text was mistaken for an edit and cost the columns";
+    EXPECT_EQ(groups.at(1001).front(), "ACAD");
+    ASSERT_EQ(groups.count(1000), 1u);
+    EXPECT_EQ(groups.at(1000).front(), "ACAD_MTEXT_COLUMN_INFO_BEGIN");
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    auto readBack = onlyMText(reopened);
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_EQ(readBack->text_value(), "one\ntwo\nthree")
+        << "the lines did not survive a save and reopen";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// The other pairing: an MTEXT read from somebody else's file carries its lines
+// as `\P`, and saving that drawing to R12 has to produce one TEXT per line.
+// Without the decoding it would produce a single TEXT holding a literal `\P`,
+// which is the corrupted state this series set out to end.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnImportedMTextBecomesOneTextPerLineAtR12) {
+    const std::string source = uniqueTmpDxf("mtext-imported-r12");
+    boost::filesystem::remove(source);
+    writeOneMText(source, "41\n100.0\n44\n1.0\n");
+    {
+        // writeOneMText writes a single-line body; replace it with an escaped
+        // three-line one, in place, so the fixture stays inline.
+        std::ifstream in(source);
+        std::string contents((std::istreambuf_iterator<char>(in)),
+                             std::istreambuf_iterator<char>());
+        in.close();
+        const std::string needle = "1\ntext\n";
+        const auto at = contents.find(needle);
+        ASSERT_NE(at, std::string::npos);
+        contents.replace(at, needle.size(), "1\nalpha\\Pbeta\\Pgamma\n");
+        std::ofstream out(source);
+        out << contents;
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr);
+    ASSERT_EQ(mtext->text_value(), "alpha\nbeta\ngamma");
+
+    const std::string saved = uniqueTmpDxf("mtext-imported-r12-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(
+        doc, saved, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok);
+
+    const auto census = recordsInFile(saved);
+    EXPECT_EQ(census.count("MTEXT"), 0u);
+    ASSERT_EQ(census.count("TEXT"), 1u)
+        << "the imported lines were dropped instead of converted";
+    EXPECT_EQ(census.at("TEXT"), 3u) << "one TEXT per line";
+
+    const auto texts = recordsOfType(saved, "TEXT");
+    ASSERT_EQ(texts.size(), 3u);
+    EXPECT_EQ(texts[0].at(1), "alpha");
+    EXPECT_EQ(texts[1].at(1), "beta");
+    EXPECT_EQ(texts[2].at(1), "gamma")
+        << "a literal paragraph escape reached a TEXT record";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
