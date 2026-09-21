@@ -1701,7 +1701,12 @@ TEST(DxfRoundTripTest, GuardedReadsRecordNothingForGoodFiles) {
 TEST(DxfRoundTripTest, BinaryAndAsciiCarryTheSameText) {
     auto layer = defaultLayer();
     const std::string plain = "plain text";
-    const std::string multi = "multi line text";
+    // A real newline, and a backslash. The fixture used to be "multi line
+    // text" -- spaces, not line breaks -- so the one test that compares MText
+    // content character for character never exercised the paragraph-break
+    // encoding it was named for, and never noticed that \P was written on the
+    // way out and never read on the way back in.
+    const std::string multi = "multi\nline C:\\text";
 
     auto doc = newDocument();
     ASSERT_NO_THROW(insertThroughBuilder(doc, {
