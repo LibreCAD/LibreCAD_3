@@ -8,7 +8,7 @@ EllipseOperations = {
     description = "Ellipse Operation",
     menu_actions = {
         default = "actionEllipse_Axis",
-        arc = "actionEllipse_Axis",
+        arc = "actionEllipse_Arc",
         foci = "actionEllipse_FociPoints"
     }
 }
