@@ -332,6 +332,14 @@ if 'PyPointOperations' in lc.operation_registry:
 if 'PyRemoveOperation' in lc.operation_registry:
     del lc.operation_registry['PyRemoveOperation']
 
+# Every MainWindow built by an earlier test imported these modules
+# through LuaInterface's lcUIPy autoregister.  A cached module is not
+# executed again, so its decorator would not put back the entries just
+# deleted; drop the modules so the imports below run them afresh.
+import sys
+sys.modules.pop('lcUIPy.create_actions.point_operations', None)
+sys.modules.pop('lcUIPy.actions.remove_operation', None)
+
 # Import — triggers @lc.register_operation at module top-level.
 import lcUIPy.create_actions.point_operations
 import lcUIPy.actions.remove_operation
