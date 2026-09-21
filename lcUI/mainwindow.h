@@ -324,6 +324,12 @@ namespace lc
             void clearUndoableStack();
             void autoScale();
 
+            // Create menu: many random entities in one undo step, to see how
+            // the drawing and the viewer cope with a lot of them
+            void addRandomLines();
+            void addRandomCircles();
+            void addRandomArcs();
+
             // Customize toolbar slots
             void runCustomizeToolbar();
             void writeSettings();
@@ -333,6 +339,15 @@ namespace lc
             void point(lc::geo::Coordinate coordinate);
 
         protected:
+            /**
+            * \brief Add count entities made by make, as one undo step
+            * \param make given the active layer, a meta info (a random colour one time in three, else none) and the active viewport, returns one entity
+            */
+            void addRandomEntities(int count,
+                                   const std::function<lc::entity::CADEntity_CSPtr(const lc::meta::Layer_CSPtr&,
+                                                                                    const lc::meta::MetaInfo_CSPtr&,
+                                                                                    const lc::meta::Block_CSPtr&)>& make);
+
             Ui::MainWindow* ui;
             lc::ui::LuaInterface _luaInterface;
 

@@ -11,6 +11,8 @@
 #include <cad/meta/layer.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/circle.h>
 #include <cad/primitive/line.h>
 
 #include "uitests.h"
@@ -43,6 +45,17 @@ bool hasLine(lc::ui::MainWindow& window, const lc::geo::Coordinate& start, const
         }
     }
     return false;
+}
+
+template <typename Kind>
+size_t countOf(lc::ui::MainWindow& window) {
+    size_t count = 0;
+    for (const auto& entity : entitiesOf(window)) {
+        if (std::dynamic_pointer_cast<const Kind>(entity) != nullptr) {
+            count++;
+        }
+    }
+    return count;
 }
 
 }  // namespace
@@ -136,4 +149,25 @@ TEST(MenuEntriesTest, PastingIntoAnotherDrawingBringsTheLayerAlong) {
     trigger(*to, "actionUndo");
     EXPECT_EQ(entitiesOf(*to).size(), before);
     EXPECT_EQ(to->cadMdiChild()->document()->layerByName("Walls"), nullptr);
+}
+
+// Create > Add Random Lines, Circles and Arc add a thousand of their kind
+// each, as one undo step.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MenuEntriesTest, AddRandomEntriesAddAThousandOfTheirKindInOneUndoStep) {
+    QApplication app(argc, argv);
+    auto* window = new lc::ui::MainWindow();
+    const size_t before = entitiesOf(*window).size();
+
+    trigger(*window, "actionAdd_Random_Lines");
+    EXPECT_EQ(countOf<lc::entity::Line>(*window), 1000u);
+    trigger(*window, "actionAdd_Random_Circles");
+    EXPECT_EQ(countOf<lc::entity::Circle>(*window), 1000u);
+    trigger(*window, "actionAdd_Random_Arc");
+    EXPECT_EQ(countOf<lc::entity::Arc>(*window), 1000u);
+    EXPECT_EQ(entitiesOf(*window).size(), before + 3000);
+
+    trigger(*window, "actionUndo");
+    EXPECT_EQ(countOf<lc::entity::Arc>(*window), 0u);
+    EXPECT_EQ(entitiesOf(*window).size(), before + 2000);
 }

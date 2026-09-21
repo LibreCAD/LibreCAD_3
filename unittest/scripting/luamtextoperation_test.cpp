@@ -233,7 +233,6 @@ TEST_F(LuaMTextOperationFixture, EveryMenuEntryTheUiDefinesIsConnected) {
 local knownDead = {
     actionContinue = true,
     actionOrdinate = true, actionANG2LN = true,
-    actionAdd_Random_Lines = true, actionAdd_Random_Circles = true, actionAdd_Random_Arc = true,
 }
 
 local native = {}
