@@ -26,6 +26,12 @@ public:
     static PropertyEditor* GetPropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
 
     /**
+    * \brief Forget this instance, so its MainWindow's address is not
+    * mapped to a deleted editor
+    */
+    ~PropertyEditor() override;
+
+    /**
     * \brief Clear widgets and groups that were present before but not in the passed in new selected entities
     * \param vector of currently selected entities
     */
