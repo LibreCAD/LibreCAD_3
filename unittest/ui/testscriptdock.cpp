@@ -50,8 +50,11 @@ std::size_t entityCount(const std::shared_ptr<lc::storage::Document>& doc) {
 TEST(ScriptDockTest, LuaCreatesLine) {
     // Baseline: verify Lua console behavior is unchanged from the
     // pre-refactor LuaScript widget.  Emit a Lua script that creates
-    // a single Line entity via lc.entity.Line + the operation builder,
-    // count entities, expect 1.
+    // a single Line entity via lc.builder.LineBuilder + the operation
+    // builder, count entities, expect 1.  Lua has no lc.entity.Line
+    // constructor (entities are built through builders, as
+    // lineoperations.lua does): calling the class falls through to
+    // lc.entity.ID's and hands appendEntity an ID, not an entity.
     QApplication app(argc, argv);
     lc::ui::MainWindow mainWindow;
     ScriptDock dock(&mainWindow);
@@ -61,7 +64,11 @@ TEST(ScriptDockTest, LuaCreatesLine) {
         local start_pt = lc.geo.Coordinate(0, 0, 0)
         local end_pt = lc.geo.Coordinate(10, 0, 0)
         local layer = mainWindow:cadMdiChild():activeLayer()
-        local line = lc.entity.Line(start_pt, end_pt, layer)
+        local lineBuilder = lc.builder.LineBuilder()
+        lineBuilder:setStartPoint(start_pt)
+        lineBuilder:setEndPoint(end_pt)
+        lineBuilder:setLayer(layer)
+        local line = lineBuilder:build()
         local builder = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
         builder:appendEntity(line)
         builder:execute()
