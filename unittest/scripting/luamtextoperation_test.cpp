@@ -227,12 +227,6 @@ TEST_F(LuaMTextOperationFixture, EveryMenuEntryTheUiDefinesIsConnected) {
     setGlobalString("MAINWINDOW_CPP", mainWindow);
 
     EXPECT_EQ(lcLua->runString(R"LUA(
--- Entries that were in the menus with nothing behind them before this test
--- existed.  Each wants an operation written for it or removing from the .ui.
--- The list is checked to be exact, so it can only get shorter.
-local knownDead = {
-}
-
 local native = {}
 for action in MAINWINDOW_CPP:gmatch(
         'connect%(%s*findMenuItemByObjectName%("([%w_]+)"%)%s*,%s*&QAction::triggered') do
@@ -279,21 +273,9 @@ table.sort(entries)
 
 local problems = {}
 for _, action in ipairs(entries) do
-    if not (named[action] or native[action] or knownDead[action]) then
+    if not (named[action] or native[action]) then
         problems[#problems + 1] = action .. ' is in a menu, but no operation names it in menu_actions'
             .. ' and MainWindow does not connect it'
-    end
-end
-local dead = {}
-for action in pairs(knownDead) do
-    dead[#dead + 1] = action
-end
-table.sort(dead)
-for _, action in ipairs(dead) do
-    if not inMenu[action] then
-        problems[#problems + 1] = action .. ' is no longer in a menu; take it out of knownDead'
-    elseif named[action] or native[action] then
-        problems[#problems + 1] = action .. ' is connected now; take it out of knownDead'
     end
 end
 assert(#problems == 0, table.concat(problems, '\n'))
