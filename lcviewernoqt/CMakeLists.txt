@@ -30,6 +30,7 @@ drawitems/lcdimdiametric.cpp
 drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
+drawitems/lcdimordinate.cpp
 drawitems/lclwpolyline.cpp
 drawables/lccursor.cpp
 painters/createpainter.cpp
@@ -86,6 +87,7 @@ drawitems/lcdimdiametric.h
 drawitems/lcdimlinear.h
 drawitems/lcdimaligned.h
 drawitems/lcdimangular.h
+drawitems/lcdimordinate.h
 drawitems/lclwpolyline.h
 drawables/lccursor.h
 events/drawevent.h
