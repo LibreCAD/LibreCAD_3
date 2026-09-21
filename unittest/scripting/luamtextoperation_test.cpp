@@ -1,11 +1,17 @@
 // The MText creation operation, from Lua.
 //
-// An operation's `icon` and `menu_actions` are strings resolved at startup
-// against two files nothing compiles together with the Lua: a menu action the
-// .ui does not define makes MainWindow::connectMenuItem dereference a null
-// MenuItem, and an icon the .qrc does not alias is a blank toolbar button.
-// Both are silent until the application runs, so they are checked for every
-// operation, not just MText.
+// Two things here that nothing else checks.
+//
+// The first is decodeTypedText, the only reason MTextOperations is no longer a
+// verbatim copy of TextOperations: the command line is one line, so `\P` is
+// how a typed MText gets more than one.
+//
+// The second is the wiring.  An operation's `icon` and `menu_actions` are
+// strings resolved at startup against two files nothing compiles together with
+// the Lua: a menu action the .ui does not define makes
+// MainWindow::connectMenuItem dereference a null MenuItem, and an icon the
+// .qrc does not alias is a blank toolbar button.  Both are silent until the
+// application runs, so they are checked for every operation, not just MText.
 
 #include <algorithm>
 #include <fstream>
@@ -84,6 +90,45 @@ struct LuaMTextOperationFixture : public ::testing::Test {
 };
 
 }  // namespace
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMTextOperationFixture, TypedTextBreaksIntoLines) {
+    loadOperation(std::string(LCUILUA_SOURCE_DIR) + "/createActions/mtextoperations.lua");
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local decode = MTextOperations.decodeTypedText
+assert(decode('one\\Ptwo\\Pthree') == 'one\ntwo\nthree', 'paragraph breaks')
+assert(decode('\\P') == '\n', 'a break on its own')
+assert(decode('plain text') == 'plain text', 'text without escapes is untouched')
+)LUA"), "");
+}
+
+// A user typing a Windows path has to be able to say so, and `\\` is how the
+// file format spells one literal backslash.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMTextOperationFixture, AnEscapedBackslashStaysABackslash) {
+    loadOperation(std::string(LCUILUA_SOURCE_DIR) + "/createActions/mtextoperations.lua");
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local decode = MTextOperations.decodeTypedText
+assert(decode('C:\\\\Path') == 'C:\\Path', 'an escaped backslash')
+assert(decode('\\{braced\\}') == '{braced}', 'escaped braces')
+assert(decode('a\\~b') == 'a\194\160b', 'a no-break space')
+)LUA"), "");
+}
+
+// Deleting characters the user can see is a worse failure than leaving a rare
+// escape alone, so an introducer this does not know is kept as typed.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMTextOperationFixture, AnUnknownEscapeIsKeptAsTyped) {
+    loadOperation(std::string(LCUILUA_SOURCE_DIR) + "/createActions/mtextoperations.lua");
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local decode = MTextOperations.decodeTypedText
+assert(decode('\\H2;keep') == '\\H2;keep', 'an unhandled formatting code')
+assert(decode('trailing\\') == 'trailing\\', 'a backslash at the end')
+)LUA"), "");
+}
 
 // MText had no toolbar button and no menu entry: the command line was the only
 // route to one that did not open the modal dialog.

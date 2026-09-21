@@ -13,6 +13,9 @@
 --   * MTEXT on the command line was the only route to an MText that does not
 --     open a modal dialog, and it had no toolbar button and no menu entry.
 --     Both are added here rather than removed.
+--
+-- What makes it an *MText* operation and not a copy of the text one is the
+-- line breaks: see decodeTypedText.
 
 MTextOperations = {
     name = "MTextOperations",
@@ -40,9 +43,60 @@ setmetatable(MTextOperations, {
     end,
 })
 
+-- The escapes a typed MText value understands, keyed by the character after
+-- the backslash.
+local TYPED_ESCAPES = {
+    ["P"] = "\n",         -- paragraph break
+    ["\\"] = "\\",        -- a literal backslash
+    ["{"] = "{",
+    ["}"] = "}",
+    ["~"] = "\194\160",   -- U+00A0 no-break space
+}
+
+--- Turn a value typed at the command line into the text of a multi-line MText.
+--
+-- The command line is one line, so without this an MText created there can
+-- only ever have one line -- which is the whole difference between MText and
+-- Text.  The spelling is not invented for the command line: `\P` is what a
+-- paragraph break is called in the file format, and `\\` is how that format
+-- writes one literal backslash, so what you type here is what
+-- persistence/libdxfrw/mtextcodec.h reads back out of a DXF.
+--
+-- Only the escapes above are recognised.  A backslash before anything else is
+-- kept as typed: dropping characters the user can see is worse than leaving a
+-- rare escape alone.
+function MTextOperations.decodeTypedText(text)
+    if type(text) ~= "string" then
+        return text
+    end
+
+    local out = {}
+    local i = 1
+    local n = #text
+
+    while i <= n do
+        local c = text:sub(i, i)
+        local escape = nil
+
+        if c == "\\" then
+            escape = TYPED_ESCAPES[text:sub(i + 1, i + 1)]
+        end
+
+        if escape ~= nil then
+            out[#out + 1] = escape
+            i = i + 2
+        else
+            out[#out + 1] = c
+            i = i + 1
+        end
+    end
+
+    return table.concat(out)
+end
+
 function MTextOperations:_init()
     CreateOperations._init(self, lc.builder.MTextBuilder, "enterTextValue")
-    message("Enter mtext value")
+    message("Enter mtext value (\\P starts a new line)")
     self.builder:setTextValue("MText")
     mainWindow:cliCommand():commandActive(true)
 end
@@ -51,8 +105,9 @@ function MTextOperations:enterTextValue(eventName, data)
     if(eventName == "mouseMove") then
         self.builder:setInsertionPoint(data["position"])
     elseif(eventName == "text") then
-        self.builder:setTextValue(data["text"])
-        self.textValue = data["text"]
+        local value = MTextOperations.decodeTypedText(data["text"])
+        self.builder:setTextValue(value)
+        self.textValue = value
         self:determineNextStep()
     end
 end
@@ -112,7 +167,7 @@ end
 
 function MTextOperations:determineNextStep()
     if(self.textValue == nil) then
-        message("Enter mtext value")
+        message("Enter mtext value (\\P starts a new line)")
         self.step = "enterTextValue"
     elseif(self.insertionPoint == nil) then
         message("Enter insertion point")
