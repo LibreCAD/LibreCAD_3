@@ -3,6 +3,10 @@
 #include <iostream>
 #include <memory>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
+#include <cad/primitive/textconst.h>
+#include <cmath>
 
 using namespace lc;
 using namespace entity;
@@ -776,4 +780,100 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     }
 
     return ellipses;
+}
+// The box the quadtree indexes. It cannot be the rendered extents -- the
+// kernel has no font -- but it has to be roughly the right shape, and the one
+// it replaces was a square sized from a byte count, centred on the insertion
+// point, ignoring lines, alignment and rotation.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AMultiLineBlockIsTallerThanItIsForOneLine) {
+    auto layer = std::make_shared<Layer>();
+    const auto oneLine = std::make_shared<MText>(
+        geo::Coordinate(0.0, 0.0, 0.0), "one", 10.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VATop, false, false, false, false, layer);
+    const auto threeLines = std::make_shared<MText>(
+        geo::Coordinate(0.0, 0.0, 0.0), "one\ntwo\nthree", 10.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VATop, false, false, false, false, layer);
+
+    const auto one = oneLine->boundingBox();
+    const auto three = threeLines->boundingBox();
+
+    EXPECT_GT(three.height(), one.height() * 2.0)
+        << "three lines must be taller than one";
+    EXPECT_GT(three.width(), one.width())
+        << "the widest line is 'three', not 'one'";
+    EXPECT_NEAR(one.height(), 10.0, 1e-9) << "one line is one height tall";
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AlignmentMovesTheBox) {
+    auto layer = std::make_shared<Layer>();
+    const auto make = [&layer](TextConst::HAlign h, TextConst::VAlign v) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "text", 10.0, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, h, v,
+            false, false, false, false, layer)->boundingBox();
+    };
+
+    const auto left = make(TextConst::HALeft, TextConst::VATop);
+    const auto centre = make(TextConst::HACenter, TextConst::VATop);
+    const auto right = make(TextConst::HARight, TextConst::VATop);
+
+    EXPECT_NEAR(left.minP().x(), 0.0, 1e-9) << "left-aligned starts at the anchor";
+    EXPECT_LT(centre.minP().x(), left.minP().x());
+    EXPECT_LT(right.minP().x(), centre.minP().x());
+    EXPECT_NEAR(right.maxP().x(), 0.0, 1e-9) << "right-aligned ends at the anchor";
+
+    const auto top = make(TextConst::HALeft, TextConst::VATop);
+    const auto bottom = make(TextConst::HALeft, TextConst::VABottom);
+    EXPECT_LT(top.minP().y(), bottom.minP().y()) << "top-aligned hangs below the anchor";
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, RotationIsAccountedFor) {
+    auto layer = std::make_shared<Layer>();
+    const auto make = [&layer](double angle) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "a wide line of text", 10.0, angle,
+            "STANDARD", TextConst::DrawingDirection::None,
+            TextConst::HAlign::HALeft, TextConst::VAlign::VATop,
+            false, false, false, false, layer)->boundingBox();
+    };
+
+    const auto flat = make(0.0);
+    const auto upright = make(M_PI / 2.0);
+
+    EXPECT_GT(flat.width(), flat.height()) << "a wide line is wider than it is tall";
+    EXPECT_NEAR(upright.height(), flat.width(), 1e-6)
+        << "turned ninety degrees, the width becomes the height";
+    EXPECT_NEAR(upright.width(), flat.height(), 1e-6);
+}
+
+// The byte count was the bug: a line of CJK was measured by the length of its
+// UTF-8 encoding and selected from three times too far away.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, WidthCountsCharactersNotBytes) {
+    auto layer = std::make_shared<Layer>();
+    const auto make = [&layer](const std::string& s) {
+        return std::make_shared<Text>(
+            geo::Coordinate(0.0, 0.0, 0.0), s, 10.0, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+            TextConst::VAlign::VATop, layer)->boundingBox();
+    };
+
+    // Three characters either way; the second takes nine bytes.
+    EXPECT_NEAR(make("abc").width(), make("\xE4\xB8\xAD\xE6\x96\x87\xE5\xAD\x97").width(), 1e-9);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AnEmptyTextIsNotDegenerate) {
+    auto layer = std::make_shared<Layer>();
+    const auto box = std::make_shared<MText>(
+        geo::Coordinate(3.0, 4.0, 0.0), "", 10.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VATop, false, false, false, false, layer)->boundingBox();
+    EXPECT_NEAR(box.height(), 10.0, 1e-9) << "an empty line still has a height";
 }
