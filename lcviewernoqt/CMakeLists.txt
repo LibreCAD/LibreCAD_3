@@ -9,6 +9,7 @@ message("***** LibreCAD lcviewernoqt *****")
 set(viewer_srcs
 lcdrawoptions.cpp
 drawitems/lcvdrawitem.cpp
+drawitems/mtextlayout.cpp
 drawitems/lcvarc.cpp
 drawitems/lcvcircle.cpp
 drawitems/lcvhatch.cpp

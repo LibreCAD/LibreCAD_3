@@ -71,6 +71,7 @@ lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
+lcviewernoqt/mtextlayouttest.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
