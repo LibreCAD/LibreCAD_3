@@ -22,6 +22,7 @@ namespace lc
                 void visit(entity::DimAngular_CSPtr) override;
                 void visit(entity::DimDiametric_CSPtr) override;
                 void visit(entity::DimLinear_CSPtr) override;
+                void visit(entity::DimOrdinate_CSPtr) override;
                 void visit(entity::DimRadial_CSPtr) override;
                 void visit(entity::LWPolyline_CSPtr) override;
                 void visit(entity::Image_CSPtr) override;

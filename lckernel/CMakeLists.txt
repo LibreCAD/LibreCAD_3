@@ -76,6 +76,7 @@ cad/primitive/dimdiametric.cpp
 cad/primitive/dimlinear.cpp
 cad/primitive/dimaligned.cpp
 cad/primitive/dimangular.cpp
+cad/primitive/dimordinate.cpp
 cad/primitive/lwpolyline.cpp
 cad/primitive/image.cpp
 cad/primitive/insert.cpp
@@ -89,6 +90,7 @@ cad/builders/dimangular.cpp
 cad/builders/dimension.cpp
 cad/builders/dimdiametric.cpp
 cad/builders/dimlinear.cpp
+cad/builders/dimordinate.cpp
 cad/builders/dimradial.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
@@ -195,6 +197,7 @@ cad/primitive/dimdiametric.h
 cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
+cad/primitive/dimordinate.h
 cad/primitive/textconst.h
 cad/tools/string_helper.h
 cad/primitive/image.h
@@ -209,6 +212,7 @@ cad/builders/dimangular.h
 cad/builders/dimension.h
 cad/builders/dimdiametric.h
 cad/builders/dimlinear.h
+cad/builders/dimordinate.h
 cad/builders/dimradial.h
 cad/builders/ellipse.cpp
 cad/builders/point.h

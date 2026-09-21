@@ -69,6 +69,9 @@ DECLARE_SHORT_SHARED_PTR(DimDiametric)
 class DimLinear;
 DECLARE_SHORT_SHARED_PTR(DimLinear)
 
+class DimOrdinate;
+DECLARE_SHORT_SHARED_PTR(DimOrdinate)
+
 class DimRadial;
 DECLARE_SHORT_SHARED_PTR(DimRadial)
 

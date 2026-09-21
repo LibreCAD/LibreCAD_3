@@ -8,6 +8,7 @@
 #include <cad/builders/point.h>
 #include <cad/builders/dimangular.h>
 #include <cad/builders/dimdiametric.h>
+#include <cad/builders/dimordinate.h>
 #include <cad/builders/dimradial.h>
 #include <cad/builders/ellipse.h>
 #include <cad/builders/line.h>
@@ -191,6 +192,22 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("setDefinitionPoint3", &lc::builder::DimLinearBuilder::setDefinitionPoint3)
             .addFunction("setOblique", &lc::builder::DimLinearBuilder::setOblique)
                                                        );
+
+
+
+
+    state["lc"]["builder"]["DimOrdinateBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimOrdinateBuilder, lc::builder::DimensionBuilder>()
+            .setConstructors<lc::builder::DimOrdinateBuilder()>()
+            .addFunction("build", &lc::builder::DimOrdinateBuilder::build)
+            .addFunction("dimAuto", &lc::builder::DimOrdinateBuilder::dimAuto)
+            .addFunction("featurePoint", &lc::builder::DimOrdinateBuilder::featurePoint)
+            .addFunction("leaderEndPoint", &lc::builder::DimOrdinateBuilder::leaderEndPoint)
+            .addStaticFunction("measuresX", &lc::builder::DimOrdinateBuilder::measuresX)
+            .addFunction("setFeaturePoint", &lc::builder::DimOrdinateBuilder::setFeaturePoint)
+            .addFunction("setLeaderEndPoint", &lc::builder::DimOrdinateBuilder::setLeaderEndPoint)
+            .addFunction("setXType", &lc::builder::DimOrdinateBuilder::setXType)
+            .addFunction("xType", &lc::builder::DimOrdinateBuilder::xType)
+                                                         );
 
 
 

@@ -11,6 +11,7 @@
 #include <cad/primitive/dimangular.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimordinate.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/line.h>
@@ -215,6 +216,24 @@ void import_lc_entity_namespace(kaguya::State& state) {
             .addFunction("scale", &lc::entity::DimLinear::scale)
             .addFunction("setDragPoints", &lc::entity::DimLinear::setDragPoints)
                                                );
+
+    state["lc"]["entity"]["DimOrdinate"].setClass(kaguya::UserdataMetatable<lc::entity::DimOrdinate, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
+            .addFunction("accept", &lc::entity::DimOrdinate::accept)
+            .addFunction("boundingBox", &lc::entity::DimOrdinate::boundingBox)
+            .addFunction("copy", &lc::entity::DimOrdinate::copy)
+            .addFunction("dispatch", &lc::entity::DimOrdinate::dispatch)
+            .addFunction("dragPoints", &lc::entity::DimOrdinate::dragPoints)
+            .addFunction("featurePoint", &lc::entity::DimOrdinate::featurePoint)
+            .addFunction("leaderEndPoint", &lc::entity::DimOrdinate::leaderEndPoint)
+            .addFunction("mirror", &lc::entity::DimOrdinate::mirror)
+            .addFunction("modify", &lc::entity::DimOrdinate::modify)
+            .addFunction("move", &lc::entity::DimOrdinate::move)
+            .addFunction("rotate", &lc::entity::DimOrdinate::rotate)
+            .addFunction("scale", &lc::entity::DimOrdinate::scale)
+            .addFunction("setDragPoints", &lc::entity::DimOrdinate::setDragPoints)
+            .addFunction("value", &lc::entity::DimOrdinate::value)
+            .addFunction("xType", &lc::entity::DimOrdinate::xType)
+                                                 );
 
     state["lc"]["entity"]["DimRadial"].setClass(kaguya::UserdataMetatable<lc::entity::DimRadial, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
             .addFunction("accept", &lc::entity::DimRadial::accept)
