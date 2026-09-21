@@ -75,3 +75,29 @@ assert(through({{0, 0}, {1, 0}, {0, 1}, {5, 5}}) == nil, 'points on a hyperbola'
 assert(through({{1, 1}, {1, 1}, {1, 1}, {1, 1}}) == nil, 'one point four times')
 )LUA"), "");
 }
+
+// Arc > Continue: an arc that leaves a point in a given direction and ends
+// where the user clicks.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, AContinuingArcLeavesAlongTheDirectionItIsGiven) {
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/arcoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local tangentArc = ArcOperations.tangentArc
+local function near(a, b) return math.abs(a - b) < 1e-9 end
+
+local center, radius, startAngle, endAngle, ccw = tangentArc({0, 0}, {2, 0}, {1, 1})
+assert(near(center[1], 0) and near(center[2], 1) and near(radius, 1), 'a left turn: the center is on the left')
+assert(near(startAngle, -math.pi / 2) and near(endAngle, 0) and ccw, 'a quarter circle, counterclockwise')
+
+center, radius, startAngle, endAngle, ccw = tangentArc({0, 0}, {1, 0}, {1, -1})
+assert(near(center[2], -1) and not ccw, 'a right turn runs clockwise')
+
+center, radius, startAngle, endAngle, ccw = tangentArc({0, 0}, {1, 0}, {-1, 1})
+assert(near(center[2], 1) and near(radius, 1) and ccw, 'an end point behind gives three quarters of a circle')
+
+assert(tangentArc({0, 0}, {1, 0}, {5, 0}) == nil, 'straight ahead there is no arc')
+assert(tangentArc({0, 0}, {1, 0}, {-5, 0}) == nil, 'nor straight back')
+assert(tangentArc({0, 0}, {1, 0}, {0, 0}) == nil, 'nor back at the start')
+)LUA"), "");
+}

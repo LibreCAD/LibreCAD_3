@@ -34,6 +34,22 @@ void addLine(lc::ui::MainWindow& window, const lc::geo::Coordinate& start, const
     builder->execute();
 }
 
+template <typename Kind>
+std::shared_ptr<const Kind> lastOf(lc::ui::MainWindow& window) {
+    std::shared_ptr<const Kind> last;
+    for (const auto& entity : entitiesOf(window)) {
+        auto kind = std::dynamic_pointer_cast<const Kind>(entity);
+        if (kind != nullptr && (last == nullptr || kind->id() > last->id())) {
+            last = kind;
+        }
+    }
+    return last;
+}
+
+bool near(const lc::geo::Coordinate& a, const lc::geo::Coordinate& b) {
+    return a.distanceTo(b) < 1e-9;
+}
+
 /// Whether the drawing has a line from start to end on a layer named layerName.
 bool hasLine(lc::ui::MainWindow& window, const lc::geo::Coordinate& start, const lc::geo::Coordinate& end,
              const std::string& layerName) {
@@ -171,3 +187,34 @@ TEST(MenuEntriesTest, AddRandomEntriesAddAThousandOfTheirKindInOneUndoStep) {
     EXPECT_EQ(countOf<lc::entity::Arc>(*window), 0u);
     EXPECT_EQ(entitiesOf(*window).size(), before + 2000);
 }
+
+// Arc > Continue starts where the last line or arc ends, going the way it
+// went, and ends where the user says.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MenuEntriesTest, ContinueDrawsAnArcOnFromTheLastLineOrArc) {
+    QApplication app(argc, argv);
+    auto* window = new lc::ui::MainWindow();
+    addLine(*window, {0, 0}, {10, 0}, window->cadMdiChild()->activeLayer());
+
+    trigger(*window, "actionContinue");
+    window->triggerCoordinateEntered(lc::geo::Coordinate(20, 10));
+
+    auto arc = lastOf<lc::entity::Arc>(*window);
+    ASSERT_NE(arc, nullptr);
+    EXPECT_TRUE(near(arc->center(), lc::geo::Coordinate(10, 10)));
+    EXPECT_NEAR(arc->radius(), 10, 1e-9);
+    EXPECT_TRUE(arc->CCW());
+    EXPECT_TRUE(near(arc->startP(), lc::geo::Coordinate(10, 0)));
+    EXPECT_TRUE(near(arc->endP(), lc::geo::Coordinate(20, 10)));
+
+    // Heading up from (20, 10) now: the next quarter of the same circle.
+    trigger(*window, "actionContinue");
+    window->triggerCoordinateEntered(lc::geo::Coordinate(10, 20));
+
+    auto next = lastOf<lc::entity::Arc>(*window);
+    ASSERT_NE(next, arc);
+    EXPECT_TRUE(near(next->center(), lc::geo::Coordinate(10, 10)));
+    EXPECT_NEAR(next->radius(), 10, 1e-9);
+    EXPECT_TRUE(near(next->endP(), lc::geo::Coordinate(10, 20)));
+}
+

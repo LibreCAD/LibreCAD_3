@@ -99,6 +99,12 @@ void import_lc_entity_namespace(kaguya::State& state) {
                                           .addFunction("scale", &lc::entity::Arc::scale)
                                           .addFunction("setDragPoints", &lc::entity::Arc::setDragPoints)
                                           .addFunction("snapPoints", &lc::entity::Arc::snapPoints)
+                                          // An entity from a selection or the document reaches Lua
+                                          // as a CADEntity, without an arc's methods; this gives
+                                          // them back, or nil when it is not an arc.
+                                          .addStaticFunction("cast", [](const lc::entity::CADEntity_CSPtr& entity) {
+                                              return std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
+                                          })
                                          );
 
     //TODO: should be moved to geo
@@ -255,6 +261,11 @@ void import_lc_entity_namespace(kaguya::State& state) {
                                            .addFunction("scale", &lc::entity::Line::scale)
                                            .addFunction("setDragPoints", &lc::entity::Line::setDragPoints)
                                            .addFunction("snapPoints", &lc::entity::Line::snapPoints)
+                                           // As Arc.cast: a line's methods for an entity that is
+                                           // one, or nil.
+                                           .addStaticFunction("cast", [](const lc::entity::CADEntity_CSPtr& entity) {
+                                               return std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+                                           })
                                           );
 
     state["lc"]["entity"]["LWVertex2D"].setClass(kaguya::UserdataMetatable<lc::entity::LWVertex2D>()
