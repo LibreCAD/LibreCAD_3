@@ -3,6 +3,10 @@
 #include <iostream>
 #include <memory>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/text.h>
+#include <cad/primitive/mtext.h>
+#include <cad/primitive/textconst.h>
+#include <cmath>
 
 using namespace lc;
 using namespace entity;
@@ -776,4 +780,239 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     }
 
     return ellipses;
+}
+// Rotating a text turns it. Rotate used to move the insertion point and pass
+// the angle through unchanged, so the text orbited the rotation centre while
+// every glyph kept pointing the way it started.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextRotationTest, RotatingATextTurnsIt) {
+    auto layer = std::make_shared<Layer>();
+    const auto text = std::make_shared<Text>(
+        geo::Coordinate(10.0, 0.0, 0.0), "turn", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, layer);
+
+    const auto turned = std::dynamic_pointer_cast<const Text>(
+        text->rotate(geo::Coordinate(0.0, 0.0, 0.0), M_PI / 2.0));
+    ASSERT_NE(turned, nullptr);
+    EXPECT_DOUBLE_EQ(turned->angle(), M_PI / 2.0) << "the glyphs did not turn";
+    EXPECT_NEAR(turned->insertion_point().x(), 0.0, 1e-9);
+    EXPECT_NEAR(turned->insertion_point().y(), 10.0, 1e-9);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextRotationTest, RotatingAnMTextTurnsIt) {
+    auto layer = std::make_shared<Layer>();
+    const auto text = std::make_shared<MText>(
+        geo::Coordinate(10.0, 0.0, 0.0), "turn", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, false, false, false, false,
+        /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+        layer);
+
+    const auto turned = std::dynamic_pointer_cast<const MText>(
+        text->rotate(geo::Coordinate(0.0, 0.0, 0.0), M_PI / 2.0));
+    ASSERT_NE(turned, nullptr);
+    EXPECT_DOUBLE_EQ(turned->angle(), M_PI / 2.0) << "the glyphs did not turn";
+}
+
+// Every other transform keeps the entity's id; rotate was the one that did
+// not, so the storage layer saw a new entity rather than a changed one. And a
+// copy is a new entity, so it must NOT inherit one -- Line, Circle and Arc all
+// agree, and Text and MText had the two the wrong way round.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextRotationTest, TransformsAgreeWithEveryOtherEntityOnIdentity) {
+    auto layer = std::make_shared<Layer>();
+    const auto text = std::make_shared<Text>(
+        geo::Coordinate(1.0, 1.0, 0.0), "id", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, layer);
+    const auto mtext = std::make_shared<MText>(
+        geo::Coordinate(1.0, 1.0, 0.0), "id", 1.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VABaseline, false, false, false, false,
+        /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+        layer);
+
+    const geo::Coordinate origin(0.0, 0.0, 0.0);
+    const geo::Coordinate offset(5.0, 5.0, 0.0);
+
+    EXPECT_EQ(text->rotate(origin, 1.0)->id(), text->id()) << "rotate keeps identity";
+    EXPECT_EQ(text->move(offset)->id(), text->id()) << "move keeps identity";
+    EXPECT_NE(text->copy(offset)->id(), text->id()) << "a copy is a new entity";
+
+    EXPECT_EQ(mtext->rotate(origin, 1.0)->id(), mtext->id());
+    EXPECT_EQ(mtext->move(offset)->id(), mtext->id());
+    EXPECT_NE(mtext->copy(offset)->id(), mtext->id());
+}
+
+// The box the quadtree indexes. It cannot be the rendered extents -- the
+// kernel has no font -- but it has to be roughly the right shape, and the one
+// it replaces was a square sized from a byte count, centred on the insertion
+// point, ignoring lines, alignment and rotation.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AMultiLineBlockIsTallerThanItIsForOneLine) {
+    auto layer = std::make_shared<Layer>();
+    const auto oneLine = std::make_shared<MText>(
+        geo::Coordinate(0.0, 0.0, 0.0), "one", 10.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VATop, false, false, false, false,
+        /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+        layer);
+    const auto threeLines = std::make_shared<MText>(
+        geo::Coordinate(0.0, 0.0, 0.0), "one\ntwo\nthree", 10.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VATop, false, false, false, false,
+        /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+        layer);
+
+    const auto one = oneLine->boundingBox();
+    const auto three = threeLines->boundingBox();
+
+    EXPECT_GT(three.height(), one.height() * 2.0)
+        << "three lines must be taller than one";
+    EXPECT_GT(three.width(), one.width())
+        << "the widest line is 'three', not 'one'";
+    EXPECT_NEAR(one.height(), 10.0, 1e-9) << "one line is one height tall";
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AlignmentMovesTheBox) {
+    auto layer = std::make_shared<Layer>();
+    const auto make = [&layer](TextConst::HAlign h, TextConst::VAlign v) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "text", 10.0, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, h, v,
+            false, false, false, false,
+            /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+            layer)->boundingBox();
+    };
+
+    const auto left = make(TextConst::HALeft, TextConst::VATop);
+    const auto centre = make(TextConst::HACenter, TextConst::VATop);
+    const auto right = make(TextConst::HARight, TextConst::VATop);
+
+    EXPECT_NEAR(left.minP().x(), 0.0, 1e-9) << "left-aligned starts at the anchor";
+    EXPECT_LT(centre.minP().x(), left.minP().x());
+    EXPECT_LT(right.minP().x(), centre.minP().x());
+    EXPECT_NEAR(right.maxP().x(), 0.0, 1e-9) << "right-aligned ends at the anchor";
+
+    const auto top = make(TextConst::HALeft, TextConst::VATop);
+    const auto bottom = make(TextConst::HALeft, TextConst::VABottom);
+    EXPECT_LT(top.minP().y(), bottom.minP().y()) << "top-aligned hangs below the anchor";
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, RotationIsAccountedFor) {
+    auto layer = std::make_shared<Layer>();
+    const auto make = [&layer](double angle) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "a wide line of text", 10.0, angle,
+            "STANDARD", TextConst::DrawingDirection::None,
+            TextConst::HAlign::HALeft, TextConst::VAlign::VATop,
+            false, false, false, false,
+            /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+            layer)->boundingBox();
+    };
+
+    const auto flat = make(0.0);
+    const auto upright = make(M_PI / 2.0);
+
+    EXPECT_GT(flat.width(), flat.height()) << "a wide line is wider than it is tall";
+    EXPECT_NEAR(upright.height(), flat.width(), 1e-6)
+        << "turned ninety degrees, the width becomes the height";
+    EXPECT_NEAR(upright.width(), flat.height(), 1e-6);
+}
+
+// The byte count was the bug: a line of CJK was measured by the length of its
+// UTF-8 encoding and selected from three times too far away.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, WidthCountsCharactersNotBytes) {
+    auto layer = std::make_shared<Layer>();
+    const auto make = [&layer](const std::string& s) {
+        return std::make_shared<Text>(
+            geo::Coordinate(0.0, 0.0, 0.0), s, 10.0, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+            TextConst::VAlign::VATop, layer)->boundingBox();
+    };
+
+    // Three characters either way; the second takes nine bytes.
+    EXPECT_NEAR(make("abc").width(), make("\xE4\xB8\xAD\xE6\x96\x87\xE5\xAD\x97").width(), 1e-9);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AnEmptyTextIsNotDegenerate) {
+    auto layer = std::make_shared<Layer>();
+    const auto box = std::make_shared<MText>(
+        geo::Coordinate(3.0, 4.0, 0.0), "", 10.0, 0.0, "STANDARD",
+        TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+        TextConst::VAlign::VATop, false, false, false, false,
+        /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, TextConst::LineSpacingStyle::AtLeast,
+        layer)->boundingBox();
+    EXPECT_NEAR(box.height(), 10.0, 1e-9) << "an empty line still has a height";
+}
+
+// The box and the drawing have to agree about the line pitch. The renderer
+// applies group 44; if the box does not, a text asking for wide spacing gets a
+// box up to four times too short -- and this box is what the quadtree indexes,
+// so selection, snapping and zoom-to-fit would all stop short of the drawing.
+// Neither half of this could be seen alone: the box predates the field, and
+// the field predates the box.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, TheBoxGrowsWithTheLineSpacingFactor) {
+    auto layer = std::make_shared<Layer>();
+    const auto boxFor = [&layer](double factor) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "one\ntwo\nthree", 2.5, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+            TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+            factor, TextConst::LineSpacingStyle::AtLeast, layer)->boundingBox();
+    };
+
+    const double single = boxFor(1.0).height();
+    const double doubled = boxFor(2.0).height();
+
+    EXPECT_GT(doubled, single) << "the factor never reached the box";
+
+    // Three lines: the block is one line tall plus two pitches, and only the
+    // pitches scale. It must match lc::TextConst::mtextLinePitch exactly,
+    // because that is what the renderer places the lines with.
+    const double pitch1 = TextConst::mtextLinePitch(2.5, 1.0);
+    const double pitch2 = TextConst::mtextLinePitch(2.5, 2.0);
+    EXPECT_DOUBLE_EQ(doubled - single, 2.0 * (pitch2 - pitch1));
+}
+
+// And a factor DXF does not allow takes the documented default, in the box as
+// well as in the renderer -- otherwise the two disagree for exactly the inputs
+// nobody validates.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(TextBoundingBoxTest, AnImpossibleFactorGivesTheBoxSingleSpacing) {
+    auto layer = std::make_shared<Layer>();
+    const auto heightFor = [&layer](double factor) {
+        return std::make_shared<MText>(
+            geo::Coordinate(0.0, 0.0, 0.0), "one\ntwo", 2.5, 0.0, "STANDARD",
+            TextConst::DrawingDirection::None, TextConst::HAlign::HALeft,
+            TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, TextConst::MTextDrawingDirection::ByStyle,
+            factor, TextConst::LineSpacingStyle::AtLeast, layer)->boundingBox().height();
+    };
+
+    const double single = heightFor(1.0);
+    for (const double impossible : {0.0, -1.0, 0.1, 9.0}) {
+        EXPECT_DOUBLE_EQ(heightFor(impossible), single)
+            << "a factor of " << impossible << " is not one DXF allows";
+    }
 }

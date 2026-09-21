@@ -1,4 +1,5 @@
 #include "mtext.h"
+#include "textblockbox.h"
 #include "textbase.h"
 
 
@@ -17,6 +18,10 @@ MText::MText(geo::Coordinate insertion_point,
     bool strikethrough,
     bool bold,
     bool italic,
+    double width,
+    const TextConst::MTextDrawingDirection drawingDirection,
+    double lineSpacingFactor,
+    const TextConst::LineSpacingStyle lineSpacingStyle,
     meta::Layer_CSPtr layer,
     meta::MetaInfo_CSPtr metaInfo,
     meta::Block_CSPtr block) :
@@ -25,7 +30,11 @@ MText::MText(geo::Coordinate insertion_point,
     _underlined(underlined),
     _strikethrough(strikethrough),
     _bold(bold),
-    _italic(italic)
+    _italic(italic),
+    _width(width),
+    _drawingDirection(drawingDirection),
+    _lineSpacingFactor(lineSpacingFactor),
+    _lineSpacingStyle(lineSpacingStyle)
 {
 }
 
@@ -36,7 +45,11 @@ MText::MText(const builder::MTextBuilder& builder)
     _underlined(builder.underlined()),
     _strikethrough(builder.strikethrough()),
     _bold(builder.bold()),
-    _italic(builder.italic())
+    _italic(builder.italic()),
+    _width(builder.width()),
+    _drawingDirection(builder.mtextDrawingDirection()),
+    _lineSpacingFactor(builder.lineSpacingFactor()),
+    _lineSpacingStyle(builder.lineSpacingStyle())
 {
 }
 
@@ -46,7 +59,11 @@ MText::MText(const MText_CSPtr& other, bool sameID) :
     _underlined(other->_underlined),
     _strikethrough(other->_strikethrough),
     _bold(other->_bold),
-    _italic(other->_italic)
+    _italic(other->_italic),
+    _width(other->_width),
+    _drawingDirection(other->_drawingDirection),
+    _lineSpacingFactor(other->_lineSpacingFactor),
+    _lineSpacingStyle(other->_lineSpacingStyle)
 {
 }
 
@@ -63,6 +80,10 @@ CADEntity_CSPtr MText::move(const geo::Coordinate& offset) const {
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer()
         , metaInfo(), block()
         );
@@ -71,6 +92,9 @@ CADEntity_CSPtr MText::move(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr MText::copy(const geo::Coordinate& offset) const {
+    // A copy is a NEW entity and must not inherit an id. Line, Circle and Arc
+    // all leave it unset here and set it in move; Text and MText had the two
+    // the wrong way round.
     auto newMText = std::make_shared<MText>(
         this->_insertion_point + offset,
         this->_text_value,
@@ -84,18 +108,28 @@ CADEntity_CSPtr MText::copy(const geo::Coordinate& offset) const {
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer()
         , metaInfo(), block());
-    newMText->setID(this->id());
     return newMText;
 }
 
 CADEntity_CSPtr MText::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
+    // The angle turns with the block. Passing _angle through rotated the
+    // insertion point and left the glyphs pointing the way they were, so the
+    // text orbited the centre without ever facing a different direction.
+    //
+    // And the identity is preserved, as it is in move, scale and modify --
+    // rotate was the one transform that did not, so the storage layer saw a
+    // new entity rather than a changed one.
     auto newMText = std::make_shared<MText>(
         this->_insertion_point.rotate(rotation_center, rotation_angle),
         this->_text_value,
         this->_height,
-        this->_angle,
+        this->_angle + rotation_angle,
         this->_style,
         this->_textgeneration,
         this->_halign,
@@ -104,8 +138,13 @@ CADEntity_CSPtr MText::rotate(const geo::Coordinate& rotation_center, double rot
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer()
         , metaInfo(), block());
+    newMText->setID(this->id());
     return newMText;
 }
 
@@ -123,6 +162,10 @@ CADEntity_CSPtr MText::scale(const geo::Coordinate& scale_center, const geo::Coo
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         this->layer()
         , metaInfo(), block());
     newMText->setID(this->id());
@@ -130,12 +173,18 @@ CADEntity_CSPtr MText::scale(const geo::Coordinate& scale_center, const geo::Coo
 }
 
 const geo::Area MText::boundingBox() const {
-    /// @todo Fix this
-    // Rough bounding box
-    // Assume that the font has char max. width equal to height
-    // Assume single line
-    double width = this->_height * (this->_text_value).size() / 2;
-    return geo::Area(this->_insertion_point - geo::Coordinate(width, width), this->_insertion_point + geo::Coordinate(width, width));
+    // An estimate: the kernel has no font, so nothing here can measure a
+    // string. What it does account for, and the square it replaces did not,
+    // is the number of lines, the alignment the block hangs from, and the rotation.
+    //
+    // The old box was `height * text.size() / 2` in BOTH axes, centred on the
+    // insertion point -- a square, sized from a byte count, ignoring every
+    // one of those. It is what the quadtree indexes, so selection, snapping
+    // and zoom-to-fit were all asking the wrong shape.
+    return textBlockBoundingBox(this->_insertion_point, this->_text_value,
+                                this->_height, this->_angle,
+                                this->_halign, this->_valign,
+                                this->_lineSpacingFactor, true);
 }
 
 CADEntity_CSPtr MText::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -152,6 +201,10 @@ CADEntity_CSPtr MText::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
         this->_strikethrough,
         this->_bold,
         this->_italic,
+        this->_width,
+        this->_drawingDirection,
+        this->_lineSpacingFactor,
+        this->_lineSpacingStyle,
         layer,
         metaInfo,
         block
@@ -183,6 +236,10 @@ CADEntity_CSPtr MText::setDragPoints(std::map<unsigned int, lc::geo::Coordinate>
             strikethrough(),
             bold(),
             italic(),
+            width(),
+            drawingDirection(),
+            lineSpacingFactor(),
+            lineSpacingStyle(),
             layer(),
             metaInfo(), block()
             );
@@ -235,7 +292,10 @@ CADEntity_CSPtr MText::setProperties(const PropertiesMap& propertiesMap) const {
         }
     }
 
-    auto textEntity = std::make_shared<MText>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), underlinedp, strikethroughp, boldp, italicp, layer(), metaInfo(), block());
+    auto textEntity = std::make_shared<MText>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(),
+        underlinedp, strikethroughp, boldp, italicp,
+        width(), drawingDirection(), lineSpacingFactor(), lineSpacingStyle(),
+        layer(), metaInfo(), block());
     textEntity->setID(this->id());
     return textEntity;
 }

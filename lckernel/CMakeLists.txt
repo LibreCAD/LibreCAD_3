@@ -68,6 +68,7 @@ cad/primitive/line.cpp
 cad/primitive/spline.cpp
 cad/primitive/text.cpp
 cad/primitive/mtext.cpp
+cad/primitive/textblockbox.cpp
 cad/primitive/textbase.cpp
 cad/primitive/dimension.cpp
 cad/primitive/dimradial.cpp

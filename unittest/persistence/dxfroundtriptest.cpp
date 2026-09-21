@@ -1701,7 +1701,12 @@ TEST(DxfRoundTripTest, GuardedReadsRecordNothingForGoodFiles) {
 TEST(DxfRoundTripTest, BinaryAndAsciiCarryTheSameText) {
     auto layer = defaultLayer();
     const std::string plain = "plain text";
-    const std::string multi = "multi line text";
+    // A real newline, and a backslash. The fixture used to be "multi line
+    // text" -- spaces, not line breaks -- so the one test that compares MText
+    // content character for character never exercised the paragraph-break
+    // encoding it was named for, and never noticed that \P was written on the
+    // way out and never read on the way back in.
+    const std::string multi = "multi\nline C:\\text";
 
     auto doc = newDocument();
     ASSERT_NO_THROW(insertThroughBuilder(doc, {
@@ -1712,7 +1717,10 @@ TEST(DxfRoundTripTest, BinaryAndAsciiCarryTheSameText) {
         std::make_shared<lc::entity::MText>(
             lc::geo::Coordinate(1.0, 7.0, 0.0), multi, 0.5, 0.0, "STANDARD",
             lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
-            lc::TextConst::VAlign::VABaseline, false, false, false, false, layer)}));
+            lc::TextConst::VAlign::VABaseline, false, false, false, false,
+            /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+            layer)}));
 
     const struct {
         lc::persistence::File::Type type;
@@ -1940,7 +1948,431 @@ std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) 
     return identities;
 }
 
+
+/** Every group of one record kind, as (code -> values) in file order. */
+std::map<int, std::vector<std::string>> groupsOfRecord(const std::string& path,
+                                                      const std::string& recordName) {
+    std::map<int, std::vector<std::string>> groups;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    std::string record;
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
+            value.pop_back();
+        }
+        const auto start = code.find_first_not_of(" \t");
+        const std::string group = start == std::string::npos ? code : code.substr(start);
+
+        if (group == "0") {
+            record = value;
+            continue;
+        }
+        if (record != recordName) {
+            continue;
+        }
+        try {
+            groups[std::stoi(group)].push_back(value);
+        } catch (const std::exception&) {
+            // not a numeric group code; nothing to record
+        }
+    }
+
+    return groups;
+}
+
 }  // namespace
+
+// Three group codes that every MTEXT LibreCAD_3 writes got wrong, and that no
+// test looked at because the round trip reads them back through the same
+// mistaken assumptions that wrote them. These assertions read the file.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextIsWrittenWithValidGroupCodes) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::MText>(
+            lc::geo::Coordinate(1.0, 1.0, 0.0), "text", 100.0, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+            defaultLayer())}));
+
+    const std::string saved = uniqueTmpDxf("mtext-codes");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    // 41 is the reference rectangle width. It used to come out as 1.0 --
+    // DRW_Text's constructor default, emitted unconditionally -- which tells
+    // every conforming reader to wrap this 100-unit-high text at one drawing
+    // unit. Zero means "no reference rectangle".
+    ASSERT_EQ(groups.count(41), 1u) << "libdxfrw always emits code 41";
+    ASSERT_EQ(groups.at(41).size(), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(41).front()), 0.0)
+        << "a one-unit wrap column was declared on every MTEXT ever written";
+
+    // 72 is the drawing direction: 1, 3 or 5 are the defined values. It used
+    // to come out as 0 for every MText the dialog creates.
+    ASSERT_EQ(groups.count(72), 1u);
+    const int direction = std::stoi(groups.at(72).front());
+    EXPECT_TRUE(direction == 1 || direction == 3 || direction == 5)
+        << "code 72 = " << direction << " is not a defined drawing direction";
+    EXPECT_EQ(direction, 5) << "a default MText means 'by style'";
+
+    // And reopening must not reinterpret that as a mirrored MText, which is
+    // what writing 1 here would have done.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    lc::entity::MText_CSPtr readBack;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto m = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            readBack = m;
+        }
+    }
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_EQ(readBack->textgeneration(), lc::TextConst::DrawingDirection::None)
+        << "the drawing direction changed by being written and read";
+
+    boost::filesystem::remove(saved);
+}
+
+namespace {
+
+/// The single MText in a document, or null.
+lc::entity::MText_CSPtr onlyMText(
+    const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+    lc::entity::MText_CSPtr found;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto m = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            found = m;
+        }
+    }
+    return found;
+}
+
+/// A one-MTEXT ENTITIES section, with whatever trailing groups are passed.
+void writeOneMText(const std::string& path, const std::string& tail) {
+    std::ofstream dxf(path);
+    dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+        << "0\nSECTION\n2\nENTITIES\n"
+        << "0\nMTEXT\n8\n0\n"
+        << "10\n1.0\n20\n2.0\n30\n0.0\n"
+        << "40\n2.5\n"
+        << "1\ntext\n"
+        << "71\n1\n"
+        << tail
+        << "0\nENDSEC\n0\nEOF\n";
+}
+
+}  // namespace
+
+// Codes 41, 44, 72 and 73 arrived on every MTEXT libdxfrw handed over and were
+// read by nothing: the entity had nowhere to keep them, so a file's reference
+// rectangle and line spacing were discarded on open and replaced by a default
+// on the next save.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextReadsItsWidthSpacingAndDirection) {
+    const std::string path = uniqueTmpDxf("mtext-fields");
+    boost::filesystem::remove(path);
+    writeOneMText(path, "41\n250.0\n72\n3\n73\n2\n44\n1.75\n");
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr) << "the MTEXT did not arrive";
+
+    EXPECT_DOUBLE_EQ(mtext->width(), 250.0) << "group 41, the reference rectangle";
+    EXPECT_EQ(mtext->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::TopToBottom) << "group 72";
+    EXPECT_DOUBLE_EQ(mtext->lineSpacingFactor(), 1.75) << "group 44";
+    EXPECT_EQ(mtext->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::Exact)
+        << "group 73 -- the enum numbers these 0 and 1, the file numbers them 1 and 2";
+
+    boost::filesystem::remove(path);
+}
+
+// Real files do not stay inside the defined values. Across 150 drawings here,
+// 456 of 877 MTEXT records carry group 72 = 2, which is not one of the three
+// directions the specification defines, and 269 carry group 73 = 0, which is
+// neither of its two styles. A cast would turn those into an entity claiming a
+// direction no renderer has, so they take the documented default instead.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextWithUndefinedGroupCodesTakesTheDefaults) {
+    const std::string path = uniqueTmpDxf("mtext-undefined");
+    boost::filesystem::remove(path);
+    // 72 = 2 and 73 = 0 are the values the corpus actually carries; 44 = 9.0 is
+    // outside the documented 0.25 to 4.
+    writeOneMText(path, "41\n100.0\n72\n2\n73\n0\n44\n9.0\n");
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, path, lc::persistence::File::Library::LIBDXFRW));
+
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr) << "the MTEXT did not arrive";
+
+    EXPECT_EQ(mtext->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::ByStyle)
+        << "an undefined group 72 must not become an undefined direction";
+    EXPECT_EQ(mtext->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::AtLeast)
+        << "an undefined group 73 takes the DXF default";
+    EXPECT_DOUBLE_EQ(mtext->lineSpacingFactor(), 1.0)
+        << "a spacing factor outside 0.25 to 4 takes the DXF default";
+    EXPECT_DOUBLE_EQ(mtext->width(), 100.0) << "group 41 was in range and stands";
+
+    boost::filesystem::remove(path);
+}
+
+// And the write side: what the entity carries is what the file says. Before
+// this the writer emitted three constants -- 0, 5 and 1 -- so a drawing opened
+// and saved came back with its reference rectangle and spacing replaced.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextWritesTheWidthAndSpacingItCarries) {
+    const std::string source = uniqueTmpDxf("mtext-fields-source");
+    boost::filesystem::remove(source);
+    writeOneMText(source, "41\n250.0\n72\n3\n73\n2\n44\n1.75\n");
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    ASSERT_NE(onlyMText(doc), nullptr);
+
+    const std::string saved = uniqueTmpDxf("mtext-fields-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    ASSERT_EQ(groups.count(41), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(41).front()), 250.0)
+        << "the reference rectangle was replaced on save";
+    ASSERT_EQ(groups.count(72), 1u);
+    EXPECT_EQ(std::stoi(groups.at(72).front()), 3) << "the drawing direction was replaced";
+    ASSERT_EQ(groups.count(73), 1u);
+    EXPECT_EQ(std::stoi(groups.at(73).front()), 2) << "the line spacing style was replaced";
+    ASSERT_EQ(groups.count(44), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(44).front()), 1.75)
+        << "the line spacing factor was replaced";
+
+    // The whole point: open, save, open again and nothing moved.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    auto readBack = onlyMText(reopened);
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_DOUBLE_EQ(readBack->width(), 250.0);
+    EXPECT_EQ(readBack->drawingDirection(),
+              lc::TextConst::MTextDrawingDirection::TopToBottom);
+    EXPECT_DOUBLE_EQ(readBack->lineSpacingFactor(), 1.75);
+    EXPECT_EQ(readBack->lineSpacingStyle(), lc::TextConst::LineSpacingStyle::Exact);
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+namespace {
+
+/// The two-column layout of a real MTEXT, as XDATA.
+///
+/// MTEXT columns are not AcDbMText group codes: they are 1070 keys inside an
+/// ACAD_MTEXT_COLUMN_INFO group under AppID ACAD. 75 is the column type, 79
+/// auto-height, 76 the count, 78 flow-reversed, 48 the width and 49 the
+/// gutter. Nothing in LibreCAD reads any of it; that is the point.
+const char* const kColumnXData =
+    "1001\nACAD\n"
+    "1000\nACAD_MTEXT_COLUMN_INFO_BEGIN\n"
+    "1070\n75\n1070\n1\n"
+    "1070\n79\n1070\n0\n"
+    "1070\n76\n1070\n2\n"
+    "1070\n78\n1070\n0\n"
+    "1070\n48\n1040\n50.0\n"
+    "1070\n49\n1040\n5.0\n"
+    "1000\nACAD_MTEXT_COLUMN_INFO_END\n";
+
+/// The same, plus a handle reference -- what linked columns carry.
+const char* const kLinkedColumnXData =
+    "1001\nACAD\n"
+    "1000\nACAD_MTEXT_COLUMNS\n"
+    "1005\n2F\n";
+
+}  // namespace
+
+// Columns survive a DXF-to-DXF pass through libdxfrw alone: DRW_Entity
+// captures 1000-1071 into extData and dxfRW::writeMText writes it back, with
+// no MTEXT-specific code on either side. They did not survive LibreCAD,
+// because writeMText builds a fresh DRW_MText and the capture went nowhere --
+// `grep -c extData persistence/libdxfrw/dxfimpl.cpp` was 0. Open a columned
+// drawing, press Save, and the columns were gone.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextKeepsItsColumnsAcrossASave) {
+    const std::string source = uniqueTmpDxf("mtext-columns-source");
+    boost::filesystem::remove(source);
+    writeOneMText(source, std::string("41\n100.0\n72\n5\n73\n1\n44\n1.0\n") + kColumnXData);
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    ASSERT_NE(onlyMText(doc), nullptr);
+
+    const std::string saved = uniqueTmpDxf("mtext-columns-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    ASSERT_EQ(groups.count(1001), 1u) << "the MTEXT went out with no XDATA at all";
+    EXPECT_EQ(groups.at(1001).front(), "ACAD");
+
+    ASSERT_EQ(groups.count(1000), 1u);
+    EXPECT_EQ(groups.at(1000).front(), "ACAD_MTEXT_COLUMN_INFO_BEGIN");
+    EXPECT_EQ(groups.at(1000).back(), "ACAD_MTEXT_COLUMN_INFO_END");
+
+    // The keys and their values, in order, exactly as they arrived. DXF pads
+    // an integer group to a fixed width, so compare the numbers.
+    ASSERT_EQ(groups.count(1070), 1u);
+    std::vector<int> keys;
+    for (const std::string& value : groups.at(1070)) {
+        keys.push_back(std::stoi(value));
+    }
+    const std::vector<int> expected{75, 1, 79, 0, 76, 2, 78, 0, 48, 49};
+    EXPECT_EQ(keys, expected) << "the column keys were reordered or lost";
+
+    ASSERT_EQ(groups.count(1040), 1u);
+    ASSERT_EQ(groups.at(1040).size(), 2u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(1040)[0]), 50.0) << "column width";
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(1040)[1]), 5.0) << "column gutter";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// A column layout describes a particular block of text. Re-emitting it beside
+// different words is worse than dropping it: the reader would lay the new text
+// out to the old measurements, and nothing would say so. The text the capture
+// belonged to is kept beside it, and an edit is noticed by comparison rather
+// than by trusting that an edit produces a new entity -- setProperties keeps
+// the id.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnEditedMTextDropsTheColumnsThatDescribedItsOldText) {
+    const std::string source = uniqueTmpDxf("mtext-columns-edit");
+    boost::filesystem::remove(source);
+    writeOneMText(source, std::string("41\n100.0\n") + kColumnXData);
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    auto original = onlyMText(doc);
+    ASSERT_NE(original, nullptr);
+
+    // Same entity id, different words.
+    lc::entity::PropertiesMap edited;
+    edited["textValue"] = std::string("something else entirely");
+    auto changed = std::dynamic_pointer_cast<const lc::entity::MText>(
+        original->setProperties(edited));
+    ASSERT_NE(changed, nullptr);
+    ASSERT_EQ(changed->id(), original->id()) << "the premise of this test";
+    ASSERT_NE(changed->text_value(), original->text_value())
+        << "setProperties did not change the text; the test proves nothing";
+
+    // The shelf travels with the document the file was read into, so the edit
+    // has to replace the entity in THAT document for the lookup to happen at
+    // all: take the original out and put the edited one in.
+    {
+        auto remove = std::make_shared<lc::operation::EntityBuilder>(doc);
+        remove->appendEntity(original);
+        remove->appendOperation(std::make_shared<lc::operation::Push>());
+        remove->appendOperation(std::make_shared<lc::operation::Remove>());
+        remove->execute();
+
+        auto add = std::make_shared<lc::operation::EntityBuilder>(doc);
+        add->appendEntity(changed);
+        add->execute();
+    }
+    ASSERT_NE(onlyMText(doc), nullptr);
+    EXPECT_EQ(onlyMText(doc)->text_value(), changed->text_value());
+
+    const std::string saved = uniqueTmpDxf("mtext-columns-edited");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+    EXPECT_EQ(groups.count(1001), 0u)
+        << "a column layout for text this MText no longer holds was written out";
+}
+
+// A 1005 names another record by its code 5, and every handle in the written
+// file was either minted fresh or moved by the reservation pass -- so the
+// handle the variant carries names whatever now happens to hold it, or
+// nothing. A dangling reference is worse than a lost one.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, XDataThatNamesAnotherRecordByHandleIsNotWrittenBack) {
+    const std::string source = uniqueTmpDxf("mtext-columns-linked");
+    boost::filesystem::remove(source);
+    writeOneMText(source, std::string("41\n100.0\n") + kLinkedColumnXData);
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    ASSERT_NE(onlyMText(doc), nullptr);
+
+    const std::string saved = uniqueTmpDxf("mtext-columns-linked-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+    EXPECT_EQ(groups.count(1005), 0u) << "a handle reference was replayed";
+    EXPECT_EQ(groups.count(1001), 0u)
+        << "half a capture is not a capture: the whole group goes or none of it";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// And nothing is invented. An MText this session created has no XDATA, and
+// must not acquire any.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextThisSessionCreatedGetsNoExtendedData) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::MText>(
+            lc::geo::Coordinate(1.0, 1.0, 0.0), "text", 10.0, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+            defaultLayer())}));
+
+    const std::string saved = uniqueTmpDxf("mtext-no-xdata");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+    EXPECT_EQ(groups.count(1001), 0u);
+    EXPECT_EQ(groups.count(1000), 0u);
+
+    boost::filesystem::remove(saved);
+}
+
 
 // A DXF holds far more than geometry: layouts, plot settings, table styles,
 // dictionaries, and whatever a vertical application stored under its own class.
@@ -2896,5 +3328,405 @@ TEST(DxfRoundTripTest, EveryDimensionCarriesItsGeometryBlock) {
 }
 
 
+namespace {
 
-// TEMPORARY corpus probe.
+/// Every record of one type in ENTITIES, in file order, as code -> first value.
+std::vector<std::map<int, std::string>> recordsOfType(const std::string& path,
+                                                      const std::string& wanted) {
+    std::vector<std::map<int, std::string>> records;
+    std::ifstream file(path);
+    std::string code;
+    std::string value;
+    bool inEntities = false;
+    bool collecting = false;
+
+    auto trim = [](std::string& text) {
+        while (!text.empty() && (text.back() == '\r' || text.back() == ' ')) {
+            text.pop_back();
+        }
+        while (!text.empty() && (text.front() == ' ' || text.front() == '\t')) {
+            text.erase(text.begin());
+        }
+    };
+
+    while (std::getline(file, code) && std::getline(file, value)) {
+        trim(code);
+        trim(value);
+
+        if (code == "0") {
+            collecting = false;
+            if (value == "SECTION") {
+                std::string sectionCode;
+                std::string sectionName;
+                if (std::getline(file, sectionCode) && std::getline(file, sectionName)) {
+                    trim(sectionName);
+                    inEntities = sectionName == "ENTITIES";
+                }
+                continue;
+            }
+            if (value == "ENDSEC" || value == "EOF") {
+                inEntities = false;
+                continue;
+            }
+            if (inEntities && value == wanted) {
+                records.emplace_back();
+                collecting = true;
+            }
+            continue;
+        }
+
+        if (!collecting) {
+            continue;
+        }
+        try {
+            records.back().emplace(std::stoi(code), value);
+        } catch (const std::exception&) {
+            // A group code this scanner cannot read is not what it is looking for.
+        }
+    }
+
+    return records;
+}
+
+lc::entity::MText_CSPtr threeLineMText(double angle,
+                                       lc::TextConst::VAlign valign) {
+    return std::make_shared<lc::entity::MText>(
+        lc::geo::Coordinate(10.0, 100.0, 0.0), "one\ntwo\nthree", /*height=*/3.0,
+        angle, /*style=*/"STANDARD",
+        lc::TextConst::DrawingDirection::None,
+        lc::TextConst::HAlign::HALeft, valign,
+        false, false, false, false,
+        /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+        defaultLayer());
+}
+
+}  // namespace
+
+// R12 has no MTEXT, so libdxfrw refuses the record and the whole emit fails
+// with it -- which is why writeEntity dropped the entity before offering it.
+// Dropping loses the words as well as the block. R12 has had TEXT since the
+// beginning, and a TEXT holds one line, so a three-line note becomes three
+// records rather than nothing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextBecomesOneTextPerLineAtR12) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(
+        0.0, lc::TextConst::VAlign::VATop)}));
+
+    const std::string path = uniqueTmpDxf("mtext-r12");
+    boost::filesystem::remove(path);
+    const auto written = lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12);
+    ASSERT_TRUE(written.ok) << "the file must still be written";
+
+    const auto census = recordsInFile(path);
+    EXPECT_EQ(census.count("MTEXT"), 0u) << "R12 cannot hold an MTEXT";
+    ASSERT_EQ(census.count("TEXT"), 1u) << "the lines were dropped, not converted";
+    EXPECT_EQ(census.at("TEXT"), 3u) << "one TEXT per line";
+
+    const auto texts = recordsOfType(path, "TEXT");
+    ASSERT_EQ(texts.size(), 3u);
+    EXPECT_EQ(texts[0].at(1), "one");
+    EXPECT_EQ(texts[1].at(1), "two");
+    EXPECT_EQ(texts[2].at(1), "three");
+
+    // Reopening gives three Texts back. Nothing claims they are an MText
+    // again -- R12 cannot say that, and pretending otherwise would be worse.
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW));
+    std::size_t texts_back = 0;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (std::dynamic_pointer_cast<const lc::entity::Text>(entity)) {
+            texts_back++;
+        }
+    }
+    EXPECT_EQ(texts_back, 3u);
+
+    boost::filesystem::remove(path);
+}
+
+// A TEXT has no line spacing, so the spacing has to become geometry. Each line
+// carries the block's own alignment, which is what lets the anchors be stepped
+// by one pitch: the alignment decides only where the FIRST line's anchor goes.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TheR12TextLinesStackWhereTheBlockHadThem) {
+    const double pitch = 3.0 * lc::TextConst::MTextLinePitchRatio;
+
+    struct {
+        lc::TextConst::VAlign valign;
+        double firstLineY;
+        const char* label;
+    } cases[] = {
+        // Top-aligned: the block hangs below its anchor, so line one is at it.
+        {lc::TextConst::VAlign::VATop, 100.0, "top"},
+        // Bottom-aligned: the block stands on its anchor, so line one is two
+        // pitches above it.
+        {lc::TextConst::VAlign::VABottom, 100.0 + 2 * pitch, "bottom"},
+        // Middle: half the block above, half below.
+        {lc::TextConst::VAlign::VAMiddle, 100.0 + pitch, "middle"},
+    };
+
+    for (const auto& item : cases) {
+        auto doc = newDocument();
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(0.0, item.valign)}))
+            << item.label;
+
+        const std::string path = uniqueTmpDxf("mtext-r12-stack");
+        boost::filesystem::remove(path);
+        ASSERT_TRUE(lc::persistence::File::exportFile(
+            doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok) << item.label;
+
+        const auto texts = recordsOfType(path, "TEXT");
+        ASSERT_EQ(texts.size(), 3u) << item.label;
+
+        for (std::size_t i = 0; i < texts.size(); i++) {
+            ASSERT_EQ(texts[i].count(10), 1u) << item.label;
+            ASSERT_EQ(texts[i].count(20), 1u) << item.label;
+            EXPECT_NEAR(std::stod(texts[i].at(10)), 10.0, 1e-9)
+                << item.label << " line " << i << " moved sideways";
+            EXPECT_NEAR(std::stod(texts[i].at(20)),
+                        item.firstLineY - static_cast<double>(i) * pitch, 1e-9)
+                << item.label << " line " << i << " is not one pitch below the last";
+        }
+
+        boost::filesystem::remove(path);
+    }
+}
+
+// The lines stack along the text's own up direction, not along world Y: turn
+// the MText a quarter turn and they must step sideways with it.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TheR12TextLinesTurnWithTheMText) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(
+        M_PI / 2, lc::TextConst::VAlign::VATop)}));
+
+    const std::string path = uniqueTmpDxf("mtext-r12-rotated");
+    boost::filesystem::remove(path);
+    ASSERT_TRUE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok);
+
+    const auto texts = recordsOfType(path, "TEXT");
+    ASSERT_EQ(texts.size(), 3u);
+
+    const double pitch = 3.0 * lc::TextConst::MTextLinePitchRatio;
+    for (std::size_t i = 0; i < texts.size(); i++) {
+        // Turned a quarter turn, "down the page" is +x in world terms.
+        EXPECT_NEAR(std::stod(texts[i].at(10)),
+                    10.0 + static_cast<double>(i) * pitch, 1e-9)
+            << "line " << i << " did not turn with the block";
+        EXPECT_NEAR(std::stod(texts[i].at(20)), 100.0, 1e-9)
+            << "line " << i << " stepped down the page instead of across it";
+        EXPECT_NEAR(std::stod(texts[i].at(50)), 90.0, 1e-9)
+            << "line " << i << " was not rotated";
+    }
+
+    boost::filesystem::remove(path);
+}
+
+// Converting is still a loss, and a save that loses something has to say what.
+// The note carries it: there is no dropped count to report, and reporting only
+// counts printed "written without :" with the explanation missing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnR12SaveSaysTheMultilineTextWasConverted) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {threeLineMText(
+        0.0, lc::TextConst::VAlign::VATop)}));
+
+    const std::string path = uniqueTmpDxf("mtext-r12-reported");
+    boost::filesystem::remove(path);
+    const auto written = lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12);
+
+    EXPECT_TRUE(written.ok);
+    EXPECT_EQ(written.loss.droppedByType.count("MTEXT"), 0u)
+        << "nothing was dropped; it was written another way";
+    ASSERT_EQ(written.loss.notes.size(), 1u) << "the conversion was not reported";
+    EXPECT_NE(written.loss.notes.front().find("one TEXT record per line"),
+              std::string::npos) << written.loss.notes.front();
+
+    ASSERT_FALSE(written.diagnostics.empty()) << "a note that reaches no caller is not a report";
+    EXPECT_EQ(written.diagnostics.front().code, "record-converted");
+    EXPECT_NE(written.diagnostics.front().message.find("TEXT record per line"),
+              std::string::npos) << written.diagnostics.front().message;
+
+    // And the bool overload still says the drawing was not written whole.
+    EXPECT_FALSE(lc::persistence::File::save(
+        doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12))
+        << "an MTEXT that came out as TEXT is not a lossless save";
+
+    boost::filesystem::remove(path);
+}
+
+// ---------------------------------------------------------------------------
+// Where the separate MText changes meet.
+//
+// Each of the changes below was written on its own and could only be tested on
+// its own. These are the cases that need two of them at once, which is to say
+// the cases nobody could write until now -- and they are the ones a user
+// actually performs: open a drawing somebody else made, and save it.
+// ---------------------------------------------------------------------------
+
+// Decoding the escape language and keeping the column layout have to agree
+// about what "the text" is. The layout is only replayed when the MText still
+// holds the words it was read with, and that comparison is made against the
+// DECODED text on both sides -- so a `\P` in the source must not look like an
+// edit and cost the drawing its columns.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnImportedMTextKeepsBothItsLineBreaksAndItsColumns) {
+    const std::string source = uniqueTmpDxf("mtext-breaks-and-columns");
+    boost::filesystem::remove(source);
+    {
+        std::ofstream dxf(source);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n"
+            << "0\nMTEXT\n8\n0\n"
+            << "10\n1.0\n20\n2.0\n30\n0.0\n"
+            << "40\n2.5\n41\n100.0\n"
+            << "1\none\\Ptwo\\Pthree\n"
+            << "71\n1\n72\n5\n73\n1\n44\n1.0\n"
+            << kColumnXData
+            << "0\nENDSEC\n0\nEOF\n";
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr);
+    EXPECT_EQ(mtext->text_value(), "one\ntwo\nthree")
+        << "the escape language was not decoded";
+
+    const std::string saved = uniqueTmpDxf("mtext-breaks-and-columns-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    // The text goes back out escaped...
+    ASSERT_EQ(groups.count(1), 1u);
+    EXPECT_EQ(groups.at(1).front(), "one\\Ptwo\\Pthree")
+        << "the line breaks were not written back as paragraph breaks";
+
+    // ...and the columns are still there beside it. If the staleness check
+    // compared the encoded text against the decoded text, this MText would
+    // look edited and the layout would have been dropped.
+    ASSERT_EQ(groups.count(1001), 1u)
+        << "decoding the text was mistaken for an edit and cost the columns";
+    EXPECT_EQ(groups.at(1001).front(), "ACAD");
+    ASSERT_EQ(groups.count(1000), 1u);
+    EXPECT_EQ(groups.at(1000).front(), "ACAD_MTEXT_COLUMN_INFO_BEGIN");
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    auto readBack = onlyMText(reopened);
+    ASSERT_NE(readBack, nullptr);
+    EXPECT_EQ(readBack->text_value(), "one\ntwo\nthree")
+        << "the lines did not survive a save and reopen";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// The other pairing: an MTEXT read from somebody else's file carries its lines
+// as `\P`, and saving that drawing to R12 has to produce one TEXT per line.
+// Without the decoding it would produce a single TEXT holding a literal `\P`,
+// which is the corrupted state this series set out to end.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnImportedMTextBecomesOneTextPerLineAtR12) {
+    const std::string source = uniqueTmpDxf("mtext-imported-r12");
+    boost::filesystem::remove(source);
+    writeOneMText(source, "41\n100.0\n44\n1.0\n");
+    {
+        // writeOneMText writes a single-line body; replace it with an escaped
+        // three-line one, in place, so the fixture stays inline.
+        std::ifstream in(source);
+        std::string contents((std::istreambuf_iterator<char>(in)),
+                             std::istreambuf_iterator<char>());
+        in.close();
+        const std::string needle = "1\ntext\n";
+        const auto at = contents.find(needle);
+        ASSERT_NE(at, std::string::npos);
+        contents.replace(at, needle.size(), "1\nalpha\\Pbeta\\Pgamma\n");
+        std::ofstream out(source);
+        out << contents;
+    }
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    auto mtext = onlyMText(doc);
+    ASSERT_NE(mtext, nullptr);
+    ASSERT_EQ(mtext->text_value(), "alpha\nbeta\ngamma");
+
+    const std::string saved = uniqueTmpDxf("mtext-imported-r12-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::exportFile(
+        doc, saved, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok);
+
+    const auto census = recordsInFile(saved);
+    EXPECT_EQ(census.count("MTEXT"), 0u);
+    ASSERT_EQ(census.count("TEXT"), 1u)
+        << "the imported lines were dropped instead of converted";
+    EXPECT_EQ(census.at("TEXT"), 3u) << "one TEXT per line";
+
+    const auto texts = recordsOfType(saved, "TEXT");
+    ASSERT_EQ(texts.size(), 3u);
+    EXPECT_EQ(texts[0].at(1), "alpha");
+    EXPECT_EQ(texts[1].at(1), "beta");
+    EXPECT_EQ(texts[2].at(1), "gamma")
+        << "a literal paragraph escape reached a TEXT record";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// At R12 the spacing IS the geometry -- there is no group 44 on a TEXT -- so a
+// text that asks for double spacing has to come out double spaced. The
+// splitter was written before the entity carried a factor and stepped by the
+// bare 5/3 pitch, which collapsed every wide-spaced MTEXT to single spacing.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, TheR12TextLinesKeepTheLineSpacingFactor) {
+    for (const double factor : {1.0, 1.75, 3.0}) {
+        auto doc = newDocument();
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {
+            std::make_shared<lc::entity::MText>(
+                lc::geo::Coordinate(10.0, 100.0, 0.0), "one\ntwo\nthree",
+                /*height=*/3.0, /*angle=*/0.0, "STANDARD",
+                lc::TextConst::DrawingDirection::None,
+                lc::TextConst::HAlign::HALeft, lc::TextConst::VAlign::VATop,
+                false, false, false, false,
+                /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+                factor, lc::TextConst::LineSpacingStyle::AtLeast,
+                defaultLayer())})) << factor;
+
+        const std::string path = uniqueTmpDxf("mtext-r12-factor");
+        boost::filesystem::remove(path);
+        ASSERT_TRUE(lc::persistence::File::exportFile(
+            doc, path, lc::persistence::File::Type::LIBDXFRW_DXF_R12).ok) << factor;
+
+        const auto texts = recordsOfType(path, "TEXT");
+        ASSERT_EQ(texts.size(), 3u) << factor;
+
+        const double pitch = lc::TextConst::mtextLinePitch(3.0, factor);
+        for (std::size_t i = 0; i < texts.size(); i++) {
+            EXPECT_NEAR(std::stod(texts[i].at(20)),
+                        100.0 - static_cast<double>(i) * pitch, 1e-9)
+                << "a factor of " << factor << " did not reach line " << i;
+        }
+
+        boost::filesystem::remove(path);
+    }
+}

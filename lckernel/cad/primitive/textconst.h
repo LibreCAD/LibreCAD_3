@@ -5,6 +5,52 @@ namespace lc {
 struct TextConst {
 public:
     /**
+    * DXF's line pitch for MTEXT: one line sits 5/3 of the nominal text height
+    * below the last, before the line-spacing factor of group 44 is applied.
+    *
+    * It lives here because both the kernel (to size a text's bounding box) and
+    * the viewer (to place the lines) have to agree on it, and the kernel is the
+    * layer they share.
+    */
+    static constexpr double MTextLinePitchRatio = 5.0 / 3.0;
+
+    /**
+    * The range DXF documents for the line spacing factor, group 44.
+    */
+    static constexpr double MinLineSpacingFactor = 0.25;
+    static constexpr double MaxLineSpacingFactor = 4.0;
+
+    /**
+    * How far one line of MTEXT sits below the last.
+    *
+    * Every consumer has to get the same answer from the same text or they
+    * disagree about where the drawing is: the viewer places the lines, the
+    * kernel sizes the box the quadtree indexes, and the DXF writer turns the
+    * spacing into geometry when a revision has no MTEXT. Three copies of this
+    * arithmetic is three chances to drift, so there is one.
+    *
+    * A factor outside the range DXF documents means the DXF default -- the
+    * same answer DXFimpl::addMText gives an out-of-range file value. Only the
+    * reader validates, and a script can set the field directly: a factor of 0
+    * would otherwise stack every line on the first.
+    */
+    static constexpr double mtextLinePitch(double height, double lineSpacingFactor) {
+        return height * MTextLinePitchRatio
+               * ((lineSpacingFactor >= MinLineSpacingFactor
+                   && lineSpacingFactor <= MaxLineSpacingFactor)
+                      ? lineSpacingFactor
+                      : 1.0);
+    }
+
+    /**
+    * A rough glyph width as a fraction of the text height.
+    *
+    * The kernel has no font: lcviewernoqt links lckernel and not the other way
+    * round, so nothing here can measure a string. Anything in the kernel that
+    * needs a width -- a bounding box, and nothing else so far -- is estimating.
+    */
+    static constexpr double NominalGlyphWidthRatio = 0.5;
+    /**
     * Vertical alignments.
     */
     enum
@@ -49,6 +95,22 @@ public:
         None = 0, /**< Normal text */
         Backward = 1, /**< Mirrored in X */
         UpsideDown = 2 /**< Mirrored in Y */
+    };
+
+    /**
+    * MTEXT drawing direction, DXF group 72.
+    *
+    * The enumerators ARE the group codes, so encoding one is a cast rather
+    * than a table.  Note this is a different thing from DrawingDirection
+    * above, which is TEXT's group-71 generation flag -- MTEXT has no
+    * mirroring flag, and a writer that puts one in group 72 is writing a
+    * value no reader is defined to understand.
+    */
+    enum
+    MTextDrawingDirection {
+        LeftToRight = 1,
+        TopToBottom = 3,
+        ByStyle = 5     /**< Take the direction from the text style. */
     };
 
     /**

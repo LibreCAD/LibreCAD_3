@@ -1,4 +1,5 @@
 #include "text.h"
+#include "textblockbox.h"
 #include "textbase.h"
 
 
@@ -51,6 +52,9 @@ CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Text::copy(const geo::Coordinate& offset) const {
+    // A copy is a NEW entity and must not inherit an id. Line, Circle and Arc
+    // all leave it unset here and set it in move; Text and MText had the two
+    // the wrong way round.
     auto newText = std::make_shared<Text>(
                        this->_insertion_point + offset,
                        this->_text_value,
@@ -62,22 +66,29 @@ CADEntity_CSPtr Text::copy(const geo::Coordinate& offset) const {
                        this->_valign,
                        layer()
                        , metaInfo(), block());
-    newText->setID(this->id());
     return newText;
 }
 
 CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
+    // The angle turns with the block. Passing _angle through rotated the
+    // insertion point and left the glyphs pointing the way they were, so the
+    // text orbited the centre without ever facing a different direction.
+    //
+    // And the identity is preserved, as it is in move, scale and modify --
+    // rotate was the one transform that did not, so the storage layer saw a
+    // new entity rather than a changed one.
     auto newText = std::make_shared<Text>(
                        this->_insertion_point.rotate(rotation_center, rotation_angle),
                        this->_text_value,
                        this->_height,
-                       this->_angle,
+                       this->_angle + rotation_angle,
                        this->_style,
                        this->_textgeneration,
                        this->_halign,
                        this->_valign,
                        layer()
                        , metaInfo(), block());
+    newText->setID(this->id());
     return newText;
 }
 
@@ -98,12 +109,18 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
 }
 
 const geo::Area Text::boundingBox() const {
-    /// @todo Fix this
-    // Rough bounding box
-    // Assume that the font has char max. width equal to height
-    // Assume single line
-    double width = this->_height * (this->_text_value).size() / 2;
-    return geo::Area(this->_insertion_point - geo::Coordinate(width, width), this->_insertion_point + geo::Coordinate(width, width));
+    // An estimate: the kernel has no font, so nothing here can measure a
+    // string. What it does account for, and the square it replaces did not,
+    // is  the alignment the block hangs from, and the rotation.
+    //
+    // The old box was `height * text.size() / 2` in BOTH axes, centred on the
+    // insertion point -- a square, sized from a byte count, ignoring every
+    // one of those. It is what the quadtree indexes, so selection, snapping
+    // and zoom-to-fit were all asking the wrong shape.
+    return textBlockBoundingBox(this->_insertion_point, this->_text_value,
+                                this->_height, this->_angle,
+                                this->_halign, this->_valign,
+                                /*lineSpacingFactor=*/1.0, false);
 }
 
 CADEntity_CSPtr Text::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

@@ -34,6 +34,7 @@
         <file alias="point.svg">icons/point.svg</file>
         <file alias="infoarea.png">icons/infoarea.png</file>
         <file alias="text.svg">icons/text.svg</file>
+        <file alias="mtext.svg">icons/mtext.svg</file>
         <file alias="mtext_align_bottomcenter.svg">icons/mtext_align_bottomcenter.svg</file>
         <file alias="mtext_align_bottomleft.svg">icons/mtext_align_bottomleft.svg</file>
         <file alias="mtext_align_bottomright.svg">icons/mtext_align_bottomright.svg</file>

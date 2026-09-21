@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -50,7 +52,8 @@ public:
     }
 
     bool empty() const {
-        return objects.empty() && entities.empty() && sections.empty();
+        return objects.empty() && entities.empty() && sections.empty()
+               && mtextExtendedData.empty();
     }
 
     std::size_t total() const {
@@ -94,6 +97,33 @@ public:
     int insUnitsCode{0};
     int measurement{0};
     double lineTypeScale{1.0};
+
+    /**
+     * The extended entity data an MTEXT arrived with, by the id of the entity
+     * built from it.
+     *
+     * MTEXT columns are XDATA -- `1070` keys inside an
+     * ACAD_MTEXT_COLUMN_INFO_BEGIN/END group under AppID ACAD -- not AcDbMText
+     * group codes. libdxfrw captures them into DRW_Entity::extData and writes
+     * them back from there without a line of MTEXT-specific code, so a
+     * DXF-to-DXF pass through the library alone preserves them. LibreCAD did
+     * not: writeMText builds a fresh DRW_MText, and the columns went in the
+     * bin on every save.
+     *
+     * Nothing here is interpreted. The variants are what the reader handed
+     * over, kept so the writer can hand them back, and the text they belonged
+     * to is kept beside them so an edited MText does not carry a column layout
+     * describing text it no longer holds.
+     */
+    struct MTextExtendedData {
+        /** The entity's text as it was read, so an edit can be noticed. */
+        std::string text;
+
+        /** The variants, verbatim. */
+        std::vector<std::shared_ptr<DRW_Variant>> data;
+    };
+
+    std::map<unsigned long, MTextExtendedData> mtextExtendedData;
 
     /**
      * The revision these came from.

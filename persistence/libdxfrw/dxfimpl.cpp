@@ -1,5 +1,6 @@
 #include "dxfimpl.h"
 #include "../generic/helpers.h"
+#include "mtextcodec.h"
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
@@ -531,8 +532,10 @@ void DXFimpl::addText(const DRW_Text& data) {
         LOG_TRACE << "addText";
         auto layer = getLayer(data);
         std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+        // A TEXT record carries no escape language -- only the %% forms it
+        // shares with MTEXT, which LibreCAD has never decoded either.
         auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
-                      data.text, data.height,
+                      lc::persistence::textToPlain(data.text), data.height,
                       data.angle * M_PI / 180, data.style,
                       lc::TextConst::DrawingDirection(data.textgen),
                       lc::TextConst::HAlign(data.alignH),
@@ -766,7 +769,6 @@ void DXFimpl::addMText(const DRW_MText& data) {
         lc::TextConst::VAlign valign;
         //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
         lc::TextConst::DrawingDirection drawingDir;
-        //lc::TextConst::LineSpacingStyle lineSpacingStyle;
 
         switch (data.textgen % 3) {
         default:
@@ -804,16 +806,51 @@ void DXFimpl::addMText(const DRW_MText& data) {
             drawingDir = lc::TextConst::DrawingDirection::None;
         }
 
-        // Uncomment when line spacing style has been implemented
-        /*if (data.alignV == 1) {
-            lineSpacingStyle = lc::TextConst::LineSpacingStyle::AtLeast;
+        // Code 73, line spacing style: 1 = at least, 2 = exact.  Neither the
+        // enum's own ordering nor a cast gets this right, and real files carry
+        // values the specification does not define -- over 150 drawings here,
+        // 269 of 877 MTEXT records say 73 = 0 and 4 omit it.  Anything that is
+        // not 2 takes the DXF default.
+        const auto lineSpacingStyle = (data.linespacingStyle == 2)
+            ? lc::TextConst::LineSpacingStyle::Exact
+            : lc::TextConst::LineSpacingStyle::AtLeast;
+
+        // Code 44, line spacing factor, 0.25 to 4.  libdxfrw defaults it to 1
+        // when the group is absent, which is also the DXF default, so an
+        // out-of-range value is the only thing worth refusing.
+        const double lineSpacingFactor =
+            (data.interlin >= 0.25 && data.interlin <= 4.0) ? data.interlin : 1.0;
+
+        // Code 72, drawing direction: 1 left-to-right, 3 top-to-bottom, 5 by
+        // style.  libdxfrw routes it into DRW_Text::alignH, whose type has
+        // nothing to do with it.  Do not cast: in the same 150 drawings, 456
+        // of 877 MTEXT records carry 72 = 2, which is not a defined value.
+        // An undefined direction becomes ByStyle, which is what the file is
+        // effectively asking for.
+        lc::TextConst::MTextDrawingDirection mtextDirection;
+        switch (static_cast<int>(data.alignH)) {
+        case lc::TextConst::MTextDrawingDirection::LeftToRight:
+            mtextDirection = lc::TextConst::MTextDrawingDirection::LeftToRight;
+            break;
+        case lc::TextConst::MTextDrawingDirection::TopToBottom:
+            mtextDirection = lc::TextConst::MTextDrawingDirection::TopToBottom;
+            break;
+        default:
+            mtextDirection = lc::TextConst::MTextDrawingDirection::ByStyle;
+            break;
         }
-        else {
-            lineSpacingStyle = lc::TextConst::LineSpacingStyle::Exact;
-        }*/
+
+        // Code 41, the reference rectangle width.  libdxfrw carries it in
+        // DRW_Text::widthscale, which is TEXT's width FACTOR -- a different
+        // quantity in the same member -- and DRW_Text's constructor defaults
+        // it to 1, so an MTEXT with no group 41 is indistinguishable from one
+        // that asks to wrap at one drawing unit.  Every one of the 877 MTEXT
+        // records in the corpus carries group 41 and none of them carries 1.0,
+        // so the ambiguity is not one real files reach.
+        const double width = (data.widthscale > 0.0) ? data.widthscale : 0.0;
 
         auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
-                      data.text, data.height,
+                      lc::persistence::mtextToPlain(data.text), data.height,
                       data.angle * M_PI / 180, data.style,
                       lc::TextConst::DrawingDirection(drawingDir),
                       lc::TextConst::HAlign(halign),
@@ -822,10 +859,26 @@ void DXFimpl::addMText(const DRW_MText& data) {
                       false,
                       false,
                       false,
+                      width,
+                      mtextDirection,
+                      lineSpacingFactor,
+                      lineSpacingStyle,
                       layer,
                       mf,
                       getBlock(data)
                                                         );
+
+        // MTEXT columns and background fill are XDATA, not AcDbMText group
+        // codes, and libdxfrw has already captured them into extData. Keep
+        // them on the document's shelf so a save can hand them back: this is
+        // the one place the adapter carries something it does not model, and
+        // nothing here interprets a single variant.
+        if (!data.extData.empty()) {
+            PreservedRecords::MTextExtendedData carried;
+            carried.text = lcMText->text_value();
+            carried.data = data.extData;
+            _preserved.mtextExtendedData.emplace(lcMText->id(), std::move(carried));
+        }
 
         deliver(lcMText);
     });
@@ -1592,7 +1645,12 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     // came from. A record valid in R2013 has no defined meaning in R12, and
     // re-emitting it there would produce a file that claims to be R12 and is
     // not -- so a down-convert drops them, and says how many.
-    _replay = preservedOn(_document);
+    // The shelf itself, before any of the replay gating below: extended entity
+    // data is written from typed variants and is carried by every revision, so
+    // none of the reasons a raw record cannot be replayed apply to it.
+    _shelf = preservedOn(_document);
+
+    _replay = _shelf;
     if (_replay != nullptr && _replay->total() == 0) {
         // Carries only the header, which is revision independent and handled by
         // writeHeader. Nothing to replay, and nothing to report as unreplayed:
@@ -2714,8 +2772,13 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     DRW_Text tex;
     getEntityAttributes(&tex, t);
 
+    // A TEXT record is one line and has no way to say otherwise. The line
+    // this replaces substituted a lone backslash for each newline, which
+    // escapes nothing and leaves a stray `\` in the drawing; a space at least
+    // reads as the word break the newline stood for. A drawing that needs real
+    // line breaks needs an MTEXT.
     std::string correctedText = t->text_value();
-    std::replace(correctedText.begin(), correctedText.end(), '\n', '\\');
+    std::replace(correctedText.begin(), correctedText.end(), '\n', ' ');
 
     // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
@@ -2744,16 +2807,56 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
     dxfW->writeText(&tex);
 }
 
+std::vector<std::shared_ptr<DRW_Variant>> DXFimpl::extendedDataFor(
+    const lc::entity::MText_CSPtr& t) const {
+    if (_shelf == nullptr) {
+        return {};
+    }
+
+    const auto found = _shelf->mtextExtendedData.find(t->id());
+    if (found == _shelf->mtextExtendedData.end()) {
+        return {};
+    }
+
+    // An edited MText is a different text, and a column layout describing the
+    // text that used to be there is worse than no column layout: the reader
+    // would lay the new words out to the old measurements. The captured text
+    // is what decides -- the entity is immutable, so an edit is a new entity
+    // with a new id in the ordinary case, but setProperties keeps the id.
+    if (found->second.text != t->text_value()) {
+        return {};
+    }
+
+    // Handle references cannot be replayed. A 1005 points at another record by
+    // its code 5, and every handle in this file was either minted fresh or
+    // moved by the reservation pass, so the handle the variant carries names
+    // whatever now happens to hold it -- or nothing. Linked columns are the
+    // case that reaches this (ACAD_MTEXT_COLUMNS lists its continuation MTEXTs
+    // by handle); static columns carry 1000, 1070 and 1040 only and come
+    // through. A dangling reference is worse than a lost one, so the whole
+    // capture is dropped rather than half of it.
+    for (const auto& variant : found->second.data) {
+        if (variant == nullptr) {
+            return {};
+        }
+        if (variant->code() == 1005) {
+            return {};
+        }
+    }
+
+    return found->second.data;
+}
+
 void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     DRW_MText tex;
     getEntityAttributes(&tex, t);
 
-    std::string correctedText = t->text_value();
-    size_t index = 0;
-    while (correctedText.find('\n', index) != std::string::npos) {
-        index = correctedText.find('\n');
-        correctedText.replace(index, 1, "\\P");
-    }
+    // Escape first, then break lines: plainToMText doubles a user's backslash
+    // before it can be mistaken for the one in a \P this same call wrote. The
+    // loop this replaces did neither -- it substituted \P for each newline and
+    // left every other backslash alone, so a path like C:\Path went out as a
+    // paragraph break in any conforming reader.
+    const std::string correctedText = lc::persistence::plainToMText(t->text_value());
 
     // Issue #412 phase 2: preserve Z on insertion point.
     tex.basePoint.x = t->insertion_point().x();
@@ -2793,27 +2896,131 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
     }
     tex.textgen = (row - 1) * 3 + col;   // MText attachment point, code 71
 
-    // Drawing direction encoding (code 72): 1=LtR, 3=TtB, 5=byStyle.
-    // lc::TextConst::DrawingDirection: None=0, Backward=1, UpsideDown=3.
-    // Reader's addMText maps 1->Backward, 3->UpsideDown, else->None.  Match
-    // that inverse here so round-trip is symmetric.
+    // Drawing direction, code 72: 1 left-to-right, 3 top-to-bottom, 5 by
+    // style.  The entity now carries the real thing, so this is the value it
+    // was read with -- previously it was derived from textgeneration(), which
+    // is TEXT's group-71 mirroring flag and has no MTEXT meaning, and every
+    // MText the dialog creates fell through to a hardcoded 5.
+    //
     // libdxfrw types alignH/alignV as enums (DRW_Text::HAlign/VAlign) even on
-    // the DRW_MText path where the DXF semantics have nothing to do with
-    // TEXT alignment.  Cast is required — the integer we set here is what the
-    // writer emits verbatim as code 72 / code 73 for MTEXT.
-    switch (t->textgeneration()) {
-        case lc::TextConst::DrawingDirection::Backward:
-            tex.alignH = static_cast<DRW_Text::HAlign>(1); break;
-        case lc::TextConst::DrawingDirection::UpsideDown:
-            tex.alignH = static_cast<DRW_Text::HAlign>(3); break;
-        default:
-            tex.alignH = static_cast<DRW_Text::HAlign>(0); break;
-    }
-    // Line spacing style (code 73): 1=at least, 2=exact.  lc::entity::MText
-    // doesn't currently carry a spacing style so default to 1.
-    tex.alignV = static_cast<DRW_Text::VAlign>(1);
+    // the DRW_MText path where the DXF semantics have nothing to do with TEXT
+    // alignment.  The cast is required: the integer set here is what the
+    // writer emits verbatim as code 72.
+    tex.alignH = static_cast<DRW_Text::HAlign>(t->drawingDirection());
+
+    // Reference rectangle width, code 41.
+    //
+    // DRW_Text's constructor sets widthscale to 1 and dxfRW::writeMText emits
+    // the group unconditionally, so leaving it alone declared a wrap column
+    // one drawing unit wide on every MTEXT LibreCAD_3 has ever written -- and
+    // the text dialog defaults the height to 100.  The entity now carries the
+    // width it was read with, and 0 -- the default for one this build creates
+    // -- is the documented "no reference rectangle, do not wrap".
+    //
+    // The field is called widthscale because it is TEXT's width factor; on an
+    // MTEXT libdxfrw routes code 41 into the same member with an entirely
+    // different meaning.
+    tex.widthscale = t->width();
+
+    // Line spacing style is code 73, which libdxfrw emits from
+    // linespacingStyle -- not from alignV, which this used to set and which
+    // the MTEXT write path never reads.  DXF numbers the two styles 1 and 2
+    // and the enum numbers them 0 and 1, so this is an offset, not a cast.
+    tex.linespacingStyle =
+        (t->lineSpacingStyle() == lc::TextConst::LineSpacingStyle::Exact) ? 2 : 1;
+
+    // Line spacing factor, code 44.
+    tex.interlin = t->lineSpacingFactor();
+
+    tex.extData = extendedDataFor(t);
 
     dxfW->writeMText(&tex);
+}
+
+void DXFimpl::writeMTextAsTextLines(const lc::entity::MText_CSPtr& t) {
+    // One TEXT per line.  A TEXT record holds one line and has no line
+    // spacing, so the spacing has to become geometry: each line gets its own
+    // insertion point, stepped along the text's own "up" so a rotated MText
+    // still reads as a rotated block.
+    //
+    // Every line carries the block's alignment, which is what makes the
+    // placement work without repeating the renderer's layout: a reader anchors
+    // each TEXT by that alignment, so stepping the anchors by one pitch puts
+    // the lines where the block had them.  Where the FIRST line's anchor goes
+    // is the only thing the alignment changes.
+    std::vector<std::string> lines;
+    {
+        const std::string& text = t->text_value();
+        std::string current;
+        for (const char c : text) {
+            if (c == '\n') {
+                lines.push_back(current);
+                current.clear();
+            } else if (c != '\r') {
+                current += c;
+            }
+        }
+        lines.push_back(current);
+    }
+
+    const auto count = static_cast<double>(lines.size());
+    // Including group 44: here the spacing IS the geometry, so a text that asks
+    // for double spacing must come out of R12 double spaced. Ignoring the
+    // factor collapsed every one of them to single spacing.
+    const double pitch =
+        lc::TextConst::mtextLinePitch(t->height(), t->lineSpacingFactor());
+
+    // In pitches above the block's anchor.
+    double firstLine = 0.0;
+    switch (t->valign()) {
+    case lc::TextConst::VAlign::VATop:
+        firstLine = 0.0;               // the block hangs below its anchor
+        break;
+    case lc::TextConst::VAlign::VAMiddle:
+        firstLine = (count - 1.0) / 2.0;
+        break;
+    case lc::TextConst::VAlign::VABottom:
+    case lc::TextConst::VAlign::VABaseline:
+    default:
+        firstLine = count - 1.0;       // the block stands on its anchor
+        break;
+    }
+
+    // The text's own up direction, so the lines stack along the MText's
+    // rotation rather than along world Y.
+    const double upX = -std::sin(t->angle());
+    const double upY = std::cos(t->angle());
+
+    for (std::size_t i = 0; i < lines.size(); i++) {
+        const double pitches = firstLine - static_cast<double>(i);
+
+        DRW_Text tex;
+        getEntityAttributes(&tex, t);
+
+        tex.basePoint.x = t->insertion_point().x() + upX * pitches * pitch;
+        tex.basePoint.y = t->insertion_point().y() + upY * pitches * pitch;
+        tex.basePoint.z = t->insertion_point().z();
+        tex.text = lines[i];
+        tex.height = t->height();
+        tex.angle = t->angle() * 180 / M_PI;
+        tex.alignH = DRW_Text::HAlign(t->halign());
+        tex.alignV = DRW_Text::VAlign(t->valign());
+        if (!t->style().empty()) {
+            tex.style = t->style();
+        }
+        // See writeText: libdxfrw only emits code 11 for a non-default
+        // alignment, and without it such text anchors at the origin.
+        tex.secPoint = tex.basePoint;
+
+        dxfW->writeText(&tex);
+    }
+
+    if (_mtextsAsText++ == 0) {
+        _loss.notes.push_back(
+            "Multiline text was written as one TEXT record per line: this "
+            "revision has no MTEXT. The words and their placement are kept; "
+            "the block, its reference width and its line spacing are not.");
+    }
 }
 
 void DXFimpl::writeEntities() {
@@ -2883,6 +3090,14 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
     const auto recordKind = recordKindOf(entity);
     if (!recordKind.empty()
         && !variantCarriesRecord(File::variantIdForType(_exportType), recordKind)) {
+        // MTEXT is the one of these that can be said another way. R12 has no
+        // MTEXT and has had TEXT since the beginning, so a multiline note
+        // becomes one TEXT per line rather than nothing at all -- losing the
+        // block is not a reason to lose the words.
+        if (auto mtext = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            writeMTextAsTextLines(mtext);
+            return;
+        }
         _loss.droppedByType[recordKind]++;
         return;
     }

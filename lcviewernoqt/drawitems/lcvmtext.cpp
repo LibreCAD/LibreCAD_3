@@ -2,6 +2,11 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include <cad/primitive/textconst.h>
+#include "mtextlayout.h"
+
+#include <cstddef>
+#include <string>
+#include <vector>
 
 using namespace lc::viewer;
 
@@ -23,112 +28,70 @@ LCVMText::LCVMText(const lc::entity::MText_CSPtr& mtext) :
 */
 void LCVMText::draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const {
     setFontFace(painter);
-    TextExtends te = painter.text_extends(_mtext->text_value().c_str());
-    double alignX = 0.0;
-    double alignY = 0.0;
-    setAlignment(alignX, alignY, te.width);
 
-    std::string textval = _mtext->text_value();
-    std::vector<std::string> lines;
-    std::string::size_type pos = 0;
-    std::string::size_type prev = 0;
-    while ((pos = textval.find('\n', prev)) != std::string::npos)
-    {
-        lines.push_back(textval.substr(prev, pos - prev));
-        prev = pos + 1;
+    // Set the size BEFORE measuring. text_extends scales by the painter's
+    // current text height, and the renderer resets that to a default after
+    // every stroke -- so every measurement here used to be taken at that
+    // default rather than at the text's own height, and every alignment
+    // offset was wrong by the ratio between them. LCVText has always done it
+    // in this order.
+    painter.font_size(_mtext->height(), false);
+
+    const std::vector<std::string> lines = splitTextLines(_mtext->text_value());
+
+    std::vector<double> widths;
+    widths.reserve(lines.size());
+    for (const std::string& line : lines) {
+        widths.push_back(painter.text_extends(line.c_str()).width);
     }
 
-    // To get the last substring (or only, if delimiter is not found)
-    lines.push_back(textval.substr(prev));
+    // The line spacing the file asked for, group 44. This was a hardcoded 1.0
+    // because the entity had nowhere to keep the factor; an MTEXT written at
+    // double spacing came back single-spaced on screen and then single-spaced
+    // in the file on the next save.
+    //
+    // Group 73 -- at least, versus exactly -- is carried on the entity and
+    // does not reach here, because it cannot make a difference yet: it lets a
+    // line grow taller than the factor asks when the line holds a taller
+    // character, and every line of an MText here is set in one size. The
+    // inline height codes that would change that (\H) are stripped by the
+    // codec, not rendered.
+    const std::vector<TextLineOffset> offsets = layoutTextLines(
+        _mtext->halign(), _mtext->valign(), _mtext->height(),
+        _mtext->lineSpacingFactor(), widths);
 
-    double heightOffset = 0;
-    for (const std::string& line : lines) {
-        painter.font_size(_mtext->height(), false);
+    for (std::size_t i = 0; i < lines.size(); i++) {
+        // One transform per line, and the line advance goes INSIDE the
+        // rotation. It used to be folded into the translation that precedes
+        // the rotate, so a rotated block stacked its lines along the unrotated
+        // axis: at 90 degrees they printed on top of each other.
         painter.save();
-        painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() + heightOffset);
+        painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y());
         painter.rotate(-_mtext->angle());
-        painter.translate(alignX, -alignY);
-        painter.move_to(0., 0.);
-        painter.text(line.c_str());
-        painter.stroke();
-        painter.restore();
+        painter.translate(offsets[i].x, offsets[i].y);
 
+        painter.move_to(0.0, 0.0);
+        painter.text(lines[i].c_str());
+        painter.stroke();
+
+        // The rules belong to the line they cross, at that line's width. They
+        // used to be drawn at the first line's position, spanning the whole
+        // block's measured width, with the underline offset a hardcoded 8
+        // drawing units -- an absolute distance in a drawing whose text may be
+        // 2.5mm or 100m tall.
         if (_mtext->strikethrough()) {
-            painter.save();
-            painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() - (te.height / 6.0));
-            painter.rotate(-_mtext->angle());
-            painter.translate(alignX, -alignY);
-            painter.move_to(0., 0);
-            painter.line_to(te.width, 0);
+            painter.move_to(0.0, -_mtext->height() / 3.0);
+            painter.line_to(widths[i], -_mtext->height() / 3.0);
             painter.stroke();
-            painter.restore();
         }
 
         if (_mtext->underlined()) {
-            painter.save();
-            painter.translate(_mtext->insertion_point().x(), -_mtext->insertion_point().y() + 8.0);
-            painter.rotate(-_mtext->angle());
-            painter.translate(alignX, -alignY);
-            painter.move_to(0., 0);
-            painter.line_to(te.width, 0);
+            painter.move_to(0.0, _mtext->height() / 5.0);
+            painter.line_to(widths[i], _mtext->height() / 5.0);
             painter.stroke();
-            painter.restore();
         }
 
-        heightOffset += _mtext->height();
-    }
-}
-
-void LCVMText::setAlignment(double& alignX, double& alignY, const double textExtendsWidth) const {
-    switch (_mtext->valign()) {
-    case lc::TextConst::VAMiddle:
-        alignX += 0.0;
-        alignY += -_mtext->height() / 2. + (_mtext->height() * .2);
-        break;
-
-    case lc::TextConst::VABottom:
-        alignX += 0.0;
-        alignY += 0.0 + (_mtext->height() * .2);
-        break;
-
-    case lc::TextConst::VABaseline:
-        alignX += 0.0;
-        alignY += 0.0;
-        break;
-
-    case lc::TextConst::VATop:
-        alignX += 0.0;
-        alignY += -_mtext->height() + (_mtext->height() * .2);
-        break;
-
-    default:
-        break;
-    }
-
-    // Horizontal Align:
-    switch (_mtext->halign()) {
-    case lc::TextConst::HALeft:
-        alignX += 0;
-        alignY += 0.;
-        break;
-
-    case lc::TextConst::HACenter:
-        alignX += -textExtendsWidth / 2.0;
-        alignY += 0.;
-        break;
-
-    case lc::TextConst::HAMiddle:
-        alignX += -textExtendsWidth / 2.0;
-        alignY += 0.;
-        break;
-
-    case lc::TextConst::HARight:
-        alignX += -textExtendsWidth;
-        alignY += 0.;
-        break;
-
-    default:
-        break;
+        painter.restore();
     }
 }
 
