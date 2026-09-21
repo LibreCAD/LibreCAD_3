@@ -45,8 +45,20 @@ void LCVMText::draw(LcPainter& painter, const LcDrawOptions& options, const lc::
         widths.push_back(painter.text_extends(line.c_str()).width);
     }
 
+    // The line spacing the file asked for, group 44. This was a hardcoded 1.0
+    // because the entity had nowhere to keep the factor; an MTEXT written at
+    // double spacing came back single-spaced on screen and then single-spaced
+    // in the file on the next save.
+    //
+    // Group 73 -- at least, versus exactly -- is carried on the entity and
+    // does not reach here, because it cannot make a difference yet: it lets a
+    // line grow taller than the factor asks when the line holds a taller
+    // character, and every line of an MText here is set in one size. The
+    // inline height codes that would change that (\H) are stripped by the
+    // codec, not rendered.
     const std::vector<TextLineOffset> offsets = layoutTextLines(
-        _mtext->halign(), _mtext->valign(), _mtext->height(), 1.0, widths);
+        _mtext->halign(), _mtext->valign(), _mtext->height(),
+        _mtext->lineSpacingFactor(), widths);
 
     for (std::size_t i = 0; i < lines.size(); i++) {
         // One transform per line, and the line advance goes INSIDE the

@@ -17,10 +17,12 @@
 #include <cad/primitive/textconst.h>
 
 #include <drawitems/lcvmtext.h>
+#include <drawitems/mtextlayout.h>
 #include <lcdrawoptions.h>
 
 #include "recordingpainter.h"
 
+using lc::viewer::mtextLinePitch;
 using lc::viewer::testing::RecordingPainter;
 
 namespace {
@@ -73,6 +75,49 @@ TEST(MTextDrawTest, TheLinesAreDrawnAtTheTextsOwnHeight) {
     ASSERT_EQ(drawn.size(), 2u);
     EXPECT_DOUBLE_EQ(drawn[0].fontSize, kHeight);
     EXPECT_DOUBLE_EQ(drawn[1].fontSize, kHeight);
+}
+
+// The spacing the file asked for, group 44. draw() used to pass a hardcoded
+// 1.0, so an MTEXT written at double spacing came back single-spaced.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MTextDrawTest, TheLineSpacingFactorReachesTheSpacing) {
+    for (const double factor : {0.5, 1.0, 1.5, 2.0, 4.0}) {
+        const auto drawn = drawLines(mtext("one\ntwo", factor));
+        ASSERT_EQ(drawn.size(), 2u) << factor;
+
+        EXPECT_NEAR(drawn[1].y - drawn[0].y, mtextLinePitch(kHeight, factor), 1e-9)
+            << "a factor of " << factor << " did not reach the line pitch";
+    }
+}
+
+// A factor outside what DXF documents takes the default rather than the
+// value. Only the reader validates, so a script can set this directly -- and
+// a factor of 0 would stack every line on the first.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MTextDrawTest, AnImpossibleSpacingFactorFallsBackToSingle) {
+    const double single = mtextLinePitch(kHeight, 1.0);
+
+    for (const double factor : {0.0, -3.0, 0.1, 9.0}) {
+        const auto drawn = drawLines(mtext("one\ntwo", factor));
+        ASSERT_EQ(drawn.size(), 2u) << factor;
+        EXPECT_NEAR(drawn[1].y - drawn[0].y, single, 1e-9)
+            << "a factor of " << factor << " is not one DXF allows";
+    }
+}
+
+// The spacing is geometry, so it has to turn with the text: the step between
+// lines follows the text's own down direction, not the page's.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MTextDrawTest, TheSpacedLinesTurnWithTheText) {
+    const double pitch = mtextLinePitch(kHeight, 2.0);
+    const auto drawn = drawLines(mtext("one\ntwo", 2.0, M_PI / 2));
+
+    ASSERT_EQ(drawn.size(), 2u);
+    // A quarter turn puts the line advance along x, and leaves y alone.
+    EXPECT_NEAR(std::abs(drawn[1].x - drawn[0].x), pitch, 1e-9)
+        << "the lines did not step across the page";
+    EXPECT_NEAR(drawn[1].y - drawn[0].y, 0.0, 1e-9)
+        << "the lines still stepped down the page";
 }
 
 // Horizontal alignment is per line, from that line's own width -- issue #361's
