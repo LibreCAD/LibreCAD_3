@@ -349,12 +349,33 @@ private:
         kaguya::State state(_ref.state());
         std::vector<kaguya::LuaRef> lua_args;
         for (const auto& a : args) lua_args.push_back(toLuaLocked(state, a));
+
+        // kaguya's LuaRef::operator() calls functions and threads only.  An
+        // operation class is a table that Lua calls through its __call
+        // metamethod (`LineOperations()`), so call that metamethod with the
+        // table in front of the arguments, as Lua itself does.  Without this
+        // every runOperation of a Lua operation instantiated nothing.
+        kaguya::LuaRef callable = _ref;
+        const int type = _ref.type();
+        if (type != LUA_TFUNCTION && type != LUA_TTHREAD) {
+            lua_State* L = _ref.state();
+            _ref.push(L);
+            const int callType = luaL_getmetafield(L, -1, "__call");
+            if (callType == LUA_TNIL) {
+                lua_pop(L, 1);
+                return kaguya::LuaRef{};
+            }
+            callable = kaguya::LuaRef(L, kaguya::StackTop());
+            lua_pop(L, 1);
+            lua_args.insert(lua_args.begin(), _ref);
+        }
+
         try {
             switch (lua_args.size()) {
-            case 0: return _ref();
-            case 1: return _ref(lua_args[0]);
-            case 2: return _ref(lua_args[0], lua_args[1]);
-            default: return _ref(lua_args);
+            case 0: return callable();
+            case 1: return callable(lua_args[0]);
+            case 2: return callable(lua_args[0], lua_args[1]);
+            default: return callable(lua_args);
             }
         } catch (const std::exception& /*e*/) {
             return kaguya::LuaRef{};
