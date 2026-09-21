@@ -16,10 +16,21 @@ constexpr double kMTextLinePitchRatio = 5.0 / 3.0;
 /// Preserved exactly so no existing single-line MText shifts on screen.
 constexpr double kDescenderAllowance = 0.2;
 
+/// The range DXF documents for the line spacing factor, group 44.
+constexpr double kMinLineSpacingFactor = 0.25;
+constexpr double kMaxLineSpacingFactor = 4.0;
+
 }  // namespace
 
 double mtextLinePitch(double height, double lineSpacingFactor) {
-    const double factor = lineSpacingFactor > 0.0 ? lineSpacingFactor : 1.0;
+    // DXF documents group 44 as 0.25 to 4. Outside that range means the DXF
+    // default, the same answer DXFimpl::addMText gives an out-of-range file
+    // value -- and the one that matters, since only the reader validates: a
+    // script setting the field directly could otherwise ask for a factor of 0
+    // and stack every line on the first.
+    const bool usable = lineSpacingFactor >= kMinLineSpacingFactor
+                        && lineSpacingFactor <= kMaxLineSpacingFactor;
+    const double factor = usable ? lineSpacingFactor : 1.0;
     return height * kMTextLinePitchRatio * factor;
 }
 
