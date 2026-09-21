@@ -2177,6 +2177,197 @@ TEST(DxfRoundTripTest, AnMTextWritesTheWidthAndSpacingItCarries) {
     boost::filesystem::remove(saved);
 }
 
+namespace {
+
+/// The two-column layout of a real MTEXT, as XDATA.
+///
+/// MTEXT columns are not AcDbMText group codes: they are 1070 keys inside an
+/// ACAD_MTEXT_COLUMN_INFO group under AppID ACAD. 75 is the column type, 79
+/// auto-height, 76 the count, 78 flow-reversed, 48 the width and 49 the
+/// gutter. Nothing in LibreCAD reads any of it; that is the point.
+const char* const kColumnXData =
+    "1001\nACAD\n"
+    "1000\nACAD_MTEXT_COLUMN_INFO_BEGIN\n"
+    "1070\n75\n1070\n1\n"
+    "1070\n79\n1070\n0\n"
+    "1070\n76\n1070\n2\n"
+    "1070\n78\n1070\n0\n"
+    "1070\n48\n1040\n50.0\n"
+    "1070\n49\n1040\n5.0\n"
+    "1000\nACAD_MTEXT_COLUMN_INFO_END\n";
+
+/// The same, plus a handle reference -- what linked columns carry.
+const char* const kLinkedColumnXData =
+    "1001\nACAD\n"
+    "1000\nACAD_MTEXT_COLUMNS\n"
+    "1005\n2F\n";
+
+}  // namespace
+
+// Columns survive a DXF-to-DXF pass through libdxfrw alone: DRW_Entity
+// captures 1000-1071 into extData and dxfRW::writeMText writes it back, with
+// no MTEXT-specific code on either side. They did not survive LibreCAD,
+// because writeMText builds a fresh DRW_MText and the capture went nowhere --
+// `grep -c extData persistence/libdxfrw/dxfimpl.cpp` was 0. Open a columned
+// drawing, press Save, and the columns were gone.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextKeepsItsColumnsAcrossASave) {
+    const std::string source = uniqueTmpDxf("mtext-columns-source");
+    boost::filesystem::remove(source);
+    writeOneMText(source, std::string("41\n100.0\n72\n5\n73\n1\n44\n1.0\n") + kColumnXData);
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    ASSERT_NE(onlyMText(doc), nullptr);
+
+    const std::string saved = uniqueTmpDxf("mtext-columns-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+
+    ASSERT_EQ(groups.count(1001), 1u) << "the MTEXT went out with no XDATA at all";
+    EXPECT_EQ(groups.at(1001).front(), "ACAD");
+
+    ASSERT_EQ(groups.count(1000), 1u);
+    EXPECT_EQ(groups.at(1000).front(), "ACAD_MTEXT_COLUMN_INFO_BEGIN");
+    EXPECT_EQ(groups.at(1000).back(), "ACAD_MTEXT_COLUMN_INFO_END");
+
+    // The keys and their values, in order, exactly as they arrived. DXF pads
+    // an integer group to a fixed width, so compare the numbers.
+    ASSERT_EQ(groups.count(1070), 1u);
+    std::vector<int> keys;
+    for (const std::string& value : groups.at(1070)) {
+        keys.push_back(std::stoi(value));
+    }
+    const std::vector<int> expected{75, 1, 79, 0, 76, 2, 78, 0, 48, 49};
+    EXPECT_EQ(keys, expected) << "the column keys were reordered or lost";
+
+    ASSERT_EQ(groups.count(1040), 1u);
+    ASSERT_EQ(groups.at(1040).size(), 2u);
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(1040)[0]), 50.0) << "column width";
+    EXPECT_DOUBLE_EQ(std::stod(groups.at(1040)[1]), 5.0) << "column gutter";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// A column layout describes a particular block of text. Re-emitting it beside
+// different words is worse than dropping it: the reader would lay the new text
+// out to the old measurements, and nothing would say so. The text the capture
+// belonged to is kept beside it, and an edit is noticed by comparison rather
+// than by trusting that an edit produces a new entity -- setProperties keeps
+// the id.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnEditedMTextDropsTheColumnsThatDescribedItsOldText) {
+    const std::string source = uniqueTmpDxf("mtext-columns-edit");
+    boost::filesystem::remove(source);
+    writeOneMText(source, std::string("41\n100.0\n") + kColumnXData);
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    auto original = onlyMText(doc);
+    ASSERT_NE(original, nullptr);
+
+    // Same entity id, different words.
+    lc::entity::PropertiesMap edited;
+    edited["textValue"] = std::string("something else entirely");
+    auto changed = std::dynamic_pointer_cast<const lc::entity::MText>(
+        original->setProperties(edited));
+    ASSERT_NE(changed, nullptr);
+    ASSERT_EQ(changed->id(), original->id()) << "the premise of this test";
+    ASSERT_NE(changed->text_value(), original->text_value())
+        << "setProperties did not change the text; the test proves nothing";
+
+    // The shelf travels with the document the file was read into, so the edit
+    // has to replace the entity in THAT document for the lookup to happen at
+    // all: take the original out and put the edited one in.
+    {
+        auto remove = std::make_shared<lc::operation::EntityBuilder>(doc);
+        remove->appendEntity(original);
+        remove->appendOperation(std::make_shared<lc::operation::Push>());
+        remove->appendOperation(std::make_shared<lc::operation::Remove>());
+        remove->execute();
+
+        auto add = std::make_shared<lc::operation::EntityBuilder>(doc);
+        add->appendEntity(changed);
+        add->execute();
+    }
+    ASSERT_NE(onlyMText(doc), nullptr);
+    EXPECT_EQ(onlyMText(doc)->text_value(), changed->text_value());
+
+    const std::string saved = uniqueTmpDxf("mtext-columns-edited");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+    EXPECT_EQ(groups.count(1001), 0u)
+        << "a column layout for text this MText no longer holds was written out";
+}
+
+// A 1005 names another record by its code 5, and every handle in the written
+// file was either minted fresh or moved by the reservation pass -- so the
+// handle the variant carries names whatever now happens to hold it, or
+// nothing. A dangling reference is worse than a lost one.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, XDataThatNamesAnotherRecordByHandleIsNotWrittenBack) {
+    const std::string source = uniqueTmpDxf("mtext-columns-linked");
+    boost::filesystem::remove(source);
+    writeOneMText(source, std::string("41\n100.0\n") + kLinkedColumnXData);
+
+    auto doc = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        doc, source, lc::persistence::File::Library::LIBDXFRW));
+    ASSERT_NE(onlyMText(doc), nullptr);
+
+    const std::string saved = uniqueTmpDxf("mtext-columns-linked-saved");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+    EXPECT_EQ(groups.count(1005), 0u) << "a handle reference was replayed";
+    EXPECT_EQ(groups.count(1001), 0u)
+        << "half a capture is not a capture: the whole group goes or none of it";
+
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+// And nothing is invented. An MText this session created has no XDATA, and
+// must not acquire any.
+//
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, AnMTextThisSessionCreatedGetsNoExtendedData) {
+    auto doc = newDocument();
+    ASSERT_NO_THROW(insertThroughBuilder(doc, {
+        std::make_shared<lc::entity::MText>(
+            lc::geo::Coordinate(1.0, 1.0, 0.0), "text", 10.0, 0.0, "STANDARD",
+            lc::TextConst::DrawingDirection::None, lc::TextConst::HAlign::HALeft,
+            lc::TextConst::VAlign::VATop, false, false, false, false,
+            /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+            /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+            defaultLayer())}));
+
+    const std::string saved = uniqueTmpDxf("mtext-no-xdata");
+    boost::filesystem::remove(saved);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    const auto groups = groupsOfRecord(saved, "MTEXT");
+    EXPECT_EQ(groups.count(1001), 0u);
+    EXPECT_EQ(groups.count(1000), 0u);
+
+    boost::filesystem::remove(saved);
+}
+
 
 // A DXF holds far more than geometry: layouts, plot settings, table styles,
 // dictionaries, and whatever a vertical application stored under its own class.
