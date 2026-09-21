@@ -321,7 +321,7 @@ if importlib.util.find_spec('lcUIPy') is None:
     # Cannot import — the test is a no-op in this environment.
     # Fail loudly so the discovery gap is visible.
     raise RuntimeError(
-        'lcUIPy not on sys.path — the source-tree search couldn\\'t '
+        'lcUIPy not on sys.path — the source-tree search couldn\'t '
         'locate it.  Run this test from a directory where the '
         'source-tree lcUIPy/ is reachable within 6 parents.')
 
