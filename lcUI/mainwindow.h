@@ -12,7 +12,6 @@
 #include <functional>
 
 #include <QMainWindow>
-#include <QShortcut>
 #include "widgets/clicommand.h"
 #include "widgets/layers.h"
 #include "widgets/linepatternselect.h"
@@ -170,11 +169,31 @@ namespace lc
             * \brief Copy selected entities to the clipboard
             */
             void copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
-            
+
             /**
-            * \brief Paste entities from the clipboard
+            * \brief Copy selected entities to the clipboard and remove them from the drawing
+            */
+            void cutSelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
+
+            /**
+            * \brief Paste entities from the clipboard: start PasteOperation, which asks where
             */
             void pasteEvent();
+
+            /**
+            * \brief The clipboard entities a paste into this window adds copies of
+            */
+            std::vector<lc::entity::CADEntity_CSPtr> clipboardEntities() const;
+
+            /**
+            * \brief The point of the clipboard entities that a paste puts where the user clicks
+            */
+            lc::geo::Coordinate clipboardBasePoint() const;
+
+            /**
+            * \brief Add copies of the clipboard entities, moved by offset, as one undo step
+            */
+            void pasteClipboard(const lc::geo::Coordinate& offset);
 
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
@@ -350,10 +369,6 @@ namespace lc
 
             // Phase 4 PR-7 — ordered resolver list; last-registered wins.
             std::vector<OperationResolver> _operationResolvers;
-
-            // Shortcuts
-            QShortcut* copyShortcut;
-            QShortcut* pasteShortcut;
         };
     }
 }

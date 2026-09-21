@@ -294,7 +294,11 @@ void addLCBindings(lua_State *L) {
                                        .addFunction("runLastOperation", &lc::ui::MainWindow::runLastOperation)
                                        .addFunction("currentOperation", &lc::ui::MainWindow::currentOperation)
                                        .addFunction("copySelectedEntities", &lc::ui::MainWindow::copySelectedEntities)
+                                       .addFunction("cutSelectedEntities", &lc::ui::MainWindow::cutSelectedEntities)
                                        .addFunction("pasteEvent", &lc::ui::MainWindow::pasteEvent)
+                                       .addFunction("clipboardEntities", &lc::ui::MainWindow::clipboardEntities)
+                                       .addFunction("clipboardBasePoint", &lc::ui::MainWindow::clipboardBasePoint)
+                                       .addFunction("pasteClipboard", &lc::ui::MainWindow::pasteClipboard)
                                        .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
                                        .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
     // Phase 4 PR-7 — runOperation now takes lc::scripting::ScriptObject.

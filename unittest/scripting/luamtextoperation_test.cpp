@@ -231,7 +231,6 @@ TEST_F(LuaMTextOperationFixture, EveryMenuEntryTheUiDefinesIsConnected) {
 -- existed.  Each wants an operation written for it or removing from the .ui.
 -- The list is checked to be exact, so it can only get shorter.
 local knownDead = {
-    actionCut = true, actionCopy = true, actionPaste = true,
     actionContinue = true,
     actionOrdinate = true, actionANG2LN = true,
     actionAdd_Random_Lines = true, actionAdd_Random_Circles = true, actionAdd_Random_Arc = true,

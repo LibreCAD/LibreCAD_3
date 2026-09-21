@@ -215,6 +215,9 @@ if(WITH_QT_UI)
             ui/testlinewidthselect.cpp
             ui/testmainwindow.cpp
             ui/testwindowmanager.cpp
+            # Menu entries MainWindow connects natively: Cut, Copy, Paste
+            # and the Add Random entries.
+            ui/testmenuentries.cpp
             ui/gui/testmenuitem.cpp
             ui/gui/testmenu.cpp
             ui/gui/testtoolbartab.cpp

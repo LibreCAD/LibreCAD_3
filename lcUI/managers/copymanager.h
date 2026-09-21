@@ -1,13 +1,21 @@
 #pragma once
 
+#include <cstddef>
+#include <vector>
+
 #include <cad/base/cadentity.h>
-#include <rapidjson/document.h>
+#include <cad/geometry/geocoordinate.h>
 #include <cadmdichild.h>
 
 namespace lc {
     namespace ui {
         /**
         * \brief Copy Manager
+        *
+        * Cut, copy and paste of drawing entities.  Entities are immutable, so
+        * the clipboard holds the copied entities themselves, and a paste adds
+        * copies of them with new IDs.  The clipboard is shared by every window,
+        * so what is copied from one drawing can be pasted into another.
         */
         class CopyManager
         {
@@ -19,46 +27,38 @@ namespace lc {
             CopyManager(CadMdiChild* cadMdiChild = nullptr);
 
             /**
-            * \brief Copy event, copy entities to the clipboard
-            * \param pointer to vector of selected cad entities
+            * \brief Put entities on the clipboard
+            * \param cadEntities entities to copy; an empty list leaves the clipboard as it was
             */
             void copyEntitiesToClipboard(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
 
             /**
-            * \brief Paste the entities to the window
+            * \brief Put entities on the clipboard and remove them from the drawing, as one undo step
+            * \param cadEntities entities to cut; an empty list does nothing
             */
-            void pasteEvent();
-
-        private:
-            /**
-            * \brief Read entities from the document
-            */
-            void readEntities(rapidjson::Document& document);
+            void cutEntitiesToClipboard(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
 
             /**
-            * \brief Create and add entity from the given properties list
+            * \brief The clipboard entities that can be pasted into this window's drawing
+            *
+            * A block reference names a block of the drawing it was copied from,
+            * so it only pastes back into that drawing.
             */
-            void createEntity(const std::string& entityName, const lc::entity::PropertiesMap& propertiesList);
+            std::vector<lc::entity::CADEntity_CSPtr> pasteableEntities() const;
 
             /**
-            * \brief Create entities with extra properties (lwpolyline)
+            * \brief The lower left corner of the pasteable entities, which a paste puts where the user clicks
             */
-            void createOtherEntity(const std::string& entityName, const lc::entity::PropertiesMap& propertiesList, const rapidjson::Value& otherProperties);
+            lc::geo::Coordinate basePoint() const;
 
             /**
-            * \brief Serialize entity property to JSON
+            * \brief Add the pasteable entities to this window's drawing, moved by offset, as one undo step
+            *
+            * Each entity keeps its layer.  A layer the drawing has no layer of
+            * that name for is added to the drawing in the same undo step.
+            * \return the number of entities pasted
             */
-            rapidjson::Value propertyValue(const std::string key, const lc::entity::EntityProperty& entityProperty, rapidjson::Document& document);
-
-            /**
-            * \brief Deserialize entity property from json
-            */
-            lc::entity::EntityProperty getEntityPropertyFromJSONValue(const rapidjson::Value& value);
-
-            /**
-            * \brief Deserialize entities with extra properties
-            */
-            rapidjson::Value getCustomProperties(const std::string& entityName, lc::entity::CADEntity_CSPtr entity, rapidjson::Document& document);
+            std::size_t paste(const lc::geo::Coordinate& offset);
 
         private:
             CadMdiChild* _cadMdiChild;

@@ -6,6 +6,7 @@
 #include "propertyeditor.h"
 #include "managers/contextmenumanager.h"
 
+#include <QKeySequence>
 #include <QStandardPaths>
 
 #include "widgets/guiAPI/coordinategui.h"
@@ -128,13 +129,6 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
-
-    /* Shortcuts */
-    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C), this);
-    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_V), this);
-
-    connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
-    connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);
 
     this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
 }
@@ -361,6 +355,15 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
     QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
     QObject::connect(findMenuItemByObjectName("actionAuto_Scale"), &QAction::triggered, this, &MainWindow::autoScale);
+    QObject::connect(findMenuItemByObjectName("actionCut"), &QAction::triggered, this, [this]() { cutSelectedEntities(_cadMdiChild.selection()); });
+    QObject::connect(findMenuItemByObjectName("actionCopy"), &QAction::triggered, this, [this]() { copySelectedEntities(_cadMdiChild.selection()); });
+    QObject::connect(findMenuItemByObjectName("actionPaste"), &QAction::triggered, this, &MainWindow::pasteEvent);
+
+    // initMenuAPI rebuilds every menu entry from its text and object name
+    // only, so a shortcut has to be given to the rebuilt entry.
+    findMenuItemByObjectName("actionCut")->setShortcut(QKeySequence::Cut);
+    findMenuItemByObjectName("actionCopy")->setShortcut(QKeySequence::Copy);
+    findMenuItemByObjectName("actionPaste")->setShortcut(QKeySequence::Paste);
 }
 
 void MainWindow::runLastOperation() {
@@ -904,8 +907,31 @@ void MainWindow::copySelectedEntities(const std::vector<lc::entity::CADEntity_CS
     _copyManager.copyEntitiesToClipboard(cadEntities);
 }
 
+void MainWindow::cutSelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities) {
+    _copyManager.cutEntitiesToClipboard(cadEntities);
+    _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    _cadMdiChild.viewer()->update();
+}
+
 void MainWindow::pasteEvent() {
-    _copyManager.pasteEvent();
+    if (_copyManager.pasteableEntities().empty()) {
+        _cliCommand.write("Nothing to paste");
+        return;
+    }
+    runOperationByName("PasteOperation");
+}
+
+std::vector<lc::entity::CADEntity_CSPtr> MainWindow::clipboardEntities() const {
+    return _copyManager.pasteableEntities();
+}
+
+lc::geo::Coordinate MainWindow::clipboardBasePoint() const {
+    return _copyManager.basePoint();
+}
+
+void MainWindow::pasteClipboard(const lc::geo::Coordinate& offset) {
+    _copyManager.paste(offset);
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::saveDockLayout() {
