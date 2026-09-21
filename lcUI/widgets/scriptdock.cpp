@@ -30,7 +30,13 @@ namespace {
 #ifdef LC_WITH_PYTHONSCRIPT
 
 struct LC_PYTHON_LOCAL ScriptDock::PyNamespace {
-    py::dict ns;
+    // A py::object, not a py::dict: a default py::object holds no
+    // reference, whereas a default py::dict calls PyDict_New.  Members
+    // are constructed before, and destroyed after, the bodies below
+    // that hold the GIL, so a py::dict member touched Python with no
+    // thread state and crashed.  The dict is created, and dropped,
+    // inside those bodies instead.
+    py::object ns;
     PyNamespace();
     ~PyNamespace();
     PyNamespace(const PyNamespace&) = delete;
@@ -57,8 +63,9 @@ ScriptDock::PyNamespace::PyNamespace() {
 ScriptDock::PyNamespace::~PyNamespace() {
     // GIL-holding destruction: the main thread's Qt event loop runs
     // GIL-free between Python calls, so ~py::dict must reacquire.
+    // Leave `ns` empty, so its own destructor has nothing to release.
     py::gil_scoped_acquire gil;
-    ns = py::dict();
+    ns = py::object();
 }
 
 #endif   // LC_WITH_PYTHONSCRIPT

@@ -321,7 +321,7 @@ if importlib.util.find_spec('lcUIPy') is None:
     # Cannot import — the test is a no-op in this environment.
     # Fail loudly so the discovery gap is visible.
     raise RuntimeError(
-        'lcUIPy not on sys.path — the source-tree search couldn\\'t '
+        'lcUIPy not on sys.path — the source-tree search couldn\'t '
         'locate it.  Run this test from a directory where the '
         'source-tree lcUIPy/ is reachable within 6 parents.')
 
@@ -331,6 +331,14 @@ if 'PyPointOperations' in lc.operation_registry:
     del lc.operation_registry['PyPointOperations']
 if 'PyRemoveOperation' in lc.operation_registry:
     del lc.operation_registry['PyRemoveOperation']
+
+# Every MainWindow built by an earlier test imported these modules
+# through LuaInterface's lcUIPy autoregister.  A cached module is not
+# executed again, so its decorator would not put back the entries just
+# deleted; drop the modules so the imports below run them afresh.
+import sys
+sys.modules.pop('lcUIPy.create_actions.point_operations', None)
+sys.modules.pop('lcUIPy.actions.remove_operation', None)
 
 # Import — triggers @lc.register_operation at module top-level.
 import lcUIPy.create_actions.point_operations

@@ -57,6 +57,13 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     this->setTitleBarWidget(titleBar);
 }
 
+PropertyEditor::~PropertyEditor() {
+    // The editor is a child of its MainWindow and is deleted with it.  A
+    // later MainWindow can be allocated at the same address, and must not
+    // be handed this editor back.
+    instances.erase(mainWindow);
+}
+
 PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow) {
     if (instances.find(mainWindow) == instances.end()) {
         instances[mainWindow] = new PropertyEditor(mainWindow);
