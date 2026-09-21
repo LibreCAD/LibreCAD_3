@@ -151,7 +151,8 @@ if(WITH_PYTHONSCRIPT)
         # The Lua createActions/actions operations: the typed-text decoding
         # that makes MTextOperations more than a copy of TextOperations, plus
         # the two cross-file references every operation makes -- a menu action
-        # mainwindow.ui must define, and an icon resource.qrc must alias.
+        # mainwindow.ui must define, and an icon resource.qrc must alias --
+        # and the other direction: every menu entry is connected to something.
         scripting/luamtextoperation_test.cpp
         )
     # The operation .lua files, mainwindow.ui and resource.qrc are read from
