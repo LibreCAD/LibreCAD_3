@@ -46,6 +46,7 @@
 #include <cad/primitive/dimangular.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimordinate.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/hatch.h>
@@ -275,6 +276,14 @@ void populateOneOfEach(const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
         lc::geo::Coordinate(60, 70), lc::geo::Coordinate(70, 70),
         lc::geo::Coordinate(60, 70), lc::geo::Coordinate(60, 80), layer));
 
+    eb->appendEntity(std::make_shared<lc::entity::DimOrdinate>(
+        lc::geo::Coordinate(0, 0), lc::geo::Coordinate(80, 80),
+        lc::TextConst::AttachmentPoint::Bottom_center,
+        /*textAngle=*/0.0, /*lsf=*/1.0,
+        lc::TextConst::LineSpacingStyle::Exact, "",
+        lc::geo::Coordinate(80, 70), lc::geo::Coordinate(80, 80),
+        /*xType=*/true, layer));
+
     // Insert requires a block; add an empty one.  Its presence in the
     // ENTITIES section verifies writeEntity() dispatches Insert correctly.
     auto block = std::make_shared<lc::meta::Block>(
@@ -390,7 +399,7 @@ TEST(DxfExportTest, EveryReaderProducibleKindReachesTheFile) {
     EXPECT_GE(counted.count("LWPOLYLINE"),1) << "LWPOLYLINE dropped. " << dbg;
     EXPECT_GE(counted.count("HATCH"),     1) << "HATCH dropped. " << dbg;
     EXPECT_GE(counted.count("IMAGE"),     1) << "IMAGE dropped. " << dbg;
-    EXPECT_GE(counted.count("DIMENSION"), 5) << "DIMENSION dropped. " << dbg;
+    EXPECT_GE(counted.count("DIMENSION"), 6) << "DIMENSION dropped. " << dbg;
 
     boost::filesystem::remove(dxfPath);
 }

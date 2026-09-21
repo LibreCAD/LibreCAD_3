@@ -373,6 +373,7 @@ public:
     void writeDimRadial(const lc::entity::DimRadial_CSPtr& d);
     void writeDimDiametric(const lc::entity::DimDiametric_CSPtr& d);
     void writeDimAngular(const lc::entity::DimAngular_CSPtr& d);
+    void writeDimOrdinate(const lc::entity::DimOrdinate_CSPtr& d);
 
     void writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p);
 
@@ -446,6 +447,10 @@ public:
     std::string writeAngularDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
                                            const lc::entity::Dimension& dimension,
                                            const lc::entity::DimAngular& angular);
+
+    /** The leader from the feature out to the text, and the ordinate. */
+    std::string writeOrdinateDimensionBlock(const lc::entity::CADEntity_CSPtr& entity,
+                                            const lc::entity::DimOrdinate& ordinate);
 
     /** Every dimension in the document, in one stable order. */
     std::vector<lc::entity::CADEntity_CSPtr> allDimensions() const;
