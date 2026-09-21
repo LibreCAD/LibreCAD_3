@@ -386,6 +386,14 @@ public:
 
     void writeMText(const lc::entity::MText_CSPtr& t);
 
+    /**
+     * Write an MText as one TEXT record per line.
+     *
+     * For a revision that has no MTEXT. The alternative was dropping the
+     * entity, which loses the words as well as the formatting.
+     */
+    void writeMTextAsTextLines(const lc::entity::MText_CSPtr& t);
+
     void writeInsert(const lc::entity::Insert_CSPtr& i);
 
     void writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer);
@@ -495,6 +503,7 @@ public:
     std::vector<ImportFailure> _failures;
     std::size_t _entitiesDelivered{0};
     std::size_t _attributesAsText{0};
+    std::size_t _mtextsAsText{0};
 
     void recordLoss(const char* recordKind) {
         _loss.droppedByType[recordKind]++;
