@@ -2815,11 +2815,35 @@ void DXFimpl::writeMText(const lc::entity::MText_CSPtr& t) {
         case lc::TextConst::DrawingDirection::UpsideDown:
             tex.alignH = static_cast<DRW_Text::HAlign>(3); break;
         default:
-            tex.alignH = static_cast<DRW_Text::HAlign>(0); break;
+            // 5 (by style), not 0. Zero is not a defined code-72 value, and
+            // this arm is every MText the dialog creates -- DrawingDirection
+            // defaults to None and the dialog's combo defaults to item 0. It
+            // cannot be 1 either: addMText reads alignH == 1 as Backward, so
+            // writing 1 would flip every default MText to mirrored on the next
+            // open. 5 falls into that reader's else arm and returns None.
+            tex.alignH = static_cast<DRW_Text::HAlign>(5); break;
     }
-    // Line spacing style (code 73): 1=at least, 2=exact.  lc::entity::MText
-    // doesn't currently carry a spacing style so default to 1.
-    tex.alignV = static_cast<DRW_Text::VAlign>(1);
+
+    // Reference rectangle width, code 41.
+    //
+    // DRW_Text's constructor sets widthscale to 1 and dxfRW::writeMText emits
+    // the group unconditionally, so leaving it alone declared a wrap column
+    // one drawing unit wide on every MTEXT LibreCAD_3 has ever written -- and
+    // the text dialog defaults the height to 100. Zero is the documented
+    // "no reference rectangle, do not wrap", which is what this build means:
+    // lc::entity::MText carries no width to wrap against.
+    //
+    // The field is called widthscale because it is TEXT's width factor; on an
+    // MTEXT libdxfrw routes code 41 into the same member with an entirely
+    // different meaning.
+    tex.widthscale = 0.0;
+
+    // Line spacing style is code 73, which libdxfrw emits from
+    // linespacingStyle -- not from alignV, which this used to set and which
+    // the MTEXT write path never reads. lc::entity::MText carries no spacing
+    // style, so 1 (at least) stands, but now it is written where the library
+    // will look for it.
+    tex.linespacingStyle = 1;
 
     dxfW->writeMText(&tex);
 }
