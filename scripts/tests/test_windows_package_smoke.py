@@ -138,6 +138,11 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         settings = self.root_cmake[start:end]
         vendor = (REPOSITORY_ROOT / "lckernel/tinyspline/src/CMakeLists.txt").read_text()
         vendor = vendor.split("# CPack\n", 1)[1].split("# Dub\n", 1)[0]
+        # CPack writes beneath build/bin in production. Exercise the real Qt
+        # DLL install rule too: otherwise an out-of-tree archive fixture misses
+        # the installer recursively copying its own staging directory.
+        qt_install = "if(MSVC)\n" + self.ui_cmake.split(
+            "# WinDeployQt runs after the build", 1)[1].split("if(MSVC)\n", 1)[1]
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
             source = root / "source"
@@ -158,22 +163,43 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
                 'file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin")\n'
                 'file(WRITE "${CMAKE_BINARY_DIR}/bin/librecad.exe" "application")\n'
                 'file(WRITE "${CMAKE_BINARY_DIR}/bin/build-only.txt" "not installed")\n'
+                'file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin/platforms" '
+                '"${CMAKE_BINARY_DIR}/bin/_CPack_Packages/stale/bin")\n'
+                'file(WRITE "${CMAKE_BINARY_DIR}/bin/Qt6Core.dll" "Qt runtime")\n'
+                'file(WRITE "${CMAKE_BINARY_DIR}/bin/platforms/qoffscreen.dll" "Qt plugin")\n'
+                'file(WRITE "${CMAKE_BINARY_DIR}/bin/_CPack_Packages/stale/bin/stale.dll" '
+                '"old installer payload, not runtime")\n'
+                'file(WRITE "${CMAKE_BINARY_DIR}/bin/qt.conf" "[Paths]\\nPlugins=.\\n")\n'
                 'install(FILES "${CMAKE_BINARY_DIR}/bin/librecad.exe" DESTINATION bin)\n'
-                'install(FILES runtime.txt DESTINATION share/librecad/python)\n' +
+                'install(FILES runtime.txt DESTINATION share/librecad/python)\n'
+                'set(MSVC TRUE)\nset(CMAKE_INSTALL_BINDIR bin)\n' + qt_install +
                 (settings if packaging_first else "") + 'add_subdirectory(nested)\n' +
                 ("" if packaging_first else settings))
             commands = (["cmake", "-S", str(source), "-B", str(build)],
-                        ["cpack", "--config", str(build / "CPackConfig.cmake"),
-                         "-G", "ZIP", "-C", "Release", "-B", str(root / "packages"),
-                         "-D", "CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF"])
+                        ["cmake", "--install", str(build), "--prefix", str(root / "install Ω")])
             for command in commands:
                 result = subprocess.run(command, capture_output=True, text=True, timeout=30)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-            archives = list((root / "packages").glob("*.zip"))
+            # Fail the old implementation before asking it to recurse into an
+            # active CPack staging tree. No timeout/path-length failure needed.
+            self.assertFalse((root / "install Ω/bin/_CPack_Packages").exists(),
+                             "Qt runtime install copied CPack's staging tree")
+            package_command = ["cpack", "--config", str(build / "CPackConfig.cmake"),
+                               "-G", "ZIP", "-C", "Release", "-B", str(build / "bin"),
+                               "-D", "CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF"]
+            # The second pack must exclude the previous pack's staging files
+            # just as the first excludes its own live staging directory.
+            for _ in range(2):
+                result = subprocess.run(package_command, capture_output=True,
+                                        text=True, timeout=30)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            archives = list((build / "bin").glob("*.zip"))
             self.assertEqual(1, len(archives))
             with zipfile.ZipFile(archives[0]) as archive:
                 files = {name for name in archive.namelist() if not name.endswith("/")}
-                self.assertEqual({"bin/librecad.exe", "share/librecad/python/runtime.txt"}, files)
+                self.assertEqual({"bin/librecad.exe", "bin/Qt6Core.dll",
+                                  "bin/platforms/qoffscreen.dll", "bin/qt.conf",
+                                  "share/librecad/python/runtime.txt"}, files)
                 self.assertEqual(b"installed provider data",
                                  archive.read("share/librecad/python/runtime.txt"))
             self.assertNotEqual((build / "CPackConfig.cmake").read_bytes(),

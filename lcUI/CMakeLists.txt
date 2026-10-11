@@ -396,11 +396,13 @@ file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAK
 
 # WinDeployQt runs after the build and before CPack. Include its Qt DLL/plugin
 # tree in the normal install so the NSIS package is self-contained; target DLLs
-# installed above may be copied again with identical contents.
+# installed above may be copied again with identical contents. CPack stages
+# beneath this same bin directory: never traverse its current or stale payload.
 if(MSVC)
     install(DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        FILES_MATCHING PATTERN "*.dll")
+        FILES_MATCHING PATTERN "*.dll"
+        PATTERN "_CPack_Packages" EXCLUDE)
     install(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
         DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL)
 endif()
