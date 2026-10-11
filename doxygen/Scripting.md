@@ -141,8 +141,10 @@ Linux AppImage CI additionally runs the exact artifact's extraction launcher
 in an unprivileged, offline, read-only Ubuntu 26.04 runtime container without
 system Python, libpython, or a Python SDK. The bounded smoke still requires
 bundled CPython and native extension dependencies; it complements the native
-FUSE-launcher check, not older-distribution compatibility. This new gate awaits
-hosted execution. The inspected Linux candidate payload requires GLIBC 2.43
+FUSE-launcher check, not older-distribution compatibility. Initial native clean
+execution exposed missing HarfBuzz; the packager now explicitly stages it and
+its Graphite dependency, with rebuilt-artifact acceptance still pending.
+The inspected Linux candidate payload requires GLIBC 2.43
 and its executable declares x86-64-v3; compatibility with older glibc
 distributions or older x86_64 CPU baselines is not claimed.
 

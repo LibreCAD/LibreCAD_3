@@ -35,6 +35,8 @@ VERSION="$(git describe)" \
 --library=/usr/lib/x86_64-linux-gnu/libsqlite3.so.0 \
 --library=/usr/lib/x86_64-linux-gnu/libffi.so.8 \
 --library=/usr/lib/x86_64-linux-gnu/libz.so.1 \
+--library=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0 \
+--library=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3 \
 --output appimage \
 --executable AppDir/usr/bin/librecad \
 --desktop-file AppDir/librecad.desktop \

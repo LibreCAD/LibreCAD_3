@@ -192,6 +192,14 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         )
         self.assertIn('exec "$appdir/usr/bin/librecad" "$@"', app_run)
 
+    def test_appimage_bundles_harfbuzz_instead_of_weakening_clean_runtime(self):
+        for library in ("libharfbuzz.so.0", "libgraphite2.so.3"):
+            with self.subTest(library=library):
+                self.assertIn(f"--library=/usr/lib/x86_64-linux-gnu/{library}",
+                              self.appimage_script)
+        runtime_image = (REPOSITORY_ROOT / "scripts/ubuntu-install/appimage-runtime.Dockerfile").read_text()
+        self.assertNotIn("libharfbuzz", runtime_image)
+
     def test_linuxdeploy_qt_plugin_has_patchelf_dependency(self):
         install_start = self.linux_build_script.index("sudo apt install")
         install_end = self.linux_build_script.index("\n\n", install_start)
