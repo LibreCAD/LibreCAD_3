@@ -343,7 +343,14 @@ void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::ve
                         lc::scripting::nativeCallback([self, transition]() {
                             lc::scripting::ScriptObject op = self->currentOperation();
                             if (!op.isNil()) {
-                                op.setAttr("step", lc::scripting::ScriptValue(transition));
+                                std::string error;
+                                if (!op.setAttrChecked(
+                                        "step",
+                                        lc::scripting::ScriptValue(transition),
+                                        error)) {
+                                    lc::scripting::reportScriptDiagnostic(
+                                        {}, "Context-menu operation step update failed: " + error);
+                                }
                             }
                         }));
                     menu->addItem(menuItem);

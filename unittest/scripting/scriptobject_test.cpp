@@ -81,6 +81,57 @@ TEST(ScriptObject, SetAttrWritesPythonInstance) {
     EXPECT_EQ(step.asInt(), 3);
 }
 
+TEST(ScriptObject, CheckedSetAttrReturnsPythonSetterFailure) {
+    auto op = makePyObj(
+        "class Op:\n"
+        "    def __init__(self):\n"
+        "        self._step = 0\n"
+        "    @property\n"
+        "    def step(self):\n"
+        "        return self._step\n"
+        "    @step.setter\n"
+        "    def step(self, value):\n"
+        "        raise ValueError('step is read-only')\n",
+        "Op()");
+
+    std::string error;
+    EXPECT_FALSE(op.setAttrChecked("step", lcs::ScriptValue(3), error));
+    EXPECT_NE(error.find("step is read-only"), std::string::npos);
+    EXPECT_EQ(op.getAttr("step").asInt(), 0);
+}
+
+TEST(ScriptObject, CheckedSetAttrReturnsConversionFailure) {
+    auto op = makePyObj(
+        "class Op:\n"
+        "    def __init__(self):\n"
+        "        self.step = 0\n",
+        "Op()");
+    static int marker = 0;
+    const lcs::ScriptValue unsupported(lcs::OpaquePtr{&marker, "test-unknown"});
+
+    std::string error;
+    EXPECT_FALSE(op.setAttrChecked("step", unsupported, error));
+    EXPECT_NE(error.find("opaque"), std::string::npos);
+    EXPECT_EQ(op.getAttr("step").asInt(), 0);
+}
+
+TEST(ScriptObject, CheckedSetAttrSucceedsAndRejectsNilObject) {
+    auto op = makePyObj(
+        "class Op:\n"
+        "    def __init__(self):\n"
+        "        self.step = 0\n",
+        "Op()");
+
+    std::string error;
+    EXPECT_TRUE(op.setAttrChecked("step", lcs::ScriptValue(3), error));
+    EXPECT_TRUE(error.empty());
+    EXPECT_EQ(op.getAttr("step").asInt(), 3);
+
+    lcs::ScriptObject nil;
+    EXPECT_FALSE(nil.setAttrChecked("step", lcs::ScriptValue(3), error));
+    EXPECT_NE(error.find("nil script object"), std::string::npos);
+}
+
 TEST(ScriptObject, CallMethodInvokesInstanceMethod) {
     // Mirrors the runOperation contract: callMethod("_init_default", []).
     auto op = makePyObj(
