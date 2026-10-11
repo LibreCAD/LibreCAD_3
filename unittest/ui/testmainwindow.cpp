@@ -420,6 +420,9 @@ class PyCloseFailureProbe:
         lc.event.register("_lc_close_failure_cleanup", _lc_close_failure_listener)
     def close(self):
         builtins._lc_close_failure_calls += 1
+        lc.event.register(
+            "_lc_close_failure_cleanup_from_close",
+            _lc_close_failure_listener)
         raise RuntimeError("intentional operation close failure")
 )py");
     }
@@ -428,12 +431,16 @@ class PyCloseFailureProbe:
     ASSERT_FALSE(mainWindow.currentOperation().isNil());
     ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
                   "_lc_close_failure_cleanup"), 1u);
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup_from_close"), 0u);
 
     mainWindow.luaInterface()->finishOperation();
     QCoreApplication::processEvents();
 
     EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
                   "_lc_close_failure_cleanup"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup_from_close"), 0u);
     auto* history = mainWindow.cliCommand()->findChild<QTextEdit*>(
         QStringLiteral("history"));
     ASSERT_NE(history, nullptr);
@@ -450,6 +457,136 @@ lc.operation_registry.pop("PyCloseFailureProbe", None)
 del builtins._lc_close_failure_calls
 )py");
     }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationCallbacksTrackAndCancelTheirEventRegistrations) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+
+    struct PythonStateCleanup {
+        ~PythonStateCleanup() {
+            pybind11::gil_scoped_acquire gil;
+            pybind11::exec(R"py(
+import builtins
+import lc
+lc.operation_registry.pop("PyOperationEventTrackingProbe", None)
+for _name in ("_lc_operation_late_listener",):
+    if hasattr(builtins, _name):
+        delattr(builtins, _name)
+if hasattr(builtins, "_lc_operation_close_calls"):
+    del builtins._lc_operation_close_calls
+)py");
+        }
+    } cleanup;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import builtins
+import lc
+
+def _lc_operation_late_listener(event, args):
+    pass
+builtins._lc_operation_late_listener = _lc_operation_late_listener
+builtins._lc_operation_close_calls = 0
+
+@lc.register_operation
+class PyOperationEventTrackingProbe:
+    name = "PyOperationEventTrackingProbe"
+    def _init_default(self):
+        lc.event.register("_lc_operation_dynamic_trigger", self)
+        lc.event.register("_lc_operation_failure_trigger", self)
+    @property
+    def step(self):
+        lc.event.register(
+            "_lc_operation_read_attribute", builtins._lc_operation_late_listener)
+        return "pick"
+    @step.setter
+    def step(self, value):
+        lc.event.register(
+            "_lc_operation_write_attribute", builtins._lc_operation_late_listener)
+    def register_from_action(self):
+        return lc.event.register(
+            "_lc_operation_action_registered",
+            builtins._lc_operation_late_listener)
+    def onEvent(self, event, args):
+        if event == "_lc_operation_dynamic_trigger":
+            lc.event.register(
+                "_lc_operation_late_registered",
+                builtins._lc_operation_late_listener)
+        elif event == "_lc_operation_failure_trigger":
+            raise RuntimeError("intentional operation event failure")
+    def close(self):
+        builtins._lc_operation_close_calls += 1
+        lc.event.register(
+            "_lc_operation_close_registered",
+            builtins._lc_operation_late_listener)
+)py");
+    }
+
+    mainWindow.runOperationByName("PyOperationEventTrackingProbe");
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_dynamic_trigger"), 1u);
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_failure_trigger"), 1u);
+
+    std::string error;
+    EXPECT_EQ(mainWindow.luaInterface()->getOperationAttribute("step").asString(),
+              "pick");
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_read_attribute"), 2u);
+    ASSERT_TRUE(mainWindow.luaInterface()->setOperationAttributeChecked(
+        "step", lc::scripting::ScriptValue("next"), error)) << error;
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_write_attribute"), 1u);
+
+    lc::scripting::ScriptValue result;
+    ASSERT_TRUE(mainWindow.luaInterface()->callOperationMethodChecked(
+        "register_from_action", {}, result, error)) << error;
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_action_registered"), 1u);
+
+    mainWindow.luaInterface()->triggerEvent(
+        "_lc_operation_dynamic_trigger", lc::scripting::ScriptValue{});
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_late_registered"), 1u);
+
+    int unrelatedCalls = 0;
+    const auto unrelatedListener = lc::scripting::nativeCallback(
+        [&unrelatedCalls](const std::vector<lc::scripting::ScriptValue>&) {
+            ++unrelatedCalls;
+            return lc::scripting::ScriptValue{};
+        });
+    mainWindow.luaInterface()->registerEvent(
+        "_lc_operation_failure_trigger", unrelatedListener);
+    mainWindow.luaInterface()->triggerEvent(
+        "_lc_operation_failure_trigger", lc::scripting::ScriptValue{});
+
+    EXPECT_EQ(unrelatedCalls, 1);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_dynamic_trigger"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_failure_trigger"), 1u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_read_attribute"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_write_attribute"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_action_registered"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_late_registered"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_close_registered"), 0u);
+    EXPECT_TRUE(mainWindow.currentOperation().isNil());
+    {
+        pybind11::gil_scoped_acquire gil;
+        EXPECT_EQ(pybind11::module_::import("builtins")
+                      .attr("_lc_operation_close_calls").cast<int>(), 1);
+    }
+    EXPECT_TRUE(mainWindow.luaInterface()->deleteEvent(
+        "_lc_operation_failure_trigger", unrelatedListener));
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)

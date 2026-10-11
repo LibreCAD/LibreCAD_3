@@ -9,6 +9,7 @@
 #include <QMetaObject>
 #include <QPointer>
 #include <QStringList>
+#include <algorithm>
 #include <exception>
 #include <iostream>
 #include <vector>
@@ -39,6 +40,23 @@
 using namespace lc::ui;
 
 namespace {
+class ScopedBoolValue final {
+public:
+    ScopedBoolValue(bool& value, bool replacement)
+        : _value(value), _previous(value) {
+        _value = replacement;
+    }
+
+    ~ScopedBoolValue() { _value = _previous; }
+
+    ScopedBoolValue(const ScopedBoolValue&) = delete;
+    ScopedBoolValue& operator=(const ScopedBoolValue&) = delete;
+
+private:
+    bool& _value;
+    bool _previous;
+};
+
 QString resolveLuaPackageRoot() {
     const QString appDir = QCoreApplication::applicationDirPath();
     const QStringList candidates = {
@@ -313,16 +331,23 @@ void LuaInterface::finishOperation() {
     #ifdef LC_WITH_PYTHONSCRIPT
     lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
     #endif
+    // Remove existing operation listeners before close can fire events. Any
+    // registrations made by close itself are tracked and removed immediately
+    // afterward, even when close throws.
+    cancelOperationEventTracking();
     std::string closeError;
-    try {
-        if (!_operation.isNil() && _operation.hasAttr("close")) {
-            lc::scripting::ScriptValue ignored;
-            (void)_operation.callMethodChecked("close", ignored, closeError);
+    {
+        ScopedBoolValue operationTracking(_trackOperationEvents, true);
+        try {
+            if (!_operation.isNil() && _operation.hasAttr("close")) {
+                lc::scripting::ScriptValue ignored;
+                (void)_operation.callMethodChecked("close", ignored, closeError);
+            }
+        } catch (const std::exception& error) {
+            closeError = error.what();
+        } catch (...) {
+            closeError = "operation close failed with an unknown exception";
         }
-    } catch (const std::exception& error) {
-        closeError = error.what();
-    } catch (...) {
-        closeError = "operation close failed with an unknown exception";
     }
 
     // A failed close must not leave operation-owned listeners live. Queue the
@@ -332,6 +357,50 @@ void LuaInterface::finishOperation() {
         _eventBus.reportDiagnostic("Script operation close failed:\n" +
                                    closeError);
     }
+}
+
+bool LuaInterface::callOperationMethodChecked(
+    const std::string& method,
+    const std::vector<lc::scripting::ScriptValue>& args,
+    lc::scripting::ScriptValue& result,
+    std::string& error) {
+    if (_operation.isNil()) {
+        error = "there is no active script operation";
+        result = lc::scripting::ScriptValue{};
+        return false;
+    }
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+#endif
+    ScopedBoolValue operationTracking(_trackOperationEvents, true);
+    return _operation.callMethodChecked(method, result, error, args);
+}
+
+lc::scripting::ScriptValue LuaInterface::getOperationAttribute(
+    const std::string& name) {
+    if (_operation.isNil()) {
+        return lc::scripting::ScriptValue{};
+    }
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+#endif
+    ScopedBoolValue operationTracking(_trackOperationEvents, true);
+    return _operation.getAttr(name);
+}
+
+bool LuaInterface::setOperationAttributeChecked(
+    const std::string& name,
+    const lc::scripting::ScriptValue& value,
+    std::string& error) {
+    if (_operation.isNil()) {
+        error = "there is no active script operation";
+        return false;
+    }
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+#endif
+    ScopedBoolValue operationTracking(_trackOperationEvents, true);
+    return _operation.setAttrChecked(name, value, error);
 }
 
 void LuaInterface::beginOperationEventTracking() {
@@ -349,6 +418,25 @@ void LuaInterface::cancelOperationEventTracking() {
         _eventBus.deleteRegistration(registration.first, registration.second);
     }
     _operationEventRegistrations.clear();
+}
+
+bool LuaInterface::isOperationEventRegistration(
+    lc::scripting::EventBus::RegistrationId id) const {
+    return std::any_of(
+        _operationEventRegistrations.begin(), _operationEventRegistrations.end(),
+        [id](const auto& registration) { return registration.second == id; });
+}
+
+void LuaInterface::failOperationAfterCallbackFailure() {
+    // Drop the failed operation's listeners before invoking close or
+    // operationFinished callbacks, preventing a failing operation callback
+    // from re-entering during teardown.
+    cancelOperationEventTracking();
+    triggerEvent("operationFinished", lc::scripting::ScriptValue{});
+    if (!_operation.isNil()) {
+        finishOperation();
+        _operation = lc::scripting::ScriptObject{};
+    }
 }
 
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
@@ -427,8 +515,13 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
     bool convertedArgs = false;
     lc::scripting::ScriptValue convertedValue;
     std::vector<lc::scripting::EventBus::RegistrationId> failedRegistrations;
+    bool operationCallbackFailed = false;
     for (auto& registration : snap) {
         auto& cb = registration.callback;
+        const bool operationOwned =
+            isOperationEventRegistration(registration.id);
+        ScopedBoolValue operationTracking(
+            _trackOperationEvents, _trackOperationEvents || operationOwned);
         bool callbackFailed = false;
         const lc::scripting::ScriptDiagnosticSink callbackDiagnostics =
             [&callbackFailed, &diagnostics](const std::string& message) {
@@ -461,14 +554,26 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
             }
         }
         if (callbackFailed) {
-            failedRegistrations.push_back(registration.id);
+            if (operationOwned) {
+                operationCallbackFailed = true;
+            } else {
+                failedRegistrations.push_back(registration.id);
+            }
         }
     }
 
     // Apply cleanup after the snapshot finishes so duplicate callbacks retain
-    // independent identities and no listener is removed during iteration.
+    // independent identities and no listener is removed during iteration. A
+    // failing operation callback invalidates the whole operation subscription
+    // set; an unrelated listener failure removes only its own registration.
+    if (operationCallbackFailed) {
+        cancelOperationEventTracking();
+    }
     for (const auto id : failedRegistrations) {
         _eventBus.deleteRegistration(event, id);
+    }
+    if (operationCallbackFailed) {
+        failOperationAfterCallbackFailure();
     }
 }
 
@@ -477,11 +582,57 @@ void LuaInterface::triggerEvent(const std::string& event,
 #ifdef LC_WITH_PYTHONSCRIPT
     lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
 #endif
-    // Phase 4 PR-9a — native-side entry point.  Used by MainWindow's
-    // trigger* slots after PR-9b's payload switch: they build
-    // ScriptValue payloads directly (Coordinate / Int / Map) and skip
-    // the LuaRef round-trip.
-    _eventBus.triggerEvent(event, args);
+    // Native-side events retain registration IDs through dispatch so Python
+    // operation callbacks can extend their subscriptions and a failing
+    // operation callback can invalidate the whole set after the snapshot.
+    const auto snapshot = _eventBus.snapshotEntries(event);
+    const auto diagnostics = _eventBus.diagnosticSink();
+    std::vector<lc::scripting::EventBus::RegistrationId> failedRegistrations;
+    bool operationCallbackFailed = false;
+    for (const auto& registration : snapshot) {
+        const bool operationOwned =
+            isOperationEventRegistration(registration.id);
+        ScopedBoolValue operationTracking(
+            _trackOperationEvents, _trackOperationEvents || operationOwned);
+        bool callbackFailed = false;
+        const lc::scripting::ScriptDiagnosticSink callbackDiagnostics =
+            [&callbackFailed, &diagnostics](const std::string& message) {
+                callbackFailed = true;
+                lc::scripting::reportScriptDiagnostic(diagnostics, message);
+            };
+        try {
+            (void)registration.callback.invokeEvent(
+                event, args, callbackDiagnostics);
+        } catch (const std::exception& error) {
+            callbackDiagnostics(
+                "Script event '" + event + "' callback (" +
+                registration.callback.runtime() + ") failed: " + error.what());
+        } catch (...) {
+            callbackDiagnostics(
+                "Script event '" + event + "' callback (" +
+                registration.callback.runtime() +
+                ") failed with an unknown exception");
+        }
+        if (callbackFailed) {
+            if (operationOwned) {
+                operationCallbackFailed = true;
+            } else {
+                failedRegistrations.push_back(registration.id);
+            }
+        }
+    }
+
+    // Defer removal until all snapshot entries have run, so an operation
+    // failure does not suppress unrelated listeners for this same event.
+    if (operationCallbackFailed) {
+        cancelOperationEventTracking();
+    }
+    for (const auto id : failedRegistrations) {
+        _eventBus.deleteRegistration(event, id);
+    }
+    if (operationCallbackFailed) {
+        failOperationAfterCallbackFailure();
+    }
 }
 
 std::size_t LuaInterface::listenerCount(const std::string& event) const {

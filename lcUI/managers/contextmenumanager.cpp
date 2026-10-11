@@ -100,7 +100,15 @@ void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::e
     {
         lc::scripting::ScriptObject curOp = self->currentOperation();
         if (!curOp.isNil()) {
-            panItem->setChecked(curOp.callMethod("isPaused").asBool());
+            lc::scripting::ScriptValue result;
+            std::string error;
+            if (self->luaInterface()->callOperationMethodChecked(
+                    "isPaused", {}, result, error)) {
+                panItem->setChecked(result.asBool());
+            } else {
+                self->cliCommand()->write(
+                    "Operation isPaused failed: " + error + "\n");
+            }
         }
     }
     panItem->addCheckedCallback(
@@ -108,7 +116,13 @@ void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::e
             [self](const std::vector<lc::scripting::ScriptValue>& args) {
                 lc::scripting::ScriptObject curOp = self->currentOperation();
                 if (!curOp.isNil()) {
-                    curOp.callMethod("pauseCreation", args);
+                    lc::scripting::ScriptValue result;
+                    std::string error;
+                    if (!self->luaInterface()->callOperationMethodChecked(
+                            "pauseCreation", args, result, error)) {
+                        self->cliCommand()->write(
+                            "Operation pauseCreation failed: " + error + "\n");
+                    }
                 }
                 return lc::scripting::ScriptValue{};
             }));
@@ -326,7 +340,8 @@ void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::ve
     lc::scripting::ScriptObject currentOp = _mainWindow->currentOperation();
 
     if (_transitionMap.find(entityName) != _transitionMap.end()) {
-        lc::scripting::ScriptValue stepName = currentOp.getAttr("step");
+        lc::scripting::ScriptValue stepName =
+            _mainWindow->luaInterface()->getOperationAttribute("step");
 
         if (!stepName.isNil()) {
             std::string step = stepName.asString();
@@ -341,16 +356,14 @@ void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::ve
                     MainWindow* self = _mainWindow;
                     menuItem->addCallback(
                         lc::scripting::nativeCallback([self, transition]() {
-                            lc::scripting::ScriptObject op = self->currentOperation();
-                            if (!op.isNil()) {
-                                std::string error;
-                                if (!op.setAttrChecked(
-                                        "step",
-                                        lc::scripting::ScriptValue(transition),
-                                        error)) {
-                                    lc::scripting::reportScriptDiagnostic(
-                                        {}, "Context-menu operation step update failed: " + error);
-                                }
+                            std::string error;
+                            if (!self->luaInterface()->setOperationAttributeChecked(
+                                    "step",
+                                    lc::scripting::ScriptValue(transition),
+                                    error)) {
+                                self->cliCommand()->write(
+                                    "Context-menu operation step update failed: " +
+                                    error + "\n");
                             }
                         }));
                     menu->addItem(menuItem);
@@ -371,7 +384,13 @@ void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::ve
         lc::scripting::OpaquePtr menuOpaque{menu, lc::ui::opaquetag::Menu};
         std::vector<lc::scripting::ScriptValue> args;
         args.push_back(lc::scripting::ScriptValue(menuOpaque));
-        currentOp.callMethod("contextMenuOptions", args);
+        lc::scripting::ScriptValue result;
+        std::string error;
+        if (!_mainWindow->luaInterface()->callOperationMethodChecked(
+                "contextMenuOptions", args, result, error)) {
+            _mainWindow->cliCommand()->write(
+                "Operation contextMenuOptions failed: " + error + "\n");
+        }
     }
 }
 

@@ -98,8 +98,23 @@ public:
 
     void finishOperation();
 
-    /// Track registrations created while an operation is instantiated and
-    /// initialized. They are removed on normal finish or startup failure.
+    /// Invoke a method on the active operation with its owning-window scope
+    /// and operation-event tracking active. UI callbacks/actions use this
+    /// instead of calling ScriptObject directly.
+    bool callOperationMethodChecked(
+        const std::string& method,
+        const std::vector<lc::scripting::ScriptValue>& args,
+        lc::scripting::ScriptValue& result,
+        std::string& error);
+    lc::scripting::ScriptValue getOperationAttribute(const std::string& name);
+    bool setOperationAttributeChecked(
+        const std::string& name,
+        const lc::scripting::ScriptValue& value,
+        std::string& error);
+
+    /// Track registrations created during operation initialization and scoped
+    /// action, callback, property-access, and close execution. They are removed
+    /// on normal finish or failure.
     void beginOperationEventTracking();
     void endOperationEventTracking();
     void cancelOperationEventTracking();
@@ -163,6 +178,10 @@ private:
      * \brief make common functions available globally and register finish events
      */
     void registerGlobalFunctions(QMainWindow* mainWindow);
+
+    bool isOperationEventRegistration(
+        lc::scripting::EventBus::RegistrationId id) const;
+    void failOperationAfterCallbackFailure();
 
 private:
     kaguya::State _L;

@@ -359,7 +359,15 @@ void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const 
                 "cancel", iconPath.c_str(), "Current operation",
                 lc::scripting::nativeCallback([mWindow, action]() {
                     lc::scripting::ScriptObject op = mWindow->currentOperation();
-                    if (!op.isNil()) op.callMethod(action);
+                    if (op.isNil()) return;
+                    lc::scripting::ScriptValue result;
+                    std::string error;
+                    if (!mWindow->luaInterface()->callOperationMethodChecked(
+                            action, {}, result, error)) {
+                        mWindow->cliCommand()->write(
+                            "Lua operation toolbar action '" + action +
+                            "' failed: " + error + "\n");
+                    }
                 }),
                 label.c_str());
         });
@@ -797,8 +805,9 @@ void OperationLoader::loadPythonOperations() {
                                             }
                                             lc::scripting::ScriptValue result;
                                             std::string error;
-                                            if (!operation.callMethodChecked(
-                                                    action, result, error)) {
+                                            if (!mWindow->luaInterface()
+                                                     ->callOperationMethodChecked(
+                                                         action, {}, result, error)) {
                                                 mWindow->cliCommand()->write(
                                                     "Python toolbar action '" +
                                                     action + "' failed: " +

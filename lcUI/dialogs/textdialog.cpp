@@ -140,7 +140,13 @@ void TextDialog::okButtonClicked() {
     if (!curOp.isNil()) {
         std::vector<lc::scripting::ScriptValue> args;
         args.emplace_back(textBuilder.build());
-        curOp.callMethod("copyEntity", args);
+        lc::scripting::ScriptValue result;
+        std::string error;
+        if (!_mainWindow->luaInterface()->callOperationMethodChecked(
+                "copyEntity", args, result, error)) {
+            _mainWindow->cliCommand()->write(
+                "Text operation copyEntity failed: " + error + "\n");
+        }
     }
 
     this->close();
