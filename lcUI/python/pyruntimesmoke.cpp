@@ -209,7 +209,12 @@ if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":
         os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1", \
         "full ELF closure requires an installed glibc/Linux package"
     from lcUIPy._runtimeaudit import audit_elf_closure
-    _elf_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
+    _elf_root = pathlib.Path(expected_staged_python_root).resolve().parents[3]
+    assert _elf_root != pathlib.Path(_elf_root.anchor) and \
+        (_elf_root / "usr/share/librecad/python").resolve() == \
+        pathlib.Path(expected_staged_python_root).resolve() and \
+        ((_elf_root / "AppRun").is_file() or (_elf_root / "meta/snap.yaml").is_file()), \
+        "full ELF closure requires a recognized AppImage or Snap root"
     _elf_count = audit_elf_closure(_elf_root)
     _elf_diagnostics = f"; full payload ELF closure: {_elf_count} distinct files"
 import lcgui

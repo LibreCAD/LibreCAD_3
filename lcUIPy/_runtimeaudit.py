@@ -1,6 +1,7 @@
 """Internal, SDK-free dependency check for installed glibc/Linux artifacts."""
 
 from pathlib import Path
+import os
 import subprocess
 import time
 
@@ -18,11 +19,30 @@ def _glibc_loader():
     return loaders.pop()
 
 
+def _payload_files(root):
+    device = root.stat().st_dev
+
+    def fail(error):
+        raise error
+
+    for directory, directories, filenames in os.walk(root, onerror=fail):
+        directory = Path(directory)
+        # Snap content mounts supply dependencies, not files shipped by us.
+        # lstat preserves symlinks for the later escape/deduplication checks.
+        directories[:] = sorted(name for name in directories
+                                if (directory / name).lstat().st_dev == device)
+        for name in sorted(filenames):
+            candidate = directory / name
+            if candidate.lstat().st_dev == device:
+                yield candidate
+
+
 def audit_elf_closure(prefix, timeout_seconds=120):
     """Inspect every distinct loadable ELF with the running provider's loader.
 
     Inherit the real launcher's search paths and namespace (Snap includes its
-    base/content providers). This checks DT_NEEDED closure, not arbitrary
+    base/content providers); inspect the artifact's own filesystem, not
+    external content mounts. This checks DT_NEEDED closure, not arbitrary
     dlopen names, module functionality, licenses or older-system compatibility.
     """
     if timeout_seconds <= 0:
@@ -31,7 +51,7 @@ def audit_elf_closure(prefix, timeout_seconds=120):
     loader = _glibc_loader()
     deadline = time.monotonic() + timeout_seconds
     checked = set()
-    for candidate in sorted(root.rglob("*")):
+    for candidate in _payload_files(root):
         if not candidate.is_file():
             continue
         with candidate.open("rb") as stream:

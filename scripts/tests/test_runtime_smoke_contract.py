@@ -492,6 +492,48 @@ class FullElfClosureTests(unittest.TestCase):
         path.write_bytes(b"\x7fELF\x02\x01\x01" + b"\0" * 9 + b"\x03\0\x3e\0" + b"\0" * 44)
         return path
 
+    def run_package_gate(self, staged_python):
+        source = (REPOSITORY_ROOT / "lcUI/python/pyruntimesmoke.cpp").read_text()
+        body = source.split(
+            'if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":', 1
+        )[1].split("\nimport lcgui", 1)[0]
+        namespace = {
+            "os": SimpleNamespace(environ={"LIBRECAD_REQUIRE_BUNDLED_PYTHON": "1"}),
+            "sys": SimpleNamespace(platform="linux"), "pathlib": pathlib,
+            "expected_staged_python_root": str(staged_python),
+        }
+        exec(textwrap.dedent(body), namespace)
+        return namespace
+
+    def test_full_gate_scans_artifact_root_including_non_usr_payload_elf(self):
+        staged = self.root / "share/librecad/python"
+        staged.mkdir(parents=True)
+        self.elf("lib/inside-usr.so")
+        self.elf("../lib/outside-usr.so")
+        for marker in ("AppRun", "meta/snap.yaml"):
+            with self.subTest(marker=marker):
+                metadata = self.root.parent / marker
+                metadata.parent.mkdir(parents=True, exist_ok=True)
+                metadata.write_text("artifact marker", encoding="utf-8")
+                self.run.reset_mock()
+                namespace = self.run_package_gate(staged)
+                self.assertEqual(self.root.parent, namespace["_elf_root"])
+                self.assertEqual(2, namespace["_elf_count"])
+                self.assertEqual(2, self.run.call_count)
+                metadata.unlink()
+
+    def test_full_gate_rejects_unknown_layout_and_filesystem_root(self):
+        staged = self.root / "share/librecad/python"
+        staged.mkdir(parents=True)
+        self.elf()
+        with patch("lcUIPy._runtimeaudit.audit_elf_closure") as audit:
+            for prefix in (staged, Path("/usr/share/librecad/python")):
+                with self.subTest(prefix=prefix):
+                    with self.assertRaisesRegex(AssertionError, "recognized AppImage or Snap root"):
+                        self.run_package_gate(prefix)
+            audit.assert_not_called()
+        self.run.assert_not_called()
+
     def test_every_elf_is_checked_by_header_with_direct_loader_arguments(self):
         first = self.elf("lib/python/extension.so")
         second = self.elf("bin/executable Ω")
@@ -505,6 +547,21 @@ class FullElfClosureTests(unittest.TestCase):
             self.assertLessEqual(call.kwargs["timeout"], 15)
             self.assertFalse(call.kwargs.get("shell", False))
             self.assertNotIn("env", call.kwargs)  # Preserve launcher/base/content paths.
+
+    def test_external_content_mount_is_provider_not_artifact_payload(self):
+        own = self.elf("lib/owned.so")
+        self.elf("gpu-2604/lib/provider.so")
+        content_mount = self.root / "gpu-2604"
+        original_lstat = Path.lstat
+
+        def lstat(path):
+            if path == content_mount:
+                return SimpleNamespace(st_dev=self.root.stat().st_dev + 1)
+            return original_lstat(path)
+
+        with patch.object(Path, "lstat", autospec=True, side_effect=lstat):
+            self.assertEqual(1, audit_elf_closure(self.root))
+        self.assertEqual([str(self.loader), "--list", str(own)], self.run.call_args.args[0])
 
     def test_missing_dependency_or_inspector_failure_rejects_the_payload(self):
         self.elf()

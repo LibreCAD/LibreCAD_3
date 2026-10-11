@@ -141,6 +141,10 @@ by this embedded-runtime contract. Plugins are trusted code.
 
 Linux artifact validation also checks every distinct loadable ELF file in the
 package, including Python and Qt extensions not used by the startup smoke.
+The gate recognizes the AppImage/Snap root above `usr`, so payload files outside
+`usr` are included; unknown layouts and the filesystem root are rejected.
+Traversal stays on the artifact filesystem: Snap's separately mounted content
+provider is a dependency source, not copied payload to inspect wholesale.
 It uses the running glibc loader with the launcher's actual library paths and
 namespace; Snap includes its base/content providers. This check has a total
 120-second inspection budget and rejects missing dependencies, inspector
