@@ -320,6 +320,10 @@ lc::scripting::ScriptObject LuaInterface::operation() {
     return _operation;
 }
 
+QObject* LuaInterface::ownerObject() const {
+    return _owner.data();
+}
+
 void LuaInterface::setOperation(lc::scripting::ScriptObject operation) {
     _operation = std::move(operation);
 }

@@ -605,7 +605,9 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
         return nullptr;
     }
 
-    api::Menu* newMenu = new api::Menu(menuName.c_str());
+    // QMenuBar::addMenu(QMenu*) does not take ownership. Parent menus we
+    // create here so window teardown also destroys their script callbacks.
+    api::Menu* newMenu = new api::Menu(menuName.c_str(), menuBar());
     addMenu(newMenu);
 
     return newMenu;

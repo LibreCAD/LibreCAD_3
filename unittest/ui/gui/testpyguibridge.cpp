@@ -15,12 +15,17 @@
 
 #include <QApplication>
 #include <gtest/gtest.h>
+#include <memory>
+#include <new>
 #include <type_traits>
 
 #include <mainwindow.h>
 #include <cadmdichild.h>
 #include <windowmanager.h>
 #include <widgets/guiAPI/inputguicontainer.h>
+#include <widgets/guiAPI/textgui.h>
+#include <widgets/guiAPI/menuitem.h>
+#include <widgets/guiAPI/toolbarbutton.h>
 #include <drawables/tempentities.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
@@ -63,6 +68,150 @@ struct TempEntityRefreshCounter {
 };
 
 } // namespace
+
+TEST(PyGuiBridgeTest, RetainedQtHandlesRejectDestroyedOwner) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    auto window = std::make_unique<lc::ui::MainWindow>();
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["window"] = pybind11::cast(window.get(), pybind11::return_value_policy::reference);
+    // Fail safely on an unguarded implementation before invoking a dangling
+    // receiver. Then exercise actual bound methods after native destruction.
+    ASSERT_TRUE(pybind11::hasattr(ns["window"], "_lc_qobject_lifetime"));
+    pybind11::exec(R"py(
+mdi = window.cadMdiChild()
+cli = window.cliCommand()
+lua = window.luaInterface()
+assert isinstance(mdi.getFilename(), str)
+assert isinstance(cli.availableCommands(), list)
+calls = [lambda: window.message("stale"), mdi.getFilename,
+         cli.availableCommands, lambda: lua.pluginList("")]
+)py", ns);
+    window.reset();
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+for call in calls:
+    try:
+        call()
+    except RuntimeError as error:
+        assert "destroyed Qt object" in str(error), str(error)
+    else:
+        raise AssertionError("destroyed receiver was accepted")
+)py", ns));
+}
+
+TEST(PyGuiBridgeTest, DestroyedQtArgumentsAndOwnedChildrenAreSafe) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    auto owner = std::make_unique<lc::ui::MainWindow>();
+    lc::ui::MainWindow other;
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["owner"] = pybind11::cast(owner.get(), pybind11::return_value_policy::reference);
+    ns["other"] = pybind11::cast(&other, pybind11::return_value_policy::reference);
+    ASSERT_TRUE(pybind11::hasattr(ns["owner"], "_lc_qobject_lifetime"));
+    pybind11::exec(R"py(
+import lcgui
+import gc
+import weakref
+menu = owner.addMenu("lifetime probe")
+submenu = menu.addMenu("child menu")
+item = submenu.addItem("child item")
+dialog = lcgui.DialogWidget("lifetime probe", owner)
+assert isinstance(dialog.keys(), list)  # mixed non-QObject base API
+field = lcgui.Text("field")
+assert dialog.addWidget("field", field)
+field.setValue("live")
+assert field.value() == "live"
+cycle = lcgui.Text("callback-held child")
+assert dialog.addWidget("cycle", cycle)
+cycle.addFinishCallback(lambda widget=cycle: None)
+cycle_ref = weakref.ref(cycle)
+del cycle
+gc.collect()
+assert cycle_ref() is not None  # The C++ callback, not this dict, roots it.
+)py", ns);
+    owner.reset();
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+for name, call in (("menu argument", lambda: other.addMenu(menu)),
+                   ("submenu", submenu.label), ("item", item.label),
+                   ("dialog base", dialog.keys), ("dialog", dialog.enable),
+                   ("field", field.value),
+                   ("constructor owner", lambda: lcgui.DialogWidget("invalid owner", owner))):
+    try:
+        call()
+    except RuntimeError as error:
+        assert "destroyed Qt object" in str(error), str(error)
+    else:
+        raise AssertionError("destroyed Qt argument/child was accepted: " + name)
+# Qt already destroyed this Python-created child. Collecting the retained
+# wrapper must not delete it a second time.
+assert cycle_ref() is None  # Qt teardown released the callback-held wrapper.
+del dialog, field, menu, submenu, item, owner, call
+gc.collect()
+)py", ns));
+}
+
+TEST(PyGuiBridgeTest, NativeQtAddressReuseDoesNotReviveStaleWrapper) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    using Text = lc::ui::api::TextGUI;
+    alignas(Text) unsigned char storage[sizeof(Text)];
+    auto destroy = [](Text* widget) { widget->~Text(); };
+    std::unique_ptr<Text, decltype(destroy)> widget(new (storage) Text("first"), destroy);
+    pybind11::gil_scoped_acquire gil;
+    auto first = pybind11::cast(widget.get(), pybind11::return_value_policy::reference);
+    ASSERT_TRUE(pybind11::hasattr(first, "_lc_qobject_lifetime"));
+    widget.reset();
+    widget.reset(new (storage) Text("replacement"));
+    auto second = pybind11::cast(widget.get(), pybind11::return_value_policy::reference);
+    EXPECT_FALSE(first.is(second));
+    EXPECT_NO_THROW(second.attr("setValue")("replacement"));
+    EXPECT_EQ(second.attr("value")().cast<std::string>(), "replacement");
+    EXPECT_THROW(first.attr("value")(), pybind11::error_already_set);
+    widget.reset();
+}
+
+TEST(PyGuiBridgeTest, QtAdoptionSurvivesWrapperCollectionWithoutLeakingStandaloneWidgets) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    auto owner = std::make_unique<lc::ui::MainWindow>();
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["owner"] = pybind11::cast(owner.get(), pybind11::return_value_policy::reference);
+    pybind11::exec(R"py(
+import lcgui, gc, weakref
+dialog = lcgui.DialogWidget("adoption probe", owner)
+field = lcgui.Text("adopted")
+standalone = lcgui.Text("standalone")
+item_factory = lcgui.MenuItem.new("factory item", lambda: None)
+button_factory = lcgui.ToolbarButton.new("factory button", "", lambda: None)
+tooltip_factory = lcgui.ToolbarButton.newWithTooltip("factory tooltip", "", lambda: None, "tip")
+checkable_factory = lcgui.ToolbarButton.newCheckable("factory checkable", "", lambda: None, "tip", True)
+assert dialog.addWidget("field", field)
+field.setValue("retained by Qt")
+field_ref = weakref.ref(field)
+)py", ns);
+    QPointer<lc::ui::api::TextGUI> field(ns["field"].cast<lc::ui::api::TextGUI*>());
+    QPointer<lc::ui::api::TextGUI> standalone(ns["standalone"].cast<lc::ui::api::TextGUI*>());
+    const std::vector<QPointer<QObject>> factories {
+        ns["item_factory"].cast<lc::ui::api::MenuItem*>(),
+        ns["button_factory"].cast<lc::ui::api::ToolbarButton*>(),
+        ns["tooltip_factory"].cast<lc::ui::api::ToolbarButton*>(),
+        ns["checkable_factory"].cast<lc::ui::api::ToolbarButton*>()
+    };
+    pybind11::exec(R"py(
+del field, standalone, item_factory, button_factory, tooltip_factory, checkable_factory
+gc.collect()
+assert field_ref() is None
+)py", ns);
+    ASSERT_FALSE(field.isNull());  // Fail before ever dereferencing a deleted child.
+    EXPECT_TRUE(standalone.isNull());
+    for (const auto& factory : factories) EXPECT_TRUE(factory.isNull());
+    EXPECT_EQ(field->value(), "retained by Qt");
+    owner.reset();
+    EXPECT_TRUE(field.isNull());
+}
 
 // -----------------------------------------------------------------------------
 // Test — MainWindow method surface: exercise the phase-5 PR-5.6 additions

@@ -93,6 +93,16 @@ No claim of universal support or complete Lua parity should be inferred from
 this table. The CI/platform matrix and remaining acceptance work are tracked in
 `PYTHON_BINDING_IMPLEMENTATION_PLAN.md`.
 
+`lcgui` calls must run on the Qt application thread. Retained Qt-backed
+receivers and arguments raise `RuntimeError` after their native object is
+destroyed, rather than dereferencing stale pointers. Shared kernel/viewer
+objects retain their normal shared ownership. Python-created widgets start
+Python-owned; when a bound call gives them a Qt parent, Qt takes over deletion.
+Dialogs are parented to their supplied window, as are menus/items created by
+the native menu factories. Collect UI wrappers on the application thread, too.
+These guards do not make scripts a sandbox or support arbitrary native-code
+ownership changes outside the bound API.
+
 Core namespace organization intentionally parallels Lua: Python exposes
 `lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`, `lc.meta.*`,
 `lc.storage.*`, `lc.event.*`, and `lc.maths.*`; persistence-enabled builds also

@@ -50,6 +50,8 @@ public:
 
     ~LuaInterface();
 
+    QObject* ownerObject() const;
+
     /**
      * \brief Read and execute Lua files
      */

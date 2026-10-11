@@ -1,8 +1,8 @@
 // Phase 3 PR-3.2 — lcgui embedded module.
 // Phase 5 PR-5.6 — full lc-side band + gui.* widget family.
 //
-// See pyguibridge.h for the design rationale (holder-less bindings for
-// Qt-owned widgets, `import lc` first to register kernel types).
+// See pyguibridge.h for the Qt lifetime/ownership policy and importing `lc`
+// first to register kernel types.
 //
 // Cross-referenced every `.def(...)` against the real header signature
 // per coordinator discipline (code review alone hasn't been sufficient
@@ -57,6 +57,7 @@
 #include "luainterface.h"
 #include "managers/metainfomanager.h"
 #include "pyeventhooks.h"   // Phase 5 PR-5.1 fixup: currentMainWindow()
+#include "qtpythonlifetime.h"
 
 #include <drawables/tempentities.h>
 #include <managers/snapmanagerimpl.h>
@@ -65,24 +66,12 @@
 
 namespace py = pybind11;
 
-namespace {
+using lc::ui::python::QtUiThreadCallGuard;
+using lc::ui::python::QtClass;
 
-class QtUiThreadCallGuard {
-public:
-    QtUiThreadCallGuard() {
-        QCoreApplication* app = QCoreApplication::instance();
-        if (app == nullptr) {
-            throw std::runtime_error(
-                "LibreCAD GUI bindings require a Qt application instance");
-        }
-        if (QThread::currentThread() != app->thread()) {
-            throw std::runtime_error(
-                "LibreCAD GUI bindings must be called from the Qt application thread");
-        }
-    }
-};
-
-} // namespace
+QObject* lc::ui::python::qtLifetimeOwner(lc::ui::LuaInterface* value) {
+    return value->ownerObject();
+}
 
 PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     m.doc() = "LibreCAD GUI bindings — phase 3 minimum + phase-5 PR-5.6 "
@@ -99,10 +88,9 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     py::module_::import("lc");
 
     // -----------------------------------------------------------------
-    // MainWindow (holder-less; Qt owns it, Python holds a raw pointer).
+    // MainWindow (native-owned; Python holds a guarded reference).
     // -----------------------------------------------------------------
-    // Deliberately NO smart-pointer holder — see the header note.
-    py::class_<lc::ui::MainWindow>(m, "MainWindow")
+    QtClass<lc::ui::MainWindow>(m, "MainWindow")
         // Convenience: `mainWindow.message("hello")` writes to the CLI.
         // Mirrors Lua's `mainWindow:cliCommand():write(m)` at
         // luainterface.cpp:160 pattern, with the tostring() applied
@@ -285,7 +273,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // completes the plugin-list + operation slots + finishOperation
     // remainder (Lua exposes them under the same names).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::LuaInterface>(m, "LuaInterface")
+    QtClass<lc::ui::LuaInterface>(m, "LuaInterface")
         .def("triggerEvent",
              [](lc::ui::LuaInterface& self, const std::string& event) {
                  self.triggerEvent(event, lc::scripting::ScriptValue{});
@@ -318,7 +306,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // CLI-state reset (`returnText(False)` + `commandActive(False)`).
     // Phase 5 PR-5.6 adds the full Lua-exposed remainder.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::widgets::CliCommand>(m, "CliCommand")
+    QtClass<lc::ui::widgets::CliCommand>(m, "CliCommand")
         .def("write",
              &lc::ui::widgets::CliCommand::write,
              py::arg("message"),
@@ -382,7 +370,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // -----------------------------------------------------------------
     // CadMdiChild (holder-less; Qt owns it via the MainWindow tree).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::CadMdiChild>(m, "CadMdiChild")
+    QtClass<lc::ui::CadMdiChild>(m, "CadMdiChild")
         .def("document",
              &lc::ui::CadMdiChild::document,
              "Return the underlying kernel Document (shared_ptr; "
@@ -443,7 +431,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // setOperationActive + docCanvas; mirror them here.  Qt-owned; raw
     // pointer, no holder.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::LCADViewer>(m, "LCADViewer")
+    QtClass<lc::ui::LCADViewer>(m, "LCADViewer")
         .def("autoScale",
              &lc::ui::LCADViewer::autoScale,
              "Re-fit the viewport to the document's extents.", py::call_guard<QtUiThreadCallGuard>())
@@ -546,7 +534,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // Phase 5 PR-5.6 — Toolbar.  Layout mirrors Lua's binding.
     // addButton takes a ScriptCallback; wrap py::object.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::widgets::Toolbar>(m, "Toolbar")
+    QtClass<lc::ui::widgets::Toolbar>(m, "Toolbar")
         .def("tabByName",
              &lc::ui::widgets::Toolbar::tabByName,
              py::arg("name"),
@@ -605,7 +593,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // arities that take a Color are exposed as-is; pybind11 will
     // dispatch by argument types.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::widgets::Layers>(m, "Layers")
+    QtClass<lc::ui::widgets::Layers>(m, "Layers")
         .def("setMdiChild",
              &lc::ui::widgets::Layers::setMdiChild,
              py::arg("mdi_child"), py::call_guard<QtUiThreadCallGuard>())
@@ -709,7 +697,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // Phase 5 PR-5.6 — PropertyEditor: the Lua binding only exposes
     // GetPropertyEditor + propertyChanged.  Same surface here.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::PropertyEditor>(m, "PropertyEditor")
+    QtClass<lc::ui::PropertyEditor>(m, "PropertyEditor")
         // Header allows nullptr but the singleton needs a MainWindow at
         // first call; make the arg mandatory Python-side so callers pass
         // `mainWindow` explicitly.  Lua's binding takes an arg too.
@@ -742,7 +730,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // only one Lua exposes) — the other two are QMenuBar/QMenu-taking
     // internal ctors, not script-callable.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::Menu>(m, "Menu")
+    QtClass<lc::ui::api::Menu>(m, "Menu")
         .def(py::init([](const std::string& name) {
                  return new lc::ui::api::Menu(name.c_str());
              }),
@@ -852,7 +840,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // is the plain ctor and `MenuItem.new("label", callback)` is the
     // callback-attached form.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::MenuItem>(m, "MenuItem")
+    QtClass<lc::ui::api::MenuItem>(m, "MenuItem")
         .def(py::init([](const std::string& label) {
                  return new lc::ui::api::MenuItem(label.c_str());
              }),
@@ -864,7 +852,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                      lc::python::makePythonCallback(std::move(cb)));
              },
              py::arg("label"), py::arg("callback"),
-             py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
+             py::return_value_policy::take_ownership, py::call_guard<QtUiThreadCallGuard>())
         .def("label",       &lc::ui::api::MenuItem::label, py::call_guard<QtUiThreadCallGuard>())
         .def("setLabel",
              [](lc::ui::api::MenuItem& self, const std::string& label) {
@@ -928,7 +916,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // (name).  Mirror that.  addGroup + removeGroup have 2 overloads;
     // bind both.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ToolbarTab>(m, "ToolbarTab")
+    QtClass<lc::ui::api::ToolbarTab>(m, "ToolbarTab")
         .def(py::init([](const std::string& name) {
                  return new lc::ui::api::ToolbarTab(name.c_str());
              }),
@@ -1018,7 +1006,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // `.newWithTooltip(...)`, `.newCheckable(...)` static factories,
     // and the plain ctors as py::init variants.  Mirror that shape.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ToolbarButton>(m, "ToolbarButton")
+    QtClass<lc::ui::api::ToolbarButton>(m, "ToolbarButton")
         // Plain (no-callback) ctors: (label, icon) + (label, icon,
         // tooltip) + (label, icon, tooltip, checkable).  The header
         // packs these as a single ctor with default args — pybind11's
@@ -1056,7 +1044,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                      lc::python::makePythonCallback(std::move(cb)));
              },
              py::arg("label"), py::arg("icon"), py::arg("callback"),
-             py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
+             py::return_value_policy::take_ownership, py::call_guard<QtUiThreadCallGuard>())
         .def_static("newWithTooltip",
              [](const std::string& label, const std::string& icon,
                 py::object cb, const std::string& tooltip) {
@@ -1067,7 +1055,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              },
              py::arg("label"), py::arg("icon"), py::arg("callback"),
              py::arg("tooltip"),
-             py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
+             py::return_value_policy::take_ownership, py::call_guard<QtUiThreadCallGuard>())
         .def_static("newCheckable",
              [](const std::string& label, const std::string& icon,
                 py::object cb, const std::string& tooltip,
@@ -1079,7 +1067,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              },
              py::arg("label"), py::arg("icon"), py::arg("callback"),
              py::arg("tooltip"), py::arg("checkable"),
-             py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
+             py::return_value_policy::take_ownership, py::call_guard<QtUiThreadCallGuard>())
         .def("label",    &lc::ui::api::ToolbarButton::label, py::call_guard<QtUiThreadCallGuard>())
         .def("setLabel",
              [](lc::ui::api::ToolbarButton& self,
@@ -1137,7 +1125,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // ToolbarGroup.  Ctor (name, width=3).  addButton has 3 overloads;
     // Lua's binding mirrors all 3.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ToolbarGroup>(m, "ToolbarGroup")
+    QtClass<lc::ui::api::ToolbarGroup>(m, "ToolbarGroup")
         .def(py::init([](const std::string& name) {
                  return new lc::ui::api::ToolbarGroup(name.c_str());
              }),
@@ -1240,7 +1228,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // Lua exposes inputWidgets/addFinishCallback/keys/addWidget.  Mirror
     // that surface.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::InputGUIContainer>(m, "InputGUIContainer")
+    QtClass<lc::ui::api::InputGUIContainer>(m, "InputGUIContainer")
         .def("inputWidgets",
              &lc::ui::api::InputGUIContainer::inputWidgets,
              "Return the list of all child InputGUI widgets.", py::call_guard<QtUiThreadCallGuard>())
@@ -1266,9 +1254,11 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // takes (title, MainWindow*).  Lua exposes setFinishButton/
     // enable/disable + addWidget override.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::DialogWidget,
+    QtClass<lc::ui::api::DialogWidget,
                lc::ui::api::InputGUIContainer>(m, "DialogWidget")
-        .def(py::init<const std::string&, lc::ui::MainWindow*>(),
+        .def(py::init([](const std::string& title, lc::ui::MainWindow* owner) {
+                 return new lc::ui::api::DialogWidget(title, owner, owner);
+             }),
              py::arg("title"), py::arg("main_window"), py::call_guard<QtUiThreadCallGuard>())
         .def("setFinishButton",
              &lc::ui::api::DialogWidget::setFinishButton,
@@ -1313,7 +1303,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // HorizontalGroupGUI::addWidget which takes QWidget* — pybind11
     // passes InputGUI* implicitly).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::InputGUI>(m, "InputGUI")
+    QtClass<lc::ui::api::InputGUI>(m, "InputGUI")
         .def("label", &lc::ui::api::InputGUI::label, py::call_guard<QtUiThreadCallGuard>())
         .def("setLabel",
              &lc::ui::api::InputGUI::setLabel,
@@ -1331,7 +1321,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // -----------------------------------------------------------------
     // TextGUI (bound as `Text` per Lua's exposure).  Ctor: (label).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::TextGUI, lc::ui::api::InputGUI>(m, "Text")
+    QtClass<lc::ui::api::TextGUI, lc::ui::api::InputGUI>(m, "Text")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::TextGUI::value, py::call_guard<QtUiThreadCallGuard>())
         .def("setValue",
@@ -1353,7 +1343,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // -----------------------------------------------------------------
     // ButtonGUI (bound as `Button`).  Ctor: (label).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ButtonGUI, lc::ui::api::InputGUI>(m, "Button")
+    QtClass<lc::ui::api::ButtonGUI, lc::ui::api::InputGUI>(m, "Button")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("addCallback",
              [](lc::ui::api::ButtonGUI& self, py::object cb) {
@@ -1369,7 +1359,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // with 1 default arg.  Bind with py::arg default so Python callers
     // can use CheckBox("Label") or CheckBox("Label", True).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::CheckBoxGUI,
+    QtClass<lc::ui::api::CheckBoxGUI,
                lc::ui::api::InputGUI>(m, "CheckBox")
         .def(py::init<std::string, bool>(),
              py::arg("label"), py::arg("checked") = false, py::call_guard<QtUiThreadCallGuard>())
@@ -1391,7 +1381,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // has `value()`/`setValue()`.  Expose the header names for
     // correctness; Python callers see the actual .h signature.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::RadioButtonGUI>(m, "RadioButton")
+    QtClass<lc::ui::api::RadioButtonGUI>(m, "RadioButton")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("label",    &lc::ui::api::RadioButtonGUI::label, py::call_guard<QtUiThreadCallGuard>())
         .def("setLabel",
@@ -1415,7 +1405,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // ButtonGUI/CheckBoxGUI upcast automatically via pybind11's
     // class hierarchy.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::HorizontalGroupGUI,
+    QtClass<lc::ui::api::HorizontalGroupGUI,
                lc::ui::api::InputGUI>(m, "HorizontalGroup")
         .def(py::init<std::string, bool>(),
              py::arg("label"), py::arg("vertical") = false, py::call_guard<QtUiThreadCallGuard>())
@@ -1431,7 +1421,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // RadioGroupGUI (bound as `RadioGroup`).  Ctor: (label).
     // addButton(key, RadioButtonGUI*).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::RadioGroupGUI,
+    QtClass<lc::ui::api::RadioGroupGUI,
                lc::ui::api::InputGUI>(m, "RadioGroup")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("addButton",
@@ -1442,7 +1432,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // CoordinateGUI (bound as `Coordinate`).  Ctor: (label).  value()
     // returns lc::geo::Coordinate — kernel type registered by lc.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::CoordinateGUI,
+    QtClass<lc::ui::api::CoordinateGUI,
                lc::ui::api::InputGUI>(m, "Coordinate")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("addFinishCallback",
@@ -1465,7 +1455,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // -----------------------------------------------------------------
     // AngleGUI (bound as `Angle`).  Ctor: (label).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::AngleGUI,
+    QtClass<lc::ui::api::AngleGUI,
                lc::ui::api::InputGUI>(m, "Angle")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("toDegrees", &lc::ui::api::AngleGUI::toDegrees, py::call_guard<QtUiThreadCallGuard>())
@@ -1492,7 +1482,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // `SliderGUI(std::string, int setMin=0, int setMax=100)`.  Expose
     // both arities.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::SliderGUI,
+    QtClass<lc::ui::api::SliderGUI,
                lc::ui::api::InputGUI>(m, "Slider")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def(py::init<std::string, int, int>(),
@@ -1512,7 +1502,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // ComboBoxGUI (bound as `ComboBox`).  Ctor: (label).  addItem has
     // an index default; setValue has 2 overloads (string / int).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ComboBoxGUI,
+    QtClass<lc::ui::api::ComboBoxGUI,
                lc::ui::api::InputGUI>(m, "ComboBox")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("addCallback",
@@ -1543,7 +1533,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // `NumberGUI(std::string, double minVal=-10000, double maxVal=10000)`.
     // Lua only exposes the (label) form; we mirror that.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::NumberGUI,
+    QtClass<lc::ui::api::NumberGUI,
                lc::ui::api::InputGUI>(m, "Number")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def(py::init<std::string, double, double>(),
@@ -1563,7 +1553,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // ColorGUI (bound as `ColorPicker`).  Ctor: (label).
     // value()/setValue() take lc::Color.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ColorGUI,
+    QtClass<lc::ui::api::ColorGUI,
                lc::ui::api::InputGUI>(m, "ColorPicker")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::ColorGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1581,7 +1571,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // EntityGUI (bound as `EntityPicker`).  Ctor: (label).  value()
     // returns vector<CADEntity_CSPtr>.
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::EntityGUI,
+    QtClass<lc::ui::api::EntityGUI,
                lc::ui::api::InputGUI>(m, "EntityPicker")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::EntityGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1605,7 +1595,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // parity with Lua's `setListType(string)`.  addItem takes an
     // InputGUI*.  DELIBERATELY NO addCallbackToAll (Lua omits it too).
     // -----------------------------------------------------------------
-    py::class_<lc::ui::api::ListGUI,
+    QtClass<lc::ui::api::ListGUI,
                lc::ui::api::InputGUI>(m, "List")
         .def(py::init<std::string>(), py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def("addItem",
