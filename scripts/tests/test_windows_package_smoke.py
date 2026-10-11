@@ -216,15 +216,19 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
             (["_WIN32", "LC_UI_SHARED", "lcui_EXPORTS"], "__declspec(dllexport)"),
             (["LC_UI_SHARED", "lcui_EXPORTS"], ""),
         ):
-            with self.subTest(defines=defines):
-                result = subprocess.run(
-                    ["clang++", "-E", "-P", "-x", "c++", "-include", str(header)]
-                    + ["-D" + define for define in defines] + ["-"],
-                    input="LC_UI_API int exported_data;\n", capture_output=True,
-                    text=True, check=False,
-                )
-                self.assertEqual(0, result.returncode, result.stderr)
-                self.assertEqual((expected + " int exported_data;").strip(), result.stdout.strip())
+            for target in ([], ["--target=x86_64-pc-windows-msvc"]):
+                with self.subTest(defines=defines, target=target):
+                    result = subprocess.run(
+                        ["clang++"] + target
+                        # These are simulated modes, independent of the
+                        # compiler host/target's predefined _WIN32 macro.
+                        + ["-E", "-P", "-x", "c++", "-U_WIN32", "-include", str(header)]
+                        + ["-D" + define for define in defines] + ["-"],
+                        input="LC_UI_API int exported_data;\n", capture_output=True,
+                        text=True, check=False,
+                    )
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertEqual((expected + " int exported_data;").strip(), result.stdout.strip())
 
     @unittest.skipUnless(shutil.which("cmake"), "CMake is needed for the syntax regression")
     def test_runtime_dependency_install_configures_with_and_without_search_paths(self):
