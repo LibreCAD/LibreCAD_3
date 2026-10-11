@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT_DIRECTORY = Path(__file__).resolve().parents[1]
@@ -307,10 +308,11 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "repository-relative"):
             plan_checker._exclude_candidate_paths(candidates, ["../outside/"])
 
-    def test_candidate_path_mode_accepts_an_untracked_plan_file(self):
+    def test_candidate_path_mode_accepts_plan_file_when_base_has_no_plan(self):
         output = io.StringIO()
-        with redirect_stdout(output):
-            result = plan_checker.main(["--paths", plan_checker.PLAN_RELATIVE_PATH])
+        with patch.object(plan_checker, "_git_plan_at_ref", return_value=None):
+            with redirect_stdout(output):
+                result = plan_checker.main(["--paths", plan_checker.PLAN_RELATIVE_PATH])
 
         self.assertEqual(0, result)
         self.assertIn("Change source: explicit candidate paths", output.getvalue())
