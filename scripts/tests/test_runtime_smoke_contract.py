@@ -4,6 +4,7 @@ import ast
 import ctypes
 import os
 import pathlib
+import subprocess
 import textwrap
 import unittest
 from pathlib import Path
@@ -255,6 +256,42 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         self.assertNotIn("--gtest_list_tests", self.linux_build_script)
         self.assertIn("ERROR: bin/lcunittest not built; required tests cannot run", self.linux_build_script)
         self.assertNotIn("skipping test run", self.linux_build_script)
+
+    @unittest.skipUnless(os.name == "posix", "Linux CI shell contract")
+    def test_linux_informational_tests_are_bounded_and_preserve_exit_diagnostics(self):
+        start = self.linux_build_script.index(
+            'echo "running lcunittest (remaining suites'
+        )
+        end = self.linux_build_script.index(
+            '\nelse\n    echo "ERROR: bin/lcunittest', start
+        )
+        informational = self.linux_build_script[start:end]
+        for status in (0, 7, 124, 137):
+            with self.subTest(status=status):
+                script = """set -e
+CORE_SUITES='Core.*:Other.*'
+timeout() { printf 'bounded: <%%s>\\n' "$@"; return %d; }
+xvfb-run() { echo 'unbounded invocation'; return %d; }
+%s
+echo 'continued to install'
+""" % (status, status, informational)
+                result = subprocess.run(
+                    ["bash"], input=script, text=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT, timeout=10, check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stdout)
+                for argument in (
+                    "--kill-after=10s", "180s", "xvfb-run", "-a",
+                    "./bin/lcunittest", "--gtest_filter=-Core.*:Other.*",
+                ):
+                    self.assertIn("bounded: <{}>".format(argument), result.stdout)
+                self.assertNotIn("unbounded invocation", result.stdout)
+                self.assertIn("continued to install", result.stdout)
+                if status:
+                    self.assertIn("non-core tests exited {}".format(status), result.stdout)
+                    self.assertIn("180s limit, 10s kill grace", result.stdout)
+                else:
+                    self.assertNotIn("WARNING:", result.stdout)
 
     def test_windows_required_filters_use_bounded_required_runner(self):
         required_filters = (
