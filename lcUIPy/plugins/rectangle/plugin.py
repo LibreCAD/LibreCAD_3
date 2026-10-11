@@ -552,7 +552,7 @@ def _on_new_waiting_custom_entity(insert):
 
 
 # Register the plugin at module import time.  The plugin registration
-# hook (installed by lcUI's installEventHooks at MainWindow construction)
+# hook (installed before definition loading by lcUI's process bootstrap)
 # routes this into the process-global LuaCustomEntityManager.  In
 # headless CLI mode with no hook installed, this call is a silent
 # no-op (matches the sub-piece 1 rationale for the hook slot).

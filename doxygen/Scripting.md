@@ -319,15 +319,20 @@ by `PluginManager::loadPlugins()` via a directory walk driven by the
 land in the operation registry immediately.
 
 **Python plugins** live under `lcUIPy/plugins/<name>/plugin.py`,
-loaded directly from the resolved application package directory in
-`LuaInterface::initLua` (no generated `path.py` file is required).
+loaded once per process from the resolved application package directory by
+`bootstrapPythonPlugins` before window setup (no generated `path.py` is required).
 Each plugin gets its own `py::dict` namespace with `import lc; import lcgui as gui`
 pre-loaded + a `LC_interface = "gui"` global; `@lc.register_operation`
 inside populates the process-global `lc.operation_registry` dict.
-Load order is BEFORE `OperationLoader::loadPythonOperations` so the
-CLI/menu/toolbar wiring walk sees plugin registrations (reverse of the Lua
-order because Python's decorator model needs registration before the wiring
-walk).
+Definition evaluation has no active window: `gui.currentMainWindow()` returns
+`None`, even when a caller has an outer window scope. Do not capture a window
+at module load; use operation construction/callbacks or a class's per-window
+`init` for UI work. `OperationLoader::loadPythonOperations` still wires the
+shared definitions separately for each window. Closing one window does not
+re-evaluate plugins or replace another window's reconstruction state.
+The bootstrap retains its original plain load report, including failures;
+broken plugins do not prevent the remaining definitions from loading, and
+smoke requires a successful report. Automatic retry/hot reload is not supported.
 
 The `plugin.py` scan is bounded to the plugin subdir only — it does
 NOT recurse into sub-subdirs.  For a plugin needing multiple files,

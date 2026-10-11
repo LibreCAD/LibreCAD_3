@@ -35,12 +35,8 @@ private:
 };
 
 /// Install the process hook functions. Idempotent; safe to call at startup.
-/// Phase 5 PR-5.1 fixup: MUST be called unconditionally at MainWindow
-/// startup — the ScriptDock-only install site was broken because
-/// Python operations registering via `lc.event.register` at startup
-/// arrived BEFORE the ScriptDock had ever been opened, so the hook
-/// slots were still default-constructed (falsy) and every registration
-/// silently no-op'd.
+/// Bootstrap installs these before process-global plugin definitions and
+/// per-window operation init; installing only when ScriptDock opens is too late.
 void installEventHooks();
 
 /// Return the MainWindow bound to the current execution scope, or nullptr

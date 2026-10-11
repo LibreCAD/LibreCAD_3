@@ -34,10 +34,9 @@
 // wraps kaguya::LuaRef via makeLuaObject.
 #include <scriptadapter/luacallback.h>
 
-// Phase 5 PR-5.1 fixup — installEventHooks() called unconditionally
-// at MainWindow ctor.
 #ifdef LC_WITH_PYTHONSCRIPT
 #include "python/pyeventhooks.h"
+#include "python/pypluginloader.h"
 #endif
 
 // Phase 4 PR-9b — trigger* slots build ScriptValue::Map payloads
@@ -59,6 +58,9 @@ MainWindow::MainWindow()
     _copyManager(&_cadMdiChild)
 {
 #ifdef LC_WITH_PYTHONSCRIPT
+    // Also support direct construction by embedders/tests, before entering
+    // this window's scope. Normal app startup has already bootstrapped.
+    lc::ui::python::bootstrapPythonPlugins();
     lc::ui::python::MainWindowExecutionScope ownerScope(this);
 #endif
     ContextMenuManager::GetContextMenuManager(this);
@@ -109,20 +111,6 @@ MainWindow::MainWindow()
         }
         return lc::lua::makeLuaObject(std::move(ref));
     });
-
-    // Phase 5 PR-5.1 fixup — install the lc.event.register /
-    // lc.event.deregister hooks HERE, not lazily from ScriptDock's
-    // ctor.  Python operations registered via lc.event.register at
-    // startup (PR-5.2's OperationLoader second source calls a
-    // Python operation's `__init__` which registers listeners) fire
-    // BEFORE the ScriptDock has ever been opened, so the hook slots
-    // were previously still default-constructed (falsy) and every
-    // early registration silently no-op'd.  MUST be installed BEFORE
-    // initLua so Python ops that register listeners at load time see
-    // live hook slots.
-#ifdef LC_WITH_PYTHONSCRIPT
-    lc::ui::python::installEventHooks();
-#endif
 
     // open qt bridge and run lua scripts — this triggers OperationLoader
     // which pushes the Python-registry resolver ONTO the resolver list

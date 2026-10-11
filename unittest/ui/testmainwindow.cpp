@@ -1,6 +1,10 @@
 #include <QApplication>
 #include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QTemporaryDir>
 #include <QTextEdit>
+#include <algorithm>
 #include <memory>
 #include <thread>
 
@@ -15,6 +19,7 @@
 #include <qt_keywords_pop.h>
 #include <lcpython.h>
 #include <python/pyeventhooks.h>
+#include <python/pypluginloader.h>
 #include <lcscripting/scriptvalue.h>
 #include <lcscripting/scriptobject.h>
 #include <lcscripting/scriptcallback.h>  // Phase 6 PR-6.1 nativeCallback
@@ -123,6 +128,121 @@ TEST(MWindowTest, MenuAPITest) {
 }
 
 #ifdef LC_WITH_PYTHONSCRIPT
+
+TEST(MWindowTest, PythonPluginBootstrapPrecedesWindowsAndIsIdempotent) {
+    ensureUiApplication();
+    const auto& report = lc::ui::python::bootstrapPythonPlugins();
+    EXPECT_TRUE(report.directoryFound);
+    EXPECT_TRUE(report.failures.empty());
+    EXPECT_EQ(std::count(report.loadedPlugins.begin(), report.loadedPlugins.end(), "gear"), 1);
+    EXPECT_EQ(std::count(report.loadedPlugins.begin(), report.loadedPlugins.end(), "rectangle"), 1);
+    EXPECT_TRUE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin("LC Plugin"));
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), nullptr);
+    MainWindowTest window;
+    lc::ui::python::MainWindowExecutionScope scope(&window);
+    EXPECT_EQ(&lc::ui::python::bootstrapPythonPlugins(), &report);
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), &window);
+    std::string failure;
+    std::thread worker([&] {
+        try {
+            (void)lc::ui::python::bootstrapPythonPlugins();
+        } catch (const std::exception& error) {
+            failure = error.what();
+        }
+    });
+    worker.join();
+    EXPECT_NE(failure.find("Qt application thread"), std::string::npos);
+}
+
+TEST(MWindowTest, PythonPluginDefinitionsAreSharedAcrossWindows) {
+    ensureUiApplication();
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    auto first = std::make_unique<MainWindowTest>();
+    struct RestoreRegistrationHook {
+        lc::python::LCPython& python;
+        lc::python::PyNamespace& ns;
+        ~RestoreRegistrationHook() {
+            (void)python.runString(
+                "if '_register_plugin' in globals(): lc.register_plugin = _register_plugin", ns);
+        }
+    } restore{python, ns};
+    ASSERT_EQ(python.runString(R"py(
+_definitions = {name: lc.operation_registry[name]
+                for name in ('PyGearOp', 'PyRectangleOp')}
+_rectangle_globals = _definitions['PyRectangleOp']._init_default.__globals__
+_register_plugin = lc.register_plugin
+_registrations = []
+def _record_registration(name, callback):
+    _registrations.append((name, callback))
+    _register_plugin(name, callback)
+lc.register_plugin = _record_registration
+)py", ns), "");
+
+    auto second = std::make_unique<MainWindowTest>();
+    EXPECT_EQ(python.runString(R"py(
+assert all(lc.operation_registry[name] is cls for name, cls in _definitions.items()), \
+    'new window replaced process-global plugin operation definitions'
+assert lc.operation_registry['PyRectangleOp']._init_default.__globals__ is _rectangle_globals
+assert not _registrations, 'new window replayed global custom-entity registrations'
+)py", ns), "");
+    for (auto* window : {first.get(), second.get()}) {
+        const auto commands = window->cliCommand()->availableCommands();
+        EXPECT_EQ(std::count(commands.begin(), commands.end(), "PYGEAR"), 1);
+        EXPECT_EQ(std::count(commands.begin(), commands.end(), "PYRECTANGLE"), 1);
+        window->cliCommand()->runCommand("PYRECTANGLE");
+        ASSERT_FALSE(window->currentOperation().isNil());
+        EXPECT_EQ(window->currentOperation().getAttr("step").asString(), "AWAIT_P1");
+        EXPECT_EQ(window->luaInterface()->listenerCount("point"), 1u);
+    }
+    first->triggerCoordinateEntered(lc::geo::Coordinate(1, 2));
+    EXPECT_EQ(first->currentOperation().getAttr("step").asString(), "AWAIT_P2");
+    EXPECT_EQ(second->currentOperation().getAttr("step").asString(), "AWAIT_P1");
+    first.reset();
+    EXPECT_EQ(second->luaInterface()->listenerCount("point"), 1u);
+    second->triggerCoordinateEntered(lc::geo::Coordinate(3, 4));
+    second->triggerCoordinateEntered(lc::geo::Coordinate(13, 12));
+    EXPECT_EQ(second->cadMdiChild()->document()->entityContainer().asVector(32767).size(), 1u);
+    EXPECT_EQ(second->luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(python.runString(R"py(
+assert all(lc.operation_registry[name] is cls for name, cls in _definitions.items())
+)py", ns), "");
+}
+
+TEST(MWindowTest, PythonPluginDefinitionsHaveNoWindowAndFailuresRemainIsolated) {
+    ensureUiApplication();
+    MainWindowTest window;
+    QTemporaryDir directory;
+    ASSERT_TRUE(directory.isValid());
+    auto writePlugin = [&](const QString& name, const QByteArray& source) {
+        const QString folder = QDir(directory.path()).filePath(name);
+        if (!QDir().mkpath(folder)) return false;
+        QFile file(QDir(folder).filePath("plugin.py"));
+        return file.open(QIODevice::WriteOnly) && file.write(source) == source.size();
+    };
+    ASSERT_TRUE(writePlugin("a_broken", "raise RuntimeError('expected plugin load failure')\n"));
+    ASSERT_TRUE(writePlugin("z_probe", R"py(
+import builtins
+builtins._lc_definition_without_owner = gui.currentMainWindow() is None
+assert LC_interface == 'gui'
+)py"));
+    lc::ui::python::MainWindowExecutionScope scope(&window);
+    const auto report = lc::ui::python::loadPythonPlugins(
+        directory.path().toStdString(), "gui");
+    EXPECT_TRUE(report.directoryFound);
+    EXPECT_EQ(report.loadedPlugins, std::vector<std::string>({"z_probe"}));
+    ASSERT_EQ(report.failures.size(), 1u);
+    EXPECT_NE(report.failures.front().find("expected plugin load failure"), std::string::npos);
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), &window);
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    EXPECT_EQ(python.runString(R"py(
+import builtins
+owner_free = builtins._lc_definition_without_owner
+del builtins._lc_definition_without_owner
+assert owner_free, 'global plugin definition captured the loading window'
+)py", ns), "");
+}
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MWindowTest, PythonOperationOptionsWireDefaultAndInitSpecificActions) {

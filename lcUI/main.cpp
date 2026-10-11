@@ -13,6 +13,7 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <lcpython.h>
 #include "python/pyruntimesmoke.h"
+#include "python/pypluginloader.h"
 #endif
 
 #ifndef debug
@@ -92,6 +93,9 @@ int main2(int argc, char* argv[]) {
     LOGGER;//Init logger
     lc::persistence::PatternProvider::Instance();//Init pattern loader
 
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::bootstrapPythonPlugins();
+#endif
     lc::ui::WindowManager::init();
 
     return QApplication::exec();

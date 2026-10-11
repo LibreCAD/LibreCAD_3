@@ -263,10 +263,9 @@ runtime_diagnostics = (
                       << std::endl;
         }
 
-        installEventHooks();
         const QString pluginDirectory = QDir(packageRoot).filePath("plugins");
         const PythonPluginLoadReport pluginReport =
-            loadPythonPlugins(pluginDirectory.toStdString(), "gui");
+            bootstrapPythonPlugins();
         if (!pluginReport.directoryFound || !pluginReport.failures.empty()) {
             std::cerr << "Python smoke failed loading plugins from "
                       << pluginDirectory.toStdString() << '\n';
