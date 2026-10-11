@@ -313,14 +313,25 @@ void LuaInterface::finishOperation() {
     #ifdef LC_WITH_PYTHONSCRIPT
     lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
     #endif
+    std::string closeError;
     try {
         if (!_operation.isNil() && _operation.hasAttr("close")) {
-            _operation.callMethod("close");
+            lc::scripting::ScriptValue ignored;
+            (void)_operation.callMethodChecked("close", ignored, closeError);
         }
+    } catch (const std::exception& error) {
+        closeError = error.what();
     } catch (...) {
-        // Teardown failure must not prevent exact subscription cleanup.
+        closeError = "operation close failed with an unknown exception";
     }
+
+    // A failed close must not leave operation-owned listeners live. Queue the
+    // diagnostic only after exact cleanup has completed.
     cancelOperationEventTracking();
+    if (!closeError.empty()) {
+        _eventBus.reportDiagnostic("Script operation close failed:\n" +
+                                   closeError);
+    }
 }
 
 void LuaInterface::beginOperationEventTracking() {

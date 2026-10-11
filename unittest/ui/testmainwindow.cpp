@@ -398,6 +398,61 @@ lc.operation_registry.pop("PyFailDuringOperationInit", None)
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationCloseFailureReportsOnceAndCleansEvents) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import builtins
+import lc
+
+builtins._lc_close_failure_calls = 0
+def _lc_close_failure_listener(event, args):
+    pass
+
+@lc.register_operation
+class PyCloseFailureProbe:
+    name = "PyCloseFailureProbe"
+    def _init_default(self):
+        lc.event.register("_lc_close_failure_cleanup", _lc_close_failure_listener)
+    def close(self):
+        builtins._lc_close_failure_calls += 1
+        raise RuntimeError("intentional operation close failure")
+)py");
+    }
+
+    mainWindow.runOperationByName("PyCloseFailureProbe");
+    ASSERT_FALSE(mainWindow.currentOperation().isNil());
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup"), 1u);
+
+    mainWindow.luaInterface()->finishOperation();
+    QCoreApplication::processEvents();
+
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup"), 0u);
+    auto* history = mainWindow.cliCommand()->findChild<QTextEdit*>(
+        QStringLiteral("history"));
+    ASSERT_NE(history, nullptr);
+    EXPECT_EQ(history->toPlainText().count(
+                  QStringLiteral("intentional operation close failure")), 1);
+    {
+        pybind11::gil_scoped_acquire gil;
+        EXPECT_EQ(pybind11::module_::import("builtins")
+                      .attr("_lc_close_failure_calls").cast<int>(), 1);
+        pybind11::exec(R"py(
+import builtins
+import lc
+lc.operation_registry.pop("PyCloseFailureProbe", None)
+del builtins._lc_close_failure_calls
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MWindowTest, WindowTeardownClearsOnlyItsPythonEventCallbacks) {
     ensureUiApplication();
     lc::python::PythonInit::initialize();
