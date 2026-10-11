@@ -33,8 +33,9 @@ local container evidence, not hosted/native Linux acceptance. Hosted Linux,
 Windows, macOS x86_64, Snap, and required branch protection remain open. The
 GitHub device flow has since completed: `gh auth status --hostname github.com`
 and `gh api user --jq .login` verify `dxli` with `repo` and `workflow` scopes.
-The implementation branch is `codex/python-binding-followup`; draft publication
-and hosted validation are the current batch. The pinned libdxfrw fix
+The implementation branch is `codex/python-binding-followup`, published as
+[draft PR #445](https://github.com/LibreCAD/LibreCAD_3/pull/445). Hosted platform
+validation has started. The pinned libdxfrw fix
 `b406694227500ef520fac37e1dd9f8dabae27599` is now published in
 [libdxfrw draft PR #103](https://github.com/LibreCAD/libdxfrw/pull/103).
 Branch protection was not changed. The old PR #416 Qt-install and
@@ -1203,8 +1204,11 @@ A blocked entry records its last achieved state and the concrete unblock action.
 All implementation entries start planned: reviewing source is not runtime proof.
 
 **Current GitHub state (2026-10-11):** the device flow is complete and the
-authenticated CLI verifies `dxli` with `repo`/`workflow` scopes. Draft publication
-and hosted platform jobs are the current batch. The libdxfrw gitlink is now
+authenticated CLI verifies `dxli` with `repo`/`workflow` scopes. Draft PR #445
+has started hosted Linux, Windows, and both macOS architectures. The first
+PLAN-SYNC run failed because its checkout omitted submodules, making the
+pybind11 reference link absent; recursive checkout is the current fix. The
+libdxfrw gitlink is now
 available remotely at `b406694227500ef520fac37e1dd9f8dabae27599` in
 [draft PR #103](https://github.com/LibreCAD/libdxfrw/pull/103); the API resolves
 the exact SHA. This supersedes earlier invalid-token/pending-approval and
@@ -1220,9 +1224,9 @@ No branch-protection or release-signing settings were changed.
 | S4 | active | Re-run the lifecycle failure filter on hosted Windows; keep DWG/ATTRIB-specific acceptance open | `LuaInterface` scopes active-operation methods and context-menu property reads/writes to their owner while tracking registrations created from actions, operation-owned event callbacks, property accessors, and `close()`. Both native `ScriptValue` and raw-Lua event dispatch retain registration IDs; after snapshot dispatch, a failing operation callback removes every operation-owned subscription while unrelated listeners still run. The close-failure regression verifies a listener registered during throwing `close()` is removed and exactly one diagnostic is reported. Focused lifecycle regressions pass 2/2; native macOS, native ARM64 Linux, and current-source x86_64-emulated non-rendering suites pass 450/450 across 79 suites with zero skips. Hosted Windows, broader failure-path review, and DWG/ATTRIB-specific acceptance remain open. |
 | S5 | active | Run current-provider mixed-language DXF/parity on hosted Windows/Snap, then capture hosted results | Native ARM64 Linux full non-rendering passes 450/450 and exact `CORE_SUITES` 315/315; native macOS arm64 passes 450/450. Current-source x86_64 emulation also passes the full suite 450/450 and exact `CORE_SUITES` 315/315, including DXF round-trip/parity coverage. These are local source/provider results; hosted Windows/Snap artifacts and hosted acceptance remain open. |
 | S6 | active | Run current-source AppImage/Snap on native or hosted Linux; run hosted Windows NSIS and retain hosted macOS/protected-signing proof separately | The current AppImage candidate (SHA-256 `71314c615ca9628151fe89ce63da5488b7007cb12cb3fa68e86ee711d6609434`, 58,386,936 bytes) passes strict QEMU/Xvfb launcher smoke with `LIBRECAD_REQUIRE_BUNDLED_PYTHON=1` and `LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE=1`; the smoke confirms the OpenSSL/SQLite/ffi/zlib dependencies resolve within the extracted package. The candidate packaging code explicitly deploys these libraries and uses a custom AppRun that prepends the package library directories. Native ARM64 developer install remains system-linked, not package-closure evidence. Native/hosted x64, FUSE launch, Snap, hosted Windows NSIS, and protected signing remain open. |
-| S7 | active | Publish the parent draft PR, then inspect every required platform and artifact workflow result | GitHub authenticates `dxli`; upstream `master` remains `f972953`. Local macOS arm64 and Linux-container tests remain as recorded, including 450/450 non-rendering tests and 315/315 Linux core tests. The bounded test runner rejects empty, skipped, incomplete, timed-out, and unmatched required suites. Pinned libdxfrw `b406694` is published in draft PR #103 and resolves through the API; the focused native macOS ATTRIB regressions pass 2/2, zero skips. Hosted Linux, Windows, macOS, AppImage, Snap, and PLAN-SYNC evidence remains open. Branch-protection and protected-release settings have not been changed. |
+| S7 | active | Inspect PR #445's platform and artifact jobs; fix failures and record tested revisions/counts/artifacts | Draft PR #445 is mergeable at head `8083076a`, base `f972953`; builder run `38151810463` and macOS run `38151810494` started. Their recursive checkouts can resolve published libdxfrw `b406694` from dependency draft PR #103. Local evidence remains 450/450 non-rendering tests and 315/315 Linux core tests; the fresh native macOS ATTRIB slice passes 2/2, zero skips. Hosted acceptance is incomplete; the first plan workflow fails because its checkout omits submodules. Required-check enforcement is absent (protection 404, no rulesets); protected release signing remains open. |
 | DOC | active | Validate the capability matrix and maintained-example lifecycle against hosted Linux/Windows artifacts | README and `doxygen/Scripting.md` describe the bounded Python surface, selected-provider runtime staging, exclusions, and incomplete platform validation. The capability matrix separately lists geometry, builders/operations, storage/undo, persistence, operation registration/metadata, events/callbacks, UI widgets, custom entities, plugins, and runtime; a new subsection records the supported callback value conversions, rejected ambiguous values, and Python factory/constructor differences. The focused latest-base `lcunittest` build succeeds with existing warnings, and its capability filter passes 51/51 across six suites. Hosted non-macOS artifacts and maintained-example lifecycle acceptance remain open. |
-| PLAN-SYNC | implemented | Run the hosted plan check on the draft PR; inspect required-check configuration before release acceptance | The stdlib-only checker, complete worktree/base-ref path coverage, receipt freshness enforcement, 31 regression fixtures, and PR summary workflow are implemented. The previous final local transaction passed full-plan validation, checker tests 31/31, all scripts 102/102, and all 17 candidate gates without unmapped paths or stale evidence. GitHub authentication is now verified; draft publication is the next step for hosted evidence. PLAN-SYNC remains implemented until its hosted check passes and required-check configuration is verified. The existing archived rolling-release action and protected signing remain separate delivery concerns. |
+| PLAN-SYNC | implemented | Rerun the hosted PR check with recursive checkout, then establish required-check enforcement for release acceptance | Hosted run `38151810486` at PR head `8083076a` maps all 17 gates but fails its local-link check because pybind11 is absent. A fresh local checkout reproduces the same failure; initializing pinned pybind11 `97bf890d` makes the same actual-base check pass with all 17 gates, no unmapped paths or stale evidence. The workflow now requests recursive submodules and passes actionlint; full-plan, checker 31/31, worktree, actual-base, and whitespace checks pass. Hosted rerun remains required. GitHub reports no master branch protection or rulesets, so enforcement remains open. |
 
 | Platform gate ID | State | Required proof | Evidence / next action |
 |---|---|---|---|
@@ -1275,16 +1279,21 @@ smoke remain open in SNAP-AMD64. See [Snapcraft 9.0 release notes](https://ubunt
 The restarted device flow completed. `gh auth status --hostname github.com`
 verifies `dxli` over HTTPS with `gist`, `read:org`, `repo`, and `workflow`
 scopes; `gh api user --jq .login` returns `dxli`. No token value is recorded.
-Read-only checks show PR #416 and Python scripting support PR #407 merged, no
-PR for `codex/python-binding-followup`, a 404 branch lookup for that local
-candidate, and no Actions runs on the branch. No branch-protection change was
-made. The implementation source snapshot is commit
+PR #445 is draft and mergeable at head `8083076a850f0ca0be707b6013270598e9bba034`
+against base `f972953aa3295543550a90f4c6ed1c4609124c59`. Hosted builder run
+`38151810463` and macOS run `38151810494` started; plan run `38151810486`
+failed on `broken local link: third_party/pybind11/include/pybind11/embed.h`.
+Its checkout did not initialize submodules; the fix retains link validation
+and enables recursive checkout. The branch-protection endpoint reports 404
+(`Branch not protected`) and the ruleset list is empty, so required-check
+enforcement is not established. No repository settings changed. The locally
+tested implementation source snapshot is commit
 `57da459809493c12716a7deb615d3a976b332ffc`, based on `origin/master` at
 `f972953aa3295543550a90f4c6ed1c4609124c59`; the authenticated remote-state
 receipt was committed as `9db3ec74`. The only untracked path is generated
 `build-linux-arm64/`, excluded from plan validation. The next delivery step is
-publishing the libdxfrw prerequisite and implementation as draft PRs, then
-reconciling hosted results. Leave S0-S7, platform gates, and hosted PLAN-SYNC
+fixing hosted failures and reconciling each platform result. Leave S0-S7,
+platform gates, and hosted PLAN-SYNC
 unvalidated until their stated acceptance criteria are met.
 
 ### Linux x86_64 emulation test update (2026-10-10)
@@ -1462,6 +1471,7 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Published main draft PR #445 and fixed its first hosted plan-sync checkout failure | PR head `8083076a850f0ca0be707b6013270598e9bba034` targets base `f972953aa3295543550a90f4c6ed1c4609124c59`. Builder `38151810463`, macOS `38151810494`, and CodeQL `38151810423` started. Plan run `38151810486` fails on the missing pybind11 local link because checkout omitted submodules. Fresh clone `/private/tmp/librecad-python-pr.jlkL02/plan-fresh` reproduces this exact failure; initializing pinned pybind11 `97bf890d` makes the same `--base-ref origin/master` check pass across all 17 gates. `.github/workflows/python-binding-plan.yml` now requests recursive submodules and passes actionlint. Final local `--full`, checker tests 31/31, complete worktree inventory, actual-base coverage, and whitespace checks pass; only generated `build-linux-arm64/` is excluded. Hosted rerun and platform acceptance remain open. Protection returns 404 and the ruleset list is empty; enforcement is incomplete. |
 | 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Published the required libdxfrw feature ref and draft PR before parent publication | [LibreCAD/libdxfrw#103](https://github.com/LibreCAD/libdxfrw/pull/103) pins `b406694227500ef520fac37e1dd9f8dabae27599` on `codex/fix-multiline-attribute-text`; a subsequent API read resolves the SHA. Native macOS arm64's current-source ATTRIB filter passes 2/2 with zero skips after rebuilding `lcunittest` at source snapshot `7bfd19fc`. Full-plan, checker 31/31, worktree inventory, actual-base coverage of all 17 gates, and whitespace checks pass; sole generated-output exclusion is `build-linux-arm64/`. Parent branch/PR publication and hosted platform runs are the next acceptance checks. |
 | 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Prepared draft publication and hosted acceptance; identified and locally revalidated the unpublished libdxfrw prerequisite before fresh CI checkout | Upstream `master` remains `f972953aa3295543550a90f4c6ed1c4609124c59`; GitHub authenticates `dxli`. Pinned libdxfrw `b406694227500ef520fac37e1dd9f8dabae27599` is clean/committed locally but absent remotely (HTTP 422). On native macOS arm64, `cmake --build /private/tmp/librecad-python-multiline-attrib.qSf9aN --target lcunittest --parallel 3` rebuilds source `7bfd19fc`; the bounded multiline/single-line ATTRIB filter discovers and passes 2/2, zero skips. Full-plan validation, checker tests 31/31, worktree inventory, actual-base coverage of all 17 gates, and `git diff --check` pass. Sole generated-output exclusion: `build-linux-arm64/`. Next publish the prerequisite feature ref/draft PR, then the parent draft PR and hosted workflows; no platform gate is promoted by these local results. |
 | 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Reconciled the completed GitHub device approval and verified that the implementation branch is still unpublished; refreshed the candidate revision/path count and removed stale pending-auth claims from the current summary | `gh auth status --hostname github.com` verifies `dxli` with `gist`, `read:org`, `repo`, and `workflow` scopes; `gh api user --jq .login` returns `dxli`. The branch endpoint returns 404, `gh pr list --head codex/python-binding-followup` is empty, and `gh run list --branch codex/python-binding-followup` is empty. Implementation source snapshot `57da459809493c12716a7deb615d3a976b332ffc` is based on `origin/master` `f972953aa3295543550a90f4c6ed1c4609124c59`; the auth/plan receipt was committed as `9db3ec74`; 152 paths differ. After adding this receipt, `--full`, checker tests 31/31, all script tests 102/102, `--worktree --exclude-path build-linux-arm64/` (PLAN-SYNC only; no unmapped paths or stale evidence), `--base-ref origin/master` (all 17 gates, no unmapped paths or stale evidence), and `git diff --check origin/master` pass. The only worktree exclusion is generated `build-linux-arm64/`. No push, PR, hosted run, branch-protection, or release-signing change is authorized or claimed. |
