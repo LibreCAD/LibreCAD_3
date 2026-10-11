@@ -1,7 +1,7 @@
 #ifndef GL_FONT_BOOK_H
 #define GL_FONT_BOOK_H
-#include "gl_font.h"
 #include <map>
+#include <string>
 #include <vector>
 #include <boost/filesystem.hpp>
 
@@ -11,6 +11,8 @@ namespace viewer
 {
 namespace opengl
 {
+class GL_Font;
+
 class Font_Book
 {
 public:

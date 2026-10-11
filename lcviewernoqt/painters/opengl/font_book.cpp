@@ -1,4 +1,5 @@
 #include "font_book.h"
+#include "gl_font.h"
 
 using namespace lc::viewer::opengl;
 
