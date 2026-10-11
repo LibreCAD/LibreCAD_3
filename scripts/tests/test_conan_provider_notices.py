@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -297,6 +298,83 @@ class ConanProviderNoticesTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/main.yml").read_text()
         self.assertIn('set "LIBRECAD_REQUIRE_CONAN_NOTICES=1"', script)
         self.assertIn("$env:LIBRECAD_REQUIRE_CONAN_NOTICES = '1'", workflow)
+
+    def test_combined_windows_smoke_keeps_package_and_runtime_roots_distinct(self):
+        self.dependency("provider")
+        source = self.generate()
+        data = self.root / "installed Ω/share/librecad"
+        package = data / "lcUIPy"
+        package.mkdir(parents=True)
+        (package / "__init__.py").write_text("")
+        (data / "python").mkdir()
+        license = data / "licenses/python/LICENSE.txt"
+        license.parent.mkdir(parents=True)
+        license.write_text("selected CPython license fixture")
+        installed = data / "licenses/providers/conan"
+        shutil.copytree(source, installed)
+        # Exercise the whole production literal, not just its notice block.
+        # Win32 APIs and module-origin metadata are fixtures, so this proves
+        # combined control flow, not native loading or Windows qualification.
+        driver = r'''
+import ctypes, encodings, gzip, hashlib, importlib.util, json, math, os
+import pathlib, sqlite3, ssl, sys, types, zlib, _ctypes, _sqlite3, _ssl
+data, smoke, audit_file = map(pathlib.Path, sys.argv[1:])
+spec = importlib.util.spec_from_file_location("lcUIPy._runtimeaudit", audit_file)
+audit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+package = data / "lcUIPy"
+module = types.ModuleType("lcUIPy")
+module.__file__, module.__path__ = str(package / "__init__.py"), [str(package)]
+sys.modules.update({"lcUIPy": module, "lcUIPy._runtimeaudit": audit})
+gui = types.ModuleType("lcgui")
+gui.MainWindow = object
+sys.modules["lcgui"] = gui
+sys.prefix = str(data / "python")
+for module in (ctypes, encodings, gzip, hashlib, json, math, os, pathlib,
+               sqlite3, ssl, sys, zlib, _ctypes, _sqlite3, _ssl):
+    if getattr(module, "__file__", None):
+        module.__file__ = str(data / "python/Lib" / pathlib.Path(module.__file__).name)
+sys.platform = "win32"
+dll_name = f"python{sys.version_info.major}{sys.version_info.minor}.dll"
+def get_handle(name):
+    assert name == dll_name
+    return 1
+def get_filename(handle, buffer, capacity):
+    assert handle == 1 and capacity == 32768
+    buffer.value = str(data.parents[1] / "bin" / dll_name)
+    return len(buffer.value)
+ctypes.WinDLL = lambda *args, **kwargs: types.SimpleNamespace(
+    GetModuleHandleW=get_handle, GetModuleFileNameW=get_filename)
+os.environ.update(LIBRECAD_REQUIRE_BUNDLED_PYTHON="1", LIBRECAD_REQUIRE_CONAN_NOTICES="1")
+for variable in ("LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE", "LIBRECAD_REQUIRE_FULL_ELF_CLOSURE"):
+    os.environ.pop(variable, None)
+code = smoke.read_text(encoding="utf-8").split(
+    'const std::string importsAndProviderCheck = R"py(\n', 1)[1].split(')py";', 1)[0]
+namespace = dict(python_package_root=str(package), expected_staged_python_root=sys.prefix,
+                 expected_staged_python_license=str(data / "licenses/python/LICENSE.txt"))
+exec(code, namespace)
+assert namespace["_package_root"] == package.resolve()
+assert "Conan provider notices: 1 providers, 1 files" in namespace["runtime_diagnostics"]
+'''
+        manifest = json.loads((installed / "manifest.json").read_text())
+        notice = installed / manifest["providers"][0]["files"][0]["path"]
+        for kind in ("valid", "missing-manifest", "tampered-notice"):
+            with self.subTest(kind=kind):
+                if kind == "missing-manifest":
+                    (installed / "manifest.json").unlink()
+                elif kind == "tampered-notice":
+                    shutil.copyfile(source / "manifest.json", installed / "manifest.json")
+                    notice.write_bytes(b"different notice bytes")
+                result = subprocess.run(
+                    [sys.executable, "-I", "-B", "-c", driver, str(data),
+                     str(ROOT / "lcUI/python/pyruntimesmoke.cpp"), str(ROOT / "lcUIPy/_runtimeaudit.py")],
+                    text=True, capture_output=True, timeout=30)
+                if kind == "valid":
+                    self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                else:
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("manifest.json" if kind == "missing-manifest" else
+                                  "Conan notice content hash differs", result.stderr)
 
     @unittest.skipUnless(shutil.which("conan") and shutil.which("cmake"),
                          "actual Conan/CMake local-cache integration")

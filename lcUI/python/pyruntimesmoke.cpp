@@ -197,8 +197,8 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
         assert 0 < _python_dll_length < len(_python_dll_buffer), \
             f"could not resolve the loaded CPython DLL path (Win32 error {ctypes.get_last_error()})"
         _python_dll_path = pathlib.Path(_python_dll_buffer.value).resolve()
-        _package_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
-        _expected_runtime_dir = (_package_root / "bin").resolve()
+        _windows_package_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
+        _expected_runtime_dir = (_windows_package_root / "bin").resolve()
         assert _python_dll_path.is_relative_to(_expected_runtime_dir), \
             f"CPython loaded from {_python_dll_path}, expected under {_expected_runtime_dir}"
         if os.environ.get("LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE") == "1":
