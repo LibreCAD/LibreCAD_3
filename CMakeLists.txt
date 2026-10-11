@@ -415,7 +415,9 @@ if(WITH_UNITTESTS)
 endif()
 
 if(MSVC)
-    set(_lc_runtime_dependency_directories)
+    # VirtualRunEnv makes Conan DLLs available to tests via PATH, but CMake's
+    # install-time dependency scanner needs their selected directories.
+    set(_lc_runtime_dependency_directories ${CONAN_RUNTIME_LIB_DIRS})
     if(WITH_PYTHONSCRIPT)
         get_filename_component(_lc_python_runtime_bin "${Python_EXECUTABLE}" DIRECTORY)
         list(APPEND _lc_runtime_dependency_directories "${_lc_python_runtime_bin}")

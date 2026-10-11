@@ -53,6 +53,12 @@ class SnapRuntimeContractTests(unittest.TestCase):
             with self.subTest(package=package):
                 self.assertRegex(stage_packages, r"(?m)^      - {}$".format(package))
 
+    def test_relocates_libproxy_private_backend_search_path(self):
+        # Ubuntu's libproxy RUNPATH is absolute /usr/lib/.../libproxy, outside
+        # the installed Snap. The backend is already staged with libproxy1v5.
+        library_path = re.search(r"(?m)^  LD_LIBRARY_PATH: (.+)$", self.snapcraft).group(1)
+        self.assertIn("$SNAP/usr/lib/x86_64-linux-gnu/libproxy/", library_path.split(":"))
+
     def test_retains_and_validates_the_snap_specific_provider(self):
         pack = self.snap_script.index("snapcraft pack --destructive-mode --output librecad.snap")
         inventory = self.snap_script.index("snap_inventory=parts/librecad/build/python-runtime-inventory.txt")

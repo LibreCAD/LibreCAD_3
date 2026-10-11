@@ -17,7 +17,9 @@ contact:
   - https://forum.librecad.org/
 issues: https://github.com/LibreCAD/LibreCAD_3/issues
 environment:
-  LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
+  # libproxy's private backend has an absolute distro RUNPATH; relocate that
+  # search too, otherwise Qt Network cannot load it in the Snap namespace.
+  LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib/x86_64-linux-gnu/libproxy/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
   # Qt's compiled-in plugin directory points at the host's /usr, outside the
   # snap mount namespace. Resolve both generic/image plugins and the QPA
   # platform plugin from the staged Qt package tree instead.

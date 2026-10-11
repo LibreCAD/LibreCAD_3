@@ -133,6 +133,7 @@ for _module in (
     _prefix = pathlib.Path(sys.prefix).resolve()
     assert _origin.is_relative_to(_prefix), \
         f"{_module.__name__} loaded from {_origin}, outside Python prefix {_prefix}"
+_windows_diagnostics = ""
 if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
     assert expected_staged_python_root, \
         "cannot verify packaged libpython without an expected staged Python runtime"
@@ -200,6 +201,12 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
         _expected_runtime_dir = (_package_root / "bin").resolve()
         assert _python_dll_path.is_relative_to(_expected_runtime_dir), \
             f"CPython loaded from {_python_dll_path}, expected under {_expected_runtime_dir}"
+        if os.environ.get("LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE") == "1":
+            from lcUIPy._runtimeaudit import audit_windows_extensions
+            _windows_extension_count = audit_windows_extensions(
+                pathlib.Path(expected_staged_python_root).resolve())
+            _windows_diagnostics = \
+                f"; Windows extension closure: {_windows_extension_count} distinct files"
     else:
         raise AssertionError(
             f"bundled-libpython verification is unsupported on {sys.platform}")
@@ -221,7 +228,7 @@ import lcgui
 assert hasattr(lcgui, 'MainWindow'), "embedded lcgui module lacks MainWindow"
 runtime_diagnostics = (
     f"Python runtime: version={sys.version.split()[0]}, prefix={sys.prefix}; "
-    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}"
+    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}"
 )
 )py";
         const std::string importError = python.runString(importsAndProviderCheck.c_str(), ns);

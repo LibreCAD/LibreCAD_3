@@ -131,7 +131,20 @@ Windows Conan builds select prebuilt shared Lua so states crossing the UI,
 binding and executable DLLs use one core. Lua 5.3's
 [version check](https://www.lua.org/source/5.3/lauxlib.c.html#luaL_checkversion_)
 rejects separate static cores even when their versions match. Dependencies
-still use `--build=never`; actual native Windows/NSIS acceptance remains open.
+still use `--build=never`. Install-time dependency scanning uses Conan's selected
+runtime directories, not the broader build-time PATH. Native Windows passes
+the 158-test mixed-language selection at `6f65ef05`; installer acceptance remains
+open after that revision exposed an unresolved `lua.dll` install dependency.
+
+The installed Windows smoke additionally loads every staged `.pyd` through the
+native loader, searching only its directory, the application directory and
+System32. It rejects missing imports, empty inventories and escaped aliases,
+and the CI step has a five-minute timeout. This checks normal DLL dependencies,
+not Python module initialization, delay-loaded paths, arbitrary DLL opens or
+complete notices; Tk/IDLE remain unsupported. Native acceptance is still pending.
+CI also builds Python OFF with discovery disabled and the headless
+Python-ON/persistence-OFF binding in separate trees using the same prebuilt
+providers; these checks do not alter the packaged ON build.
 
 Staged runtime trees intentionally exclude `site-packages` and `dist-packages`:
 third-party Python dependencies are not installed implicitly, and plugins are
@@ -153,7 +166,12 @@ relocatable build objects are not runtime libraries. It does not prove arbitrary
 `dlopen` paths, all module behavior, dependency-license completeness, or older
 OS/CPU compatibility. Copied Tk binaries have their native dependencies staged;
 that does not make Tk/IDLE a supported scripting interface. Rebuilt hosted
-AppImage and Snap acceptance is still required.
+AppImage and Snap acceptance is still required for the final candidate.
+At `6f65ef05`, the SDK-free AppImage gate resolves 146 distinct payload ELFs.
+The installed Snap gate instead exposes libproxy's absolute distro RUNPATH;
+the recipe now searches its already-staged private backend directory explicitly.
+That repair still requires a regenerated installed-Snap gate; local targeted
+loader checks are not complete namespace/base/content-provider acceptance.
 
 macOS bundles declare `LSMinimumSystemVersion` from the highest deployment
 target in the shipped application, Python, Qt, and other native libraries,
@@ -171,9 +189,9 @@ system Python, libpython, or a Python SDK. The bounded smoke still requires
 bundled CPython and native extension dependencies; it complements the native
 FUSE-launcher check, not older-distribution compatibility. Initial native clean
 execution exposed missing HarfBuzz; explicit HarfBuzz/Graphite staging passes
-both native and SDK-free launcher smokes at `ab94eb1f`. The newer complete
-loadable-ELF audit and copied-extension dependencies still require rebuilt
-hosted AppImage/Snap acceptance.
+both native and SDK-free launcher smokes at `ab94eb1f`. The complete loadable-ELF
+gate also passes the SDK-free AppImage at `6f65ef05`; Snap's corresponding gate
+and final-candidate artifact freshness remain required.
 The inspected Linux candidate payload requires GLIBC 2.43
 and its executable declares x86-64-v3; compatibility with older glibc
 distributions or older x86_64 CPU baselines is not claimed.

@@ -74,6 +74,58 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         self.assertIn("--build=never", self.conan_script)
         self.assertIn('"VirtualRunEnv"', self.conanfile)
 
+    @unittest.skipUnless(shutil.which("cmake"), "CMake dependency-directory fixture")
+    def test_runtime_install_searches_selected_conan_dll_directories(self):
+        # Execute the actual MSVC install block, intercepting only install()
+        # so this runs without pretending to resolve PE binaries on macOS.
+        section = self.root_cmake.split("\n# The installed executable", 1)[0]
+        block = "if(MSVC)\n" + section.rsplit("if(MSVC)\n", 1)[1]
+        with tempfile.TemporaryDirectory() as temporary:
+            script = Path(temporary) / "runtime-dirs.cmake"
+            script.write_text(
+                'cmake_minimum_required(VERSION 3.28)\n'
+                'set(MSVC TRUE)\nset(WITH_PYTHONSCRIPT ON)\n'
+                'set(CONAN_RUNTIME_LIB_DIRS "C:/Conan lua Ω/bin;C:/other/bin")\n'
+                'set(Python_EXECUTABLE "C:/Selected Python/python.exe")\n'
+                'set(ENV{QT_ROOT_DIR} "C:/Selected Qt")\n'
+                'set(CMAKE_INSTALL_BINDIR bin)\n'
+                'function(install)\n'
+                '  foreach(expected "C:/Conan lua Ω/bin" "C:/other/bin" '
+                '"C:/Selected Python" "C:/Selected Qt/bin")\n'
+                '    if(NOT expected IN_LIST ARGV)\n'
+                '      message(FATAL_ERROR "Missing runtime directory: ${expected}")\n'
+                '    endif()\n'
+                '  endforeach()\n'
+                'endfunction()\n' + block, encoding="utf-8")
+            result = subprocess.run(["cmake", "-P", str(script)],
+                                    text=True, capture_output=True, timeout=30)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_windows_feature_matrix_uses_fresh_trees_and_existing_providers(self):
+        step = self.workflow.split(
+            "- name: Verify Windows Python feature configurations", 1)[1].split(
+            "\n      - name:", 1)[0]
+        self.assertIn("shell: cmd", step)
+        self.assertIn('call "${{ github.workspace }}\\conan\\conanrun.bat"', step)
+        disabled, no_persistence = step.split("REM Binding-only", 1)
+        for required in (
+            "build-python-off", "-DWITH_PYTHONSCRIPT=OFF",
+            "-DCMAKE_DISABLE_FIND_PACKAGE_Python=TRUE", "-DWITH_UNITTESTS=ON",
+            "--target librecad lcunittest", "scripts\\run_required_gtests.py",
+            '--filter="LuaRuntimeTest.*"', '--require-suite "LuaRuntimeTest."',
+        ):
+            self.assertIn(required, disabled)
+        for required in (
+            "build-python-no-persistence", "-DWITH_PYTHONSCRIPT=ON",
+            "-DWITH_PERSISTENCE=OFF", "-DWITH_QT_UI=OFF", "-DWITH_UNITTESTS=OFF",
+            '-DPython_ROOT_DIR="%Python_ROOT_DIR%"',
+            '-DPython_EXECUTABLE="%Python_EXECUTABLE%"', "--target lcpythonscript",
+        ):
+            self.assertIn(required, no_persistence)
+        self.assertEqual(6, step.count("if errorlevel 1 exit /b 1"))
+        self.assertNotIn("conan install", step)
+        self.assertNotIn("pip install", step)
+
     @unittest.skipUnless(shutil.which("cmake"), "CMake install-layout fixture")
     def test_msvc_python_package_installs_adjacent_to_runtime_and_license(self):
         with tempfile.TemporaryDirectory() as temporary:

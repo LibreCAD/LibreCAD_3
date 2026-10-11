@@ -13,6 +13,7 @@ from pathlib import PurePosixPath
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from lcUIPy import _runtimeaudit as runtimeaudit
 from lcUIPy._runtimeaudit import _glibc_loader, audit_elf_closure
 
 
@@ -76,7 +77,7 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         )
         self.assertIn("is_relative_to(_expected_runtime_dir)", strict_check)
 
-    def _run_windows_check(self, loaded_dll_path):
+    def _run_windows_check(self, loaded_dll_path, require_extension_closure=False):
         requested_modules = []
 
         def get_module_handle(name):
@@ -103,6 +104,10 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         )
         namespace = {
             "ctypes": fake_ctypes,
+            "os": SimpleNamespace(environ={
+                "LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE":
+                    "1" if require_extension_closure else "0",
+            }),
             "pathlib": pathlib,
             "sys": SimpleNamespace(
                 platform="win32", version_info=SimpleNamespace(major=3, minor=14)
@@ -113,6 +118,7 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         }
         exec(self.windows_check, namespace)
         self.assertEqual(["python314.dll"], requested_modules)
+        return namespace
 
     def test_windows_runtime_check_accepts_installed_cpython_dll(self):
         self._run_windows_check("/private/tmp/librecad-smoke-test/bin/python314.dll")
@@ -121,12 +127,27 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "CPython loaded from"):
             self._run_windows_check("/external/python314.dll")
 
+    def test_windows_strict_gate_runs_extension_audit_and_propagates_failure(self):
+        with patch.object(runtimeaudit, "audit_windows_extensions", create=True,
+                          return_value=7) as audit:
+            namespace = self._run_windows_check(
+                "/private/tmp/librecad-smoke-test/bin/python314.dll", True)
+            audit.assert_called_once_with(Path(
+                "/private/tmp/librecad-smoke-test/share/librecad/python").resolve())
+            self.assertIn("7 distinct files", namespace["_windows_diagnostics"])
+            audit.side_effect = RuntimeError("missing native dependency")
+            with self.assertRaisesRegex(RuntimeError, "missing native dependency"):
+                self._run_windows_check(
+                    "/private/tmp/librecad-smoke-test/bin/python314.dll", True)
+
     def test_windows_nsis_smoke_enables_strict_runtime_check(self):
         marker = "      - name: Install and smoke the isolated Python runtime"
         start = self.workflow.index(marker)
         end = self.workflow.find("\n      - name:", start + len(marker))
         step = self.workflow[start : end if end >= 0 else len(self.workflow)]
         self.assertIn("$env:LIBRECAD_REQUIRE_BUNDLED_PYTHON = '1'", step)
+        self.assertIn("$env:LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE = '1'", step)
+        self.assertIn("timeout-minutes: 5", step)
         self.assertIn(
             '$env:PATH = "$env:SystemRoot\\System32;$env:SystemRoot"', step
         )
@@ -469,6 +490,62 @@ echo 'continued to install'
                 ),
                 require_extension_closure=True,
             )
+
+
+class WindowsExtensionClosureTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve() / "Python runtime Ω"
+        self.root.mkdir()
+        loader_patch = patch.object(ctypes, "WinDLL", create=True)
+        self.load = loader_patch.start()
+        self.addCleanup(loader_patch.stop)
+
+    def extension(self, name):
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"MZ fixture: native loader is mocked")
+        return path
+
+    def test_every_extension_is_loaded_without_path_cwd_or_user_dll_dirs(self):
+        first = self.extension("DLLs/_ssl.pyd")
+        second = self.extension("DLLs/nested/other.PYD")
+        self.extension("DLLs/not-an-extension.dll")
+        self.assertEqual(2, runtimeaudit.audit_windows_extensions(self.root))
+        self.assertEqual({str(first), str(second)}, {
+            call.args[0] for call in self.load.call_args_list})
+        for call in self.load.call_args_list:
+            self.assertEqual({"winmode": 0x100 | 0x200 | 0x800}, call.kwargs)
+
+    def test_loader_failure_names_the_extension_and_propagates_os_diagnostic(self):
+        self.extension("DLLs/_ssl.pyd")
+        self.load.side_effect = OSError(126, "dependent DLL not found")
+        with self.assertRaisesRegex(RuntimeError, "_ssl.pyd.*dependent DLL not found"):
+            runtimeaudit.audit_windows_extensions(self.root)
+
+    def test_empty_extension_inventory_fails_closed(self):
+        with self.assertRaisesRegex(RuntimeError, "zero.*extension"):
+            runtimeaudit.audit_windows_extensions(self.root)
+        self.load.assert_not_called()
+
+    def test_extension_path_that_is_not_a_file_cannot_be_silently_skipped(self):
+        (self.root / "invalid.pyd").mkdir()
+        with self.assertRaisesRegex(RuntimeError, "not a file"):
+            runtimeaudit.audit_windows_extensions(self.root)
+        self.load.assert_not_called()
+
+    @unittest.skipUnless(os.name == "posix", "POSIX fixture symlinks")
+    def test_aliases_are_deduplicated_and_escaped_extensions_fail(self):
+        original = self.extension("DLLs/_ssl.pyd")
+        (original.parent / "alias.pyd").symlink_to(original.name)
+        self.assertEqual(1, runtimeaudit.audit_windows_extensions(self.root))
+        outside = self.root.parent / "outside.pyd"
+        outside.write_bytes(original.read_bytes())
+        (original.parent / "escaped.pyd").symlink_to(outside)
+        with self.assertRaisesRegex(RuntimeError, "extension symlink escapes"):
+            runtimeaudit.audit_windows_extensions(self.root)
+        self.assertNotIn(str(outside), {call.args[0] for call in self.load.call_args_list})
 
 
 class FullElfClosureTests(unittest.TestCase):

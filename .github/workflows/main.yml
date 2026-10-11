@@ -262,6 +262,31 @@ jobs:
         shell: cmd
         run: call "${{ github.workspace }}\scripts\windows-install\buildLibrecadAndCreatePackage.bat"
 
+      - name: Verify Windows Python feature configurations
+        shell: cmd
+        run: |
+          call "${{ github.workspace }}\conan\conanrun.bat"
+          if errorlevel 1 exit /b 1
+          cmake -S "${{ github.workspace }}" -B "${{ github.workspace }}\build-python-off" ^
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\conan\conan_toolchain.cmake" ^
+            -DWITH_PYTHONSCRIPT=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Python=TRUE ^
+            -DWITH_UNITTESTS=ON -DWITH_RENDERING_UNITTESTS=OFF
+          if errorlevel 1 exit /b 1
+          cmake --build "${{ github.workspace }}\build-python-off" --config Release --target librecad lcunittest --parallel 3
+          if errorlevel 1 exit /b 1
+          set "QT_QPA_PLATFORM=offscreen"
+          "%Python_EXECUTABLE%" scripts\run_required_gtests.py --binary "${{ github.workspace }}\build-python-off\bin\lcunittest.exe" --filter="LuaRuntimeTest.*" --require-suite "LuaRuntimeTest."
+          if errorlevel 1 exit /b 1
+          REM Binding-only: persistence-OFF is not a supported GUI configuration.
+          cmake -S "${{ github.workspace }}" -B "${{ github.workspace }}\build-python-no-persistence" ^
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\conan\conan_toolchain.cmake" ^
+            -DPython_ROOT_DIR="%Python_ROOT_DIR%" -DPython_EXECUTABLE="%Python_EXECUTABLE%" ^
+            -DWITH_PYTHONSCRIPT=ON -DWITH_PERSISTENCE=OFF -DWITH_QT_UI=OFF ^
+            -DWITH_LUACMDINTERFACE=OFF -DWITH_UNITTESTS=OFF
+          if errorlevel 1 exit /b 1
+          cmake --build "${{ github.workspace }}\build-python-no-persistence" --config Release --target lcpythonscript --parallel 3
+          if errorlevel 1 exit /b 1
+
       - name: Verify selected Python runtime inventory
         shell: pwsh
         run: |
@@ -284,6 +309,7 @@ jobs:
         shell: bash
 
       - name: Install and smoke the isolated Python runtime
+        timeout-minutes: 5
         shell: pwsh
         run: |
           $installer = Get-ChildItem 'build/bin/LibreCAD3-*.exe' | Select-Object -First 1
@@ -301,6 +327,7 @@ jobs:
           $env:PYTHONHOME = Join-Path $env:RUNNER_TEMP 'poison-python-home'
           $env:PYTHONPATH = Join-Path $env:RUNNER_TEMP 'poison-python-path'
           $env:LIBRECAD_REQUIRE_BUNDLED_PYTHON = '1'
+          $env:LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE = '1'
           Remove-Item Env:QT_PLUGIN_PATH -ErrorAction SilentlyContinue
           Remove-Item Env:QT_QPA_PLATFORM_PLUGIN_PATH -ErrorAction SilentlyContinue
           Remove-Item Env:QTDIR -ErrorAction SilentlyContinue

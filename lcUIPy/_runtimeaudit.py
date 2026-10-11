@@ -1,9 +1,39 @@
-"""Internal, SDK-free dependency check for installed glibc/Linux artifacts."""
+"""Internal, SDK-free dependency checks for installed native artifacts."""
 
 from pathlib import Path
+import ctypes
 import os
 import subprocess
 import time
+
+
+def audit_windows_extensions(python_root):
+    """Load each staged .pyd's normal imports, not PyInit or delay-load paths.
+
+    Search only the extension's directory, the application directory and
+    System32; neither PATH, CWD nor user-added SDK directories may rescue it.
+    The installed CI smoke has an outer timeout for native loader calls.
+    """
+    root = Path(python_root).resolve(strict=True)
+    checked = set()
+    for candidate in sorted(root.rglob("*")):
+        if candidate.suffix.lower() != ".pyd":
+            continue
+        binary = candidate.resolve(strict=True)
+        if not binary.is_file() or not binary.is_relative_to(root):
+            raise RuntimeError("Python extension symlink escapes runtime or is not a file: {}".format(candidate))
+        if binary in checked:
+            continue
+        try:
+            # LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | APPLICATION_DIR | SYSTEM32.
+            ctypes.WinDLL(str(binary), winmode=0x100 | 0x200 | 0x800)
+        except (OSError, AttributeError) as error:
+            raise RuntimeError("unresolved Windows extension {}: {}".format(
+                binary.relative_to(root), error)) from error
+        checked.add(binary)
+    if not checked:
+        raise RuntimeError("Windows closure audit found zero Python extension files")
+    return len(checked)
 
 
 def _glibc_loader():
