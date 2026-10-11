@@ -39,6 +39,9 @@ public:
     MetaColorByValue(const Color& other) : MetaColor(), _color(other) {
     }
 
+    MetaColorByValue(int r, int g, int b, int a = 255) : MetaColor(), _color(r, g, b, a) {
+    }
+
     MetaColorByValue(double r, double g, double b, double a = 1.) : MetaColor(), _color(r, g, b, a) {
     }
 
@@ -112,4 +115,3 @@ DECLARE_SHORT_SHARED_PTR(MetaColorByValue)
 DECLARE_SHORT_SHARED_PTR(MetaColorByBlock)
 }
 }
-

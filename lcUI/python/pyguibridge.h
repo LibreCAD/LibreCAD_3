@@ -23,9 +23,8 @@
 // CadMdiChild (document/selection/tempEntities/autoScale).  The full
 // gui.* widget API is phase 5.
 //
-// Build gate: LC_WITH_PYTHONSCRIPT (root CMakeLists.txt adds -D
-// globally when WITH_PYTHONSCRIPT=ON; lcUI/CMakeLists.txt links the
-// required libraries).
+// Build gate: LC_WITH_PYTHONSCRIPT is propagated by the lcpythonscript
+// target to consumers; lcUI links that target when Python support is enabled.
 
 #ifdef LC_WITH_PYTHONSCRIPT
 

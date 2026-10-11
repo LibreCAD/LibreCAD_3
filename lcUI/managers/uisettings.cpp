@@ -4,6 +4,10 @@
 #include <rapidjson/schema.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/istreamwrapper.h>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QStringList>
 
 #include <memory>
 #include <fstream>
@@ -239,6 +243,22 @@ std::map<std::string, int> UiSettings::readDockSettings(std::map<std::string, in
 
 rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
     std::unique_ptr<std::istream> settingsFile = std::make_unique<std::ifstream>(_filePaths["settings_load"] + fileName);
+
+    if (settingsFile->fail() && fileName == defaultSettingsFileName) {
+        const QString appDir = QCoreApplication::applicationDirPath();
+        const QString defaultSettingsName = QString::fromStdString(defaultSettingsFileName);
+        const QStringList candidates = {
+            QDir(appDir).filePath(defaultSettingsName),
+            QDir(appDir).filePath("../share/librecad/lcUI/" + defaultSettingsName),
+            QDir(appDir).filePath("../Resources/librecad/lcUI/" + defaultSettingsName),
+        };
+        for (const QString& candidate : candidates) {
+            if (QFileInfo(candidate).isFile()) {
+                settingsFile = std::make_unique<std::ifstream>(candidate.toStdString());
+                if (!settingsFile->fail()) break;
+            }
+        }
+    }
 
     while (settingsFile->fail()) {
         if (fileName == settingsFileName) {

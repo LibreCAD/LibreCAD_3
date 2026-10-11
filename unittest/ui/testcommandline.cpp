@@ -13,7 +13,7 @@
 #include "uitests.h"
 
 TEST(CommandLine, CommandTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     CliCommandTest cliTest;
 
     QSignalSpy commandSpy(&cliTest, SIGNAL(commandEntered(QString)));
@@ -34,7 +34,7 @@ TEST(CommandLine, CommandTest) {
 }
 
 TEST(CommandLine, CoordinateTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     CliCommandTest cliTest;
 
     qRegisterMetaType<lc::geo::Coordinate>();
@@ -65,7 +65,7 @@ TEST(CommandLine, CoordinateTest) {
 }
 
 TEST(CommandLine, RelativeCoordinateTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     CliCommandTest cliTest;
 
     qRegisterMetaType<lc::geo::Coordinate>();
@@ -96,7 +96,7 @@ TEST(CommandLine, RelativeCoordinateTest) {
 }
 
 TEST(CommandLine, NumberTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     CliCommandTest cliTest;
 
     qRegisterMetaType<lc::geo::Coordinate>();
@@ -122,7 +122,7 @@ TEST(CommandLine, NumberTest) {
 }
 
 TEST(CommandLine, EnableCommandTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
 
     kaguya::State state;
     CliCommandTest cliTest;
@@ -149,7 +149,7 @@ TEST(CommandLine, EnableCommandTest) {
 }
 
 TEST(CommandLine, GetAPITest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     kaguya::State state;
     CliCommandTest cliTest;
 

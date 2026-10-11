@@ -85,8 +85,9 @@ namespace {
 
 std::string uniqueTmpDxf(const char* tag) {
     return (boost::filesystem::temp_directory_path()
-            / (std::string("lc3-roundtrip-") + tag + "-"
-               + std::to_string(::getpid()) + ".dxf")).string();
+            / boost::filesystem::unique_path(
+                std::string("lc3-roundtrip-") + tag + "-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
 }
 
 std::shared_ptr<lc::storage::DocumentImpl> newDocument() {
@@ -1845,6 +1846,49 @@ TEST(DxfRoundTripTest, AttributedInsertSurfacesItsValues) {
     boost::filesystem::remove(path);
 }
 
+// R2018 multiline ATTRIB stores its value in an embedded MText object rather
+// than DRW_Attrib::text. It must not become an empty Text when inserted.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, MultilineInsertAttributeRetainsItsLines) {
+    auto doc = newDocument();
+    const auto imported = lc::persistence::File::importFile(
+        doc, fixture("multiline_attributed_insert.dxf"),
+        lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+
+    std::vector<lc::entity::MText_CSPtr> values;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto text = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            values.push_back(text);
+        }
+    }
+    ASSERT_EQ(values.size(), 1u) << "The embedded MText value must be delivered.";
+    EXPECT_EQ(values.front()->text_value(), "FIRST LINE\nSECOND LINE");
+    EXPECT_DOUBLE_EQ(values.front()->insertion_point().x(), 101.0);
+    EXPECT_DOUBLE_EQ(values.front()->insertion_point().y(), 202.0);
+    ASSERT_EQ(imported.loss.notes.size(), 1u);
+    EXPECT_NE(imported.loss.notes.front().find("tags are not kept"), std::string::npos);
+
+    const std::string path = uniqueTmpDxf("multiline-attributed-insert");
+    boost::filesystem::remove(path);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    auto reopened = newDocument();
+    const auto roundTrip = lc::persistence::File::importFile(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(roundTrip.ok);
+    std::vector<lc::entity::MText_CSPtr> reloadedValues;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto text = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            reloadedValues.push_back(text);
+        }
+    }
+    ASSERT_EQ(reloadedValues.size(), 1u);
+    EXPECT_EQ(reloadedValues.front()->text_value(), values.front()->text_value());
+    boost::filesystem::remove(path);
+}
+
 namespace {
 
 /** Every record in one section of a DXF file, by type name. */
@@ -2465,7 +2509,7 @@ TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
     // one, and `link.string()` then resolves to a member of a function type.
     const boost::filesystem::path directory =
         boost::filesystem::temp_directory_path()
-        / ("libdxfrw-link-save-" + std::to_string(::getpid()));
+        / boost::filesystem::unique_path("libdxfrw-link-save-%%%%%%%%-%%%%%%%%");
     boost::system::error_code ignored;
     boost::filesystem::remove_all(directory, ignored);
     boost::filesystem::create_directories(directory, ignored);

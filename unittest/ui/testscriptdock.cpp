@@ -14,11 +14,15 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QTextEdit>
 #include <gtest/gtest.h>
 
+#include <string>
+#include <thread>
+
 #include <mainwindow.h>
+#include <widgets/guiAPI/menu.h>
 #include <widgets/scriptdock.h>
-#include <windowmanager.h>
 #include <cad/storage/document.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
@@ -26,8 +30,12 @@
 #include <pybind11/embed.h>
 #include <qt_keywords_pop.h>
 #include <lcpython.h>
+#include <python/pyeventhooks.h>
+#include <scriptadapter/pythoncallback.h>
+#include <scriptadapter/pythonobject.h>
 #include <lcscripting/scriptvalue.h>
 #include <luainterface.h>
+#include <lua/opaquetags.h>
 #endif
 
 #include "uitests.h"
@@ -55,7 +63,7 @@ TEST(ScriptDockTest, LuaCreatesLine) {
     // constructor (entities are built through builders, as
     // lineoperations.lua does): calling the class falls through to
     // lc.entity.ID's and hands appendEntity an ID, not an entity.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::MainWindow mainWindow;
     ScriptDock dock(&mainWindow);
     ASSERT_EQ(entityCount(mainWindow.cadMdiChild()->document()), 0u);
@@ -86,7 +94,7 @@ TEST(ScriptDockTest, PythonCreatesLine) {
     // Same scenario in Python — proves the Python leg has a functional
     // path from ScriptDock's `runPython` through lcgui's mainWindow/
     // document injection and lc's kernel bindings.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::MainWindow mainWindow;
     ScriptDock dock(&mainWindow);
     ASSERT_EQ(entityCount(mainWindow.cadMdiChild()->document()), 0u);
@@ -106,18 +114,26 @@ end_pt   = lc.geo.Coordinate(10, 0, 0)
 # Reach layer through the (holder-less) CadMdiChild binding — same
 # call shape as the Lua sibling test but with Python attr syntax.
 mdi      = mainWindow.cadMdiChild()
-layer    = mdi.document().activeLayer()
-line     = lc.entity.Line(start_pt, end_pt, layer)
-builder  = lc.operation.EntityBuilder(mdi.document())
+layer    = mdi.activeLayer()
+line_builder = lc.builder.LineBuilder()
+line_builder.setStartPoint(start_pt)
+line_builder.setEndPoint(end_pt)
+line_builder.setLayer(layer)
+line     = line_builder.build()
+builder  = lc.operation.EntityBuilder.new(mdi.document())
 builder.appendEntity(line)
 builder.execute()
 )py"));
     dock.run();
 
+    QTextEdit* cliHistory = mainWindow.cliCommand()->findChild<QTextEdit*>(
+        QStringLiteral("history"));
+    ASSERT_NE(cliHistory, nullptr);
     EXPECT_EQ(entityCount(mainWindow.cadMdiChild()->document()), 1u)
         << "Python leg of ScriptDock must create exactly one Line entity "
            "— proves the mainWindow/document injection + lcgui bindings "
-           "reach the kernel correctly";
+           "reach the kernel correctly. ScriptDock output: "
+        << cliHistory->toPlainText().toStdString();
 }
 
 
@@ -145,19 +161,14 @@ TEST(ScriptDockTest, PythonEventDrivenOnEventReachesMainWindow) {
     //      MainWindow (proves the C++-side lookup works from a
     //      C++-invoked callback path with no Python caller frame).
     //
-    // `lcgui.currentMainWindow()` reads `WindowManager::mainWindows`,
-    // which only `WindowManager::init/newFile/openFile` populate —
-    // MainWindow's own constructor does not self-register.  A
-    // directly-constructed MainWindow (as below) is therefore
-    // invisible to it unless we push it in ourselves; without this,
-    // the register hook no-ops on a null current window and the
-    // assertions below fail regardless of whether `_get_main_window()`
-    // is fixed or still frame-walking, giving zero signal either way.
-    QApplication app(argc, argv);
+    // A directly-constructed MainWindow is deliberately not inserted in
+    // WindowManager. Bind the explicit owner scope used by application
+    // entrypoints instead of relying on global insertion order.
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mainWindow;
-    lc::ui::WindowManager::mainWindows.push_back(&mainWindow);
+    lc::ui::python::MainWindowExecutionScope ownerScope(&mainWindow);
 
     // Set up the Python-side listener + record buffer.
     {
@@ -175,6 +186,7 @@ class Listener:
     def __init__(self):
         self.saw_event = False
         self.mw_from_onEvent = None
+        self.widget = None
     def onEvent(self, event_name, args):
         # THIS is the failure mode the fixup addresses.  Under the
         # broken frame-walking implementation, lcgui.currentMainWindow()
@@ -183,6 +195,7 @@ class Listener:
         # now calls internally.
         self.saw_event = True
         self.mw_from_onEvent = lcgui.currentMainWindow()
+        self.widget = args["widget"]
 
 _listener = Listener()
 builtins._lc_event_test_state["listener"] = _listener
@@ -196,8 +209,12 @@ lc.event.register("point", _listener)
     // event bus routes to the Python listener's PythonCallbackImpl,
     // whose invokeEvent shape-checks for onEvent and fires it fresh
     // from C++ — exactly the path _get_main_window() has to work in.
+    auto payload = lc::scripting::makeMap();
+    (*payload)["widget"] = lc::scripting::ScriptValue(
+        lc::scripting::OpaquePtr{mainWindow.cadMdiChild(),
+                                 lc::ui::opaquetag::CadMdiChild});
     mainWindow.luaInterface()->triggerEvent(
-        "point", lc::scripting::ScriptValue{});
+        "point", lc::scripting::ScriptValue(payload));
 
     // Verify: onEvent fired AND saw a non-None MainWindow.
     {
@@ -215,6 +232,83 @@ lc.event.register("point", _listener)
                "implementation returned None here, breaking every "
                "CreateOperations subclass on every real event";
 
+        pybind11::object widget = listener.attr("widget");
+        pybind11::object lcgui = pybind11::module_::import("lcgui");
+        EXPECT_TRUE(pybind11::isinstance(widget, lcgui.attr("CadMdiChild")))
+            << "CadMdiChild OpaquePtr must materialize as the holder-less "
+               "lcgui type, not silently become None";
+        EXPECT_FALSE(widget.attr("document")().is_none());
+
+        lc::ui::api::Menu contextMenu("Python opaque event menu");
+        pybind11::module_ builtins = pybind11::module_::import("builtins");
+        builtins.attr("_lc_opaque_menu_type") = pybind11::none();
+        pybind11::object menuCallbackFn = pybind11::eval(
+            "lambda event, args: setattr(__import__('builtins'), "
+            "'_lc_opaque_menu_type', type(args['widget']).__name__)");
+        auto menuCallback =
+            lc::python::makePythonCallback(std::move(menuCallbackFn));
+        auto menuPayload = lc::scripting::makeMap();
+        (*menuPayload)["widget"] = lc::scripting::ScriptValue(
+            lc::scripting::OpaquePtr{&contextMenu, lc::ui::opaquetag::Menu});
+        std::string menuDiagnostic;
+        menuCallback.invokeEvent("menuOpaque",
+                                 lc::scripting::ScriptValue(menuPayload),
+                                 [&menuDiagnostic](const std::string& message) {
+                                     menuDiagnostic = message;
+                                 });
+        EXPECT_TRUE(menuDiagnostic.empty()) << menuDiagnostic;
+        EXPECT_EQ(builtins.attr("_lc_opaque_menu_type").cast<std::string>(),
+                  "Menu");
+
+        pybind11::dict objectNamespace;
+        objectNamespace["__builtins__"] = pybind11::module_::import("builtins");
+        pybind11::exec(
+            "class _OpaqueProbe:\n"
+            "    def check(self, widget):\n"
+            "        return type(widget).__name__\n",
+            objectNamespace);
+        pybind11::object probeClass = objectNamespace["_OpaqueProbe"];
+        auto operationObject =
+            lc::python::makePythonObject(probeClass());
+        const auto objectResult = operationObject.callMethod(
+            "check", {lc::scripting::ScriptValue(
+                lc::scripting::OpaquePtr{&contextMenu,
+                                         lc::ui::opaquetag::Menu})});
+        EXPECT_EQ(objectResult.asString(), "Menu")
+            << "ScriptObject must use the shared Python value converter";
+
+        // Unknown tags must produce a callback diagnostic instead of
+        // silently becoming Python None.
+        pybind11::object noop = pybind11::eval("lambda event, args: None");
+        auto callback = lc::python::makePythonCallback(std::move(noop));
+        auto unknownPayload = lc::scripting::makeMap();
+        (*unknownPayload)["widget"] = lc::scripting::ScriptValue(
+            lc::scripting::OpaquePtr{&mainWindow, "test::UnknownUiType*"});
+        std::string diagnostic;
+        callback.invokeEvent("unknownOpaque",
+                             lc::scripting::ScriptValue(unknownPayload),
+                             [&diagnostic](const std::string& message) {
+                                 diagnostic = message;
+                             });
+        EXPECT_NE(diagnostic.find("test::UnknownUiType*"), std::string::npos);
+
+        // The known tag is also rejected from a worker thread. GIL
+        // acquisition does not make Qt-owned objects thread-safe.
+        std::string workerDiagnostic;
+        {
+            pybind11::gil_scoped_release release;
+            std::thread worker([&]() {
+                callback.invokeEvent(
+                    "workerOpaque", lc::scripting::ScriptValue(payload),
+                    [&workerDiagnostic](const std::string& message) {
+                        workerDiagnostic = message;
+                    });
+            });
+            worker.join();
+        }
+        EXPECT_NE(workerDiagnostic.find("Qt application thread"),
+                  std::string::npos);
+
         // Cleanup: deregister so the listener doesn't outlive this test.
         pybind11::exec(R"py(
 import builtins, lc
@@ -223,10 +317,6 @@ builtins._lc_event_test_state = {}
 )py");
     }
 
-    // Cleanup: this MainWindow is stack-local and about to be
-    // destroyed — remove it from the shared static registry so it
-    // doesn't dangle for whichever test runs next in this binary.
-    lc::ui::WindowManager::removeWindow(&mainWindow);
 }
 
 #endif  // LC_WITH_PYTHONSCRIPT

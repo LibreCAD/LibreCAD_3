@@ -28,6 +28,7 @@
 #include "../qt_keywords_pop.h"
 
 #include <memory>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -38,13 +39,35 @@ namespace python {
 /// "python", and the underlying pImpl handles the GIL discipline.
 LC_PYTHON_API lc::scripting::ScriptCallback makePythonCallback(pybind11::object obj);
 
-/// Convert a ScriptValue to a py::object (returns py::none() for Nil).
-/// Must be called with the GIL held.
+/// Invoke a Python-backed callback with already-materialized Python args.
+/// Unlike ScriptCallback::invoke this preserves adapter-only argument and
+/// return types such as Builder_SPtr, SimpleSnapConstrain, and snap vectors.
+/// Exceptions propagate to the typed adapter so it can report the slot and
+/// return a safe default without invoking the callback a second time.
+LC_PYTHON_API pybind11::object invokePythonCallback(
+    const lc::scripting::ScriptCallback& callback,
+    const pybind11::tuple& args);
+
+/// UI-side extension point for tagged non-owning values in ScriptValue.
+/// lcadpythonscript stays independent of Qt and UI types; lcUI installs the
+/// materializer after registering its holder-less pybind11 classes.
+using PythonOpaqueMaterializer = std::function<pybind11::object(
+    const lc::scripting::OpaquePtr&)>;
+LC_PYTHON_API void setPythonOpaqueMaterializer(
+    PythonOpaqueMaterializer materializer);
+
+/// Convert a ScriptValue to a Python object (`Nil` becomes `None`). The
+/// wrapper acquires the GIL before touching Python objects. Materializing an
+/// opaque UI value requires the UI-installed materializer and may throw when
+/// that materializer is unavailable.
 pybind11::object toPy(const lc::scripting::ScriptValue& v);
 
-/// Convert a py::object to a ScriptValue.  Best-effort — falls back to
-/// Nil for shapes we can't map (adapters may extend for their own types).
-/// Must be called with the GIL held.
+/// Convert a Python object to a ScriptValue. `None` becomes `Nil`; supported
+/// scalar, map, coordinate, entity, and homogeneous coordinate/entity sequence
+/// values are converted losslessly. Unsupported values, ambiguous empty
+/// sequences, invalid map keys, and integers outside ScriptValue's range
+/// raise Python conversion exceptions instead of silently becoming `Nil`.
+/// The wrapper acquires the GIL before touching Python objects.
 lc::scripting::ScriptValue fromPy(pybind11::handle o);
 
 } // namespace python

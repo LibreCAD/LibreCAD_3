@@ -92,7 +92,9 @@ public:
     std::shared_ptr<lc::viewer::DocumentCanvas> documentCanvas() const;
 
     void autoScale() const {
-        documentCanvas()->autoScale(*_documentPainter);
+        if (_docCanvas != nullptr && _documentPainter != nullptr) {
+            _docCanvas->autoScale(*_documentPainter);
+        }
     }
 
     void setOperationActive(bool operationActiveIn);

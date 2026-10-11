@@ -3,17 +3,28 @@
 #include "luainterface.h"
 
 #include <QDir>
+#include <QCoreApplication>
 #include <QFileDialog>
+#include <QFileInfo>
+#include <QMetaObject>
+#include <QPointer>
+#include <QStringList>
+#include <exception>
+#include <iostream>
+#include <vector>
 
 #include "mainwindow.h"
 #include "operationloader.h"
+#ifdef LC_WITH_PYTHONSCRIPT
+#include "python/pyeventhooks.h"
+#endif
 
 // Phase 4 PR-9a — LuaInterface's event registry delegates to EventBus.
 // The Lua-facing overloads wrap kaguya::LuaRef via the Lua adapter.
 #include <scriptadapter/luacallback.h>
 
-// Phase 5 PR-5.3 — path.py execution + lcUIPy autoregister.
-// Phase 5 PR-5.5 — Python plugin loader called from initLua.
+// Python package/plugin paths are resolved from the app layout; no generated
+// path.py file or build-machine path is needed at runtime.
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
@@ -22,9 +33,32 @@
 #include <qt_keywords_pop.h>
 #include <lcpython.h>   // PythonInit
 #include "python/pypluginloader.h"
+#include <stdexcept>
 #endif
 
 using namespace lc::ui;
+
+namespace {
+QString resolveLuaPackageRoot() {
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QStringList candidates = {
+        QDir(appDir).filePath("lcUILua"),
+        QDir(appDir).filePath("../lcUILua"),
+        QDir(appDir).filePath("../share/librecad/lcUILua"),
+        QDir(appDir).filePath("../Resources/lcUILua"),
+        QDir(appDir).filePath("../Resources/librecad/lcUILua"),
+    };
+
+    for (const QString& candidate : candidates) {
+        const QString root = QDir::cleanPath(candidate);
+        if (QFileInfo(QDir(root).filePath("actions/operations.lua")).isFile()) {
+            return QFileInfo(root).absoluteFilePath();
+        }
+    }
+    return {};
+}
+
+}
 
 LuaInterface::LuaInterface() :
     _pluginManager(_L.state(), "gui") {
@@ -33,6 +67,7 @@ LuaInterface::LuaInterface() :
 LuaInterface::~LuaInterface() {
     // Phase 4 PR-9a — was `_events.clear()`; EventBus has its own clear.
     _eventBus.clear();
+    _eventBus.setDiagnosticSink({});
 
     // Phase 6 PR-6.1 — MULTI-WINDOW BUG FIX.  Previously this destructor
     // called `LuaCustomEntityManager::getInstance().removePlugins()`,
@@ -55,6 +90,35 @@ LuaInterface::~LuaInterface() {
 }
 
 void LuaInterface::initLua(QMainWindow* mainWindow) {
+    _owner = dynamic_cast<MainWindow*>(mainWindow);
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+#endif
+    if (auto* window = dynamic_cast<MainWindow*>(mainWindow)) {
+        const QPointer<widgets::CliCommand> output(window->cliCommand());
+        _eventBus.setDiagnosticSink([output](const std::string& message) {
+            if (!output) {
+                std::cerr << message << '\n';
+                return;
+            }
+            const QString html = QStringLiteral("<pre>") +
+                QString::fromStdString(message).toHtmlEscaped() +
+                QStringLiteral("</pre>");
+            auto* target = output.data();
+            const bool queued = QMetaObject::invokeMethod(
+                target,
+                [output, html]() {
+                    if (output) {
+                        output->write(html.toUtf8().toStdString());
+                    }
+                },
+                Qt::QueuedConnection);
+            if (!queued) {
+                std::cerr << message << '\n';
+            }
+        });
+    }
+
     auto lcLua = lc::lua::LCLua(_L.state());
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
@@ -66,42 +130,39 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     registerGlobalFunctions(mainWindow);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
-    // kaguya's dofile puts the stack back the way it found it, so nothing
-    // path.lua returns is left on it to read.
-    if (!_L.dofile(luaFile.toStdString().c_str())) {
-        LOG_WARNING << "Could not run " << luaFile.toStdString() << std::endl;
+    const bool pathLoaded = _L.dofile(luaFile.toStdString().c_str());
+    if (!pathLoaded) {
+        LOG_WARNING << "Lua path bootstrap failed: "
+                    << luaFile.toStdString() << std::endl;
     }
 
-    std::string luaPath = _L["lua_path"];
+    std::string luaPath = pathLoaded ? _L["lua_path"].get<std::string>() : "";
+    const QString luaPackageRoot = resolveLuaPackageRoot();
+    if (!luaPackageRoot.isEmpty()) {
+        luaPath = luaPackageRoot.toStdString();
+        _L["lua_path"] = luaPath;
+        _L["plugin_path"] = QDir(luaPackageRoot).filePath("plugins").toStdString();
+    }
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
-    // Phase 5 PR-5.3 — path bootstrap.  Execute path.py (auto-generated
-    // by lcUIPy/CMakeLists.txt at build time; installed next to
-    // path.lua in bin/) to insert lcUIPy's parent dir onto sys.path.
-    // After this runs, `import lcUIPy.operations` and friends work —
-    // OperationLoader::loadPythonOperations (called below) can then
-    // discover any modules that autoregister via @lc.register_operation
-    // during their own top-level import.
-    //
-    // Failing gracefully: if path.py doesn't exist (unittest binary
-    // in a weird runtime dir, or WITH_PYTHONSCRIPT=OFF) the error text
-    // is logged and the Python second source proceeds with whatever
-    // registry state exists — matches the "empty registry is OK for
-    // PR-5.2" contract.
 #ifdef LC_WITH_PYTHONSCRIPT
+    QString pythonPluginDirectory;
     {
-        QString pyFile =
-            QCoreApplication::applicationDirPath() + "/path.py";
+        const QString packageRoot = python::resolvePythonPackageRoot();
+        if (packageRoot.isEmpty()) {
+            throw std::runtime_error(
+                "Could not locate the lcUIPy package beside the application or in the source tree");
+        }
+
         lc::python::PythonInit::initialize();
         pybind11::gil_scoped_acquire gil;
-        try {
-            pybind11::eval_file(pyFile.toStdString(),
-                pybind11::module_::import("__main__").attr("__dict__"));
-        } catch (const pybind11::error_already_set& e) {
-            // Missing/malformed path.py isn't fatal — log and continue.
-            LOG_WARNING << "path.py load failed: " << e.what()
-                        << std::endl;
+        const QString packageParent = QFileInfo(packageRoot).dir().absolutePath();
+        pybind11::object sysPath = pybind11::module_::import("sys").attr("path");
+        pybind11::str pyPackageParent(packageParent.toStdString());
+        if (!pybind11::cast<bool>(sysPath.attr("__contains__")(pyPackageParent))) {
+            sysPath.attr("insert")(0, pyPackageParent);
         }
+        pythonPluginDirectory = QDir(packageRoot).filePath("plugins");
 
         // Best-effort autoregister: import every module under lcUIPy/
         // that begins with `create_` or `action_` (matches Lua's
@@ -175,7 +236,7 @@ except Exception as _e:
     // for their own UI hookup, not the ops registry.  Python's
     // decorator-based registration requires the reverse.
 #ifdef LC_WITH_PYTHONSCRIPT
-    lc::ui::python::loadPythonPluginsFromPathPy("gui");
+    lc::ui::python::loadPythonPlugins(pythonPluginDirectory.toStdString(), "gui");
 
     // Phase 5 PR-5.2 — Python second source.  Walks
     // `lc.operation_registry` (populated by @lc.register_operation
@@ -189,7 +250,9 @@ except Exception as _e:
 QWidget* LuaInterface::loadUiFile(const char* fileName) {
     QUiLoader uiLoader;
     QFile file(fileName);
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly)) {
+        return nullptr;
+    }
 
     QWidget* widget = uiLoader.load(&file);
 
@@ -247,9 +310,34 @@ void LuaInterface::finishOperation() {
     // Phase 4 PR-7: was `_operation["close"](_operation)`.  ScriptObject's
     // callMethod prepends `self` automatically for the Lua adapter, so
     // this matches the Lua `op:close()` call shape exactly.
-    if (!_operation.isNil() && _operation.hasAttr("close")) {
-        _operation.callMethod("close");
+    #ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+    #endif
+    try {
+        if (!_operation.isNil() && _operation.hasAttr("close")) {
+            _operation.callMethod("close");
+        }
+    } catch (...) {
+        // Teardown failure must not prevent exact subscription cleanup.
     }
+    cancelOperationEventTracking();
+}
+
+void LuaInterface::beginOperationEventTracking() {
+    cancelOperationEventTracking();
+    _trackOperationEvents = true;
+}
+
+void LuaInterface::endOperationEventTracking() {
+    _trackOperationEvents = false;
+}
+
+void LuaInterface::cancelOperationEventTracking() {
+    _trackOperationEvents = false;
+    for (const auto& registration : _operationEventRegistrations) {
+        _eventBus.deleteRegistration(registration.first, registration.second);
+    }
+    _operationEventRegistrations.clear();
 }
 
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
@@ -260,14 +348,23 @@ void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef&
     if (callback.type() == LUA_TTABLE && callback["onEvent"].isNilref()) {
         return;
     }
-    _eventBus.registerEvent(event, lc::lua::makeLuaCallback(callback));
+    (void)registerEventTracked(event, lc::lua::makeLuaCallback(callback));
 }
 
 void LuaInterface::registerEvent(const std::string& event, lc::scripting::ScriptCallback callback) {
     // Native-side entry point.  No LuaRef inspection — the ScriptCallback
     // adapter's own invokeEvent handles the shape decision (Python's
     // hasattr("onEvent") check, Lua's LuaRef type check).
-    _eventBus.registerEvent(event, std::move(callback));
+    (void)registerEventTracked(event, std::move(callback));
+}
+
+lc::scripting::EventBus::RegistrationId LuaInterface::registerEventTracked(
+    const std::string& event, lc::scripting::ScriptCallback callback) {
+    const auto id = _eventBus.registerEventTracked(event, std::move(callback));
+    if (_trackOperationEvents) {
+        _operationEventRegistrations.emplace_back(event, id);
+    }
+    return id;
 }
 
 void LuaInterface::deleteEvent(const std::string& event, const kaguya::LuaRef& callback) {
@@ -285,7 +382,16 @@ bool LuaInterface::deleteEvent(const std::string& event,
     return _eventBus.deleteEvent(event, callback);
 }
 
+bool LuaInterface::deleteEvent(
+    const std::string& event,
+    lc::scripting::EventBus::RegistrationId id) {
+    return _eventBus.deleteRegistration(event, id);
+}
+
 void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+#endif
     // Phase 4 PR-9a + post-review fix — the LuaRef-taking overload's
     // whole point is Lua-to-Lua dispatch where NO conversion is needed.
     // The naive `_eventBus.triggerEvent(event, fromLua(args))` path is
@@ -302,36 +408,64 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
     // ScriptValue for non-Lua listeners (Python et al) — those need
     // the conversion anyway.  Preserves the double-fire order for
     // operationFinished→finishOperation because EventBus's snapshot
-    // returns callbacks in insertion order.
-    auto snap = _eventBus.snapshot(event);
+    // returns entries in insertion order.
+    auto snap = _eventBus.snapshotEntries(event);
+    const auto diagnostics = _eventBus.diagnosticSink();
     // Lazy fromLua conversion — only pay it if a non-Lua listener
     // actually needs it.
     bool convertedArgs = false;
     lc::scripting::ScriptValue convertedValue;
-    for (auto& cb : snap) {
+    std::vector<lc::scripting::EventBus::RegistrationId> failedRegistrations;
+    for (auto& registration : snap) {
+        auto& cb = registration.callback;
+        bool callbackFailed = false;
+        const lc::scripting::ScriptDiagnosticSink callbackDiagnostics =
+            [&callbackFailed, &diagnostics](const std::string& message) {
+                callbackFailed = true;
+                lc::scripting::reportScriptDiagnostic(diagnostics, message);
+            };
         kaguya::LuaRef luaRef = lc::lua::unwrapLuaCallback(cb);
         if (!luaRef.isNilref()) {
             // Native Lua-side dispatch — no ScriptValue round-trip.
-            if (luaRef.type() == LUA_TFUNCTION) {
-                luaRef(event, args);
-            } else if (luaRef.type() == LUA_TTABLE) {
-                luaRef["onEvent"](luaRef, event, args);
-            }
+            (void)lc::lua::invokeLuaEventRaw(
+                luaRef, event, args, callbackDiagnostics);
         } else {
             // Cross-language listener — fromLua once, invoke via the
             // adapter's own shape-dispatch (Python's hasattr("onEvent")
             // check, native adapter, ...).
-            if (!convertedArgs) {
-                convertedValue = lc::lua::fromLua(args);
-                convertedArgs = true;
+            try {
+                if (!convertedArgs) {
+                    convertedValue = lc::lua::fromLua(args);
+                    convertedArgs = true;
+                }
+                (void) cb.invokeEvent(event, convertedValue, callbackDiagnostics);
+            } catch (const std::exception& error) {
+                callbackDiagnostics(
+                    "Script event '" + event + "' callback (" + cb.runtime() +
+                        ") failed: " + error.what());
+            } catch (...) {
+                callbackDiagnostics(
+                    "Script event '" + event + "' callback (" + cb.runtime() +
+                        ") failed with an unknown exception");
             }
-            (void) cb.invokeEvent(event, convertedValue);
         }
+        if (callbackFailed) {
+            failedRegistrations.push_back(registration.id);
+        }
+    }
+
+    // Apply cleanup after the snapshot finishes so duplicate callbacks retain
+    // independent identities and no listener is removed during iteration.
+    for (const auto id : failedRegistrations) {
+        _eventBus.deleteRegistration(event, id);
     }
 }
 
 void LuaInterface::triggerEvent(const std::string& event,
                                 const lc::scripting::ScriptValue& args) {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(_owner.data());
+#endif
     // Phase 4 PR-9a — native-side entry point.  Used by MainWindow's
     // trigger* slots after PR-9b's payload switch: they build
     // ScriptValue payloads directly (Coordinate / Int / Map) and skip

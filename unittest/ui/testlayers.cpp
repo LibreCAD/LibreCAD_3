@@ -7,7 +7,7 @@
 #include "dialogs/addlayerdialog.h"
 
 TEST(LayersTest, Creation) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new CadMdiChild;
     mdiChild->newDocument();
 
@@ -36,7 +36,7 @@ TEST(LayersTest, Creation) {
 }
 
 TEST(LayersTest, Selection) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new CadMdiChild;
     mdiChild->newDocument();
 
@@ -62,7 +62,7 @@ TEST(LayersTest, Selection) {
 }
 
 TEST(LayersTest, Edition) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new CadMdiChild;
     mdiChild->newDocument();
 
@@ -92,7 +92,7 @@ TEST(LayersTest, Edition) {
 }
 
 TEST(LayersTest, Remove) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new CadMdiChild;
     mdiChild->newDocument();
 
@@ -113,7 +113,7 @@ TEST(LayersTest, Remove) {
 }
 
 TEST(LayersTest, EditionDialog) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto document = createDocument();
 
     auto width = 0.13;
@@ -139,7 +139,7 @@ TEST(LayersTest, EditionDialog) {
 }
 
 TEST(LayersTest, AddAndGetAPI) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new lc::ui::CadMdiChild;
     mdiChild->newDocument();
 
@@ -166,7 +166,7 @@ TEST(LayersTest, AddAndGetAPI) {
 }
 
 TEST(LayersTest, APITest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new lc::ui::CadMdiChild;
     mdiChild->newDocument();
 
@@ -210,7 +210,7 @@ TEST(LayersTest, APITest) {
 }
 
 TEST(LayersTest, ButtonClickTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto mdiChild = new lc::ui::CadMdiChild;
     mdiChild->newDocument();
 
@@ -235,5 +235,5 @@ TEST(LayersTest, ButtonClickTest) {
         }
     }
     EXPECT_TRUE(found);
-    app.closeAllWindows();
+    ensureUiApplication().closeAllWindows();
 }

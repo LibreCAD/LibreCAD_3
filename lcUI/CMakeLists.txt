@@ -179,6 +179,9 @@ if(WITH_PYTHONSCRIPT)
     # Phase 5 PR-5.5 — Python plugin loader.
     list(APPEND UI_srcs python/pypluginloader.cpp)
     list(APPEND UI_hdrs python/pypluginloader.h)
+    # Actual installed-artifact import/plugin/document smoke used by CI.
+    list(APPEND UI_srcs python/pyruntimesmoke.cpp)
+    list(APPEND UI_hdrs python/pyruntimesmoke.h)
 endif()
 
 qt_wrap_ui(UI_HEADERS
@@ -299,11 +302,10 @@ set(EXTRA_LIBS
         ${APR_LIBRARIES})
 
 # Phase 3 PR-3.1 — ScriptDock's Python leg needs lcpythonscript +
-# pybind11::embed on WITH_PYTHONSCRIPT=ON builds.  The root
-# CMakeLists.txt already adds -DLC_WITH_PYTHONSCRIPT globally so the
-# #ifdef in scriptdock.{h,cpp} fires; here we just link the required
-# libraries.  When WITH_PYTHONSCRIPT=OFF (Windows/embed CPython), the
-# Python code paths compile out and no link is needed.
+# pybind11::embed on WITH_PYTHONSCRIPT=ON builds. The lcpythonscript target
+# propagates LC_WITH_PYTHONSCRIPT to its consumers, so linking it enables the
+# #ifdef in scriptdock.{h,cpp} and supplies the required libraries. When
+# WITH_PYTHONSCRIPT=OFF, the Python code paths compile out and no link is needed.
 if(WITH_PYTHONSCRIPT)
     set(EXTRA_LIBS "${EXTRA_LIBS}" lcpythonscript pybind11::embed)
     if(APPLE)
@@ -325,6 +327,9 @@ if(WITH_UNITTESTS)
     set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
     target_compile_options(lcui PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
     target_link_libraries(lcui ${EXTRA_LIBS})
+    if(WITH_PYTHONSCRIPT)
+        add_dependencies(lcui lcuipy_build_tree)
+    endif()
 endif(WITH_UNITTESTS)
 
 if (MSVC)
@@ -338,9 +343,16 @@ endif()
 # CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
 # compilation, where forcing a C++ header is a hard error.
 target_compile_options(librecad PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
-
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})
+if(WITH_PYTHONSCRIPT)
+    add_dependencies(librecad lcuipy_build_tree)
+endif()
+
+if(WITH_PYTHONSCRIPT AND WITH_PERSISTENCE)
+    set_source_files_properties(python/pyruntimesmoke.cpp PROPERTIES
+        COMPILE_DEFINITIONS LC_PYTHON_SMOKE_WITH_PERSISTENCE)
+endif()
 
 # Boost.System has been header-only since Boost 1.69, and 1.92 ships no
 # libboost_system at all -- a literal -lboost_system here failed the final link
@@ -361,12 +373,18 @@ if (MSVC)
 endif()
 
 # INSTALLATION
-install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS librecad
+    ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 if (NOT MSVC)
-	install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+	install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/lcUI")
+	install(FILES default_ui_settings.json settings_schema.json
+		DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/lcUI")
 else()
-	install(TARGETS librecad DESTINATION "${FINAL_INSTALL_DIR}")
-	install(DIRECTORY "${CMAKE_SOURCE_DIR}/build/bin/lcUI/ui" DESTINATION "lcUI")
+	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+		DESTINATION "${CMAKE_INSTALL_BINDIR}/lcUI")
+	install(FILES default_ui_settings.json settings_schema.json
+		DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 # SETTINGS_PATH is the runtime lookup path baked into the binary and is
 # intentionally empty for portable mode, so it can't be used as a build-time
@@ -374,3 +392,14 @@ endif()
 # the executable instead, which is where portable mode expects them.
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+# WinDeployQt runs after the build and before CPack. Include its Qt DLL/plugin
+# tree in the normal install so the NSIS package is self-contained; target DLLs
+# installed above may be copied again with identical contents.
+if(MSVC)
+    install(DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        FILES_MATCHING PATTERN "*.dll")
+    install(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL)
+endif()

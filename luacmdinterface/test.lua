@@ -9,13 +9,14 @@
 --   ./luacmdinterface -i file:test.lua -o out.tga
 
 -- ---- Layer + line-pattern (any drawing needs a Layer) ---------------------
-local layer = lc.meta.Layer(
-    "0",
-    lc.meta.MetaLineWidthByValue(1.0),
-    lc.Color(255, 255, 255, 255),
-    nil,
-    false
-)
+-- LayerBuilder::build returns Layer_CSPtr, which is what document operations
+-- and entity builders retain. The direct Layer constructor returns a value.
+local layerBuilder = lc.builder.LayerBuilder()
+layerBuilder:setName("0")
+layerBuilder:setLineWidth(lc.meta.MetaLineWidthByValue(1.0))
+layerBuilder:setColor(lc.Color(255, 255, 255, 255))
+layerBuilder:setIsFrozen(false)
+local layer = layerBuilder:build()
 
 -- Register the layer as a document meta type via the AddLayer operation.
 -- Same idiom kaguya-side scripts use throughout createActions/*.lua.

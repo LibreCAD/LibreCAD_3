@@ -1,4 +1,8 @@
-#include<QApplication>
+#include <QApplication>
+#include <QCoreApplication>
+#include <QTextEdit>
+#include <memory>
+#include <thread>
 
 #include <gtest/gtest.h>
 #include "mainwindowtest.h"
@@ -10,15 +14,18 @@
 #include <pybind11/embed.h>
 #include <qt_keywords_pop.h>
 #include <lcpython.h>
+#include <python/pyeventhooks.h>
 #include <lcscripting/scriptvalue.h>
 #include <lcscripting/scriptobject.h>
 #include <lcscripting/scriptcallback.h>  // Phase 6 PR-6.1 nativeCallback
 #include <managers/luacustomentitymanager.h>  // Phase 6 PR-6.1 multi-window bug test
 #include <luainterface.h>  // Phase 6 PR-6.1 — construct/destruct LuaInterface directly
+#include <widgets/guiAPI/toolbargroup.h>
+#include <widgets/guiAPI/toolbarbutton.h>
 #endif
 
 TEST(MWindowTest, WindowWidgetTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     EXPECT_TRUE(mainWindow->testAddingOfWidgets());
@@ -26,7 +33,7 @@ TEST(MWindowTest, WindowWidgetTest) {
 }
 
 TEST(MWindowTest, PointTriggerTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     // test if last point is updated
@@ -34,7 +41,7 @@ TEST(MWindowTest, PointTriggerTest) {
 }
 
 TEST(MWindowTest, OperationFinishedTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     EXPECT_TRUE(mainWindow->testOperationFinished());
@@ -46,35 +53,49 @@ TEST(MWindowTest, TriggerEventArrayPayloadPreserved) {
     // LuaInterface::triggerEvent(LuaRef) passes array-table + function
     // payloads through to Lua listeners without the lossy
     // fromLua/toLua round-trip.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     EXPECT_TRUE(mainWindow->testTriggerEventArrayPayloadPreserved());
 }
 
+TEST(MWindowTest, FailedLuaEventListenersAreRemovedAfterSnapshot) {
+    ensureUiApplication();
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    EXPECT_TRUE(mainWindow->testFailedLuaListenersAreRemovedAfterSnapshot());
+}
+
+TEST(MWindowTest, LuaOperationEventRegistrationsAreScoped) {
+    ensureUiApplication();
+    MainWindowTest mainWindow;
+
+    EXPECT_TRUE(mainWindow.testLuaOperationEventRegistrationsAreScoped());
+}
+
 TEST(MWindowTest, RunOperationTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     EXPECT_TRUE(mainWindow->testRunOperation());
 }
 
 TEST(MWindowTest, AddOperationOptionsTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     EXPECT_TRUE(mainWindow->testAddOperationOptions());
 }
 
 TEST(MWindowTest, ConnectMenuTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     EXPECT_TRUE(mainWindow->testConnectMenuItem());
 }
 
 TEST(MWindowTest, MenuAPITest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindowTest* mainWindow = new MainWindowTest();
 
     lc::ui::api::Menu* menu1 = mainWindow->addMenu("Menu1");
@@ -104,6 +125,432 @@ TEST(MWindowTest, MenuAPITest) {
 #ifdef LC_WITH_PYTHONSCRIPT
 
 // NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationOptionsWireDefaultAndInitSpecificActions) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+
+    struct RegistryEntryCleanup {
+        ~RegistryEntryCleanup() {
+            pybind11::gil_scoped_acquire gil;
+            pybind11::module_::import("lc").attr("operation_registry")
+                .attr("pop")("PyToolbarOptionsProbe", pybind11::none());
+        }
+    } cleanup;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+
+class PyToolbarOptionsProbe:
+    name = "PyToolbarOptionsProbe"
+    command_line = "PYOPTIONS"
+    operation_options = {
+        "Line": {"icon": "linesnormal.png", "action": "choose_line"},
+        "_init_special": {
+            "Arc": {"icon": "arc.svg", "action": "choose_arc"},
+        },
+    }
+
+    def _init_default(self):
+        self.selection = "default"
+
+    def _init_special(self):
+        self.selection = "special"
+
+    def choose_line(self):
+        self.selection = "line"
+
+    def choose_arc(self):
+        self.selection = "arc"
+
+lc.register_operation(PyToolbarOptionsProbe)
+)py");
+    }
+
+    MainWindowTest mainWindow;
+    auto findOptionButton = [](lc::ui::api::ToolbarGroup* group,
+                               const QString& tooltip) {
+        if (group == nullptr) return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
+        for (auto* button : group->buttons()) {
+            if (button->toolTip() == tooltip) return button;
+        }
+        return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
+    };
+
+    mainWindow.runOperationByName("PyToolbarOptionsProbe");
+    auto* currentGroup = mainWindow.toolbar()->tabByName("Quick Access")
+        ->groupByName("Current operation");
+    ASSERT_NE(currentGroup, nullptr);
+    auto* lineOption = findOptionButton(currentGroup, QStringLiteral("Line"));
+    ASSERT_NE(lineOption, nullptr);
+    lineOption->click();
+    EXPECT_EQ(mainWindow.currentOperation().getAttr("selection").asString(),
+              "line");
+
+    mainWindow.runOperationByName("PyToolbarOptionsProbe", "_init_special");
+    currentGroup = mainWindow.toolbar()->tabByName("Quick Access")
+        ->groupByName("Current operation");
+    ASSERT_NE(currentGroup, nullptr);
+    auto* arcOption = findOptionButton(currentGroup, QStringLiteral("Arc"));
+    ASSERT_NE(arcOption, nullptr);
+    arcOption->click();
+    EXPECT_EQ(mainWindow.currentOperation().getAttr("selection").asString(),
+              "arc");
+
+    mainWindow.luaInterface()->finishOperation();
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonWindowScopeAndOperationEventCleanup) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+
+    // The operation loader invokes init() while MainWindow is still being
+    // constructed and before WindowManager can append it to mainWindows.
+    // The registration must still route to this window's EventBus.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+import lcgui
+
+def _python_binding_scope_probe_init():
+    global _python_binding_scope_probe_owner, _python_binding_scope_probe_id
+    _python_binding_scope_probe_owner = lcgui.currentMainWindow()
+    _python_binding_scope_probe_id = lc.event.register(
+        "_python_binding_scope_probe", lambda event, args: None)
+
+@lc.register_operation
+class PyWindowScopeProbe:
+    name = "PyWindowScopeProbe"
+    init = staticmethod(_python_binding_scope_probe_init)
+)py");
+    }
+
+    auto mainWindow = std::make_unique<MainWindowTest>();
+    EXPECT_EQ(mainWindow->luaInterface()->listenerCount(
+                  "_python_binding_scope_probe"), 1u);
+
+    // Construct a real CreateOperations subclass after startup. Its four
+    // subscriptions are tracked by exact ID, and lcgui.currentMainWindow()
+    // must resolve to the runOperation owner despite no vector insertion.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+import lcgui
+from lcUIPy.create_operations import CreateOperations
+
+@lc.register_operation
+class PyScopedCreateOperation(CreateOperations):
+    name = "PyScopedCreateOperation"
+    def _init_default(self):
+        self.owner_was_available = lcgui.currentMainWindow() is not None
+        # Deliberately add equal registrations twice; exact tokens must remove
+        # both rather than deleting only the first matching callback.
+        self.registerEvents()
+)py");
+    }
+    mainWindow->runOperationByName("PyScopedCreateOperation");
+    const auto operation = mainWindow->currentOperation();
+    ASSERT_FALSE(operation.isNil());
+    EXPECT_TRUE(operation.getAttr("owner_was_available").asBool());
+    EXPECT_EQ(mainWindow->luaInterface()->listenerCount("point"), 2u);
+    EXPECT_EQ(mainWindow->luaInterface()->listenerCount("mouseMove"), 2u);
+
+    mainWindow->luaInterface()->finishOperation();
+    EXPECT_EQ(mainWindow->luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(mainWindow->luaInterface()->listenerCount("mouseMove"), 0u);
+    EXPECT_EQ(mainWindow->luaInterface()->listenerCount(
+                  "_python_binding_scope_probe"), 1u);
+
+    // Remove test-only operation definitions and let MainWindow teardown
+    // clear its independent startup probe registration.
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+lc.operation_registry.pop("PyWindowScopeProbe", None)
+lc.operation_registry.pop("PyScopedCreateOperation", None)
+globals().pop("_python_binding_scope_probe_owner", None)
+globals().pop("_python_binding_scope_probe_id", None)
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonMainWindowExecutionScopeRestoresNestedOwner) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest firstWindow;
+    MainWindowTest secondWindow;
+
+    auto currentWindowFromPython = []() -> MainWindow* {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::object current =
+            pybind11::module_::import("lcgui").attr("currentMainWindow")();
+        return current.is_none() ? nullptr : current.cast<MainWindow*>();
+    };
+
+    EXPECT_EQ(currentWindowFromPython(), nullptr);
+    {
+        lc::ui::python::MainWindowExecutionScope firstScope(&firstWindow);
+        EXPECT_EQ(currentWindowFromPython(), &firstWindow);
+        {
+            lc::ui::python::MainWindowExecutionScope secondScope(&secondWindow);
+            EXPECT_EQ(currentWindowFromPython(), &secondWindow);
+        }
+        EXPECT_EQ(currentWindowFromPython(), &firstWindow);
+    }
+    EXPECT_EQ(currentWindowFromPython(), nullptr);
+
+    auto closingWindow = std::make_unique<MainWindowTest>();
+    {
+        lc::ui::python::MainWindowExecutionScope closingScope(
+            closingWindow.get());
+        EXPECT_EQ(currentWindowFromPython(), closingWindow.get());
+        closingWindow.reset();
+        EXPECT_EQ(currentWindowFromPython(), nullptr);
+    }
+    EXPECT_EQ(currentWindowFromPython(), nullptr);
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonFailedOperationConstructorDoesNotLeakEvents) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+from lcUIPy.create_operations import CreateOperations
+
+@lc.register_operation
+class PyFailAfterEventRegistration(CreateOperations):
+    name = "PyFailAfterEventRegistration"
+    def __init__(self):
+        super().__init__(step="PAUSE")
+        raise RuntimeError("intentional operation constructor failure")
+)py");
+    }
+
+    mainWindow.runOperationByName("PyFailAfterEventRegistration");
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("mouseMove"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("number"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("text"), 0u);
+    auto* history = mainWindow.cliCommand()->findChild<QTextEdit*>(
+        QStringLiteral("history"));
+    ASSERT_NE(history, nullptr);
+    EXPECT_TRUE(history->toPlainText().contains(
+        QStringLiteral("intentional operation constructor failure")));
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+lc.operation_registry.pop("PyFailAfterEventRegistration", None)
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonFailedOperationInitReportsAndCleansEvents) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+from lcUIPy.create_operations import CreateOperations
+
+@lc.register_operation
+class PyFailDuringOperationInit(CreateOperations):
+    name = "PyFailDuringOperationInit"
+    def __init__(self):
+        super().__init__(step="PAUSE")
+    def _init_default(self):
+        raise RuntimeError("intentional operation init failure")
+)py");
+    }
+
+    mainWindow.runOperationByName("PyFailDuringOperationInit");
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("mouseMove"), 0u);
+    auto* history = mainWindow.cliCommand()->findChild<QTextEdit*>(
+        QStringLiteral("history"));
+    ASSERT_NE(history, nullptr);
+    EXPECT_TRUE(history->toPlainText().contains(
+        QStringLiteral("intentional operation init failure")));
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+lc.operation_registry.pop("PyFailDuringOperationInit", None)
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, WindowTeardownClearsOnlyItsPythonEventCallbacks) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import builtins
+import lc
+import weakref
+
+builtins._lc_window_teardown_counter = 0
+builtins._lc_window_teardown_callbacks = {}
+builtins._lc_window_teardown_weakrefs = {}
+builtins._lc_window_teardown_hits = {}
+
+def _lc_window_teardown_callback_alive(event):
+    reference = builtins._lc_window_teardown_weakrefs.get(event)
+    return reference is not None and reference() is not None
+
+def _lc_window_teardown_hit_count(event):
+    return builtins._lc_window_teardown_hits.get(event, 0)
+
+builtins._lc_window_teardown_callback_alive = _lc_window_teardown_callback_alive
+builtins._lc_window_teardown_hit_count = _lc_window_teardown_hit_count
+
+@lc.register_operation
+class PyWindowTeardownProbe:
+    name = "PyWindowTeardownProbe"
+    def _init_default(self):
+        builtins._lc_window_teardown_counter += 1
+        event = "_lc_window_teardown_" + str(builtins._lc_window_teardown_counter)
+        builtins._lc_window_teardown_hits[event] = 0
+        def callback(name, args):
+            builtins._lc_window_teardown_hits[event] += 1
+        builtins._lc_window_teardown_callbacks[event] = callback
+        builtins._lc_window_teardown_weakrefs[event] = weakref.ref(callback)
+        lc.event.register(event, callback)
+        builtins._lc_window_teardown_callbacks.pop(event)
+        self.event_name = event
+)py");
+    }
+
+    auto callbackAlive = [](const std::string& event) {
+        pybind11::gil_scoped_acquire gil;
+        return pybind11::module_::import("builtins")
+            .attr("_lc_window_teardown_callback_alive")(event).cast<bool>();
+    };
+    auto hitCount = [](const std::string& event) {
+        pybind11::gil_scoped_acquire gil;
+        return pybind11::module_::import("builtins")
+            .attr("_lc_window_teardown_hit_count")(event).cast<int>();
+    };
+
+    auto first = std::make_unique<MainWindowTest>();
+    first->runOperationByName("PyWindowTeardownProbe");
+    const std::string firstEvent = first->luaInterface()->operation()
+        .getAttr("event_name").asString();
+    EXPECT_FALSE(firstEvent.empty());
+    EXPECT_EQ(first->luaInterface()->listenerCount(firstEvent), 1u);
+    EXPECT_TRUE(callbackAlive(firstEvent));
+
+    auto second = std::make_unique<MainWindowTest>();
+    second->runOperationByName("PyWindowTeardownProbe");
+    const std::string secondEvent = second->luaInterface()->operation()
+        .getAttr("event_name").asString();
+    EXPECT_FALSE(secondEvent.empty());
+    EXPECT_EQ(second->luaInterface()->listenerCount(secondEvent), 1u);
+    EXPECT_TRUE(callbackAlive(secondEvent));
+
+    first.reset();
+    EXPECT_FALSE(callbackAlive(firstEvent));
+    EXPECT_TRUE(callbackAlive(secondEvent));
+    EXPECT_EQ(second->luaInterface()->listenerCount(secondEvent), 1u);
+    second->luaInterface()->triggerEvent(
+        secondEvent, lc::scripting::ScriptValue{});
+    EXPECT_EQ(hitCount(secondEvent), 1);
+
+    second.reset();
+    EXPECT_FALSE(callbackAlive(secondEvent));
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import builtins, lc
+lc.operation_registry.pop("PyWindowTeardownProbe", None)
+for _name in (
+    "_lc_window_teardown_counter",
+    "_lc_window_teardown_callbacks",
+    "_lc_window_teardown_weakrefs",
+    "_lc_window_teardown_hits",
+    "_lc_window_teardown_callback_alive",
+    "_lc_window_teardown_hit_count",
+):
+    builtins.__dict__.pop(_name, None)
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PyGuiBridgeRejectsWorkerThreadAccess) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+    lc::ui::python::MainWindowExecutionScope ownerScope(&mainWindow);
+
+    pybind11::object pythonWindow;
+    pybind11::object textGuiClass;
+    {
+        pybind11::gil_scoped_acquire gil;
+        pythonWindow = pybind11::module_::import("lcgui")
+                           .attr("currentMainWindow")();
+        textGuiClass = pybind11::module_::import("lcgui").attr("Text");
+    }
+    PyObject* const borrowedWindow = pythonWindow.ptr();
+    PyObject* const borrowedTextGuiClass = textGuiClass.ptr();
+    std::string methodError;
+    std::string constructorError;
+    std::thread worker([borrowedWindow, borrowedTextGuiClass,
+                        &methodError, &constructorError]() {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::object window =
+            pybind11::reinterpret_borrow<pybind11::object>(borrowedWindow);
+        pybind11::object textGui =
+            pybind11::reinterpret_borrow<pybind11::object>(borrowedTextGuiClass);
+        try {
+            window.attr("message")("must not access Qt from this worker");
+        } catch (const pybind11::error_already_set& error) {
+            methodError = error.what();
+        }
+        try {
+            textGui("worker widget");
+        } catch (const pybind11::error_already_set& error) {
+            constructorError = error.what();
+        }
+    });
+    worker.join();
+
+    EXPECT_NE(methodError.find(
+                  "LibreCAD GUI bindings must be called from the Qt application thread"),
+              std::string::npos) << methodError;
+    EXPECT_NE(constructorError.find(
+                  "LibreCAD GUI bindings must be called from the Qt application thread"),
+              std::string::npos) << constructorError;
+    {
+        pybind11::gil_scoped_acquire gil;
+        // Leave the outer C++ wrappers empty before releasing the GIL;
+        // otherwise their final decref of Python None runs without it.
+        pythonWindow = pybind11::object();
+        textGuiClass = pybind11::object();
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MWindowTest, PythonOperationDictCommandLineWiresCliCommand) {
     // Phase 5 PR-5.2 fixup — exercise the wiring loop with a
     // dict-form command_line to guard against the key/value swap
@@ -118,7 +565,7 @@ TEST(MWindowTest, PythonOperationDictCommandLineWiresCliCommand) {
     // This test would FAIL against the original PR-5.2 code because
     // the swap meant the "NAMEDCMD" CLI entry was never registered
     // (it registered "second" against `_init_NAMEDCMD` instead).
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     {
@@ -196,7 +643,7 @@ TEST(MWindowTest, PythonOperationResolverWiresIntoRunOperationByName) {
     // This is the exit-bar test for PR-5.2: a Python operation
     // registered via @lc.register_operation reaches the runOperation
     // pipeline end-to-end.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     // Register a Python operation BEFORE MainWindow construction so
@@ -260,49 +707,14 @@ TEST(MWindowTest, PyProofPortsImportAndRegister) {
     // coordinator called out repeatedly: don't rely on py_compile
     // alone; import the ACTUAL modules and touch what they expose.
     //
-    // The lcUIPy dir isn't auto-added to sys.path in this unit-test
-    // binary (path.py is a Qt-only bootstrap), so we manually push
-    // the source-tree lcUIPy path onto sys.path before import.  The
-    // resolution is: SOURCE_DIR is set by CMake for the WITH_QT_UI
-    // tests when `add_compile_definitions(SOURCE_DIR=...)` runs, but
-    // that's under WITH_RENDERING_UNITTESTS only — for our purposes
-    // just walk from __file__.  Or simpler: use CMAKE_CURRENT_LIST_DIR
-    // via a compile-time macro.  Simplest: infer from
-    // QCoreApplication::applicationDirPath() and walk up.
-    QApplication app(argc, argv);
+    // The build mirrors lcUIPy beside the test executable; add its parent to
+    // sys.path because this test doesn't initialize LuaInterface.
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
-
-    // The lcUIPy dir sits at LIBRECAD_SRC_ROOT/lcUIPy.  For the source
-    // tree we walk up from __file__ (the test binary's applicationDirPath
-    // is CMAKE_RUNTIME_OUTPUT_DIRECTORY = build/bin/, which is a sibling
-    // of build/{lcUI,lcUIPy,...}; walking up 2 lands on build/, walking
-    // up 3 lands on the project root).  Since the test also runs from a
-    // scratchpad build tree, we use a resilient search: try  a few known
-    // relative parents and pick the first that contains lcUIPy/.
     {
         pybind11::gil_scoped_acquire gil;
-        pybind11::exec(R"py(
-import os, sys
-# Search upward from the applicationDirPath (bin/) for a directory
-# containing lcUIPy/create_actions/point_operations.py.  This test
-# needs to work in both the source-tree scratchpad and the
-# canonical build.
-_search_from = os.getcwd()
-_found = None
-for _i in range(6):
-    _cand = os.path.join(_search_from, 'lcUIPy',
-                         'create_actions', 'point_operations.py')
-    if os.path.isfile(_cand):
-        _found = os.path.dirname(os.path.dirname(_cand))
-        break
-    _search_from = os.path.dirname(_search_from)
-
-if _found is not None:
-    _parent = os.path.dirname(_found)
-    if _parent not in sys.path:
-        sys.path.insert(0, _parent)
-del _found, _search_from
-)py");
+        pybind11::module_::import("sys").attr("path").attr("insert")(
+            0, QCoreApplication::applicationDirPath().toStdString());
     }
 
     // Import the proof-port modules directly.  If they raise (missing
@@ -313,17 +725,10 @@ del _found, _search_from
         pybind11::exec(R"py(
 import lc
 
-# The test infra may not have lcUIPy on sys.path if the scratchpad
-# search above didn't find it — skip gracefully in that case.  A
-# CI build with the correct working directory will exercise this test.
+# The test requires the package copied beside the test executable.
 import importlib.util
 if importlib.util.find_spec('lcUIPy') is None:
-    # Cannot import — the test is a no-op in this environment.
-    # Fail loudly so the discovery gap is visible.
-    raise RuntimeError(
-        'lcUIPy not on sys.path — the source-tree search couldn\'t '
-        'locate it.  Run this test from a directory where the '
-        'source-tree lcUIPy/ is reachable within 6 parents.')
+    raise RuntimeError('lcUIPy is missing beside the test executable')
 
 # Ensure clean slate — the tests above may have injected transient
 # PyDemoOp / PyDictCmdOp classes.
@@ -332,17 +737,17 @@ if 'PyPointOperations' in lc.operation_registry:
 if 'PyRemoveOperation' in lc.operation_registry:
     del lc.operation_registry['PyRemoveOperation']
 
-# Every MainWindow built by an earlier test imported these modules
-# through LuaInterface's lcUIPy autoregister.  A cached module is not
-# executed again, so its decorator would not put back the entries just
-# deleted; drop the modules so the imports below run them afresh.
-import sys
-sys.modules.pop('lcUIPy.create_actions.point_operations', None)
-sys.modules.pop('lcUIPy.actions.remove_operation', None)
-
 # Import — triggers @lc.register_operation at module top-level.
-import lcUIPy.create_actions.point_operations
-import lcUIPy.actions.remove_operation
+# LuaInterface imports operation modules during MainWindow construction, so
+# these modules may already be cached by earlier tests. Reload after clearing
+# the registry to exercise the decorators rather than relying on import cache.
+import importlib
+for _module_name in (
+    'lcUIPy.create_actions.point_operations',
+    'lcUIPy.actions.remove_operation',
+):
+    _module = importlib.import_module(_module_name)
+    importlib.reload(_module)
 
 # Registry entries must exist under their declared `name`.
 assert 'PyPointOperations' in lc.operation_registry, \
@@ -406,7 +811,7 @@ TEST(MWindowTest, PluginRegistrationSurvivesLuaInterfaceDestructor) {
     //
     // Post-fix: assertion passes.  Pre-fix: it fails because the
     // ~LuaInterface call cleared the manager's map.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     // Ensure a clean manager state so previous tests don't skew.

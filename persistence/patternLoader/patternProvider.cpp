@@ -16,11 +16,17 @@ PatternProvider* PatternProvider::Instance() {
     return instance;
 }
 
+void PatternProvider::setResourcePath(std::string path) {
+    if (!instance && !path.empty()) {
+        resourcePath = std::move(path);
+    }
+}
+
 PatternProvider::PatternProvider() {
     //load all patterns path
     std::string filename;
-    if(boost::filesystem::exists(PATTERN_RESOURCE_PATH))
-        for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(PATTERN_RESOURCE_PATH), {})) {
+    if(boost::filesystem::exists(resourcePath))
+        for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(resourcePath), {})) {
             boost::filesystem::path pathObj(entry);
             if(pathObj.has_stem())
             {
@@ -83,3 +89,4 @@ const Pattern& PatternProvider::getPattern(std::string filename) {
 };
 
 PatternProvider* PatternProvider::instance = nullptr;
+std::string PatternProvider::resourcePath = PATTERN_RESOURCE_PATH;

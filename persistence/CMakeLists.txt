@@ -76,6 +76,7 @@ target_link_libraries(persistence
 # without this the DLL is never installed and the installed application cannot
 # start. It belongs beside the executable.
 install(TARGETS persistence
+        ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"

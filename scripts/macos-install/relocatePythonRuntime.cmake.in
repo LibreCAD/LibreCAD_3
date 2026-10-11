@@ -1,0 +1,98 @@
+# Install-time relocation of the selected CPython dylib into the LibreCAD
+# prefix. Keep the source install ID available so all consumers are rewritten
+# consistently after the files have been installed.
+
+set(_install_prefix "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}")
+set(_python_runtime "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@/@LC_PYTHON_RUNTIME_LIBRARY_NAME@")
+if(NOT EXISTS "${_python_runtime}")
+    message(FATAL_ERROR "Staged CPython runtime is missing: ${_python_runtime}")
+endif()
+
+execute_process(
+    COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -id "@LC_PYTHON_RUNTIME_NEW_INSTALL_ID@"
+            "${_python_runtime}"
+    RESULT_VARIABLE _id_result
+    ERROR_VARIABLE _id_error)
+if(NOT _id_result EQUAL 0)
+    message(FATAL_ERROR "Could not set staged CPython install ID: ${_id_error}")
+endif()
+
+set(_python_consumers
+    "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@/liblcpythonscript.dylib"
+    "${_install_prefix}/@CMAKE_INSTALL_BINDIR@/librecad")
+foreach(_consumer IN LISTS _python_consumers)
+    if(NOT EXISTS "${_consumer}")
+        continue()
+    endif()
+    execute_process(
+        COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -change
+                "@LC_PYTHON_RUNTIME_OLD_INSTALL_ID@"
+                "@LC_PYTHON_RUNTIME_NEW_INSTALL_ID@"
+                "${_consumer}"
+        RESULT_VARIABLE _change_result
+        ERROR_VARIABLE _change_error)
+    if(NOT _change_result EQUAL 0)
+        message(FATAL_ERROR
+            "Could not relocate CPython dependency in ${_consumer}: ${_change_error}")
+    endif()
+endforeach()
+
+# Stage non-system dylibs needed by the copied stdlib extensions and libpython.
+# Keep this after install_name_tool has relocated libpython itself, and before
+# signing consumers: the helper may rewrite IDs, loads, and RPATHs in any of
+# these Mach-O files.
+set(_python_stage_root
+    "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@")
+set(_python_library_dir "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@")
+set(_python_stage_search_args)
+if(NOT "@LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY@" STREQUAL "")
+    list(APPEND _python_stage_search_args
+        --search-directory "@LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY@")
+endif()
+execute_process(
+    COMMAND "@LC_PYTHON_RUNTIME_EXECUTABLE@"
+            "@LC_PYTHON_DEPENDENCY_STAGER@"
+            "${_install_prefix}"
+            "${_python_stage_root}"
+            "${_python_library_dir}"
+            "@LC_PYTHON_RUNTIME_OTOOL@"
+            "@LC_PYTHON_RUNTIME_INSTALL_NAME_TOOL@"
+            "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@"
+            ${_python_stage_search_args}
+            --application-binary
+            "${_install_prefix}/@CMAKE_INSTALL_BINDIR@/librecad"
+            --defer-frameworks
+    RESULT_VARIABLE _stage_result
+    OUTPUT_VARIABLE _stage_output
+    ERROR_VARIABLE _stage_error)
+if(NOT _stage_result EQUAL 0)
+    message(FATAL_ERROR
+        "Could not stage Python runtime dependencies: ${_stage_output}${_stage_error}")
+endif()
+message(STATUS "${_stage_output}")
+
+# install_name_tool invalidates the selected Python dylib's embedded
+# signature. Ad-hoc sign the rewritten Mach-O files for local installs and PR
+# smoke; protected release packaging will replace these with its release seal.
+set(_python_macho_files "${_python_runtime}" ${_python_consumers})
+foreach(_macho IN LISTS _python_macho_files)
+    if(NOT EXISTS "${_macho}")
+        continue()
+    endif()
+    execute_process(
+        COMMAND "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@" --force --sign - "${_macho}"
+        RESULT_VARIABLE _sign_result
+        ERROR_VARIABLE _sign_error)
+    if(NOT _sign_result EQUAL 0)
+        message(FATAL_ERROR "Could not ad-hoc sign ${_macho}: ${_sign_error}")
+    endif()
+    execute_process(
+        COMMAND "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@" --verify --strict "${_macho}"
+        RESULT_VARIABLE _verify_result
+        ERROR_VARIABLE _verify_error)
+    if(NOT _verify_result EQUAL 0)
+        message(FATAL_ERROR "Ad-hoc signature is invalid for ${_macho}: ${_verify_error}")
+    endif()
+endforeach()
+
+message(STATUS "Staged CPython runtime at ${_python_runtime}")

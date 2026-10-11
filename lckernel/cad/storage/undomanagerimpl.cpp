@@ -26,6 +26,16 @@ void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& eve
             // document()->absolueteEntity(entity);
         }
 
+        // Interactive operations may be executed more than once while one
+        // transaction is being assembled (for example, a drag commits its
+        // removal at press and appends its replacement at release). The
+        // Builder object is mutable, so the existing undo entry already
+        // refers to the complete transaction; recording the same object
+        // twice would require two undos for one gesture.
+        if (!_unDoables.empty() && _unDoables.back() == undoable) {
+            return;
+        }
+
         // Add undoable to stack
         _unDoables.push_back(undoable);
 

@@ -6,7 +6,7 @@
 #include "../uitests.h"
 
 TEST(MenuTest, MenuLabelTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
@@ -35,7 +35,7 @@ TEST(MenuTest, MenuLabelTest) {
 }
 
 TEST(MenuTest, MenuGetTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
@@ -63,7 +63,7 @@ TEST(MenuTest, MenuGetTest) {
 }
 
 TEST(MenuTest, MenuPositionTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TESTMENU");
@@ -124,7 +124,7 @@ TEST(MenuTest, MenuPositionTest) {
 }
 
 TEST(MenuTest, MenuRemoveTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TESTMENU");
@@ -165,7 +165,7 @@ TEST(MenuTest, MenuRemoveTest) {
 }
 
 TEST(MenuTest, MenuInBarRemoveTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* menu1 = mainWindow->addMenu("Menu1");

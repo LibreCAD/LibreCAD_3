@@ -62,6 +62,29 @@ const FormatVariant* variantFor(File::Type type) {
     return nullptr;
 }
 
+bool isBinaryDxfFile(const std::string& path) {
+    // Match libdxfrw's complete binary-DXF sentinel, including the trailing
+    // NUL. Looking only at $ACADVER cannot distinguish ASCII from binary.
+    static constexpr char kBinaryDxfSentinel[] = "AutoCAD Binary DXF\r\n\x1a";
+    std::ifstream file(path, std::ios::binary);
+    char header[sizeof(kBinaryDxfSentinel)] = {};
+    return file.read(header, sizeof(header))
+           && std::equal(header, header + sizeof(header), kBinaryDxfSentinel);
+}
+
+File::Type binaryVariantFor(File::Type type) {
+    switch (type) {
+    case File::LIBDXFRW_DXF_R12: return File::LIBDXFRW_DXB_R12;
+    case File::LIBDXFRW_DXF_R14: return File::LIBDXFRW_DXB_R14;
+    case File::LIBDXFRW_DXF_R2000: return File::LIBDXFRW_DXB_R2000;
+    case File::LIBDXFRW_DXF_R2004: return File::LIBDXFRW_DXB_R2004;
+    case File::LIBDXFRW_DXF_R2007: return File::LIBDXFRW_DXB_R2007;
+    case File::LIBDXFRW_DXF_R2010: return File::LIBDXFRW_DXB_R2010;
+    case File::LIBDXFRW_DXF_R2013: return File::LIBDXFRW_DXB_R2013;
+    default: return type;
+    }
+}
+
 }  // namespace
 
 std::string File::variantIdForType(Type type) {
@@ -356,7 +379,11 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         // no revision table knows -- falls back to R12, the only revision
         // every reader accepts.
         bool recognised = false;
-        result.variantId = variantIdForType(typeForAcadVersion(header.acadVersion, &recognised));
+        auto sourceType = typeForAcadVersion(header.acadVersion, &recognised);
+        if (isBinaryDxfFile(path)) {
+            sourceType = binaryVariantFor(sourceType);
+        }
+        result.variantId = variantIdForType(sourceType);
 
         if (header.acadVersion.empty()) {
             LOG_DEBUG << path << " carries no $ACADVER; recording R12";
@@ -494,5 +521,3 @@ bool File::save(lc::storage::Document_SPtr document, const std::string& path, Fi
     // told otherwise -- exportFile says which records, and how many.
     return result.ok && result.loss.empty();
 }
-
-

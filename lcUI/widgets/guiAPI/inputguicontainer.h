@@ -27,7 +27,7 @@ public:
     /**
     * \brief InputGUIContainer Destructor
     */
-    ~InputGUIContainer();
+    virtual ~InputGUIContainer();
 
     /**
     * \brief Set InputGUIContainer label

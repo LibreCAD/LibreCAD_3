@@ -13,6 +13,7 @@ typedef struct lc::objects::Pattern Pattern;
 class PatternProvider {
 public:
     static PatternProvider* Instance();
+    static void setResourcePath(std::string path);
     const Pattern& getPattern(std::string);
 
 private:
@@ -21,6 +22,7 @@ private:
     PatternProvider& operator=(PatternProvider const&)=delete;
     void loadPattern(std::string);
     static PatternProvider* instance;
+    static std::string resourcePath;
     std::map<std::string, std::string> _patternLocation;
     std::map<std::string, Pattern> _patterns;
 };

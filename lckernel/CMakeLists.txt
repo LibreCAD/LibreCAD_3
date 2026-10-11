@@ -6,12 +6,17 @@ set(PATTERN_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/res/hatch)
 if (MSVC)
     install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "res")
 else()
-    install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad")
+    install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad")
 endif()
 
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 add_definitions("-DBOOST_ALL_NO_LIB")
+# Keep TinySpline's install layout aligned with LibreCAD. Its upstream default
+# is `lib64` on 64-bit targets, while LibreCAD's executable RPATH and package
+# staging use GNUInstallDirs (for example, `lib/x86_64-linux-gnu` on Ubuntu).
+set(TINYSPLINE_INSTALL_LIBRARY_DIR "${CMAKE_INSTALL_LIBDIR}"
+    CACHE STRING "TinySpline library install directory" FORCE)
 remove_definitions("-Wall")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
@@ -24,8 +29,9 @@ message("***** LibreCAD kernel *****")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # SOURCE FILES
+set(BUILD_CONSTANTS_CPP "${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp")
 set(lckernel_srcs
-build_constants.cpp
+${BUILD_CONSTANTS_CPP}
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -273,10 +279,18 @@ endif()
 
 #Create version.cpp
 add_custom_command(
-        PRE_BUILD
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp
-        COMMAND ${CMAKE_COMMAND} -DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -DSETTINGS_PATH=${SETTINGS_PATH} -DLIBDXFRW_BUILD_VERSION=$<IF:$<TARGET_EXISTS:dxfrw>,$<TARGET_PROPERTY:dxfrw,VERSION>,> -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        OUTPUT "${BUILD_CONSTANTS_CPP}"
+        COMMAND ${CMAKE_COMMAND}
+                "-DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH}"
+                "-DDIR=${CMAKE_CURRENT_SOURCE_DIR}"
+                "-DOUTPUT_FILE=${BUILD_CONSTANTS_CPP}"
+                "-DSETTINGS_PATH=${SETTINGS_PATH}"
+                "-DLIBDXFRW_BUILD_VERSION=$<IF:$<TARGET_EXISTS:dxfrw>,$<TARGET_PROPERTY:dxfrw,VERSION>,>"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
         DEPENDS always_rebuild
+                "${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp.in"
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        VERBATIM
 )
 
 # Anything that depends on this will always be rebuilt.
@@ -301,6 +315,7 @@ endif()
 
 # INSTALLATION
 install(TARGETS lckernel 
+	${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

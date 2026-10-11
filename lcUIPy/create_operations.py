@@ -24,11 +24,13 @@ from .operations import Operations
 
 # `lcgui` is the lcUI-side embedded Python module (see
 # lcUI/python/pyguibridge.cpp).  It exposes `currentMainWindow()` which
-# is the ONLY reliable way to reach the active MainWindow from an
+# is the only supported way to reach the owning MainWindow from an
 # event-driven callback path: PythonCallbackImpl::invokeEvent fires
 # our `onEvent` fresh from C++ (Qt slot → EventBus → invoke), so
 # `sys._getframe()` walking finds no Python caller with `mainWindow`
-# in scope.  The C++-side lookup works from any calling context.
+# in scope. C++ enters nested owner scopes around construction, teardown,
+# script execution, and EventBus dispatch; outside those scopes this returns
+# None rather than guessing from insertion order.
 try:
     import lcgui as _gui
 except ImportError:
@@ -59,6 +61,7 @@ class CreateOperations(Operations):
         self.entity = None
         self.builder = builder() if builder is not None else None
         self.step = step
+        self._event_registrations = []
         # Register on the CURRENT MainWindow's EventBus via the phase-5
         # hooks.  If no MainWindow exists (headless CLI) the hooks
         # silently no-op — Python operations can still be *loaded* in
@@ -69,16 +72,18 @@ class CreateOperations(Operations):
     # Event lifecycle.
     # -----------------------------------------------------------------
     def registerEvents(self):
-        lc.event.register('point',     self)
-        lc.event.register('mouseMove', self)
-        lc.event.register('number',    self)
-        lc.event.register('text',      self)
+        for name in ('point', 'mouseMove', 'number', 'text'):
+            registration = lc.event.register(name, self)
+            if registration is not None:
+                self._event_registrations.append((name, registration))
 
     def unregisterEvents(self):
-        lc.event.deregister('mouseMove', self)
-        lc.event.deregister('number',    self)
-        lc.event.deregister('point',     self)
-        lc.event.deregister('text',      self)
+        # Exact tokens avoid deleting another equal callback if this object
+        # registered more than once or a fresh bound method/object compares
+        # equal to a sibling registration.
+        for name, registration in reversed(self._event_registrations):
+            lc.event.deregister(name, registration)
+        self._event_registrations.clear()
 
     # -----------------------------------------------------------------
     # onEvent — the object-shape dispatch entry point.  PythonCallbackImpl
@@ -103,9 +108,9 @@ class CreateOperations(Operations):
     # the Python call stack.  The frame walk failed for event-driven
     # dispatch — PythonCallbackImpl::invokeEvent calls onEvent fresh
     # from C++ (Qt slot → EventBus → invoke), so no Python caller
-    # frame contains `mainWindow`.  currentMainWindow() reads
-    # WindowManager::mainWindows.back() directly and works from any
-    # calling context.
+    # frame contains `mainWindow`. currentMainWindow() is supplied by
+    # a nested C++ execution scope during operation construction,
+    # callbacks, and ScriptDock runs.
     # -----------------------------------------------------------------
     def _get_main_window(self):
         if _gui is None:

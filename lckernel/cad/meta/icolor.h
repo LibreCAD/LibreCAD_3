@@ -2,6 +2,8 @@
 #include "color.h"
 #include "metacolor.h"
 
+#include <limits>
+
 /// @todo move this to persistence
 namespace lc {
 
@@ -33,8 +35,8 @@ public:
     * Use this function if you want to know if a color does exists in DXF and what it's int value is
     */
     int colorToInt(const lc::Color& col) const {
-        int closestColor;
-        double diff=4.;//No. of colors
+        int closestColor = 0;
+        double diff = std::numeric_limits<double>::infinity();
         for (int i = 0; i < 256; i++) {
             auto tableColor = _intToCol[i]->color();
             if (_intToCol[i]->color() == col) {
@@ -72,6 +74,5 @@ public:
 
 
 }
-
 
 

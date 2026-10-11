@@ -10,9 +10,12 @@
 #include <pybind11/eval.h>
 #include <qt_keywords_pop.h>
 
-#include <dirent.h>
-#include <sys/stat.h>
 #include <iostream>
+
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QStringList>
 
 namespace py = pybind11;
 
@@ -20,84 +23,79 @@ namespace lc {
 namespace ui {
 namespace python {
 
+QString resolvePythonPackageRoot() {
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QStringList candidates = {
+        QDir(appDir).filePath("lcUIPy"),
+        QDir(appDir).filePath("../lcUIPy"),
+        QDir(appDir).filePath("../share/librecad/lcUIPy"),
+        QDir(appDir).filePath("../Resources/lcUIPy"),
+        QDir(appDir).filePath("../Resources/librecad/lcUIPy"),
+    };
+
+    for (const QString& candidate : candidates) {
+        const QString root = QDir::cleanPath(candidate);
+        if (QFileInfo(QDir(root).filePath("__init__.py")).isFile()) {
+            return QFileInfo(root).absoluteFilePath();
+        }
+    }
+    return {};
+}
+
 namespace {
 
 // True iff `<dir>/plugin.py` exists as a regular file.  Skips symlink
 // weirdness intentionally — matches the Lua path's `dofile` behavior
 // which just calls `fopen`.
-bool hasPluginPy(const std::string& dir) {
-    std::string candidate = dir + "/plugin.py";
-    struct stat st;
-    if (stat(candidate.c_str(), &st) != 0) return false;
-    return S_ISREG(st.st_mode);
+bool hasPluginPy(const QString& dir) {
+    return QFileInfo(QDir(dir).filePath("plugin.py")).isFile();
 }
 
 } // namespace
 
-void loadPythonPlugins(const std::string& pluginDir,
-                       const char* interfaceName) {
+PythonPluginLoadReport loadPythonPlugins(const std::string& pluginDir,
+                                         const char* interfaceName) {
+    PythonPluginLoadReport report;
     // Silent no-op on missing dir — same graceful-fail policy as
-    // PluginManager::loadPluginsFrom() / phase 5 PR-5.3's path.py.
-    DIR* dir = opendir(pluginDir.c_str());
-    if (dir == nullptr) return;
+    // PluginManager::loadPluginsFrom().
+    const QDir dir(QString::fromStdString(pluginDir));
+    if (!dir.exists()) {
+        report.failures.push_back("plugin directory not found: " + pluginDir);
+        return report;
+    }
+    report.directoryFound = true;
 
     py::gil_scoped_acquire gil;
 
-    struct dirent* ent;
-    while ((ent = readdir(dir)) != nullptr) {
-        if (strcmp(ent->d_name, ".") == 0
-            || strcmp(ent->d_name, "..") == 0) {
-            continue;
-        }
+    const QFileInfoList entries = dir.entryInfoList(
+        QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    for (const QFileInfo& entry : entries) {
+        if (!hasPluginPy(entry.absoluteFilePath())) continue;
 
-        std::string subdir = pluginDir + "/" + ent->d_name;
-
-        // Only descend into directories.  d_type isn't portable so
-        // stat() the entry.
-        struct stat st;
-        if (stat(subdir.c_str(), &st) != 0) continue;
-        if (!S_ISDIR(st.st_mode)) continue;
-
-        if (!hasPluginPy(subdir)) continue;
-
-        std::string pluginFile = subdir + "/plugin.py";
+        const QString pluginPath = QDir(entry.absoluteFilePath()).filePath("plugin.py");
+        const std::string pluginFile = pluginPath.toStdString();
         try {
             // Fresh namespace per plugin so `LC_interface` doesn't
             // leak between plugins and one plugin can't stomp another's
             // globals.  Import `lc` + `lcgui as gui` first for parity
             // with what ScriptDock's PyNamespace ships (see
             // scriptdock.cpp).  Plugins can `import lcUIPy.<module>`
-            // via the sys.path insertion path.py performs.
+            // because LuaInterface adds the package parent to sys.path first.
             py::dict ns;
             ns["__builtins__"] = py::module_::import("builtins");
             py::exec("import lc\ntry:\n    import lcgui as gui\nexcept ImportError:\n    pass\n", ns);
             ns["LC_interface"] = interfaceName;
             py::eval_file(pluginFile, ns);
+            report.loadedPlugins.emplace_back(entry.fileName().toStdString());
         } catch (const py::error_already_set& e) {
             // Broken plugin — log and continue with the next.
             std::cerr << "Plugin " << pluginFile
                       << " load failed: " << e.what() << std::endl;
+            report.failures.emplace_back(
+                entry.fileName().toStdString() + ": " + e.what());
         }
     }
-    closedir(dir);
-}
-
-void loadPythonPluginsFromPathPy(const char* interfaceName) {
-    py::gil_scoped_acquire gil;
-    try {
-        py::dict main =
-            py::reinterpret_borrow<py::dict>(
-                py::module_::import("__main__").attr("__dict__"));
-        if (!main.contains("plugin_path")) return;
-        py::object obj = main["plugin_path"];
-        if (obj.is_none()) return;
-        std::string path = py::str(obj);
-        if (path.empty()) return;
-        loadPythonPlugins(path, interfaceName);
-    } catch (const py::error_already_set& e) {
-        std::cerr << "loadPythonPluginsFromPathPy failed: "
-                  << e.what() << std::endl;
-    }
+    return report;
 }
 
 } // namespace python

@@ -14,7 +14,7 @@ using namespace lc::ui::widgets;
 using namespace lc::ui::api;
 
 TEST(ToolbarTest, TabOperations) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
 
     toolbar.addTab("TestTab1");
@@ -36,7 +36,7 @@ TEST(ToolbarTest, TabOperations) {
 }
 
 TEST(ToolbarTest, GroupOperations) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
 
     auto tab1 = toolbar.addTab("TestTab1");
@@ -58,13 +58,13 @@ TEST(ToolbarTest, GroupOperations) {
 }
 
 TEST(ToolbarTest, SlotTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
     kaguya::State state(luaInterface->luaState());
 
-    state.dostring("testtoolbar = function() doesThisExist=true end");
+    state.dostring("doesThisExist=false; testtoolbar = function() doesThisExist=true end");
     kaguya::LuaRef cb = state["testtoolbar"];
 
     Toolbar* toolbar = mainWindow->toolbar();

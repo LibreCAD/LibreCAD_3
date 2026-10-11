@@ -27,6 +27,16 @@ LinePatternSelect::LinePatternSelect(CadMdiChild* mdiChild, QWidget* parent, boo
     setMdiChild(mdiChild);
 }
 
+LinePatternSelect::~LinePatternSelect() {
+    if (_document == nullptr) {
+        return;
+    }
+
+    _document->addLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_addLinePatternEvent>(this);
+    _document->removeLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_removeLinePatternEvent>(this);
+    _document->replaceLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_replaceLinePatternEvent>(this);
+}
+
 void LinePatternSelect::setMdiChild(CadMdiChild* mdiChild) {
     if(mdiChild == nullptr) {
         setDocument(nullptr);

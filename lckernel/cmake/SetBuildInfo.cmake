@@ -1,18 +1,19 @@
-#Write compilation info to version.cpp file
+# Write build metadata to the generated source selected by the caller.
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M:%S")
 
-IF(EXISTS ${DIR}/.git OR EXISTS ${DIR}/../.git)
+get_filename_component(LIBRECAD_SOURCE_ROOT "${DIR}/.." ABSOLUTE)
+if(EXISTS "${LIBRECAD_SOURCE_ROOT}/.git")
     execute_process(
             COMMAND git rev-parse --abbrev-ref HEAD
             OUTPUT_VARIABLE BUILD_GIT_BRANCH
             OUTPUT_STRIP_TRAILING_WHITESPACE
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            WORKING_DIRECTORY "${LIBRECAD_SOURCE_ROOT}"
     )
     execute_process(
             COMMAND git log -1 --format=%h
             OUTPUT_VARIABLE BUILD_GIT_COMMIT
             OUTPUT_STRIP_TRAILING_WHITESPACE
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            WORKING_DIRECTORY "${LIBRECAD_SOURCE_ROOT}"
     )
     set(BUILD_INFO "branch ${BUILD_GIT_BRANCH} - commit ${BUILD_GIT_COMMIT}")
 else()
@@ -36,7 +37,10 @@ if(LIBDXFRW_GIT_COMMIT)
     set(LIBDXFRW_BUILD_VERSION "${LIBDXFRW_BUILD_VERSION} (${LIBDXFRW_GIT_COMMIT})")
 endif()
 
-configure_file(${DIR}/build_constants.cpp.in ${DIR}/build_constants.cpp)
+if(NOT DEFINED OUTPUT_FILE OR OUTPUT_FILE STREQUAL "")
+    message(FATAL_ERROR "OUTPUT_FILE must point into the CMake binary tree")
+endif()
+configure_file("${DIR}/build_constants.cpp.in" "${OUTPUT_FILE}")
 
 message(STATUS "Build date: ${BUILD_DATE}")
 message(STATUS "Build info: ${BUILD_INFO}")

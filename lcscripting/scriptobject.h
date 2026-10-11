@@ -29,6 +29,7 @@
 #include "scriptvalue.h"
 
 #include <memory>
+#include <exception>
 #include <string>
 #include <vector>
 
@@ -59,6 +60,26 @@ public:
     virtual std::shared_ptr<ScriptObjectImpl>
     instantiate(const std::vector<ScriptValue>& args) = 0;
 
+    /// Checked boundary for operation startup. Adapters with protected-call
+    /// status (notably Python) override this to distinguish a raised
+    /// exception from a constructor that legitimately returns a value.
+    virtual bool instantiateChecked(
+        const std::vector<ScriptValue>& args,
+        std::shared_ptr<ScriptObjectImpl>& result,
+        std::string& error) {
+        error.clear();
+        try {
+            result = instantiate(args);
+            if (result) return true;
+            error = "script constructor did not produce an instance";
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "script constructor failed with an unknown exception";
+        }
+        return false;
+    }
+
     /// Read a named attribute.  Returns Nil for absent (matches Lua's
     /// `t[k]` on a missing key — no distinction between nil and absent).
     virtual ScriptValue getAttr(const std::string& name) = 0;
@@ -75,6 +96,24 @@ public:
     /// `_init_` prefix used by runOperation is the caller's job.
     virtual ScriptValue callMethod(const std::string& name,
                                    const std::vector<ScriptValue>& args) = 0;
+
+    /// Checked method boundary. Absence and a legitimate Nil return remain
+    /// successful; runtime adapters report exceptions through @p error.
+    virtual bool callMethodChecked(const std::string& name,
+                                   const std::vector<ScriptValue>& args,
+                                   ScriptValue& result,
+                                   std::string& error) {
+        error.clear();
+        try {
+            result = callMethod(name, args);
+            return true;
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "script method failed with an unknown exception";
+        }
+        return false;
+    }
 
     /// Equality with another impl.  Lua: LuaRef ==.  Python: is OR equal
     /// (same design decision as ScriptCallback).
@@ -115,6 +154,26 @@ public:
         return _impl ? ScriptObject(_impl->instantiate(args)) : ScriptObject{};
     }
 
+    bool instantiateChecked(ScriptObject& result,
+                           std::string& error,
+                           const std::vector<ScriptValue>& args = {}) const {
+        result = ScriptObject{};
+        if (!_impl) {
+            error = "cannot instantiate a nil script object";
+            return false;
+        }
+        std::shared_ptr<ScriptObjectImpl> instance;
+        if (!_impl->instantiateChecked(args, instance, error)) return false;
+        if (!instance) {
+            if (error.empty()) {
+                error = "script constructor did not produce an instance";
+            }
+            return false;
+        }
+        result = ScriptObject(std::move(instance));
+        return true;
+    }
+
     ScriptValue getAttr(const std::string& name) const {
         return _impl ? _impl->getAttr(name) : ScriptValue{};
     }
@@ -130,6 +189,17 @@ public:
     ScriptValue callMethod(const std::string& name,
                            const std::vector<ScriptValue>& args = {}) const {
         return _impl ? _impl->callMethod(name, args) : ScriptValue{};
+    }
+
+    bool callMethodChecked(const std::string& name,
+                           ScriptValue& result,
+                           std::string& error,
+                           const std::vector<ScriptValue>& args = {}) const {
+        if (!_impl) {
+            error = "cannot call a method on a nil script object";
+            return false;
+        }
+        return _impl->callMethodChecked(name, args, result, error);
     }
 
     bool operator==(const ScriptObject& other) const {

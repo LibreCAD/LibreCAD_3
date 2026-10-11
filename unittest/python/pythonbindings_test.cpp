@@ -21,6 +21,9 @@
 #include <lcpython.h>
 
 #include <bridge/py_lc.h>  // Phase 6 PR-6.1 — setRegisterPluginHook for direct hook tests
+#include <scriptadapter/python_customentitydispatch.h>
+#include <scriptadapter/customentitydispatch_lua.h>
+#include <lcscripting/customentitydispatchhook.h>
 
 #include <cad/geometry/geocoordinate.h>
 #include <cad/storage/documentimpl.h>
@@ -900,18 +903,9 @@ assert block.entityName() == 'Rectangle'
 // works, dispatch silently doesn't' pattern that caused every real Lua-
 // side bug in sub-pieces 1 and 2a."
 //
-// These tests close that gap.  They construct a ScriptCustomEntity via
-// CustomEntityBuilder with Python callbacks, then INVOKE dispatch
-// methods directly through the entity and assert:
-//   * the Python callback fired at all;
-//   * it received the expected arguments;
-//   * (for return-valued slots) the return value flowed back through
-//     the neutral ScriptValue path.
-//
-// The dispatch runs via the neutral fallback path (invokeNonLua) since
-// no Lua adapter is loaded in this headless test binary.  This proves
-// that the sub-piece 2a fixup's "non-Lua callbacks silently no-op" bug
-// really is fixed on the Python side too.
+// These tests construct ScriptCustomEntity through CustomEntityBuilder and
+// invoke the six dispatch slots directly. The typed Python adapter must
+// preserve callback arguments/results that ScriptValue cannot represent.
 // -----------------------------------------------------------------------------
 
 // Helper: build a ScriptCustomEntity with the given 6 Python callbacks
@@ -950,9 +944,8 @@ TEST_F(PythonFixture, CustomEntityDispatchFiresPythonCallback_NearestPoint) {
     // verify it fires with correct data.
     //
     // We pick `nearestPointOnPath` because:
-    //   * It has a return value (Coordinate) that traverses the
-    //     ScriptValue path, exercising BOTH argument packaging AND
-    //     return extraction.
+    //   * It has a return value (Coordinate) that exercises typed argument
+    //     packaging and return extraction.
     //   * It's a public overrideable method on CustomEntity, so we
     //     can invoke it directly through pybind11 (no adapter needed).
     auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
@@ -979,15 +972,9 @@ def _release_cb(*a): return None
 )py") + kBuildCeScript + R"py(
 # Fire the dispatch.  In the C++ implementation, `nearestPointOnPath`
 # ends up in ScriptCustomEntity::nearestPointOnPath which:
-#   1. Queries the installed CustomEntityDispatchHook (none in headless
-#      Python-only test — returns nullptr).
-#   2. Falls through to invokeNonLua(), which calls
-#      `callback.invoke({self, coord})` on the neutral ScriptCallback
-#      pipeline.
-#   3. PythonCallbackImpl::invoke wraps args as py::tuple and calls the
-#      Python callable.
-#   4. The returned Coordinate is packed into a ScriptValue::Kind::Coordinate.
-#   5. ScriptCustomEntity extracts .asCoordinate() and returns it.
+#   1. Selects the hook for this callback's Python runtime.
+#   2. Passes the concrete Insert and Coordinate to Python.
+#   3. Converts the returned Coordinate back to the kernel value.
 query = lc.geo.Coordinate(1.5, 2.5, 3.5)
 result = _test_ce.nearestPointOnPath(query)
 
@@ -1024,10 +1011,8 @@ assert abs(result.z() - 77.0) < 1e-9
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST_F(PythonFixture, CustomEntityDispatchFiresPythonCallback_OnDragPointClick) {
-    // Test a VOID-return slot (onDragPointClick) so we also cover the
-    // fire-with-no-return-materialization branch.  Also verifies the
-    // 3-arg form (insert, builder, point) where `builder` is
-    // Builder_SPtr (no ScriptValue kind, passes as Nil / None).
+    // Test the void-return slot's arity. A null Builder remains a valid
+    // explicit argument here; a later test covers a real transaction builder.
     auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
     auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
     lcpy.setDocument(ns, doc);
@@ -1047,10 +1032,7 @@ def _newdrag_cb(*a): return None
 def _release_cb(*a): return None
 )py") + kBuildCeScript + R"py(
 # onDragPointClick takes a Builder_SPtr and an unsigned int point ID.
-# From Python we can only pass None for the builder (no bound
-# construction API — it's an operation-time-internal type).
-# ScriptCustomEntity's dispatch will pass None -> Nil ScriptValue ->
-# None back to Python.
+# None is preserved as None by the typed Python adapter.
 _test_ce.onDragPointClick(None, 42)
 
 assert _fired_state['count'] == 1, (
@@ -1062,9 +1044,7 @@ assert _fired_state['received_point'] == 42, (
     f"{_fired_state['received_point']}"
 )
 assert _fired_state['builder_was_none'] is True, (
-    "Builder_SPtr has no ScriptValue kind today; passes as None on "
-    "the Python side.  If this assertion fails, someone added a "
-    "kind for Builder_SPtr — update the header's inline note."
+    "an explicitly null Builder_SPtr must arrive as None"
 )
 )py";
     const std::string err = lcpy.runString(script.c_str(), ns);
@@ -1106,6 +1086,131 @@ assert not lc.builder.DimOrdinateBuilder.measuresX(lc.geo.Coordinate(0.0, 0.0),
 )py",
         ns);
     ASSERT_EQ(err, "") << err;
+}
+
+TEST_F(PythonFixture, CustomEntityPythonDispatchPreservesTypedValues) {
+    auto sm = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
+
+    const std::string script = std::string(R"py(
+_dispatch_state = {}
+
+def _snap_cb(insert, coord, constrain, min_distance, max_count):
+    _dispatch_state['snap'] = (
+        isinstance(insert, lc.entity.ScriptCustomEntity),
+        isinstance(coord, lc.geo.Coordinate),
+        isinstance(constrain, lc.SimpleSnapConstrain),
+        constrain.divisions() if isinstance(constrain, lc.SimpleSnapConstrain) else -1,
+        constrain.angle() if isinstance(constrain, lc.SimpleSnapConstrain) else -1.0,
+        min_distance, max_count)
+    return [
+        lc.EntityCoordinate(lc.geo.Coordinate(3.0, 4.0, 0.0), 7),
+        lc.EntityCoordinate(lc.geo.Coordinate(6.0, 8.0, 0.0), 9),
+    ]
+
+def _nearest_cb(insert, coord):
+    _dispatch_state['nearest'] = (
+        isinstance(insert, lc.entity.ScriptCustomEntity),
+        (coord.x(), coord.y(), coord.z()))
+    return lc.geo.Coordinate(9.0, 8.0, 7.0)
+
+def _drag_cb(insert):
+    _dispatch_state['drag'] = isinstance(insert, lc.entity.ScriptCustomEntity)
+    return {11: lc.geo.Coordinate(1.0, 2.0),
+            12: lc.geo.Coordinate(3.0, 4.0)}
+
+def _newdrag_cb(insert, position):
+    _dispatch_state['newdrag'] = (
+        isinstance(insert, lc.entity.ScriptCustomEntity),
+        (position.x(), position.y(), position.z()))
+
+def _click_cb(insert, builder, point):
+    _dispatch_state['click'] = (
+        isinstance(insert, lc.entity.ScriptCustomEntity),
+        isinstance(builder, lc.operation.Builder), point)
+
+def _release_cb(insert, builder):
+    _dispatch_state['release'] = (
+        isinstance(insert, lc.entity.ScriptCustomEntity),
+        isinstance(builder, lc.operation.Builder))
+)py") + kBuildCeScript + R"py(
+query = lc.geo.Coordinate(0.0, 0.0, 0.0)
+constrain = lc.SimpleSnapConstrain(lc.SimpleSnapConstrain.LOGICAL, 7, 0.25)
+snaps = _test_ce.snapPoints(query, constrain, 123.0, 8)
+assert len(snaps) == 2
+assert [p.pointId() for p in snaps] == [7, 9]
+assert _dispatch_state['snap'] == (True, True, True, 7, 0.25, 123.0, 8)
+
+nearest = _test_ce.nearestPointOnPath(query)
+assert _dispatch_state['nearest'] == (True, (0.0, 0.0, 0.0))
+assert (nearest.x(), nearest.y(), nearest.z()) == (9.0, 8.0, 7.0)
+
+drag = _test_ce.dragPoints()
+assert _dispatch_state['drag'] is True
+assert set(drag.keys()) == {11, 12}
+assert (drag[11].x(), drag[11].y()) == (1.0, 2.0)
+
+position = lc.geo.Coordinate(5.0, 6.0, 7.0)
+_test_ce.setDragPoint(position)
+assert _dispatch_state['newdrag'] == (True, (5.0, 6.0, 7.0))
+
+builder = lc.operation.Builder(document, 'custom entity drag transaction')
+_test_ce.onDragPointClick(builder, 17)
+_test_ce.onDragPointRelease(builder)
+assert _dispatch_state['click'] == (True, True, 17)
+assert _dispatch_state['release'] == (True, True)
+)py";
+
+    const std::string err = lcpy.runString(script.c_str(), ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+TEST_F(PythonFixture, CustomEntityPythonFailureIsReportedAndNotRetried) {
+    auto sm = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+    lcpy.setDocument(ns, doc);
+
+    const std::string script = std::string(R"py(
+_failure_count = 0
+def _nearest_cb(insert, coord):
+    global _failure_count
+    _failure_count += 1
+    raise RuntimeError('expected custom-entity callback failure')
+
+def _snap_cb(*args): return []
+def _drag_cb(*args): return {}
+def _newdrag_cb(*args): return None
+def _click_cb(*args): return None
+def _release_cb(*args): return None
+)py") + kBuildCeScript + R"py(
+query = lc.geo.Coordinate(1.0, 2.0, 3.0)
+result = _test_ce.nearestPointOnPath(query)
+assert _failure_count == 1, 'a handled Python failure must not fall through and call twice'
+assert (result.x(), result.y(), result.z()) == (1.0, 2.0, 3.0)
+)py";
+
+    const std::string err = lcpy.runString(script.c_str(), ns);
+    ASSERT_EQ(err, "") << err;
+}
+
+TEST_F(PythonFixture, CustomEntityDispatchHooksCoexistInEitherInstallOrder) {
+    using lc::scripting::clearCustomEntityDispatchHook;
+    using lc::scripting::customEntityDispatchHook;
+
+    clearCustomEntityDispatchHook("lua");
+    clearCustomEntityDispatchHook("python");
+    lc::python::installPythonCustomEntityDispatchHook();
+    lc::lua::installLuaCustomEntityDispatchHook();
+    EXPECT_NE(customEntityDispatchHook("python"), nullptr);
+    EXPECT_NE(customEntityDispatchHook("lua"), nullptr);
+
+    clearCustomEntityDispatchHook("lua");
+    clearCustomEntityDispatchHook("python");
+    lc::lua::installLuaCustomEntityDispatchHook();
+    lc::python::installPythonCustomEntityDispatchHook();
+    EXPECT_NE(customEntityDispatchHook("python"), nullptr);
+    EXPECT_NE(customEntityDispatchHook("lua"), nullptr);
 }
 
 } // namespace

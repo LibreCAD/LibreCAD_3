@@ -29,6 +29,7 @@
 #include "scriptcallback.h"
 #include "scriptvalue.h"
 
+#include <cstdint>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -39,15 +40,30 @@ namespace scripting {
 
 class EventBus {
 public:
+    using RegistrationId = std::uint64_t;
+
+    struct Registration {
+        RegistrationId id;
+        ScriptCallback callback;
+    };
+
     EventBus() = default;
 
     /// Register @p cb as a listener for event @p name.  Same callback
     /// registered twice is stored twice — matches Lua behavior.
     void registerEvent(const std::string& name, ScriptCallback cb);
 
+    /// Register a callback and return an identity for exact ownership and
+    /// cleanup. Equal callbacks registered twice receive distinct IDs.
+    RegistrationId registerEventTracked(const std::string& name,
+                                        ScriptCallback cb);
+
     /// Remove the first callback whose operator== matches @p cb.
     /// Returns true if a callback was removed.
     bool deleteEvent(const std::string& name, const ScriptCallback& cb);
+
+    /// Remove exactly one registration, even when equal callbacks exist.
+    bool deleteRegistration(const std::string& name, RegistrationId id);
 
     /// Fire the event: dispatch @p args to every registered callback.
     /// Callbacks may register/deregister during dispatch — we copy the
@@ -56,6 +72,16 @@ public:
     /// `pcall(cb, ...)` shape).
     void triggerEvent(const std::string& name,
                       const ScriptValue& args = ScriptValue{});
+
+    /// Set the per-window failure sink. It is copied while holding the bus
+    /// mutex and invoked only after the mutex is released.
+    void setDiagnosticSink(ScriptDiagnosticSink sink);
+
+    /// Copy the current sink for adapters that perform a raw-runtime dispatch.
+    ScriptDiagnosticSink diagnosticSink() const;
+
+    /// Route a raw-dispatch failure through this bus's sink.
+    void reportDiagnostic(const std::string& message) const;
 
     /// Number of callbacks registered for @p name.  Callers use this to
     /// skip lazy payload conversion when no listeners are present
@@ -78,6 +104,9 @@ public:
     /// themselves.
     std::vector<ScriptCallback> snapshot(const std::string& name) const;
 
+    /// ID-preserving variant for dispatchers that must clean up exact entries.
+    std::vector<Registration> snapshotEntries(const std::string& name) const;
+
     /// Remove all registrations.  Used at MainWindow teardown.
     void clear();
 
@@ -86,7 +115,9 @@ private:
     // holding the lock, then releases so callbacks can re-enter for
     // register/deregister.
     mutable std::mutex _mu;
-    std::unordered_map<std::string, std::vector<ScriptCallback>> _events;
+    std::unordered_map<std::string, std::vector<Registration>> _events;
+    RegistrationId _nextRegistrationId = 1;
+    ScriptDiagnosticSink _diagnosticSink;
 };
 
 } // namespace scripting
