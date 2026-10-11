@@ -162,6 +162,36 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         self.assertIn("-u QT_PLUGIN_PATH", smoke)
         self.assertIn("-u QT_QPA_PLATFORM_PLUGIN_PATH", smoke)
 
+    def test_appimage_bundles_python_extension_libraries_and_uses_private_runpath(self):
+        for library in (
+            "libssl.so.3",
+            "libcrypto.so.3",
+            "libsqlite3.so.0",
+            "libffi.so.8",
+            "libz.so.1",
+        ):
+            with self.subTest(library=library):
+                self.assertIn(
+                    f"--library=/usr/lib/x86_64-linux-gnu/{library}",
+                    self.appimage_script,
+                )
+        self.assertIn(
+            "--custom-apprun ../scripts/ubuntu-install/AppRun",
+            self.appimage_script,
+        )
+        app_run = (
+            REPOSITORY_ROOT / "scripts/ubuntu-install/AppRun"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "$appdir/usr/lib:$appdir/usr/lib/x86_64-linux-gnu:$appdir/usr/lib64",
+            app_run,
+        )
+        self.assertIn(
+            'export LD_LIBRARY_PATH="$private_library_path:$LD_LIBRARY_PATH"',
+            app_run,
+        )
+        self.assertIn('exec "$appdir/usr/bin/librecad" "$@"', app_run)
+
     def test_linuxdeploy_qt_plugin_has_patchelf_dependency(self):
         install_start = self.linux_build_script.index("sudo apt install")
         install_end = self.linux_build_script.index("\n\n", install_start)

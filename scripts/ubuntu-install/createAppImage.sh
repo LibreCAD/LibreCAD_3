@@ -30,10 +30,16 @@ sudo \
 LD_LIBRARY_PATH="AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib" \
 VERSION="$(git describe)" \
 "./$QTDEPLOY" --appdir AppDir \
+--library=/usr/lib/x86_64-linux-gnu/libssl.so.3 \
+--library=/usr/lib/x86_64-linux-gnu/libcrypto.so.3 \
+--library=/usr/lib/x86_64-linux-gnu/libsqlite3.so.0 \
+--library=/usr/lib/x86_64-linux-gnu/libffi.so.8 \
+--library=/usr/lib/x86_64-linux-gnu/libz.so.1 \
 --output appimage \
 --executable AppDir/usr/bin/librecad \
 --desktop-file AppDir/librecad.desktop \
---icon-file AppDir/librecad.svg --plugin qt
+--icon-file AppDir/librecad.svg --plugin qt \
+--custom-apprun ../scripts/ubuntu-install/AppRun
 
 # The pre-linuxdeploy install smoke intentionally accepts the matching system
 # libpython. After linuxdeploy, exercise the AppDir launcher from outside the
