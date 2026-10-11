@@ -62,7 +62,7 @@ jobs:
             PYTHONPATH=/__librecad_python_poison__ \
             LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
             LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE=1 \
-            "$appimage" --python-smoke
+            "$appimage" --python-smoke 2>&1 | tee "$GITHUB_WORKSPACE/build/appimage-native-runtime.log"
 
       - name: Smoke AppImage without host Python
         shell: bash
@@ -86,6 +86,21 @@ jobs:
             -v "$appimage:/artifact/LibreCAD.AppImage:ro" \
             librecad-appimage-runtime /artifact/LibreCAD.AppImage \
             2>&1 | tee build/appimage-clean-runtime.log
+
+      - name: Record AppImage artifact identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          artifacts=(build/LibreCAD*.AppImage)
+          test "${#artifacts[@]}" -eq 1
+          python3 -B scripts/record_python_artifact.py \
+            --artifact "${artifacts[0]}" --inventory build/python-runtime-inventory.txt \
+            --platform appimage-x86_64 --revision "$(git rev-parse HEAD)" \
+            --evidence build/appimage-native-runtime.log \
+            --evidence build/appimage-clean-runtime.log \
+            --evidence build/appimage-runtime-container.txt \
+            --output build/appimage-artifact-identity.json
 
       - name: Install or refresh Snapcraft (latest/stable)
         shell: bash
@@ -114,18 +129,31 @@ jobs:
             LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1 \
             snap run librecad --python-smoke 2>&1 | tee "$GITHUB_WORKSPACE/build/snap-elf-runtime-smoke.log"
 
+      - name: Record snap artifact identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B scripts/record_python_artifact.py \
+            --artifact librecad.snap --inventory build/snap-python-runtime-inventory.txt \
+            --platform snap-amd64 --revision "$(git rev-parse HEAD)" \
+            --evidence build/snap-runtime-identity.txt \
+            --evidence build/snap-elf-runtime-smoke.log \
+            --output build/snap-artifact-identity.json
+
       # if: always(): a later, unrelated createSnap.sh failure was otherwise
       # skipping this upload of an AppImage that had already built fine.
       - name: Uploading AppImage
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: assets
+          name: assets-linux-x86_64
           path: |
             ${{ github.workspace }}/build/LibreCAD**AppImage
             ${{ github.workspace }}/build/python-runtime-inventory.txt
             ${{ github.workspace }}/build/appimage-runtime-container.txt
             ${{ github.workspace }}/build/appimage-clean-runtime.log
+            ${{ github.workspace }}/build/appimage-native-runtime.log
+            ${{ github.workspace }}/build/appimage-artifact-identity.json
           if-no-files-found: error
           retention-days: 2
 
@@ -138,6 +166,7 @@ jobs:
             ${{ github.workspace }}/build/snap-python-runtime-inventory.txt
             ${{ github.workspace }}/build/snap-runtime-identity.txt
             ${{ github.workspace }}/build/snap-elf-runtime-smoke.log
+            ${{ github.workspace }}/build/snap-artifact-identity.json
           name: LibreCAD3.snap
           retention-days: 2
 
@@ -338,10 +367,26 @@ jobs:
           $env:QT_QPA_PLATFORM = 'offscreen'
           $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
           Push-Location (Split-Path $app)
-          & $app --python-smoke
+          & $app --python-smoke 2>&1 | Tee-Object -FilePath (Join-Path $env:GITHUB_WORKSPACE 'build/windows-installed-smoke.log')
           $smokeExitCode = $LASTEXITCODE
           Pop-Location
           if ($smokeExitCode -ne 0) { throw "Installed Python smoke exited with $smokeExitCode" }
+          Copy-Item (Join-Path $installRoot 'share/librecad/licenses/providers/conan/manifest.json') `
+            'build/windows-conan-provider-manifest.json'
+
+      - name: Record Windows artifact identity
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem 'build/bin/LibreCAD3-*.exe')
+          if ($installers.Count -ne 1) { throw 'Expected exactly one tested NSIS installer' }
+          $revision = git rev-parse HEAD
+          & $env:Python_EXECUTABLE -B scripts/record_python_artifact.py `
+            --artifact $installers[0].FullName --inventory build/python-runtime-inventory.txt `
+            --platform windows-x64 --revision $revision `
+            --evidence build/windows-installed-smoke.log `
+            --evidence build/windows-conan-provider-manifest.json `
+            --output build/windows-artifact-identity.json
+          if ($LASTEXITCODE -ne 0) { throw 'Windows artifact identity recording failed' }
 
       - name: Uploading exe
         uses: actions/upload-artifact@v4
@@ -349,7 +394,10 @@ jobs:
           path: |
             ${{ github.workspace }}/build/bin/LibreCAD3**.exe
             ${{ github.workspace }}/build/python-runtime-inventory.txt
-          name: assets
+            ${{ github.workspace }}/build/windows-artifact-identity.json
+            ${{ github.workspace }}/build/windows-installed-smoke.log
+            ${{ github.workspace }}/build/windows-conan-provider-manifest.json
+          name: assets-windows-x64
           if-no-files-found: error
 
   # DWG reading is off by default, so nothing else in CI exercises it. This job
@@ -478,6 +526,9 @@ jobs:
 
       - name: Fetch artifacts
         uses: actions/download-artifact@v4
+        with:
+          pattern: assets-*
+          path: release-artifacts
 
       - name: Upload latest pre-release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -486,5 +537,6 @@ jobs:
           automatic_release_tag: "latest"
           title: "Continuous Build"
           files: |
-            assets/LibreCAD*.*
+            release-artifacts/assets-linux-x86_64/LibreCAD*.AppImage
+            release-artifacts/assets-windows-x64/bin/LibreCAD3*.exe
             LICENSE

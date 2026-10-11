@@ -24,21 +24,22 @@ class LibreCAD3(ConanFile):
             if not dep.package_folder:
                 raise RuntimeError("Conan package notices require a cached binary: " + identity["reference"])
             package = Path(dep.package_folder)
-            if identity["reference"] == "opengl/system" and str(dep.settings.os) == "Windows":
-                # This recipe only links Windows' opengl32.dll. It distributes
+            system_libs = {"opengl/system": ["opengl32"], "glu/system": ["glu32"]}.get(identity["reference"])
+            if system_libs and str(dep.settings.os) == "Windows":
+                # These wrappers only link Windows system DLLs and distribute
                 # no library/header bytes. Never extend this to arbitrary
                 # packages merely because their license directory is absent.
                 if not package.is_dir() or package.is_symlink():
-                    raise RuntimeError("opengl/system cached package directory is missing or linked")
+                    raise RuntimeError(identity["reference"] + " cached package directory is missing or linked")
                 info = dep.cpp_info
-                if info.system_libs != ["opengl32"] or any((info.libs, info.objects,
+                if info.system_libs != system_libs or any((info.libs, info.objects,
                         info.frameworks, info.includedirs, info.libdirs, info.bindirs, info.components)):
-                    raise RuntimeError("Unexpected opengl/system Windows provider metadata")
+                    raise RuntimeError("Unexpected Windows system provider metadata: " + identity["reference"])
                 for path in package.rglob("*"):
                     if path.is_symlink() or (path.is_file() and path.relative_to(package).as_posix()
                                             not in ("conaninfo.txt", "conanmanifest.txt")):
-                        raise RuntimeError("opengl/system unexpectedly distributes package files")
-                providers.append(dict(identity, files=[], system_os="Windows", system_libraries=["opengl32"]))
+                        raise RuntimeError(identity["reference"] + " unexpectedly distributes package files")
+                providers.append(dict(identity, files=[], system_os="Windows", system_libraries=system_libs))
                 continue
             source = package / "licenses"
             if not source.is_dir() or source.is_symlink():

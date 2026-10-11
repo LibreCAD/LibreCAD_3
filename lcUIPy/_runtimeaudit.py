@@ -28,8 +28,9 @@ def audit_conan_notices(directory):
                    for key in ("reference", "recipe_revision", "package_id", "package_revision")):
             raise RuntimeError("Conan notice provider identity is incomplete")
         if "system_os" in provider or "system_libraries" in provider:
-            if provider["reference"] != "opengl/system" or provider.get("system_os") != "Windows" or \
-                    provider.get("system_libraries") != ["opengl32"] or provider.get("files") != []:
+            system_libs = {"opengl/system": ["opengl32"], "glu/system": ["glu32"]}.get(provider["reference"])
+            if not system_libs or provider.get("system_os") != "Windows" or \
+                    provider.get("system_libraries") != system_libs or provider.get("files") != []:
                 raise RuntimeError("Conan system dependency exemption is unsupported")
             continue
         if not isinstance(provider.get("files"), list) or not provider["files"]:

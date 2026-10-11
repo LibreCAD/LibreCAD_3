@@ -103,17 +103,17 @@ class ConanProviderNoticesTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "empty|zero"):
             self.generate()
 
-    def system_dependency(self):
-        folder = self.root / "system-opengl"
+    def system_dependency(self, name="opengl"):
+        folder = self.root / ("system-" + name)
         folder.mkdir(exist_ok=True)
         (folder / "conaninfo.txt").write_text("cache metadata")
         dep = SimpleNamespace(package_folder=str(folder),
-                              ref=SimpleNamespace(name="opengl", version="system", revision="recipe-revision"),
+                              ref=SimpleNamespace(name=name, version="system", revision="recipe-revision"),
                               pref=SimpleNamespace(package_id="binary-id", revision="package-revision"),
                               settings=SimpleNamespace(os="Windows"),
-                              cpp_info=SimpleNamespace(system_libs=["opengl32"], libs=[], objects=[],
+                              cpp_info=SimpleNamespace(system_libs=[{"opengl": "opengl32", "glu": "glu32"}[name]], libs=[], objects=[],
                                   frameworks=[], includedirs=[], libdirs=[], bindirs=[], components={}))
-        self.dependencies["opengl"] = dep
+        self.dependencies[name] = dep
         return dep
 
     def test_records_empty_windows_opengl_system_wrapper_without_inventing_a_license(self):
@@ -127,6 +127,33 @@ class ConanProviderNoticesTests(unittest.TestCase):
         self.assertEqual("Windows", system["system_os"])
         self.assertEqual(["opengl32"], system["system_libraries"])
         self.assertEqual((2, 1), audit.audit_conan_notices(directory))
+
+    def test_windows_glu_wrapper_requires_exact_system_library_and_no_payload(self):
+        self.dependency("provider")
+        dep = self.system_dependency("glu")
+        directory = self.generate()
+        manifest = json.loads((directory / "manifest.json").read_text())
+        system = manifest["providers"][0]
+        self.assertEqual("glu/system", system["reference"])
+        self.assertEqual([], system["files"])
+        self.assertEqual(["glu32"], system["system_libraries"])
+        self.assertEqual((2, 1), audit.audit_conan_notices(directory))
+        for kind in ("library", "platform", "payload", "include"):
+            with self.subTest(kind=kind):
+                dep.cpp_info.system_libs = ["opengl32"] if kind == "library" else ["glu32"]
+                dep.settings.os = "Linux" if kind == "platform" else "Windows"
+                dep.cpp_info.includedirs = ["include"] if kind == "include" else []
+                payload = Path(dep.package_folder) / "glu32.dll"
+                if kind == "payload":
+                    payload.write_bytes(b"MZnot-system")
+                with self.assertRaises(RuntimeError):
+                    self.generate()
+                if payload.exists():
+                    payload.unlink()
+        manifest["providers"][0]["system_libraries"] = ["opengl32"]
+        (directory / "manifest.json").write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(RuntimeError, "system"):
+            audit.audit_conan_notices(directory)
 
     def test_system_exemption_rejects_other_platforms_metadata_and_distributed_bytes(self):
         for kind in ("platform", "library", "include", "binary", "link", "unknown", "missing", "system-only"):
@@ -320,33 +347,36 @@ class ConanProviderNoticesTests(unittest.TestCase):
         self.assertEqual(["notice-direct/1.0", "notice-leaf/1.0"],
                          [p["reference"] for p in json.loads((installed / "manifest.json").read_text())["providers"]])
         # Validate the actual Conan dependency interface for Windows' empty
-        # system wrapper too. Only metadata/header packages are created; no
+        # system wrappers too. Only metadata/header packages are created; no
         # Windows compiler, SDK, dependency source build or remote is used.
-        system = self.root / "actual-opengl-system"
-        system.mkdir()
-        (system / "conanfile.py").write_text(
-            'from conan import ConanFile\nclass OpenGL(ConanFile):\n'
-            '    name = "opengl"\n    version = "system"\n    settings = "os"\n'
-            '    package_type = "shared-library"\n'
-            '    def package_info(self):\n'
-            '        self.cpp_info.includedirs = []\n        self.cpp_info.libdirs = []\n'
-            '        self.cpp_info.bindirs = []\n        self.cpp_info.system_libs = ["opengl32"]\n')
         windows = ["-s:h", "os=Windows", "-s:h", "arch=x86_64", "-s:h", "compiler=msvc",
                    "-s:h", "compiler.version=194", "-s:h", "compiler.cppstd=17",
                    "-s:h", "compiler.runtime=dynamic"]
-        run("conan", "create", str(system), "--no-remote", *windows)
+        for name, library in (("opengl", "opengl32"), ("glu", "glu32")):
+            system = self.root / ("actual-" + name + "-system")
+            system.mkdir()
+            (system / "conanfile.py").write_text(
+                'from conan import ConanFile\nclass System(ConanFile):\n'
+                '    name = "{}"\n    version = "system"\n    settings = "os"\n'.format(name) +
+                '    package_type = "shared-library"\n'
+                '    def package_info(self):\n'
+                '        self.cpp_info.includedirs = []\n        self.cpp_info.libdirs = []\n'
+                '        self.cpp_info.bindirs = []\n        self.cpp_info.system_libs = ["{}"]\n'.format(library))
+            run("conan", "create", str(system), "--no-remote", *windows)
         recipe = consumer / "conanfile.py"
         recipe.write_text(recipe.read_text().replace(
             'self.requires("notice-direct/1.0")',
-            'self.requires("notice-direct/1.0"); self.requires("opengl/system")'))
+            'self.requires("notice-direct/1.0"); self.requires("opengl/system"); self.requires("glu/system")'))
         win_output = self.root / "Windows generated"
         run("conan", "install", str(consumer), "--output-folder", str(win_output),
             "--build=never", "--no-remote", *windows)
         manifests = list((win_output / "librecad-licenses").glob("*/manifest.json"))
         self.assertEqual(1, len(manifests))
-        self.assertEqual((3, 2), audit.audit_conan_notices(manifests[0].parent))
-        self.assertEqual(["opengl32"],
-                         json.loads(manifests[0].read_text())["providers"][-1]["system_libraries"])
+        self.assertEqual((4, 2), audit.audit_conan_notices(manifests[0].parent))
+        self.assertEqual({"opengl/system": ["opengl32"], "glu/system": ["glu32"]},
+                         {provider["reference"]: provider["system_libraries"]
+                          for provider in json.loads(manifests[0].read_text())["providers"]
+                          if "system_libraries" in provider})
 
 
 if __name__ == "__main__":
