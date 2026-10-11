@@ -64,6 +64,29 @@ jobs:
             LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE=1 \
             "$appimage" --python-smoke
 
+      - name: Smoke AppImage without host Python
+        shell: bash
+        run: |
+          set -euo pipefail
+          appimage="$(find build -maxdepth 1 -type f -name 'LibreCAD*.AppImage' -print -quit)"
+          test -n "$appimage"
+          appimage="$(realpath "$appimage")"
+          docker pull --platform linux/amd64 ubuntu:26.04
+          runtime_base=$(docker image inspect --format '{{index .RepoDigests 0}}' ubuntu:26.04)
+          docker build --platform linux/amd64 --build-arg "RUNTIME_BASE=$runtime_base" \
+            -f scripts/ubuntu-install/appimage-runtime.Dockerfile \
+            -t librecad-appimage-runtime scripts/ubuntu-install
+          {
+            docker image inspect --format '{{.Id}} {{.Architecture}}' librecad-appimage-runtime
+            echo "base=$runtime_base"
+          } | tee build/appimage-runtime-container.txt
+          docker run --rm --platform linux/amd64 --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,exec,nosuid,size=1g \
+            -v "$appimage:/artifact/LibreCAD.AppImage:ro" \
+            librecad-appimage-runtime /artifact/LibreCAD.AppImage \
+            2>&1 | tee build/appimage-clean-runtime.log
+
       - name: Install or refresh Snapcraft (latest/stable)
         shell: bash
         run: |
@@ -100,6 +123,8 @@ jobs:
           path: |
             ${{ github.workspace }}/build/LibreCAD**AppImage
             ${{ github.workspace }}/build/python-runtime-inventory.txt
+            ${{ github.workspace }}/build/appimage-runtime-container.txt
+            ${{ github.workspace }}/build/appimage-clean-runtime.log
           if-no-files-found: error
           retention-days: 2
 

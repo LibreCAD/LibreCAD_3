@@ -99,12 +99,14 @@ Core namespace organization intentionally parallels Lua: Python exposes
 expose `lc.persistence.*`. The GUI surface is `gui` in Lua and `lcgui` in
 Python.
 
-Hosted checkpoint (2026-10-11, PR candidate `783266c3`): Linux x64 passes the
+Hosted checkpoint (2026-10-11): PR candidate `783266c3` on Linux x64 passes the
 315-test required core filter, AppDir/final AppImage and installed core26 Snap
-smokes; macOS arm64 passes 158 required scripting tests plus one Lua runtime
-test and relocated app smoke. Required tests report zero skips. These are
+smokes; `38514122` on macOS arm64 passes 158 required scripting tests plus one
+Lua runtime test, original/relocated/archive-extracted app smoke, and retained
+archive/inventory checks. That archive declares macOS 15.0 as its measured
+minimum and is ad-hoc signed. Required tests report zero skips. These are
 candidate results, not a claim that the roadmap is complete: clean Linux
-runtime validation, Windows/NSIS, macOS x86_64/final archived artifacts,
+runtime validation, Windows/NSIS, macOS x86_64 final archived artifacts,
 dependency qualification/notices and protected signing still have open gates
 in `PYTHON_BINDING_IMPLEMENTATION_PLAN.md`.
 
@@ -134,6 +136,15 @@ macOS release. The native arm64/x86_64 workflow retains the signed app archive,
 its SHA-256 and minimum OS, the selected-provider inventory, and test/smoke logs.
 PR bundles are ad-hoc signed; Developer ID signing and notarization are separate
 release requirements.
+
+Linux AppImage CI additionally runs the exact artifact's extraction launcher
+in an unprivileged, offline, read-only Ubuntu 26.04 runtime container without
+system Python, libpython, or a Python SDK. The bounded smoke still requires
+bundled CPython and native extension dependencies; it complements the native
+FUSE-launcher check, not older-distribution compatibility. This new gate awaits
+hosted execution. The inspected Linux candidate payload requires GLIBC 2.43
+and its executable declares x86-64-v3; compatibility with older glibc
+distributions or older x86_64 CPU baselines is not claimed.
 
 Operation contract
 ------------------
