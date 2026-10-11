@@ -101,13 +101,13 @@ Python.
 
 Hosted checkpoint (2026-10-11): PR candidate `783266c3` on Linux x64 passes the
 315-test required core filter, AppDir/final AppImage and installed core26 Snap
-smokes; `38514122` on macOS arm64 passes 158 required scripting tests plus one
-Lua runtime test, original/relocated/archive-extracted app smoke, and retained
-archive/inventory checks. That archive declares macOS 15.0 as its measured
-minimum and is ad-hoc signed. Required tests report zero skips. These are
+smokes; `38514122` on both macOS architectures passes 158 required scripting
+tests plus one Lua runtime test, original/relocated/archive-extracted app smoke, and retained
+archive/inventory checks. Both archives declare macOS 15.0 as their measured
+minimum and are ad-hoc signed. Required tests report zero skips. These are
 candidate results, not a claim that the roadmap is complete: clean Linux
-runtime validation, Windows/NSIS, macOS x86_64 final archived artifacts,
-dependency qualification/notices and protected signing still have open gates
+runtime validation, Windows/NSIS, dependency qualification/notices and protected
+signing still have open gates
 in `PYTHON_BINDING_IMPLEMENTATION_PLAN.md`.
 
 ### Runtime selection and packaging

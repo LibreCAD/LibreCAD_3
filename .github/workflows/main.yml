@@ -132,7 +132,10 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          path: ${{ github.workspace }}/librecad**snap
+          path: |
+            ${{ github.workspace }}/librecad**snap
+            ${{ github.workspace }}/build/snap-python-runtime-inventory.txt
+            ${{ github.workspace }}/build/snap-runtime-identity.txt
           name: LibreCAD3.snap
           retention-days: 2
 

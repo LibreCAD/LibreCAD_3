@@ -4,6 +4,10 @@ grade: stable
 # Core 26 is the current base supported by Snapcraft 9.  The prior core20
 # base requires the now-legacy Snapcraft 8 track.
 base: core26
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
 confinement: devmode
 summary: "librecad: is a 2D CAD"
 description: |
@@ -104,6 +108,10 @@ parts:
       # standard library to start at all.
       - python3
       - libpython3.14
+      # Stage these explicitly: the full ELF linter catches _gdbm and the
+      # staged SVG loader even when app smoke does not load them.
+      - libgdbm6t64
+      - libxml2-16
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"

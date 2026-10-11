@@ -156,4 +156,19 @@ fi
 # as the runner user.
 sudo chown "$(id -u):$(id -g)" librecad.snap
 
+# Keep the Snap's configure-selected provider separate from the earlier
+# AppImage/system build. Never substitute build/python-runtime-inventory.txt.
+snap_inventory=parts/librecad/build/python-runtime-inventory.txt
+sudo test -s "$snap_inventory"
+mkdir -p build
+sudo cat "$snap_inventory" | tee build/snap-python-runtime-inventory.txt >/dev/null
+python3 scripts/validate_python_inventory.py \
+    --inventory build/snap-python-runtime-inventory.txt \
+    --expected-root /usr --expected-version 3.14 --expected-architecture x86_64
+cat build/snap-python-runtime-inventory.txt
+{
+    sha256sum librecad.snap
+    snap list core26 mesa-2604 snapcraft
+} > build/snap-runtime-identity.txt
+
 sudo snap install ./librecad.snap --devmode --dangerous
