@@ -20,20 +20,24 @@ These checks prove plan synchronization, not product behavior.
 **Revision boundary (2026-10-11):** this isolated worktree contains the committed
 candidate, based on `origin/master` at
 `f972953aa3295543550a90f4c6ed1c4609124c59`; the original dirty checkout remains
-untouched. The candidate contains 149 paths relative to that base. Its only
+untouched. The candidate contains 152 paths relative to that base. Its only
 untracked path is the generated `build-linux-arm64/` output tree, which is
 excluded from plan candidate checks. The committed implementation and plan
 receipts cover the earlier port, Linux ARM64 container, Ubuntu x86_64 emulation,
 and native macOS arm64 evidence. On macOS arm64, the current source diff's full
-non-rendering test suite passes 448/448 across 79 suites with zero skips. A
+non-rendering test suite passes 450/450 across 79 suites with zero skips. A
 fresh `WITH_PYTHONSCRIPT=OFF` configuration builds `librecad` without Python
 CMake discovery or a linked Python runtime when matching Lua 5.5 headers and
 library are selected. The Linux ARM64 and x86_64 emulation results below are
 local container evidence, not hosted/native Linux acceptance. Hosted Linux,
-Windows, macOS x86_64, Snap, and required branch protection remain open. GitHub
-CLI authentication is not currently valid; a new device login is waiting for
-account approval. The old PR #416 Qt-install and external-libdxfrw failures are
-historical against this base.
+Windows, macOS x86_64, Snap, and required branch protection remain open. The
+GitHub device flow has since completed: `gh auth status --hostname github.com`
+and `gh api user --jq .login` verify `dxli` with `repo` and `workflow` scopes.
+The candidate branch is not published: GitHub returns 404 for
+`codex/python-binding-followup`, and the PR and Actions-run lists for it are
+empty. Hosted validation therefore still requires publication authorization;
+branch protection was not changed. The old PR #416 Qt-install and
+external-libdxfrw failures are historical against this base.
 
 Latest-base port status (2026-10-10): the isolated worktree is detached at
 `f972953aa3295543550a90f4c6ed1c4609124c59`; the original dirty checkout remains
@@ -1195,6 +1199,13 @@ States: `planned`, `active`, `implemented`, `validated`, `blocked`.
 A blocked entry records its last achieved state and the concrete unblock action.
 All implementation entries start planned: reviewing source is not runtime proof.
 
+**Current GitHub state (2026-10-11):** the device flow is complete and the
+authenticated CLI verifies `dxli` with `repo`/`workflow` scopes. The candidate
+branch is absent remotely (branch lookup 404), with no candidate PR or Actions
+runs. This supersedes the earlier invalid-token/pending-approval wording in
+ledger evidence and receipts. Publication still requires user authorization;
+no branch-protection or release-signing settings were changed.
+
 | Gate | State | Next action / blocker | Evidence |
 |---|---|---|---|
 | S0 | active | Run the hosted Windows lane, inspect its uploaded CPython inventory, and confirm all recorded provider paths belong to setup-python; obtain hosted Linux inventory and retain hosted macOS x86_64 validation | `scripts/validate_python_provider.py` rejects non-CPython, debug, free-threaded, version/header/library, and target ABI mismatches; its nine fixtures pass. Latest-base macOS arm64 and Ubuntu 26.04 x86_64 emulation configure against their selected providers. Fresh Ubuntu 26.04 ARM64- and x86_64-container guard invocations validate CPython 3.14.4, 64-bit GIL-enabled builds against their configured headers/libraries (`aarch64`: `/usr/include/python3.14`, `/usr/lib/aarch64-linux-gnu/libpython3.14.so`; `x86_64`: `/usr/include/python3.14`, `/usr/lib/x86_64-linux-gnu/libpython3.14.so`). Windows CI now fails closed if its inventory is missing, empty, not CPython 3.14 x64 release ABI, or lacks expected CMake/provider fields; Linux x64 CI requires and prints the non-empty inventory before packaging. Static contract tests verify check-before-upload ordering. The S0 capability inventory in `doxygen/Scripting.md` now explicitly distinguishes geometry, construction/operations, storage/undo, persistence, metadata, callbacks, widgets, plugins, and runtime; collection-conversion and factory differences are documented. The focused latest-base test filter passes 51/51 across six suites. No hosted Windows/Linux inventory has been retrieved; hosted Windows/Linux and macOS x86_64 provider validation remain pending. |
@@ -1256,25 +1267,18 @@ smoke remain open in SNAP-AMD64. See [Snapcraft 9.0 release notes](https://ubunt
 
 ### GitHub authorization and hosted-gate checkpoint (2026-10-11)
 
-An earlier network-enabled CLI context reported `dxli` authenticated over HTTPS
-with `gist`, `read:org`, `repo`, and `workflow` scopes; no token value is
-recorded. The current local CLI now reports its saved token invalid. A fresh
-device flow started from this candidate is still waiting for account approval;
-the earlier external-context status is not proof that this CLI is authenticated.
-
-Earlier read-only remote checks reported PR #416 and the Python scripting
-support PR #407 merged, no candidate PR or candidate-hosted Actions run, only
-scheduled runs on the base revision, and HTTP 404 from the `master`
-branch-protection endpoint. These remote facts have not been rechecked in this
-local context because its GitHub token is invalid. The authoritative local
-candidate is now `b2b5e4ec204693e2fb7f002b94df3ad2ed44d373`, whose merge base is
-`origin/master` at `f972953aa3295543550a90f4c6ed1c4609124c59`; the checked setter
-and plan changes are uncommitted. Do not treat the earlier `6706f696` reference
-as this worktree's current HEAD. The new device flow is awaiting account
-approval. User authorization to authenticate and commit does not authorize
-pushing, publishing a PR, or changing branch protection. Leave S0-S7, platform
-gates, and PLAN-SYNC unvalidated until their stated acceptance criteria are
-met.
+The restarted device flow completed. `gh auth status --hostname github.com`
+verifies `dxli` over HTTPS with `gist`, `read:org`, `repo`, and `workflow`
+scopes; `gh api user --jq .login` returns `dxli`. No token value is recorded.
+Read-only checks show PR #416 and Python scripting support PR #407 merged, no
+PR for `codex/python-binding-followup`, a 404 branch lookup for that local
+candidate, and no Actions runs on the branch. No branch-protection change was
+made. This candidate is HEAD `57da459809493c12716a7deb615d3a976b332ffc`, based
+on `origin/master` at `f972953aa3295543550a90f4c6ed1c4609124c59`; its plan
+receipt is the current local edit and `build-linux-arm64/` is generated
+untracked output. Authorization to authenticate and commit does not authorize
+pushing or publishing a PR. Leave S0-S7, platform gates, and hosted PLAN-SYNC
+unvalidated until their stated acceptance criteria are met.
 
 ### Linux x86_64 emulation test update (2026-10-10)
 
@@ -1451,6 +1455,7 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Reconciled the completed GitHub device approval and verified that the implementation branch is still unpublished; refreshed the candidate revision/path count and removed stale pending-auth claims from the current summary | `gh auth status --hostname github.com` verifies `dxli` with `gist`, `read:org`, `repo`, and `workflow` scopes; `gh api user --jq .login` returns `dxli`. The branch endpoint returns 404, `gh pr list --head codex/python-binding-followup` is empty, and `gh run list --branch codex/python-binding-followup` is empty. Candidate HEAD `57da459809493c12716a7deb615d3a976b332ffc` is based on `origin/master` `f972953aa3295543550a90f4c6ed1c4609124c59`; 152 paths differ. After adding this receipt, `--full`, checker tests 31/31, all script tests 102/102, `--worktree --exclude-path build-linux-arm64/` (PLAN-SYNC only; no unmapped paths or stale evidence), `--base-ref origin/master` (all 17 gates, no unmapped paths or stale evidence), and `git diff --check origin/master` pass. The only worktree exclusion is generated `build-linux-arm64/`. No push, PR, hosted run, branch-protection, or release-signing change is authorized or claimed. |
 | 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Rechecked local architecture options and retained hosted acceptance as the only valid remaining platform closeout | On the arm64 Mac, `/usr/bin/arch -x86_64 /usr/bin/uname -m` runs and reports `x86_64`, but the only detected CMake/Homebrew are under `/opt/homebrew`; `/usr/local/bin/brew` and `/usr/local/Cellar` are absent. This is not an x86_64 SDK/dependency environment, so it does not validate `MAC-X64`. The latest-base candidate remains at `45fb81a1`; `gh auth status` still reports the saved token invalid and device authorization pending, so hosted PR validation cannot yet start. Linux/Windows/macOS hosted lanes, Snap, native/FUSE AppImage, and branch-protection checks remain open. |
 | 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Revalidated the latest-base candidate's committed PR diff and refreshed the plan-checker regression count without promoting platform gates | On candidate HEAD `007888d6` based on `origin/master` `f972953`, `python3 -B -m unittest discover -s scripts/tests` passes 102/102; `python3 -B scripts/validate_python_binding_plan.py --full` passes; `--base-ref origin/master` maps all 17 gates with no unmapped paths or stale evidence. `--worktree --exclude-path build-linux-arm64/` reports no source changes beyond the plan receipt and excludes only the generated build directory. Hosted Linux/Windows/macOS, Snap, native/FUSE AppImage execution, and branch-protection acceptance remain open; this does not claim a PR or hosted result. |
 | 2026-10-11 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Regenerated the current-source AppImage and fixed the strict-smoke Python extension closure gap with explicit runtime libraries and a custom AppRun; added a packaging-contract regression | Ubuntu 26.04 x86_64 emulation packages the `33f54a6a` application build plus candidate packaging changes. The first strict smoke caught host-loaded `libssl.so.3`; linuxdeploy now explicitly stages `libssl.so.3`, `libcrypto.so.3`, `libsqlite3.so.0`, `libffi.so.8`, and `libz.so.1`, while `scripts/ubuntu-install/AppRun` prepends the AppDir library directories before launching LibreCAD. Candidate artifact SHA-256 `71314c615ca9628151fe89ce63da5488b7007cb12cb3fa68e86ee711d6609434`, size 58,386,936 bytes. Its actual type-2 launcher (`--appimage-extract-and-run`) passes under `qemu-x86_64`/Xvfb with poisoned Python paths and both strict bundled-runtime and extension-closure checks; CPython 3.14.4, two plugins, embedded imports, undo/redo, and DXF round-trip pass. Runtime smoke contract tests pass 21/21; all script tests pass 102/102. After finalizing the receipt, `validate_python_binding_plan.py --full` passes; `--worktree --exclude-path build-linux-arm64/` maps every changed path with no unmapped paths or stale evidence; `--base-ref origin/master` maps all 17 gates with no unmapped paths or stale evidence; Bash/sh syntax checks and `git diff --check` pass. This is emulated package evidence only, not native/hosted or FUSE-mounted acceptance. |
