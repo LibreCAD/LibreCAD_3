@@ -68,6 +68,11 @@ void dispatchToPlugin(const lc::scripting::ScriptCallback& callback,
 
 } // namespace
 
+LuaCustomEntityManager& LuaCustomEntityManager::getInstance() {
+    static LuaCustomEntityManager _instance;
+    return _instance;
+}
+
 LuaCustomEntityManager::LuaCustomEntityManager() {
     storage::DocumentList::getInstance().newWaitingCustomEntityEvent().connect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
 }

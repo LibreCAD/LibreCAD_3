@@ -30,6 +30,24 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
             encoding="utf-8"
         )
 
+    def assert_singleton_owned_by_library(self, stem, class_name):
+        header = (REPOSITORY_ROOT / (stem + ".h")).read_text(encoding="utf-8")
+        implementation = (REPOSITORY_ROOT / (stem + ".cpp")).read_text(encoding="utf-8")
+        self.assertIn(f"static {class_name}& getInstance();", header)
+        self.assertNotIn(f"static {class_name} _instance;", header)
+        self.assertIn(f"{class_name}& {class_name}::getInstance()", implementation)
+        self.assertIn(f"static {class_name} _instance;", implementation)
+
+    def test_document_registry_singleton_is_owned_by_kernel_dll(self):
+        self.assert_singleton_owned_by_library(
+            "lckernel/cad/storage/documentlist", "DocumentList"
+        )
+
+    def test_custom_entity_manager_singleton_is_owned_by_lua_dll(self):
+        self.assert_singleton_owned_by_library(
+            "lcadluascript/managers/luacustomentitymanager", "LuaCustomEntityManager"
+        )
+
     def test_installed_smoke_runs_between_deployment_and_nsis(self):
         script = self.package_script.lower()
         deployment = script.index("windeployqt --include-plugins qoffscreen librecad.exe")

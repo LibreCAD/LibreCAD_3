@@ -3,6 +3,11 @@
 using namespace lc;
 using namespace lc::storage;
 
+DocumentList& DocumentList::getInstance() {
+    static DocumentList _instance;
+    return _instance;
+}
+
 void DocumentList::addDocument(Document* document) {
     _documents.insert(document);
     document->newWaitingCustomEntityEvent().connect<DocumentList, &DocumentList::onNewWaitingCustomEntity>(this);

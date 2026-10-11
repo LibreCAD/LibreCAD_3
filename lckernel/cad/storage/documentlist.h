@@ -12,11 +12,8 @@ class DocumentList {
     friend class Document;
 
 public:
-    static DocumentList& getInstance() {
-        static DocumentList _instance;
-
-        return _instance;
-    }
+    // One registry owned by lckernel, not a header-local copy in each DLL.
+    static DocumentList& getInstance();
 
     DocumentList(DocumentList const&) = delete;
 
