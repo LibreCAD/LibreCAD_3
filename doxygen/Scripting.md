@@ -121,6 +121,18 @@ the embedded interpreter from that selected provider, ignores ambient
 `PYTHONHOME`/`PYTHONPATH`, and prefers an app-relative staged runtime when one
 is present. System/developer builds may use the configure-selected provider.
 
+All desktop installers place `lcUIPy`, the staged Python tree, and provider
+licenses together under `share/librecad` (macOS bundle assembly relocates this
+tree into Resources). Windows keeps its runtime DLL beside the executable in
+`bin`; its stdlib/extensions still use the common data layout. This keeps the
+runtime resolver and installed-package smoke consistent after relocation.
+
+Windows Conan builds select prebuilt shared Lua so states crossing the UI,
+binding and executable DLLs use one core. Lua 5.3's
+[version check](https://www.lua.org/source/5.3/lauxlib.c.html#luaL_checkversion_)
+rejects separate static cores even when their versions match. Dependencies
+still use `--build=never`; actual native Windows/NSIS acceptance remains open.
+
 Staged runtime trees intentionally exclude `site-packages` and `dist-packages`:
 third-party Python dependencies are not installed implicitly, and plugins are
 expected to use the standard library plus LibreCAD's shipped modules. Tk/IDLE,
@@ -154,8 +166,10 @@ in an unprivileged, offline, read-only Ubuntu 26.04 runtime container without
 system Python, libpython, or a Python SDK. The bounded smoke still requires
 bundled CPython and native extension dependencies; it complements the native
 FUSE-launcher check, not older-distribution compatibility. Initial native clean
-execution exposed missing HarfBuzz; the packager now explicitly stages it and
-its Graphite dependency, with rebuilt-artifact acceptance still pending.
+execution exposed missing HarfBuzz; explicit HarfBuzz/Graphite staging passes
+both native and SDK-free launcher smokes at `ab94eb1f`. The newer complete
+loadable-ELF audit and copied-extension dependencies still require rebuilt
+hosted AppImage/Snap acceptance.
 The inspected Linux candidate payload requires GLIBC 2.43
 and its executable declares x86-64-v3; compatibility with older glibc
 distributions or older x86_64 CPU baselines is not claimed.

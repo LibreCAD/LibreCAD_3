@@ -6,6 +6,12 @@ class LibreCAD3(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "CMakeDeps", "CMakeToolchain", "VirtualRunEnv"
 
+    def configure(self):
+        # Lua states cross DLL boundaries; separate static cores fail Lua 5.3's
+        # identity check even when their version numbers match.
+        if self.settings.os == "Windows":
+            self.options["lua"].shared = True
+
     def requirements(self):
         self.requires("boost/1.82.0")
         self.requires("eigen/3.4.0")

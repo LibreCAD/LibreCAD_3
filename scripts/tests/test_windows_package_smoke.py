@@ -1,10 +1,12 @@
-"""Guard the Windows package lane's installed Python smoke contract."""
+"""Guard Windows scripting providers and installed Python packaging."""
 
+import ast
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -47,6 +49,63 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         self.assert_singleton_owned_by_library(
             "lcadluascript/managers/luacustomentitymanager", "LuaCustomEntityManager"
         )
+
+    def test_windows_selects_one_shared_prebuilt_lua_provider(self):
+        recipe = next(node for node in ast.parse(self.conanfile).body
+                      if isinstance(node, ast.ClassDef) and node.name == "LibreCAD3")
+        configure = next((node for node in recipe.body
+                          if isinstance(node, ast.FunctionDef)
+                          and node.name == "configure"), None)
+        self.assertIsNotNone(configure, "Windows must select shared Lua across DLLs")
+        namespace = {}
+        module = ast.Module(body=[configure], type_ignores=[])
+        exec(compile(ast.fix_missing_locations(module), str(CONANFILE), "exec"),
+             namespace)
+        for operating_system in ("Windows", "Linux", "Macos"):
+            for initially_shared in (False, True):
+                with self.subTest(os=operating_system, initially_shared=initially_shared):
+                    lua_options = SimpleNamespace(shared=initially_shared)
+                    consumer = SimpleNamespace(
+                        settings=SimpleNamespace(os=operating_system),
+                        options={"lua": lua_options})
+                    namespace["configure"](consumer)
+                    self.assertEqual(True if operating_system == "Windows"
+                                     else initially_shared, lua_options.shared)
+        self.assertIn("--build=never", self.conan_script)
+        self.assertIn('"VirtualRunEnv"', self.conanfile)
+
+    @unittest.skipUnless(shutil.which("cmake"), "CMake install-layout fixture")
+    def test_msvc_python_package_installs_adjacent_to_runtime_and_license(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            source, build, prefix = root / "source", root / "build", root / "install Ω"
+            source.mkdir()
+            shutil.copytree(REPOSITORY_ROOT / "lcUIPy", source / "lcUIPy",
+                            ignore=shutil.ignore_patterns("__pycache__"))
+            (source / "CMakeLists.txt").write_text(
+                'cmake_minimum_required(VERSION 3.28)\n'
+                'project(PythonInstallLayout LANGUAGES NONE)\n'
+                'set(MSVC TRUE)\nset(WITH_PYTHONSCRIPT ON)\n'
+                'set(CMAKE_INSTALL_DATADIR share)\n'
+                'set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")\n'
+                'add_subdirectory(lcUIPy)\n', encoding="utf-8")
+            for command in (
+                ["cmake", "-S", str(source), "-B", str(build)],
+                ["cmake", "--install", str(build), "--prefix", str(prefix)],
+            ):
+                result = subprocess.run(command, text=True, capture_output=True,
+                                        timeout=30, check=False)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            package = prefix / "share/librecad/lcUIPy"
+            self.assertTrue((package / "__init__.py").is_file())
+            self.assertTrue((package / "_runtimeaudit.py").is_file())
+            self.assertFalse((prefix / "lcUIPy").exists())
+            python_cmake = (REPOSITORY_ROOT / "lcadpythonscript/CMakeLists.txt").read_text()
+            self.assertIn('${CMAKE_INSTALL_DATADIR}/librecad/python', python_cmake)
+            self.assertIn('${CMAKE_INSTALL_DATADIR}/librecad/licenses/python', python_cmake)
+            smoke = (REPOSITORY_ROOT / "lcUI/python/pyruntimesmoke.cpp").read_text()
+            self.assertIn('packageDirectory.filePath("python")', smoke)
+            self.assertIn('"licenses/python/LICENSE.txt"', smoke)
 
     def test_installed_smoke_runs_between_deployment_and_nsis(self):
         script = self.package_script.lower()
