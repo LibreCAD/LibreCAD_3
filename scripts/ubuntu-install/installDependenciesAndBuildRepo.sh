@@ -23,7 +23,7 @@ sudo apt install -y -qq cmake qt6-base-dev qt6-tools-dev qt6-tools-dev-tools lib
 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-all-dev libboost-program-options-dev \
 qt6-svg-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev \
 libbz2-dev libglfw3-dev libglm-dev libfltk1.3-dev doxygen mkdocs freeglut3-dev fuse \
-python3-dev python3 xvfb patchelf
+python3-dev python3 xvfb patchelf libreadline8t64 libgdbm6t64 libtcl8.6 libtk8.6 libxft2 libxss1
 
 #This is for versions older that 20.04, like ubuntu 18.04
 

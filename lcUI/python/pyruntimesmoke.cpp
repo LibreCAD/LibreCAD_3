@@ -203,11 +203,20 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
     else:
         raise AssertionError(
             f"bundled-libpython verification is unsupported on {sys.platform}")
+_elf_diagnostics = ""
+if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":
+    assert sys.platform.startswith("linux") and expected_staged_python_root and \
+        os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1", \
+        "full ELF closure requires an installed glibc/Linux package"
+    from lcUIPy._runtimeaudit import audit_elf_closure
+    _elf_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
+    _elf_count = audit_elf_closure(_elf_root)
+    _elf_diagnostics = f"; full payload ELF closure: {_elf_count} distinct files"
 import lcgui
 assert hasattr(lcgui, 'MainWindow'), "embedded lcgui module lacks MainWindow"
 runtime_diagnostics = (
     f"Python runtime: version={sys.version.split()[0]}, prefix={sys.prefix}; "
-    f"lcUIPy={_package_file}; module search paths={sys.path}"
+    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}"
 )
 )py";
         const std::string importError = python.runString(importsAndProviderCheck.c_str(), ns);

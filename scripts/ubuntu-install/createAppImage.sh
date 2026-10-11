@@ -37,6 +37,12 @@ VERSION="$(git describe)" \
 --library=/usr/lib/x86_64-linux-gnu/libz.so.1 \
 --library=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0 \
 --library=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3 \
+--library=/usr/lib/x86_64-linux-gnu/libreadline.so.8 \
+--library=/usr/lib/x86_64-linux-gnu/libgdbm.so.6 \
+--library=/usr/lib/x86_64-linux-gnu/libtcl8.6.so \
+--library=/usr/lib/x86_64-linux-gnu/libtk8.6.so \
+--library=/usr/lib/x86_64-linux-gnu/libXft.so.2 \
+--library=/usr/lib/x86_64-linux-gnu/libXss.so.1 \
 --output appimage \
 --executable AppDir/usr/bin/librecad \
 --desktop-file AppDir/librecad.desktop \

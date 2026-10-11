@@ -127,6 +127,18 @@ expected to use the standard library plus LibreCAD's shipped modules. Tk/IDLE,
 `pip` inside LibreCAD, multiprocessing, and script sandboxing are not supported
 by this embedded-runtime contract. Plugins are trusted code.
 
+Linux artifact validation also checks every distinct loadable ELF file in the
+package, including Python and Qt extensions not used by the startup smoke.
+It uses the running glibc loader with the launcher's actual library paths and
+namespace; Snap includes its base/content providers. This check has a total
+120-second inspection budget and rejects missing dependencies, inspector
+failures, malformed files, escaped ELF symlinks and empty inventories. CPython
+relocatable build objects are not runtime libraries. It does not prove arbitrary
+`dlopen` paths, all module behavior, dependency-license completeness, or older
+OS/CPU compatibility. Copied Tk binaries have their native dependencies staged;
+that does not make Tk/IDLE a supported scripting interface. Rebuilt hosted
+AppImage and Snap acceptance is still required.
+
 macOS bundles declare `LSMinimumSystemVersion` from the highest deployment
 target in the shipped application, Python, Qt, and other native libraries,
 including every Mach-O architecture slice. The packager preserves a higher

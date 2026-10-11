@@ -38,6 +38,7 @@ class CleanAppImageRuntimeTests(unittest.TestCase):
             'test "$PYTHONPATH" = /__librecad_python_poison__\n'
             'test "$LIBRECAD_REQUIRE_BUNDLED_PYTHON" = 1\n'
             'test "$LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE" = 1\n'
+            'test "$LIBRECAD_REQUIRE_FULL_ELF_CLOSURE" = 1\n'
             'test "$QT_QPA_PLATFORM" = xcb\n'
             'test -z "${QT_PLUGIN_PATH:-}${QT_QPA_PLATFORM_PLUGIN_PATH:-}${LD_LIBRARY_PATH:-}${LD_PRELOAD:-}"\n'
             'printf "fixture launcher passed\\n"\n', encoding="utf-8",

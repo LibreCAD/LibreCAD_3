@@ -107,11 +107,12 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp
-          xvfb-run -a env QT_QPA_PLATFORM=xcb \
+          timeout --kill-after=10s 180s xvfb-run -a env QT_QPA_PLATFORM=xcb \
             PYTHONHOME=/__librecad_python_poison__ \
             PYTHONPATH=/__librecad_python_poison__ \
             LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
-            snap run librecad --python-smoke
+            LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1 \
+            snap run librecad --python-smoke 2>&1 | tee "$GITHUB_WORKSPACE/build/snap-elf-runtime-smoke.log"
 
       # if: always(): a later, unrelated createSnap.sh failure was otherwise
       # skipping this upload of an AppImage that had already built fine.
@@ -136,6 +137,7 @@ jobs:
             ${{ github.workspace }}/librecad**snap
             ${{ github.workspace }}/build/snap-python-runtime-inventory.txt
             ${{ github.workspace }}/build/snap-runtime-identity.txt
+            ${{ github.workspace }}/build/snap-elf-runtime-smoke.log
           name: LibreCAD3.snap
           retention-days: 2
 

@@ -5,12 +5,15 @@ import ctypes
 import os
 import pathlib
 import subprocess
+import tempfile
 import textwrap
 import unittest
 from pathlib import Path
 from pathlib import PurePosixPath
 from types import SimpleNamespace
 from unittest.mock import patch
+
+from lcUIPy._runtimeaudit import _glibc_loader, audit_elf_closure
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -466,3 +469,118 @@ echo 'continued to install'
                 ),
                 require_extension_closure=True,
             )
+
+
+class FullElfClosureTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve() / "runtime Ω" / "usr"
+        self.root.mkdir(parents=True)
+        self.loader = Path(temporary.name) / "ld-linux-fixture.so"
+        loader_patch = patch("lcUIPy._runtimeaudit._glibc_loader", return_value=self.loader)
+        loader_patch.start()
+        self.addCleanup(loader_patch.stop)
+        run_patch = patch("lcUIPy._runtimeaudit.subprocess.run", return_value=SimpleNamespace(
+            returncode=0, stdout="libc.so.6 => /usr/lib/libc.so.6\n"))
+        self.run = run_patch.start()
+        self.addCleanup(run_patch.stop)
+
+    def elf(self, name="extension.so"):
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"\x7fELF\x02\x01\x01" + b"\0" * 9 + b"\x03\0\x3e\0" + b"\0" * 44)
+        return path
+
+    def test_every_elf_is_checked_by_header_with_direct_loader_arguments(self):
+        first = self.elf("lib/python/extension.so")
+        second = self.elf("bin/executable Ω")
+        (self.root / "not-an-elf.so").write_text("ordinary data", encoding="utf-8")
+        self.assertEqual(2, audit_elf_closure(self.root))
+        self.assertEqual(2, self.run.call_count)
+        self.assertEqual({str(first), str(second)}, {
+            call.args[0][2] for call in self.run.call_args_list})
+        for call in self.run.call_args_list:
+            self.assertEqual([str(self.loader), "--list"], call.args[0][:2])
+            self.assertLessEqual(call.kwargs["timeout"], 15)
+            self.assertFalse(call.kwargs.get("shell", False))
+            self.assertNotIn("env", call.kwargs)  # Preserve launcher/base/content paths.
+
+    def test_missing_dependency_or_inspector_failure_rejects_the_payload(self):
+        self.elf()
+        for status, output in ((0, "libmissing.so => not found"), (127, "loader failure")):
+            with self.subTest(status=status):
+                self.run.return_value = SimpleNamespace(returncode=status, stdout=output)
+                with self.assertRaisesRegex(RuntimeError, "unresolved ELF closure for extension.so"):
+                    audit_elf_closure(self.root)
+
+    def test_empty_payload_cannot_pass(self):
+        with self.assertRaisesRegex(RuntimeError, "zero payload ELF"):
+            audit_elf_closure(self.root)
+        self.run.assert_not_called()
+
+    def test_relocatable_objects_are_not_loaded_and_malformed_elf_fails(self):
+        self.elf()
+        obj = self.elf("config/python.o")
+        header = bytearray(obj.read_bytes())
+        header[16:18] = b"\x01\0"  # ET_REL, not a runtime executable/library.
+        obj.write_bytes(header)
+        self.assertEqual(1, audit_elf_closure(self.root))
+        (self.root / "malformed.so").write_bytes(b"\x7fELF")
+        with self.assertRaisesRegex(RuntimeError, "invalid ELF header"):
+            audit_elf_closure(self.root)
+
+    def test_inspector_timeout_and_missing_loader_fail_with_binary_diagnostic(self):
+        self.elf()
+        for error in (subprocess.TimeoutExpired("loader", 15), FileNotFoundError("loader")):
+            with self.subTest(error=error):
+                self.run.side_effect = error
+                with self.assertRaisesRegex(RuntimeError, "inspection failed for .*extension.so"):
+                    audit_elf_closure(self.root)
+
+    def test_total_deadline_and_invalid_budget_fail_closed(self):
+        self.elf()
+        with patch("lcUIPy._runtimeaudit.time.monotonic", side_effect=(0, 121)):
+            with self.assertRaisesRegex(RuntimeError, "total time limit"):
+                audit_elf_closure(self.root)
+        with self.assertRaisesRegex(ValueError, "timeout must be positive"):
+            audit_elf_closure(self.root, timeout_seconds=0)
+        self.run.assert_not_called()
+
+    @unittest.skipUnless(os.name == "posix", "POSIX payload symlinks")
+    def test_internal_alias_is_deduplicated_and_escaped_elf_is_rejected(self):
+        target = self.elf()
+        (self.root / "alias.so").symlink_to(target.name)
+        self.assertEqual(1, audit_elf_closure(self.root))
+        outside = self.root.parent / "outside.so"
+        outside.write_bytes(target.read_bytes())
+        (self.root / "escaped.so").symlink_to(outside)
+        with self.assertRaisesRegex(RuntimeError, "ELF symlink escapes prefix"):
+            audit_elf_closure(self.root)
+
+    def test_mapped_loader_discovery_requires_one_distinct_glibc_provider(self):
+        mapping = "100-200 r-xp 0000 00:00 1 /runtime/ld-linux-x86-64.so.2\n"
+        with patch.object(Path, "read_text", return_value=mapping * 2):
+            self.assertEqual(Path("/runtime/ld-linux-x86-64.so.2").resolve(), _glibc_loader())
+        for maps in ("", mapping + mapping.replace("/runtime/", "/other/")):
+            with patch.object(Path, "read_text", return_value=maps):
+                with self.assertRaisesRegex(RuntimeError, "exactly one mapped glibc loader"):
+                    _glibc_loader()
+
+    def test_actual_package_smokes_require_full_closure_and_prebuilt_dependencies(self):
+        runtime = (REPOSITORY_ROOT / "lcUI/python/pyruntimesmoke.cpp").read_text()
+        clean = (REPOSITORY_ROOT / "scripts/ubuntu-install/smokeAppImageRuntime.sh").read_text()
+        workflow = (REPOSITORY_ROOT / ".github/workflows/main.yml").read_text()
+        snap = workflow.split("- name: Smoke installed snap Python runtime", 1)[1].split("# if: always()", 1)[0]
+        self.assertIn("from lcUIPy._runtimeaudit import audit_elf_closure", runtime)
+        self.assertIn("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1", clean)
+        self.assertIn("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1", snap)
+        self.assertIn("timeout --kill-after=10s 180s", snap)
+        self.assertIn("snap-elf-runtime-smoke.log", snap)
+        appimage = (REPOSITORY_ROOT / "scripts/ubuntu-install/createAppImage.sh").read_text()
+        for library in ("libreadline.so.8", "libgdbm.so.6", "libtcl8.6.so", "libtk8.6.so", "libXft.so.2", "libXss.so.1"):
+            self.assertIn("--library=/usr/lib/x86_64-linux-gnu/" + library, appimage)
+        recipe = (REPOSITORY_ROOT / "snapcraft.yaml").read_text()
+        stage = recipe.split("    stage-packages:", 1)[1].split("    cmake-parameters:", 1)[0]
+        for package in ("libreadline8t64", "libtcl8.6", "libtk8.6", "libxft2", "libxss1"):
+            self.assertIn("      - " + package + "\n", stage)

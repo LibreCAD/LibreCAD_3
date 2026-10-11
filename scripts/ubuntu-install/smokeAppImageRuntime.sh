@@ -43,5 +43,6 @@ timeout --kill-after=10s 180s xvfb-run -a env -u QT_PLUGIN_PATH -u QT_QPA_PLATFO
     PYTHONPATH=/__librecad_python_poison__ \
     LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
     LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE=1 \
+    LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1 \
     LIBRECAD_SETTINGS_DIR="$runtime_dir/settings" \
     "$runtime_dir/LibreCAD.AppImage" --appimage-extract-and-run --python-smoke

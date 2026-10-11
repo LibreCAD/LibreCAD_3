@@ -72,11 +72,9 @@ parts:
       - libglm-dev
       - cmake
     stage-packages:
-      # Runtime packages, not the -dev ones that were here before. These are
-      # exactly the packages that own the libraries linuxdeploy copies into the
-      # AppImage when it walks this binary's dependencies, which is the only
-      # list that is known to be complete -- the snap's own missing-library
-      # lint never ran, because the pack died before staging.
+      # Runtime packages, not -dev SDKs. Closure must be checked independently
+      # of AppImage:
+      # startup smoke does not load every copied Python or Qt extension.
       #
       # Under devmode the process still runs in the snap's own mount namespace,
       # so a library named here and nowhere else is simply absent: the snap
@@ -112,6 +110,13 @@ parts:
       # staged SVG loader even when app smoke does not load them.
       - libgdbm6t64
       - libxml2-16
+      # Keep copied stdlib ELF files resolvable even for unsupported Tk/IDLE;
+      # staging dependencies does not promote those interfaces to supported.
+      - libreadline8t64
+      - libtcl8.6
+      - libtk8.6
+      - libxft2
+      - libxss1
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
