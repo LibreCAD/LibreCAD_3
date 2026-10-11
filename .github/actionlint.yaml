@@ -1,0 +1,6 @@
+# These GitHub-hosted labels are verified in the runner reference. The
+# locally installed actionlint runner catalog has not caught up yet.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - ubuntu-26.04-arm

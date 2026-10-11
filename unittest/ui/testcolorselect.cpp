@@ -4,7 +4,7 @@
 #include <widgets/colorselect.h>
 
 TEST(ColorSelectTest, Selection) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::widgets::ColorSelect colorSelect(nullptr, 0, false, false);
     lc::ui::widgets::ColorSelect colorSelect_ByBlock_ByLayer(nullptr, 0, true, true);
     auto nbColors = QColor::colorNames().size();
@@ -37,7 +37,7 @@ TEST(ColorSelectTest, Selection) {
 }
 
 TEST(ColorSelectTest, CustomColor) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::widgets::ColorSelect colorSelect(nullptr, 0, false, false);
     lc::Color lcColor(1, 2, 3, 4);
     lc::meta::MetaColorByValue lcMetaColor(lcColor);

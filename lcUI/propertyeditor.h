@@ -18,6 +18,8 @@ class PropertyEditor : public QDockWidget, public api::InputGUIContainer
     Q_OBJECT
 
 public:
+    ~PropertyEditor() override;
+
     /**
     * \brief Return the property editor instance (create if does not exist)
     * \param pointer to MainWindow

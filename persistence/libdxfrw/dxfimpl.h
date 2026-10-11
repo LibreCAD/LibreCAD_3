@@ -44,7 +44,11 @@ public:
     DXFimpl(std::shared_ptr<lc::storage::Document> document) : _document(document) {}
 
     // READ FUNCTIONALITY
-    void addHeader(const DRW_Header* data) override {}
+    void addHeader(const DRW_Header* data) override;
+
+    const std::string& acadVersion() const {
+        return _acadVersion;
+    }
 
     void addDimStyle(const DRW_Dimstyle& data) override {}
 
@@ -242,6 +246,8 @@ public:
     lc::meta::Block_SPtr _currentBlock;
 
 private:
+    std::string _acadVersion;
+
     /**
     * Return the MetaInfo object from a DRW_Entity.
     * This is useful because most/all entities will share the same basic properties
@@ -268,7 +274,7 @@ private:
     lc::iColor icol;
 
     std::vector<DRW_Image> imageMapCache;
-    //std::map<std::string, lc::meta::Block_CSPtr> _blocks;
+    std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;
 
     const static std::map<int, lc::Units> _dxfToLCUnits;

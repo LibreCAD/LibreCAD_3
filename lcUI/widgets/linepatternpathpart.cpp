@@ -38,7 +38,8 @@ LinePatternPathPart::LinePatternPathPart(double value, QWidget* parent) :
         ui->type->setCurrentIndex(typeIndex);
     }
 
-    connect(ui->type, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(onTypeChanged(const QString&)));
+    connect(ui->type, &QComboBox::currentTextChanged,
+            this, &LinePatternPathPart::onTypeChanged);
     connect(ui->value, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
 }
 

@@ -74,19 +74,9 @@ public:
      *   - CliCommand::addCommand (str + dict command_line forms),
      *   - MainWindow::connectMenuItem (menu_actions dict),
      *   - Toolbar::addButton (icon + description → tooltip),
+     *   - MainWindow::addOperationOptions (default and `_init_*`
+     *     operation-option dictionaries with module-relative icons),
      *   - ContextMenuManager::addOperation + addTransition.
-     *
-     * DEFERRED (fixup — matched sub-plan's phase-5 wiring list but
-     * not yet in scope for this slice):
-     *   - `operation_options` toolbar-option-icon binding (Lua sibling
-     *     is OperationLoader::addOperationToolbarOptions).  Needs the
-     *     same nested-lambda `mainWindow:toolbar():addButton(...,
-     *     function() luaInterface:operation():<action>() end, ...)`
-     *     factory shape phase-4 PR-7 built for Lua; landing here
-     *     requires the same shape ported to Python + a way to invoke
-     *     a named method on `MainWindow::currentOperation()` — which
-     *     is a Python ScriptObject now.  Tracked as a follow-up
-     *     alongside PR-5.6's gui.* bindings expansion.
      *
      * Also pushes a Python-registry resolver onto MainWindow's ordered
      * resolver list (phase 4 PR-7) so `MainWindow::runOperationByName(

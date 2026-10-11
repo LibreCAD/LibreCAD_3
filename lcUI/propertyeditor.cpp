@@ -57,6 +57,10 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     this->setTitleBarWidget(titleBar);
 }
 
+PropertyEditor::~PropertyEditor() {
+    instances.erase(mainWindow);
+}
+
 PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow) {
     if (instances.find(mainWindow) == instances.end()) {
         instances[mainWindow] = new PropertyEditor(mainWindow);
@@ -143,8 +147,22 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     // typed values via ScriptValue accessors.  The vector case reads back
     // the nested Map that ListGUI writes under `key` (aliasing preserved
     // — see listgui.cpp) and pulls out its Coordinate children.
+    auto widgetEntity = _widgetKeyToEntity.find(key);
+    if (widgetEntity == _widgetKeyToEntity.end() || mainWindow == nullptr ||
+        mainWindow->cadMdiChild() == nullptr) {
+        return;
+    }
+
     auto propertiesTable = generateInfo();
-    lc::entity::CADEntity_CSPtr entity = mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]);
+    if (!propertiesTable || propertiesTable->find(key) == propertiesTable->end()) {
+        return;
+    }
+
+    lc::entity::CADEntity_CSPtr entity =
+        mainWindow->cadMdiChild()->storageManager()->entityByID(widgetEntity->second);
+    if (entity == nullptr) {
+        return;
+    }
 
     std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
 

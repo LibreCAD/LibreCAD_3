@@ -52,8 +52,7 @@ set(lcluascript_hdrs
 )
 
 # Phase 2 slice 2.6 — persistence bindings (mirror of the Python side).
-# Same gating as lcadpythonscript: WITH_PERSISTENCE at the root defines
-# USE_PERSISTENCE=1 which the TU checks with `#if`.
+# The root establishes LC_USE_PERSISTENCE before configuring this target.
 if(WITH_PERSISTENCE)
     list(APPEND lcluascript_srcs bridge/lc_persistence.cpp)
     list(APPEND lcluascript_hdrs bridge/lc_persistence.h)
@@ -107,6 +106,8 @@ else()
 endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
+target_compile_definitions(lcluascript PRIVATE
+    USE_PERSISTENCE=${LC_USE_PERSISTENCE})
 target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel lcscripting)
 
 if(WITH_PERSISTENCE)
@@ -120,6 +121,8 @@ endif()
 
 # INSTALLATION
 install(TARGETS lcluascript 
+	${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
 	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )

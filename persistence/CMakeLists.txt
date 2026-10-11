@@ -68,7 +68,7 @@ if(WITH_LIBOPENCAD)
 	add_definitions(-DLIBOPENCAD_ENABLED)
 endif()
 
-if (MSVC)
+if (MSVC AND libdxfrw_INCLUDE_DIR)
     include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
 endif()
 # DEBUGGING PATHS
@@ -79,6 +79,8 @@ target_link_libraries(persistence lckernel ${Boost_LIBRARIES} libdxfrw::libdxfrw
 
 # INSTALLATION
 install(TARGETS persistence
+        ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )

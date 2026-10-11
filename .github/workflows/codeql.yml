@@ -74,9 +74,13 @@ jobs:
       if: matrix.language == 'cpp'
       run: |
         git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw "$RUNNER_TEMP/libdxfrw"
+        git -C "$RUNNER_TEMP/libdxfrw" checkout --detach f7debf4c5f30734a70c5e828cf05247aabc2d04b
+        bash "$GITHUB_WORKSPACE/scripts/patch-libdxfrw.sh" "$RUNNER_TEMP/libdxfrw"
         mkdir -p "$RUNNER_TEMP/libdxfrw/release"
         pushd "$RUNNER_TEMP/libdxfrw/release"
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+          -DCMAKE_CXX_FLAGS=-Wno-error=misleading-indentation \
+          -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
         make -j 4
         echo "installing dxfrw"
         sudo make install

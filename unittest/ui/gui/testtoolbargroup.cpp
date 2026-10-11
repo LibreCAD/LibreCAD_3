@@ -12,7 +12,7 @@ using namespace lc::ui::widgets;
 using namespace lc::ui::api;
 
 TEST(ToolbarGroupTest, LabelAndInitTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
     ToolbarTab* testtab = toolbar.addTab("TestTab");
 
@@ -31,7 +31,7 @@ TEST(ToolbarGroupTest, LabelAndInitTest) {
 }
 
 TEST(ToolbarGroupTest, ButtonTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
     ToolbarTab* testtab = toolbar.addTab("TestTab");
     ToolbarGroup* testgroup = testtab->addGroup("TestGroup");
@@ -56,7 +56,7 @@ TEST(ToolbarGroupTest, ButtonTest) {
 }
 
 TEST(ToolbarGroupTest, RemoveTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
     ToolbarTab* testtab = toolbar.addTab("TestTab");
     ToolbarGroup* testgroup = testtab->addGroup("TestGroup");

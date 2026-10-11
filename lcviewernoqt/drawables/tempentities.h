@@ -21,6 +21,8 @@ public:
      */
     TempEntities(DocumentCanvas_SPtr docCanvas);
 
+    virtual ~TempEntities() = default;
+
     /**
      * \brief Add a new entity to the container
      * \param entity Entity to add

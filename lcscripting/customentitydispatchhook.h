@@ -5,31 +5,29 @@
 //
 // Rationale: the 6 script-defined behavior slots on `ScriptCustomEntity`
 // (snap / nearestPoint / dragPoints / newDragPoint / dragPointClick /
-// dragPointRelease) need CONCRETE-TYPE preservation for Lua callbacks
-// (see the sub-piece 1 fixup and sub-piece 2a's dispatch pattern).
-// The concrete-type-preserving path uses kaguya's static template
-// deduction — which requires including kaguya's headers.  But
-// `lcscripting` (which owns the ScriptCustomEntity + CustomEntityBuilder
-// classes as of PR-6.1 sub-piece 2b's physical move) MUST NOT depend
-// on kaguya or Lua per the phase-4 layering constraint (lcscripting sits
-// below the language adapters).
+// dragPointRelease) need concrete argument/result preservation for language
+// callbacks. Lua originally required this to preserve Insert's userdata type;
+// Python also needs it for snap constraints, Builder transactions, and typed
+// snap/drag results. Runtime headers stay in adapter implementations;
+// `lcscripting` (which owns ScriptCustomEntity + CustomEntityBuilder) MUST NOT
+// depend on kaguya, Lua, or pybind11.
 //
 // Solution: `lcscripting` defines this abstract interface with one
 // method per dispatch site.  Each dispatch method on `ScriptCustomEntity`
 // asks the installed hook to try the fast path FIRST; if the hook
 // returns false, falls through to the neutral ScriptValue-based
-// `callback.invoke(...)` path (which fires native/Python callbacks
-// correctly per the sub-piece 2a fixup).
+// `callback.invoke(...)` path for callbacks whose values are representable
+// there (notably native callbacks).
 //
 // `lcadluascript` provides `LuaCustomEntityDispatchHook`
 // (`scriptadapter/customentitydispatch_lua.{h,cpp}`) — an implementation
 // that uses `unwrapLuaCallback` + `luaRef.call<T>()` for the Lua fast
 // path.  Installation happens at `LCLua` construction time via
-// `setCustomEntityDispatchHook()`.
+// `setCustomEntityDispatchHook()`. `lcadpythonscript` provides the analogous
+// typed hook and installs it during Python interpreter initialization.
 //
-// Pattern reference: this mirrors `lc::python::setRegisterPluginHook`
-// from PR-6.1 sub-piece 1 (Python `lc.register_plugin` implemented as a
-// hook slot in `lcadpythonscript`, installed by lcUI at initLua time).
+// The registry stays below both adapters and contains no runtime-specific
+// implementation; each adapter installs its own hook when its runtime starts.
 
 #include "scriptcallback.h"
 
@@ -39,6 +37,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 // Forward-declare kernel types the hook methods reference by pointer.
@@ -55,10 +54,9 @@ using Builder_SPtr = std::shared_ptr<Builder>;
 namespace lc {
 namespace scripting {
 
-/// Abstract interface implemented by language adapters (Lua today;
-/// Python could add its own equivalent when concrete-type preservation
-/// matters — though py::cast's RTTI-based polymorphic downcast handles
-/// most cases for free).
+/// Abstract interface implemented by language adapters. Hooks are selected
+/// by callback runtime so registering Lua cannot replace Python (or vice
+/// versa).
 ///
 /// Every method returns `bool`:
 ///   * `true`  — the hook fired the callback; `out` populated for
@@ -70,6 +68,9 @@ namespace scripting {
 class CustomEntityDispatchHook {
 public:
     virtual ~CustomEntityDispatchHook() = default;
+
+    /// Stable callback runtime key, e.g. "lua" or "python".
+    virtual const char* runtime() const = 0;
 
     virtual bool trySnapPoints(
         const ScriptCallback& callback,
@@ -108,17 +109,22 @@ public:
         lc::operation::Builder_SPtr builder) = 0;
 };
 
-/// Install the process-global hook.  Later installations OVERWRITE
-/// earlier ones (matches the `setRegisterPluginHook` / `setEventRegisterHook`
-/// policy from sub-piece 1 — one hook per process; adapters can
-/// coordinate multi-language cases in their own logic).  Passing a
-/// null shared_ptr clears the hook (falls back to neutral dispatch
-/// only).
+/// Install or replace the hook for its runtime. Repeated installation is
+/// idempotent and leaves hooks for other runtimes untouched. Null hooks are
+/// ignored; use clearCustomEntityDispatchHook for explicit removal.
 void setCustomEntityDispatchHook(std::shared_ptr<CustomEntityDispatchHook> hook);
 
-/// Query the currently-installed hook.  Returns a null shared_ptr if
-/// none is installed (headless mode / Lua adapter not linked).
-std::shared_ptr<CustomEntityDispatchHook> customEntityDispatchHook();
+/// Remove one runtime's hook. Intended for adapter teardown/tests.
+void clearCustomEntityDispatchHook(const std::string& runtime);
+
+/// Find the hook that owns this callback. Returns null for nil callbacks or
+/// when that runtime's adapter has not been installed.
+std::shared_ptr<CustomEntityDispatchHook> customEntityDispatchHook(
+    const ScriptCallback& callback);
+
+/// Runtime-keyed lookup for adapter tests and explicit adapter management.
+std::shared_ptr<CustomEntityDispatchHook> customEntityDispatchHook(
+    const std::string& runtime);
 
 } // namespace scripting
 } // namespace lc

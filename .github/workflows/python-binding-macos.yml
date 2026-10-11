@@ -1,0 +1,166 @@
+name: Python binding macOS
+'on':
+  workflow_dispatch: null
+  push:
+    branches:
+      - main
+      - master
+      - ci_dev
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: Python / Lua / app bundle (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install native dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install cmake boost eigen freetype glew glfw glm googletest lua@5.4 rapidjson qt python@3.14
+          qt_root="$(brew --prefix qt)"
+          lua_root="$(brew --prefix lua@5.4)"
+          python_root="$(brew --prefix python@3.14)"
+          {
+            echo "QT_ROOT_DIR=$qt_root"
+            echo "LUA_INCLUDE_DIR=$lua_root/include/lua5.4"
+            echo "LUA_LIBRARY=$lua_root/lib/liblua.dylib"
+            echo "PYTHON_ROOT_DIR=$python_root"
+            echo "PYTHON_EXECUTABLE=$python_root/bin/python3.14"
+          } >> "$GITHUB_ENV"
+          {
+            echo "$qt_root/bin"
+            echo "$python_root/bin"
+          } >> "$GITHUB_PATH"
+
+      - name: Test embedded Python provider guard
+        shell: bash
+        run: |
+          "$PYTHON_EXECUTABLE" -m unittest \
+            scripts.tests.test_validate_python_provider \
+            scripts.tests.test_runtime_smoke_contract -v
+
+      - name: Build the pinned, patched libdxfrw
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/libdxfrw-source"
+          prefix="$RUNNER_TEMP/libdxfrw-install"
+          git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw "$source_dir"
+          git -C "$source_dir" checkout --detach f7debf4c5f30734a70c5e828cf05247aabc2d04b
+          bash scripts/patch-libdxfrw.sh "$source_dir"
+          cmake -S "$source_dir" -B "$source_dir/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_INSTALL_PREFIX="$prefix" \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DBUILD_SHARED_LIBS=ON
+          cmake --build "$source_dir/build" --parallel 3
+          cmake --install "$source_dir/build"
+          {
+            echo "LIBDXFRW_INCLUDE_DIR=$prefix/include/libdxfrw"
+            echo "LIBDXFRW_LIBRARY=$prefix/lib/libdxfrw.dylib"
+            echo "BREW_PREFIX=$(brew --prefix)"
+          } >> "$GITHUB_ENV"
+
+      - name: Configure Python-enabled LibreCAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/LibreCAD install Ω" \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR;$BREW_PREFIX" \
+            -DPython_ROOT_DIR="$PYTHON_ROOT_DIR" \
+            -DPython_EXECUTABLE="$PYTHON_EXECUTABLE" \
+            -DLUA_INCLUDE_DIR="$LUA_INCLUDE_DIR" \
+            -DLUA_LIBRARY="$LUA_LIBRARY" \
+            -DLIBDXFRW_INCLUDE_DIR="$LIBDXFRW_INCLUDE_DIR" \
+            -DLIBDXFRW_LIBRARY="$LIBDXFRW_LIBRARY" \
+            -DWITH_PYTHONSCRIPT=ON \
+            -DWITH_PERSISTENCE=ON \
+            -DWITH_UNITTESTS=ON \
+            -DWITH_RENDERING_UNITTESTS=OFF
+
+      - name: Validate selected macOS Python provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/python-runtime-inventory.txt
+          "$PYTHON_EXECUTABLE" scripts/validate_python_provider.py \
+            --inventory build/python-runtime-inventory.txt
+
+      - name: Upload macOS Python runtime inventory
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-runtime-inventory-macos-${{ matrix.arch }}
+          path: build/python-runtime-inventory.txt
+          if-no-files-found: ignore
+
+      - name: Build application and tests
+        run: cmake --build build --target tinyspline librecad lcunittest --parallel 3
+
+      - name: Run required non-rendering test suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_binary="$GITHUB_WORKSPACE/build/bin/lcunittest"
+          QT_QPA_PLATFORM=offscreen "$PYTHON_EXECUTABLE" \
+            scripts/run_required_gtests.py \
+            --binary "$test_binary" \
+            --filter=-RenderingTest.*
+
+      - name: Install LibreCAD
+        shell: bash
+        run: cmake --install build
+
+      - name: Create and smoke the relocated app bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          install_prefix="$RUNNER_TEMP/LibreCAD install Ω"
+          app="$RUNNER_TEMP/LibreCAD.app"
+          relocated_app="$RUNNER_TEMP/LibreCAD relocated Ω.app"
+          settings="$RUNNER_TEMP/LibreCAD settings Ω"
+          scripts/macos-install/createBundle.sh "$install_prefix" "$app"
+          poison=/__librecad_python_environment_must_not_be_used__
+          env QT_QPA_PLATFORM=offscreen \
+            PYTHONHOME="$poison" \
+            PYTHONPATH="$poison" \
+            QT_PLUGIN_PATH="$poison" \
+            DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_SETTINGS_DIR="$settings" \
+            "$app/Contents/MacOS/librecad" --python-smoke
+          ditto "$app" "$relocated_app"
+          codesign --verify --deep --strict "$relocated_app"
+          env QT_QPA_PLATFORM=offscreen \
+            PYTHONHOME="$poison" \
+            PYTHONPATH="$poison" \
+            QT_PLUGIN_PATH="$poison" \
+            DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_SETTINGS_DIR="$settings" \
+            "$relocated_app/Contents/MacOS/librecad" --python-smoke
+
+      - name: Reject a missing bundled Python runtime
+        shell: bash
+        run: scripts/macos-install/testMissingPythonRuntime.sh "$RUNNER_TEMP/LibreCAD.app"

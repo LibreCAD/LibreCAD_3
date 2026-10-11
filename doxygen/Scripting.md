@@ -2,12 +2,10 @@ Scripting (Lua + Python)
 ========================
 
 LibreCAD 3 embeds two scripting languages simultaneously: Lua (historical,
-retained), and Python (phase 5 addition).  Both are backed by the same
-C++-side neutral scripting layer (`lcscripting`), so **operations,
-event listeners, and plugins written in one language interoperate with
-the other with zero glue code** — they share the EventBus, the
-operation registry, the custom-entity plugin slots, and the CLI/menu/
-toolbar dispatch.
+retained) and Python. Both use the C++ neutral scripting layer (`lcscripting`)
+for callback values, event dispatch, and custom-entity hooks. Language-specific
+adapters still handle registration and value conversion; sharing kernel types
+does not by itself guarantee API or behavioral parity.
 
 For quick-start authoring examples see `lcUILua/` (Lua) and `lcUIPy/`
 (Python).  This document is the architecture reference.
@@ -51,12 +49,62 @@ Architecture
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Namespaces are 1:1 between the two languages by design.  Both expose
-`lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`,
-`lc.meta.*`, `lc.storage.*`, `lc.event.*`, `lc.maths.*`.  The GUI
-surface is exposed as `gui` (Lua) or `lcgui` (Python — a Python module
-can't be named `gui` alone under `import` without a namespace clash
-with the `gui` global in some workflows).
+### Capability and validation status
+
+This is the bounded Python surface maintained by the current implementation;
+“implemented” means there is a binding and focused local regression coverage,
+not that every C++ method is exposed or every platform artifact has passed.
+
+| Area | Python entry point | Current evidence | Status |
+|---|---|---|---|
+| Namespace registration | `lc.entity`, `lc.builder`, `lc.operation`, `lc.geo`, `lc.meta`, `lc.storage`, `lc.event`, `lc.maths`, conditional `lc.persistence`, and `lcgui` | `PythonFixture.EmbeddedModuleHasAllSubmodules`; persistence namespace/enumeration tests | Tested; persistence is configuration-dependent, and exhaustive Lua/API parity is incomplete. |
+| Geometry and entities | `lc.geo`, `lc.entity` | `CoordinateArithmeticEqualsCpp`, `ArcCirclePropertiesMatchCpp`, `PointMultipleInheritanceRoundTrip` | Tested; exhaustive type/method parity and non-macOS builds remain incomplete. |
+| Builders, documents, and undo | `lc.builder`, `lc.storage` | `LineBuilderRoundTrip`, `UndoManagerBasics`, `EntityBuilderAndLineBuilderRuntimeCalls`, and Lua/Python canonical parity with undo/redo | Tested for these flows; broader operation and lifetime combinations remain incomplete. |
+| Storage and persistence | `lc.storage`, conditional `lc.persistence` | `PersistenceTest.DxfRoundTrip`, `PersistenceTest.SaveFormatMatrixRoundTrip` (14 DXF/DXB variants) | Tested locally on macOS arm64; Windows/Linux/provider acceptance remains incomplete. |
+| Operations and operation metadata | `lc.operation`, `@lc.register_operation` | `RegisterOperationDecoratorAddsToRegistry`, `PythonOperationOptionsWireDefaultAndNamedActions`, operation resolver and constructor/init-failure regressions | Tested for the documented registration/dispatch paths; full Lua metadata and lifecycle parity remains incomplete. |
+| Events and callback values | `lc.event`, `ScriptCallback` adapters | `ScriptValueRoundTrip.*`, `EventBus.*`, two-window/nested/failure-cleanup UI regressions | Tested for declared conversion and dispatch cases on macOS arm64; full callback/platform parity remains incomplete. |
+| GUI and widgets | `lcgui` | `PyGuiBridgeTest.*`, `MWindowTest.PyGuiBridgeRejectsWorkerThreadAccess` | Tested for the current bound surface and Qt-thread rejection; retained raw Qt-widget handle safety remains incomplete. |
+| Custom entities | `lc.register_plugin`, `lc.entity.CustomEntity` | Typed callback/coexistence/error regressions and `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData` | Tested for Python dispatch and DXF reconstruction locally; cross-platform provider/CI acceptance remains incomplete. |
+| ScriptDock and bundled plugins | `lcUIPy` package and `ScriptDock` | `ScriptDockTest.PythonCreatesLine`, event-routing and plugin-idempotency tests; packaged runtime smoke loads two plugins | Tested for these examples and lifecycle cases; complete plugin/artifact coverage remains incomplete. |
+| Runtime and distribution | Embedded CPython selected by CMake | `PythonRuntime.IsolatedProviderIgnoresAmbientPaths`; macOS arm64 relocated-bundle smoke; Ubuntu ARM64 installed-prefix smoke; Ubuntu 26.04 x86_64-emulated strict AppDir smoke | Tested locally on macOS arm64 and Ubuntu ARM64; strict bundled-libpython AppDir smoke passes under x86_64 emulation. Native/hosted Linux package closure, Windows, macOS x86_64, and final artifact validation remain incomplete. |
+| Deliberately unsupported runtime features | In-application `pip`, Tk/IDLE, multiprocessing, and script sandboxing | Runtime contract below | Deliberately unsupported; plugins are trusted code and staged site-packages are not provided. |
+
+Python call shapes are binding-specific: construct ordinary bound values with
+their registered class signature (for example `lc.geo.Coordinate(...)` and
+`lc.builder.LineBuilder()`), while selected operations use explicit factories
+such as `lc.operation.EntityBuilder.new(document)`. Do not infer that Lua's
+`Class.new(...)` or colon syntax transfers mechanically. At `ScriptValue`
+boundaries, Python dictionaries require string keys; non-empty lists/tuples
+must be homogeneous Coordinate or entity collections. Empty or mixed
+sequences, out-of-range integers, and arbitrary objects are rejected with
+diagnostics; `None` is a valid nil value.
+
+No claim of universal support or complete Lua parity should be inferred from
+this table. The CI/platform matrix and remaining acceptance work are tracked in
+`PYTHON_BINDING_IMPLEMENTATION_PLAN.md`.
+
+Core namespace organization intentionally parallels Lua: Python exposes
+`lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`, `lc.meta.*`,
+`lc.storage.*`, `lc.event.*`, and `lc.maths.*`; persistence-enabled builds also
+expose `lc.persistence.*`. The GUI surface is `gui` in Lua and `lcgui` in
+Python.
+
+### Runtime selection and packaging
+
+CMake's `find_package(Python ... Interpreter Development.Embed)` selection is
+the source of truth for the executable, headers/import library, runtime ABI,
+standard library, and dynamic extension modules. Configuration writes
+`python-runtime-inventory.txt` in the build directory for CI/evidence; it is a
+diagnostic artifact and is not installed. Application/CLI startup configures
+the embedded interpreter from that selected provider, ignores ambient
+`PYTHONHOME`/`PYTHONPATH`, and prefers an app-relative staged runtime when one
+is present. System/developer builds may use the configure-selected provider.
+
+Staged runtime trees intentionally exclude `site-packages` and `dist-packages`:
+third-party Python dependencies are not installed implicitly, and plugins are
+expected to use the standard library plus LibreCAD's shipped modules. Tk/IDLE,
+`pip` inside LibreCAD, multiprocessing, and script sandboxing are not supported
+by this embedded-runtime contract. Plugins are trusted code.
 
 Operation contract
 ------------------
@@ -155,14 +203,15 @@ by `PluginManager::loadPlugins()` via a directory walk driven by the
 land in the operation registry immediately.
 
 **Python plugins** live under `lcUIPy/plugins/<name>/plugin.py`,
-loaded by `loadPythonPluginsFromPathPy("gui")` in `LuaInterface::initLua`.
+loaded directly from the resolved application package directory in
+`LuaInterface::initLua` (no generated `path.py` file is required).
 Each plugin gets its own `py::dict` namespace with `import lc; import lcgui as gui`
 pre-loaded + a `LC_interface = "gui"` global; `@lc.register_operation`
 inside populates the process-global `lc.operation_registry` dict.
 Load order is BEFORE `OperationLoader::loadPythonOperations` so the
-CLI/menu/toolbar wiring walk sees plugin registrations (phase 5 PR-5.5
-fixup — reverse of the Lua order because Python's decorator model
-needs the registration to exist before the wiring walk).
+CLI/menu/toolbar wiring walk sees plugin registrations (reverse of the Lua
+order because Python's decorator model needs registration before the wiring
+walk).
 
 The `plugin.py` scan is bounded to the plugin subdir only — it does
 NOT recurse into sub-subdirs.  For a plugin needing multiple files,

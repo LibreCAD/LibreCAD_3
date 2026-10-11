@@ -34,48 +34,74 @@ echo "building LibreCAD"
 # slice 1.2 lists this as a CI dep fix.
 git submodule update --init --recursive
 
-[ -d libdxfrw ] || git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
+LIBDXFRW_REVISION=f7debf4c5f30734a70c5e828cf05247aabc2d04b
+if [ -d libdxfrw/.git ]; then
+    libdxfrw_actual_revision=$(git -C libdxfrw rev-parse HEAD)
+    if [ "$libdxfrw_actual_revision" != "$LIBDXFRW_REVISION" ]; then
+        echo "libdxfrw revision mismatch: expected $LIBDXFRW_REVISION, got $libdxfrw_actual_revision" >&2
+        exit 1
+    fi
+else
+    git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
+    git -C libdxfrw checkout --detach "$LIBDXFRW_REVISION"
+fi
+bash scripts/patch-libdxfrw.sh "$PWD/libdxfrw"
 mkdir -p libdxfrw/release
 pushd libdxfrw/release
 echo "building dxfrw"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_CXX_FLAGS=-Wno-error=misleading-indentation \
+    -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
 make -j 4
 echo "installing dxfrw"
 sudo make install
 popd
 
 echo "building LibreCAD"
-mkdir -p build
-pushd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
+build_dir="${LIBRECAD_BUILD_DIR:-build}"
+mkdir -p "$build_dir"
+pushd "$build_dir"
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On \
+    -DWITH_BUNDLED_PYTHON_RUNTIME=ON
 make -j 4
 
-# ---- Run the test suite in CI (phase 1 slice 1.2) ----
-# `set -e` above makes a failure here fail the build, but the Qt/Python UI
-# suites are independently unstable (crash location moves between runs — see
-# the CI review dated 2026-09-12), so a single blocking run can never go
-# green. CORE_SUITES is every suite in the files always built regardless of
-# WITH_QT_UI/WITH_PYTHONSCRIPT; it blocks. Everything else still runs, for
-# visibility, guarded by `|| echo` so it can't take the build down.
-CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DxfExportTest.*:EIGEN.*:EntityBuilderTest.*:IntersectTest.*:LayerOps.*:MathTest.*:Maths.*:Matrix.*:QM.*:SPLINE.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
+# ---- Run required and informational tests in CI ----
+# CORE_SUITES contains the always-built kernel tests plus the required Python,
+# persistence, parity, custom-entity, and deterministic UI regression suites.
+# Every release-relevant Python/scripting regression is blocking. The shared
+# runner verifies selected and executed counts and rejects skipped tests.
+# Non-core tests still run for visibility, but remain informational.
+CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityDxfRoundTrip.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DxfExportTest.*:EIGEN.*:EntityBuilderTest.*:EventBus.*:IntersectTest.*:LayerOps.*:LuaCustomEntityManager.*:LuaRuntimeTest.*:MathTest.*:Maths.*:Matrix.*:MWindowTest.*:ParityTest.*:PersistenceTest.*:PythonFixture.*:PythonRuntime.*:PyGuiBridgeTest.*:QM.*:SPLINE.*:ScriptCallbackEquality.*:ScriptCallbackInvoke.*:ScriptCallbackLifecycle.*:ScriptCustomEntity.*:ScriptCustomEntityBuilder.*:ScriptCustomEntityLuaRegistration.*:ScriptDockTest.Python*:ScriptValueRoundTrip.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
 
-if [ -x ./bin/lcunittest ]; then
-    echo "running lcunittest (core suites — blocking)"
-    xvfb-run -a ./bin/lcunittest --gtest_filter="${CORE_SUITES}"
-
-    echo "running lcunittest (remaining suites — informational, not gating)"
-    xvfb-run -a ./bin/lcunittest --gtest_filter="-${CORE_SUITES}" || \
-        echo "WARNING: a non-core test failed or crashed above — tracked, not blocking"
-else
-    echo "WARNING: bin/lcunittest not built; skipping test run"
+if [ ! -x ./bin/lcunittest ]; then
+    echo "ERROR: required lcunittest executable was not built" >&2
+    exit 1
 fi
+
+echo "running lcunittest (blocking kernel/Python/scripting/UI suites)"
+python3 ../scripts/run_required_gtests.py \
+    --command-prefix=xvfb-run --command-prefix=-a \
+    --binary ./bin/lcunittest --filter="${CORE_SUITES}"
+
+echo "running lcunittest (remaining suites — informational, not gating)"
+xvfb-run -a ./bin/lcunittest --gtest_filter="-${CORE_SUITES}" || \
+    echo "WARNING: a non-core test failed or crashed above — tracked, not blocking"
 
 echo "installing LibreCAD"
 sudo make install DESTDIR=AppDir
-# Phase 5 PR-5.3 — copy path.py alongside path.lua so ScriptDock's
-# Python leg finds lcUIPy modules in AppImage builds.  The `|| true`
-# guards a Lua-only build where WITH_PYTHONSCRIPT=OFF and no bin/*.py
-# was generated.
 sudo cp bin/*.lua bin/*.json AppDir/usr/bin
-sudo cp bin/*.py AppDir/usr/bin 2>/dev/null || true
+
+# Exercise the installed prefix (including its resolved lcUIPy package and
+# production plugin loader) from outside the build tree. Poison inherited
+# Python settings so success must come from PythonInit's selected provider.
+installed_app="$(pwd)/AppDir/usr/bin/librecad"
+if [ ! -x "$installed_app" ]; then
+    echo "ERROR: installed LibreCAD executable is missing: $installed_app" >&2
+    exit 1
+fi
+(cd /tmp && env QT_QPA_PLATFORM=offscreen \
+    PYTHONHOME=/__librecad_python_poison__ \
+    PYTHONPATH=/__librecad_python_poison__ \
+    LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
+    "$installed_app" --python-smoke)
 popd

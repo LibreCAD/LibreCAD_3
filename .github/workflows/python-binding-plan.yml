@@ -1,0 +1,30 @@
+name: Python Binding Plan Sync
+'on':
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  plan-sync:
+    name: Python Binding Plan Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR and base history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Validate changed-path synchronization
+        run: python3 scripts/validate_python_binding_plan.py --base-ref "origin/${{ github.base_ref }}" --summary-file "$GITHUB_STEP_SUMMARY"
+
+      - name: Run plan-checker failure fixtures
+        run: python3 -m unittest discover -s scripts/tests -p 'test_validate_python_binding_plan.py' -v

@@ -46,6 +46,8 @@ public:
     LinePatternSelect(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0, bool showByLayer = false,
                       bool showByBlock = false);
 
+    ~LinePatternSelect() override;
+
     /**
      * \brief Change document
      * \param document New document

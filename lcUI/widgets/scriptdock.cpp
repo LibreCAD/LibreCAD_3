@@ -5,6 +5,7 @@
 
 #include <QComboBox>
 #include <QFileInfo>
+#include <QMessageBox>
 
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <qt_keywords_push.h>
@@ -12,6 +13,7 @@
 #include <pybind11/eval.h>
 #include <qt_keywords_pop.h>
 #include <lcpython.h>   // PythonInit
+#include "../python/pyeventhooks.h"
 // Phase 5 PR-5.1 fixup: pyeventhooks.h include no longer needed here —
 // installEventHooks() moved to MainWindow ctor.
 namespace py = pybind11;
@@ -28,8 +30,11 @@ namespace {
 
 #ifdef LC_WITH_PYTHONSCRIPT
 
-struct ScriptDock::PyNamespace {
-    py::dict ns;
+// pybind11 types carry hidden visibility; keep this translation-unit-only
+// implementation hidden too, so the owning Qt class does not expose a
+// differently-visibility-qualified member type in shared-library builds.
+struct LC_PYTHON_LOCAL ScriptDock::PyNamespace {
+    std::unique_ptr<py::dict> ns;
     PyNamespace();
     ~PyNamespace();
     PyNamespace(const PyNamespace&) = delete;
@@ -44,20 +49,28 @@ ScriptDock::PyNamespace::PyNamespace() {
     // interpreter for a headless CLI use.
     lc::python::PythonInit::initialize();
     py::gil_scoped_acquire gil;
-    ns = py::dict();
-    ns["__builtins__"] = py::module_::import("builtins");
-    // Pre-import lc so `lc.entity.Line(...)` etc are directly available
-    // — same as the Lua path where `lc.*` is exposed via LCLua.
-    // Phase 3 PR-3.2 — lcgui also pre-imported, exposed as `gui` in
-    // the namespace for Lua parity (Lua scripts also write `gui.*`).
-    py::exec("import lc\nimport lcgui as gui\n", ns);
+    try {
+        ns = std::make_unique<py::dict>();
+        (*ns)["__builtins__"] = py::module_::import("builtins");
+        // Pre-import lc so kernel APIs such as `lc.builder.LineBuilder()`
+        // are directly available — same as the Lua path where `lc.*` is
+        // exposed via LCLua.
+        // Phase 3 PR-3.2 — lcgui also pre-imported, exposed as `gui` in
+        // the namespace for Lua parity (Lua scripts also write `gui.*`).
+        py::exec("import lc\nimport lcgui as gui\n", *ns);
+    } catch (...) {
+        // A partially constructed namespace still owns Python references;
+        // release them before the GIL guard leaves scope.
+        ns.reset();
+        throw;
+    }
 }
 
 ScriptDock::PyNamespace::~PyNamespace() {
     // GIL-holding destruction: the main thread's Qt event loop runs
     // GIL-free between Python calls, so ~py::dict must reacquire.
     py::gil_scoped_acquire gil;
-    ns = py::dict();
+    ns.reset();
 }
 
 #endif   // LC_WITH_PYTHONSCRIPT
@@ -121,6 +134,7 @@ void ScriptDock::runLua(const std::string& code) {
 
 #ifdef LC_WITH_PYTHONSCRIPT
 void ScriptDock::runPython(const std::string& code) {
+    lc::ui::python::MainWindowExecutionScope ownerScope(_mainWindow);
     py::gil_scoped_acquire gil;
     try {
         // Phase 3 PR-3.2 — inject mainWindow + document freshly on
@@ -131,10 +145,11 @@ void ScriptDock::runPython(const std::string& code) {
         // path at luascript.cpp:29-31 — a fresh newDocument()/openFile
         // between Run clicks changes the document instance, so we
         // re-inject to avoid holding a stale reference.
-        _pyNamespace->ns["mainWindow"] =
+        py::dict& ns = *_pyNamespace->ns;
+        ns["mainWindow"] =
             py::cast(_mainWindow, py::return_value_policy::reference);
-        _pyNamespace->ns["document"] = _mdiChild->document();
-        py::exec(code, _pyNamespace->ns);
+        ns["document"] = _mdiChild->document();
+        py::exec(code, ns);
     } catch (const py::error_already_set& e) {
         _cliCommand->write(std::string(e.what()));
     }
@@ -174,7 +189,10 @@ void ScriptDock::on_open_clicked() {
     if(!fileName.isEmpty()) {
         QFile file(fileName);
 
-        file.open(QFile::ReadOnly | QFile::Text);
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Unable to open script"), file.errorString());
+            return;
+        }
         QTextStream stream(&file);
 
         ui->luaInput->setPlainText(stream.readAll());
@@ -207,7 +225,10 @@ void ScriptDock::on_save_clicked() {
     if(!fileName.isEmpty()) {
         QFile file(fileName);
 
-        file.open(QFile::WriteOnly | QFile::Text);
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Unable to save script"), file.errorString());
+            return;
+        }
         QTextStream stream(&file);
 
         stream << ui->luaInput->toPlainText();

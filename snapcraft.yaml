@@ -4,6 +4,10 @@ grade: stable
 # Core 26 is the current base supported by Snapcraft 9.  The prior core20
 # base requires the now-legacy Snapcraft 8 track.
 base: core26
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
 confinement: devmode
 summary: "librecad: is a 2D CAD"
 description: |
@@ -13,7 +17,7 @@ contact:
   - https://forum.librecad.org/
 issues: https://github.com/LibreCAD/LibreCAD_3/issues
 environment:
-  LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
+  LD_LIBRARY_PATH: $SNAP/usr/local/lib:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$SNAP/usr/lib64:$SNAP/usr/lib:$LD_LIBRARY_PATH
 
 apps:
   librecad:
@@ -31,6 +35,7 @@ parts:
   librecad:
     plugin: cmake
     source: .
+    after: [libdxfrw]
     build-packages:
       # Use the distribution's Qt 6 packages.  This keeps the build
       # self-contained and avoids the retired Qt5/KDE content snaps.
@@ -85,14 +90,28 @@ parts:
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
+      - "-DWITH_BUNDLED_PYTHON_RUNTIME=ON"
     #For 18.04
     #configflags:
     #  - "-DCMAKE_INSTALL_PREFIX=/usr"
     #  - "-DBUILD_SHARED_LIBS=On"
   libdxfrw:
     plugin: cmake
-    source: persistence/libdxfrw
+    source: https://github.com/LibreCAD/libdxfrw.git
+    source-type: git
+    source-commit: f7debf4c5f30734a70c5e828cf05247aabc2d04b
+    build-packages:
+      - cmake
+      - g++
+      - git
+      - libboost-dev
+      - libbz2-dev
+    override-build: |
+      bash "$CRAFT_PROJECT_DIR/scripts/patch-libdxfrw.sh" "$CRAFT_PART_SRC"
+      craftctl default
     cmake-parameters:
+      - "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+      - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
 
 

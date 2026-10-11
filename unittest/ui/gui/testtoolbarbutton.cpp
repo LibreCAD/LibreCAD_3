@@ -30,7 +30,7 @@ using namespace lc::ui::widgets;
 using namespace lc::ui::api;
 
 TEST(ToolbarButtonTest, LabelAndInitTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
     ToolbarTab* testtab = toolbar.addTab("TestTab");
     ToolbarGroup* testgroup = testtab->addGroup("TestGroup");
@@ -52,7 +52,7 @@ TEST(ToolbarButtonTest, LabelAndInitTest) {
 }
 
 TEST(ToolbarButtonTest, TooltipAndRemoveTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     Toolbar toolbar(nullptr);
     ToolbarTab* testtab = toolbar.addTab("TestTab");
     ToolbarGroup* testgroup = testtab->addGroup("TestGroup");
@@ -73,7 +73,7 @@ TEST(ToolbarButtonTest, TooltipAndRemoveTest) {
 }
 
 TEST(ToolbarButtonTest, CallbackTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
@@ -142,7 +142,7 @@ TEST(ToolbarButtonTest, PythonCallbackFires) {
     // phase 4 but never written until the coordinator's exit-bar
     // review.  Companion for the register/deregister-with-bound-method
     // property covered by the next test.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     Toolbar toolbar(nullptr);
@@ -202,7 +202,7 @@ TEST(ToolbarButtonTest, PythonBoundMethodRegisterDeregister) {
     // therefore does `is OR __eq__`; verify that here by attaching a
     // named callback, removing it by name, and confirming subsequent
     // clicks don't fire the removed slot.
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     Toolbar toolbar(nullptr);

@@ -42,9 +42,8 @@ LCLua::LCLua(lua_State* L) :
     // hook so ScriptCustomEntity's 6 dispatch methods (which live in
     // lcscripting post-move) can reach the Lua fast path via
     // unwrapLuaCallback + kaguya's static template deduction.
-    // Idempotent — safe to call once per LuaInterface / LCLua
-    // construction; the process-global slot always points at a fresh
-    // hook instance (which is stateless).
+    // Idempotent — safe to call once per LuaInterface / LCLua construction;
+    // this replaces only the Lua runtime's stateless hook.
     lc::lua::installLuaCustomEntityDispatchHook();
 }
 
@@ -90,7 +89,13 @@ std::string LCLua::runString(const char* code) {
 
     auto s = luaL_dostring(_L, code);
     if (s) {
-        out.append(lua_tostring(_L, -1));
+        const char* error = lua_tostring(_L, -1);
+        if (error != nullptr) {
+            out.append(error);
+        } else {
+            out = "Lua script failed with non-string error value of type ";
+            out.append(lua_typename(_L, lua_type(_L, -1)));
+        }
         lua_pop(_L, 1);
     }
 

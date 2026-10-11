@@ -7,6 +7,7 @@
 #include "managers/contextmenumanager.h"
 
 #include <QStandardPaths>
+#include <exception>
 
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/entitygui.h"
@@ -47,6 +48,9 @@ MainWindow::MainWindow()
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _copyManager(&_cadMdiChild)
 {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(this);
+#endif
     ContextMenuManager::GetContextMenuManager(this);
     _contextMenuManagerId = ContextMenuManager::GetInstanceId(this);
 
@@ -208,6 +212,9 @@ void MainWindow::addOtherMenus() {
 
 void MainWindow::runOperation(lc::scripting::ScriptObject operation,
                               const std::string& init_method) {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(this);
+#endif
     // Phase 4 PR-7 — routed through ScriptObject / ScriptCallback.
     //   * `finish_op` dostring gone → native Cancel-button lambda calling
     //     `_luaInterface.finishOperation()` directly.
@@ -218,6 +225,7 @@ void MainWindow::runOperation(lc::scripting::ScriptObject operation,
     //     (the Lua adapter prepends `self` implicitly — see luacallback.cpp).
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
+    _luaInterface.setOperation(lc::scripting::ScriptObject{});
     _cadMdiChild.viewer()->setOperationActive(true);
 
     // Extra option toolbar icons.  Two-tier key: first "cmdLine+init",
@@ -245,15 +253,56 @@ void MainWindow::runOperation(lc::scripting::ScriptObject operation,
         }),
         "Cancel");
 
-    // Instantiate the operation class + run its init method.
-    lc::scripting::ScriptObject instance = operation.instantiate();
-    _luaInterface.setOperation(instance);
-    if (init_method.empty()) {
-        if (instance.hasAttr("_init_default")) {
-            instance.callMethod("_init_default");
+    // Registrations made by an operation constructor/init belong to this
+    // operation and must be removed if construction fails or it later closes.
+    _luaInterface.beginOperationEventTracking();
+    try {
+        // Instantiate the operation class + run its init method.
+        lc::scripting::ScriptObject instance;
+        std::string startupError;
+        if (!operation.instantiateChecked(instance, startupError)) {
+            _luaInterface.cancelOperationEventTracking();
+            _cliCommand.write("Could not instantiate script operation" +
+                              (startupError.empty() ? std::string(".\n")
+                                                    : ": " + startupError + "\n"));
+            operationFinished();
+            return;
         }
-    } else {
-        instance.callMethod(init_method);
+        _luaInterface.setOperation(instance);
+        bool initSucceeded = true;
+        if (init_method.empty()) {
+            if (instance.hasAttr("_init_default")) {
+                lc::scripting::ScriptValue ignored;
+                initSucceeded = instance.callMethodChecked(
+                    "_init_default", ignored, startupError);
+            }
+        } else {
+            lc::scripting::ScriptValue ignored;
+            initSucceeded = instance.callMethodChecked(
+                init_method, ignored, startupError);
+        }
+        if (!initSucceeded) {
+            _luaInterface.finishOperation();
+            _luaInterface.setOperation(lc::scripting::ScriptObject{});
+            _cliCommand.write("Script operation initialization failed: " +
+                              startupError + "\n");
+            operationFinished();
+            return;
+        }
+        _luaInterface.endOperationEventTracking();
+    } catch (const std::exception& error) {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.write(std::string("Script operation startup failed: ") +
+                          error.what() + "\n");
+        operationFinished();
+        return;
+    } catch (...) {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.write("Script operation startup failed.\n");
+        operationFinished();
+        return;
     }
 
     _oldOperation = std::move(operation);

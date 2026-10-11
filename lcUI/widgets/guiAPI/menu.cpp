@@ -200,6 +200,13 @@ void Menu::setPosition(int newPosition) {
     }
 
     QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
+    if (widgets.isEmpty()) {
+        // A script may configure a menu before adding it to a menu bar or
+        // parent menu. Remember the requested position; there is nothing to
+        // reorder until the QAction is associated with a widget.
+        _position = newPosition;
+        return;
+    }
 
     if (!insideMenu) {
         setPositionInsideMenuBar(widgets[0], newPosition);
@@ -211,6 +218,9 @@ void Menu::setPosition(int newPosition) {
 
 void Menu::remove() {
     QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
+    if (widgets.isEmpty()) {
+        return;
+    }
 
     updateOtherPositionsAfterRemove();
 

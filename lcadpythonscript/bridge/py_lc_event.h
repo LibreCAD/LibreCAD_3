@@ -13,7 +13,9 @@
 //         lc::python::setEventDeregisterHook(fn)
 //     lcUI installs the hooks at MainWindow construction; the hook
 //     wraps the py::object as a ScriptCallback (via makePythonCallback)
-//     and delegates to the appropriate EventBus.
+//     and delegates to the owner window's EventBus. register() returns
+//     an exact registration token; callback-equality deregistration is
+//     retained for compatibility.
 //   * If no hook is set (headless CLI use), the register/deregister
 //     calls silently no-op.  Matches the pattern established by
 //     lcadluascript's OpaquePtr encoder registry (phase 4 PR-8) where
@@ -25,6 +27,7 @@
 #include "../qt_keywords_pop.h"
 
 #include <functional>
+#include <cstdint>
 #include <string>
 
 namespace lc {
@@ -35,18 +38,34 @@ namespace python {
 /// plus the phase-5 register/deregister free-functions.
 void import_py_lc_event_namespace(pybind11::module_& m_event);
 
-/// Function shape: `(event_name, py::object) -> void`.  py::object is
-/// the callback the Python script passed to `lc.event.register`.
-using EventHook = std::function<void(const std::string&, pybind11::object)>;
+using EventRegistrationId = std::uint64_t;
+
+/// Function shape: `(event_name, callback) -> registration_id`. The ID
+/// allows an owner to remove exactly the registration it created even if
+/// equal callbacks have been registered more than once.
+using EventRegisterHook = std::function<EventRegistrationId(
+    const std::string&, pybind11::object)>;
+
+/// Compatibility hook for callback-equality deregistration.
+using EventDeregisterHook = std::function<void(
+    const std::string&, pybind11::object)>;
+
+/// Exact-identity deregistration hook used by the token returned from
+/// `lc.event.register`.
+using EventRegistrationDeregisterHook = std::function<void(
+    const std::string&, EventRegistrationId)>;
 
 /// Install a hook fired by `lc.event.register(name, obj)`.  Later
 /// registrations OVERWRITE the previous hook (matches the OpaquePtr
 /// registry semantics — one hook per process; multi-window support
 /// resolves via the hook's own logic against WindowManager).
-LC_PYTHON_API void setEventRegisterHook(EventHook hook);
+LC_PYTHON_API void setEventRegisterHook(EventRegisterHook hook);
 
 /// Install a hook fired by `lc.event.deregister(name, obj)`.
-LC_PYTHON_API void setEventDeregisterHook(EventHook hook);
+LC_PYTHON_API void setEventDeregisterHook(EventDeregisterHook hook);
+
+LC_PYTHON_API void setEventRegistrationDeregisterHook(
+    EventRegistrationDeregisterHook hook);
 
 } // namespace python
 } // namespace lc

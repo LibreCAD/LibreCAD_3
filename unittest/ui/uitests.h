@@ -6,8 +6,26 @@
 #include <cad/storage/storagemanagerimpl.h>
 #include <cadmdichild.h>
 
-static int argc = 1;
-static char* argv[2] = {strdup("lcunittest"), NULL};
+inline int& uiTestArgc() {
+    static int argc = 1;
+    return argc;
+}
+
+inline char** uiTestArgv() {
+    static char appName[] = "lcunittest";
+    static char* argv[] = {appName, nullptr};
+    return argv;
+}
+
+inline QApplication& ensureUiApplication() {
+    static QApplication* application = [] {
+        // Qt owns process-global platform resources; keep QApplication alive
+        // until process exit instead of running teardown after test widgets
+        // and platform-plugin singletons have begun static destruction.
+        return new QApplication(uiTestArgc(), uiTestArgv());
+    }();
+    return *application;
+}
 
 using namespace lc;
 using namespace ui;

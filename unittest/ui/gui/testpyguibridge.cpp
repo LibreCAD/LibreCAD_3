@@ -15,16 +15,20 @@
 
 #include <QApplication>
 #include <gtest/gtest.h>
+#include <type_traits>
 
 #include <mainwindow.h>
 #include <cadmdichild.h>
 #include <windowmanager.h>
+#include <widgets/guiAPI/inputguicontainer.h>
+#include <drawables/tempentities.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <qt_keywords_push.h>
 #include <pybind11/embed.h>
 #include <qt_keywords_pop.h>
 #include <lcpython.h>
+#include <python/pyeventhooks.h>
 #endif
 
 #include "../uitests.h"
@@ -63,11 +67,11 @@ struct MainWindowRegistration {
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, MainWindowRemainderBindingsCallable) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mw;
-    MainWindowRegistration mwReg(&mw);
+    lc::ui::python::MainWindowExecutionScope ownerScope(&mw);
 
     pybind11::gil_scoped_acquire gil;
     pybind11::dict ns;
@@ -135,6 +139,26 @@ assert not hasattr(lua_iface, "setOperation"), \
 _ = mainWindow.menuByPosition(0)
 )py",
         ns);
+
+    // The Lua GUI bridge exposes the plain constructor and callback factory
+    // under the same `new` name. Exercise both overloads to prevent the
+    // Kaguya duplicate-registration regression from returning.
+    const int luaStatus = luaL_dostring(mw.luaInterface()->luaState(), R"lua(
+local plainItem = gui.MenuItem.new("Plain")
+assert(plainItem:label() == "Plain")
+local callbackItem = gui.MenuItem.new("Callback", function() end)
+assert(callbackItem:label() == "Callback")
+
+local plainButton = gui.ToolbarButton.new("PlainButton", ":/icons/none.svg", "tip", true)
+assert(plainButton:label() == "PlainButton")
+local callbackButton = gui.ToolbarButton.new("CallbackButton", ":/icons/none.svg", function() end)
+assert(callbackButton:label() == "CallbackButton")
+)lua");
+    if (luaStatus != 0) {
+        const char* error = lua_tostring(mw.luaInterface()->luaState(), -1);
+        FAIL() << "Lua GUI constructor overloads failed: "
+               << (error == nullptr ? "unknown Lua error" : error);
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -143,7 +167,7 @@ _ = mainWindow.menuByPosition(0)
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, SnapManagerSettersMutate) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mw;
@@ -181,7 +205,7 @@ snap.setEntitySnappable(True)
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, CliCommandFullSurfaceCallable) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mw;
@@ -239,7 +263,7 @@ cli.write("smoke test message")
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, PropertyEditorGetPropertyEditor) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mw;
@@ -270,7 +294,7 @@ pe.propertyChanged("some.unknown.key")
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, LayersOverloadDispatch) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mw;
@@ -339,7 +363,7 @@ assert isinstance(all_layers, list)
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, MenuFamilyConstructAndCall) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     // No MainWindow needed — these widgets are constructible standalone.
@@ -402,7 +426,7 @@ menu.removeMenu("SubMenu")
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, MenuItemConstructAndCall) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     pybind11::gil_scoped_acquire gil;
@@ -468,7 +492,7 @@ assert mi.label() == "PyItem_renamed"
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, ToolbarWidgetFamilyConstructAndCompose) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     pybind11::gil_scoped_acquire gil;
@@ -561,7 +585,7 @@ assert btn_a.isEnabled() is True
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, InputWidgetsConstructAndRoundTrip) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     pybind11::gil_scoped_acquire gil;
@@ -684,8 +708,19 @@ assert not hasattr(li, "addCallbackToAll"), \
 // them, and calls addFinishCallback.
 // -----------------------------------------------------------------------------
 // NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, BoundPolymorphicBasesHaveVirtualDestructors) {
+    static_assert(
+        std::has_virtual_destructor<lc::ui::api::InputGUIContainer>::value,
+        "InputGUIContainer is a polymorphic Python-visible base");
+    static_assert(
+        std::has_virtual_destructor<lc::viewer::drawable::TempEntities>::value,
+        "TempEntities is a polymorphic Python-visible type");
+    SUCCEED();
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
 TEST(PyGuiBridgeTest, DialogWidgetComposition) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::python::PythonInit::initialize();
 
     lc::ui::MainWindow mw;
@@ -705,6 +740,7 @@ import lcgui, builtins
 
 # DialogWidget ctor takes (title, MainWindow*).
 dlg = lcgui.DialogWidget("PyDialog", mainWindow)
+assert dlg.keys() == [], "new DialogWidget should start without registered keys"
 
 # Compose child widgets via addWidget under keys.
 text_widget = lcgui.Text("field_A")
@@ -712,6 +748,7 @@ num_widget  = lcgui.Number("field_B")
 ok_button   = lcgui.Button("OK")
 
 assert dlg.addWidget("A", text_widget) is True
+assert dlg.keys() == ["A"], "first key must be registered"
 assert dlg.addWidget("B", num_widget)  is True
 assert dlg.addWidget("btn", ok_button) is True
 
@@ -742,6 +779,106 @@ dlg.enable()
 
     pybind11::module_::import("builtins").attr("_lc_dlg_hits") =
         pybind11::list();
+}
+
+// Exercise the real rectangle custom-entity callbacks through a mutable
+// transaction builder. The release re-executes the same Builder that was
+// committed at press, so one undo must restore the original rectangle and one
+// redo must restore the resized one without duplicate entities.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(PyGuiBridgeTest, PythonRectangleDragIsOneUndoStep) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+
+    lc::ui::MainWindow mw;
+    MainWindowRegistration mwReg(&mw);
+
+    pybind11::gil_scoped_acquire gil;
+    pybind11::module_::import("sys").attr("path").attr("insert")(
+        0, QCoreApplication::applicationDirPath().toStdString());
+
+    pybind11::dict ns;
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+    ns["mainWindow"] = pybind11::cast(
+        &mw, pybind11::return_value_policy::reference);
+
+    pybind11::exec(R"py(
+import importlib
+import lc
+
+rectangle = importlib.import_module('lcUIPy.plugins.rectangle.plugin')
+mdi = mainWindow.cadMdiChild()
+doc = mdi.document()
+layer = mdi.activeLayer()
+undo = mdi.undoManager()
+
+base = lc.geo.Coordinate(1.0, 2.0, 0.0)
+old_block = rectangle._create_storage(base, 10.0, 8.0)
+lc.operation.AddBlock.new(doc, old_block).execute()
+old_insert = rectangle._create_rectangle_entity(
+    base, layer, doc, old_block)
+initial_entities = lc.operation.EntityBuilder.new(doc)
+for line in rectangle._generate_lines(
+        base, lc.geo.Coordinate(11.0, 10.0, 0.0), layer, old_block):
+    initial_entities.appendEntity(line)
+initial_entities.appendEntity(old_insert)
+initial_entities.execute()
+setup_entities = doc.entityContainer().asVector(32767)
+assert len(setup_entities) == 1, f'rectangle setup created {len(setup_entities)} top-level entities'
+assert len(doc.entitiesByBlock(old_block).asVector(32767)) == 4
+
+# Treat setup as the pre-existing document state; only the drag transaction
+# should remain on the undo stack.
+undo.removeUndoables()
+drag = lc.operation.Builder(doc, 'Python rectangle drag')
+rectangle._drag_point_click(old_insert, drag, 2)
+drag.execute()
+assert len(doc.entityContainer().asVector(32767)) == 0, 'press callback did not remove the original insert'
+assert len(doc.entitiesByBlock(old_block).asVector(32767)) == 0, 'press callback did not remove the original block geometry'
+
+# Move the top-right corner from (11, 10) to (13, 11), producing a 12x9
+# rectangle while keeping its lower-left corner fixed at (1, 2).
+rectangle._new_drag_point(
+    old_insert, lc.geo.Coordinate(13.0, 11.0, 0.0))
+rectangle._drag_point_release(old_insert, drag)
+drag.execute()
+
+def custom_rectangles():
+    return [entity for entity in doc.entityContainer().asVector(32767)
+            if isinstance(entity, lc.entity.ScriptCustomEntity)]
+
+assert len(doc.entityContainer().asVector(32767)) == 1, 'release did not leave exactly one rectangle insert'
+resized = custom_rectangles()
+assert len(resized) == 1, 'release did not leave exactly one custom rectangle'
+new_block = resized[0].displayBlock()
+assert len(doc.entitiesByBlock(new_block).asVector(32767)) == 4, 'release did not create exactly four block edges'
+assert float(new_block.param('width')) == 12.0, 'drag width was not applied'
+assert float(new_block.param('height')) == 9.0, 'drag height was not applied'
+assert undo.canUndo() is True, 'drag did not create an undo entry'
+
+# One undo restores the original 4 lines + custom entity. A second undo
+# would consume unrelated document history and must not be needed.
+undo.undo()
+assert undo.canUndo() is False, 'one undo did not consume the full drag transaction'
+assert undo.canRedo() is True, 'undo did not enable redo'
+restored = custom_rectangles()
+assert len(doc.entityContainer().asVector(32767)) == 1, 'undo did not restore exactly one original insert'
+assert len(restored) == 1, 'undo did not restore exactly one custom rectangle'
+assert len(doc.entitiesByBlock(old_block).asVector(32767)) == 4, 'undo did not restore the original block geometry'
+assert restored[0].id() == old_insert.id(), 'undo did not restore the original entity ID'
+assert float(restored[0].displayBlock().param('width')) == 10.0, 'undo did not restore the original width'
+assert float(restored[0].displayBlock().param('height')) == 8.0, 'undo did not restore the original height'
+
+undo.redo()
+assert undo.canRedo() is False, 'redo did not consume the drag redo entry'
+assert len(doc.entityContainer().asVector(32767)) == 1, 'redo created duplicate or missing rectangle inserts'
+resized = custom_rectangles()
+assert len(resized) == 1, 'redo did not restore exactly one custom rectangle'
+assert len(doc.entitiesByBlock(resized[0].displayBlock()).asVector(32767)) == 4, 'redo did not restore exactly four block edges'
+assert float(resized[0].displayBlock().param('width')) == 12.0, 'redo did not restore the resized width'
+assert float(resized[0].displayBlock().param('height')) == 9.0, 'redo did not restore the resized height'
+)py",
+        ns);
 }
 
 #endif  // LC_WITH_PYTHONSCRIPT

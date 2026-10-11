@@ -362,8 +362,10 @@ void addLuaGUIAPIBindings(lua_State* L) {
     // ToolbarButton in PR-3.  Non-callback constructor stays direct.
     // addCallback + addCheckedCallback take ScriptCallback; wrap LuaRef.
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
-                                      .setConstructors<lc::ui::api::MenuItem(const char*)>()
-    .addStaticFunction("new",
+    .addOverloadedFunctions("new",
+        [](const char* label) {
+            return new lc::ui::api::MenuItem(label);
+        },
         [](const char* label, kaguya::LuaRef cb) {
             return new lc::ui::api::MenuItem(label, lc::lua::makeLuaCallback(std::move(cb)));
         })
@@ -424,22 +426,24 @@ void addLuaGUIAPIBindings(lua_State* L) {
     })
                                        );
 
-    // Phase 4 PR-3 — ToolbarButton's Lua-facing constructors and
-    // addCallback overloads take a LuaRef; wrap into ScriptCallback
-    // before forwarding.  The 3 callback-taking constructor arities are
-    // exposed as `gui.ToolbarButton.new(...)` static factory shapes
-    // (kaguya's setConstructors can't emit lambdas per arity, but
-    // `.addStaticFunction("new", ...)` can — Lua callers can either use
-    // the 3-arg + optional args new() variants or the ctor overloads
-    // that don't take a callback).  Non-callback ctors stay unchanged.
+    // Phase 4 PR-3 — ToolbarButton's constructors and callback-taking
+    // factory share one `new` overload set; Kaguya rejects registering
+    // constructors and a static factory under the same name separately.
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
-                                           .setConstructors<lc::ui::api::ToolbarButton(const char*, const char*),
-                                           lc::ui::api::ToolbarButton(const char*, const char*, const char*),
-                                           lc::ui::api::ToolbarButton(const char*, const char*, const char*, bool)>()
-    .addStaticFunction("new", [](const char* label, const char* icon, kaguya::LuaRef cb) {
-        return new lc::ui::api::ToolbarButton(label, icon,
-            lc::lua::makeLuaCallback(std::move(cb)));
-    })
+    .addOverloadedFunctions("new",
+        [](const char* label, const char* icon) {
+            return new lc::ui::api::ToolbarButton(label, icon);
+        },
+        [](const char* label, const char* icon, const char* tooltip) {
+            return new lc::ui::api::ToolbarButton(label, icon, tooltip);
+        },
+        [](const char* label, const char* icon, const char* tooltip, bool checkable) {
+            return new lc::ui::api::ToolbarButton(label, icon, tooltip, checkable);
+        },
+        [](const char* label, const char* icon, kaguya::LuaRef cb) {
+            return new lc::ui::api::ToolbarButton(label, icon,
+                lc::lua::makeLuaCallback(std::move(cb)));
+        })
     .addStaticFunction("newWithTooltip",
         [](const char* label, const char* icon, kaguya::LuaRef cb, const char* tooltip) {
             return new lc::ui::api::ToolbarButton(label, icon,

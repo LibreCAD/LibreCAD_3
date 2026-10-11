@@ -16,13 +16,24 @@ LinePatternSelect::LinePatternSelect(lc::storage::Document_SPtr document, QWidge
 
     setDocument(std::move(document));
 
-    connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
+    connect(this, &QComboBox::textActivated,
+            this, &LinePatternSelect::onActivated);
 }
 
 LinePatternSelect::LinePatternSelect(CadMdiChild* mdiChild, QWidget* parent, bool showByLayer, bool showByBlock) :
     LinePatternSelect((lc::storage::Document_SPtr) nullptr, parent, showByLayer, showByBlock) {
 
     setMdiChild(mdiChild);
+}
+
+LinePatternSelect::~LinePatternSelect() {
+    if (_document == nullptr) {
+        return;
+    }
+
+    _document->addLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_addLinePatternEvent>(this);
+    _document->removeLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_removeLinePatternEvent>(this);
+    _document->replaceLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_replaceLinePatternEvent>(this);
 }
 
 void LinePatternSelect::setMdiChild(CadMdiChild* mdiChild) {

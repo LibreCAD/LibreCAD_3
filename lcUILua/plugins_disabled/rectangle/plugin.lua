@@ -20,11 +20,11 @@
 --      (setSnapFunctionLua etc.) which preserve the LUA_TFUNCTION
 --      guard from sub-piece 2a fixup.
 --
--- Also: this file is at `plugins_disabled/rectangle/` — the plugin
--- loader points at `plugins/` per lcUILua/CMakeLists.txt, so this file
--- doesn't auto-load.  Enabling requires renaming the parent directory
--- or moving this file to `plugins/rectangle/`.  Kept disabled for now
--- pending the libdxfrw reload blocker (task_e20ba02a).
+-- This reference remains in `plugins_disabled/rectangle/`; the Lua plugin
+-- loader reads `plugins/`, so this file does not auto-load. It is disabled by
+-- its directory placement, not by a current DXF reader blocker. The custom
+-- entity round-trip is covered against the pinned app-data-patched libdxfrw;
+-- platform-provider validation is still pending.
 
 -- =============================================================================
 -- Module-level per-Insert state for interactive drag operations.
@@ -430,10 +430,9 @@ end
 -- duplicating every custom entity on every reload.  Same fix applied
 -- to the Python companion.
 --
--- NOTE (task_e20ba02a): the DXF reload dispatch is currently BLOCKED by
--- an upstream libdxfrw bug (DRW_Entity::parseDxfGroups dead loop drops
--- all app-data on read).  The plugin registration itself is correct
--- today; the callback fires only after the upstream fix.
+-- The pinned app-data-patched libdxfrw provider is covered by the custom
+-- entity DXF round-trip regression. This reference plugin's disabled
+-- directory placement is independent of that reader fix.
 -- =============================================================================
 
 local function onNewWaitingCustomEntity(insert)

@@ -1,10 +1,8 @@
 #include "customentity.h"
 #include "../builders/customentity.h"
 
-// Phase 6 PR-6.1 sub-piece 2b — dispatch via CustomEntityDispatchHook
-// (installed by lcadluascript's LuaCustomEntityDispatchHook at LCLua
-// construction time).  See lcscripting/customentitydispatchhook.h for
-// the hook contract.
+// Dispatch via the runtime-specific CustomEntityDispatchHook. Language
+// adapters install their own hooks; one runtime cannot replace another.
 #include "../customentitydispatchhook.h"
 
 using namespace lc;
@@ -12,13 +10,10 @@ using namespace entity;
 
 namespace {
 
-// Local helper: invoke a non-Lua callback through the neutral
-// ScriptValue path.  Same pattern as sub-piece 2a's `invokeNonLua`
-// which lived in lcadluascript pre-move; identical behavior.  Native
-// callbacks fire with real side effects; ScriptValue kinds without
-// corresponding types (Builder_SPtr, SimpleSnapConstrain) pass as
-// Nil for now.
-lc::scripting::ScriptValue invokeNonLua(
+// Local helper for the neutral ScriptValue fallback. Language callbacks
+// should use their runtime-specific typed hook; native callbacks can use
+// this path for values represented by ScriptValue.
+lc::scripting::ScriptValue invokeNeutralCallback(
     const lc::scripting::ScriptCallback& callback,
     const std::vector<lc::scripting::ScriptValue>& args) {
     if (callback.isNil()) {
@@ -57,10 +52,9 @@ std::vector<EntityCoordinate> ScriptCustomEntity::snapPoints(const geo::Coordina
         int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
-    // Lua fast path via the installed dispatch hook.  If the hook
-    // handles the callback (returns true), `points` is populated with
-    // concrete Insert-typed userdata semantics preserved.
-    auto hook = lc::scripting::customEntityDispatchHook();
+    // Typed adapter path preserves concrete Insert identity and the
+    // EntityCoordinate result vector (which ScriptValue does not represent).
+    auto hook = lc::scripting::customEntityDispatchHook(_snapPoints);
     if (hook && hook->trySnapPoints(_snapPoints, shared_from_this(),
                                     coord, simpleSnapConstrain,
                                     minDistanceToSnap, maxNumberOfSnapPoints,
@@ -69,12 +63,10 @@ std::vector<EntityCoordinate> ScriptCustomEntity::snapPoints(const geo::Coordina
         return points;
     }
 
-    // Non-Lua path: fire callback via neutral ScriptValue.  Return type
-    // (vector<EntityCoordinate>) has no ScriptValue kind, so the
-    // callback's return is IGNORED — dispatch is for side effects only
-    // until ScriptValue grows an EntityCoordinateList kind.
+    // Neutral fallback: snap vectors are not represented by ScriptValue,
+    // so only a runtime-specific hook can provide snap results.
     lc::entity::CADEntity_CSPtr self = shared_from_this();
-    invokeNonLua(_snapPoints, {
+    invokeNeutralCallback(_snapPoints, {
         lc::scripting::ScriptValue(self),
         lc::scripting::ScriptValue(coord),
         // SimpleSnapConstrain has no ScriptValue kind — Nil placeholder.
@@ -88,16 +80,16 @@ std::vector<EntityCoordinate> ScriptCustomEntity::snapPoints(const geo::Coordina
 geo::Coordinate ScriptCustomEntity::nearestPointOnPath(const geo::Coordinate& coord) const {
     geo::Coordinate result;
 
-    auto hook = lc::scripting::customEntityDispatchHook();
+    auto hook = lc::scripting::customEntityDispatchHook(_nearestPoint);
     if (hook && hook->tryNearestPointOnPath(_nearestPoint, shared_from_this(),
                                             coord, result)) {
         return result;
     }
 
-    // Non-Lua path: fire callback + extract Coordinate return if
-    // present, else fall back to query point.
+    // Neutral fallback: extract a Coordinate result if available, otherwise
+    // keep the query point as the safe default.
     lc::entity::CADEntity_CSPtr self = shared_from_this();
-    lc::scripting::ScriptValue ret = invokeNonLua(_nearestPoint, {
+    lc::scripting::ScriptValue ret = invokeNeutralCallback(_nearestPoint, {
         lc::scripting::ScriptValue(self),
         lc::scripting::ScriptValue(coord),
     });
@@ -147,28 +139,29 @@ CADEntity_CSPtr ScriptCustomEntity::modify(meta::Layer_CSPtr layer, const meta::
 std::map<unsigned int, geo::Coordinate> ScriptCustomEntity::dragPoints() const {
     std::map<unsigned int, geo::Coordinate> result;
 
-    auto hook = lc::scripting::customEntityDispatchHook();
+    auto hook = lc::scripting::customEntityDispatchHook(_dragPoints);
     if (hook && hook->tryDragPoints(_dragPoints, shared_from_this(), result)) {
         return result;
     }
 
-    // Non-Lua path: fire for side effects; return type has no
-    // ScriptValue kind, so the callback's return is discarded.
+    // Neutral fallback: drag-point maps are not represented by ScriptValue,
+    // so only a runtime-specific hook can provide drag handles.
     lc::entity::CADEntity_CSPtr self = shared_from_this();
-    invokeNonLua(_dragPoints, { lc::scripting::ScriptValue(self) });
+    invokeNeutralCallback(_dragPoints, { lc::scripting::ScriptValue(self) });
     return result;
 }
 
 void ScriptCustomEntity::onDragPointClick(lc::operation::Builder_SPtr builder, unsigned int point) const {
-    auto hook = lc::scripting::customEntityDispatchHook();
+    auto hook = lc::scripting::customEntityDispatchHook(_dragPointClick);
     if (hook && hook->tryOnDragPointClick(_dragPointClick, shared_from_this(),
                                           builder, point)) {
         return;
     }
 
-    // Non-Lua path.  Builder_SPtr passes as Nil (no ScriptValue kind).
+    // Neutral fallback cannot represent Builder_SPtr; language adapters
+    // must supply the typed path for transaction-aware callbacks.
     lc::entity::CADEntity_CSPtr self = shared_from_this();
-    invokeNonLua(_dragPointClick, {
+    invokeNeutralCallback(_dragPointClick, {
         lc::scripting::ScriptValue(self),
         lc::scripting::ScriptValue{},  // Builder_SPtr — no kind yet
         lc::scripting::ScriptValue(static_cast<int>(point)),
@@ -176,28 +169,28 @@ void ScriptCustomEntity::onDragPointClick(lc::operation::Builder_SPtr builder, u
 }
 
 void ScriptCustomEntity::onDragPointRelease(lc::operation::Builder_SPtr builder) const {
-    auto hook = lc::scripting::customEntityDispatchHook();
+    auto hook = lc::scripting::customEntityDispatchHook(_dragPointRelease);
     if (hook && hook->tryOnDragPointRelease(_dragPointRelease, shared_from_this(),
                                             builder)) {
         return;
     }
 
     lc::entity::CADEntity_CSPtr self = shared_from_this();
-    invokeNonLua(_dragPointRelease, {
+    invokeNeutralCallback(_dragPointRelease, {
         lc::scripting::ScriptValue(self),
         lc::scripting::ScriptValue{},  // Builder_SPtr — no kind yet
     });
 }
 
 void ScriptCustomEntity::setDragPoint(lc::geo::Coordinate position) const {
-    auto hook = lc::scripting::customEntityDispatchHook();
+    auto hook = lc::scripting::customEntityDispatchHook(_newDragPoint);
     if (hook && hook->trySetDragPoint(_newDragPoint, shared_from_this(),
                                       position)) {
         return;
     }
 
     lc::entity::CADEntity_CSPtr self = shared_from_this();
-    invokeNonLua(_newDragPoint, {
+    invokeNeutralCallback(_newDragPoint, {
         lc::scripting::ScriptValue(self),
         lc::scripting::ScriptValue(position),
     });

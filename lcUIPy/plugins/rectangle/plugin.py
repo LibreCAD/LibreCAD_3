@@ -27,12 +27,11 @@ Two limitations compared to the pre-refactor Lua original:
     `.new()` per PR-5.5's ctor-vs-factory pattern, matching the fixed
     `remove_operation.py` sample.
 
-**Known blocker**: DXF reload of custom entities is currently broken by
-an upstream libdxfrw bug (task_e20ba02a — dead loop in
-`DRW_Entity::parseDxfGroups` never reads app-data codes 410/411/470/
-471).  The plugin *registration* is correct and works today; the
-*reconstruction dispatch* only fires post-DXF-fix.  Meanwhile the
-interactive `PYRECTANGLE` create path fully works today.
+**DXF round-trip status**: the custom-entity reconstruction regression passes
+against the pinned libdxfrw revision with the app-data reader patch applied.
+The Python callback and interactive `PYRECTANGLE` path are covered locally;
+Linux/Windows provider validation remains a platform gate, so do not infer
+cross-platform DXF support from the macOS result alone.
 """
 
 import lc
@@ -63,6 +62,14 @@ _drag_selected_point = {}   # insert_id → int (0-3, corner ID)
 _drag_width = {}            # insert_id → float
 _drag_height = {}           # insert_id → float
 _drag_base = {}             # insert_id → Coordinate (bottom-left after drag)
+
+
+def _require_drag_builder(builder):
+    """Require the host's shared transaction; never split drag undo steps."""
+    if not isinstance(builder, lc.operation.Builder):
+        raise RuntimeError(
+            "custom-entity drag requires the operation Builder transaction")
+    return builder
 
 
 # =============================================================================
@@ -149,21 +156,11 @@ def _drag_point_click(insert, builder, point_id):
     Per PR-5.5's fixup lesson: `lc.operation.Push()` / `Remove()` are
     NOT valid ctor calls; use `.new()` static factories.
 
-    ARCHITECTURAL GAP (task_TBD — Python-side dispatch hook): the
-    Python neutral dispatch path passes `builder` as None because
-    `Builder_SPtr` has no `ScriptValue` kind (see
-    lcscripting/scriptvalue.h — no Kind::Builder).  When lcadluascript's
-    `LuaCustomEntityDispatchHook` fires for a Lua-registered plugin,
-    `builder` is a real kaguya userdata; when the neutral fallback
-    fires for a Python-registered plugin, `builder` is None.  The
-    proper long-term fix is to add a Python-side dispatch hook that
-    mirrors sub-piece 2b's Lua hook — bindings for
-    `lc::operation::Builder` + a hook implementation in
-    lcadpythonscript/scriptadapter/.  For now this plugin is
-    DEFENSIVE: when `builder is None`, fall back to direct
-    `.execute()`, sacrificing undo-transaction grouping but keeping
-    the drag operation functional.
+    The Python dispatch adapter passes the real Builder. Treat a missing
+    builder as a broken host contract: direct execution here would split
+    the drag into unrelated undo entries.
     """
+    builder = _require_drag_builder(builder)
     key = insert.id()
     _drag_selected_point[key] = point_id
     doc = insert.document()
@@ -180,8 +177,7 @@ def _drag_point_click(insert, builder, point_id):
     # GUI session via mainWindow's cadMdiChild → tempEntities.
     _preview_add(insert.document(), existing)
 
-    # Remove from document; commit through the builder if we have one,
-    # else direct execute (see docstring's ARCHITECTURAL GAP note).
+    # Remove from document through the shared drag transaction.
     _remove_via_builder(builder, doc, list(existing) + [insert])
 
 
@@ -189,12 +185,8 @@ def _drag_point_release(insert, builder):
     """Called when the user releases the drag.  Commits the new
     rectangle to the document with the updated width/height/base.
 
-    ARCHITECTURAL GAP: same builder-is-None situation as
-    _drag_point_click; falls back to direct execute when builder is
-    None.  Coordinator's PR-6.1 sub-piece 3c review flagged the
-    previous version for calling `.execute()` unconditionally
-    (ignoring `builder`) — now fixed to use `builder.append(...)`
-    when non-None per the intended undo-transaction-grouping shape.
+    All changes are appended to the shared drag transaction. A missing
+    builder is an integration error; never commit separate operations.
     """
     key = insert.id()
     doc = insert.document()
@@ -204,6 +196,7 @@ def _drag_point_release(insert, builder):
     h = _drag_height.get(key)
     if base is None or w is None or h is None:
         return
+    builder = _require_drag_builder(builder)
 
     # Clear the preview lines from tempEntities.
     if key in _drag_storage:
@@ -220,27 +213,9 @@ def _drag_point_release(insert, builder):
         eb.appendEntity(line)
     eb.appendEntity(_create_rectangle_entity(base, insert.layer(), doc, block))
 
-    # Commit through the builder (undo-transaction grouping) OR direct
-    # execute (defensive path per _drag_point_click's ARCHITECTURAL GAP
-    # note).
-    if builder is not None:
-        # Preferred path — atomic group via Builder::append.  Add the
-        # AddBlock op then the EntityBuilder.
-        try:
-            builder.append(lc.operation.AddBlock.new(doc, block))
-            builder.append(eb)
-        except AttributeError:
-            # Very old runtime hit; fall through to direct execute
-            # for robustness.  If this path fires, the ARCHITECTURAL
-            # GAP fix (Python-side dispatch hook + Builder binding)
-            # hasn't landed yet.
-            lc.operation.AddBlock.new(doc, block).execute()
-            eb.execute()
-    else:
-        # Defensive path — direct execute.  Undo groups the two ops
-        # separately instead of as one drag transaction.
-        lc.operation.AddBlock.new(doc, block).execute()
-        eb.execute()
+    # Append to the same Builder used by the click callback and DragManager.
+    builder.append(lc.operation.AddBlock.new(doc, block))
+    builder.append(eb)
 
     # Cleanup per-Insert drag state.
     for d in (_drag_storage, _drag_selected_point,
@@ -377,11 +352,8 @@ def _remove_via_builder(builder, doc, entities):
     """Remove `entities` from `doc` via the operation `builder` using
     the Push+Remove pattern.
 
-    Sub-piece 3c fixup — the previous version called `builder.append(...)`
-    unconditionally, which raised AttributeError on `builder=None`
-    (silently swallowed by PythonCallbackImpl::invoke).  Now: guard on
-    None, direct execute when builder is None.  See ARCHITECTURAL GAP
-    note in `_drag_point_click`.
+    The actual drag path always supplies the shared operation Builder;
+    reject a broken host contract rather than executing outside it.
     """
     # Per PR-5.5 fixup — Push and Remove are `.def_static("new", ...)`
     # only, NOT `py::init<>()`.  Calling `Push()` / `Remove()` raises
@@ -392,17 +364,7 @@ def _remove_via_builder(builder, doc, entities):
     inner.appendOperation(lc.operation.Push.new())
     inner.appendOperation(lc.operation.Remove.new())
 
-    if builder is not None:
-        try:
-            builder.append(inner)
-        except AttributeError:
-            # Should not happen if a Builder binding lands (see
-            # ARCHITECTURAL GAP note); guard for robustness.
-            inner.execute()
-    else:
-        # Defensive path — no Builder available in the Python neutral
-        # dispatch fallback.  Direct execute.
-        inner.execute()
+    _require_drag_builder(builder).append(inner)
 
 
 def _preview_add(doc, entities):
@@ -539,12 +501,10 @@ class PyRectangleOp(CreateOperations):
 # Fires when NewWaitingCustomEntityEvent is emitted for an Insert whose
 # displayBlock is a CustomEntityStorage with pluginName == "LC Plugin".
 #
-# NOTE (task_e20ba02a): this dispatch is currently BLOCKED by an upstream
-# libdxfrw bug that drops all app-data on read (DRW_Entity::parseDxfGroups
-# dead loop).  The plugin registration itself is correct; the callback
-# will fire once the upstream bug is fixed.  See
-# unittest/scripting/customentitymanager_test.cpp's
-# `CustomEntityDxfRoundTrip` test comment for the full evidence trail.
+# The shipped DXF reader path must use the pinned, app-data-patched libdxfrw
+# revision; the local `CustomEntityDxfRoundTrip` regression verifies the
+# reconstruction callback against that provider. Other provider lanes remain
+# unverified until their hosted artifact tests pass.
 # =============================================================================
 
 def _on_new_waiting_custom_entity(insert):
@@ -567,9 +527,9 @@ def _on_new_waiting_custom_entity(insert):
     replaces the placeholder atomically via the storage manager's
     id-keyed dispatch.
 
-    (task_e20ba02a is orthogonal: once libdxfrw is fixed, DXF reload
-    will actually reach this callback, and this setID fix keeps the
-    reconstruction from creating duplicates.)
+    The pinned-provider DXF regression exercises this callback after reload;
+    setting the original ID replaces the reader's placeholder Insert instead
+    of adding a duplicate entity.
     """
     ceb = lc.builder.CustomEntityBuilder()
     # Copy the InsertBuilder-parent fields explicitly.  The Lua

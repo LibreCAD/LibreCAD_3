@@ -101,25 +101,27 @@ You need to compile Google Test in /usr/src/gtest/ and move the libraries in /us
 GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
 http://askubuntu.com/a/456849
 
-### AppImage packaging (phase 6 PR-6.3)
-The Ubuntu build script (`scripts/ubuntu-install/createAppImage.sh`)
-uses `linuxdeploy` + the Qt plugin to produce a distributable AppImage.
+### AppImage packaging
 
-**Python scripting in the current AppImage:** the librecad binary is
-linked against libpython3.X.so, so `linuxdeploy` bundles the shared
-library automatically.  The Python **standard library** (~30 MB of .py
-files under `/usr/lib/python3.X/`) is NOT a shared-library dependency
-and is not bundled.  A user running the AppImage on a system without
-matching Python installed will get `ImportError` on `import os` (etc.)
-in Python scripts that reach for stdlib modules.
+The Ubuntu package build enables Python scripting and
+`WITH_BUNDLED_PYTHON_RUNTIME=ON`. CMake stages the selected provider's standard
+library, dynamic modules, and exact shared `libpython` under the `AppDir`
+prefix; the Python binding library uses `$ORIGIN` to find that runtime beside
+itself. `scripts/ubuntu-install/createAppImage.sh` then uses `linuxdeploy` and
+its Qt plugin to package the staged tree. Ordinary developer/system installs
+leave `WITH_BUNDLED_PYTHON_RUNTIME` off and use their declared system Python
+dependency; Python scripting can be disabled with `-DWITH_PYTHONSCRIPT=OFF`.
+The core26 Snap recipe enables the same package-only runtime option.
 
-Two ways to work around this today:
-1. Ship the AppImage with `-DWITH_PYTHONSCRIPT=OFF` for a Lua-only
-   binary.  Python-authored operations won't be available, but Lua
-   ones work fully.
-2. Add a `linuxdeploy-plugin-python` step to `createAppImage.sh` that
-   bundles libpython + a stdlib subset (~30-50 MB AppImage size
-   increase).  Deferred; not blocking the Python scripting phase.
+The Ubuntu workflow smokes both the installed `AppDir` and final AppImage with
+`PYTHONHOME` and `PYTHONPATH` poisoned and requires every loaded `libpython`
+mapping to resolve inside the package's `usr` tree. Local Ubuntu 26.04 x86_64
+emulation passes the strict installed-AppDir smoke; native/hosted x86_64 and
+the final AppImage/Snap runtime closures remain open. The smoke does not by
+itself prove independence from every host library: extension-module dependency
+closure and hosted artifact results are still required. Consult the Python
+scripting support table for current evidence rather than assuming that a
+successful local packaging command establishes release-ready closure.
 
 Windows
 =======

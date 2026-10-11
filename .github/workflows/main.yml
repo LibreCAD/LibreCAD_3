@@ -19,15 +19,42 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
+      - name: Test embedded Python provider guard
+        run: python3 -m unittest scripts.tests.test_validate_python_provider scripts.tests.test_runtime_smoke_contract -v
+
       - run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
+
+      - name: Validate selected Linux Python provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          inventory=build/python-runtime-inventory.txt
+          test -s "$inventory"
+          python_executable="$(sed -n 's/^executable=//p' "$inventory")"
+          test -x "$python_executable"
+          "$python_executable" scripts/validate_python_provider.py --inventory "$inventory"
 
       - run: cd ${{ github.workspace }}
 
       - run: sudo ${{ github.workspace }}/scripts/ubuntu-install/createAppImage.sh
+
+      - name: Smoke final AppImage Python runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          appimage="$(find build -maxdepth 1 -type f -name 'LibreCAD*.AppImage' -print -quit)"
+          test -n "$appimage"
+          appimage="$(realpath "$appimage")"
+          cd /tmp
+          xvfb-run -a env QT_QPA_PLATFORM=xcb \
+            PYTHONHOME=/__librecad_python_poison__ \
+            PYTHONPATH=/__librecad_python_poison__ \
+            LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
+            "$appimage" --python-smoke
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
@@ -36,6 +63,17 @@ jobs:
 
       - run: ${{ github.workspace }}/scripts/ubuntu-install/createSnap.sh
 
+      - name: Smoke installed snap Python runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp
+          env QT_QPA_PLATFORM=offscreen \
+            PYTHONHOME=/__librecad_python_poison__ \
+            PYTHONPATH=/__librecad_python_poison__ \
+            LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
+            snap run librecad --python-smoke
+
       # if: always(): a later, unrelated createSnap.sh failure was otherwise
       # skipping this upload of an AppImage that had already built fine.
       - name: Uploading AppImage
@@ -43,7 +81,9 @@ jobs:
         if: always()
         with:
           name: assets
-          path: ${{ github.workspace }}/build/LibreCAD**AppImage
+          path: |
+            ${{ github.workspace }}/build/LibreCAD**AppImage
+            ${{ github.workspace }}/build/python-runtime-inventory.txt
           retention-days: 2
 
       - name: Uploading snap
@@ -54,17 +94,84 @@ jobs:
           name: LibreCAD3.snap
           retention-days: 2
 
-  windows:
-    name: BuildWindows
-    runs-on: windows-latest
+  # Validate the installed system-Python path on native ARM64. AppImage and
+  # Snap packaging remain in the amd64 job above.
+  linux-arm64:
+    name: BuildLinuxArm64
+    runs-on: ubuntu-26.04-arm
     steps:
-
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
-      - name: Install Visual Studio 2019 with tools
+      - name: Verify native runner architecture
+        run: |
+          test "$(uname -m)" = aarch64
+          test "$(dpkg --print-architecture)" = arm64
+
+      - name: Test embedded Python provider guard
+        run: python3 -m unittest scripts.tests.test_validate_python_provider scripts.tests.test_runtime_smoke_contract -v
+
+      - name: Build, test, install, and smoke Linux ARM64
+        env:
+          LIBRECAD_BUILD_DIR: build-linux-arm64
+        run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
+
+      - name: Validate selected ARM64 Python provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          inventory=build-linux-arm64/python-runtime-inventory.txt
+          test -s "$inventory"
+          python_executable="$(sed -n 's/^executable=//p' "$inventory")"
+          test -x "$python_executable"
+          "$python_executable" scripts/validate_python_provider.py --inventory "$inventory"
+
+      - name: Upload ARM64 Python runtime inventory
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-runtime-inventory-linux-arm64
+          path: build-linux-arm64/python-runtime-inventory.txt
+          if-no-files-found: ignore
+
+  windows:
+    name: BuildWindows
+    # Keep the hosted compiler aligned with Qt 6.8.3 and Conan's MSVC 2022 ABI.
+    runs-on: windows-2022
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Set up CPython SDK
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          architecture: 'x64'
+
+      - name: Pin the selected CPython for CMake
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:pythonLocation)) {
+            throw 'setup-python did not provide pythonLocation'
+          }
+          $pythonExe = Join-Path $env:pythonLocation 'python.exe'
+          if (-not (Test-Path $pythonExe)) {
+            throw "Selected CPython executable not found: $pythonExe"
+          }
+          & $pythonExe -c 'import sys; print(sys.version)'
+          "Python_ROOT_DIR=$env:pythonLocation" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "Python_EXECUTABLE=$pythonExe" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Test embedded Python provider guard
+        shell: pwsh
+        run: '& $env:Python_EXECUTABLE -m unittest scripts.tests.test_validate_python_provider scripts.tests.test_runtime_smoke_contract -v'
+
+      - name: Install Visual Studio 2022 with tools
         run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
 
       - run: cd ${{ github.workspace }}
@@ -79,8 +186,10 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
-          arch: win64_msvc2019_64
-          modules: 'qttools qtsvg'
+          # Qt 6.8+ publishes Windows desktop binaries against MSVC 2022.
+          # QtSvg and QtTools are part of the Qt 6 essentials package; they
+          # are not separately installable aqt modules.
+          arch: win64_msvc2022_64
 
       - name: Configure Qt 6
         shell: pwsh
@@ -104,17 +213,63 @@ jobs:
 
       - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
 
+      - name: Validate selected Windows Python provider
+        shell: pwsh
+        run: '& $env:Python_EXECUTABLE scripts/validate_python_provider.py --inventory build/python-runtime-inventory.txt'
+
+      - name: Upload Windows Python runtime inventory
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-runtime-inventory-windows
+          path: build/python-runtime-inventory.txt
+          if-no-files-found: ignore
+
       - run: cd ${{ github.workspace }}
 
       - name: Rename installer
         run: |
-          mv build/bin/LibreCAD3*.exe build/bin/LibreCAD3-`git describe --always`.exe
+          shopt -s nullglob
+          installers=(build/bin/LibreCAD3*.exe)
+          test "${#installers[@]}" -eq 1
+          version="$(git describe --always)"
+          mv "${installers[0]}" "build/bin/LibreCAD3-${version}.exe"
         shell: bash
+
+      - name: Install and smoke the isolated Python runtime
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem 'build/bin/LibreCAD3-*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'Packaged NSIS installer not found' }
+          $installRoot = Join-Path $env:RUNNER_TEMP 'LibreCAD Python smoke Ω'
+          # NSIS requires /D to be the last option and forbids quotes, even
+          # when the installation path contains spaces.
+          $installArgs = @('/S', "/D=$installRoot")
+          $installProcess = Start-Process -FilePath $installer.FullName -ArgumentList $installArgs -Wait -PassThru
+          if ($installProcess.ExitCode -ne 0) {
+            throw "NSIS installer exited with $($installProcess.ExitCode)"
+          }
+          $app = Join-Path $installRoot 'bin/librecad.exe'
+          if (-not (Test-Path $app)) { throw "Installed executable not found: $app" }
+          $env:PYTHONHOME = Join-Path $env:RUNNER_TEMP 'poison-python-home'
+          $env:PYTHONPATH = Join-Path $env:RUNNER_TEMP 'poison-python-path'
+          $env:LIBRECAD_REQUIRE_BUNDLED_PYTHON = '1'
+          Remove-Item Env:QT_PLUGIN_PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:QT_QPA_PLATFORM_PLUGIN_PATH -ErrorAction SilentlyContinue
+          Remove-Item Env:QTDIR -ErrorAction SilentlyContinue
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          Push-Location (Split-Path $app)
+          & $app --python-smoke
+          $smokeExitCode = $LASTEXITCODE
+          Pop-Location
+          if ($smokeExitCode -ne 0) { throw "Installed Python smoke exited with $smokeExitCode" }
 
       - name: Uploading exe
         uses: actions/upload-artifact@v4
         with:
-          path: '${{ github.workspace }}/build/bin/LibreCAD3**.exe'
+          path: |
+            ${{ github.workspace }}/build/bin/LibreCAD3**.exe
+            ${{ github.workspace }}/build/python-runtime-inventory.txt
           name: assets
 
   UpdateAssets:
@@ -123,7 +278,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

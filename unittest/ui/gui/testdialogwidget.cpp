@@ -18,7 +18,7 @@
 #include <lcscripting/scriptvalue.h>
 
 TEST(DialogWidgetTest, AddTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::api::DialogWidget dialogWidget("DialogTitle", nullptr);
 
     EXPECT_EQ("DialogTitle", dialogWidget.title());
@@ -52,7 +52,7 @@ TEST(DialogWidgetTest, AddTest) {
 }
 
 TEST(DialogWidgetTest, CallbackTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::MainWindow mainWindow;
     lc::ui::api::DialogWidget dialogWidget("DialogTitle", &mainWindow);
 

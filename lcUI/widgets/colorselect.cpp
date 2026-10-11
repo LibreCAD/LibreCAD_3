@@ -29,7 +29,8 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
         addItem(QIcon(pixmap), color);
     }
 
-    connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
+    connect(this, &QComboBox::textActivated,
+            this, &ColorSelect::onActivated);
 
     setMetaInfoManager(std::move(metaInfoManager));
 }

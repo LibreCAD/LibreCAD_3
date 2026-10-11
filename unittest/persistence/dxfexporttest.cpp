@@ -131,9 +131,8 @@ private:
 };
 
 std::string uniqueTmpDxf(const char* tag) {
-    auto pid = std::to_string(::getpid());
     return (boost::filesystem::temp_directory_path()
-            / (std::string("lc3-issue412-") + tag + "-" + pid + ".dxf")).string();
+            / boost::filesystem::unique_path(std::string("lc3-issue412-") + tag + "-%%%%%%%%.dxf")).string();
 }
 
 // Populate a document with one entity of every reader-producible kind.

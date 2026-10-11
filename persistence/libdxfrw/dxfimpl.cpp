@@ -39,6 +39,22 @@
 
 using namespace lc::persistence;
 
+void DXFimpl::addHeader(const DRW_Header* data) {
+    if (data == nullptr) {
+        return;
+    }
+
+    auto version = data->vars.find("$ACADVER");
+    if (version == data->vars.end()) {
+        version = data->vars.find("ACADVER");
+    }
+    if (version != data->vars.end() && version->second != nullptr
+        && version->second->type() == DRW_Variant::STRING
+        && version->second->content.s != nullptr) {
+        _acadVersion = *version->second->content.s;
+    }
+}
+
 const std::map<int, lc::Units> DXFimpl::_dxfToLCUnits = {
     {0, lc::Units::None},
     {1, lc::Units::Inch},
@@ -152,6 +168,11 @@ void DXFimpl::addBlock(const DRW_Block& data) {
     if(_currentBlock == nullptr) {
         _currentBlock = std::make_shared<lc::meta::Block>(data.name, base);
     }
+    // Blocks are parsed before the top-level Builder executes, so the
+    // document's name lookup does not yet include this definition. Keep the
+    // decoded block available while following INSERT references in the same
+    // DXF, especially custom-entity storage reconstructed from app-data.
+    _blocks[data.name] = _currentBlock;
     _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
     // May need to check if the block already exists: not sure
@@ -822,7 +843,10 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
     builder.setLayer(layer);
     builder.setCoordinate(coord(data.basePoint));
 
-    auto block=_document->blockByName(data.name);
+    auto parsedBlock = _blocks.find(data.name);
+    auto block = parsedBlock == _blocks.end()
+        ? _document->blockByName(data.name)
+        : parsedBlock->second;
     if (block==nullptr) {
         // It requests block like V21_PAKNING , it is already defined or from other file??
         // These blocks were not declared in loading file
@@ -923,7 +947,8 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         break;
     }
 
-    bool isBinary = type >= lc::persistence::File::LIBDXFRW_DXB_R12 && type < lc::persistence::File::LIBDXFRW_DXB_R2013;
+    bool isBinary = type >= lc::persistence::File::LIBDXFRW_DXB_R12
+                    && type <= lc::persistence::File::LIBDXFRW_DXB_R2013;
 
     bool success = dxfW->write(this, exportVersion, isBinary);
     delete dxfW;

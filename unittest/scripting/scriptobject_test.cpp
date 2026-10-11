@@ -125,6 +125,21 @@ TEST(ScriptObject, CallMethodPropagatesArgs) {
     EXPECT_EQ(result.asInt(), 7);
 }
 
+TEST(ScriptObject, UnsupportedMethodReturnFailsCheckedCall) {
+    auto op = makePyObj(
+        "class Op:\n"
+        "    def values(self):\n"
+        "        return [1, 2]\n",
+        "Op()");
+    lcs::ScriptValue result;
+    std::string error;
+
+    EXPECT_FALSE(op.callMethodChecked("values", result, error));
+    EXPECT_TRUE(result.isNil());
+    EXPECT_NE(error.find("Python sequences must contain only"),
+              std::string::npos);
+}
+
 TEST(ScriptObject, InstantiateInvokesConstructor) {
     // Phase 4 PR-7 primitive: instantiate() must return a fresh,
     // identity-preserved ScriptObject (unlike .call() which lossy-

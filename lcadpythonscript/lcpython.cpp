@@ -17,6 +17,8 @@
 #include "bridge/py_lc_operation.h"
 #include "bridge/py_lc_maths.h"
 #include "bridge/py_lc_event.h"
+#include "scriptadapter/python_customentitydispatch.h"
+#include "python_runtime_config.h"
 #if USE_PERSISTENCE
 #include "bridge/py_lc_persistence.h"
 #endif
@@ -24,9 +26,21 @@
 #include <pybind11/embed.h>
 
 #include <cassert>
+#include <algorithm>
+#include <codecvt>
+#include <fstream>
+#include <locale>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
+#include <vector>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace py = pybind11;
 
@@ -123,22 +137,241 @@ py::scoped_interpreter* g_interpreter = nullptr;
 py::gil_scoped_release* g_gil_release = nullptr;
 
 std::once_flag g_init_flag;
+std::mutex g_runtime_mutex;
+bool g_initialization_started = false;
+
+struct IsolatedRuntimeConfig {
+    std::string home;
+    std::vector<std::string> moduleSearchPaths;
+    bool staged = false;
+};
+
+bool g_has_isolated_runtime_config = false;
+IsolatedRuntimeConfig g_isolated_runtime_config;
+
+std::wstring toWide(const std::string& utf8) {
+#ifdef _WIN32
+    return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(utf8);
+#else
+    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(utf8);
+#endif
+}
+
+std::string joinPath(const std::string& root, const std::string& relative) {
+    if (root.empty()) return relative;
+    if (relative.empty()) return root;
+    const char last = root.back();
+    if (last == '/' || last == '\\') return root + relative;
+    return root + "/" + relative;
+}
+
+bool isFile(const std::string& path) {
+#ifdef _WIN32
+    const std::wstring wide = toWide(path);
+    return _waccess(wide.c_str(), 0) == 0;
+#else
+    return access(path.c_str(), F_OK) == 0;
+#endif
+}
+
+bool hasInstalledPythonPackage(const std::string& applicationDirectory) {
+    if (applicationDirectory.empty()) return false;
+
+    const std::vector<std::string> packageRoots = {
+        joinPath(applicationDirectory, "../lcUIPy"),
+        joinPath(applicationDirectory, "../share/librecad/lcUIPy"),
+        joinPath(applicationDirectory, "../Resources/lcUIPy"),
+        joinPath(applicationDirectory, "../Resources/librecad/lcUIPy"),
+    };
+    return std::any_of(packageRoots.begin(), packageRoots.end(),
+        [](const std::string& root) {
+            return isFile(joinPath(root, "__init__.py"));
+        });
+}
+
+bool selectStagedRuntime(const std::string& applicationDirectory,
+                         IsolatedRuntimeConfig& runtime) {
+    if (applicationDirectory.empty()) return false;
+    const std::vector<std::string> roots = {
+        joinPath(applicationDirectory, "python"),
+        joinPath(applicationDirectory, "../share/librecad/python"),
+        joinPath(applicationDirectory, "../Resources/python"),
+        joinPath(applicationDirectory, "../Resources/librecad/python"),
+        joinPath(applicationDirectory, "../Frameworks/python"),
+    };
+
+    for (const auto& root : roots) {
+        const std::string stdlib = joinPath(root, LC_PYTHON_STAGED_STDLIB_REL);
+        if (!isFile(joinPath(stdlib, "os.py"))) continue;
+
+        runtime.home = root;
+        runtime.staged = true;
+        runtime.moduleSearchPaths.clear();
+        const std::vector<std::string> relativePaths = {
+            LC_PYTHON_STAGED_STDLIB_REL,
+            LC_PYTHON_STAGED_STDARCH_REL,
+            LC_PYTHON_STAGED_DYNLIBS_REL,
+        };
+        for (const auto& relative : relativePaths) {
+            const std::string path = joinPath(root, relative);
+            if (!isFile(joinPath(path, "os.py")) &&
+                !isFile(joinPath(path, "encodings/__init__.py")) &&
+                relative != LC_PYTHON_STAGED_DYNLIBS_REL) {
+                continue;
+            }
+            if (std::find(runtime.moduleSearchPaths.begin(),
+                          runtime.moduleSearchPaths.end(), path) ==
+                runtime.moduleSearchPaths.end()) {
+                runtime.moduleSearchPaths.push_back(path);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void checkPyStatus(PyStatus status, const char* operation) {
+    if (PyStatus_Exception(status)) {
+        const char* detail = status.err_msg ? status.err_msg : "unknown CPython error";
+        throw std::runtime_error(std::string(operation) + ": " + detail);
+    }
+}
+
+void setConfigString(PyConfig& config, wchar_t** field,
+                     const std::string& value, const char* operation) {
+    const std::wstring wide = toWide(value);
+    checkPyStatus(PyConfig_SetString(&config, field, wide.c_str()), operation);
+}
+
+void appendModuleSearchPath(PyConfig& config, const std::string& path) {
+    if (path.empty()) {
+        return;
+    }
+    const std::wstring wide = toWide(path);
+    checkPyStatus(PyWideStringList_Append(&config.module_search_paths, wide.c_str()),
+                  "append Python module search path");
+}
+
+void initializeIsolatedInterpreter(const IsolatedRuntimeConfig& runtime) {
+    PyPreConfig preconfig;
+    PyPreConfig_InitIsolatedConfig(&preconfig);
+    preconfig.utf8_mode = 1;
+    checkPyStatus(Py_PreInitialize(&preconfig), "preinitialize Python in UTF-8 mode");
+
+    PyConfig config;
+    PyConfig_InitIsolatedConfig(&config);
+    bool passedToPybind = false;
+    try {
+        // Keep the flags explicit: packaged/application execution must not
+        // inherit host Python settings or add the current/executable dir.
+        config.parse_argv = 0;
+        config.install_signal_handlers = 0;
+        config.use_environment = 0;
+        config.site_import = 0;
+        config.user_site_directory = 0;
+        config.write_bytecode = 0;
+        config.module_search_paths_set = 1;
+
+        setConfigString(config, &config.home, runtime.home,
+                        "set Python runtime home");
+        for (const auto& path : runtime.moduleSearchPaths) {
+            appendModuleSearchPath(config, path);
+        }
+        if (config.module_search_paths.length == 0) {
+            throw std::runtime_error("isolated Python configuration has no module search paths");
+        }
+        if (Py_IsInitialized()) {
+            throw std::runtime_error("Python was initialized before runtime configuration");
+        }
+
+        // pybind11's PyConfig overload clears config on success or failure.
+        // add_program_dir_to_path=false prevents it from reintroducing the
+        // executable directory after our explicit isolated configuration.
+        passedToPybind = true;
+        g_interpreter = new py::scoped_interpreter(&config, 0, nullptr, false);
+    } catch (...) {
+        if (!passedToPybind) {
+            PyConfig_Clear(&config);
+        }
+        throw;
+    }
+}
 
 } // namespace
 
+void PythonInit::configureForApplication(
+    const std::string& applicationDirectory) {
+    IsolatedRuntimeConfig config;
+    config.home = LC_PYTHON_RUNTIME_HOME;
+    config.moduleSearchPaths = {
+        LC_PYTHON_RUNTIME_STDLIB,
+        LC_PYTHON_RUNTIME_STDARCH,
+        LC_PYTHON_RUNTIME_DYNLIBS,
+        LC_PYTHON_RUNTIME_SITELIB,
+        LC_PYTHON_RUNTIME_SITEARCH,
+    };
+    const bool stagedRuntime =
+        selectStagedRuntime(applicationDirectory, config);
+    if (hasInstalledPythonPackage(applicationDirectory) && !stagedRuntime) {
+        throw std::runtime_error(
+            "installed lcUIPy package found, but its staged CPython runtime is missing beside the application");
+    }
+    if (stagedRuntime && config.moduleSearchPaths.empty()) {
+        throw std::runtime_error(
+            "staged Python runtime contains no module search paths");
+    }
+
+    std::lock_guard<std::mutex> lock(g_runtime_mutex);
+    if (g_has_isolated_runtime_config) {
+        if (g_isolated_runtime_config.home != config.home ||
+            g_isolated_runtime_config.moduleSearchPaths != config.moduleSearchPaths) {
+            throw std::logic_error("conflicting Python runtime configuration");
+        }
+        return;
+    }
+    if (g_initialization_started || Py_IsInitialized()) {
+        throw std::logic_error(
+            "Python runtime configuration must be selected before initialization");
+    }
+    g_isolated_runtime_config = std::move(config);
+    g_has_isolated_runtime_config = true;
+}
+
+std::string PythonInit::configuredStagedRuntimeHome() {
+    std::lock_guard<std::mutex> lock(g_runtime_mutex);
+    if (!g_has_isolated_runtime_config || !g_isolated_runtime_config.staged) {
+        return {};
+    }
+    return g_isolated_runtime_config.home;
+}
+
 void PythonInit::initialize() {
     std::call_once(g_init_flag, [] {
-        // Signal handlers OFF — the default installs CPython's SIGINT handler,
-        // which makes Ctrl-C a no-op for a Qt-event-loop process.
-        // Explicit heap-allocation ties the lifetime to the process, matching
-        // the "intentionally leaked, never finalized" decision.
-        g_interpreter = new py::scoped_interpreter(
-            /*init_signal_handlers=*/false);
+        IsolatedRuntimeConfig runtime;
+        bool isolated = false;
+        {
+            std::lock_guard<std::mutex> lock(g_runtime_mutex);
+            g_initialization_started = true;
+            isolated = g_has_isolated_runtime_config;
+            runtime = g_isolated_runtime_config;
+        }
+
+        if (isolated) {
+            initializeIsolatedInterpreter(runtime);
+        } else {
+            // Tests and developer clients which do not select an application
+            // runtime retain normal system-Python discovery.
+            g_interpreter = new py::scoped_interpreter(
+                /*init_signal_handlers=*/false);
+        }
 
         // Permanent-release GIL pattern (plan decision 7).  After this call
         // the main thread does NOT hold the GIL; every re-entry point (this
         // facade's run*, phase-4 adapters, etc.) must acquire.
         g_gil_release = new py::gil_scoped_release();
+
+        // Keep Python and Lua custom-entity dispatch hooks independent.
+        installPythonCustomEntityDispatchHook();
     });
 }
 

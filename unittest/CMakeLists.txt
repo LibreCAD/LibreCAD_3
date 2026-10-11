@@ -103,10 +103,12 @@ endif()
 # Only included when WITH_PYTHONSCRIPT is ON; the test files start with
 # `#include <lcpython.h>` which needs pybind11.
 if(WITH_PYTHONSCRIPT)
+    include_directories("${CMAKE_BINARY_DIR}/lcadpythonscript/generated")
     list(APPEND src
         python/pythonbindings_test.cpp
         python/demoscript_test.cpp
         python/parity_test.cpp             # Phase 2 slice 2.4 parity dump
+        python/python_runtime_test.cpp     # isolated selected-provider startup
         scripting/scriptcallback_test.cpp  # Phase 4 slice 4.1
         scripting/scriptobject_test.cpp    # Phase 4 slice 4.1 follow-on
         scripting/eventbus_test.cpp        # Phase 4 slice 4.1 follow-on
@@ -126,6 +128,7 @@ if(WITH_PYTHONSCRIPT)
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
     include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")  # Phase 6 PR-6.1
     include_directories("${CMAKE_SOURCE_DIR}")   # for <lcscripting/...>
+    include_directories(${LUA_INCLUDE_DIR}) # customentitymanager_test uses the Lua runtime API
     set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting lcluascript)
     # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
     # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
@@ -206,7 +209,9 @@ if(WITH_RENDERING_UNITTESTS)
 
     # Boost
     set(Boost_USE_MULTITHREADED ON)
-    find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
+    # Boost.System is header-only since Boost 1.69; don't require a separate
+    # boost_system package when the optional rendering suite is enabled.
+    find_package(Boost COMPONENTS program_options filesystem log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 
@@ -244,4 +249,8 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 # Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
 include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+# Current GoogleTest releases require C++17. Keep the application and library
+# targets on the project's C++14 baseline; only the test runner needs C++17.
+target_compile_features(lcunittest PRIVATE cxx_std_17)
+target_compile_definitions(lcunittest PRIVATE LC_USE_PERSISTENCE=${LC_USE_PERSISTENCE})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})

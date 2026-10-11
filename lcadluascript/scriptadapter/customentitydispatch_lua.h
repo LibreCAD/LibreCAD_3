@@ -33,6 +33,8 @@ namespace lua {
 /// `callback.invoke(...)` per the neutral path.
 class LuaCustomEntityDispatchHook : public lc::scripting::CustomEntityDispatchHook {
 public:
+    const char* runtime() const override { return "lua"; }
+
     bool trySnapPoints(
         const lc::scripting::ScriptCallback& callback,
         const std::shared_ptr<const lc::entity::Insert>& self,
@@ -70,10 +72,8 @@ public:
         lc::operation::Builder_SPtr builder) override;
 };
 
-/// Install the Lua dispatch hook as the process-global
-/// `CustomEntityDispatchHook`.  Idempotent — safe to call multiple
-/// times (later calls overwrite with a fresh instance; the previous
-/// instance's ref-count drops to zero and it's destroyed).
+/// Install or replace the Lua runtime's dispatch hook. Repeated calls are
+/// idempotent and leave the Python runtime's hook untouched.
 ///
 /// Called from `LCLua::LCLua(...)` in `lcadluascript/lclua.cpp` so
 /// every window's initLua step installs the hook (matches Lua-adapter

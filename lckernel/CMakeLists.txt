@@ -6,7 +6,7 @@ set(PATTERN_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/res/hatch)
 if (MSVC)
     install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "res")
 else()
-    install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad")
+    install(DIRECTORY "${PATTERN_RESOURCE_PATH}" DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad")
 endif()
 
 #Include TinySpline
@@ -14,6 +14,11 @@ add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 add_definitions("-DBOOST_ALL_NO_LIB")
 remove_definitions("-Wall")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
+# TinySpline otherwise hard-codes `lib64` for every 64-bit target. Keep its
+# shared library beside LibreCAD's libraries so the install RPATH and AppDir
+# layout agree on Debian-style multiarch paths, macOS, and other prefixes.
+set(TINYSPLINE_INSTALL_LIBRARY_DIR "${CMAKE_INSTALL_LIBDIR}" CACHE STRING
+    "TinySpline library install directory, aligned with LibreCAD" FORCE)
 add_subdirectory("tinyspline")
 include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -296,5 +301,7 @@ endif()
 
 # INSTALLATION
 install(TARGETS lckernel 
+	${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

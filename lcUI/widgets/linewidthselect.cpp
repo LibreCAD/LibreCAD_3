@@ -48,7 +48,8 @@ LineWidthSelect::LineWidthSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, Q
 
     setMetaInfoManager(std::move(metaInfoManager));
 
-    connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
+    connect(this, &QComboBox::textActivated,
+            this, &LineWidthSelect::onActivated);
 }
 
 void LineWidthSelect::createEntries() {

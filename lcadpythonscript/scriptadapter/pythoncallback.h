@@ -28,6 +28,7 @@
 #include "../qt_keywords_pop.h"
 
 #include <memory>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,23 @@ namespace python {
 /// Wrap a py::object into a ScriptCallback.  The `runtime()` tag is
 /// "python", and the underlying pImpl handles the GIL discipline.
 LC_PYTHON_API lc::scripting::ScriptCallback makePythonCallback(pybind11::object obj);
+
+/// Invoke a Python-backed callback with already-materialized Python args.
+/// Unlike ScriptCallback::invoke this preserves adapter-only argument and
+/// return types such as Builder_SPtr, SimpleSnapConstrain, and snap vectors.
+/// Exceptions propagate to the typed adapter so it can report the slot and
+/// return a safe default without invoking the callback a second time.
+LC_PYTHON_API pybind11::object invokePythonCallback(
+    const lc::scripting::ScriptCallback& callback,
+    const pybind11::tuple& args);
+
+/// UI-side extension point for tagged non-owning values in ScriptValue.
+/// lcadpythonscript stays independent of Qt and UI types; lcUI installs the
+/// materializer after registering its holder-less pybind11 classes.
+using PythonOpaqueMaterializer = std::function<pybind11::object(
+    const lc::scripting::OpaquePtr&)>;
+LC_PYTHON_API void setPythonOpaqueMaterializer(
+    PythonOpaqueMaterializer materializer);
 
 /// Convert a ScriptValue to a py::object (returns py::none() for Nil).
 /// Must be called with the GIL held.

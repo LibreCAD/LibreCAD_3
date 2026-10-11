@@ -33,7 +33,7 @@ public:
 
     static Type open(lc::storage::Document_SPtr document, const std::string& path, Library library);
 
-    static void save(lc::storage::Document_SPtr document, const std::string& path, Type type);
+    static bool save(lc::storage::Document_SPtr document, const std::string& path, Type type);
 
     static std::map<Type, std::string> getAvailableFileTypes();
 

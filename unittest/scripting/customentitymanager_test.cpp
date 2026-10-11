@@ -35,6 +35,7 @@
 #include <cad/events/newwaitingcustomentityevent.h>
 #include <cad/meta/customentitystorage.h>
 #include <cad/meta/layer.h>
+#include <cad/operations/builder.h>
 #include <cad/operations/blockops.h>
 #include <cad/primitive/insert.h>
 #include <cad/storage/documentimpl.h>
@@ -546,8 +547,6 @@ struct SceFixture {
         // CADEntity's metatable instead of Insert's.
         lc::lua::installLuaCustomEntityDispatchHook();
 
-        // Bind Insert::position + Coordinate accessors + return-type
-        // classes so callbacks can call type-specific methods.
         state["lc"] = kaguya::NewTable();
         state["lc"]["entity"] = kaguya::NewTable();
         state["lc"]["entity"]["Insert"].setClass(
@@ -906,17 +905,14 @@ TEST(ScriptCustomEntity, LuaCustomEntityTypedefStillWorks) {
 //     entity name, custom params (width/height) round-trip through DXF
 //     app-data.
 //
-// The test is CI-only executable (macOS Homebrew's Lua 5.5 breaks
-// kaguya's `lua_newuserdata` reference; needs Ubuntu CI's Lua 5.3 arm64
-// + libdxfrw runtime).
+// Runs against the pinned, patched libdxfrw dependency on local and CI builds.
 // -----------------------------------------------------------------------------
 
 namespace {
 
 std::string uniqueTmpDxf(const std::string& prefix) {
-    const std::string pid = std::to_string(::getpid());
     return (boost::filesystem::temp_directory_path()
-            / ("librecad-" + prefix + "-" + pid + ".dxf")).string();
+            / boost::filesystem::unique_path("librecad-" + prefix + "-%%%%%%%%.dxf")).string();
 }
 
 }  // namespace
@@ -924,54 +920,10 @@ std::string uniqueTmpDxf(const std::string& prefix) {
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(CustomEntityDxfRoundTrip, PluginReconstructsEntityFromDxfAppData) {
     namespace py = pybind11;
-
-    // -------------------------------------------------------------------------
-    // KNOWN BLOCKER — upstream libdxfrw bug (task_e20ba02a).
-    //
-    // Coordinator's orchestrated review of PR-6.1 sub-piece 3b confirmed
-    // via independent execution (real arm64 libdxfrw build from clean
-    // sibling-repo git-archive + pure-C++ harness through the production
-    // path) that the DXF READ side is broken for custom entities:
-    //   * WRITE side is correct — app-data codes 102/410/411/470/471
-    //     genuinely land in the file.
-    //   * READ side is broken — `displayBlock()` comes back as a plain
-    //     `Block`, not a `CustomEntityStorage`.  `waitingCustomEntities()`
-    //     is empty.  `NewWaitingCustomEntityEvent` never fires for a
-    //     DXF-reloaded custom entity.
-    //
-    // Root cause: `DRW_Entity::parseDxfGroups()` in
-    // libdxfrw/src/drw_entities.cpp has a dead loop.  Its exit condition
-    // checks the function's own ENTRY parameters (always 102 and always
-    // "{") instead of freshly-read values, so the loop that consumes the
-    // 410/411/470/471 records never runs.  ~7-year-old upstream bug
-    // (commit 778d1d2, 2019-04-24); confirmed present on both local
-    // master AND the LibreCAD_3 branch CI clones.
-    //
-    // This test is CORRECTLY WRITTEN — its `fired_count == 1` assertion
-    // would fail in CI because the manager never dispatches (the
-    // NewWaitingCustomEntityEvent never fires).  Do NOT weaken any
-    // assertion to work around the upstream bug.  The moment libdxfrw
-    // is fixed, this test will pass and prove the phase-6 exit
-    // criterion; until then, it's the canonical demonstration of the
-    // custom-entity persistence break.
-    //
-    // Marked as GTEST_SKIP with a link to the tracked task so CI runs
-    // stay green while the upstream fix is decided (patched libdxfrw
-    // pin, adjust the exit criterion, or wait — user decision, not
-    // resolvable at either the agent or coordinator level).
-    GTEST_SKIP()
-        << "BLOCKED by upstream libdxfrw bug (task_e20ba02a): "
-           "DRW_Entity::parseDxfGroups() has a dead loop that never "
-           "reads app-data codes 410/411/470/471, so custom-entity "
-           "DXF reload is broken.  This test is correct as written and "
-           "will pass when libdxfrw is fixed.  See test-file comment "
-           "above for the full evidence trail.";
-
-    // -------------------------------------------------------------------------
     // Setup: install the `lc.register_plugin` hook to forward into
     // `LuaCustomEntityManager` — normally done by lcUI's installEventHooks
-    // at MainWindow construction time.  This test runs headless (no
-    // lcUI), so install manually.
+    // at MainWindow construction time. This test runs headless (no lcUI),
+    // so install manually.
     // -------------------------------------------------------------------------
     lc::python::setRegisterPluginHook(
         [](const std::string& name, py::object cb) {
@@ -985,6 +937,16 @@ TEST(CustomEntityDxfRoundTrip, PluginReconstructsEntityFromDxfAppData) {
     lc::python::LCPython lcpy;
     const std::string dxfPath = uniqueTmpDxf("customentity-roundtrip");
     boost::filesystem::remove(dxfPath);  // pre-clean
+    struct Cleanup {
+        std::string path;
+        ~Cleanup() {
+            boost::filesystem::remove(path);
+            lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+            lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+            py::gil_scoped_acquire gil;
+            py::exec("import builtins; builtins._dxf_roundtrip_state = None");
+        }
+    } cleanup{dxfPath};
 
     // -------------------------------------------------------------------------
     // Step 1 — Save side.  Build a document with a custom entity via
@@ -1069,6 +1031,12 @@ lc.persistence.File.save(document, dxf_path,
 import builtins
 builtins._dxf_roundtrip_state = {
     'fired_count': 0,
+    'snap_count': 0,
+    'nearest_count': 0,
+    'drag_count': 0,
+    'set_drag_count': 0,
+    'click_count': 0,
+    'release_count': 0,
     'received_pluginName': None,
     'received_entityName': None,
     'received_width':      None,
@@ -1080,7 +1048,33 @@ builtins._dxf_roundtrip_state = {
     # (base-typed Block_CSPtr → CustomEntityStorage via classh RTTI).
     'displayblock_is_ces': None,
     'insert_is_insert':    None,
+    'placeholder_id': None,
+    'rebuilt_id': None,
 }
+
+def _snap_points(insert, coord, constrain, min_distance, max_points):
+    state = builtins._dxf_roundtrip_state
+    state['snap_count'] += 1
+    return [lc.EntityCoordinate(lc.geo.Coordinate(5.0, 10.0, 0.0), 0)]
+
+def _nearest_point(insert, coord):
+    builtins._dxf_roundtrip_state['nearest_count'] += 1
+    return lc.geo.Coordinate(31.0, 32.0, 33.0)
+
+def _drag_points(insert):
+    builtins._dxf_roundtrip_state['drag_count'] += 1
+    return {4: lc.geo.Coordinate(40.0, 41.0, 42.0)}
+
+def _set_drag_point(insert, position):
+    builtins._dxf_roundtrip_state['set_drag_count'] += 1
+
+def _on_drag_point_click(insert, builder, point):
+    state = builtins._dxf_roundtrip_state
+    state['click_count'] += 1
+    state['click_point'] = point
+
+def _on_drag_point_release(insert, builder):
+    builtins._dxf_roundtrip_state['release_count'] += 1
 
 def _reconstruct(insert):
     # Prove pybind11's polymorphic downcast on the received arg:
@@ -1090,6 +1084,7 @@ def _reconstruct(insert):
     # that only exists when the plugin BUILDS one via
     # CustomEntityBuilder).  Verify via isinstance.
     builtins._dxf_roundtrip_state['fired_count'] += 1
+    builtins._dxf_roundtrip_state['placeholder_id'] = insert.id()
     builtins._dxf_roundtrip_state['insert_is_insert'] = \
         isinstance(insert, lc.entity.Insert)
 
@@ -1116,6 +1111,26 @@ def _reconstruct(insert):
     builtins._dxf_roundtrip_state['received_position_y'] = pos.y()
     builtins._dxf_roundtrip_state['received_position_z'] = pos.z()
 
+    # Rebuild live Python behavior from the DXF-backed storage metadata.
+    # Callbacks are plugin code and are intentionally not serialized.
+    ceb = lc.builder.CustomEntityBuilder()
+    ceb.setLayer(insert.layer())
+    ceb.setCoordinate(insert.position())
+    ceb.setDocument(insert.document())
+    ceb.setDisplayBlock(block)
+    ceb.setID(insert.id())
+    ceb.setSnapFunction(_snap_points)
+    ceb.setNearestPointFunction(_nearest_point)
+    ceb.setDragPointsFunction(_drag_points)
+    ceb.setNewDragPointFunction(_set_drag_point)
+    ceb.setDragPointsClickedFunction(_on_drag_point_click)
+    ceb.setDragPointsReleasedFunction(_on_drag_point_release)
+    rebuilt = ceb.build()
+    builtins._dxf_roundtrip_state['rebuilt_id'] = rebuilt.id()
+    eb = lc.operation.EntityBuilder.new(insert.document())
+    eb.appendEntity(rebuilt)
+    eb.execute()
+
 lc.register_plugin('DxfRoundTripPlugin', _reconstruct)
 )py";
     ASSERT_EQ(lcpy.runString(registerScript.c_str(), ns2), "");
@@ -1130,6 +1145,34 @@ opened_type = lc.persistence.File.open(
 assert opened_type is not None, "libdxfrw open must return a file-type enum"
 )py";
     ASSERT_EQ(lcpy.runString(openScript.c_str(), ns2), "");
+
+    bool foundCustomStorage = false;
+    for (const auto& block : doc2->blocks()) {
+        auto storage = std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block);
+        if (storage && storage->pluginName() == "DxfRoundTripPlugin") {
+            foundCustomStorage = true;
+            EXPECT_EQ(storage->entityName(), "TestBox");
+            EXPECT_EQ(storage->param("width"), "20.5");
+            EXPECT_EQ(storage->param("height"), "30.25");
+        }
+    }
+    ASSERT_TRUE(foundCustomStorage)
+        << "DXF app-data must reconstruct CustomEntityStorage before plugin dispatch";
+    EXPECT_TRUE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin("DxfRoundTripPlugin"));
+    const auto loadedEntities = doc2->entityContainer().asVector();
+    ASSERT_EQ(loadedEntities.size(), 1u);
+    auto loadedInsert = std::dynamic_pointer_cast<const lc::entity::Insert>(loadedEntities.front());
+    ASSERT_TRUE(loadedInsert);
+    auto loadedStorage = std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(
+        loadedInsert->displayBlock());
+    ASSERT_TRUE(loadedStorage);
+    EXPECT_EQ(loadedStorage->pluginName(), "DxfRoundTripPlugin");
+    ns2.set("loaded_entity_id", loadedInsert->id());
+    EXPECT_EQ(doc2->waitingCustomEntities("DxfRoundTripPlugin").size(), 0u);
+    auto loadedCustomEntity = std::dynamic_pointer_cast<const lc::entity::ScriptCustomEntity>(
+        loadedEntities.front());
+    ASSERT_TRUE(loadedCustomEntity)
+        << "the plugin must replace the raw DXF placeholder with a live entity";
 
     // -------------------------------------------------------------------------
     // Step 3 — Assertions on the reconstructed state.
@@ -1181,21 +1224,55 @@ assert abs(s['received_position_x'] -  5.0) < 1e-6, \
     f"position.x mismatch: {s['received_position_x']}"
 assert abs(s['received_position_y'] - 10.0) < 1e-6
 assert abs(s['received_position_z'] -  0.0) < 1e-6
+assert s['rebuilt_id'] is not None, "the plugin must build a live entity"
+assert s['rebuilt_id'] == s['placeholder_id'], \
+    "the reconstructed entity must preserve the current DXF placeholder ID"
+assert s['rebuilt_id'] == loaded_entity_id, \
+    "the rebuilt entity must replace the placeholder in the document"
 )py";
     ASSERT_EQ(lcpy.runString(assertScript.c_str(), ns2), "");
 
-    // -------------------------------------------------------------------------
-    // Cleanup.
-    // -------------------------------------------------------------------------
-    boost::filesystem::remove(dxfPath);
-    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
-    lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+    lc::SimpleSnapConstrain snapConstrain;
+    const auto snapPoints = loadedCustomEntity->snapPoints(
+        lc::geo::Coordinate(5.0, 10.0, 0.0), snapConstrain, 1000.0, 16);
+    ASSERT_EQ(snapPoints.size(), 1u);
+    EXPECT_DOUBLE_EQ(snapPoints.front().coordinate().x(), 5.0);
+    const auto nearest = loadedCustomEntity->nearestPointOnPath(
+        lc::geo::Coordinate(0.0, 0.0, 0.0));
+    EXPECT_DOUBLE_EQ(nearest.x(), 31.0);
+    EXPECT_DOUBLE_EQ(nearest.y(), 32.0);
+    EXPECT_DOUBLE_EQ(nearest.z(), 33.0);
+    const auto dragPoints = loadedCustomEntity->dragPoints();
+    ASSERT_EQ(dragPoints.size(), 1u);
+    ASSERT_NE(dragPoints.find(4u), dragPoints.end());
+    EXPECT_DOUBLE_EQ(dragPoints.at(4u).x(), 40.0);
+    loadedCustomEntity->setDragPoint(lc::geo::Coordinate(50.0, 51.0, 52.0));
+    auto dragBuilder = std::make_shared<lc::operation::Builder>(doc2, "DXF custom entity drag");
+    loadedCustomEntity->onDragPointClick(dragBuilder, 4u);
+    loadedCustomEntity->onDragPointRelease(dragBuilder);
 
-    // Clear the builtins state so subsequent tests start clean.
-    {
-        py::gil_scoped_acquire gil;
-        py::exec("import builtins; builtins._dxf_roundtrip_state = None");
-    }
+    const std::string assertCallbacks = R"py(
+import builtins
+s = builtins._dxf_roundtrip_state
+assert (s['snap_count'], s['nearest_count'], s['drag_count'],
+        s['set_drag_count'], s['click_count'], s['release_count']) == (1, 1, 1, 1, 1, 1)
+assert s['click_point'] == 4
+)py";
+    ASSERT_EQ(lcpy.runString(assertCallbacks.c_str(), ns2), "");
+
+    // Re-registering an already-loaded plugin must not replay the stale
+    // placeholder: the replacement preserves its ID and leaves no waiting
+    // entry behind.
+    ASSERT_EQ(lcpy.runString(
+        "lc.register_plugin('DxfRoundTripPlugin', _reconstruct)", ns2), "");
+    EXPECT_EQ(doc2->entityContainer().asVector().size(), 1u);
+    EXPECT_EQ(doc2->waitingCustomEntities("DxfRoundTripPlugin").size(), 0u);
+    const std::string assertSingleReconstruction = R"py(
+import builtins
+assert builtins._dxf_roundtrip_state['fired_count'] == 1
+)py";
+    EXPECT_EQ(lcpy.runString(assertSingleReconstruction.c_str(), ns2), "");
+
 }
 
 // -----------------------------------------------------------------------------

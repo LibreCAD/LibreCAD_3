@@ -56,7 +56,9 @@ bool CliCommand::addCommand(const char* name, lc::scripting::ScriptCallback cb) 
 }
 
 void CliCommand::write(std::string message) {
-    ui->history->setHtml(ui->history->toHtml() + QString(message.c_str()));
+    ui->history->setHtml(
+        ui->history->toHtml() +
+        QString::fromUtf8(message.data(), static_cast<qsizetype>(message.size())));
     ui->history->verticalScrollBar()->setValue(ui->history->verticalScrollBar()->maximum());
 }
 

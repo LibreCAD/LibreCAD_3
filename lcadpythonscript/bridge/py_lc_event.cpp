@@ -36,24 +36,34 @@ namespace python {
 
 namespace {
 
-EventHook& registerHookSlot() {
-    static EventHook h;
+EventRegisterHook& registerHookSlot() {
+    static EventRegisterHook h;
     return h;
 }
 
-EventHook& deregisterHookSlot() {
-    static EventHook h;
+EventDeregisterHook& deregisterHookSlot() {
+    static EventDeregisterHook h;
+    return h;
+}
+
+EventRegistrationDeregisterHook& registrationDeregisterHookSlot() {
+    static EventRegistrationDeregisterHook h;
     return h;
 }
 
 } // namespace
 
-void setEventRegisterHook(EventHook hook) {
+void setEventRegisterHook(EventRegisterHook hook) {
     registerHookSlot() = std::move(hook);
 }
 
-void setEventDeregisterHook(EventHook hook) {
+void setEventDeregisterHook(EventDeregisterHook hook) {
     deregisterHookSlot() = std::move(hook);
+}
+
+void setEventRegistrationDeregisterHook(
+    EventRegistrationDeregisterHook hook) {
+    registrationDeregisterHookSlot() = std::move(hook);
 }
 
 void import_py_lc_event_namespace(py::module_& m_event) {
@@ -63,7 +73,10 @@ void import_py_lc_event_namespace(py::module_& m_event) {
     m_event.def("register",
         [](const std::string& name, py::object obj) {
             auto& hook = registerHookSlot();
-            if (hook) hook(name, std::move(obj));
+            if (!hook) return py::object(py::none());
+            const EventRegistrationId id = hook(name, std::move(obj));
+            return id == 0 ? py::object(py::none())
+                           : py::object(py::int_(id));
         },
         py::arg("name"), py::arg("callback"),
         "Register a Python callback for the named event.  The callback "
@@ -75,14 +88,22 @@ void import_py_lc_event_namespace(py::module_& m_event) {
 
     m_event.def("deregister",
         [](const std::string& name, py::object obj) {
+            if (py::isinstance<py::int_>(obj)) {
+                const EventRegistrationId id = obj.cast<EventRegistrationId>();
+                auto& registrationHook = registrationDeregisterHookSlot();
+                if (id != 0 && registrationHook) {
+                    registrationHook(name, id);
+                }
+                return;
+            }
             auto& hook = deregisterHookSlot();
             if (hook) hook(name, std::move(obj));
         },
         py::arg("name"), py::arg("callback"),
-        "Remove the first matching registration for the named event.  "
-        "Equality follows PythonCallbackImpl's is-or-equal rule: "
-        "identical py::object (same instance) OR __eq__ True.  Silent "
-        "no-op on miss.");
+        "Remove a registration for the named event. Pass the registration "
+        "ID returned by register() to remove exactly that entry, or pass "
+        "the callback to remove the first equal entry. Equality follows "
+        "PythonCallbackImpl's is-or-equal rule. Silent no-op on miss.");
 
 
     py::class_<lc::event::AddLayerEvent>(m_event, "AddLayerEvent")

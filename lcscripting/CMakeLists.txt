@@ -67,6 +67,8 @@ add_library(lcscripting SHARED ${lcscripting_srcs} ${lcscripting_hdrs})
 target_link_libraries(lcscripting lckernel)
 
 install(TARGETS lcscripting
+    ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )

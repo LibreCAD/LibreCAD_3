@@ -2,6 +2,13 @@
 #include "ui_anglegui.h"
 
 #include <QDoubleValidator>
+#include <limits>
+
+namespace {
+QString formatAngle(double angle) {
+    return QString::number(angle, 'g', std::numeric_limits<double>::max_digits10);
+}
+}
 
 using namespace lc::ui::api;
 
@@ -49,7 +56,7 @@ void AngleGUI::toDegrees() {
     double angleInRad = _lineEdit->text().toDouble();
     double angleInDeg = angleInRad * 180 / 3.1416;
 
-    _lineEdit->setText(QString::number(angleInDeg));
+    _lineEdit->setText(formatAngle(angleInDeg));
 }
 
 void AngleGUI::toRadians() {
@@ -62,7 +69,7 @@ void AngleGUI::toRadians() {
     double angleInDeg = _lineEdit->text().toDouble();
     double angleInRad = angleInDeg * 3.1416 / 180;
 
-    _lineEdit->setText(QString::number(angleInRad));
+    _lineEdit->setText(formatAngle(angleInRad));
 }
 
 void AngleGUI::toggleUnit() {
@@ -140,7 +147,7 @@ void AngleGUI::setValue(double val) {
     else {
         angle = val;
     }
-    _lineEdit->setText(QString::number(angle));
+    _lineEdit->setText(formatAngle(angle));
 }
 
 void AngleGUI::getValue(lc::scripting::Map& map) {

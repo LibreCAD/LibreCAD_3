@@ -1,31 +1,14 @@
-"""Gear plugin — Python port of lcUILua/plugins_disabled/gear/plugin.lua.
+"""Python port of the Lua gear sample's interactive drawing path.
 
-Phase 5 PR-5.5 sample: proves the plugin.py load path works end-to-end
-and demonstrates the CreateOperations subclass shape.
-
-Deliberate scope reduction vs the original Lua sample:
-  * The Lua sample uses `Block`/`InsertBuilder`/`AddBlock` to draw the
-    gear as a scaled block-insert.  Those builders are NOT bound in the
-    phase-3.2 lcgui surface (phase 5 PR-5.6 will expand it).  This port
-    creates the individual `Line` entities directly via
-    `lc.operation.EntityBuilder`, which IS bound — enough to prove the
-    plugin fires and the geometry math works.
-  * The Lua GUI hook (create_button + luaConnect) is replaced by
-    `@lc.register_operation`, which routes through OperationLoader's
-    Python second source (PR-5.2) so the operation appears in the CLI +
-    context menu without touching widget-specific bindings.
-  * No `tempGear` mouse-preview — needs Block/InsertBuilder too.
-
-Structure:
-  * Import lc + lcgui at module scope so `LC_interface` (set to "gui"
-    by the plugin loader) can be used to gate GUI-specific setup.
-  * Register the `PyGearOp` class via `@lc.register_operation` so the
-    C++ OperationLoader picks it up alongside Lua ops.
-  * Command line: `PYGEAR` (distinct from the Lua sample's `GEAR` so
-    they can coexist in a mixed setup).
+The operation creates its outline as block-local Lines, inserts the block
+at the chosen origin, previews the outline while the cursor moves, and
+removes that preview when the operation finishes. The Python command is
+named `PYGEAR` so it can coexist with the Lua sample's `GEAR`; its
+Lua-specific toolbar hook is intentionally not duplicated here.
 """
 
 import math
+import uuid
 
 import lc
 
@@ -38,6 +21,26 @@ def _involute_intersect_angle(rb, r):
 
 def _point_on_circle(radius, angle):
     return (radius * math.cos(angle), radius * math.sin(angle))
+
+
+def _make_lines(points, layer, origin, scale, meta_info=None, block=None):
+    """Build a closed outline, optionally in a block's local coordinates."""
+    ox, oy = origin.x(), origin.y()
+    lines = []
+    for index, (x1, y1) in enumerate(points):
+        x2, y2 = points[(index + 1) % len(points)]
+        start = lc.geo.Coordinate(x1 * scale + ox, y1 * scale + oy, 0)
+        end = lc.geo.Coordinate(x2 * scale + ox, y2 * scale + oy, 0)
+        builder = lc.builder.LineBuilder()
+        builder.setStartPoint(start)
+        builder.setEndPoint(end)
+        builder.setLayer(layer)
+        if meta_info is not None:
+            builder.setMetaInfo(meta_info)
+        if block is not None:
+            builder.setBlock(block)
+        lines.append(builder.build())
+    return lines
 
 
 def _calc_gear_points(n, phi, pc):
@@ -119,13 +122,77 @@ class PyGearOp(CreateOperations):
         self.origin = None
         self.scale_point = None
         self.step = "AWAIT_TEETH"
+        self._preview_entities = []
+        self._preview_count = 0
         # First prompt to the CLI.
         mw = self._get_main_window()
         if mw is not None:
             mw.message("PyGear: enter number of teeth")
 
-    # onEvent is inherited from CreateOperations; step-name methods
-    # below implement the actual state machine.
+    def onEvent(self, event_name, args):
+        if event_name == "mouseMove":
+            position = args.get("position")
+            if position is not None and not self.finished:
+                self.tempGear(position)
+            return
+        super().onEvent(event_name, args)
+
+    def refreshTempEntity(self):
+        # This operation's preview is a set of Lines, refreshed on mouseMove,
+        # rather than CreateOperations' single builder-produced entity.
+        return
+
+    def _remove_preview(self):
+        mw = self._get_main_window()
+        if mw is not None and self._preview_entities:
+            temp_entities = mw.cadMdiChild().tempEntities()
+            for entity in self._preview_entities:
+                temp_entities.removeEntity(entity)
+        self._preview_entities = []
+        self._preview_count = 0
+
+    def tempGear(self, cursor_position):
+        mw = self._get_main_window()
+        if mw is None:
+            return
+
+        origin = self.origin
+        scale_point = self.scale_point
+        if origin is None:
+            origin = cursor_position
+            scale_point = lc.geo.Coordinate(10, 10, 0)
+        elif scale_point is None:
+            distance = cursor_position.distanceTo(origin)
+            scale_point = lc.geo.Coordinate(distance, distance, 0)
+
+        self._remove_preview()
+        scale = scale_point.distanceTo(origin)
+        if scale == 0:
+            return
+
+        points = _calc_gear_points(
+            self.n or 10,
+            math.radians(self.phi or 10),
+            math.radians(self.pc or 10),
+        )
+        mdi = mw.cadMdiChild()
+        lines = _make_lines(
+            points,
+            mdi.activeLayer(),
+            origin,
+            scale,
+            mdi.metaInfoManager().metaInfo(),
+        )
+        temp_entities = mdi.tempEntities()
+        for entity in lines:
+            temp_entities.addEntity(entity)
+        self._preview_entities = lines
+        self._preview_count = len(lines)
+
+    def cleanUp(self):
+        self._remove_preview()
+
+    # Step-name methods below implement the actual state machine.
     #
     # Phase 5 PR-5.5 fixup — `args` is a real Python DICT here (not a
     # ScriptValue with `.asMap()`).  MainWindow's trigger* slots build
@@ -229,26 +296,35 @@ class PyGearOp(CreateOperations):
         if scale == 0:
             return
 
-        # Phase 5 PR-5.5 fixup — `lc.entity.Line(...)` is NOT a bound
-        # ctor (py_lc_entity.cpp has zero `py::init` calls for any of
-        # its 12 entity types); use `lc.builder.LineBuilder`
-        # + setStartPoint/setEndPoint/setLayer + build() instead.
-        # Same pattern LineBuilder is bound with in py_lc_builder.cpp.
+        block = lc.meta.Block(
+            "Gear_" + uuid.uuid4().hex,
+            lc.geo.Coordinate(0, 0, 0),
+        )
         eb = lc.operation.EntityBuilder.new(doc)
-        n_pts = len(points)
-        for i in range(n_pts):
-            x1, y1 = points[i]
-            x2, y2 = points[(i + 1) % n_pts]
-            start = lc.geo.Coordinate(x1 * scale + ox,
-                                       y1 * scale + oy, 0)
-            end = lc.geo.Coordinate(x2 * scale + ox,
-                                     y2 * scale + oy, 0)
-            lb = lc.builder.LineBuilder()
-            lb.setStartPoint(start)
-            lb.setEndPoint(end)
-            lb.setLayer(layer)
-            eb.appendEntity(lb.build())
-        eb.execute()
+        meta_info = mdi.metaInfoManager().metaInfo()
+        for entity in _make_lines(
+                points, layer, lc.geo.Coordinate(0, 0, 0), 1.0,
+                meta_info, block):
+            eb.appendEntity(entity)
+        eb.appendOperation(lc.operation.Push.new())
+        eb.appendOperation(lc.operation.Scale.new(
+            lc.geo.Coordinate(0, 0, 0),
+            lc.geo.Coordinate(scale, scale, 1),
+        ))
+        eb.processStack()
+
+        insert_builder = lc.builder.InsertBuilder()
+        insert_builder.setLayer(layer)
+        insert_builder.setMetaInfo(meta_info)
+        insert_builder.setDisplayBlock(block)
+        insert_builder.setCoordinate(self.origin)
+        insert_builder.setDocument(doc)
+        eb.appendEntity(insert_builder.build())
+
+        transaction = lc.operation.Builder(doc, "Gear")
+        transaction.append(lc.operation.AddBlock.new(doc, block))
+        transaction.append(eb)
+        transaction.execute()
         self.close()
 
 

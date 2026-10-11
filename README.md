@@ -13,13 +13,14 @@ See https://github.com/LibreCAD/LibreCAD_3/releases
 
 Scripting
 ----------
-LibreCAD_3 embeds both Lua and Python simultaneously.  User scripts,
-plugins, and custom entity classes can be written in either language;
-the two share the same underlying event bus, operation registry, and
-kernel API.  See [doxygen/Scripting.md](doxygen/Scripting.md) for the
-architecture, the parity table, and plugin authoring notes.  Python
-scripting is enabled by default at build time (`WITH_PYTHONSCRIPT=ON`);
-build with `-DWITH_PYTHONSCRIPT=OFF` for a Lua-only build.
+LibreCAD_3 supports embedded Lua and Python scripting, including bundled Python
+plugins and script-defined custom entities. Lua and Python share the neutral
+scripting layer, but their API coverage and distribution status are not
+identical. See [doxygen/Scripting.md](doxygen/Scripting.md) for the tested
+capabilities, runtime selection, platform status, and plugin authoring notes.
+Python is enabled by default in ordinary CMake builds
+(`WITH_PYTHONSCRIPT=ON`); a build configuration may disable it, so check the
+selected package/build options for the artifact you use.
 
 
 Reading materials for feature usage
@@ -40,4 +41,3 @@ List of apparently awesome frameworks
 If we are short of sample DXF files to test
 =========
 http://cadkit.blogspot.nl/p/sample-dxf-files.html
-
