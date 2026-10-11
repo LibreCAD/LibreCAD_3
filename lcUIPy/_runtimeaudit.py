@@ -9,6 +9,115 @@ import subprocess
 import time
 
 
+def audit_python_extensions(python_root, timeout_seconds=60):
+    """Initialize every staged extension, verifying its configured import origin.
+
+    This checks PyInit as well as ordinary loader closure, not every native
+    function or arbitrary delay-load path. An outer process timeout is still
+    required for native calls that never return.
+    """
+    import importlib
+    import importlib.machinery
+    import sys
+
+    if timeout_seconds <= 0:
+        raise ValueError("Python extension audit timeout must be positive")
+    root = Path(python_root).resolve(strict=True)
+    deadline = time.monotonic() + timeout_seconds
+    paths = sorted({Path(path).resolve() for path in sys.path if path and
+                    Path(path).is_dir() and Path(path).resolve().is_relative_to(root)},
+                   key=lambda path: len(path.parts), reverse=True)
+    suffixes = sorted(importlib.machinery.EXTENSION_SUFFIXES, key=len, reverse=True)
+    modules, identities, checked = {}, {}, set()
+
+    def fail(error):
+        raise error
+
+    for directory, directories, filenames in os.walk(root, onerror=fail):
+        if any((Path(directory) / name).is_symlink() for name in directories):
+            raise RuntimeError("Python extension catalog contains a symlinked directory")
+        for filename in sorted(filenames):
+            candidate = Path(directory) / filename
+            suffix = next((suffix for suffix in suffixes if filename.endswith(suffix)), None)
+            if not suffix:
+                continue
+            # CPython's Unix build-config link is an interpreter library, not
+            # an importable extension; it can be dangling after relocation.
+            if Path(directory).name.startswith("config-") and \
+                    filename == "libpython{}.{}.so".format(*sys.version_info[:2]):
+                continue
+            binary = candidate.resolve(strict=True)
+            if not binary.is_file() or not binary.is_relative_to(root):
+                raise RuntimeError("Python extension escapes runtime: {}".format(candidate))
+            if binary in checked:
+                continue
+            base = next((path for path in paths if candidate.is_relative_to(path)), None)
+            if base is None:
+                raise RuntimeError("Python extension has no configured import path: {}".format(candidate))
+            parts = (*candidate.relative_to(base).parts[:-1], filename[:-len(suffix)])
+            if not all(part.isidentifier() for part in parts):
+                raise RuntimeError("Python extension has an invalid module name: {}".format(candidate))
+            name = ".".join(parts)
+            if name.casefold() in identities:
+                raise RuntimeError("ambiguous Python extension module: {}".format(name))
+            modules[name], identities[name.casefold()] = binary, binary
+            checked.add(binary)
+    if not modules:
+        raise RuntimeError("Python extension catalog is empty")
+    for name, binary in sorted(modules.items()):
+        if time.monotonic() >= deadline:
+            raise RuntimeError("Python extension initialization exceeded its total time limit")
+        try:
+            module = importlib.import_module(name)
+            origin = getattr(module, "__file__", None)
+            if not origin or Path(origin).resolve() != binary:
+                raise RuntimeError("module origin is not the selected file: {}".format(origin))
+        except Exception as error:
+            raise RuntimeError("Python extension initialization failed for {}: {}".format(name, error)) from error
+        if time.monotonic() >= deadline:
+            raise RuntimeError("Python extension initialization exceeded its total time limit")
+    return tuple(sorted(modules))
+
+
+def audit_native_stdlib():
+    """Small offline behavior probes, separate from full extension initialization."""
+    import gzip
+    import sqlite3
+    import ssl
+    import zlib
+
+    payload = "LibreCAD Ω\0".encode("utf-8") * 32
+    if gzip.decompress(gzip.compress(payload, mtime=0)) != payload or \
+            zlib.decompress(zlib.compress(payload)) != payload:
+        raise RuntimeError("native gzip/zlib round-trip failed")
+    if hashlib.sha256(b"abc").hexdigest() != \
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad":
+        raise RuntimeError("native SHA-256 known-answer check failed")
+    connection = sqlite3.connect(":memory:")
+    try:
+        connection.execute("CREATE TABLE smoke (name TEXT, payload BLOB)")
+        connection.execute("INSERT INTO smoke VALUES (?, ?)", ("LibreCAD Ω", payload))
+        connection.commit()
+        if connection.execute("SELECT name, payload FROM smoke").fetchone() != ("LibreCAD Ω", payload):
+            raise RuntimeError("native SQLite Unicode/BLOB round-trip failed")
+    finally:
+        connection.close()
+    incoming, outgoing = ssl.MemoryBIO(), ssl.MemoryBIO()
+    client = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT).wrap_bio(
+        incoming, outgoing, server_hostname="librecad.invalid")
+    try:
+        client.do_handshake()
+    except ssl.SSLWantReadError:
+        if not outgoing.read():
+            raise RuntimeError("native TLS produced no client hello")
+    else:
+        raise RuntimeError("native TLS handshake completed without server input")
+    callback = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_int)(lambda value: value + 1)
+    if callback(41) != 42:
+        raise RuntimeError("native ffi callback failed")
+    return "gzip/zlib, SHA-256, SQLite Unicode/BLOB, TLS client hello, ffi callback"
+
+
 def audit_conan_notices(directory):
     """Verify selected Conan notice inventory/bytes, not legal compliance."""
     if Path(directory).is_symlink():

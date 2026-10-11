@@ -2,9 +2,11 @@
 
 import ast
 import ctypes
+import importlib.machinery
 import os
 import pathlib
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -63,6 +65,25 @@ class RuntimeSmokeContractTests(unittest.TestCase):
 
     def test_embedded_runtime_check_is_valid_python(self):
         ast.parse(self.python_smoke)
+
+    def test_actual_smoke_runs_native_module_audits_and_propagates_failures(self):
+        code = self.python_smoke.split("# BEGIN native Python modules\n", 1)[1].split(
+            "# END native Python modules", 1)[0]
+        namespace = dict(pathlib=pathlib, expected_staged_python_root="/runtime Ω")
+        with patch.object(runtimeaudit, "audit_native_stdlib", create=True, return_value="offline probes") as core, \
+                patch.object(runtimeaudit, "audit_python_extensions", create=True, return_value=("alpha",)) as extensions:
+            exec(code, namespace)
+            core.assert_called_once_with()
+            extensions.assert_called_once_with(Path("/runtime Ω").resolve())
+            self.assertIn("1 distinct files", namespace["_native_diagnostics"])
+            self.assertIn("offline probes", namespace["_native_diagnostics"])
+            extensions.side_effect = RuntimeError("failed module initialization")
+            with self.assertRaisesRegex(RuntimeError, "failed module initialization"):
+                exec(code, namespace)
+            extensions.reset_mock(side_effect=True)
+            core.side_effect = RuntimeError("failed native behavior")
+            with self.assertRaisesRegex(RuntimeError, "failed native behavior"):
+                exec(code, namespace)
 
     def test_windows_runtime_check_resolves_loaded_cpython_dll(self):
         strict_check = self.python_smoke.split(
@@ -573,7 +594,7 @@ class FullElfClosureTests(unittest.TestCase):
         source = (REPOSITORY_ROOT / "lcUI/python/pyruntimesmoke.cpp").read_text()
         body = source.split(
             'if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":', 1
-        )[1].split("\nimport lcgui", 1)[0]
+        )[1].split("\n# BEGIN native Python modules", 1)[0]
         namespace = {
             "os": SimpleNamespace(environ={"LIBRECAD_REQUIRE_BUNDLED_PYTHON": "1"}),
             "sys": SimpleNamespace(platform="linux"), "pathlib": pathlib,
@@ -718,3 +739,122 @@ class FullElfClosureTests(unittest.TestCase):
         stage = recipe.split("    stage-packages:", 1)[1].split("    cmake-parameters:", 1)[0]
         for package in ("libreadline8t64", "libtcl8.6", "libtk8.6", "libxft2", "libxss1"):
             self.assertIn("      - " + package + "\n", stage)
+
+
+class NativePythonModuleTests(unittest.TestCase):
+    def fixture(self, names=("alpha", "nested.beta")):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name) / "runtime Ω"
+        library = root / "Lib"
+        library.mkdir(parents=True)
+        suffix = importlib.machinery.EXTENSION_SUFFIXES[0]
+        binaries = {}
+        for name in names:
+            path = library.joinpath(*name.split(".")).with_suffix(suffix)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"fixture, never passed to the native loader")
+            binaries[name] = path
+        return root, library, binaries
+
+    def run_catalog(self, root, paths, load, **options):
+        with patch.object(sys, "path", list(map(str, paths))), \
+                patch("importlib.import_module", side_effect=load):
+            return runtimeaudit.audit_python_extensions(root, **options)
+
+    def test_initializes_the_whole_catalog_with_exact_origins(self):
+        root, library, binaries = self.fixture()
+        loaded = []
+        def load(name):
+            loaded.append(name)
+            return SimpleNamespace(__file__=str(binaries[name]))
+        self.assertEqual(("alpha", "nested.beta"), self.run_catalog(root, [library], load))
+        self.assertEqual(["alpha", "nested.beta"], loaded)
+
+    def test_missing_unreachable_escaped_and_ambiguous_catalogs_fail(self):
+        for kind in ("empty", "unreachable", "escaped", "directory-link", "ambiguous", "invalid"):
+            with self.subTest(kind=kind):
+                root, library, binaries = self.fixture(() if kind == "empty" else ("alpha",))
+                paths = [library]
+                binary = binaries.get("alpha")
+                if kind == "unreachable":
+                    paths = []
+                elif kind == "escaped":
+                    outside = root.parent / binary.name
+                    outside.write_bytes(binary.read_bytes())
+                    binary.unlink()
+                    binary.symlink_to(outside)
+                elif kind == "ambiguous":
+                    other = root / "DLLs"
+                    other.mkdir()
+                    (other / binary.name).write_bytes(b"different native file")
+                    paths.append(other)
+                elif kind == "directory-link":
+                    (library / "alias").symlink_to(root.parent, target_is_directory=True)
+                elif kind == "invalid":
+                    binary.rename(binary.with_name("not-valid" + importlib.machinery.EXTENSION_SUFFIXES[0]))
+                with self.assertRaisesRegex(RuntimeError, "catalog|escape|ambiguous|name|path"):
+                    self.run_catalog(root, paths, lambda name: SimpleNamespace(__file__=str(binary)))
+
+    def test_build_config_libpython_link_is_not_a_python_extension(self):
+        root, library, binaries = self.fixture(("alpha",))
+        config = library / "config-{}.{}/".format(*sys.version_info[:2])
+        config.mkdir()
+        (config / "libpython{}.{}.so".format(*sys.version_info[:2])).symlink_to("missing-interpreter-library")
+        self.assertEqual(("alpha",), self.run_catalog(
+            root, [library], lambda name: SimpleNamespace(__file__=str(binaries[name]))))
+
+    def test_missing_root_and_unreadable_walk_fail_instead_of_omitting_files(self):
+        root, library, binaries = self.fixture()
+        with self.assertRaises(FileNotFoundError):
+            self.run_catalog(root / "missing", [library], lambda name: None)
+        def unreadable(root, onerror):
+            onerror(PermissionError("catalog unreadable"))
+            return iter(())
+        with patch.object(runtimeaudit.os, "walk", side_effect=unreadable), \
+                self.assertRaisesRegex(PermissionError, "catalog unreadable"):
+            self.run_catalog(root, [library], lambda name: None)
+
+    def test_import_failures_wrong_origins_and_total_timeout_fail(self):
+        root, library, binaries = self.fixture(("alpha",))
+        def broken(name):
+            raise ImportError("missing transitive dependency")
+        with self.assertRaisesRegex(RuntimeError, "alpha.*missing transitive dependency"):
+            self.run_catalog(root, [library], broken)
+        for origin in (None, str(root / "wrong.so")):
+            with self.subTest(origin=origin), self.assertRaisesRegex(RuntimeError, "origin|selected file"):
+                self.run_catalog(root, [library], lambda name: SimpleNamespace(__file__=origin))
+        with self.assertRaises(ValueError):
+            self.run_catalog(root, [library], broken, timeout_seconds=0)
+        with patch.object(runtimeaudit.time, "monotonic", side_effect=[0, 0, 61]), \
+                self.assertRaisesRegex(RuntimeError, "time limit"):
+            self.run_catalog(root, [library], lambda name: SimpleNamespace(__file__=str(binaries[name])))
+
+    def test_core_native_behavior_is_real_and_offline(self):
+        with patch("socket.socket", side_effect=AssertionError("network is forbidden")):
+            diagnostics = runtimeaudit.audit_native_stdlib()
+        for name in ("gzip/zlib", "SHA-256", "SQLite", "TLS client hello", "ffi callback"):
+            self.assertIn(name, diagnostics)
+
+    def test_core_native_behavior_rejects_corrupt_results(self):
+        cases = (("gzip.decompress", b"bad"), ("zlib.decompress", b"bad"),
+                 ("hashlib.sha256", SimpleNamespace(hexdigest=lambda: "bad")),
+                 ("ctypes.CFUNCTYPE", lambda callback: lambda value: 0))
+        for target, value in cases:
+            with self.subTest(target=target), patch(target, return_value=value), \
+                    self.assertRaises(RuntimeError):
+                runtimeaudit.audit_native_stdlib()
+
+    def test_sqlite_result_and_tls_output_are_required(self):
+        closed = []
+        connection = SimpleNamespace(commit=lambda: None, close=lambda: closed.append(True))
+        connection.execute = lambda *args: SimpleNamespace(fetchone=lambda: ("wrong", b"wrong"))
+        with patch("sqlite3.connect", return_value=connection), self.assertRaisesRegex(RuntimeError, "SQLite"):
+            runtimeaudit.audit_native_stdlib()
+        self.assertEqual([True], closed)
+        import ssl
+        def need_input():
+            raise ssl.SSLWantReadError()
+        context = SimpleNamespace(wrap_bio=lambda *args, **kwargs: SimpleNamespace(do_handshake=need_input))
+        with patch("ssl.SSLContext", return_value=context), self.assertRaisesRegex(RuntimeError, "TLS"):
+            runtimeaudit.audit_native_stdlib()

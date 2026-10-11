@@ -234,11 +234,21 @@ if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":
         "full ELF closure requires a recognized AppImage or Snap root"
     _elf_count = audit_elf_closure(_elf_root)
     _elf_diagnostics = f"; full payload ELF closure: {_elf_count} distinct files"
+# BEGIN native Python modules
+from lcUIPy._runtimeaudit import audit_native_stdlib, audit_python_extensions
+_native_diagnostics = f"; native stdlib behavior: {audit_native_stdlib()}"
+if expected_staged_python_root:
+    _initialized_extensions = audit_python_extensions(
+        pathlib.Path(expected_staged_python_root).resolve())
+    _native_diagnostics += (
+        f"; Python extension initialization: {len(_initialized_extensions)} distinct files "
+        f"[{', '.join(_initialized_extensions)}]")
+# END native Python modules
 import lcgui
 assert hasattr(lcgui, 'MainWindow'), "embedded lcgui module lacks MainWindow"
 runtime_diagnostics = (
     f"Python runtime: version={sys.version.split()[0]}, prefix={sys.prefix}; "
-    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}{_notice_diagnostics}"
+    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}{_notice_diagnostics}{_native_diagnostics}"
 )
 )py";
         const std::string importError = python.runString(importsAndProviderCheck.c_str(), ns);

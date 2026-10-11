@@ -168,6 +168,17 @@ expected to use the standard library plus LibreCAD's shipped modules. Tk/IDLE,
 `pip` inside LibreCAD, multiprocessing, and script sandboxing are not supported
 by this embedded-runtime contract. Plugins are trusted code.
 
+The runtime smoke initializes every staged CPython extension reachable through
+its configured import paths and checks the exact loaded file, rather than only
+loading its normal DLL dependencies. Empty, ambiguous, escaped, unreadable or
+unimportable catalogs fail. CPython's Unix build-config `libpythonX.Y.so` link is
+an interpreter-library build artifact, not an extension module. The smoke also
+checks offline gzip/zlib round-trips, a SHA-256 known answer, SQLite Unicode/BLOB
+storage, a TLS client hello through memory buffers, and a native FFI callback.
+The TLS probe does not connect to a server or validate a certificate chain.
+These checks do not establish every stdlib function, arbitrary delay-load paths,
+Tk/IDLE or multiprocessing support; native final-artifact CI remains required.
+
 Linux artifact validation also checks every distinct loadable ELF file in the
 package, including Python and Qt extensions not used by the startup smoke.
 The gate recognizes the AppImage/Snap root above `usr`, so payload files outside

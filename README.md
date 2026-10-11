@@ -134,6 +134,12 @@ the remaining UI suites for visibility. See
 [`.github/workflows/main.yml`](.github/workflows/main.yml) for the current CI
 matrix and packaging jobs.
 
+For a Python-enabled build or installed application, run `librecad --python-smoke`
+from outside the checkout. It checks the selected runtime, shipped plugins,
+document undo/redo and DXF round-trip. Installed runtimes also initialize the
+staged native-extension catalog and exercise offline native stdlib operations.
+See [scripting validation](doxygen/Scripting.md) for scope and platform limits.
+
 ## Contributing
 
 Please open an issue or pull request on

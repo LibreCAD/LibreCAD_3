@@ -313,7 +313,7 @@ class ConanProviderNoticesTests(unittest.TestCase):
         installed = data / "licenses/providers/conan"
         shutil.copytree(source, installed)
         # Exercise the whole production literal, not just its notice block.
-        # Win32 APIs and module-origin metadata are fixtures, so this proves
+        # Win32 APIs, extension catalog and module-origin metadata are fixtures, so this proves
         # combined control flow, not native loading or Windows qualification.
         driver = r'''
 import ctypes, encodings, gzip, hashlib, importlib.util, json, math, os
@@ -322,6 +322,7 @@ data, smoke, audit_file = map(pathlib.Path, sys.argv[1:])
 spec = importlib.util.spec_from_file_location("lcUIPy._runtimeaudit", audit_file)
 audit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(audit)
+audit.audit_python_extensions = lambda root: ("_fixture",)
 package = data / "lcUIPy"
 module = types.ModuleType("lcUIPy")
 module.__file__, module.__path__ = str(package / "__init__.py"), [str(package)]
