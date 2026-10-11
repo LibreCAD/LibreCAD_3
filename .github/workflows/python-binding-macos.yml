@@ -113,11 +113,11 @@ jobs:
           QT_QPA_PLATFORM=offscreen "$PYTHON_EXECUTABLE" scripts/run_required_gtests.py \
             --binary "$test_binary" \
             --filter='PythonFixture.*:PythonRuntime.*:ParityTest.*:ScriptValueRoundTrip.*:ScriptCallbackInvoke.*:ScriptCallbackEquality.*:ScriptCallbackLifecycle.*:ScriptObject.*:EventBus.*:LuaCustomEntityManager.*:ScriptCustomEntity.*:ScriptCustomEntityBuilder.*:CustomEntityDxfRoundTrip.*:ScriptCustomEntityLuaRegistration.*:DwgImportTest.*:PersistenceTest.*:ScriptDockTest.*:MWindowTest.*:ToolbarButtonTest.*:PyGuiBridgeTest.*:MenuEntriesTest.*' \
-            "${required_suite_args[@]}"
+            "${required_suite_args[@]}" 2>&1 | tee build/python-required-tests.log
           QT_QPA_PLATFORM=offscreen "$PYTHON_EXECUTABLE" scripts/run_required_gtests.py \
             --binary "$test_binary" \
             --filter='LuaRuntimeTest.*' \
-            --require-suite 'LuaRuntimeTest.'
+            --require-suite 'LuaRuntimeTest.' 2>&1 | tee build/lua-required-tests.log
 
       - name: Install LibreCAD
         shell: bash
@@ -131,7 +131,7 @@ jobs:
           app="$RUNNER_TEMP/LibreCAD.app"
           relocated_app="$RUNNER_TEMP/LibreCAD relocated Ω.app"
           settings="$RUNNER_TEMP/LibreCAD settings Ω"
-          scripts/macos-install/createBundle.sh "$install_prefix" "$app"
+          scripts/macos-install/createBundle.sh "$install_prefix" "$app" 2>&1 | tee build/macos-bundle.log
           poison=/__librecad_python_environment_must_not_be_used__
           env QT_QPA_PLATFORM=offscreen \
             PYTHONHOME="$poison" \
@@ -139,7 +139,7 @@ jobs:
             QT_PLUGIN_PATH="$poison" \
             DYLD_LIBRARY_PATH="$poison" \
             LIBRECAD_SETTINGS_DIR="$settings" \
-            "$app/Contents/MacOS/librecad" --python-smoke
+            "$app/Contents/MacOS/librecad" --python-smoke 2>&1 | tee build/macos-smoke.log
           ditto "$app" "$relocated_app"
           codesign --verify --deep --strict "$relocated_app"
           env QT_QPA_PLATFORM=offscreen \
@@ -148,4 +148,53 @@ jobs:
             QT_PLUGIN_PATH="$poison" \
             DYLD_LIBRARY_PATH="$poison" \
             LIBRECAD_SETTINGS_DIR="$settings" \
-            "$relocated_app/Contents/MacOS/librecad" --python-smoke
+            "$relocated_app/Contents/MacOS/librecad" --python-smoke 2>&1 | tee build/macos-relocated-smoke.log
+
+      - name: Archive the verified app and runtime identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/python-runtime-inventory.txt
+          app="$RUNNER_TEMP/LibreCAD.app"
+          codesign --verify --deep --strict "$app"
+          archive="$RUNNER_TEMP/LibreCAD-macos-${{ matrix.arch }}.tar.gz"
+          tar -czf "$archive" -C "$RUNNER_TEMP" LibreCAD.app
+          extracted="$RUNNER_TEMP/LibreCAD archive smoke Ω"
+          mkdir "$extracted"
+          tar -xzf "$archive" -C "$extracted"
+          codesign --verify --deep --strict "$extracted/LibreCAD.app"
+          poison=/__librecad_python_environment_must_not_be_used__
+          env QT_QPA_PLATFORM=offscreen \
+            PYTHONHOME="$poison" PYTHONPATH="$poison" \
+            QT_PLUGIN_PATH="$poison" DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_SETTINGS_DIR="$RUNNER_TEMP/LibreCAD archive settings Ω" \
+            "$extracted/LibreCAD.app/Contents/MacOS/librecad" --python-smoke \
+            2>&1 | tee build/macos-archive-smoke.log
+          minimum_macos=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$app/Contents/Info.plist")
+          {
+            echo "revision=$(git rev-parse HEAD)"
+            echo "architecture=${{ matrix.arch }}"
+            echo "minimum_macos=$minimum_macos"
+            file "$app/Contents/MacOS/librecad"
+            shasum -a 256 "$archive"
+            codesign -dv --verbose=2 "$app" 2>&1
+          } > build/macos-artifact-identity.txt
+
+      - name: Upload the verified app
+        uses: actions/upload-artifact@v4
+        with:
+          name: LibreCAD-macos-${{ matrix.arch }}
+          path: ${{ runner.temp }}/LibreCAD-macos-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+
+      - name: Upload runtime and validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Python-macos-evidence-${{ matrix.arch }}
+          path: |
+            build/python-runtime-inventory.txt
+            build/*-tests.log
+            build/macos-*.log
+            build/macos-artifact-identity.txt
+          if-no-files-found: error

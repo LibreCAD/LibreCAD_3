@@ -263,6 +263,34 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         self.assertNotIn("--gtest_list_tests", self.windows_package_script)
         self.assertIn("--require-suite \"MenuEntriesTest.\"", self.windows_package_script)
 
+    def test_macos_archives_verified_bundle_and_durable_runtime_evidence(self):
+        workflow = self.macos_binding_workflow
+        smoke = workflow.index('"$relocated_app/Contents/MacOS/librecad" --python-smoke')
+        archive = workflow.index('tar -czf "$archive"')
+        upload = workflow.index("- name: Upload the verified app")
+        self.assertLess(smoke, archive)
+        self.assertLess(archive, upload)
+        for required in (
+            'test -s build/python-runtime-inventory.txt',
+            'codesign --verify --deep --strict "$app"',
+            "Print :LSMinimumSystemVersion",
+            'shasum -a 256 "$archive"',
+            'tar -xzf "$archive" -C "$extracted"',
+            'codesign --verify --deep --strict "$extracted/LibreCAD.app"',
+            '"$extracted/LibreCAD.app/Contents/MacOS/librecad" --python-smoke',
+            '2>&1 | tee build/macos-archive-smoke.log',
+            'revision=$(git rev-parse HEAD)',
+            'name: LibreCAD-macos-${{ matrix.arch }}',
+            'name: Python-macos-evidence-${{ matrix.arch }}',
+            'build/macos-artifact-identity.txt',
+            '2>&1 | tee build/python-required-tests.log',
+            '2>&1 | tee build/macos-relocated-smoke.log',
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, workflow)
+        self.assertEqual(2, workflow.count("if-no-files-found: error"))
+        self.assertIn("if: always()", workflow[upload:])
+
     def test_macos_required_filters_use_bounded_required_runner(self):
         self.assertIn("scripts/run_required_gtests.py", self.macos_binding_workflow)
         self.assertIn("--binary \"$test_binary\"", self.macos_binding_workflow)

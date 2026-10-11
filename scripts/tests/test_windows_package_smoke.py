@@ -193,6 +193,39 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         self.assertIn('-DCMAKE_TOOLCHAIN_FILE="%cd%\\conan\\conan_toolchain.cmake"', self.package_script)
         self.assertIn('-DCMAKE_TOOLCHAIN_FILE="%CD%\\conan\\conan_toolchain.cmake"', self.workflow)
 
+    def test_ui_data_exports_cover_qt_metaobjects_and_window_registry(self):
+        for relative, name in (
+            ("dialogs/addlayerdialog.h", "AddLayerDialog"),
+            ("widgets/layermodel.h", "LayerModel"),
+            ("widgets/linepatternpathpart.h", "LinePatternPathPart"),
+            ("windowmanager.h", "WindowManager"),
+        ):
+            with self.subTest(name=name):
+                header = (UI_CMAKE.parent / relative).read_text(encoding="utf-8")
+                self.assertIn('#include "lcui_api.h"', header)
+                self.assertIn("class LC_UI_API " + name, header)
+        self.assertIn("target_compile_definitions(lcui PUBLIC LC_UI_SHARED)", self.ui_cmake)
+
+    @unittest.skipUnless(shutil.which("clang++"), "Clang is needed for the export regression")
+    def test_ui_api_import_export_and_direct_executable_modes(self):
+        header = UI_CMAKE.parent / "lcui_api.h"
+        for defines, expected in (
+            ([], ""),
+            (["_WIN32"], ""),
+            (["_WIN32", "LC_UI_SHARED"], "__declspec(dllimport)"),
+            (["_WIN32", "LC_UI_SHARED", "lcui_EXPORTS"], "__declspec(dllexport)"),
+            (["LC_UI_SHARED", "lcui_EXPORTS"], ""),
+        ):
+            with self.subTest(defines=defines):
+                result = subprocess.run(
+                    ["clang++", "-E", "-P", "-x", "c++", "-include", str(header)]
+                    + ["-D" + define for define in defines] + ["-"],
+                    input="LC_UI_API int exported_data;\n", capture_output=True,
+                    text=True, check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertEqual((expected + " int exported_data;").strip(), result.stdout.strip())
+
     @unittest.skipUnless(shutil.which("cmake"), "CMake is needed for the syntax regression")
     def test_runtime_dependency_install_configures_with_and_without_search_paths(self):
         rule = "    install(RUNTIME_DEPENDENCY_SET " + self.root_cmake.split(

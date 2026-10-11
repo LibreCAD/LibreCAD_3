@@ -57,16 +57,16 @@ not that every C++ method is exposed or every platform artifact has passed.
 
 | Area | Python entry point | Current evidence | Status |
 |---|---|---|---|
-| Geometry and entities | `lc.geo`, `lc.entity`, `lc.meta` | `CoordinateArithmeticEqualsCpp`, `ArcCirclePropertiesMatchCpp`, `PointMultipleInheritanceRoundTrip` | Bound types are exercised by these flows; exhaustive C++ method parity and non-macOS builds remain unverified. |
+| Geometry and entities | `lc.geo`, `lc.entity`, `lc.meta` | `CoordinateArithmeticEqualsCpp`, `ArcCirclePropertiesMatchCpp`, `PointMultipleInheritanceRoundTrip` | Bound types are exercised by these flows; exhaustive C++ method parity and Windows artifact acceptance remain unverified. |
 | Builders and document operations | `lc.builder`, `lc.operation` | `LineBuilderRoundTrip`, `EntityBuilderAndLineBuilderRuntimeCalls`, `OperationPushRemoveConstructedViaNew`, `PythonRectangleCreationIsOneUndoStep`, `PythonRectangleDragIsOneUndoStep` | Tested constructors/factories and representative transaction flows; the API does not expose every C++ operation or constructor. |
 | Storage and undo | `lc.storage` (`Document`, `StorageManager`, `EntityContainer`, `UndoManager`) | `UndoManagerBasics`, `EntityBuilderAndLineBuilderRuntimeCalls`, rectangle create/drag undo regressions | Document/entity access and representative undo/redo are tested; broader retained-reference and storage lifecycle combinations remain incomplete. |
-| Persistence | `lc.persistence.File`, `lc.persistence.formatVariants` | `PersistenceTest.DxfRoundTrip`, `ImportResultFromPython`, `AllWritableDxfVariantsRoundTripThroughPython`, `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData` | DXF/DXB variants, import diagnostics, and custom-entity reconstruction have local test coverage; DWG/provider behavior and non-macOS acceptance remain open. |
+| Persistence | `lc.persistence.File`, `lc.persistence.formatVariants` | `PersistenceTest.DxfRoundTrip`, `ImportResultFromPython`, `AllWritableDxfVariantsRoundTripThroughPython`, `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData` | DXF/DXB variants, import diagnostics and custom-entity reconstruction pass the hosted Linux/macOS source filters below; full DWG qualification and Windows artifact acceptance remain open. |
 | Operation registration and metadata | `@lc.register_operation`, `lc.operation_registry`; class metadata such as `name`, `command_line`, `icon`, and `description` | `RegisterOperationDecoratorAddsToRegistry`, `PythonGearOperationCreatesScaledOutline`, `PythonPointAndRemoveOperationsUseRealSelection` | Registry behavior and shipped command/action flows are tested; every metadata combination and full Lua metadata parity are not claimed. |
 | Events and GUI callbacks | `lc.event`, `lcgui.MainWindow` | Event registration tests, `PyGuiBridgeTest.MainWindowRemainderBindingsCallable`, `PythonEventDrivenOnEventReachesMainWindow` | Representative callbacks and owner-scoped dispatch are tested; complete lifecycle and cross-platform behavior remain open. |
 | UI widgets | `lcgui` menu, toolbar, dialog, input, layer, and command APIs | `MenuFamilyConstructAndCall`, `MenuItemConstructAndCall`, `ToolbarWidgetFamilyConstructAndCompose`, `InputWidgetsConstructAndRoundTrip`, `DialogWidgetComposition` | The named widget families have focused coverage; this is not an exposure or validation claim for every Qt/C++ UI class. |
-| Custom entities | `lc.register_plugin`, `lc.entity.CustomEntity` | Typed callback/coexistence/error regressions and `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData` | Python dispatch and DXF reconstruction are tested locally; cross-platform CI remains outstanding. |
+| Custom entities | `lc.register_plugin`, `lc.entity.CustomEntity` | Typed callback/coexistence/error regressions and `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData` | Python dispatch and DXF reconstruction pass hosted Linux x64/macOS arm64 source filters; Windows and complete packaged lifecycle validation remain open. |
 | ScriptDock and bundled plugins | `lcUIPy` package and `ScriptDock` | `ScriptDockTest.PythonCreatesLine`, `PythonEventDrivenOnEventReachesMainWindow`; packaged runtime smoke loads two plugins | Shipped examples and the smoke path are exercised; complete plugin lifecycle/packaged coverage remains outstanding. |
-| Runtime and distribution | Embedded CPython selected by CMake | `PythonRuntime.IsolatedProviderIgnoresAmbientPaths`; macOS arm64 relocated-bundle smoke | Provider isolation is implemented; Linux, Windows, macOS x86_64, and hosted artifact validation remain open. |
+| Runtime and distribution | Embedded CPython selected by CMake | `PythonRuntime.IsolatedProviderIgnoresAmbientPaths`; macOS arm64 relocated-bundle smoke | Hosted Linux x64 AppImage/Snap and macOS arm64 relocated-bundle smoke pass; clean Linux runtime, Windows and complete final-artifact acceptance remain open. |
 
 ### Python value conversion and construction
 
@@ -99,6 +99,15 @@ Core namespace organization intentionally parallels Lua: Python exposes
 expose `lc.persistence.*`. The GUI surface is `gui` in Lua and `lcgui` in
 Python.
 
+Hosted checkpoint (2026-10-11, PR candidate `783266c3`): Linux x64 passes the
+315-test required core filter, AppDir/final AppImage and installed core26 Snap
+smokes; macOS arm64 passes 158 required scripting tests plus one Lua runtime
+test and relocated app smoke. Required tests report zero skips. These are
+candidate results, not a claim that the roadmap is complete: clean Linux
+runtime validation, Windows/NSIS, macOS x86_64/final archived artifacts,
+dependency qualification/notices and protected signing still have open gates
+in `PYTHON_BINDING_IMPLEMENTATION_PLAN.md`.
+
 ### Runtime selection and packaging
 
 CMake's `find_package(Python ... Interpreter Development.Embed)` selection is
@@ -115,6 +124,16 @@ third-party Python dependencies are not installed implicitly, and plugins are
 expected to use the standard library plus LibreCAD's shipped modules. Tk/IDLE,
 `pip` inside LibreCAD, multiprocessing, and script sandboxing are not supported
 by this embedded-runtime contract. Plugins are trusted code.
+
+macOS bundles declare `LSMinimumSystemVersion` from the highest deployment
+target in the shipped application, Python, Qt, and other native libraries,
+including every Mach-O architecture slice. The packager preserves a higher
+explicit application floor and fails if a deployment target cannot be read.
+This reports the actual artifact requirement, not compatibility with an older
+macOS release. The native arm64/x86_64 workflow retains the signed app archive,
+its SHA-256 and minimum OS, the selected-provider inventory, and test/smoke logs.
+PR bundles are ad-hoc signed; Developer ID signing and notarization are separate
+release requirements.
 
 Operation contract
 ------------------
@@ -239,8 +258,9 @@ custom entity and a fresh Python-only reconstruction hook reopens it. They
 check concrete Insert/storage types, plugin/entity names, parameters, position,
 and that reconstruction replaces the placeholder instead of duplicating it.
 The tests are `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData`
-and `CustomEntityDxfRoundTrip.LuaWriterPythonPluginReconstructsEntity`; hosted
-and non-macOS validation is still pending.
+and `CustomEntityDxfRoundTrip.LuaWriterPythonPluginReconstructsEntity`; both
+pass the hosted Linux x64/macOS arm64 required source filters at `783266c3`.
+Windows and Snap-specific full regression acceptance remain open.
 
 For Lua code that passes custom storage to shared-block APIs such as
 `AddBlock.new` or `CustomEntityBuilder:setDisplayBlock`, create an owning block

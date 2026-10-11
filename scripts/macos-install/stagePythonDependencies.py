@@ -12,12 +12,41 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Set
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 
 SYSTEM_PREFIXES = ("/System/Library/", "/usr/lib/")
 LOAD_RE = re.compile(r"^\s*(.*?) \(compatibility version ")
 RPATH_RE = re.compile(r"^\s*path (.*?) \(offset ")
+
+
+def minimum_macos(load_commands: str) -> Tuple[int, int, int]:
+    """Return the highest macOS deployment target, including every fat slice."""
+    slices = re.split(r"(?m)^.* \(architecture [^)]+\):\s*$", load_commands)
+    if len(slices) > 1:
+        return max(minimum_macos(part) for part in slices[1:])
+    versions = []
+    for command in re.split(r"(?m)^\s*Load command \d+\s*$", load_commands):
+        if re.search(r"(?m)^\s*cmd LC_VERSION_MIN_(?!MACOSX\b)\w+\s*$", command):
+            raise RuntimeError("non-macOS deployment target in staged Mach-O")
+        if re.search(r"(?m)^\s*cmd LC_BUILD_VERSION\s*$", command):
+            if not re.search(r"(?m)^\s*platform\s+(?:1|macos)\s*$", command, re.I):
+                raise RuntimeError("non-macOS deployment target in staged Mach-O")
+            field = "minos"
+        elif re.search(r"(?m)^\s*cmd LC_VERSION_MIN_MACOSX\s*$", command):
+            field = "version"
+        else:
+            continue
+        match = re.search(r"(?m)^\s*" + field + r"\s+(\d+(?:\.\d+){0,2})\s*$", command)
+        if match is None:
+            raise RuntimeError("missing or malformed macOS deployment target")
+        parts = tuple(int(value) for value in match[1].split("."))
+        if not any(parts):
+            raise RuntimeError("unspecified macOS deployment target")
+        versions.append(parts + (0,) * (3 - len(parts)))
+    if not versions:
+        raise RuntimeError("no minimum macOS load command in staged Mach-O")
+    return max(versions)
 
 
 class RuntimeStager:
@@ -34,6 +63,7 @@ class RuntimeStager:
         scan_directories: Sequence[Path],
         scan_frameworks: bool,
         search_directories: Sequence[Path] = (),
+        bundle_info_plist: Optional[Path] = None,
     ) -> None:
         self.prefix = prefix.resolve()
         self.python_root = python_root.resolve()
@@ -53,6 +83,7 @@ class RuntimeStager:
         self.scan_directories = [path.resolve() for path in scan_directories]
         self.scan_frameworks = scan_frameworks
         self.search_directories = [path.resolve() for path in search_directories]
+        self.bundle_info_plist = bundle_info_plist
         self.changed: Set[Path] = set()
         self.staged: Set[Path] = set()
         self.source_digests_by_name: Dict[str, str] = {}
@@ -348,13 +379,14 @@ class RuntimeStager:
 
             self._remove_external_rpaths(binary)
 
-        for binary in processed | self.changed | self.staged:
-            self._run([self.codesign, "--force", "--sign", "-", str(binary)])
-            if self.application_binary is not None and binary == self.application_binary:
-                # The enclosing .app is re-signed only after all bundle edits.
-                # Verifying its executable here would also check macdeployqt's
-                # now-stale bundle resource seal.
+        self._record_bundle_minimum_os(processed | self.changed | self.staged)
+        for binary in sorted(processed | self.changed | self.staged):
+            if self.bundle_info_plist is not None and binary == self.application_binary:
+                # Signing an executable inside .app can seal the enclosing
+                # bundle and reject not-yet-signed plugins. createBundle.sh
+                # signs the complete bundle after every nested object is ready.
                 continue
+            self._run([self.codesign, "--force", "--sign", "-", str(binary)])
             self._run([self.codesign, "--verify", "--strict", str(binary)])
 
         self._verify_no_external_loads(processed | self.staged)
@@ -369,6 +401,29 @@ class RuntimeStager:
                     len(self.deferred_framework_loads)
                 )
             )
+
+    def _record_bundle_minimum_os(self, binaries: Iterable[Path]) -> None:
+        if self.bundle_info_plist is None:
+            return
+        if not self._inside_prefix(self.bundle_info_plist):
+            raise RuntimeError("bundle Info.plist is outside the staged prefix")
+        with self.bundle_info_plist.open("rb") as stream:
+            info = plistlib.load(stream)
+        if not isinstance(info, dict):
+            raise RuntimeError("bundle Info.plist must contain a dictionary")
+        versions = [minimum_macos(self._run([self.otool, "-l", str(binary)]))
+                    for binary in sorted(binaries)]
+        if not versions:
+            raise RuntimeError("cannot record a bundle minimum OS without Mach-O files")
+        if "LSMinimumSystemVersion" in info:
+            existing = info["LSMinimumSystemVersion"]
+            versions.append(minimum_macos(
+                "cmd LC_VERSION_MIN_MACOSX\nversion {}\n".format(existing)))
+        version = ".".join(str(part) for part in max(versions))
+        info["LSMinimumSystemVersion"] = version
+        with self.bundle_info_plist.open("wb") as stream:
+            plistlib.dump(info, stream, sort_keys=False)
+        print("Recorded bundle minimum macOS: {}".format(version))
 
     def _verify_no_external_loads(self, binaries: Iterable[Path]) -> None:
         for binary in binaries:
@@ -403,6 +458,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--scan-directory", type=Path, action="append", default=[])
     parser.add_argument("--search-directory", type=Path, action="append", default=[])
     parser.add_argument("--scan-frameworks", action="store_true")
+    parser.add_argument("--bundle-info-plist", type=Path)
     arguments = parser.parse_args(argv)
 
     try:
@@ -418,6 +474,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             arguments.scan_directory,
             arguments.scan_frameworks,
             arguments.search_directory,
+            arguments.bundle_info_plist,
         ).stage()
     except (OSError, RuntimeError) as error:
         print("macOS Python runtime staging failed: {}".format(error), file=sys.stderr)

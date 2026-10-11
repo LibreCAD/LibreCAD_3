@@ -135,6 +135,7 @@ done
     "$install_name_tool_bin" \
     "$codesign_bin" \
     --application-binary "$macos/librecad" \
+    --bundle-info-plist "$contents/Info.plist" \
     --scan-frameworks \
     --scan-directory "$contents/PlugIns"
 
