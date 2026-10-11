@@ -127,6 +127,12 @@ tree into Resources). Windows keeps its runtime DLL beside the executable in
 `bin`; its stdlib/extensions still use the common data layout. This keeps the
 runtime resolver and installed-package smoke consistent after relocation.
 
+The shared layout also retains byte-for-byte project and vendored source
+licenses under `licenses/source`, preserving their repository-relative paths.
+Persistence/libdxfrw, CLI and pybind11 notices follow their build feature flags.
+This does not complete notices for external prebuilt binary providers or
+establish complete release-license compliance; that gate remains open.
+
 Windows Conan builds select prebuilt shared Lua so states crossing the UI,
 binding and executable DLLs use one core. Lua 5.3's
 [version check](https://www.lua.org/source/5.3/lauxlib.c.html#luaL_checkversion_)

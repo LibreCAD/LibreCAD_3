@@ -76,6 +76,29 @@ endif()
 
 # Define compiler warnings and standard install directories.
 include(GNUInstallDirs)
+
+# BEGIN source license installation
+# Preserve upstream text and source-relative paths in every artifact. Binary
+# provider notices (Qt, Lua, CPython extension libraries, etc.) are separate.
+set(_lc_source_license_files
+    LICENSE lckernel/LICENSE lcadluascript/LICENSE lcviewernoqt/LICENSE
+    third_party/kaguya/LICENSE_1_0.txt
+    lckernel/nano-signal-slot/LICENSE lckernel/tinyspline/LICENSE)
+if(WITH_PERSISTENCE)
+    list(APPEND _lc_source_license_files persistence/LICENSE third_party/libdxfrw/COPYING)
+endif()
+if(WITH_LUACMDINTERFACE)
+    list(APPEND _lc_source_license_files luacmdinterface/LICENSE)
+endif()
+if(WITH_PYTHONSCRIPT)
+    list(APPEND _lc_source_license_files third_party/pybind11/LICENSE)
+endif()
+foreach(_lc_source_license IN LISTS _lc_source_license_files)
+    get_filename_component(_lc_license_directory "${_lc_source_license}" DIRECTORY)
+    install(FILES "${CMAKE_SOURCE_DIR}/${_lc_source_license}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/source/${_lc_license_directory}")
+endforeach()
+# END source license installation
 if(MSVC)
     # CMake's runtime dependency set is used by the Windows install/NSIS path
     # to collect Conan, Qt, and CPython DLL dependencies recursively.
