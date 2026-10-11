@@ -1,5 +1,8 @@
 """Guard the Windows package lane's installed Python smoke contract."""
 
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -10,6 +13,7 @@ CONAN_SCRIPT = REPOSITORY_ROOT / "scripts/windows-install/createConanDirAndInsta
 CONANFILE = REPOSITORY_ROOT / "conanfile.py"
 WORKFLOW = REPOSITORY_ROOT / ".github/workflows/main.yml"
 UI_CMAKE = REPOSITORY_ROOT / "lcUI/CMakeLists.txt"
+ROOT_CMAKE = REPOSITORY_ROOT / "CMakeLists.txt"
 PYTHON_INVENTORY_VALIDATOR = REPOSITORY_ROOT / "scripts/validate_python_inventory.py"
 
 
@@ -21,6 +25,7 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         cls.conanfile = CONANFILE.read_text(encoding="utf-8")
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
         cls.ui_cmake = UI_CMAKE.read_text(encoding="utf-8")
+        cls.root_cmake = ROOT_CMAKE.read_text(encoding="utf-8")
         cls.python_inventory_validator = PYTHON_INVENTORY_VALIDATOR.read_text(
             encoding="utf-8"
         )
@@ -180,6 +185,33 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         self.assertNotIn("--build missing", conan)
         self.assertNotIn("cmake_policy_version_minimum", conan)
         self.assertIn("qt 6.8.3 win64_msvc2022_64", windows_job)
+
+    def test_conan_generators_have_one_explicit_location(self):
+        self.assertIn('--output-folder "%LIBRECAD_ROOT%\\conan"', self.conan_script)
+        self.assertIn('if not exist conan\\conan_toolchain.cmake', self.conan_script)
+        self.assertIn('if not exist conan\\conanrun.bat', self.conan_script)
+        self.assertIn('-DCMAKE_TOOLCHAIN_FILE="%cd%\\conan\\conan_toolchain.cmake"', self.package_script)
+        self.assertIn('-DCMAKE_TOOLCHAIN_FILE="%CD%\\conan\\conan_toolchain.cmake"', self.workflow)
+
+    @unittest.skipUnless(shutil.which("cmake"), "CMake is needed for the syntax regression")
+    def test_runtime_dependency_install_configures_with_and_without_search_paths(self):
+        rule = "    install(RUNTIME_DEPENDENCY_SET " + self.root_cmake.split(
+            "    install(RUNTIME_DEPENDENCY_SET ", 1
+        )[1].split("\nendif()", 1)[0]
+        for directories in ("", 'DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"'):
+            with self.subTest(directories=directories), tempfile.TemporaryDirectory() as directory:
+                source = Path(directory)
+                (source / "CMakeLists.txt").write_text(
+                    'cmake_minimum_required(VERSION 3.28)\nproject(RuntimeInstall NONE)\n'
+                    'set(CMAKE_INSTALL_BINDIR bin)\n'
+                    f'set(_lc_runtime_dependency_directory_args {directories})\n{rule}\n',
+                    encoding="utf-8",
+                )
+                result = subprocess.run(
+                    ["cmake", "-S", str(source), "-B", str(source / "build")],
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

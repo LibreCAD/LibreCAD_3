@@ -430,11 +430,11 @@ if(MSVC)
             DIRECTORIES ${_lc_runtime_dependency_directories})
     endif()
     install(RUNTIME_DEPENDENCY_SET LibreCADRuntimeDependencies
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         ${_lc_runtime_dependency_directory_args}
         PRE_EXCLUDE_REGEXES "^api-ms-win-.*\\.dll$" "^ext-ms-win-.*\\.dll$"
         POST_EXCLUDE_REGEXES ".*[Ww]indows.*[Ss]ystem32.*"
-                             ".*[Ww]indows.*[Ss]ysWOW64.*")
+                             ".*[Ww]indows.*[Ss]ysWOW64.*"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
 # The installed executable and LibreCAD shared libraries refer to one another

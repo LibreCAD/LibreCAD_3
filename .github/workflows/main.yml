@@ -378,7 +378,7 @@ jobs:
         shell: cmd
         run: |
           cmake -S %CD% -B %CD%\build-persistence ^
-            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake ^
+            -DCMAKE_TOOLCHAIN_FILE="%CD%\conan\conan_toolchain.cmake" ^
             -DWITH_QT_UI=OFF -DWITH_UNITTESTS=OFF -DWITH_LUACMDINTERFACE=OFF ^
             -DWITH_PYTHONSCRIPT=OFF -DWITH_RENDERING_UNITTESTS=OFF
           if errorlevel 1 exit /b 1
