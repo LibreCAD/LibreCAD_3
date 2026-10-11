@@ -102,6 +102,7 @@ pushd "%TEMP%"
 if errorlevel 1 exit /b 1
 set "PYTHONHOME=%TEMP%\librecad-poison-python-home"
 set "PYTHONPATH=%TEMP%\librecad-poison-python-path"
+set "LIBRECAD_REQUIRE_CONAN_NOTICES=1"
 set "QT_QPA_PLATFORM=offscreen"
 set "QT_PLUGIN_PATH="
 set "QT_QPA_PLATFORM_PLUGIN_PATH="
@@ -120,5 +121,5 @@ where makensis.exe
 dir ..\CPack*.cmake
 
 cd ..
-cpack --verbose -G NSIS --config CPackConfig.cmake
+cpack --verbose -G NSIS --config CPackConfig.cmake -C Release
 if errorlevel 1 exit /b 1

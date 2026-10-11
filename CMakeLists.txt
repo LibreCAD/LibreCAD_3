@@ -76,6 +76,11 @@ endif()
 
 # Define compiler warnings and standard install directories.
 include(GNUInstallDirs)
+if(NOT CMAKE_INSTALL_DATADIR)
+    # Conan can leave its resdirs override empty. All platforms need the same
+    # prefix-relative data root, including notices installed before subdirs.
+    set(CMAKE_INSTALL_DATADIR "share")
+endif()
 
 # BEGIN source license installation
 # Preserve upstream text and source-relative paths in every artifact. Binary
@@ -99,6 +104,16 @@ foreach(_lc_source_license IN LISTS _lc_source_license_files)
         DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/source/${_lc_license_directory}")
 endforeach()
 # END source license installation
+
+# BEGIN Conan provider notices
+if(DEFINED LIBRECAD_DEPENDENCY_LICENSE_DIR)
+    if(NOT EXISTS "${LIBRECAD_DEPENDENCY_LICENSE_DIR}/manifest.json")
+        message(FATAL_ERROR "Selected Conan provider notice manifest is missing")
+    endif()
+    install(DIRECTORY "${LIBRECAD_DEPENDENCY_LICENSE_DIR}/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/conan")
+endif()
+# END Conan provider notices
 if(MSVC)
     # CMake's runtime dependency set is used by the Windows install/NSIS path
     # to collect Conan, Qt, and CPython DLL dependencies recursively.
@@ -110,11 +125,6 @@ if(MSVC)
 endif()
 if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
-     # A user/toolchain may leave the GNU data-dir override empty. Keep runtime
-     # assets under the conventional prefix-relative share directory.
-     if (NOT CMAKE_INSTALL_DATADIR)
-         set(CMAKE_INSTALL_DATADIR "share")
-     endif()
 endif()
 
 set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
@@ -125,27 +135,6 @@ if(CMAKE_TOOLCHAIN_FILE AND
     set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
     set(CMAKE_INSTALL_BINDIR "bin")
     
-    #SET(CPACK_GENERATOR "ZIP;TGZ")
-    SET(CPACK_BINARY_NSIS True)
-    SET(CPACK_NSIS_DISPLAY_NAME "LibreCAD3")
-    set(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_PACKAGE_VENDOR "librecad.org")
-    set(CPACK_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_SOURCE_DIR}/build/bin;.")
-    set(CPACK_BUILD_SOURCE_DIRS "${CMAKE_SOURCE_DIR}/build/bin")
-    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-
-    SET(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_SOURCE_DIR}/res/librecad.ico")
-    SET(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_CREATE_DESKTOP_LINKS "LibreCAD3")
-    set(CPACK_PACKAGE_EXECUTABLES "librecad;LibreCAD3")
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "LibreCAD3")
-    set(CPACK_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${PROJECT_NAME};ALL;/")
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-    file(COPY "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "${FINAL_INSTALL_DIR}")
-    include(CPack)
-
     #include(${CMAKE_SOURCE_DIR}/conan_toolchain.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
     
@@ -603,3 +592,22 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+
+# Configure the binary installer after vendor subdirectories. CPack mutates its
+# variables for source packaging; an inherited second include (tinyspline) can
+# otherwise overwrite our binary config with a build-output directory copy.
+if(MSVC AND CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$")
+    set(CPACK_BINARY_NSIS TRUE)
+    set(CPACK_NSIS_DISPLAY_NAME "LibreCAD3")
+    set(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
+    set(CPACK_PACKAGE_VENDOR "librecad.org")
+    set(CPACK_PACKAGE_NAME "LibreCAD3")
+    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_SOURCE_DIR}/res/librecad.ico")
+    set(CPACK_CREATE_DESKTOP_LINKS "LibreCAD3")
+    set(CPACK_PACKAGE_EXECUTABLES "librecad;LibreCAD3")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "LibreCAD3")
+    set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${PROJECT_NAME};ALL;/")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+    include(CPack)
+endif()

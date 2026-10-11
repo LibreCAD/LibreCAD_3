@@ -328,6 +328,7 @@ jobs:
           $env:PYTHONPATH = Join-Path $env:RUNNER_TEMP 'poison-python-path'
           $env:LIBRECAD_REQUIRE_BUNDLED_PYTHON = '1'
           $env:LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE = '1'
+          $env:LIBRECAD_REQUIRE_CONAN_NOTICES = '1'
           Remove-Item Env:QT_PLUGIN_PATH -ErrorAction SilentlyContinue
           Remove-Item Env:QT_QPA_PLATFORM_PLUGIN_PATH -ErrorAction SilentlyContinue
           Remove-Item Env:QTDIR -ErrorAction SilentlyContinue

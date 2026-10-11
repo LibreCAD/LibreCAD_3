@@ -210,6 +210,16 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
     else:
         raise AssertionError(
             f"bundled-libpython verification is unsupported on {sys.platform}")
+# BEGIN required Conan notices
+_notice_diagnostics = ""
+if os.environ.get("LIBRECAD_REQUIRE_CONAN_NOTICES") == "1":
+    from lcUIPy._runtimeaudit import audit_conan_notices
+    _notice_root = _package_root.parent / "licenses/providers/conan"
+    assert _notice_root.resolve().is_relative_to(_package_root.parent), \
+        "Conan notices escape the installed data directory"
+    _provider_count, _notice_count = audit_conan_notices(_notice_root)
+    _notice_diagnostics = f"; Conan provider notices: {_provider_count} providers, {_notice_count} files"
+# END required Conan notices
 _elf_diagnostics = ""
 if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":
     assert sys.platform.startswith("linux") and expected_staged_python_root and \
@@ -228,7 +238,7 @@ import lcgui
 assert hasattr(lcgui, 'MainWindow'), "embedded lcgui module lacks MainWindow"
 runtime_diagnostics = (
     f"Python runtime: version={sys.version.split()[0]}, prefix={sys.prefix}; "
-    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}"
+    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}{_notice_diagnostics}"
 )
 )py";
         const std::string importError = python.runString(importsAndProviderCheck.c_str(), ns);

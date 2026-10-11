@@ -2,9 +2,62 @@
 
 from pathlib import Path
 import ctypes
+import hashlib
+import json
 import os
 import subprocess
 import time
+
+
+def audit_conan_notices(directory):
+    """Verify selected Conan notice inventory/bytes, not legal compliance."""
+    if Path(directory).is_symlink():
+        raise RuntimeError("Conan notice inventory root is a symlink")
+    root = Path(directory).resolve(strict=True)
+    manifest_file = root / "manifest.json"
+    if manifest_file.is_symlink():
+        raise RuntimeError("Conan notice manifest is a symlink")
+    manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or manifest.get("format") != 1 or \
+            not isinstance(manifest.get("providers"), list) or not manifest["providers"]:
+        raise RuntimeError("Conan provider notice manifest is empty or unsupported")
+    expected = {"manifest.json"}
+    for provider in manifest["providers"]:
+        if not isinstance(provider, dict) or not all(
+                   isinstance(provider.get(key), str) and provider[key] and provider[key] != "None"
+                   for key in ("reference", "recipe_revision", "package_id", "package_revision")):
+            raise RuntimeError("Conan notice provider identity is incomplete")
+        if "system_os" in provider or "system_libraries" in provider:
+            if provider["reference"] != "opengl/system" or provider.get("system_os") != "Windows" or \
+                    provider.get("system_libraries") != ["opengl32"] or provider.get("files") != []:
+                raise RuntimeError("Conan system dependency exemption is unsupported")
+            continue
+        if not isinstance(provider.get("files"), list) or not provider["files"]:
+            raise RuntimeError("Conan provider has zero notice files")
+        for entry in provider["files"]:
+            if not isinstance(entry, dict) or "sha256" not in entry:
+                raise RuntimeError("Conan notice file entry is incomplete")
+            relative = entry.get("path")
+            if not isinstance(relative, str) or not relative or "\\" in relative or ":" in relative or \
+                    Path(relative).is_absolute() or ".." in Path(relative).parts or \
+                    relative.casefold() in {path.casefold() for path in expected}:
+                raise RuntimeError("Conan notice path is unsafe or duplicated: {}".format(relative))
+            file = root / relative
+            if file.is_symlink() or not file.resolve(strict=True).is_relative_to(root) or not file.is_file():
+                raise RuntimeError("Conan notice file escapes its inventory: {}".format(relative))
+            data = file.read_bytes()
+            if not data.strip() or hashlib.sha256(data).hexdigest() != entry["sha256"]:
+                raise RuntimeError("Conan notice content hash differs: {}".format(relative))
+            expected.add(relative)
+    actual = set()
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise RuntimeError("Conan notice inventory contains a symlink: {}".format(path))
+        if path.is_file():
+            actual.add(path.relative_to(root).as_posix())
+    if actual != expected or len(expected) == 1:
+        raise RuntimeError("Conan notice inventory differs from installed files")
+    return len(manifest["providers"]), len(expected) - 1
 
 
 def audit_windows_extensions(python_root):

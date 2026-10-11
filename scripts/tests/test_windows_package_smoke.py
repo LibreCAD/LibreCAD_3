@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -125,6 +126,58 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         self.assertEqual(6, step.count("if errorlevel 1 exit /b 1"))
         self.assertNotIn("conan install", step)
         self.assertNotIn("pip install", step)
+
+    @unittest.skipUnless(shutil.which("cmake") and shutil.which("cpack"),
+                         "real nested CPack binary-install fixture")
+    def test_nested_cpack_cannot_replace_the_binary_install_with_build_outputs(self):
+        # Use the production settings/order and the vendor's CPack invocation.
+        # A real ZIP consumes the same binary config as NSIS, without claiming
+        # that this host can execute a Windows installer.
+        start = self.root_cmake.lower().index('    set(cpack_binary_nsis')
+        end = self.root_cmake.index('    include(CPack)', start) + len('    include(CPack)\n')
+        settings = self.root_cmake[start:end]
+        vendor = (REPOSITORY_ROOT / "lckernel/tinyspline/src/CMakeLists.txt").read_text()
+        vendor = vendor.split("# CPack\n", 1)[1].split("# Dub\n", 1)[0]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            source = root / "source"
+            build = source / "build"
+            source.mkdir()
+            nested = source / "nested"
+            nested.mkdir()
+            (source / "LICENSE").write_text("project license")
+            (source / "runtime.txt").write_text("installed provider data")
+            (nested / "CMakeLists.txt").write_text(
+                'set(TINYSPLINE_VERSION "0.6.0")\n' + vendor)
+            packaging_first = start < self.root_cmake.index('add_subdirectory("lckernel")')
+            (source / "CMakeLists.txt").write_text(
+                'cmake_minimum_required(VERSION 3.28)\nproject(LibreCAD3 LANGUAGES NONE)\n'
+                'set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")\n'
+                'set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/unused-prefix")\n'
+                'set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")\n'
+                'file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin")\n'
+                'file(WRITE "${CMAKE_BINARY_DIR}/bin/librecad.exe" "application")\n'
+                'file(WRITE "${CMAKE_BINARY_DIR}/bin/build-only.txt" "not installed")\n'
+                'install(FILES "${CMAKE_BINARY_DIR}/bin/librecad.exe" DESTINATION bin)\n'
+                'install(FILES runtime.txt DESTINATION share/librecad/python)\n' +
+                (settings if packaging_first else "") + 'add_subdirectory(nested)\n' +
+                ("" if packaging_first else settings))
+            commands = (["cmake", "-S", str(source), "-B", str(build)],
+                        ["cpack", "--config", str(build / "CPackConfig.cmake"),
+                         "-G", "ZIP", "-C", "Release", "-B", str(root / "packages"),
+                         "-D", "CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF"])
+            for command in commands:
+                result = subprocess.run(command, capture_output=True, text=True, timeout=30)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            archives = list((root / "packages").glob("*.zip"))
+            self.assertEqual(1, len(archives))
+            with zipfile.ZipFile(archives[0]) as archive:
+                files = {name for name in archive.namelist() if not name.endswith("/")}
+                self.assertEqual({"bin/librecad.exe", "share/librecad/python/runtime.txt"}, files)
+                self.assertEqual(b"installed provider data",
+                                 archive.read("share/librecad/python/runtime.txt"))
+            self.assertNotEqual((build / "CPackConfig.cmake").read_bytes(),
+                                (build / "CPackSourceConfig.cmake").read_bytes())
 
     @unittest.skipUnless(shutil.which("cmake"), "CMake install-layout fixture")
     def test_msvc_python_package_installs_adjacent_to_runtime_and_license(self):
