@@ -454,6 +454,14 @@ class PyRectangleOp(CreateOperations):
         for e in self.entities:
             temp.addEntity(e)
 
+    def cleanUp(self):
+        mw = self._get_main_window()
+        if mw is not None:
+            temp = mw.cadMdiChild().tempEntities()
+            for entity in self.entities:
+                temp.removeEntity(entity)
+        self.entities.clear()
+
     def _store_rectangle(self):
         """Commit the rectangle to the document."""
         mw = self._get_main_window()
@@ -464,10 +472,7 @@ class PyRectangleOp(CreateOperations):
         layer = mdi.activeLayer()
 
         # Clear preview.
-        temp = mdi.tempEntities()
-        for e in self.entities:
-            temp.removeEntity(e)
-        self.entities = []
+        self.cleanUp()
 
         # Storage block and its geometry form one user-visible creation
         # transaction. Executing AddBlock and EntityBuilder separately would

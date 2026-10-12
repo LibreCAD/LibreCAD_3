@@ -32,6 +32,15 @@
 #include <widgets/guiAPI/colorgui.h>
 #include <widgets/guiAPI/entitygui.h>
 #include <QListWidget>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTimer>
+#include <QElapsedTimer>
+#include <QTemporaryDir>
+#include <QFile>
+#include <QLineEdit>
+#include <QScopeGuard>
+#include <widgets/layermodel.h>
 #include <cad/primitive/point.h>
 #include <widgets/clicommand.h>
 #include <luainterface.h>
@@ -78,7 +87,297 @@ struct TempEntityRefreshCounter {
     }
 };
 
+// Drive the actual modal file dialog, with a deadline and no native OS panel.
+struct OpenDialogDriver {
+    QTimer timer;
+    QElapsedTimer elapsed;
+    bool previous = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+    bool selected = false;
+    bool timedOut = false;
+    int messages = 0;
+    explicit OpenDialogDriver(QString path = {}) {
+        QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, true);
+        elapsed.start();
+        QObject::connect(&timer, &QTimer::timeout, [this, path] {
+            auto* modal = QApplication::activeModalWidget();
+            if (auto* dialog = qobject_cast<QFileDialog*>(modal)) {
+                selected = true;
+                if (path.isEmpty()) dialog->reject();
+                else {
+                    // Enter the absolute path through the real filename field;
+                    // selectFile alone races the asynchronous directory model.
+                    auto* edit = dialog->findChild<QLineEdit*>("fileNameEdit");
+                    if (edit) edit->setText(path);
+                    QMetaObject::invokeMethod(dialog, "accept", Qt::DirectConnection);
+                }
+            } else if (auto* message = qobject_cast<QMessageBox*>(modal)) {
+                ++messages;
+                message->accept();
+            }
+            if (elapsed.elapsed() > 5000) {
+                timedOut = true;
+                if (auto* dialog = qobject_cast<QDialog*>(modal)) dialog->reject();
+            }
+        });
+        timer.start(10);
+    }
+    ~OpenDialogDriver() {
+        timer.stop();
+        QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, previous);
+    }
+};
+
 } // namespace
+
+TEST(PyGuiBridgeTest, DocumentReplacementCancelsOperationAndIsolatesStorage) {
+    ensureUiApplication();
+    lc::ui::MainWindow first;
+    lc::ui::MainWindow second;
+    first.layers()->addLayer("old-layer");
+    first.cliCommand()->runCommand("PYRECTANGLE");
+    first.triggerCoordinateEntered(lc::geo::Coordinate(1, 2));
+    first.triggerCoordinateEntered(lc::geo::Coordinate(11, 10));
+    auto oldDocument = first.cadMdiChild()->document();
+    auto oldStorage = first.cadMdiChild()->storageManager();
+    auto oldUndo = first.cadMdiChild()->undoManager();
+    ASSERT_EQ(oldDocument->entityContainer().asVector().size(), 1u);
+    first.cliCommand()->runCommand("PYRECTANGLE");
+    first.triggerCoordinateEntered(lc::geo::Coordinate(3, 4));
+    auto previewPayload = lc::scripting::makeMap();
+    (*previewPayload)["position"] = lc::geo::Coordinate(9, 9);
+    first.luaInterface()->triggerEvent("mouseMove", lc::scripting::ScriptValue(previewPayload));
+    second.cliCommand()->runCommand("PYRECTANGLE");
+    second.triggerCoordinateEntered(lc::geo::Coordinate(20, 30));
+    auto oldOperation = first.currentOperation();
+    ASSERT_FALSE(oldOperation.isNil());
+    TempEntityRefreshCounter preview;
+    auto oldPreview = first.cadMdiChild()->tempEntities();
+    oldPreview->requestUpdateEvent().connect<TempEntityRefreshCounter,
+        &TempEntityRefreshCounter::onRefresh>(preview);
+    {
+        lc::ui::python::MainWindowExecutionScope outer(&second);
+        pybind11::gil_scoped_acquire gil;
+        pybind11::dict ns;
+        ns["a"] = pybind11::cast(&first, pybind11::return_value_policy::reference);
+        pybind11::exec("a.cadMdiChild().newDocument()", ns);
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    EXPECT_TRUE(first.currentOperation().isNil());
+    EXPECT_TRUE(oldOperation.getAttr("finished").asBool());
+    EXPECT_EQ(first.luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(first.luaInterface()->listenerCount("mouseMove"), 0u);
+    EXPECT_EQ(second.luaInterface()->listenerCount("point"), 1u);
+    EXPECT_FALSE(second.currentOperation().isNil());
+    EXPECT_FALSE(first.cadMdiChild()->viewer()->operationActive());
+    EXPECT_GT(preview.refreshCount, 0) << "close must remove the old preview before replacement";
+    EXPECT_NE(first.cadMdiChild()->storageManager(), oldStorage);
+    EXPECT_EQ(first.findChildren<lc::ui::LCADPaperViewer*>().size(), 2);
+    EXPECT_EQ(first.findChild<lc::ui::widgets::LayerModel*>()->rowCount({}), 1);
+    EXPECT_TRUE(first.cadMdiChild()->document()->entityContainer().asVector().empty());
+    EXPECT_EQ(oldDocument->entityContainer().asVector().size(), 1u);
+    oldUndo->undo();
+    EXPECT_TRUE(oldDocument->entityContainer().asVector().empty());
+    EXPECT_TRUE(first.cadMdiChild()->document()->entityContainer().asVector().empty());
+    first.cliCommand()->runCommand("PYRECTANGLE");
+    first.triggerCoordinateEntered(lc::geo::Coordinate(5, 6));
+    first.triggerCoordinateEntered(lc::geo::Coordinate(15, 16));
+    EXPECT_EQ(first.cadMdiChild()->document()->entityContainer().asVector().size(), 1u);
+    EXPECT_TRUE(oldDocument->entityContainer().asVector().empty());
+    EXPECT_EQ(second.luaInterface()->listenerCount("point"), 1u);
+    second.triggerFinishOperation();
+}
+
+TEST(PyGuiBridgeTest, ActualFileReopenReconstructsInItsWindowAndCancelPreservesDrawing) {
+    ensureUiApplication();
+    QTemporaryDir directory;
+    ASSERT_TRUE(directory.isValid());
+    const auto path = directory.path() + QString::fromUtf8("/drawing Ω.dxf");
+    lc::ui::MainWindow first;
+    lc::ui::MainWindow second;
+    first.cliCommand()->runCommand("PYRECTANGLE");
+    first.triggerCoordinateEntered(lc::geo::Coordinate(1, 2));
+    first.triggerCoordinateEntered(lc::geo::Coordinate(11, 10));
+    ASSERT_TRUE(lc::persistence::File::exportFile(first.cadMdiChild()->document(),
+        path.toStdString(), lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto originalDocument = first.cadMdiChild()->document();
+    int replacements = 0;
+    std::string notifiedFilename;
+    QObject::connect(first.cadMdiChild(), &lc::ui::CadMdiChild::documentChanged,
+                     &first, [&] {
+        ++replacements;
+        notifiedFilename = first.cadMdiChild()->getFilename();
+    });
+    first.cliCommand()->runCommand("PYRECTANGLE");
+    first.triggerCoordinateEntered(lc::geo::Coordinate(3, 4));
+    auto activeOperation = first.currentOperation();
+    {
+        OpenDialogDriver dialog;
+        EXPECT_FALSE(first.cadMdiChild()->openFile());
+        EXPECT_TRUE(dialog.selected);
+        EXPECT_FALSE(dialog.timedOut);
+    }
+    EXPECT_EQ(first.cadMdiChild()->document(), originalDocument);
+    EXPECT_EQ(first.luaInterface()->listenerCount("point"), 1u);
+    QFile malformed(directory.path() + "/broken.dxf");
+    ASSERT_TRUE(malformed.open(QIODevice::WriteOnly));
+    malformed.write("0\nSECTION\n2\nENTITIES\n0\nLINE\n10\n");
+    malformed.close();
+    {
+        OpenDialogDriver dialog(malformed.fileName());
+        EXPECT_FALSE(first.cadMdiChild()->openFile());
+        EXPECT_TRUE(dialog.selected);
+        EXPECT_FALSE(dialog.timedOut);
+        EXPECT_GT(dialog.messages, 0);
+    }
+    EXPECT_EQ(first.cadMdiChild()->document(), originalDocument);
+    EXPECT_EQ(first.luaInterface()->listenerCount("point"), 1u);
+    pybind11::gil_scoped_acquire gil;
+    EXPECT_EQ(replacements, 0);
+    pybind11::dict ns;
+    ns["a"] = pybind11::cast(&first, pybind11::return_value_policy::reference);
+    ns["is_registered"] = pybind11::cpp_function([](lc::ui::MainWindow* window) {
+        const auto& windows = lc::ui::WindowManager::mainWindows;
+        return std::find(windows.begin(), windows.end(), window) != windows.end();
+    });
+    pybind11::exec(R"py(
+import lc, lcgui as gui
+from lcUIPy.plugins.rectangle import plugin as rectangle
+observed = []
+def reconstruct(insert):
+    owner = gui.currentMainWindow()
+    observed.append((owner, insert.document(), is_registered(owner) if owner else None))
+    rectangle._on_new_waiting_custom_entity(insert)
+lc.register_plugin('LC Plugin', reconstruct)
+)py", ns);
+    auto restorePlugin = qScopeGuard([&] {
+        ns["lc"].attr("register_plugin")("LC Plugin",
+            ns["rectangle"].attr("_on_new_waiting_custom_entity"));
+    });
+    {
+        lc::ui::python::MainWindowExecutionScope outer(&second);
+        OpenDialogDriver dialog(path);
+        pybind11::exec("opened = a.cadMdiChild().openFile()", ns);
+        EXPECT_TRUE(ns["opened"].cast<bool>());
+        EXPECT_FALSE(dialog.timedOut);
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    EXPECT_TRUE(activeOperation.getAttr("finished").asBool());
+    EXPECT_TRUE(first.currentOperation().isNil());
+    EXPECT_EQ(first.luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(first.cadMdiChild()->getFilename(), path.toStdString());
+    EXPECT_EQ(replacements, 1);
+    EXPECT_EQ(notifiedFilename, path.toStdString());
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+doc = a.cadMdiChild().document()
+assert len(observed) == 1 and observed[0][:2] == (a, doc), observed
+entities = doc.entityContainer().asVector(32767)
+assert len(entities) == 1 and isinstance(entities[0], lc.entity.ScriptCustomEntity)
+assert len(rectangle._snap_points(entities[0], lc.geo.Coordinate(), None, 0, 4)) == 4
+assert len(doc.entitiesByBlock(entities[0].displayBlock()).asVector(32767)) == 4
+)py", ns));
+    auto loadedDocument = first.cadMdiChild()->document();
+    auto loadedUndo = first.cadMdiChild()->undoManager();
+    for (const auto& chosen : {QString(), malformed.fileName()}) {
+        OpenDialogDriver dialog(chosen);
+        EXPECT_FALSE(first.cadMdiChild()->openFile());
+        EXPECT_FALSE(dialog.timedOut);
+        EXPECT_EQ(first.cadMdiChild()->document(), loadedDocument);
+        EXPECT_EQ(first.cadMdiChild()->undoManager(), loadedUndo);
+        EXPECT_EQ(first.cadMdiChild()->getFilename(), path.toStdString());
+    }
+    const auto before = lc::ui::WindowManager::mainWindows;
+    EXPECT_EQ(replacements, 1);
+    auto cleanupWindows = qScopeGuard([before] {
+        const auto current = lc::ui::WindowManager::mainWindows;
+        for (auto* window : current)
+            if (std::find(before.begin(), before.end(), window) == before.end()) delete window;
+    });
+    {
+        OpenDialogDriver dialog;
+        lc::ui::WindowManager::openFile();
+        EXPECT_FALSE(dialog.timedOut);
+        EXPECT_EQ(lc::ui::WindowManager::mainWindows.size(), before.size());
+    }
+    {
+        OpenDialogDriver dialog(malformed.fileName());
+        lc::ui::WindowManager::openFile();
+        EXPECT_FALSE(dialog.timedOut);
+        EXPECT_EQ(lc::ui::WindowManager::mainWindows.size(), before.size());
+    }
+    {
+        lc::ui::python::MainWindowExecutionScope outer(&second);
+        OpenDialogDriver dialog(path);
+        lc::ui::WindowManager::openFile();
+        EXPECT_FALSE(dialog.timedOut);
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    auto* reopened = lc::ui::WindowManager::mainWindows.back();
+    ns["reopened"] = pybind11::cast(reopened, pybind11::return_value_policy::reference);
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+assert observed[-1] == (reopened, reopened.cadMdiChild().document(), False), observed
+assert len(reopened.cadMdiChild().document().entityContainer().asVector(32767)) == 1
+)py", ns));
+    first.cadMdiChild()->newDocument();
+    EXPECT_TRUE(first.cadMdiChild()->getFilename().empty());
+    EXPECT_EQ(replacements, 2);
+    EXPECT_TRUE(notifiedFilename.empty());
+    for (auto* window : {&first, reopened}) {
+        const auto count = window->cadMdiChild()->document()->entityContainer().asVector().size();
+        window->cliCommand()->runCommand("PYRECTANGLE");
+        window->triggerCoordinateEntered(lc::geo::Coordinate(30, 40));
+        window->triggerCoordinateEntered(lc::geo::Coordinate(40, 50));
+        EXPECT_EQ(window->cadMdiChild()->document()->entityContainer().asVector().size(), count + 1);
+        window->cadMdiChild()->undoManager()->undo();
+        EXPECT_EQ(window->cadMdiChild()->document()->entityContainer().asVector().size(), count);
+    }
+}
+
+TEST(PyGuiBridgeTest, RetainedDrawingAndPreviewSurviveViewReplacementAndWindowTeardown) {
+    ensureUiApplication();
+    auto window = std::unique_ptr<lc::ui::MainWindow>(new lc::ui::MainWindow());
+    auto document = window->cadMdiChild()->document();
+    auto preview = window->cadMdiChild()->tempEntities();
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["document"] = pybind11::cast(document);
+    pybind11::exec(R"py(
+import lc
+line = lc.builder.LineBuilder()
+line.setLayer(document.layerByName('0'))
+line.setStartPoint(lc.geo.Coordinate(1, 2))
+line.setEndPoint(lc.geo.Coordinate(3, 4))
+entity = line.build()
+)py", ns);
+    for (int i = 0; i < 3; ++i) {
+        auto papers = window->findChildren<lc::ui::LCADPaperViewer*>();
+        ASSERT_EQ(papers.size(), 2);
+        QPointer<lc::ui::LCADPaperViewer> active = papers.back();
+        ASSERT_TRUE(QMetaObject::invokeMethod(active, "onMouseMoveEvent", Qt::DirectConnection));
+        EXPECT_EQ(window->cadMdiChild()->viewer(), active.data());
+        window->cadMdiChild()->newDocument();
+        EXPECT_TRUE(active.isNull());
+        EXPECT_NE(window->cadMdiChild()->viewer(), active.data());
+        EXPECT_EQ(window->findChildren<lc::ui::LCADPaperViewer*>().size(), 2);
+    }
+    auto* layers = window->findChild<lc::ui::widgets::LayerModel*>();
+    ASSERT_NE(layers, nullptr);
+    EXPECT_EQ(layers->rowCount({}), 1);
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+old_layer = lc.meta.Layer('retained-only', lc.meta.MetaLineWidthByValue(1),
+                          lc.Color(255, 255, 255, 255), None, False)
+lc.operation.AddLayer.new(document, old_layer).execute()
+)py", ns));
+    EXPECT_EQ(layers->rowCount({}), 1) << "old document must not update the new layer model";
+    window.reset();
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+builder = lc.operation.EntityBuilder.new(document)
+builder.appendEntity(entity)
+builder.execute()
+assert len(document.entityContainer().asVector(32767)) == 1
+)py", ns));
+    preview->addEntity(ns["entity"].cast<lc::entity::CADEntity_CSPtr>());
+    preview->removeEntity(ns["entity"].cast<lc::entity::CADEntity_CSPtr>());
+}
 
 TEST(PyGuiBridgeTest, StandaloneCallbacksRouteToTheirWindowAndRestoreScope) {
     ensureUiApplication();

@@ -115,7 +115,8 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 LCADViewer::~LCADViewer()
 {
     deletePainters();
-    _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    if (_document)
+        _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
 void LCADViewer::initializeGL()
@@ -157,6 +158,8 @@ void LCADViewer::initializeGL()
 
 void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport)
 {
+    if (_document)
+        _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
     QOpenGLContext* widgetContext = context();
     const bool hasValidContext = widgetContext != nullptr && widgetContext->isValid();
     if (hasValidContext) {

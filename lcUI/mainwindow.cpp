@@ -361,6 +361,17 @@ int MainWindow::contextMenuManagerId() {
 
 void MainWindow::ConnectInputEvents()
 {
+    QObject::connect(&_cadMdiChild, &CadMdiChild::documentAboutToChange, this, [this] {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.returnText(false);
+        _cliCommand.commandActive(false);
+        operationFinished();
+        _layers.setMdiChild(nullptr);
+    });
+    QObject::connect(&_cadMdiChild, &CadMdiChild::documentChanged, this, [this] {
+        _layers.setMdiChild(&_cadMdiChild);
+    });
     // CadMdiChild connections, main window should not know about proxy
     QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);

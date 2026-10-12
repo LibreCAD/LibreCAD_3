@@ -74,7 +74,9 @@ struct MouseEvent {
     int scale;
 };
 
-class LCADViewer : public QOpenGLWidget
+// Retained documents/previews may outlive the Qt view. Disconnect their Nano
+// subscriptions automatically instead of leaving callbacks to deleted widgets.
+class LCADViewer : public QOpenGLWidget, public Nano::Observer
 {
     Q_OBJECT
 

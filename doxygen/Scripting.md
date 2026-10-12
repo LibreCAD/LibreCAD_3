@@ -115,6 +115,18 @@ owner. This Qt-side policy does not bind process-global entity callbacks to a
 window or replace their document/builder context. Entity-picker entries absent
 from the drawing do not invent a selection or dereference a missing drawable.
 
+Replacing a drawing finishes its active operation and removes its temporary
+preview before adopting fresh storage, undo history, layers, and paper views.
+Opening a file imports into a separate candidate first: canceling or failing
+without recovered entities preserves the current drawing, filename, undo
+history, and active operation. A canceled or failed new-window open does not
+register an empty window. Successful adoption notifies observers only after
+the drawing and its source path are coherent. Shared documents and previews
+may outlive their window; deleted UI and undo observers must not receive their
+callbacks. The actual bound replacement/reopen/retained-object regressions
+exercise this contract; final platform and packaged acceptance remains tracked
+in the implementation plan.
+
 Core namespace organization intentionally parallels Lua: Python exposes
 `lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`, `lc.meta.*`,
 `lc.storage.*`, `lc.event.*`, and `lc.maths.*`; persistence-enabled builds also

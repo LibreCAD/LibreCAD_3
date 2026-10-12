@@ -269,10 +269,11 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         open_file_body = window_manager[start:end]
 
         scope = open_file_body.index(
-            "lc::ui::python::MainWindowExecutionScope ownerScope(window);"
+            "lc::ui::python::MainWindowExecutionScope ownerScope(window.get());"
         )
-        dispatch = open_file_body.index("window->cadMdiChild()->openFile();")
-        registration = open_file_body.index("mainWindows.push_back(window);")
+        dispatch = open_file_body.index("if (!window->cadMdiChild()->openFile()) return;")
+        registration = open_file_body.index("mainWindows.push_back(window.release());")
+        self.assertIn("std::unique_ptr<MainWindow>", open_file_body[:scope])
         self.assertLess(scope, dispatch)
         self.assertLess(dispatch, registration)
         self.assertIn("#ifdef LC_WITH_PYTHONSCRIPT", open_file_body[:scope])

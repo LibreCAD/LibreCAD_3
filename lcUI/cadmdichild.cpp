@@ -3,6 +3,11 @@
 #include "cadmdichild.h"
 
 #include "cad/storage/documentimpl.h"
+#include "cad/storage/storagemanagerimpl.h"
+#ifdef LC_WITH_PYTHONSCRIPT
+#include "mainwindow.h"
+#include "python/pyeventhooks.h"
+#endif
 
 #include <QMenu>
 #include <cad/operations/layerops.h>
@@ -51,17 +56,29 @@ CadMdiChild::~CadMdiChild() {
 
 
 void CadMdiChild::newDocument() {
-    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
-    _document = std::make_shared<lc::storage::DocumentImpl>(storageManager());
+    auto storage = std::make_shared<lc::storage::StorageManagerImpl>();
+    replaceDocument(std::make_shared<lc::storage::DocumentImpl>(storage), storage);
+}
 
-    // Add the document to a LibreCAD Viewer system so we can visualize the document
+void CadMdiChild::replaceDocument(std::shared_ptr<lc::storage::Document> document,
+                                 storage::StorageManager_SPtr storage,
+                                 lc::persistence::DocumentSource source) {
+    // Owners finish tools and detach observers while the old drawing is valid.
+    emit documentAboutToChange();
+    _document = std::move(document);
+    _storageManager = std::move(storage);
     _viewerProxy->setDocument(_document);
-
     _activeLayer = _document->layerByName("0");
+    _source = std::move(source);
+    _filename = _source.path;
+    emit documentChanged();
 }
 
 
 bool CadMdiChild::openFile() {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(qobject_cast<MainWindow*>(window()));
+#endif
     auto availableTypes = lc::persistence::File::getSupportedFileExtensions();
 
     if(availableTypes.empty()) {
@@ -102,29 +119,29 @@ bool CadMdiChild::openFile() {
 
     if(!availableLibraries.empty()) {
         //TODO: if more than once, ask which one to choose
-        newDocument();
-        _filename = file.toStdString();
-
+        // Import transactionally: cancellation/failure must not replace a live
+        // drawing, its tool, source path or undo history with an empty one.
+        auto storage = std::make_shared<lc::storage::StorageManagerImpl>();
+        auto document = std::make_shared<lc::storage::DocumentImpl>(storage);
         const auto result = lc::persistence::File::importFile(
-            _document, _filename, availableLibraries.begin()->first);
-        _source = lc::persistence::sourceFromImport(_filename, result);
+            document, file.toStdString(), availableLibraries.begin()->first);
 
         if (!result.ok && result.entitiesDelivered == 0) {
-            // Nothing arrived. Leaving the blank document behind would present
-            // an empty drawing as though the file had opened, and its name in
-            // the title bar makes Save offer to write over the original.
+            // Nothing arrived. Keep the existing drawing and its source rather
+            // than presenting an empty candidate as a successfully opened file.
             QString detail = tr("%1 could not be read.")
-                             .arg(QString::fromStdString(_filename));
+                             .arg(file);
             if (!result.diagnostics.empty()) {
                 detail += " (" + QString::fromStdString(result.diagnostics.front().code) + ": "
                           + QString::fromStdString(result.diagnostics.front().message) + ")";
             }
 
             QMessageBox::critical(nullptr, tr("Open error"), detail);
-            _filename = "";
-            _source = lc::persistence::DocumentSource();
             return false;
         }
+
+        replaceDocument(document, storage,
+                        lc::persistence::sourceFromImport(file.toStdString(), result));
 
         if (!result.ok) {
             // The document holds whatever arrived before the failure, which is
@@ -311,7 +328,7 @@ std::shared_ptr<lc::storage::Document> CadMdiChild::document() const {
 }
 
 lc::storage::StorageManager_SPtr CadMdiChild::storageManager() const {
-    return _viewerProxy->storageManager();
+    return _storageManager;
 }
 
 lc::storage::UndoManager_SPtr CadMdiChild::undoManager() const {

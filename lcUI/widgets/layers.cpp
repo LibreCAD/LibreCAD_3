@@ -31,6 +31,7 @@ Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
 }
 
 Layers::~Layers() {
+    setMdiChild(nullptr);
     delete ui;
 }
 
@@ -202,7 +203,7 @@ void Layers::on_replaceLayerEvent(const lc::event::ReplaceLayerEvent& event) {
 }
 
 void Layers::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
-    if(selected.isEmpty()) {
+    if(_mdiChild == nullptr || selected.isEmpty()) {
         return;
     }
 

@@ -81,6 +81,9 @@ public slots:
 
 signals:
 
+    void documentAboutToChange();
+    void documentChanged();
+
     void keyPressed(QKeyEvent* event);
     void keyPressEventx(int key); //temporary soln, need custom event handlers
 
@@ -142,6 +145,9 @@ public:
     }
 
 private:
+    void replaceDocument(std::shared_ptr<lc::storage::Document> document,
+                         storage::StorageManager_SPtr storage,
+                         lc::persistence::DocumentSource source = {});
     std::string _filename;
     // Where this document came from, which is what Save has to know: a
     // File::Type could only say what format to write, not whether writing it
