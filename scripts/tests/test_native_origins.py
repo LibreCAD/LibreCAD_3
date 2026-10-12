@@ -408,6 +408,86 @@ class NativeOriginTests(unittest.TestCase):
         source, _, _, _, _, digest = self.post_pour_fixture()
         self.assertTrue(homebrew_origin(source, "arm64")[0]["revision"].endswith(digest))
 
+    def transitive_fixture(self, suffix, architecture="arm64", depth=1):
+        source, keg, _, manifest, metadata, digest = self.cached_bottle(architecture, "qt3d-" + suffix)
+        entries, dependencies = [], []
+        for index in range(depth + 1):
+            native, dependency = self.keg(("glib-" if index == 0 else "json-c-") + suffix + str(index))
+            native.write_bytes(binary(arch=architecture))
+            entries.append(dict(full_name=dependency.parent.name, version="1.2", revision=1,
+                                pkg_version="1.2_1", bottle_rebuild=0, declared_directly=index == 0))
+            dependencies.append(dependency)
+        for index, dependency in enumerate(dependencies):
+            file = dependency / "INSTALL_RECEIPT.json"
+            receipt = json.loads(file.read_bytes())
+            receipt.update(arch=architecture, runtime_dependencies=[dict(entries[index + 1], declared_directly=True)]
+                           if index < depth else [])
+            file.write_text(json.dumps(receipt))
+        file = keg / "INSTALL_RECEIPT.json"
+        receipt = json.loads(file.read_bytes())
+        receipt["runtime_dependencies"] = entries
+        file.write_text(json.dumps(receipt))
+        tab = json.loads(metadata["manifests"][0]["annotations"]["sh.brew.tab"])
+        tab["runtime_dependencies"] = [dict(entries[0], version="1.1", pkg_version="1.1_1")]
+        metadata["manifests"][0]["annotations"]["sh.brew.tab"] = json.dumps(tab)
+        manifest.write_text(json.dumps(metadata))
+        return source, keg, dependencies, manifest, digest
+
+    def test_post_pour_added_transitives_require_reachable_exact_selected_receipt_edges(self):
+        for architecture in ("arm64", "x86_64"):
+            for depth in (1, 2):
+                with self.subTest(architecture=architecture, depth=depth):
+                    source, _, _, manifest, digest = self.transitive_fixture(architecture + str(depth), architecture, depth)
+                    before = manifest.read_bytes()
+                    self.assertTrue(homebrew_origin(source, architecture)[0]["revision"].endswith(digest))
+                    self.assertEqual(before, manifest.read_bytes())
+
+    def test_added_transitives_do_not_allow_unreachable_changed_or_direct_dependencies(self):
+        for mutation in ("unreachable", "cycle", "edge-version", "edge-rebuild", "edge-compatibility",
+                         "edge-unknown-field", "malformed-parent", "direct", "removed-original", "changed-declaration"):
+            with self.subTest(mutation=mutation):
+                source, keg, dependencies, _, _ = self.transitive_fixture(mutation)
+                file, parent = keg / "INSTALL_RECEIPT.json", dependencies[0] / "INSTALL_RECEIPT.json"
+                receipt, parent_receipt = json.loads(file.read_bytes()), json.loads(parent.read_bytes())
+                if mutation in ("unreachable", "cycle"):
+                    parent_receipt["runtime_dependencies"] = []
+                    if mutation == "cycle":
+                        child = dependencies[1] / "INSTALL_RECEIPT.json"
+                        value = json.loads(child.read_bytes())
+                        value["runtime_dependencies"] = [receipt["runtime_dependencies"][1]]
+                        child.write_text(json.dumps(value))
+                elif mutation == "edge-version":
+                    parent_receipt["runtime_dependencies"][0].update(version="9.0", pkg_version="9.0_1")
+                elif mutation == "edge-rebuild":
+                    parent_receipt["runtime_dependencies"][0]["bottle_rebuild"] = 9
+                elif mutation == "edge-compatibility":
+                    parent_receipt["runtime_dependencies"][0]["compatibility_version"] = 9
+                elif mutation == "edge-unknown-field":
+                    parent_receipt["runtime_dependencies"][0]["unknown"] = "not ignored"
+                elif mutation == "malformed-parent":
+                    parent_receipt["runtime_dependencies"] = {}
+                elif mutation == "direct":
+                    receipt["runtime_dependencies"][1]["declared_directly"] = True
+                elif mutation == "removed-original":
+                    receipt["runtime_dependencies"].pop(0)
+                else:
+                    receipt["runtime_dependencies"][0]["declared_directly"] = False
+                file.write_text(json.dumps(receipt))
+                parent.write_text(json.dumps(parent_receipt))
+                with self.assertRaises((RuntimeError, ValueError, OSError)):
+                    homebrew_origin(source, "arm64")
+
+    def test_unreachable_added_dependency_diagnostic_names_the_actual_record(self):
+        source, _, dependencies, _, _ = self.transitive_fixture("diagnostic")
+        file = dependencies[0] / "INSTALL_RECEIPT.json"
+        receipt = json.loads(file.read_bytes())
+        receipt["runtime_dependencies"] = []
+        file.write_text(json.dumps(receipt))
+        with self.assertRaises(RuntimeError) as error:
+            homebrew_origin(source, "arm64")
+        self.assertIn("unreachable added transitive", str(error.exception))
+        self.assertIn(dependencies[1].parent.name, str(error.exception))
+
     def test_post_pour_dependency_changes_do_not_allow_unknown_or_inconsistent_inputs(self):
         for mutation in ("name", "missing", "source-built", "architecture", "version", "duplicate",
                          "pkg-version", "declaration", "unknown-field", "linked-keg", "malformed-source",

@@ -27,6 +27,22 @@ LOAD_RE = re.compile(r"^\s*(.*?) \(compatibility version ")
 RPATH_RE = re.compile(r"^\s*path (.*?) \(offset ")
 
 
+def selected_dependency_receipt(keg: Path, entry: dict, architecture: str):
+    selected = keg.parent.parent / entry["full_name"] / entry["pkg_version"]
+    if selected.is_symlink() or selected.resolve(strict=True) != selected:
+        raise ValueError("selected Homebrew dependency keg is linked or escaped: " + str(selected))
+    receipt = unique_json(read_notice(selected / "INSTALL_RECEIPT.json"))
+    source = receipt.get("source", {}) if isinstance(receipt, dict) else {}
+    if not isinstance(receipt, dict) or not isinstance(source, dict) or \
+            not isinstance(source.get("versions"), dict) or \
+            receipt.get("built_as_bottle") is not True or receipt.get("poured_from_bottle") is not True or \
+            receipt.get("arch") != architecture or source.get("tap") != "homebrew/core" or \
+            source["versions"].get("stable") != entry["version"] or \
+            receipt.get("compatibility_version") != entry.get("compatibility_version"):
+        raise ValueError("selected Homebrew dependency receipt differs: " + str(selected))
+    return receipt
+
+
 def bottle_runtime_dependencies(keg: Path, entries, architecture: str, installed=False):
     """Validate build/current tables separately; only current entries name kegs."""
     required = {"full_name", "version", "revision", "pkg_version", "declared_directly"}
@@ -48,19 +64,39 @@ def bottle_runtime_dependencies(keg: Path, entries, architecture: str, installed
             raise ValueError("inconsistent Homebrew runtime dependency identity")
         result[name] = entry
         if installed:
-            selected = keg.parent.parent / name / entry["pkg_version"]
-            if selected.is_symlink() or selected.resolve(strict=True) != selected:
-                raise ValueError("selected Homebrew dependency keg is linked or escaped: " + str(selected))
-            receipt = unique_json(read_notice(selected / "INSTALL_RECEIPT.json"))
-            source = receipt.get("source", {}) if isinstance(receipt, dict) else {}
-            if not isinstance(receipt, dict) or not isinstance(source, dict) or \
-                    not isinstance(source.get("versions"), dict) or \
-                    receipt.get("built_as_bottle") is not True or receipt.get("poured_from_bottle") is not True or \
-                    receipt.get("arch") != architecture or source.get("tap") != "homebrew/core" or \
-                    source.get("versions", {}).get("stable") != version or \
-                    receipt.get("compatibility_version") != entry.get("compatibility_version"):
-                raise ValueError("selected Homebrew dependency receipt differs: " + str(selected))
+            selected_dependency_receipt(keg, entry, architecture)
     return result
+
+
+def verify_post_pour_dependencies(keg: Path, original: dict, current: dict, architecture: str):
+    """Allow only new transitives evidenced by exact selected receipt edges.
+
+    Homebrew recomputes the runtime closure after pour. Preserve original names
+    and direct declarations; this metadata check does not resolve native loads.
+    """
+    added, removed = current.keys() - original.keys(), original.keys() - current.keys()
+    declarations = {name for name in original.keys() & current.keys()
+                    if original[name]["declared_directly"] != current[name]["declared_directly"]}
+    labels = lambda names: ",".join(name[:128] for name in sorted(names)[:8])
+    if removed or declarations or any(current[name]["declared_directly"] for name in added):
+        raise ValueError("post-pour dependency names/declarations differ: added={} removed={} declarations={}".format(
+            labels(added), labels(removed), labels(declarations)))
+    pending, queue, seen = set(added), list(original), set()
+    while pending and queue:
+        name = queue.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        receipt = selected_dependency_receipt(keg, current[name], architecture)
+        children = bottle_runtime_dependencies(keg, receipt.get("runtime_dependencies"), architecture)
+        for child in pending & children.keys():
+            identity = lambda entry: {key: value for key, value in entry.items() if key != "declared_directly"}
+            if identity(children[child]) != identity(current[child]):
+                raise ValueError("added transitive receipt edge differs: " + child[:128])
+            pending.remove(child)
+            queue.append(child)
+    if pending:
+        raise ValueError("unreachable added transitive dependencies: " + labels(pending))
 
 
 def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
@@ -156,10 +192,7 @@ def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
                 original_deps = bottle_runtime_dependencies(keg, tab["runtime_dependencies"], architecture)
                 current_deps = bottle_runtime_dependencies(keg, receipt["runtime_dependencies"], architecture,
                     installed=canonical_json(tab["runtime_dependencies"]) != canonical_json(receipt["runtime_dependencies"]))
-                if original_deps.keys() != current_deps.keys() or any(
-                        dep["declared_directly"] != current_deps[name]["declared_directly"]
-                        for name, dep in original_deps.items() if name in current_deps):
-                    changed.add("runtime_dependencies names/declarations")
+                verify_post_pour_dependencies(keg, original_deps, current_deps, architecture)
             except (ValueError, OSError) as error:
                 changed.add("runtime_dependencies: " + str(error))
             if changed:
