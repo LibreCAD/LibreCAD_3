@@ -69,9 +69,9 @@ def bottle_runtime_dependencies(keg: Path, entries, architecture: str, installed
 
 
 def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
-    """Bind source-only SBOMs to retained inputs, never the current formula/API.
+    """Bind legacy/source-only SBOMs to retained inputs, never the current API.
 
-    Homebrew can retain a source-only SBOM after pouring a bottle. The original
+    Homebrew bottles can omit the SBOM or retain a source-only one. The original
     cache location, OCI build tab, and actual archive must agree. This proves
     metadata/input consistency, not that post-pour native bytes equal tar bytes.
     """
@@ -200,7 +200,11 @@ def homebrew_origin(source: Path, architecture: str):
     if keg is None:
         raise RuntimeError("unknown original native provider (not a selected Homebrew keg): " + str(source))
     receipt = unique_json(read_notice(keg / "INSTALL_RECEIPT.json"))
-    sbom = unique_json(read_notice(keg / "sbom.spdx.json"))
+    sbom_file = keg / "sbom.spdx.json"
+    # Historical bottles (e.g. Intel libb2) contain no SBOM. Genuine absence
+    # uses the same exact retained-input verifier as a source-only SBOM;
+    # malformed/linked present files must still fail, not enter that fallback.
+    sbom = unique_json(read_notice(sbom_file)) if sbom_file.exists() or sbom_file.is_symlink() else {}
     source_info = receipt.get("source", {})
     version = source_info.get("versions", {}).get("stable")
     tap = source_info.get("tap")

@@ -328,6 +328,60 @@ class NativeOriginTests(unittest.TestCase):
                 self.assertEqual("homebrew/core:1.2_1:" + digest, provider["revision"])
                 self.assertEqual(architecture, provider["architecture"])
 
+    def test_legacy_bottle_without_sbom_requires_exact_retained_inputs_without_creating_metadata(self):
+        for architecture in ("arm64", "x86_64"):
+            with self.subTest(architecture=architecture):
+                source, keg, archive, manifest, _, digest = self.cached_bottle(architecture, "no-sbom-" + architecture)
+                sbom = keg / "sbom.spdx.json"
+                sbom.unlink()
+                originals = {file: file.read_bytes() for file in (archive, manifest, keg / "INSTALL_RECEIPT.json")}
+                provider, selected = homebrew_origin(source, architecture)
+                self.assertEqual(keg, selected)
+                self.assertEqual("homebrew/core:1.2_1:" + digest, provider["revision"])
+                self.assertEqual(architecture, provider["architecture"])
+                self.assertFalse(sbom.exists() or sbom.is_symlink())
+                for file, original in originals.items():
+                    self.assertEqual(original, file.read_bytes())
+
+    def test_absent_sbom_does_not_waive_original_inputs_or_allow_invalid_present_sboms(self):
+        for architecture in ("arm64", "x86_64"):
+            for mutation in ("missing-manifest", "missing-archive", "changed-archive", "source-built",
+                             "wrong-architecture", "wrong-cache", "missing-build-field", "empty-sbom",
+                             "malformed-sbom", "linked-sbom", "dangling-sbom"):
+                with self.subTest(architecture=architecture, mutation=mutation):
+                    source, keg, archive, manifest, _, _ = self.cached_bottle(architecture, architecture + mutation)
+                    sbom = keg / "sbom.spdx.json"
+                    sbom.unlink()
+                    file = keg / "INSTALL_RECEIPT.json"
+                    receipt = json.loads(file.read_bytes())
+                    if mutation == "missing-manifest":
+                        manifest.unlink()
+                    elif mutation == "missing-archive":
+                        archive.unlink()
+                    elif mutation == "changed-archive":
+                        archive.write_bytes(archive.read_bytes() + b"changed")
+                    elif mutation == "source-built":
+                        receipt["poured_from_bottle"] = False
+                    elif mutation == "wrong-architecture":
+                        receipt["arch"] = "x86_64" if architecture == "arm64" else "arm64"
+                    elif mutation == "wrong-cache":
+                        receipt["source"]["path"] = str(self.root / "unrelated-api.json")
+                    elif mutation == "missing-build-field":
+                        del receipt["built_on"]
+                    elif mutation == "empty-sbom":
+                        sbom.touch()
+                    elif mutation == "malformed-sbom":
+                        sbom.write_text("{not-json")
+                    elif mutation == "linked-sbom":
+                        target = self.root / (architecture + "-outside-sbom.json")
+                        target.write_text('{"packages": []}')
+                        sbom.symlink_to(target)
+                    else:
+                        sbom.symlink_to(self.root / "absent-sbom.json")
+                    file.write_text(json.dumps(receipt))
+                    with self.assertRaises((RuntimeError, ValueError, OSError)):
+                        homebrew_origin(source, architecture)
+
     def test_legacy_homebrew_vendor_spelling_keeps_original_bytes_and_exact_other_identity(self):
         for architecture in ("arm64", "x86_64"):
             with self.subTest(architecture=architecture):
