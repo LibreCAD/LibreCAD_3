@@ -40,6 +40,7 @@
 #include <QElapsedTimer>
 #include <QTemporaryDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QLineEdit>
 #include <QScopeGuard>
 #include <QOpenGLContext>
@@ -114,7 +115,7 @@ struct OpenDialogDriver {
                           << std::endl;
                 lastModalKind = kind;
             }
-            if (auto* dialog = qobject_cast<QFileDialog*>(modal)) {
+            if (auto* dialog = qobject_cast<QFileDialog*>(modal); dialog && !selected) {
                 selected = true;
                 if (path.isEmpty()) dialog->reject();
                 else {
@@ -122,7 +123,9 @@ struct OpenDialogDriver {
                     // selectFile alone races the asynchronous directory model.
                     auto* edit = dialog->findChild<QLineEdit*>("fileNameEdit");
                     if (edit) edit->setText(path);
-                    QMetaObject::invokeMethod(dialog, "accept", Qt::DirectConnection);
+                    // accept() can run a nested warning loop. Leave this timer
+                    // slot first so it can acknowledge the warning/deadline.
+                    QMetaObject::invokeMethod(dialog, "accept", Qt::QueuedConnection);
                 }
             } else if (auto* message = qobject_cast<QMessageBox*>(modal)) {
                 ++messages;
@@ -167,6 +170,24 @@ TEST(PyGuiBridgeTest, DialogDriverAcknowledgesOpenErrorsWithTheActualButton) {
         EXPECT_EQ(driver.messages, 1);
         EXPECT_FALSE(driver.timedOut);
     }
+}
+
+TEST(PyGuiBridgeTest, DialogDriverAcknowledgesNestedMissingFileWarningAndKeepsDeadline) {
+    ensureUiApplication();
+    QTemporaryDir directory;
+    ASSERT_TRUE(directory.isValid());
+    const auto missing = directory.path() + QString::fromUtf8("/missing Ω.dxf");
+    ASSERT_FALSE(QFileInfo::exists(missing));
+    OpenDialogDriver driver(missing);
+    QFileDialog dialog(nullptr, "Open drawing", directory.path());
+    dialog.setOption(QFileDialog::DontUseNativeDialog);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    EXPECT_EQ(dialog.exec(), int(QDialog::Rejected));
+    EXPECT_TRUE(driver.selected);
+    EXPECT_EQ(driver.messages, 1);
+    // Missing input must not be accepted. The driver's existing five-second
+    // deadline must remain live while accept() runs a nested warning dialog.
+    EXPECT_TRUE(driver.timedOut);
 }
 
 TEST(PyGuiBridgeTest, DocumentReplacementCancelsOperationAndIsolatesStorage) {
@@ -239,6 +260,7 @@ TEST(PyGuiBridgeTest, ActualFileReopenReconstructsInItsWindowAndCancelPreservesD
     first.triggerCoordinateEntered(lc::geo::Coordinate(11, 10));
     ASSERT_TRUE(lc::persistence::File::exportFile(first.cadMdiChild()->document(),
         path.toStdString(), lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    ASSERT_TRUE(QFileInfo::exists(path)) << "export must preserve the exact Unicode filename";
     auto originalDocument = first.cadMdiChild()->document();
     int replacements = 0;
     std::string notifiedFilename;
