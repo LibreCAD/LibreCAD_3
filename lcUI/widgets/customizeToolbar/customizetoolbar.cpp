@@ -281,44 +281,75 @@ void CustomizeToolbar::readData(rapidjson::Document& document) {
     clearContents();
     addPlusButton();
 
-    const rapidjson::Value& jsonTabs = document["toolbar"]["tabs"];
-    rapidjson::SizeType currentTab = 0;
+    // The document can be empty or partial (missing settings file, failed schema
+    // validation, hand edited file). rapidjson asserts on a type mismatch instead
+    // of reporting one, so every access below has to be guarded.
+    if (!document.IsObject() || !document.HasMember("toolbar")) {
+        return;
+    }
 
-    while (currentTab < jsonTabs.Size()) {
-        std::string tabLabel = jsonTabs[currentTab]["label"].GetString();
-        CustomizeParentTab* parentTab = parentTab = addParentTabManual(tabLabel);
+    const rapidjson::Value& jsonToolbar = document["toolbar"];
 
-        const rapidjson::Value& jsonGroups = jsonTabs[currentTab]["groups"];
-        rapidjson::SizeType currentGroup = 0;
+    if (!jsonToolbar.IsObject() || !jsonToolbar.HasMember("tabs") || !jsonToolbar["tabs"].IsArray()) {
+        return;
+    }
 
-        while (currentGroup < jsonGroups.Size()) {
+    const rapidjson::Value& jsonTabs = jsonToolbar["tabs"];
+
+    for (rapidjson::SizeType currentTab = 0; currentTab < jsonTabs.Size(); currentTab++) {
+        const rapidjson::Value& jsonTab = jsonTabs[currentTab];
+
+        if (!jsonTab.IsObject() || !jsonTab.HasMember("label") || !jsonTab["label"].IsString()) {
+            continue;
+        }
+
+        std::string tabLabel = jsonTab["label"].GetString();
+        CustomizeParentTab* parentTab = addParentTabManual(tabLabel);
+
+        if (!jsonTab.HasMember("groups") || !jsonTab["groups"].IsArray()) {
+            continue;
+        }
+
+        const rapidjson::Value& jsonGroups = jsonTab["groups"];
+
+        for (rapidjson::SizeType currentGroup = 0; currentGroup < jsonGroups.Size(); currentGroup++) {
+            const rapidjson::Value& jsonGroup = jsonGroups[currentGroup];
+
+            if (!jsonGroup.IsObject()) {
+                continue;
+            }
+
             std::string groupLabel = "New Group";
             int newWidth = 3;
 
-            if (jsonGroups[currentGroup].HasMember("label")) {
-                groupLabel = jsonGroups[currentGroup]["label"].GetString();
+            if (jsonGroup.HasMember("label") && jsonGroup["label"].IsString()) {
+                groupLabel = jsonGroup["label"].GetString();
             }
 
-            if (jsonGroups[currentGroup].HasMember("width")) {
-                newWidth = jsonGroups[currentGroup]["width"].GetInt();
+            if (jsonGroup.HasMember("width") && jsonGroup["width"].IsInt()) {
+                newWidth = jsonGroup["width"].GetInt();
             }
 
             CustomizeGroupTab* groupTab = parentTab->addGroupTabManual(groupLabel, newWidth);
             int buttonsCount = 0;
-            for (const auto& buttonName : jsonGroups[currentGroup]["buttons"].GetArray()) {
-                lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(buttonName.GetString());
-                if (button != nullptr) {
-                    groupTab->addButton(button);
-                }
 
-                buttonsCount++;
+            if (jsonGroup.HasMember("buttons") && jsonGroup["buttons"].IsArray()) {
+                for (const auto& buttonName : jsonGroup["buttons"].GetArray()) {
+                    if (!buttonName.IsString()) {
+                        continue;
+                    }
+
+                    lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(buttonName.GetString());
+                    if (button != nullptr) {
+                        groupTab->addButton(button);
+                    }
+
+                    buttonsCount++;
+                }
             }
 
             groupTab->setWidth(newWidth, buttonsCount);
-            currentGroup++;
         }
-
-        currentTab++;
     }
 }
 

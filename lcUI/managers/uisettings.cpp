@@ -130,6 +130,15 @@ const char* settingSchema = R"(
    }
 }
 )";
+
+// An empty *object* document: getSettingsDocument() never hands back a kNullType
+// document, because rapidjson asserts on IsObject() in HasMember()/AddMember()/
+// operator[](const Ch*), which would abort the application instead of degrading.
+rapidjson::Document emptySettingsDocument() {
+    rapidjson::Document document;
+    document.SetObject();
+    return document;
+}
 }
 
 using namespace lc::ui;
@@ -217,16 +226,21 @@ std::map<std::string, int> UiSettings::readDockSettings(std::map<std::string, in
     rapidjson::Document settingsDocument = getSettingsDocument(settingsFileName);
     std::map<std::string, int> positions;
 
-    if (settingsDocument.HasMember("dockPositions")) {
-        rapidjson::Value dockPositions = settingsDocument["dockPositions"].GetArray();
+    if (settingsDocument.HasMember("dockPositions") && settingsDocument["dockPositions"].IsArray()) {
+        const rapidjson::Value& dockPositions = settingsDocument["dockPositions"];
 
         for (rapidjson::Value::ConstValueIterator iter = dockPositions.Begin(); iter != dockPositions.End(); ++iter) {
-            if (iter->HasMember("widget") && iter->HasMember("position")) {
+            if (!iter->IsObject()) {
+                continue;
+            }
+
+            if (iter->HasMember("widget") && (*iter)["widget"].IsString() &&
+                iter->HasMember("position") && (*iter)["position"].IsInt()) {
                 std::string widgetName = (*iter)["widget"].GetString();
                 int pos = (*iter)["position"].GetInt();
                 positions[widgetName] = pos;
 
-                if (iter->HasMember("proportion")) {
+                if (iter->HasMember("proportion") && (*iter)["proportion"].IsInt()) {
                     int prop = (*iter)["proportion"].GetInt();
                     proportions[widgetName] = prop;
                 }
@@ -240,20 +254,22 @@ std::map<std::string, int> UiSettings::readDockSettings(std::map<std::string, in
 rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
     std::unique_ptr<std::istream> settingsFile = std::make_unique<std::ifstream>(_filePaths["settings_load"] + fileName);
 
-    while (settingsFile->fail()) {
-        if (fileName == settingsFileName) {
-            std::cout <<__func__<<"("<<settingsFileName<<"): No settings file found, loading default settings." << std::endl;
-            fileName = defaultSettingsFileName;
-            std::cout << "Loading default settings: "<<_filePaths["settings_load"] + fileName<<std::endl;
-            static_cast<std::ifstream*>(settingsFile.get())->open(_filePaths["settings_load"] + fileName);
-            if (settingsFile->fail())
-                settingsFile = std::make_unique<std::istringstream>(defaultUiSettings);
-            if (settingsFile->fail())
-                return {};
-        }
-        else {
-            std::cout << "Default settings not found" << std::endl;
-            return rapidjson::Document();;
+    if (settingsFile->fail() && fileName == settingsFileName) {
+        std::cout <<__func__<<"("<<settingsFileName<<"): No settings file found, loading default settings." << std::endl;
+        fileName = defaultSettingsFileName;
+        std::cout << "Loading default settings: "<<_filePaths["settings_load"] + fileName<<std::endl;
+        static_cast<std::ifstream*>(settingsFile.get())->open(_filePaths["settings_load"] + fileName);
+    }
+
+    // The default settings file can be missing too (a relocated executable, an
+    // incomplete install). Fall back on the settings compiled into the binary
+    // rather than handing the caller an unusable document.
+    if (settingsFile->fail()) {
+        std::cout <<__func__<<"("<<fileName<<"): Settings file not found, using built-in default settings." << std::endl;
+        settingsFile = std::make_unique<std::istringstream>(defaultUiSettings);
+
+        if (settingsFile->fail()) {
+            return emptySettingsDocument();
         }
     }
 
@@ -262,14 +278,21 @@ rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
 
     if (settingsDocument.ParseStream(isw).HasParseError()) {
         std::cout << "Error with settings document, not in json format" << std::endl;
-        return rapidjson::Document();
+        return emptySettingsDocument();
     }
 
     if (!validateSettingsDocument(settingsDocument)) {
-        return rapidjson::Document();
+        return emptySettingsDocument();
     }
 
-    return std::move(settingsDocument);
+    // validateSettingsDocument() is permissive when the schema itself cannot be
+    // loaded, so the top level type still has to be checked here.
+    if (!settingsDocument.IsObject()) {
+        std::cout << "Settings document is not a json object" << std::endl;
+        return emptySettingsDocument();
+    }
+
+    return settingsDocument;
 }
 
 void UiSettings::writeSettingsFile(rapidjson::Document& document) {
