@@ -50,8 +50,12 @@ def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
 
     def cached_file(suffix):
         matches = list(islice(downloads.glob("*--" + suffix), 2))
-        if len(matches) != 1 or not re.fullmatch(r"[0-9a-f]{64}--" + re.escape(suffix), matches[0].name):
-            raise RuntimeError("selected Homebrew cached input is missing or ambiguous: " + suffix)
+        if len(matches) != 1:
+            state, count = ("missing", "0") if not matches else ("ambiguous", "2+")
+            raise RuntimeError("selected Homebrew cached input is {}: {} (matches={}, cache={})".format(
+                state, suffix, count, downloads))
+        if not re.fullmatch(r"[0-9a-f]{64}--" + re.escape(suffix), matches[0].name):
+            raise RuntimeError("selected Homebrew cached input filename is invalid: " + str(matches[0]))
         return matches[0]
 
     manifest = cached_file("{}-{}.bottle_manifest.json".format(keg.parent.name, keg.name))

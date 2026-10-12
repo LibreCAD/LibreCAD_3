@@ -310,11 +310,25 @@ class NativeOriginTests(unittest.TestCase):
                 self.assertEqual("homebrew/core:1.2_1:" + digest, provider["revision"])
                 self.assertEqual(architecture, provider["architecture"])
 
+    def test_cache_failure_distinguishes_absent_and_ambiguous_inputs(self):
+        for mutation, count in (("missing", "0"), ("ambiguous", "2+")):
+            with self.subTest(mutation=mutation):
+                source, _, _, manifest, _, _ = self.cached_bottle(name="jpeg-" + mutation)
+                if mutation == "missing":
+                    manifest.unlink()
+                else:
+                    shutil.copy2(manifest, manifest.with_name("c" * 64 + manifest.name[64:]))
+                with self.assertRaises(RuntimeError) as error:
+                    homebrew_origin(source, "arm64")
+                self.assertIn("cached input is " + mutation + ":", str(error.exception))
+                self.assertIn("matches=" + count, str(error.exception))
+                self.assertIn(str(manifest.parent), str(error.exception))
+
     def test_cached_bottle_provenance_fails_closed_on_missing_ambiguous_or_changed_inputs(self):
         for index, mutation in enumerate(("missing-archive", "tampered-archive", "linked-archive", "duplicate-archive",
                                           "duplicate-manifest", "wrong-architecture", "wrong-os", "wrong-version",
                                           "missing-tab", "changed-build", "partial-tab", "bad-digest", "bad-size",
-                                          "missing-manifest", "linked-manifest", "duplicate-descriptor",
+                                          "missing-manifest", "linked-manifest", "invalid-manifest-name", "duplicate-descriptor",
                                           "wrong-cache-context", "source-built", "index-type", "tab-type",
                                           *("field-" + key for key in ("homebrew_version", "changed_files",
                                             "source_modified_time", "compiler", "runtime_dependencies", "arch")))):
@@ -333,6 +347,10 @@ class NativeOriginTests(unittest.TestCase):
                     shutil.copy2(archive, archive.with_name("c" * 64 + archive.name[64:]))
                 elif mutation == "duplicate-manifest":
                     shutil.copy2(manifest, manifest.with_name("c" * 64 + manifest.name[64:]))
+                elif mutation == "invalid-manifest-name":
+                    target = manifest.with_name("invalid" + manifest.name[64:])
+                    manifest.rename(target)
+                    manifest = target
                 elif mutation == "duplicate-descriptor":
                     metadata["manifests"].append(descriptor)
                 elif mutation == "wrong-architecture":

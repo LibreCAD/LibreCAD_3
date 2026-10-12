@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          brew install cmake boost eigen freetype glew glfw glm googletest lua@5.4 rapidjson qt python@3.14
+          bash scripts/macos-install/installDependencies.sh
           qt_root="$(brew --prefix qt)"
           lua_root="$(brew --prefix lua@5.4)"
           python_root="$(brew --prefix python@3.14)"
