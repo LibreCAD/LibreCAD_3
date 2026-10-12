@@ -41,6 +41,20 @@ for tool in macdeployqt_bin qtpaths_bin otool_bin install_name_tool_bin codesign
     fi
 done
 
+install_origins="$prefix/share/librecad/licenses/providers/native-origins.json"
+if [[ -e "$install_origins" || -L "$install_origins" ]]; then
+    # Validate this stage before copying it. Its prefix-relative paths/final
+    # hashes cannot describe the later Qt-deployed and re-signed .app.
+    "$python_bin" -B -c '
+import sys
+from pathlib import Path
+root = Path(sys.argv[1])
+sys.path.insert(0, str(root / "share/librecad/lcUIPy"))
+from _nativeorigins import audit_native_origins
+print("Verified install-stage native origins:", audit_native_origins(root, sys.argv[2]))
+' "$prefix" "$install_origins"
+fi
+
 contents="$bundle/Contents"
 macos="$contents/MacOS"
 frameworks="$contents/Frameworks"
@@ -61,6 +75,15 @@ for runtime_bundle in "$prefix"/lib/*.framework "$prefix"/lib/*.bundle; do
     fi
 done
 ditto "$prefix/share/librecad" "$resources/librecad"
+if [[ -e "$install_origins" ]]; then
+    retained_origins="$resources/librecad/licenses/providers/native-origins-install-prefix.json"
+    if [[ -e "$retained_origins" || -L "$retained_origins" ]]; then
+        echo "Refusing to replace retained install-stage native origins: $retained_origins" >&2
+        exit 1
+    fi
+    mv "$resources/librecad/licenses/providers/native-origins.json" "$retained_origins"
+    echo "Retained install-prefix origins; final app native-origin qualification remains separate"
+fi
 
 # Python installs can include optional development-library links in their
 # sysconfig directory even when those libraries are not installed. Omit only

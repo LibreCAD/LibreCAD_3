@@ -14,10 +14,47 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lcUIPy"))
+from _nativeorigins import OriginLedger, binary_fingerprint, canonical_json, read_notice, unique_json
+
 
 SYSTEM_PREFIXES = ("/System/Library/", "/usr/lib/")
 LOAD_RE = re.compile(r"^\s*(.*?) \(compatibility version ")
 RPATH_RE = re.compile(r"^\s*path (.*?) \(offset ")
+
+
+def homebrew_origin(source: Path, architecture: str):
+    """Identify the actual selected keg, never another installation on PATH."""
+    source = source.resolve(strict=True)
+    keg = next((parent for parent in source.parents if parent.parent.parent.name == "Cellar"), None)
+    if keg is None:
+        raise RuntimeError("unknown original native provider (not a selected Homebrew keg): " + str(source))
+    receipt = unique_json(read_notice(keg / "INSTALL_RECEIPT.json"))
+    sbom = unique_json(read_notice(keg / "sbom.spdx.json"))
+    source_info = receipt.get("source", {})
+    version = source_info.get("versions", {}).get("stable")
+    tap = source_info.get("tap")
+    if not isinstance(version, str) or not version or not isinstance(tap, str) or not tap or \
+            not re.fullmatch(re.escape(version) + r"(?:_\d+)?", keg.name):
+        raise RuntimeError("selected Homebrew source/keg version differs: " + str(keg))
+    bottles = [item for item in sbom.get("packages", [])
+               if item.get("SPDXID", "").startswith("SPDXRef-Bottle-") and
+               item.get("name") == keg.parent.name and item.get("versionInfo") in (keg.name, version)]
+    if len(bottles) != 1 or receipt.get("poured_from_bottle") is not True or \
+            receipt.get("built_as_bottle") is not True or receipt.get("arch") != architecture:
+        raise RuntimeError("selected Homebrew binary receipt/bottle/architecture differs: " + str(keg))
+    checksums = [item.get("checksumValue") for item in bottles[0].get("checksums", [])
+                 if item.get("algorithm") == "SHA256"]
+    # Older Homebrew SBOMs (e.g. the selected zstd1.5.7_1 bottle) use the
+    # upstream version, not pkg_version. Still bind the actual installed keg
+    # revision AND exact bottle SHA; a different upstream version is rejected.
+    if len(checksums) != 1 or not re.fullmatch(r"[0-9a-f]{64}", str(checksums[0])) or \
+            not version or not tap or bottles[0].get("downloadLocation") != \
+            "https://ghcr.io/v2/{}/blobs/sha256:{}".format(
+                tap + "/" + keg.parent.name.replace("@", "/"), checksums[0]):
+        raise RuntimeError("selected Homebrew binary version/revision is incomplete: " + str(keg))
+    return dict(name=keg.parent.name, version=version,
+                revision="{}:{}:{}".format(tap, keg.name, checksums[0]), architecture=architecture), keg
 
 
 def minimum_macos(load_commands: str) -> Tuple[int, int, int]:
@@ -64,6 +101,15 @@ class RuntimeStager:
         scan_frameworks: bool,
         search_directories: Sequence[Path] = (),
         bundle_info_plist: Optional[Path] = None,
+        origin_manifest: Optional[Path] = None,
+        origin_platform: Optional[str] = None,
+        source_files: Sequence[Sequence[Path]] = (),
+        source_trees: Sequence[Sequence[Path]] = (),
+        project_files: Sequence[Sequence[Path]] = (),
+        project_root: Optional[Path] = None,
+        project_revision: Optional[str] = None,
+        project_version: Optional[str] = None,
+        relocate_python_runtime: Optional[Sequence[str]] = None,
     ) -> None:
         self.prefix = prefix.resolve()
         self.python_root = python_root.resolve()
@@ -89,6 +135,48 @@ class RuntimeStager:
         self.source_digests_by_name: Dict[str, str] = {}
         self.staged_sources: Dict[Path, Path] = {}
         self.deferred_framework_loads: Set[str] = set()
+        self.origin_manifest = origin_manifest
+        self.origins = OriginLedger(self.prefix, origin_platform) if origin_manifest is not None else None
+        self.source_files = {Path(dst).resolve(): Path(src).resolve(strict=True) for dst, src in source_files}
+        self.source_trees = [(Path(dst).resolve(), Path(src).resolve(strict=True)) for dst, src in source_trees]
+        self.project_files = {Path(dst).resolve(): Path(src).resolve(strict=True) for dst, src in project_files}
+        self.project_root = project_root
+        self.project_revision, self.project_version = project_revision, project_version
+        self.relocate_python_runtime = relocate_python_runtime
+        if self.origins is not None:
+            if not self._inside_prefix(origin_manifest) or origin_manifest.exists() or origin_manifest.is_symlink():
+                raise RuntimeError("native origin capture requires a fresh in-prefix manifest; use a fresh install prefix")
+            if not project_root or not project_revision or not project_version:
+                raise RuntimeError("native origin capture requires explicit project source context")
+            if not re.fullmatch(r"[0-9a-f]{40}(?:\+diff[0-9a-f]{64})?", project_revision):
+                raise RuntimeError("native project context must be a full revision, optionally plus exact diff SHA-256")
+
+    def _capture_origin(self, destination: Path, source: Optional[Path] = None) -> None:
+        if self.origins is None:
+            return
+        destination = destination.resolve()
+        relative = destination.relative_to(self.prefix).as_posix()
+        if relative in self.origins.files:
+            return
+        original = source or self.source_files.get(destination) or self.project_files.get(destination)
+        if original is None:
+            for target, original_root in self.source_trees:
+                if destination.is_relative_to(target):
+                    candidate = original_root / destination.relative_to(target)
+                    if candidate.is_file():
+                        if original is not None and candidate.resolve() != original.resolve():
+                            raise RuntimeError("ambiguous selected original native file: " + str(destination))
+                        original = candidate.resolve(strict=True)
+        if original is None:
+            raise RuntimeError("unknown original native file before rewriting: " + str(destination))
+        if original in self.project_files.values():
+            architecture = self.origins.platform.removeprefix("macos-")
+            provider = dict(name="LibreCAD", version=self.project_version,
+                            revision=self.project_revision, architecture=architecture)
+            source_root = self.project_root
+        else:
+            provider, source_root = homebrew_origin(original, self.origins.platform.removeprefix("macos-"))
+        self.origins.capture(destination, original, provider, source_root)
 
     @staticmethod
     def _run(command: Sequence[str]) -> str:
@@ -247,7 +335,11 @@ class RuntimeStager:
                     "expected {}".format(destination, staged_id)
                 )
         else:
+            self._capture_origin(destination, source)
             shutil.copy2(str(source), str(destination))
+            if self.origins is not None and binary_fingerprint(destination) != \
+                    self.origins.files[destination.relative_to(self.prefix).as_posix()]["original"]:
+                raise RuntimeError("original native bytes changed during staging: " + str(source))
             self.staged.add(destination)
         self.staged_sources[destination.resolve()] = source
         return destination
@@ -338,6 +430,20 @@ class RuntimeStager:
             )
         if self.scan_frameworks:
             queue.extend(self._framework_binaries())
+        # Capture selected originals for ALL initial copies before the first
+        # runtime/consumer install-name or RPATH change. External dependencies
+        # are captured in _stage_external before their copy is made.
+        for binary in queue:
+            self._capture_origin(binary)
+        if self.relocate_python_runtime is not None:
+            runtime, original_id = self.relocate_python_runtime
+            runtime = Path(runtime).resolve(strict=True)
+            if not self._inside_prefix(runtime) or runtime.parent != self.library_dir:
+                raise RuntimeError("relocated CPython runtime is outside the staged library directory")
+            self._prepare_staged_library(runtime)
+            for consumer in queue:
+                if original_id in self._loads(consumer):
+                    self._rewrite_load(consumer, original_id, runtime.name)
         processed: Set[Path] = set()
 
         while queue:
@@ -345,6 +451,7 @@ class RuntimeStager:
             if binary in processed:
                 continue
             processed.add(binary)
+            self._capture_origin(binary, self.staged_sources.get(binary))
 
             if binary.parent == self.library_dir and binary not in self.staged:
                 self._add_local_rpath(binary)
@@ -390,6 +497,15 @@ class RuntimeStager:
             self._run([self.codesign, "--verify", "--strict", str(binary)])
 
         self._verify_no_external_loads(processed | self.staged)
+        if self.origins is not None:
+            manifest = self.origins.seal()
+            self.origin_manifest.parent.mkdir(parents=True, exist_ok=True)
+            # Exclusive creation: an old, unverified report must never silently
+            # stand in for capture from the current selected originals.
+            with self.origin_manifest.open("xb") as stream:
+                stream.write(canonical_json(manifest))
+            print("Recorded original/final native coverage: {} files, {} providers".format(
+                len(manifest["files"]), len(manifest["providers"])))
         print(
             "Staged {} non-system runtime dylib(s); verified {} Mach-O file(s)".format(
                 len(self.staged), len(processed | self.staged)
@@ -459,6 +575,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--search-directory", type=Path, action="append", default=[])
     parser.add_argument("--scan-frameworks", action="store_true")
     parser.add_argument("--bundle-info-plist", type=Path)
+    parser.add_argument("--origin-manifest", type=Path)
+    parser.add_argument("--origin-platform", choices=("macos-arm64", "macos-x86_64"))
+    parser.add_argument("--source-file", type=Path, nargs=2, action="append", default=[])
+    parser.add_argument("--source-tree", type=Path, nargs=2, action="append", default=[])
+    parser.add_argument("--project-file", type=Path, nargs=2, action="append", default=[])
+    parser.add_argument("--project-root", type=Path)
+    parser.add_argument("--project-revision")
+    parser.add_argument("--project-version")
+    parser.add_argument("--relocate-python-runtime", nargs=2, metavar=("STAGED_LIBRARY", "ORIGINAL_ID"))
     arguments = parser.parse_args(argv)
 
     try:
@@ -475,8 +600,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             arguments.scan_frameworks,
             arguments.search_directory,
             arguments.bundle_info_plist,
+            arguments.origin_manifest,
+            arguments.origin_platform,
+            arguments.source_file,
+            arguments.source_tree,
+            arguments.project_file,
+            arguments.project_root,
+            arguments.project_revision,
+            arguments.project_version,
+            arguments.relocate_python_runtime,
         ).stage()
-    except (OSError, RuntimeError) as error:
+    except (OSError, RuntimeError, ValueError) as error:
         print("macOS Python runtime staging failed: {}".format(error), file=sys.stderr)
         return 1
     return 0

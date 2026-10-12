@@ -141,7 +141,6 @@ def run_required_filter(
     run_command = prefix + [
         binary,
         "--gtest_filter=" + test_filter,
-        "--gtest_brief=1",
     ]
     try:
         result = _invoke(run_command, timeout_seconds)

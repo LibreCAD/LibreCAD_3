@@ -206,6 +206,32 @@ selected provider and final path on all platforms. A valid Qt collection alone
 does not prove complete native-provider coverage, redistribution/source-offer
 obligations, or protected release qualification.
 
+Fresh macOS CMake installs can additionally record original/final native byte
+coverage with `LIBRECAD_RECORD_NATIVE_ORIGINS=ON` and an explicit
+`LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION` (the clean tested revision, or exact
+frozen parent plus non-plan diff identity). Use a new install prefix; capture
+refuses to overwrite a previous report. The existing stager hashes the selected
+Python/project originals before its first rewrite and each selected external
+dylib before copying, then records final hashes after signing in
+`licenses/providers/native-origins.json`. Homebrew identity comes from the
+actual resolved keg's bottle receipt/SBOM, not PATH or a basename guess.
+
+`lcUIPy._nativeorigins.audit_native_origins(root, manifest, notice_directory)`
+checks the actual root's entire native-file inventory and exact four-field
+provider/notice joins without an SDK or network. Contained file/directory aliases
+are sealed too: adding or retargeting an alias fails even if binary bytes did not
+change. Omitting `notice_directory`
+checks byte/origin consistency **only**; supplying it requires notices for every
+provider, including project binaries, with no unknown-provider exemption.
+The shared ledger understands ELF, PE and Mach-O and all five packaged
+platform identities, but only fresh Mac **install-prefix capture** is currently
+wired. Its paths/hashes are not a final `.app` report: Qt deployment, relocation
+and subsequent signing require their own capture/remapping/final seal. Linux,
+Snap, Windows, complete provider notices and build attestation remain separate
+open gates; this opt-in diagnostic does not promote their support claims.
+Bundle assembly verifies any present install report before copying, then retains
+it as `native-origins-install-prefix.json`, not as final app coverage.
+
 On macOS, `LIBRECAD_REQUIRE_BUNDLED_PYTHON=1` also checks the Mach-O image
 actually providing `Py_GetVersion` using the system `dladdr` API. It must be
 inside the installed prefix's `lib` or the app's `Contents/Frameworks`, not a

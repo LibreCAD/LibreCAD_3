@@ -71,7 +71,6 @@ class RunRequiredGoogleTests(unittest.TestCase):
                     "-a",
                     "lcunittest",
                     "--gtest_filter=Sample.*",
-                    "--gtest_brief=1",
                 ],
                 1800,
             ),
@@ -194,14 +193,14 @@ class RunRequiredGoogleTests(unittest.TestCase):
             [
                 SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
                 subprocess.TimeoutExpired(
-                    ["lcunittest"], timeout=4, output="test stalled\n"
+                    ["lcunittest"], timeout=4, output="[ RUN      ] Sample.First\n"
                 ),
             ],
             timeout_seconds=4,
         )
 
         self.assertEqual(1, status)
-        self.assertIn("test stalled", output)
+        self.assertIn("[ RUN      ] Sample.First", output)
         self.assertIn("filter timed out after 4 seconds", errors)
 
 

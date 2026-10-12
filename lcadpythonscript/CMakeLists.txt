@@ -49,6 +49,12 @@ file(RELATIVE_PATH LC_PYTHON_STAGED_STDARCH_REL
     "${LC_PYTHON_RUNTIME_HOME}" "${Python_STDARCH}")
 file(RELATIVE_PATH LC_PYTHON_STAGED_DYNLIBS_REL
     "${LC_PYTHON_RUNTIME_HOME}" "${LC_PYTHON_RUNTIME_DYNLIBS}")
+# Root install-time origin capture consumes this exact selected layout too;
+# do not introduce a second Python/sysconfig path resolver in packaging.
+foreach(_lc_runtime_layout LC_PYTHON_STAGED_STDLIB_REL LC_PYTHON_STAGED_STDARCH_REL
+        LC_PYTHON_STAGED_DYNLIBS_REL LC_PYTHON_RUNTIME_DYNLIBS)
+    set(${_lc_runtime_layout} "${${_lc_runtime_layout}}" PARENT_SCOPE)
+endforeach()
 set(LC_PYTHON_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY "${LC_PYTHON_GENERATED_DIR}")
 configure_file(
@@ -319,11 +325,19 @@ install(FILES "${LC_PYTHON_LICENSE_FILE}"
     RENAME "LICENSE.txt")
 
 set(LC_PYTHON_STAGED_RUNTIME_DIR "${CMAKE_INSTALL_DATADIR}/librecad/python")
+set(_LC_PYTHON_DEVELOPMENT_LINK_EXCLUDES)
+if(APPLE)
+    # These optional config-directory links point outside the selected stdlib
+    # and are not runtime payloads. The real embed dylib is installed separately.
+    list(APPEND _LC_PYTHON_DEVELOPMENT_LINK_EXCLUDES
+        PATTERN "libpython*.a" EXCLUDE PATTERN "libpython*.dylib" EXCLUDE)
+endif()
 install(DIRECTORY "${Python_STDLIB}/"
     DESTINATION "${LC_PYTHON_STAGED_RUNTIME_DIR}/${LC_PYTHON_STAGED_STDLIB_REL}"
     PATTERN "__pycache__" EXCLUDE
     PATTERN "site-packages" EXCLUDE
-    PATTERN "dist-packages" EXCLUDE)
+    PATTERN "dist-packages" EXCLUDE
+    ${_LC_PYTHON_DEVELOPMENT_LINK_EXCLUDES})
 
 # Some Python distributions split architecture-specific stdlib files and
 # extension modules into a second tree (Windows DLLs, for example). Avoid
