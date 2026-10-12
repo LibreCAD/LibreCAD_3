@@ -1034,71 +1034,38 @@ TEST(MWindowTest, PyProofPortsImportAndRegister) {
     // exception and the test fails.
     {
         pybind11::gil_scoped_acquire gil;
+        pybind11::dict ns;
         pybind11::exec(R"py(
 import lc
-
-# The test requires the package copied beside the test executable.
 import importlib.util
-if importlib.util.find_spec('lcUIPy') is None:
-    raise RuntimeError('lcUIPy is missing beside the test executable')
-
-# Ensure clean slate — the tests above may have injected transient
-# PyDemoOp / PyDictCmdOp classes.
-if 'PyPointOperations' in lc.operation_registry:
-    del lc.operation_registry['PyPointOperations']
-if 'PyRemoveOperation' in lc.operation_registry:
-    del lc.operation_registry['PyRemoveOperation']
-
-# Import — triggers @lc.register_operation at module top-level.
-# LuaInterface imports operation modules during MainWindow construction, so
-# these modules may already be cached by earlier tests. Reload after clearing
-# the registry to exercise the decorators rather than relying on import cache.
-import importlib
-for _module_name in (
-    'lcUIPy.create_actions.point_operations',
-    'lcUIPy.actions.remove_operation',
-):
-    _module = importlib.import_module(_module_name)
-    importlib.reload(_module)
-
-# Registry entries must exist under their declared `name`.
-assert 'PyPointOperations' in lc.operation_registry, \
-    'point_operations.py did not register PyPointOperations'
-assert 'PyRemoveOperation' in lc.operation_registry, \
-    'remove_operation.py did not register PyRemoveOperation'
-
-# Class metadata: `command_line` must be PYPOINT/PYREMOVE (avoids
-# CLI collision with Lua's POINT/REMOVE).
-p_cls = lc.operation_registry['PyPointOperations']
-r_cls = lc.operation_registry['PyRemoveOperation']
-
-assert p_cls.command_line == 'PYPOINT', \
-    'PyPointOperations.command_line must be PYPOINT for Lua parity'
-assert r_cls.command_line == 'PYREMOVE', \
-    'PyRemoveOperation.command_line must be PYREMOVE for Lua parity'
-
-# icon / description / menu_actions attributes present.
-assert p_cls.icon == 'point.svg'
-assert p_cls.description == 'Python Point'
-assert p_cls.menu_actions == {'default': 'actionPoint'}
-
-assert r_cls.icon == 'delete.svg'
-assert r_cls.description == 'Python Remove'
-)py");
-    }
-
-    // Cleanup — remove the classes from the registry so subsequent
-    // tests aren't affected.  We can't reliably undo the module
-    // import (CPython caches modules in sys.modules) but we CAN
-    // clear the registry entries.
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::exec(R"py(
-import lc
-for _name in ('PyPointOperations', 'PyRemoveOperation'):
-    if _name in lc.operation_registry:
-        del lc.operation_registry[_name]
-)py");
+names = ('PyPointOperations', 'PyRemoveOperation')
+saved = {name: lc.operation_registry[name] for name in names if name in lc.operation_registry}
+try:
+    for name in names:
+        lc.operation_registry.pop(name, None)
+    # Execute the actual files under private aliases. Do not reload cached
+    # production modules or leave once-only bootstrap registrations missing.
+    for module_name in ('lcUIPy.create_actions.point_operations',
+                        'lcUIPy.actions.remove_operation'):
+        source = importlib.util.find_spec(module_name)
+        assert source is not None and source.origin, module_name
+        spec = importlib.util.spec_from_file_location(module_name + '_proof_test', source.origin)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    p_cls = lc.operation_registry['PyPointOperations']
+    r_cls = lc.operation_registry['PyRemoveOperation']
+    assert p_cls.command_line == 'PYPOINT'
+    assert p_cls.icon == 'point.svg'
+    assert p_cls.description == 'Python Point'
+    assert p_cls.menu_actions == {'default': 'actionPoint'}
+    assert r_cls.command_line == 'PYREMOVE'
+    assert r_cls.icon == 'delete.svg'
+    assert r_cls.description == 'Python Remove'
+finally:
+    for name in names:
+        lc.operation_registry.pop(name, None)
+    lc.operation_registry.update(saved)
+)py", ns);
     }
 }
 

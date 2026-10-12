@@ -127,6 +127,14 @@ callbacks. The actual bound replacement/reopen/retained-object regressions
 exercise this contract; final platform and packaged acceptance remains tracked
 in the implementation plan.
 
+A retained `DocumentCanvas` keeps its original drawing's selection; selection
+changes do not notify a replacement view. `selectAll`, `inverseSelection`, and
+`removeSelection` remain usable after replacement or window destruction.
+`selectPoint` needs the live view's painter to convert its pixel tolerance:
+before painting or after detachment it raises `RuntimeError`, without borrowing
+another view or retaining a Qt window. Document edits and undo on a retained
+drawing likewise must not access a deleted painter cache.
+
 Core namespace organization intentionally parallels Lua: Python exposes
 `lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`, `lc.meta.*`,
 `lc.storage.*`, `lc.event.*`, and `lc.maths.*`; persistence-enabled builds also

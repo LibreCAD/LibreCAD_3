@@ -19,6 +19,7 @@
 #include <new>
 #include <type_traits>
 #include <thread>
+#include <iostream>
 
 #include <mainwindow.h>
 #include <cadmdichild.h>
@@ -40,6 +41,7 @@
 #include <QFile>
 #include <QLineEdit>
 #include <QScopeGuard>
+#include <QOpenGLContext>
 #include <widgets/layermodel.h>
 #include <cad/primitive/point.h>
 #include <widgets/clicommand.h>
@@ -377,6 +379,225 @@ assert len(document.entityContainer().asVector(32767)) == 1
 )py", ns));
     preview->addEntity(ns["entity"].cast<lc::entity::CADEntity_CSPtr>());
     preview->removeEntity(ns["entity"].cast<lc::entity::CADEntity_CSPtr>());
+}
+
+TEST(PyGuiBridgeTest, UnpaintedCanvasRejectsPointSelectionWithoutLosingDocumentSelection) {
+    ensureUiApplication();
+    lc::ui::MainWindow window;
+    window.cliCommand()->runCommand("PYPOINT");
+    window.triggerCoordinateEntered(lc::geo::Coordinate(4, 7));
+    auto canvas = window.cadMdiChild()->viewer()->docCanvas();
+    ASSERT_EQ(canvas->document()->entityContainer().asVector().size(), 1u);
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["window"] = pybind11::cast(&window, pybind11::return_value_policy::reference);
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+canvas = window.cadMdiChild().viewer().docCanvas()
+canvas.selectAll()
+canvas.inverseSelection()
+canvas.selectAll()
+canvas.removeSelection()
+try:
+    canvas.selectPoint(4, 7)
+except RuntimeError as error:
+    assert 'painter' in str(error).lower(), str(error)
+else:
+    raise AssertionError('unpainted canvas borrowed an absent painter')
+)py", ns));
+    EXPECT_TRUE(canvas->selectedEntities().asVector().empty());
+}
+
+TEST(PyGuiBridgeTest, MaintainedOperationsRestartAfterReplacementAndActualReopen) {
+    ensureUiApplication();
+    QTemporaryDir directory;
+    ASSERT_TRUE(directory.isValid());
+    const auto path = directory.path() + QString::fromUtf8("/operations Ω.dxf");
+    lc::ui::MainWindow first;
+    lc::ui::MainWindow second;
+    first.cliCommand()->runCommand("PYPOINT");
+    first.triggerCoordinateEntered(lc::geo::Coordinate(-4, -7));
+    ASSERT_EQ(first.cadMdiChild()->document()->entityContainer().asVector().size(), 1u);
+    ASSERT_TRUE(lc::persistence::File::exportFile(first.cadMdiChild()->document(),
+        path.toStdString(), lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    second.cliCommand()->runCommand("PYGEAR");
+    second.triggerNumberEntered(8);
+    const auto secondOperation = second.currentOperation();
+    auto noListeners = [&] {
+        for (const char* event : {"point", "mouseMove", "number", "text"})
+            EXPECT_EQ(first.luaInterface()->listenerCount(event), 0u) << event;
+    };
+    lc::ui::python::MainWindowExecutionScope outer(&second);
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["a"] = pybind11::cast(&first, pybind11::return_value_policy::reference);
+    for (bool reopen : {false, true}) {
+        SCOPED_TRACE(reopen ? "actual Unicode reopen" : "new document");
+        first.cliCommand()->runCommand("PYGEAR");
+        first.triggerNumberEntered(8);
+        auto canceledGear = first.currentOperation();
+        ASSERT_FALSE(canceledGear.isNil());
+        auto oldDocument = first.cadMdiChild()->document();
+        const auto oldCount = oldDocument->entityContainer().asVector().size();
+        if (reopen) {
+            OpenDialogDriver dialog(path);
+            pybind11::exec("assert a.cadMdiChild().openFile()", ns);
+            EXPECT_TRUE(dialog.selected);
+            EXPECT_FALSE(dialog.timedOut);
+        } else {
+            pybind11::exec("a.cadMdiChild().newDocument()", ns);
+        }
+        EXPECT_TRUE(canceledGear.getAttr("finished").asBool());
+        noListeners();
+        auto document = first.cadMdiChild()->document();
+        auto undo = first.cadMdiChild()->undoManager();
+        const std::size_t baseline = reopen ? 1u : 0u;
+        ASSERT_EQ(document->entityContainer().asVector().size(), baseline);
+        first.clearUndoableStack();
+        first.cliCommand()->runCommand("PYGEAR");
+        for (double number : {8.0, 20.0, 45.0}) first.triggerNumberEntered(number);
+        first.triggerCoordinateEntered(lc::geo::Coordinate(10, 20));
+        first.triggerCoordinateEntered(lc::geo::Coordinate(30, 20));
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline + 64);
+        EXPECT_NO_THROW(pybind11::exec(R"py(
+import lc, math
+lines = [e for e in a.cadMdiChild().document().entityContainer().asVector(32767)
+         if isinstance(e, lc.entity.Line)]
+assert len(lines) == 64, len(lines)
+radii = [math.hypot(p.x() - 10, p.y() - 20) for e in lines for p in (e.start(), e.end())]
+assert abs(min(radii) - 15) < 1e-8 and abs(max(radii) - 25) < 1e-8, radii
+)py", ns));
+        noListeners();
+        undo->undo();
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline);
+        EXPECT_FALSE(undo->canUndo());
+        undo->redo();
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline + 64);
+        undo->undo();
+
+        first.cliCommand()->runCommand("PYPOINT");
+        auto canceledPoint = first.currentOperation();
+        auto preview = lc::scripting::makeMap();
+        (*preview)["position"] = lc::geo::Coordinate(14, 17);
+        first.luaInterface()->triggerEvent("mouseMove", lc::scripting::ScriptValue(preview));
+        TempEntityRefreshCounter counter;
+        auto temp = first.cadMdiChild()->tempEntities();
+        temp->requestUpdateEvent().connect<TempEntityRefreshCounter,
+            &TempEntityRefreshCounter::onRefresh>(counter);
+        first.triggerFinishOperation();
+        temp->requestUpdateEvent().disconnect<TempEntityRefreshCounter,
+            &TempEntityRefreshCounter::onRefresh>(counter);
+        EXPECT_TRUE(canceledPoint.getAttr("finished").asBool());
+        EXPECT_GT(counter.refreshCount, 0) << "point cancellation must remove its preview";
+        noListeners();
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline);
+        first.cliCommand()->runCommand("PYPOINT");
+        first.triggerCoordinateEntered(lc::geo::Coordinate(14, 17));
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline + 1);
+        EXPECT_NO_THROW(pybind11::exec(R"py(
+points = a.cadMdiChild().document().entityContainer().asVector(32767)
+assert all(isinstance(p, lc.entity.Point) for p in points)
+assert sum(abs(p.x() - 14) < 1e-9 and abs(p.y() - 17) < 1e-9 for p in points) == 1
+)py", ns));
+        noListeners();
+        undo->undo();
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline);
+        EXPECT_FALSE(undo->canUndo());
+        undo->redo();
+        first.clearUndoableStack();
+        first.selectAll();
+        ASSERT_EQ(first.cadMdiChild()->selection().size(), baseline + 1);
+        first.cliCommand()->runCommand("PYREMOVE");
+        EXPECT_TRUE(document->entityContainer().asVector().empty());
+        undo->undo();
+        EXPECT_EQ(document->entityContainer().asVector().size(), baseline + 1);
+        EXPECT_FALSE(undo->canUndo());
+        undo->redo();
+        EXPECT_TRUE(document->entityContainer().asVector().empty());
+        noListeners();
+        first.triggerCoordinateEntered(lc::geo::Coordinate(200, 300));
+        EXPECT_TRUE(document->entityContainer().asVector().empty());
+        EXPECT_EQ(oldDocument->entityContainer().asVector().size(), oldCount);
+        EXPECT_EQ(second.currentOperation().getAttr("step").asString(), "AWAIT_PHI");
+        EXPECT_FALSE(secondOperation.getAttr("finished").asBool());
+        EXPECT_TRUE(second.cadMdiChild()->document()->entityContainer().asVector().empty());
+        for (const char* event : {"point", "mouseMove", "number", "text"})
+            EXPECT_EQ(second.luaInterface()->listenerCount(event), 1u) << event;
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    second.triggerFinishOperation();
+}
+
+TEST(PyGuiBridgeTest, RetainedCanvasSelectionIsIndependentOfReplacedAndDestroyedViews) {
+    ensureUiApplication();
+    auto window = std::unique_ptr<lc::ui::MainWindow>(new lc::ui::MainWindow());
+    window->cliCommand()->runCommand("PYPOINT");
+    window->triggerCoordinateEntered(lc::geo::Coordinate(4, 7));
+    auto canvas = window->cadMdiChild()->viewer()->docCanvas();
+    auto undo = window->cadMdiChild()->undoManager();
+    ASSERT_EQ(canvas->document()->entityContainer().asVector().size(), 1u);
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["window"] = pybind11::cast(window.get(), pybind11::return_value_policy::reference);
+    pybind11::exec("canvas = window.cadMdiChild().viewer().docCanvas()", ns);
+
+    // The required offscreen lane proves the no-painter case. A real native
+    // backend additionally proves that live point selection uses its painter.
+    const auto platform = QGuiApplication::platformName();
+    if (platform != "offscreen" && platform != "minimal") {
+        window->show();
+        QElapsedTimer elapsed;
+        elapsed.start();
+        while ((!window->cadMdiChild()->viewer()->context() ||
+                !window->cadMdiChild()->viewer()->context()->isValid()) && elapsed.elapsed() < 2000)
+            QApplication::processEvents(QEventLoop::AllEvents, 20);
+        ASSERT_NE(window->cadMdiChild()->viewer()->context(), nullptr);
+        ASSERT_TRUE(window->cadMdiChild()->viewer()->context()->isValid());
+        EXPECT_NO_THROW(pybind11::exec("canvas.selectPoint(4, 7)", ns));
+        EXPECT_EQ(canvas->selectedEntities().asVector().size(), 1u);
+        std::cout << "Retained canvas: real " << platform.toStdString()
+                  << " painter point selection executed" << std::endl;
+    }
+
+    int notifications = 0;
+    QObject::connect(window->cadMdiChild(), &lc::ui::CadMdiChild::selectionChangeEvent,
+                     window.get(), [&] { ++notifications; });
+    window->cadMdiChild()->newDocument();
+    notifications = 0;
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+canvas.removeSelection()
+canvas.selectAll()
+)py", ns));
+    EXPECT_EQ(canvas->selectedEntities().asVector().size(), 1u);
+    EXPECT_EQ(notifications, 0) << "retained selection must not notify the replacement view";
+    EXPECT_TRUE(window->cadMdiChild()->selection().empty());
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+canvas.inverseSelection()
+try:
+    canvas.selectPoint(4, 7)
+except RuntimeError as error:
+    assert 'painter' in str(error).lower(), str(error)
+else:
+    raise AssertionError('retained canvas borrowed the replacement painter')
+)py", ns));
+    EXPECT_EQ(notifications, 0);
+    window.reset();
+    // A retained document can still remove entities. It must not visit the
+    // painter cache that belonged to its destroyed view, even on real Cocoa.
+    undo->undo();
+    EXPECT_TRUE(canvas->document()->entityContainer().asVector().empty());
+    undo->redo();
+    EXPECT_EQ(canvas->document()->entityContainer().asVector().size(), 1u);
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+canvas.selectAll()
+canvas.inverseSelection()
+canvas.removeSelection()
+try:
+    canvas.selectPoint(4, 7)
+except RuntimeError as error:
+    assert 'painter' in str(error).lower(), str(error)
+else:
+    raise AssertionError('retained canvas used a destroyed view')
+)py", ns));
 }
 
 TEST(PyGuiBridgeTest, StandaloneCallbacksRouteToTheirWindowAndRestoreScope) {
@@ -1862,16 +2083,6 @@ TEST(PyGuiBridgeTest, PythonPointAndRemoveOperationsUseRealSelection) {
         pybind11::gil_scoped_acquire gil;
         pybind11::module_::import("sys").attr("path").attr("insert")(
             0, QCoreApplication::applicationDirPath().toStdString());
-        // PyProofPortsImportAndRegister deliberately clears these registry
-        // entries after checking metadata. Python retains imported modules,
-        // so a later MainWindow's import alone will not rerun the decorators.
-        pybind11::exec(R"py(
-import importlib
-for module_name in (
-        'lcUIPy.create_actions.point_operations',
-        'lcUIPy.actions.remove_operation'):
-    importlib.reload(importlib.import_module(module_name))
-)py");
     }
 
     lc::ui::MainWindow mw;

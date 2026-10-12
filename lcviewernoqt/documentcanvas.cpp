@@ -60,6 +60,11 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
     document->removeEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_removeEntityEvent>(this);
     document->commitProcessEvent().connect<DocumentCanvas, &DocumentCanvas::on_commitProcessEvent>(this);
 
+    // Reopened drawings already contain entities before their view is attached.
+    entityContainer().each<const lc::entity::CADEntity>([this](lc::entity::CADEntity_CSPtr entity) {
+        on_addEntityEvent(lc::event::AddEntityEvent(entity));
+    });
+
     // Render code for selected area
     _selectedAreaPainter = [](LcPainter & painter, lc::geo::Area area, bool occupies) {
         double dashes[] = {10.0, 3.0, 3.0, 3.0};
@@ -614,7 +619,7 @@ void DocumentCanvas::selectAll() {
         _entityDrawItem[entity->id()]->selected(true);
         _selectedDrawables.push_back(_entityDrawItem[entity->id()]);
     });
-    selectionChanged();
+    _selectionChanged();
 }
 
 void DocumentCanvas::removeSelection() {
@@ -623,7 +628,7 @@ void DocumentCanvas::removeSelection() {
     };
 
     _selectedDrawables.clear();
-    selectionChanged();
+    _selectionChanged();
 }
 
 void DocumentCanvas::inverseSelection() {
