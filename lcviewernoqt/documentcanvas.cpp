@@ -874,6 +874,9 @@ void DocumentCanvas::selectPoint(double x, double y) {
 
 void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
     lc::viewer::LCVDrawItem_SPtr entityDrawable = getDrawable(entityPtr);
+    // Script pickers can contain a valid entity absent from this document.
+    // Such an entry has no drawable to select (including after removal).
+    if (!entityDrawable) return;
     entityDrawable->selected(true);
     _selectedDrawables.push_back(entityDrawable);
 }

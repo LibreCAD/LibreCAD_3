@@ -18,6 +18,7 @@
 #include <memory>
 #include <new>
 #include <type_traits>
+#include <thread>
 
 #include <mainwindow.h>
 #include <cadmdichild.h>
@@ -26,6 +27,14 @@
 #include <widgets/guiAPI/textgui.h>
 #include <widgets/guiAPI/menuitem.h>
 #include <widgets/guiAPI/toolbarbutton.h>
+#include <widgets/guiAPI/menu.h>
+#include <widgets/guiAPI/dialogwidget.h>
+#include <widgets/guiAPI/colorgui.h>
+#include <widgets/guiAPI/entitygui.h>
+#include <QListWidget>
+#include <cad/primitive/point.h>
+#include <widgets/clicommand.h>
+#include <luainterface.h>
 #include <drawables/tempentities.h>
 
 #ifdef LC_WITH_PYTHONSCRIPT
@@ -34,6 +43,8 @@
 #include <qt_keywords_pop.h>
 #include <lcpython.h>
 #include <python/pyeventhooks.h>
+#include <python/qtpythonlifetime.h>
+#include <scriptadapter/pythoncallback.h>
 #endif
 
 #include "../uitests.h"
@@ -68,6 +79,306 @@ struct TempEntityRefreshCounter {
 };
 
 } // namespace
+
+TEST(PyGuiBridgeTest, StandaloneCallbacksRouteToTheirWindowAndRestoreScope) {
+    ensureUiApplication();
+    lc::ui::MainWindow first;
+    lc::ui::MainWindow second;
+    auto* firstItem = first.addMenu("OwnerTest")->addItem("OwnerItemA");
+    auto* secondItem = second.addMenu("OwnerTest")->addItem("OwnerItemB");
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["a"] = pybind11::cast(&first, pybind11::return_value_policy::reference);
+    ns["b"] = pybind11::cast(&second, pybind11::return_value_policy::reference);
+    ns["item_a"] = pybind11::cast(firstItem, pybind11::return_value_policy::reference);
+    ns["item_b"] = pybind11::cast(secondItem, pybind11::return_value_policy::reference);
+    pybind11::exec(R"py(
+import lc, lcgui as gui
+hits = []
+def record(label):
+    hits.append((label, gui.currentMainWindow()))
+    lc.event.register('standalone-owner-test', lambda event, data: None)
+assert a.cliCommand().addCommand('OWNER_A', lambda: record('cli-a'))
+assert b.cliCommand().addCommand('OWNER_B', lambda: record('cli-b'))
+item_a.addCallback(lambda: record('item-a'))
+item_b.addCallback(lambda: record('item-b'))
+a.connectMenuItem('OwnerItemA', lambda: record('window-a'))
+b.connectMenuItem('OwnerItemB', lambda: record('window-b'))
+late_menu = gui.Menu('LateMenu')
+a.addMenu(late_menu)
+nested = gui.Menu('Nested')
+late_menu.addMenu(nested)
+nested_item = nested.addItem('NestedItem', lambda: record('nested-a'))
+)py", ns);
+    first.cliCommand()->runCommand("OWNER_A");
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), nullptr);
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&first);
+        second.cliCommand()->runCommand("OWNER_B");
+        secondItem->trigger();
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &first);
+    }
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&second);
+        firstItem->trigger();
+        ns["nested_item"].cast<lc::ui::api::MenuItem*>()->trigger();
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    EXPECT_EQ(first.luaInterface()->listenerCount("standalone-owner-test"), 4u);
+    EXPECT_EQ(second.luaInterface()->listenerCount("standalone-owner-test"), 3u);
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+assert hits == [('cli-a', a), ('cli-b', b), ('item-b', b),
+                ('window-b', b), ('item-a', a), ('window-a', a), ('nested-a', a)], hits
+)py", ns));
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), nullptr);
+}
+
+TEST(PyGuiBridgeTest, StandaloneCallbacksHandleLateAdoptionNoOwnerAndDeadOwner) {
+    ensureUiApplication();
+    auto first = std::make_unique<lc::ui::MainWindow>();
+    lc::ui::MainWindow second;
+    auto* menu = second.addMenu("AdoptionTest");
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["a"] = pybind11::cast(first.get(), pybind11::return_value_policy::reference);
+    ns["b"] = pybind11::cast(&second, pybind11::return_value_policy::reference);
+    ns["menu"] = pybind11::cast(menu, pybind11::return_value_policy::reference);
+    pybind11::exec(R"py(
+import lcgui as gui
+hits = []
+late = gui.MenuItem.new('Late', lambda: hits.append(('late', gui.currentMainWindow())))
+free = gui.MenuItem.new('Free', lambda: hits.append(('free', gui.currentMainWindow())))
+menu.addItem(late)
+pending = gui.ToolbarButton.new('Pending', '',
+    lambda: hits.append(('pending', gui.currentMainWindow())))
+group = gui.ToolbarGroup('LateClone')
+b.toolbar().tabByName('Quick Access').addGroup(group)
+group.addButton(pending)
+)py", ns);
+    std::unique_ptr<lc::ui::api::ToolbarButton> lateClone(
+        ns["pending"].cast<lc::ui::api::ToolbarButton*>()->clone());
+    {
+        lc::ui::python::MainWindowExecutionScope scope(first.get());
+        pybind11::exec(R"py(
+saved = gui.ToolbarButton.new('Saved', '',
+    lambda: hits.append(('saved', gui.currentMainWindow())))
+)py", ns);
+        ns["free"].cast<lc::ui::api::MenuItem*>()->trigger();
+        ns["late"].cast<lc::ui::api::MenuItem*>()->trigger();
+        pybind11::exec("group.removeButton(pending)", ns);
+        lateClone->click();
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), first.get());
+    }
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&second);
+        ns["saved"].cast<lc::ui::api::ToolbarButton*>()->click();
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+        std::unique_ptr<lc::ui::api::ToolbarButton> clone(
+            ns["saved"].cast<lc::ui::api::ToolbarButton*>()->clone());
+        QPointer<QObject> original = ns["saved"].cast<lc::ui::api::ToolbarButton*>();
+        pybind11::exec("del saved", ns);
+        ASSERT_TRUE(original.isNull());
+        clone->click();
+        first.reset();
+        clone->click();
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+assert hits == [('free', None), ('late', b), ('pending', b),
+                ('saved', a), ('saved', a)], hits
+)py", ns));
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), nullptr);
+}
+
+TEST(PyGuiBridgeTest, EveryGuiCallbackAdapterUsesTheRegisteredWindow) {
+    ensureUiApplication();
+    lc::ui::MainWindow first;
+    lc::ui::MainWindow second;
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["a"] = pybind11::cast(&first, pybind11::return_value_policy::reference);
+    ns["b"] = pybind11::cast(&second, pybind11::return_value_policy::reference);
+    lc::entity::CADEntity_CSPtr point = std::make_shared<const lc::entity::Point>(
+        lc::geo::Coordinate(1, 2, 0), first.cadMdiChild()->activeLayer());
+    ns["point"] = pybind11::cast(point);
+    ns["dispatch"] = pybind11::cpp_function([](pybind11::object widget, const std::string& slot) {
+        const auto lifetime = lc::ui::python::qtLifetime(widget);
+        if (!lifetime || !lifetime->object) throw std::runtime_error("Missing actual Qt receiver");
+        QObject* receiver = lifetime->object.data();
+        bool invoked = true;
+        if (slot == "textChangedCallbacks")
+            invoked = QMetaObject::invokeMethod(receiver, slot.c_str(), Qt::DirectConnection,
+                Q_ARG(QString, QStringLiteral("1")));
+        else if (slot == "valueChangedCallbacks")
+            invoked = QMetaObject::invokeMethod(receiver, slot.c_str(), Qt::DirectConnection, Q_ARG(double, 2.0));
+        else if (slot == "activatedCallbacks")
+            invoked = QMetaObject::invokeMethod(receiver, slot.c_str(), Qt::DirectConnection, Q_ARG(int, 0));
+        else if (slot == "coordinate-change")
+            invoked = QMetaObject::invokeMethod(receiver, "textChangedCallbacks", Qt::DirectConnection);
+        else if (slot == "color")
+            dynamic_cast<lc::ui::api::ColorGUI*>(receiver)->colorSelectedCallbacks();
+        else if (slot == "entity")
+            receiver->findChild<QListWidget*>()->setCurrentRow(0);
+        else invoked = QMetaObject::invokeMethod(receiver, slot.c_str(), Qt::DirectConnection);
+        if (!invoked) throw std::runtime_error("Native GUI slot was not invoked: " + slot);
+    });
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&first);
+        pybind11::exec(R"py(
+import lc, lcgui as gui
+hits, expected, triggers = [], set(), []
+def callback(label):
+    expected.add(label)
+    return lambda *args: hits.append((label, gui.currentMainWindow()))
+def watch(widget, method, slot):
+    getattr(widget, method)(callback(type(widget).__name__ + '.' + method))
+    triggers.append(lambda: dispatch(widget, slot))
+menu = gui.Menu('CallbackMatrix')
+item = menu.addItem('from-menu', callback('Menu.addItem'))
+triggers.append(lambda: dispatch(item, 'trigger'))
+factory = gui.MenuItem.new('factory', callback('MenuItem.new'))
+factory.addCallback(callback('MenuItem.addCallback'))
+factory.addCallback('named', callback('MenuItem.addCallback.named'))
+factory.addCheckedCallback(callback('MenuItem.addCheckedCallback'))
+triggers.append(lambda: dispatch(factory, 'trigger'))
+buttons = [gui.ToolbarButton.new('one', '', callback('ToolbarButton.new')),
+           gui.ToolbarButton.newWithTooltip('two', '', callback('ToolbarButton.newWithTooltip'), 'tip'),
+           gui.ToolbarButton.newCheckable('three', '', callback('ToolbarButton.newCheckable'), 'tip', True)]
+buttons[0].addCallback(callback('ToolbarButton.addCallback'))
+buttons[0].addCallback('named', callback('ToolbarButton.addCallback.named'))
+triggers.extend(lambda button=button: dispatch(button, 'click') for button in buttons)
+group = gui.ToolbarGroup('CallbackMatrix')
+group_button = group.addButton('group-button', '', callback('ToolbarGroup.addButton'))
+triggers.append(lambda: dispatch(group_button, 'click'))
+a.toolbar().addButton('toolbar-button', '', 'CallbackMatrix', callback('Toolbar.addButton'))
+toolbar_button = a.toolbar().tabByName('Quick Access').groupByName('CallbackMatrix').buttonByName('toolbar-button')
+triggers.append(lambda: dispatch(toolbar_button, 'click'))
+dialog = gui.DialogWidget('CallbackMatrix', a)
+dialog.addFinishCallback(callback('DialogWidget.addFinishCallback'))
+gui.InputGUIContainer.addFinishCallback(dialog, callback('InputGUIContainer.addFinishCallback'))
+triggers.append(lambda: dispatch(dialog, 'finishCallbacks'))
+text = gui.Text('text')
+watch(text, 'addFinishCallback', 'editingFinishedCallbacks')
+watch(text, 'addOnChangeCallback', 'textChangedCallbacks')
+button = gui.Button('button')
+button.addCallback(callback('Button.addCallback'))
+triggers.append(button.click)
+check = gui.CheckBox('check')
+check.addCallback(callback('CheckBox.addCallback'))
+triggers.append(lambda: check.setValue(True))
+radio = gui.RadioButton('radio')
+radio.addCallback(callback('RadioButton.addCallback'))
+triggers.append(lambda: radio.setValue(True))
+coordinate = gui.Coordinate('coordinate')
+watch(coordinate, 'addFinishCallback', 'editingFinishedCallbacks')
+coordinate.addOnChangeCallback(callback('Coordinate.addOnChangeCallback'))
+triggers.append(lambda: dispatch(coordinate, 'coordinate-change'))
+angle = gui.Angle('angle')
+watch(angle, 'addFinishCallback', 'editingFinishedCallbacks')
+watch(angle, 'addOnChangeCallback', 'textChangedCallbacks')
+slider = gui.Slider('slider')
+slider.addCallback(callback('Slider.addCallback'))
+triggers.append(lambda: slider.setValue(2))
+combo = gui.ComboBox('combo')
+combo.addItem('one')
+combo.addCallback(callback('ComboBox.addCallback'))
+triggers.append(lambda: dispatch(combo, 'activatedCallbacks'))
+number = gui.Number('number')
+watch(number, 'addCallback', 'valueChangedCallbacks')
+color = gui.ColorPicker('color')
+watch(color, 'addCallback', 'color')
+entity = gui.EntityPicker('entity')
+dialog.addWidget('entity', entity)
+assert gui.InputGUIContainer.keys(dialog) == ['entity']
+entity.addEntity(point)
+watch(entity, 'addCallback', 'entity')
+)py", ns);
+    }
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&second);
+        EXPECT_NO_THROW(pybind11::exec("for trigger in triggers: trigger()", ns));
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    EXPECT_NO_THROW(pybind11::exec(R"py(
+assert {label for label, owner in hits} == expected, (expected, hits)
+assert all(owner is a for label, owner in hits), hits
+assert len(expected) == 28, expected
+)py", ns));
+    EXPECT_TRUE(first.cadMdiChild()->selection().empty());
+}
+
+TEST(PyGuiBridgeTest, ScopedCallbackPreservesEqualityResultsDiagnosticsAndThreadGuard) {
+    ensureUiApplication();
+    lc::ui::MainWindow first;
+    lc::ui::MainWindow second;
+    pybind11::gil_scoped_acquire gil;
+    pybind11::dict ns;
+    ns["owner"] = pybind11::cast(&first, pybind11::return_value_policy::reference);
+    pybind11::exec(R"py(
+import lcgui as gui
+class Receiver:
+    def callback(self, *args):
+        assert gui.currentMainWindow() is owner
+        return 42
+    def broken(self, *args):
+        raise ValueError('scoped callback failure')
+receiver = Receiver()
+)py", ns);
+    auto make = [&](const char* method) {
+        return lc::ui::python::scopedUiCallback(lc::python::makePythonCallback(
+            ns["receiver"].attr(method)), &first);
+    };
+    auto callback = make("callback");
+    EXPECT_STREQ(callback.runtime(), "python");
+    EXPECT_TRUE(callback == make("callback"));
+    EXPECT_FALSE(callback == make("broken"));
+    std::vector<std::string> diagnostics;
+    auto sink = [&](const std::string& message) { diagnostics.push_back(message); };
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&second);
+        EXPECT_EQ(callback.invoke().asInt(), 42);
+        EXPECT_EQ(callback.invokeEvent("point", {}, sink).asInt(), 42);
+        EXPECT_TRUE(make("broken").invokeEvent("point", {}, sink).isNil());
+        ASSERT_EQ(diagnostics.size(), 1u);
+        EXPECT_NE(diagnostics[0].find("scoped callback failure"), std::string::npos);
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+    diagnostics.clear();
+    std::thread worker([&] { (void)callback.invokeEvent("point", {}, sink); });
+    worker.join();
+    ASSERT_EQ(diagnostics.size(), 1u);
+    EXPECT_NE(diagnostics[0].find("Qt application thread"), std::string::npos);
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), nullptr);
+    auto receiver = std::make_unique<QObject>();
+    auto orphan = lc::ui::python::scopedUiCallback(
+        lc::python::makePythonCallback(ns["receiver"].attr("callback")), receiver.get());
+    receiver.reset();
+    EXPECT_TRUE(orphan.invoke().isNil());
+
+    lc::ui::api::MenuItem shared("Ambiguous");
+    auto late = lc::ui::python::scopedUiCallback(
+        lc::python::makePythonCallback(ns["receiver"].attr("callback")), &shared);
+    auto* firstMenu = first.addMenu("AmbiguityTest");
+    auto* secondMenu = second.addMenu("AmbiguityTest");
+    firstMenu->addItem(&shared);
+    secondMenu->addItem(&shared);
+    EXPECT_THROW(lc::ui::python::scopedUiCallback(
+        lc::python::makePythonCallback(ns["receiver"].attr("callback")), &shared), std::runtime_error);
+    diagnostics.clear();
+    {
+        lc::ui::python::MainWindowExecutionScope scope(&second);
+        EXPECT_TRUE(late.invokeEvent("point", {}, sink).isNil());
+        ASSERT_EQ(diagnostics.size(), 1u);
+        EXPECT_NE(diagnostics[0].find("ambiguous associated windows"), std::string::npos);
+        secondMenu->removeAction(&shared);
+        EXPECT_EQ(late.invoke().asInt(), 42);
+        // Once adopted, subsequent movement cannot steal the registered owner.
+        firstMenu->removeAction(&shared);
+        secondMenu->addAction(&shared);
+        EXPECT_EQ(late.invoke().asInt(), 42);
+        EXPECT_EQ(lc::ui::python::currentMainWindow(), &second);
+    }
+}
 
 TEST(PyGuiBridgeTest, RetainedQtHandlesRejectDestroyedOwner) {
     ensureUiApplication();

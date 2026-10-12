@@ -73,6 +73,14 @@ QObject* lc::ui::python::qtLifetimeOwner(lc::ui::LuaInterface* value) {
     return value->ownerObject();
 }
 
+namespace {
+template<class T> lc::scripting::ScriptCallback makeUiCallback(py::object callback, T* receiver) {
+    return lc::ui::python::scopedUiCallback(
+        lc::python::makePythonCallback(std::move(callback)),
+        lc::ui::python::qtLifetimeOwner(receiver));
+}
+}
+
 PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     m.doc() = "LibreCAD GUI bindings — phase 3 minimum + phase-5 PR-5.6 "
               "full widget API surface (mirrors the Lua guibridge.cpp "
@@ -253,7 +261,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 py::object cb) {
                  self.connectMenuItem(
                      itemName,
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("item_name"), py::arg("callback"),
              "Connect a Python callable to an existing menu item.", py::call_guard<QtUiThreadCallGuard>())
@@ -326,7 +334,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 const std::string& name, py::object cb) -> bool {
                  return self.addCommand(
                      name.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("name"), py::arg("callback"),
              "Register a Python callable under a command name.  "
@@ -581,7 +589,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 py::object cb, const std::string& tooltip) {
                  self.addButton(
                      name.c_str(), icon.c_str(), group.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)),
+                     makeUiCallback(std::move(cb), &self),
                      tooltip.c_str());
              },
              py::arg("name"), py::arg("icon"), py::arg("group"),
@@ -794,7 +802,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 py::object cb) {
                  return self.addItem(
                      label.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("label"), py::arg("callback"),
              py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
@@ -847,9 +855,10 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              py::arg("label"), py::call_guard<QtUiThreadCallGuard>())
         .def_static("new",
              [](const std::string& label, py::object cb) {
-                 return new lc::ui::api::MenuItem(
-                     label.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                 auto item = std::unique_ptr<lc::ui::api::MenuItem>(
+                     new lc::ui::api::MenuItem(label.c_str()));
+                 item->addCallback(makeUiCallback(std::move(cb), item.get()));
+                 return item.release();
              },
              py::arg("label"), py::arg("callback"),
              py::return_value_policy::take_ownership, py::call_guard<QtUiThreadCallGuard>())
@@ -892,14 +901,14 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCheckedCallback",
              [](lc::ui::api::MenuItem& self, py::object cb) {
                  self.addCheckedCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         // addCallback: 2 overloads (callback) and (name, callback).
         .def("addCallback",
              [](lc::ui::api::MenuItem& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addCallback",
@@ -907,7 +916,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 py::object cb) {
                  self.addCallback(
                      name.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("name"), py::arg("callback"), py::call_guard<QtUiThreadCallGuard>());
 
@@ -1039,19 +1048,20 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def_static("new",
              [](const std::string& label, const std::string& icon,
                 py::object cb) {
-                 return new lc::ui::api::ToolbarButton(
-                     label.c_str(), icon.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                 auto button = std::unique_ptr<lc::ui::api::ToolbarButton>(
+                     new lc::ui::api::ToolbarButton(label.c_str(), icon.c_str()));
+                 button->addCallback(makeUiCallback(std::move(cb), button.get()));
+                 return button.release();
              },
              py::arg("label"), py::arg("icon"), py::arg("callback"),
              py::return_value_policy::take_ownership, py::call_guard<QtUiThreadCallGuard>())
         .def_static("newWithTooltip",
              [](const std::string& label, const std::string& icon,
                 py::object cb, const std::string& tooltip) {
-                 return new lc::ui::api::ToolbarButton(
-                     label.c_str(), icon.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)),
-                     tooltip.c_str());
+                 auto button = std::unique_ptr<lc::ui::api::ToolbarButton>(
+                     new lc::ui::api::ToolbarButton(label.c_str(), icon.c_str(), tooltip.c_str()));
+                 button->addCallback(makeUiCallback(std::move(cb), button.get()));
+                 return button.release();
              },
              py::arg("label"), py::arg("icon"), py::arg("callback"),
              py::arg("tooltip"),
@@ -1060,10 +1070,11 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              [](const std::string& label, const std::string& icon,
                 py::object cb, const std::string& tooltip,
                 bool checkable) {
-                 return new lc::ui::api::ToolbarButton(
-                     label.c_str(), icon.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)),
-                     tooltip.c_str(), checkable);
+                 auto button = std::unique_ptr<lc::ui::api::ToolbarButton>(
+                     new lc::ui::api::ToolbarButton(label.c_str(), icon.c_str(),
+                         tooltip.c_str(), checkable));
+                 button->addCallback(makeUiCallback(std::move(cb), button.get()));
+                 return button.release();
              },
              py::arg("label"), py::arg("icon"), py::arg("callback"),
              py::arg("tooltip"), py::arg("checkable"),
@@ -1109,7 +1120,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::ToolbarButton& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addCallback",
@@ -1117,7 +1128,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 const std::string& name, py::object cb) {
                  self.addCallback(
                      name.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("name"), py::arg("callback"), py::call_guard<QtUiThreadCallGuard>());
 
@@ -1188,7 +1199,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                 py::object cb) {
                  return self.addButton(
                      name.c_str(), icon.c_str(),
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("name"), py::arg("icon"), py::arg("callback"),
              py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
@@ -1235,7 +1246,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addFinishCallback",
              [](lc::ui::api::InputGUIContainer& self, py::object cb) {
                  self.addFinishCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"),
              "Register a Python callable fired when the container "
@@ -1255,7 +1266,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
     // enable/disable + addWidget override.
     // -----------------------------------------------------------------
     QtClass<lc::ui::api::DialogWidget,
-               lc::ui::api::InputGUIContainer>(m, "DialogWidget")
+               lc::ui::api::InputGUIContainer>(m, "DialogWidget", py::multiple_inheritance())
         .def(py::init([](const std::string& title, lc::ui::MainWindow* owner) {
                  return new lc::ui::api::DialogWidget(title, owner, owner);
              }),
@@ -1289,7 +1300,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addFinishCallback",
              [](lc::ui::api::DialogWidget& self, py::object cb) {
                  self.addFinishCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addWidget",
@@ -1330,13 +1341,13 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addFinishCallback",
              [](lc::ui::api::TextGUI& self, py::object cb) {
                  self.addFinishCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addOnChangeCallback",
              [](lc::ui::api::TextGUI& self, py::object cb) {
                  self.addOnChangeCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>());
 
@@ -1348,7 +1359,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::ButtonGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("click",   &lc::ui::api::ButtonGUI::click, py::call_guard<QtUiThreadCallGuard>());
@@ -1366,7 +1377,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::CheckBoxGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::CheckBoxGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1390,7 +1401,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::RadioButtonGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::RadioButtonGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1438,13 +1449,13 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addFinishCallback",
              [](lc::ui::api::CoordinateGUI& self, py::object cb) {
                  self.addFinishCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addOnChangeCallback",
              [](lc::ui::api::CoordinateGUI& self, py::object cb) {
                  self.addOnChangeCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::CoordinateGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1463,13 +1474,13 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addFinishCallback",
              [](lc::ui::api::AngleGUI& self, py::object cb) {
                  self.addFinishCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addOnChangeCallback",
              [](lc::ui::api::AngleGUI& self, py::object cb) {
                  self.addOnChangeCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::AngleGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1490,7 +1501,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::SliderGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::SliderGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1508,7 +1519,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::ComboBoxGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("addItem",
@@ -1541,7 +1552,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::NumberGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>())
         .def("value",    &lc::ui::api::NumberGUI::value, py::call_guard<QtUiThreadCallGuard>())
@@ -1563,7 +1574,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::ColorGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>());
 
@@ -1584,7 +1595,7 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addCallback",
              [](lc::ui::api::EntityGUI& self, py::object cb) {
                  self.addCallback(
-                     lc::python::makePythonCallback(std::move(cb)));
+                     makeUiCallback(std::move(cb), &self));
              },
              py::arg("callback"), py::call_guard<QtUiThreadCallGuard>());
 

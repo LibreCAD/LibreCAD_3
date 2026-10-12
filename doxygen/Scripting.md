@@ -103,6 +103,18 @@ the native menu factories. Collect UI wrappers on the application thread, too.
 These guards do not make scripts a sandbox or support arbitrary native-code
 ownership changes outside the bound API.
 
+Standalone GUI callbacks restore their registering window while running and
+restore the caller's outer scope afterward. The receiver's actual Qt window
+takes precedence over an ambient script scope. An owner-free widget may bind
+once after late adoption; an unattached callback runs with no window. Shared
+actions with ambiguous windows fail instead of choosing insertion order.
+Native toolbar clones retain the bound window after the original button is
+removed, including adoption before the first invocation. Closed bound windows
+make callbacks inert. Event subscriptions created by callbacks use that same
+owner. This Qt-side policy does not bind process-global entity callbacks to a
+window or replace their document/builder context. Entity-picker entries absent
+from the drawing do not invent a selection or dereference a missing drawable.
+
 Core namespace organization intentionally parallels Lua: Python exposes
 `lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`, `lc.meta.*`,
 `lc.storage.*`, `lc.event.*`, and `lc.maths.*`; persistence-enabled builds also

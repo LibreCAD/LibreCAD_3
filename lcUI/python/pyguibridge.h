@@ -15,6 +15,8 @@
 // from pybind11's wrapper cache. DialogWidget is
 // parented to its supplied MainWindow. Shared kernel/viewer objects keep
 // their normal shared_ptr ownership and are not Qt lifetime wrappers.
+// GUI callback adapters share a weak window-scope proxy in pyeventhooks;
+// nested dispatch restores its caller and dead bound windows are inert.
 //
 // The module body's FIRST statement is `py::module_::import("lc")` so
 // lc's kernel bindings are registered before lcgui's signatures need

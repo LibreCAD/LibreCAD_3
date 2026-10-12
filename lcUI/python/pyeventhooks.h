@@ -12,6 +12,7 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 
 #include <QPointer>
+#include <lcscripting/scriptcallback.h>
 
 namespace lc {
 namespace ui {
@@ -44,6 +45,14 @@ void installEventHooks();
 /// owner from vector insertion order: a window runs Python during its
 /// constructor, before it can be inserted into WindowManager.
 lc::ui::MainWindow* currentMainWindow();
+
+/// Bind a GUI callback to its weak Qt receiver/window, restoring outer scopes.
+/// An initially owner-free receiver can bind once after late Qt adoption;
+/// dead bound owners/unbound receivers are inert. Bound toolbar clones retain
+/// the registering window even if the original button dies. Global entity
+/// callbacks do not use it.
+lc::scripting::ScriptCallback scopedUiCallback(
+    lc::scripting::ScriptCallback callback, QObject* receiver);
 
 } // namespace python
 } // namespace ui
