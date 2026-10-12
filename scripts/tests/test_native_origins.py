@@ -328,6 +328,31 @@ class NativeOriginTests(unittest.TestCase):
                 self.assertEqual("homebrew/core:1.2_1:" + digest, provider["revision"])
                 self.assertEqual(architecture, provider["architecture"])
 
+    def test_legacy_homebrew_vendor_spelling_keeps_original_bytes_and_exact_other_identity(self):
+        for architecture in ("arm64", "x86_64"):
+            with self.subTest(architecture=architecture):
+                source, _, _, manifest, metadata, digest = self.cached_bottle(architecture, "legacy-" + architecture)
+                metadata["annotations"]["org.opencontainers.image.vendor"] = "Homebrew"
+                manifest.write_text(json.dumps(metadata))
+                before = manifest.read_bytes()
+                self.assertTrue(homebrew_origin(source, architecture)[0]["revision"].endswith(digest))
+                self.assertEqual(before, manifest.read_bytes())
+                metadata["annotations"]["org.opencontainers.image.title"] = "another-formula"
+                manifest.write_text(json.dumps(metadata))
+                with self.assertRaises(RuntimeError):
+                    homebrew_origin(source, architecture)
+
+    def test_cached_oci_identity_diagnostics_reject_unknown_vendor_and_list_actual_difference(self):
+        for index, vendor in enumerate(("HOMEBREW", "homeBrew", "different-vendor")):
+            with self.subTest(vendor=vendor):
+                source, _, _, manifest, metadata, _ = self.cached_bottle(name="vendor-" + str(index))
+                metadata["annotations"]["org.opencontainers.image.vendor"] = vendor
+                manifest.write_text(json.dumps(metadata))
+                with self.assertRaises(RuntimeError) as error:
+                    homebrew_origin(source, "arm64")
+                self.assertIn("org.opencontainers.image.vendor", str(error.exception))
+                self.assertIn(vendor, str(error.exception))
+
     def test_cache_failure_distinguishes_absent_and_ambiguous_inputs(self):
         for mutation, count in (("missing", "0"), ("ambiguous", "2+")):
             with self.subTest(mutation=mutation):

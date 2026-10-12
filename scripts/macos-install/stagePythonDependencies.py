@@ -122,11 +122,19 @@ def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
         expected = {"com.github.package.type": "homebrew_bottle", "org.opencontainers.image.vendor": "homebrew",
                     "org.opencontainers.image.title": keg.parent.name, "org.opencontainers.image.version": keg.name,
                     "org.opencontainers.image.ref.name": keg.name + rebuild}
+        # Older retained indices (e.g. libb2) spell this vendor "Homebrew".
+        # Accept only the two observed literal values, not arbitrary case-folded
+        # aliases; every other identity field and the raw OCI hash stay exact.
+        mismatches = [key for key, value in expected.items() if isinstance(annotations, dict) and
+                      annotations.get(key) != value and not (key == "org.opencontainers.image.vendor" and
+                      annotations.get(key) == "Homebrew")]
         descriptors = index.get("manifests") if isinstance(index, dict) else None
         if not isinstance(index, dict) or index.get("schemaVersion") != 2 or not isinstance(annotations, dict) or \
-                any(annotations.get(key) != value for key, value in expected.items()) or \
+                mismatches or \
                 not isinstance(descriptors, list) or not 0 < len(descriptors) <= 256:
-            raise RuntimeError("selected Homebrew cached OCI identity differs: " + str(keg))
+            detail = "; ".join(key + "=" + repr(annotations.get(key))[:200] for key in mismatches)
+            raise RuntimeError("selected Homebrew cached OCI identity differs: {} ({})".format(
+                keg, detail or "schemaVersion/annotations/manifests"))
         for descriptor in descriptors:
             if not isinstance(descriptor, dict) or not isinstance(descriptor.get("platform"), dict) or \
                     not isinstance(descriptor.get("annotations"), dict):
