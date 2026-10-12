@@ -60,6 +60,23 @@ macos="$contents/MacOS"
 frameworks="$contents/Frameworks"
 resources="$contents/Resources"
 mkdir -p "$macos" "$frameworks" "$resources"
+origin_stage_args=()
+final_origins="$bundle.native-origins.json"
+if [[ -e "$install_origins" ]]; then
+    origin_capture="$bundle.origin-capture.json"
+    origin_staged="$bundle.origin-staged.json"
+    for output in "$origin_capture" "$origin_staged" "$final_origins"; do
+        if [[ -e "$output" || -L "$output" ]]; then
+            echo "Refusing to replace existing native-origin evidence: $output" >&2
+            exit 1
+        fi
+    done
+    qt_libraries=$($qtpaths_bin --query QT_INSTALL_LIBS)
+    qt_plugins=$($qtpaths_bin --query QT_INSTALL_PLUGINS)
+    "$python_bin" -B "$script_dir/bundleNativeOrigins.py" prepare \
+        "$prefix" "$contents" "$qt_libraries" "$qt_plugins" "$origin_capture" --otool "$otool_bin"
+    origin_stage_args=(--origin-capture "$origin_capture" "$origin_staged")
+fi
 ditto "$script_dir/Info.plist" "$contents/Info.plist"
 ditto "$prefix/bin/librecad" "$macos/librecad"
 # Stage runtime objects only. Static archives are link-time inputs and cannot
@@ -158,6 +175,7 @@ done
     "$install_name_tool_bin" \
     "$codesign_bin" \
     --application-binary "$macos/librecad" \
+    "${origin_stage_args[@]}" \
     --bundle-info-plist "$contents/Info.plist" \
     --scan-frameworks \
     --scan-directory "$contents/PlugIns"
@@ -166,4 +184,10 @@ done
 # and dependency staging have completed.
 "$codesign_bin" --force --deep --sign - "$bundle"
 "$codesign_bin" --verify --deep --strict "$bundle"
+if [[ -e "$install_origins" ]]; then
+    # Never embed hashes of the signed executable in its own signed resources:
+    # changing that resource would change the executable signature/hash again.
+    "$python_bin" -B "$script_dir/bundleNativeOrigins.py" finalize \
+        "$contents" "$origin_staged" "$final_origins"
+fi
 echo "Created and verified macOS app bundle: $bundle"

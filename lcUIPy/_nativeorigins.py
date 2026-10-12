@@ -165,6 +165,7 @@ class OriginLedger:
             raise ValueError("native origin ledger requires a real, non-filesystem-root directory")
         self.root, self.platform = root.resolve(strict=True), platform
         self.providers, self.files = {}, {}
+        self.required = None
 
     def capture(self, destination, source, provider, source_root):
         """Call before rewriting a staged copy; source must be the selected original."""
@@ -184,6 +185,12 @@ class OriginLedger:
         self.providers[key], self.files[relative] = dict(provider), entry
         return entry
 
+    def capture_state(self):
+        """Original-only staging checkpoint, explicitly not a final-byte seal."""
+        return dict(format=1, stage="original-capture", platform=self.platform,
+                    providers=self.providers, files=[self.files[key] for key in sorted(self.files)],
+                    required=sorted(self.files if self.required is None else self.required))
+
     def seal(self):
         payload, aliases = native_payload(self.root, include_aliases=True)
         if set(payload) != set(self.files):
@@ -198,17 +205,15 @@ class OriginLedger:
         return dict(format=1, platform=self.platform, providers=self.providers, files=files, aliases=aliases)
 
 
-def audit_native_origins(root, manifest_file, notice_directory=None):
-    """Verify complete final-byte coverage, optionally exact external notice joins.
-
-    Without notice_directory this checks origins/bytes ONLY. Supplying a notice
-    directory requires EVERY provider to match its exact four-field identity;
-    there is no project/system/unknown-provider license exemption here.
-    """
-    raw = read_notice(manifest_file, 16 * 1024 * 1024)
+def _read_record(path):
+    raw = read_notice(path, 16 * 1024 * 1024)
     manifest = unique_json(raw)
     if not isinstance(manifest, dict) or manifest.get("format") != 1 or raw != canonical_json(manifest):
         raise ValueError("native origin manifest is unsupported or noncanonical")
+    return manifest
+
+
+def _ledger_from_record(root, manifest):
     ledger = OriginLedger(root, manifest.get("platform"))
     providers, files = manifest.get("providers"), manifest.get("files")
     if not isinstance(providers, dict) or not providers or len(providers) > 128 or \
@@ -226,7 +231,8 @@ def audit_native_origins(root, manifest_file, notice_directory=None):
             raise ValueError("native origin is duplicated or provider is unknown")
         notice_path(entry.get("source_path"))
         original = entry.get("original")
-        if not isinstance(original, dict) or not re.fullmatch(r"[0-9a-f]{64}", str(original.get("sha256", ""))) or \
+        if not isinstance(original, dict) or set(original) != {"sha256", "size_bytes", "binary_format", "architectures"} or \
+                not re.fullmatch(r"[0-9a-f]{64}", str(original.get("sha256", ""))) or \
                 type(original.get("size_bytes")) is not int or not 0 < original["size_bytes"] <= MAX_BINARY_BYTES:
             raise ValueError("original native byte identity is incomplete")
         expected_format, architecture = PLATFORMS[ledger.platform]
@@ -238,7 +244,35 @@ def audit_native_origins(root, manifest_file, notice_directory=None):
         used.add(entry["provider"])
         ledger.files[relative] = {key: entry[key] for key in ("path", "provider", "source_path", "original")}
     ledger.providers = providers
-    if used != set(providers) or ledger.seal() != manifest:
+    if used != set(providers):
+        raise ValueError("final native bytes/inventory differ from original ledger")
+    return ledger
+
+
+def read_origin_capture(root, path):
+    state = _read_record(path)
+    ledger = _ledger_from_record(root, state)
+    required = state.get("required")
+    if not isinstance(required, list) or any(not isinstance(path, str) for path in required) or \
+            required != sorted(set(required)) or not set(required).issubset(ledger.files):
+        raise ValueError("native original capture has invalid required paths")
+    ledger.required = set(required)
+    if ledger.capture_state() != state:
+        raise ValueError("native original capture is malformed or is a final-byte report")
+    return ledger
+
+
+def audit_native_origins(root, manifest_file, notice_directory=None):
+    """Verify complete final-byte coverage, optionally exact external notice joins.
+
+    Without notice_directory this checks origins/bytes ONLY. Supplying a notice
+    directory requires EVERY provider to match its exact four-field identity;
+    there is no project/system/unknown-provider license exemption here.
+    """
+    manifest = _read_record(manifest_file)
+    ledger = _ledger_from_record(root, manifest)
+    providers, files = manifest["providers"], manifest["files"]
+    if ledger.seal() != manifest:
         raise ValueError("final native bytes/inventory differ from original ledger")
     if notice_directory is not None:
         notices = Path(notice_directory)
@@ -262,3 +296,24 @@ def audit_native_origins(root, manifest_file, notice_directory=None):
         if missing:
             raise ValueError("native providers lack exact original notices: " + str(missing))
     return len(files), len(providers)
+
+
+def main(argv=None):
+    import argparse
+    import sys
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("payload", type=Path)
+    parser.add_argument("manifest", type=Path)
+    parser.add_argument("--notices", type=Path)
+    arguments = parser.parse_args(argv)
+    try:
+        count = audit_native_origins(arguments.payload, arguments.manifest, arguments.notices)
+    except (OSError, ValueError) as error:
+        print("Native origin audit failed: " + str(error), file=sys.stderr)
+        return 1
+    print("SDK-free native origin audit: {} files, {} providers".format(*count))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

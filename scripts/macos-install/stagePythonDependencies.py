@@ -11,16 +11,91 @@ import re
 import shutil
 import subprocess
 import sys
+from itertools import islice
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lcUIPy"))
-from _nativeorigins import OriginLedger, binary_fingerprint, canonical_json, read_notice, unique_json
+from _nativeorigins import (OriginLedger, binary_fingerprint, canonical_json, native_payload,
+                            read_notice, read_origin_capture, unique_json)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from record_python_artifact import fingerprint
 
 
 SYSTEM_PREFIXES = ("/System/Library/", "/usr/lib/")
 LOAD_RE = re.compile(r"^\s*(.*?) \(compatibility version ")
 RPATH_RE = re.compile(r"^\s*path (.*?) \(offset ")
+
+
+def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
+    """Bind source-only SBOMs to retained inputs, never the current formula/API.
+
+    Homebrew can retain a source-only SBOM after pouring a bottle. The original
+    cache location, OCI build tab, and actual archive must agree. This proves
+    metadata/input consistency, not that post-pour native bytes equal tar bytes.
+    """
+    fields = ("homebrew_version", "changed_files", "source_modified_time", "compiler",
+              "runtime_dependencies", "arch", "built_on")
+    source = receipt["source"]
+    api = Path(source.get("path", ""))
+    if source.get("tap") != "homebrew/core" or not api.is_absolute() or ".." in api.parts or \
+            api.parent.name != "internal" or api.parent.parent.name != "api" or \
+            not re.fullmatch(r"packages\.[a-z0-9_]+\.jws\.json", api.name) or \
+            not all(key in receipt for key in fields) or \
+            not re.fullmatch(r"[a-z0-9+_.@-]+", keg.parent.name + keg.name):
+        raise RuntimeError("selected Homebrew receipt has no exact cached bottle context: " + str(keg))
+    downloads = api.parents[2] / "downloads"
+    if downloads.is_symlink() or not downloads.is_dir():
+        raise RuntimeError("selected Homebrew original download cache is absent: " + str(keg))
+
+    def cached_file(suffix):
+        matches = list(islice(downloads.glob("*--" + suffix), 2))
+        if len(matches) != 1 or not re.fullmatch(r"[0-9a-f]{64}--" + re.escape(suffix), matches[0].name):
+            raise RuntimeError("selected Homebrew cached input is missing or ambiguous: " + suffix)
+        return matches[0]
+
+    manifest = cached_file("{}-{}.bottle_manifest.json".format(keg.parent.name, keg.name))
+    raw = read_notice(manifest, 4 * 1024 * 1024)
+    index = unique_json(raw)
+    annotations = index.get("annotations", {}) if isinstance(index, dict) else {}
+    expected = {"com.github.package.type": "homebrew_bottle", "org.opencontainers.image.vendor": "homebrew",
+                "org.opencontainers.image.title": keg.parent.name, "org.opencontainers.image.version": keg.name,
+                "org.opencontainers.image.ref.name": keg.name}
+    descriptors = index.get("manifests") if isinstance(index, dict) else None
+    if not isinstance(index, dict) or index.get("schemaVersion") != 2 or not isinstance(annotations, dict) or \
+            any(annotations.get(key) != value for key, value in expected.items()) or \
+            not isinstance(descriptors, list) or not 0 < len(descriptors) <= 256:
+        raise RuntimeError("selected Homebrew cached OCI identity differs: " + str(keg))
+    selected = []
+    for descriptor in descriptors:
+        if not isinstance(descriptor, dict) or not isinstance(descriptor.get("platform"), dict) or \
+                not isinstance(descriptor.get("annotations"), dict):
+            raise ValueError("malformed cached bottle descriptor")
+        platform, values = descriptor["platform"], descriptor["annotations"]
+        if platform.get("os") != "darwin" or platform.get("architecture") != \
+                {"arm64": "arm64", "x86_64": "amd64"}.get(architecture):
+            continue
+        tab_text = values.get("sh.brew.tab", "null")
+        if not isinstance(tab_text, str):
+            raise ValueError("malformed cached bottle build tab")
+        tab = unique_json(tab_text)
+        if canonical_json(tab) == canonical_json({key: receipt[key] for key in fields}):
+            selected.append(values)
+    if len(selected) != 1:
+        raise RuntimeError("selected Homebrew cached bottle build fields are missing or ambiguous: " + str(keg))
+    values = selected[0]
+    reference, digest, size = (values.get(key, "") for key in
+                              ("org.opencontainers.image.ref.name", "sh.brew.bottle.digest", "sh.brew.bottle.size"))
+    if not re.fullmatch(re.escape(keg.name) + r"\.[a-z0-9_]+", str(reference)) or \
+            not re.fullmatch(r"[0-9a-f]{64}", str(digest)) or not re.fullmatch(r"[1-9][0-9]{0,9}", str(size)) or \
+            not 0 < int(size) <= 2 * 1024 * 1024 * 1024:
+        raise RuntimeError("selected Homebrew cached bottle input identity is malformed: " + str(keg))
+    archive = cached_file("{}--{}.bottle.tar.gz".format(keg.parent.name, reference))
+    if archive.stat().st_size != int(size) or fingerprint(archive)["sha256"] != digest:
+        raise RuntimeError("selected Homebrew cached bottle bytes differ: " + str(keg))
+    print("Verified cached Homebrew input: {} OCIsha256={} bottleSHA256={} bytes={}".format(
+        manifest.name, hashlib.sha256(raw).hexdigest(), digest, size))
+    return digest
 
 
 def homebrew_origin(source: Path, architecture: str):
@@ -40,8 +115,14 @@ def homebrew_origin(source: Path, architecture: str):
     bottles = [item for item in sbom.get("packages", [])
                if item.get("SPDXID", "").startswith("SPDXRef-Bottle-") and
                item.get("name") == keg.parent.name and item.get("versionInfo") in (keg.name, version)]
-    if len(bottles) != 1 or receipt.get("poured_from_bottle") is not True or \
+    if receipt.get("poured_from_bottle") is not True or \
             receipt.get("built_as_bottle") is not True or receipt.get("arch") != architecture:
+        raise RuntimeError("selected Homebrew binary receipt/bottle/architecture differs: " + str(keg))
+    if not any(item.get("SPDXID", "").startswith("SPDXRef-Bottle-") for item in sbom.get("packages", [])):
+        digest = cached_bottle_digest(keg, receipt, architecture)
+        return dict(name=keg.parent.name, version=version,
+                    revision="{}:{}:{}".format(tap, keg.name, digest), architecture=architecture), keg
+    if len(bottles) != 1:
         raise RuntimeError("selected Homebrew binary receipt/bottle/architecture differs: " + str(keg))
     checksums = [item.get("checksumValue") for item in bottles[0].get("checksums", [])
                  if item.get("algorithm") == "SHA256"]
@@ -110,6 +191,7 @@ class RuntimeStager:
         project_revision: Optional[str] = None,
         project_version: Optional[str] = None,
         relocate_python_runtime: Optional[Sequence[str]] = None,
+        origin_capture: Optional[Sequence[Path]] = None,
     ) -> None:
         self.prefix = prefix.resolve()
         self.python_root = python_root.resolve()
@@ -137,13 +219,32 @@ class RuntimeStager:
         self.deferred_framework_loads: Set[str] = set()
         self.origin_manifest = origin_manifest
         self.origins = OriginLedger(self.prefix, origin_platform) if origin_manifest is not None else None
+        self.origin_capture = origin_capture
+        if origin_capture is not None:
+            if origin_manifest is not None or len(origin_capture) != 2:
+                raise RuntimeError("use either fresh-prefix origins or a bundle original-capture pair")
+            source_capture, output_capture = map(Path, origin_capture)
+            if self._inside_prefix(source_capture) or self._inside_prefix(output_capture) or \
+                    output_capture.exists() or output_capture.is_symlink():
+                raise RuntimeError("bundle original captures require fresh outputs outside signed resources")
+            self.origins = read_origin_capture(self.prefix, source_capture)
+            payload = native_payload(self.prefix)
+            unknown = set(payload) - set(self.origins.files)
+            if unknown:
+                raise RuntimeError("unknown deployed native origin before rewriting: " + str(sorted(unknown)))
+            missing = self.origins.required - set(payload)
+            if missing:
+                raise RuntimeError("required installed native copy is missing before rewriting: " + str(sorted(missing)))
+            self.origins.files = {key: self.origins.files[key] for key in sorted(payload)}
+            used = {entry["provider"] for entry in self.origins.files.values()}
+            self.origins.providers = {key: self.origins.providers[key] for key in used}
         self.source_files = {Path(dst).resolve(): Path(src).resolve(strict=True) for dst, src in source_files}
         self.source_trees = [(Path(dst).resolve(), Path(src).resolve(strict=True)) for dst, src in source_trees]
         self.project_files = {Path(dst).resolve(): Path(src).resolve(strict=True) for dst, src in project_files}
         self.project_root = project_root
         self.project_revision, self.project_version = project_revision, project_version
         self.relocate_python_runtime = relocate_python_runtime
-        if self.origins is not None:
+        if origin_manifest is not None:
             if not self._inside_prefix(origin_manifest) or origin_manifest.exists() or origin_manifest.is_symlink():
                 raise RuntimeError("native origin capture requires a fresh in-prefix manifest; use a fresh install prefix")
             if not project_root or not project_revision or not project_version:
@@ -499,12 +600,17 @@ class RuntimeStager:
         self._verify_no_external_loads(processed | self.staged)
         if self.origins is not None:
             manifest = self.origins.seal()
-            self.origin_manifest.parent.mkdir(parents=True, exist_ok=True)
+            output = self.origin_manifest
+            if self.origin_capture is not None:
+                output = Path(self.origin_capture[1])
+                manifest = self.origins.capture_state()
+            output.parent.mkdir(parents=True, exist_ok=True)
             # Exclusive creation: an old, unverified report must never silently
             # stand in for capture from the current selected originals.
-            with self.origin_manifest.open("xb") as stream:
+            with output.open("xb") as stream:
                 stream.write(canonical_json(manifest))
-            print("Recorded original/final native coverage: {} files, {} providers".format(
+            label = "selected original capture" if self.origin_capture else "original/final native coverage"
+            print("Recorded {}: {} files, {} providers".format(label,
                 len(manifest["files"]), len(manifest["providers"])))
         print(
             "Staged {} non-system runtime dylib(s); verified {} Mach-O file(s)".format(
@@ -584,6 +690,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--project-revision")
     parser.add_argument("--project-version")
     parser.add_argument("--relocate-python-runtime", nargs=2, metavar=("STAGED_LIBRARY", "ORIGINAL_ID"))
+    parser.add_argument("--origin-capture", type=Path, nargs=2, metavar=("BEFORE_DEPLOYMENT", "AFTER_STAGING"))
     arguments = parser.parse_args(argv)
 
     try:
@@ -609,6 +716,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             arguments.project_revision,
             arguments.project_version,
             arguments.relocate_python_runtime,
+            arguments.origin_capture,
         ).stage()
     except (OSError, RuntimeError, ValueError) as error:
         print("macOS Python runtime staging failed: {}".format(error), file=sys.stderr)

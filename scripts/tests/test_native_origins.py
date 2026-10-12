@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "scripts/macos-install"))
 import _nativeorigins as origins
 import collect_provider_notices as collector
 from stagePythonDependencies import RuntimeStager, homebrew_origin
+import bundleNativeOrigins as bundle_origins
 
 
 def binary(kind="Mach-O", arch="arm64"):
@@ -266,6 +267,119 @@ class NativeOriginTests(unittest.TestCase):
                 (str(self.payload), [content.name], ["arbitrary filename Ω", "origins.json"])]):
             self.assertEqual((1, 1), origins.audit_native_origins(self.payload, manifest))
 
+    def cached_bottle(self, architecture="arm64", name="jpeg-turbo"):
+        source, keg = self.keg(name)
+        source.write_bytes(binary(arch=architecture))
+        receipt = json.loads((keg / "INSTALL_RECEIPT.json").read_bytes())
+        receipt.update(arch=architecture, homebrew_version="6.0.6", changed_files=["lib/pkgconfig/input.pc"],
+                       source_modified_time=1782840343, compiler="clang", runtime_dependencies=[],
+                       built_on=dict(os="Macintosh", os_version="macOS 26", xcode="26.4"))
+        cache = self.root / ("original cache " + name)
+        # The old API response need not survive. Never replace it with today's API.
+        receipt["source"]["path"] = str(cache / "api/internal/packages.selected.jws.json")
+        (keg / "INSTALL_RECEIPT.json").write_text(json.dumps(receipt))
+        (keg / "sbom.spdx.json").write_text(json.dumps(dict(packages=[dict(
+            SPDXID="SPDXRef-Archive-source", name=name + "-src", versionInfo="1.2")])))
+        downloads = cache / "downloads"
+        downloads.mkdir(parents=True)
+        tag = "arm64_tahoe" if architecture == "arm64" else "sonoma"
+        archive = downloads / ("a" * 64 + "--{}--1.2_1.{}.bottle.tar.gz".format(name, tag))
+        archive.write_bytes(b"exact original compressed bottle input")
+        digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+        build_fields = ("homebrew_version", "changed_files", "source_modified_time", "compiler",
+                        "runtime_dependencies", "arch", "built_on")
+        descriptor = dict(platform=dict(os="darwin", architecture="arm64" if architecture == "arm64" else "amd64"),
+                          annotations={"org.opencontainers.image.ref.name": "1.2_1." + tag,
+                                       "sh.brew.bottle.digest": digest,
+                                       "sh.brew.bottle.size": str(archive.stat().st_size),
+                                       "sh.brew.tab": json.dumps({key: receipt[key] for key in build_fields})})
+        metadata = dict(schemaVersion=2, annotations={"com.github.package.type": "homebrew_bottle",
+                        "org.opencontainers.image.vendor": "homebrew", "org.opencontainers.image.title": name,
+                        "org.opencontainers.image.version": keg.name, "org.opencontainers.image.ref.name": keg.name},
+                        manifests=[descriptor])
+        manifest = downloads / ("b" * 64 + "--{}-1.2_1.bottle_manifest.json".format(name))
+        manifest.write_text(json.dumps(metadata))
+        return source, keg, archive, manifest, metadata, digest
+
+    def test_source_only_sbom_uses_exact_cached_bottle_and_all_receipt_build_fields(self):
+        for architecture in ("arm64", "x86_64"):
+            with self.subTest(architecture=architecture):
+                source, keg, _, _, _, digest = self.cached_bottle(architecture, "jpeg-" + architecture)
+                provider, root = homebrew_origin(source, architecture)
+                self.assertEqual(keg, root)
+                self.assertEqual("homebrew/core:1.2_1:" + digest, provider["revision"])
+                self.assertEqual(architecture, provider["architecture"])
+
+    def test_cached_bottle_provenance_fails_closed_on_missing_ambiguous_or_changed_inputs(self):
+        for index, mutation in enumerate(("missing-archive", "tampered-archive", "linked-archive", "duplicate-archive",
+                                          "duplicate-manifest", "wrong-architecture", "wrong-os", "wrong-version",
+                                          "missing-tab", "changed-build", "partial-tab", "bad-digest", "bad-size",
+                                          "missing-manifest", "linked-manifest", "duplicate-descriptor",
+                                          "wrong-cache-context", "source-built", "index-type", "tab-type",
+                                          *("field-" + key for key in ("homebrew_version", "changed_files",
+                                            "source_modified_time", "compiler", "runtime_dependencies", "arch")))):
+            with self.subTest(mutation=mutation):
+                source, _, archive, manifest, metadata, _ = self.cached_bottle(name="jpeg-" + str(index))
+                descriptor = metadata["manifests"][0]
+                if mutation == "missing-archive":
+                    archive.unlink()
+                elif mutation == "tampered-archive":
+                    archive.write_bytes(archive.read_bytes() + b"changed")
+                elif mutation == "linked-archive":
+                    target = self.root / "external input"
+                    archive.rename(target)
+                    archive.symlink_to(target)
+                elif mutation == "duplicate-archive":
+                    shutil.copy2(archive, archive.with_name("c" * 64 + archive.name[64:]))
+                elif mutation == "duplicate-manifest":
+                    shutil.copy2(manifest, manifest.with_name("c" * 64 + manifest.name[64:]))
+                elif mutation == "duplicate-descriptor":
+                    metadata["manifests"].append(descriptor)
+                elif mutation == "wrong-architecture":
+                    descriptor["platform"]["architecture"] = "amd64"
+                elif mutation == "wrong-os":
+                    descriptor["platform"]["os"] = "linux"
+                elif mutation == "wrong-version":
+                    metadata["annotations"]["org.opencontainers.image.version"] = "today's version"
+                elif mutation == "missing-tab":
+                    descriptor["annotations"].pop("sh.brew.tab")
+                elif mutation in ("changed-build", "partial-tab"):
+                    tab = json.loads(descriptor["annotations"]["sh.brew.tab"])
+                    if mutation == "changed-build":
+                        tab["built_on"]["xcode"] = "other build"
+                    else:
+                        tab.pop("runtime_dependencies")
+                    descriptor["annotations"]["sh.brew.tab"] = json.dumps(tab)
+                elif mutation == "bad-digest":
+                    descriptor["annotations"]["sh.brew.bottle.digest"] = "not-a-sha256"
+                elif mutation == "bad-size":
+                    descriptor["annotations"]["sh.brew.bottle.size"] = "999999999999"
+                elif mutation in ("wrong-cache-context", "source-built"):
+                    receipt_file = source.parent / "INSTALL_RECEIPT.json"
+                    receipt = json.loads(receipt_file.read_bytes())
+                    if mutation == "wrong-cache-context":
+                        receipt["source"]["path"] = "/today/api/formula.json"
+                    else:
+                        receipt["poured_from_bottle"] = False
+                    receipt_file.write_text(json.dumps(receipt))
+                elif mutation == "tab-type":
+                    descriptor["annotations"]["sh.brew.tab"] = {}
+                elif mutation.startswith("field-"):
+                    tab = json.loads(descriptor["annotations"]["sh.brew.tab"])
+                    tab[mutation.removeprefix("field-")] = "different original build"
+                    descriptor["annotations"]["sh.brew.tab"] = json.dumps(tab)
+                if mutation == "index-type":
+                    metadata = []
+                manifest.write_text(json.dumps(metadata))
+                if mutation == "missing-manifest":
+                    manifest.unlink()
+                elif mutation == "linked-manifest":
+                    target = self.root / "external manifest"
+                    manifest.rename(target)
+                    manifest.symlink_to(target)
+                with self.assertRaises((RuntimeError, ValueError)):
+                    homebrew_origin(source, "arm64")
+
     def test_stager_captures_initial_sources_before_mutation_and_seals_after_signing(self):
         source, _ = self.keg()
         libraries, python_root, build = self.payload / "lib", self.payload / "python", self.root / "build"
@@ -317,6 +431,149 @@ class NativeOriginTests(unittest.TestCase):
         self.assertLess(source.index("audit_native_origins(root, sys.argv[2])"), source.index('ditto "$prefix/bin/librecad"'))
         self.assertLess(source.index("native-origins-install-prefix.json"), source.index('"$macdeployqt_bin" "$bundle"'))
         self.assertIn('mv "$resources/librecad/licenses/providers/native-origins.json" "$retained_origins"', source)
+
+    def test_final_bundle_origins_are_captured_before_deployment_and_sealed_outside_after_signing(self):
+        source = (ROOT / "scripts/macos-install/createBundle.sh").read_text()
+        prepare = source.index('"$script_dir/bundleNativeOrigins.py" prepare')
+        finalize = source.index('"$script_dir/bundleNativeOrigins.py" finalize')
+        self.assertLess(prepare, source.index('ditto "$prefix/bin/librecad"'))
+        self.assertLess(source.index('"$codesign_bin" --verify --deep --strict "$bundle"'), finalize)
+        self.assertIn('final_origins="$bundle.native-origins.json"', source)
+        self.assertIn('--origin-capture "$origin_capture" "$origin_staged"', source)
+
+    def bundle_capture(self, dependency=None):
+        ledger, old_report, _, installed = self.capture()
+        app = self.payload / "bin/librecad"
+        app.parent.mkdir()
+        installed.rename(app)
+        ledger.files["bin/librecad"] = dict(ledger.files.pop(installed.name), path="bin/librecad")
+        old_report.unlink()
+        report = self.payload / "share/librecad/licenses/providers/native-origins.json"
+        report.parent.mkdir(parents=True)
+        report.write_bytes(origins.canonical_json(ledger.seal()))
+        _, keg = self.keg("qtbase")
+        libraries, plugins = keg / "lib", keg / "plugins"
+        plugin = plugins / "platforms/libqoffscreen.dylib"
+        plugin.parent.mkdir(parents=True)
+        plugin.write_bytes(binary())
+        framework = libraries / "QtCore.framework/Versions/A/QtCore"
+        framework.parent.mkdir(parents=True)
+        framework.write_bytes(binary())
+        contents = self.root / "LibreCAD.app/Contents"
+        contents.mkdir(parents=True)
+        capture = self.root / "before.json"
+        def loads(stager, binary_path):
+            return [str(dependency)] if dependency is not None and binary_path == framework else []
+        with patch.object(RuntimeStager, "_loads", loads):
+            bundle_origins.prepare(self.payload, contents, libraries, plugins, capture)
+        return contents, capture, app, framework
+
+    def test_predeployment_captures_transitive_original_from_resolved_load_not_copy_basename(self):
+        original, _ = self.keg("brotli")
+        soname = original.parent / "libbrotli.1.dylib"
+        soname.symlink_to(original.name)
+        contents, capture, _, _ = self.bundle_capture(soname)
+        ledger = origins.read_origin_capture(contents, capture)
+        entry = ledger.files["Frameworks/libbrotli.1.dylib"]
+        self.assertEqual(origins.binary_fingerprint(original), entry["original"])
+        self.assertEqual(original.name, entry["source_path"])
+        self.assertEqual("brotli", ledger.providers[entry["provider"]]["name"])
+
+    def test_bundle_carries_originals_and_snapshots_qt_before_later_copy_rewrites(self):
+        contents, capture, app, framework = self.bundle_capture()
+        state = origins.read_origin_capture(contents, capture)
+        self.assertEqual(3, len(state.files))
+        self.assertEqual({"MacOS/librecad"}, state.required)
+        carried = state.files["MacOS/librecad"]
+        source = json.loads((self.payload / "share/librecad/licenses/providers/native-origins.json").read_bytes())
+        self.assertEqual(source["files"][0]["original"], carried["original"])
+        self.assertEqual(source["providers"], {carried["provider"]: state.providers[carried["provider"]]})
+        self.assertEqual(origins.binary_fingerprint(framework), state.files["Frameworks/QtCore.framework/Versions/A/QtCore"]["original"])
+        with self.assertRaisesRegex(ValueError, "coverage differs|empty"):
+            origins.audit_native_origins(contents, capture)
+        for relative, original in (("MacOS/librecad", app), ("Frameworks/QtCore.framework/Versions/A/QtCore", framework)):
+            destination = contents / relative
+            destination.parent.mkdir(parents=True)
+            shutil.copy2(original, destination)
+            destination.write_bytes(destination.read_bytes() + b"deployment/signature")
+        # Optional Qt plugin candidate is deliberately not deployed.
+        output = self.root / "after.json"
+        stager = RuntimeStager(contents, self.sdk, contents / "Frameworks", "otool", "install_name_tool", "codesign",
+                               contents / "MacOS/librecad", False, [], True, origin_capture=(capture, output))
+        self.assertEqual(2, len(stager.origins.files))
+        def command(args):
+            self.assertEqual(2, len(stager.origins.files))
+            if args[0] == "install_name_tool" or "--sign" in args:
+                path = Path(args[-1])
+                path.write_bytes(path.read_bytes() + b"stager rewrite/signature")
+            return ""
+        with patch.object(stager, "_framework_binaries", return_value=[contents / "Frameworks/QtCore.framework/Versions/A/QtCore"]), \
+                patch.object(stager, "_loads", return_value=[]), patch.object(stager, "_rpaths", return_value=[]), \
+                patch.object(stager, "_run", side_effect=command):
+            stager.stage()
+        self.assertEqual(2, len(origins.read_origin_capture(contents, output).files))
+        # Final deep signing is another change, not the staged checkpoint hash.
+        final_app = contents / "MacOS/librecad"
+        final_app.write_bytes(final_app.read_bytes() + b"final deep signature")
+        final = self.root / "LibreCAD.app.native-origins.json"
+        bundle_origins.finalize(contents, output, final)
+        self.assertEqual((2, 2), origins.audit_native_origins(contents, final))
+        self.assertEqual(0, origins.main([str(contents), str(final)]))
+        self.assertEqual(origins.binary_fingerprint(final_app), json.loads(final.read_bytes())["files"][1]["final"])
+        with self.assertRaisesRegex(ValueError, "fresh and outside"):
+            bundle_origins.finalize(contents, output, final)
+        with self.assertRaisesRegex(ValueError, "fresh and outside"):
+            bundle_origins.finalize(contents, output, contents / "embedded.json")
+        final_app.write_bytes(final_app.read_bytes() + b"tampered after final seal")
+        self.assertEqual(1, origins.main([str(contents), str(final)]))
+
+    def test_bundle_unknown_native_copy_fails_before_any_stager_command(self):
+        contents, capture, app, _ = self.bundle_capture()
+        (contents / "unknown.native").write_bytes(binary())
+        with patch.object(RuntimeStager, "_run") as command:
+            with self.assertRaisesRegex(RuntimeError, "unknown deployed native origin"):
+                RuntimeStager(contents, self.sdk, contents, "otool", "install_name_tool", "codesign",
+                              None, False, [], False, origin_capture=(capture, self.root / "after.json"))
+            command.assert_not_called()
+
+    def test_optional_sdk_pruning_must_not_hide_a_missing_required_prefix_native_copy(self):
+        contents, capture, _, framework = self.bundle_capture()
+        destination = contents / "Frameworks/QtCore.framework/Versions/A/QtCore"
+        destination.parent.mkdir(parents=True)
+        shutil.copy2(framework, destination)
+        with patch.object(RuntimeStager, "_run") as command:
+            with self.assertRaisesRegex(RuntimeError, "required installed native copy"):
+                RuntimeStager(contents, self.sdk, contents / "Frameworks", "otool", "install_name_tool", "codesign",
+                              None, False, [], False, origin_capture=(capture, self.root / "after.json"))
+            command.assert_not_called()
+
+    def test_original_capture_is_distinct_strict_and_not_final_acceptance(self):
+        ledger, final, _, _ = self.capture()
+        capture = self.root / "capture.json"
+        capture.write_bytes(origins.canonical_json(ledger.capture_state()))
+        self.assertEqual(ledger.capture_state(), origins.read_origin_capture(self.payload, capture).capture_state())
+        with self.assertRaisesRegex(ValueError, "malformed or is a final-byte|invalid required paths"):
+            origins.read_origin_capture(self.payload, final)
+        with self.assertRaisesRegex(ValueError, "final native bytes"):
+            origins.audit_native_origins(self.payload, capture)
+        state = ledger.capture_state()
+        state["extra"] = "unbound"
+        capture.write_bytes(origins.canonical_json(state))
+        with self.assertRaisesRegex(ValueError, "malformed"):
+            origins.read_origin_capture(self.payload, capture)
+        state.pop("extra")
+        state["required"] = ["not-in-capture"]
+        capture.write_bytes(origins.canonical_json(state))
+        with self.assertRaisesRegex(ValueError, "invalid required paths"):
+            origins.read_origin_capture(self.payload, capture)
+
+    def test_both_mac_lanes_retain_and_audit_final_report_with_archive(self):
+        source = (ROOT / ".github/workflows/python-binding-macos.yml").read_text()
+        self.assertIn("-DLIBRECAD_RECORD_NATIVE_ORIGINS=ON", source)
+        self.assertIn('-DLIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION="$(git rev-parse HEAD)"', source)
+        self.assertIn('LibreCAD.app LibreCAD.app.native-origins.json', source)
+        self.assertEqual(3, source.count('/lcUIPy/_nativeorigins.py"'))
+        self.assertIn('--evidence build/macos-native-origins.log', source)
 
 
 if __name__ == "__main__":

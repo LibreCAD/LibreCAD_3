@@ -215,6 +215,11 @@ Python/project originals before its first rewrite and each selected external
 dylib before copying, then records final hashes after signing in
 `licenses/providers/native-origins.json`. Homebrew identity comes from the
 actual resolved keg's bottle receipt/SBOM, not PATH or a basename guess.
+If a poured-bottle receipt has a source-only SBOM, the original receipt's cache
+must retain an unambiguous OCI index and bottle archive. All seven original
+build fields, platform, formula/version, archive size and SHA-256 must agree.
+Missing or altered inputs fail; today's API or the source tarball is never a
+substitute. Input archive identity is distinct from post-pour native byte hashes.
 
 `lcUIPy._nativeorigins.audit_native_origins(root, manifest, notice_directory)`
 checks the actual root's entire native-file inventory and exact four-field
@@ -224,11 +229,20 @@ change. Omitting `notice_directory`
 checks byte/origin consistency **only**; supplying it requires notices for every
 provider, including project binaries, with no unknown-provider exemption.
 The shared ledger understands ELF, PE and Mach-O and all five packaged
-platform identities, but only fresh Mac **install-prefix capture** is currently
-wired. Its paths/hashes are not a final `.app` report: Qt deployment, relocation
-and subsequent signing require their own capture/remapping/final seal. Linux,
-Snap, Windows, complete provider notices and build attestation remain separate
-open gates; this opt-in diagnostic does not promote their support claims.
+platform identities. Mac bundle assembly carries verified prefix originals and
+snapshots the selected SDK framework/plugin originals and resolved non-system
+dependencies before deployment, retaining each actual provider identity. The
+existing stager keeps only actual deployed files, captures further external
+copies, and retains an original-only checkpoint; these are not final-byte proof.
+Every carried install-prefix native file remains required; pruning unused SDK
+candidates must not hide a missing installed executable, library or extension.
+After deep signing, assembly seals `LibreCAD.app.native-origins.json` **beside**
+the app. Embedding signed-executable hashes in its own signed resources would
+create a circular signature/hash dependency. Move/archive the app and sidecar
+together. Both Mac CI lanes require audits of original, relocated and extracted
+payloads using the installed `_nativeorigins.py <Contents> <sidecar>` CLI.
+Linux, Snap, Windows producers, complete provider notices and build attestation
+remain separate open gates; byte consistency does not promote their support.
 Bundle assembly verifies any present install report before copying, then retains
 it as `native-origins-install-prefix.json`, not as final app coverage.
 
