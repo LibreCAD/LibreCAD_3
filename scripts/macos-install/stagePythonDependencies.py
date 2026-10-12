@@ -204,7 +204,12 @@ def homebrew_origin(source: Path, architecture: str):
     # Historical bottles (e.g. Intel libb2) contain no SBOM. Genuine absence
     # uses the same exact retained-input verifier as a source-only SBOM;
     # malformed/linked present files must still fail, not enter that fallback.
-    sbom = unique_json(read_notice(sbom_file)) if sbom_file.exists() or sbom_file.is_symlink() else {}
+    try:
+        sbom_file.lstat()
+    except FileNotFoundError:
+        sbom = {}
+    else:
+        sbom = unique_json(read_notice(sbom_file))
     source_info = receipt.get("source", {})
     version = source_info.get("versions", {}).get("stable")
     tap = source_info.get("tap")

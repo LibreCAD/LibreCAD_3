@@ -382,6 +382,27 @@ class NativeOriginTests(unittest.TestCase):
                     with self.assertRaises((RuntimeError, ValueError, OSError)):
                         homebrew_origin(source, architecture)
 
+    def test_sbom_presence_io_errors_are_not_mistaken_for_legacy_absence(self):
+        exists, is_symlink, lstat = Path.exists, Path.is_symlink, Path.lstat
+        for architecture in ("arm64", "x86_64"):
+            for error in (PermissionError("metadata denied"), OSError("metadata I/O failed")):
+                with self.subTest(architecture=architecture, error=type(error).__name__):
+                    source, keg, _, _, _, _ = self.cached_bottle(architecture, architecture + type(error).__name__.lower())
+                    sbom = keg / "sbom.spdx.json"
+                    original = sbom.read_bytes()
+                    def stat_or_error(path, *args, **kwargs):
+                        if path == sbom:
+                            raise error
+                        return lstat(path, *args, **kwargs)
+                    # Python 3.14 predicates hide OSError; simulate that policy
+                    # on older test interpreters too. A strict presence probe
+                    # must distinguish unreadable metadata from ENOENT.
+                    with patch.object(Path, "exists", lambda path: False if path == sbom else exists(path)), \
+                            patch.object(Path, "is_symlink", lambda path: False if path == sbom else is_symlink(path)), \
+                            patch.object(Path, "lstat", stat_or_error), self.assertRaises(OSError):
+                        homebrew_origin(source, architecture)
+                    self.assertEqual(original, sbom.read_bytes())
+
     def test_legacy_homebrew_vendor_spelling_keeps_original_bytes_and_exact_other_identity(self):
         for architecture in ("arm64", "x86_64"):
             with self.subTest(architecture=architecture):
