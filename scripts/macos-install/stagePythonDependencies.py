@@ -68,37 +68,6 @@ def bottle_runtime_dependencies(keg: Path, entries, architecture: str, installed
     return result
 
 
-def verify_post_pour_dependencies(keg: Path, original: dict, current: dict, architecture: str):
-    """Allow only new transitives evidenced by exact selected receipt edges.
-
-    Homebrew recomputes the runtime closure after pour. Preserve original names
-    and direct declarations; this metadata check does not resolve native loads.
-    """
-    added, removed = current.keys() - original.keys(), original.keys() - current.keys()
-    declarations = {name for name in original.keys() & current.keys()
-                    if original[name]["declared_directly"] != current[name]["declared_directly"]}
-    labels = lambda names: ",".join(name[:128] for name in sorted(names)[:8])
-    if removed or declarations or any(current[name]["declared_directly"] for name in added):
-        raise ValueError("post-pour dependency names/declarations differ: added={} removed={} declarations={}".format(
-            labels(added), labels(removed), labels(declarations)))
-    pending, queue, seen = set(added), list(original), set()
-    while pending and queue:
-        name = queue.pop()
-        if name in seen:
-            continue
-        seen.add(name)
-        receipt = selected_dependency_receipt(keg, current[name], architecture)
-        children = bottle_runtime_dependencies(keg, receipt.get("runtime_dependencies"), architecture)
-        for child in pending & children.keys():
-            identity = lambda entry: {key: value for key, value in entry.items() if key != "declared_directly"}
-            if identity(children[child]) != identity(current[child]):
-                raise ValueError("added transitive receipt edge differs: " + child[:128])
-            pending.remove(child)
-            queue.append(child)
-    if pending:
-        raise ValueError("unreachable added transitive dependencies: " + labels(pending))
-
-
 def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
     """Bind source-only SBOMs to retained inputs, never the current formula/API.
 
@@ -183,20 +152,24 @@ def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
             if not isinstance(tab_text, str):
                 raise ValueError("malformed cached bottle build tab")
             tab = unique_json(tab_text)
+            reference = str(values.get("org.opencontainers.image.ref.name", "<missing-ref>"))[:200]
             if not isinstance(tab, dict) or not set(fields) <= tab.keys() or tab.keys() - set(fields) - optional:
-                differences.add("incomplete/unknown build fields")
+                differences.add(reference + ": incomplete/unknown build fields")
                 continue
             changed = {key for key in tab if key != "runtime_dependencies" and canonical_json(tab[key]) !=
                        canonical_json({"scm_revision": source.get("scm_revision")} if key == "source" else receipt.get(key))}
             try:
-                original_deps = bottle_runtime_dependencies(keg, tab["runtime_dependencies"], architecture)
-                current_deps = bottle_runtime_dependencies(keg, receipt["runtime_dependencies"], architecture,
+                # Homebrew regenerates the whole table from current formulae
+                # after pour, including names and direct-declaration flags.
+                # Validate the original schema and changed installed records,
+                # not a closure reconstructed from other bottles' old tables.
+                bottle_runtime_dependencies(keg, tab["runtime_dependencies"], architecture)
+                bottle_runtime_dependencies(keg, receipt["runtime_dependencies"], architecture,
                     installed=canonical_json(tab["runtime_dependencies"]) != canonical_json(receipt["runtime_dependencies"]))
-                verify_post_pour_dependencies(keg, original_deps, current_deps, architecture)
             except (ValueError, OSError) as error:
                 changed.add("runtime_dependencies: " + str(error))
             if changed:
-                differences.update(changed)
+                differences.add(reference + ": " + "; ".join(sorted(changed)))
                 continue
             selected.append((manifest, raw, values, rebuild, tab["runtime_dependencies"]))
     if len(selected) != 1:
