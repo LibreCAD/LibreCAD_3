@@ -35,9 +35,12 @@ def native_header(data):
 
     if data.startswith(b"\x7fELF"):
         if len(data) < 64 or data[4:7] != b"\x02\x01\x01" or \
-                int.from_bytes(data[16:18], "little") not in (2, 3):
+                int.from_bytes(data[16:18], "little") not in (1, 2, 3):
             raise ValueError("unsupported or truncated loadable ELF header")
-        return "ELF", [cpu(int.from_bytes(data[18:20], "little"), {62: "x86_64", 183: "arm64"})]
+        architecture = cpu(int.from_bytes(data[18:20], "little"), {62: "x86_64", 183: "arm64"})
+        # CPython ships config/python.o. Like the closure audit, inventory only
+        # executables/shared objects, not valid nonloadable ET_REL inputs.
+        return None if int.from_bytes(data[16:18], "little") == 1 else ("ELF", [architecture])
     magic = data[:4]
     if magic in (b"\xcf\xfa\xed\xfe", b"\xfe\xed\xfa\xcf"):
         if len(data) < 32:

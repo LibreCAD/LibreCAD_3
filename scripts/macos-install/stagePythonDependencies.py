@@ -11,7 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
-from itertools import islice
+from itertools import chain, islice
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
@@ -25,6 +25,42 @@ from record_python_artifact import fingerprint
 SYSTEM_PREFIXES = ("/System/Library/", "/usr/lib/")
 LOAD_RE = re.compile(r"^\s*(.*?) \(compatibility version ")
 RPATH_RE = re.compile(r"^\s*path (.*?) \(offset ")
+
+
+def bottle_runtime_dependencies(keg: Path, entries, architecture: str, installed=False):
+    """Validate build/current tables separately; only current entries name kegs."""
+    required = {"full_name", "version", "revision", "pkg_version", "declared_directly"}
+    if not isinstance(entries, list) or len(entries) > 256:
+        raise ValueError("malformed Homebrew runtime dependency table")
+    result = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or not required <= entry.keys() or \
+                entry.keys() - required - {"bottle_rebuild", "compatibility_version"}:
+            raise ValueError("unknown or incomplete Homebrew runtime dependency fields")
+        name, version, revision = (entry[key] for key in ("full_name", "version", "revision"))
+        if not isinstance(name, str) or not re.fullmatch(r"[a-z0-9+_.@-]+", name) or name in (".", "..") or \
+                name in result or not isinstance(version, str) or not re.fullmatch(r"[A-Za-z0-9.+_-]{1,128}", version) or \
+                type(revision) is not int or revision < 0 or \
+                entry["pkg_version"] != version + ("_" + str(revision) if revision else "") or \
+                type(entry["declared_directly"]) is not bool or any(
+                    type(entry[key]) is not int or entry[key] < 0
+                    for key in ("bottle_rebuild", "compatibility_version") if key in entry):
+            raise ValueError("inconsistent Homebrew runtime dependency identity")
+        result[name] = entry
+        if installed:
+            selected = keg.parent.parent / name / entry["pkg_version"]
+            if selected.is_symlink() or selected.resolve(strict=True) != selected:
+                raise ValueError("selected Homebrew dependency keg is linked or escaped: " + str(selected))
+            receipt = unique_json(read_notice(selected / "INSTALL_RECEIPT.json"))
+            source = receipt.get("source", {}) if isinstance(receipt, dict) else {}
+            if not isinstance(receipt, dict) or not isinstance(source, dict) or \
+                    not isinstance(source.get("versions"), dict) or \
+                    receipt.get("built_as_bottle") is not True or receipt.get("poured_from_bottle") is not True or \
+                    receipt.get("arch") != architecture or source.get("tap") != "homebrew/core" or \
+                    source.get("versions", {}).get("stable") != version or \
+                    receipt.get("compatibility_version") != entry.get("compatibility_version"):
+                raise ValueError("selected Homebrew dependency receipt differs: " + str(selected))
+    return result
 
 
 def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
@@ -58,47 +94,88 @@ def cached_bottle_digest(keg: Path, receipt: dict, architecture: str) -> str:
             raise RuntimeError("selected Homebrew cached input filename is invalid: " + str(matches[0]))
         return matches[0]
 
-    manifest = cached_file("{}-{}.bottle_manifest.json".format(keg.parent.name, keg.name))
-    raw = read_notice(manifest, 4 * 1024 * 1024)
-    index = unique_json(raw)
-    annotations = index.get("annotations", {}) if isinstance(index, dict) else {}
-    expected = {"com.github.package.type": "homebrew_bottle", "org.opencontainers.image.vendor": "homebrew",
-                "org.opencontainers.image.title": keg.parent.name, "org.opencontainers.image.version": keg.name,
-                "org.opencontainers.image.ref.name": keg.name}
-    descriptors = index.get("manifests") if isinstance(index, dict) else None
-    if not isinstance(index, dict) or index.get("schemaVersion") != 2 or not isinstance(annotations, dict) or \
-            any(annotations.get(key) != value for key, value in expected.items()) or \
-            not isinstance(descriptors, list) or not 0 < len(descriptors) <= 256:
-        raise RuntimeError("selected Homebrew cached OCI identity differs: " + str(keg))
-    selected = []
-    for descriptor in descriptors:
-        if not isinstance(descriptor, dict) or not isinstance(descriptor.get("platform"), dict) or \
-                not isinstance(descriptor.get("annotations"), dict):
-            raise ValueError("malformed cached bottle descriptor")
-        platform, values = descriptor["platform"], descriptor["annotations"]
-        if platform.get("os") != "darwin" or platform.get("architecture") != \
-                {"arm64": "arm64", "x86_64": "amd64"}.get(architecture):
-            continue
-        tab_text = values.get("sh.brew.tab", "null")
-        if not isinstance(tab_text, str):
-            raise ValueError("malformed cached bottle build tab")
-        tab = unique_json(tab_text)
-        if canonical_json(tab) == canonical_json({key: receipt[key] for key in fields}):
-            selected.append(values)
+    # Homebrew's index uses version-R, its descriptor version.tag.R, and its
+    # archive version.tag.bottle.R.tar.gz. Check all retained rebuilds, never
+    # silently prefer the base bottle or guess a tag from the current host.
+    suffix = "{}-{}.bottle_manifest.json".format(keg.parent.name, keg.name)
+    candidates = list(islice(chain(downloads.glob("*--" + suffix), downloads.glob(
+        "*--{}-{}-[0-9]*.bottle_manifest.json".format(keg.parent.name, keg.name))), 257))
+    if not candidates:
+        cached_file(suffix)  # Retain precise absence diagnostics.
+    if len(candidates) > 256:
+        raise RuntimeError("selected Homebrew cached input is ambiguous: too many bottle manifests")
+    selected, differences, seen = [], set(), set()
+    optional = {"built_prefix", "padded_prefix", "linkage_files", "binary_relocation_files", "stdlib", "source"}
+    for manifest in candidates:
+        match = re.fullmatch(r"[0-9a-f]{64}--" + re.escape(keg.parent.name + "-" + keg.name) +
+                             r"(-[1-9][0-9]*)?\.bottle_manifest\.json", manifest.name)
+        if match is None:
+            raise RuntimeError("selected Homebrew cached input filename is invalid: " + str(manifest))
+        rebuild = match[1] or ""
+        if rebuild in seen:
+            raise RuntimeError("selected Homebrew cached input is ambiguous: {} (matches=2+, cache={})".format(
+                manifest.name[66:], downloads))
+        seen.add(rebuild)
+        raw = read_notice(manifest, 4 * 1024 * 1024)
+        index = unique_json(raw)
+        annotations = index.get("annotations", {}) if isinstance(index, dict) else {}
+        expected = {"com.github.package.type": "homebrew_bottle", "org.opencontainers.image.vendor": "homebrew",
+                    "org.opencontainers.image.title": keg.parent.name, "org.opencontainers.image.version": keg.name,
+                    "org.opencontainers.image.ref.name": keg.name + rebuild}
+        descriptors = index.get("manifests") if isinstance(index, dict) else None
+        if not isinstance(index, dict) or index.get("schemaVersion") != 2 or not isinstance(annotations, dict) or \
+                any(annotations.get(key) != value for key, value in expected.items()) or \
+                not isinstance(descriptors, list) or not 0 < len(descriptors) <= 256:
+            raise RuntimeError("selected Homebrew cached OCI identity differs: " + str(keg))
+        for descriptor in descriptors:
+            if not isinstance(descriptor, dict) or not isinstance(descriptor.get("platform"), dict) or \
+                    not isinstance(descriptor.get("annotations"), dict):
+                raise ValueError("malformed cached bottle descriptor")
+            platform, values = descriptor["platform"], descriptor["annotations"]
+            if platform.get("os") != "darwin" or platform.get("architecture") != \
+                    {"arm64": "arm64", "x86_64": "amd64"}.get(architecture):
+                continue
+            tab_text = values.get("sh.brew.tab", "null")
+            if not isinstance(tab_text, str):
+                raise ValueError("malformed cached bottle build tab")
+            tab = unique_json(tab_text)
+            if not isinstance(tab, dict) or not set(fields) <= tab.keys() or tab.keys() - set(fields) - optional:
+                differences.add("incomplete/unknown build fields")
+                continue
+            changed = {key for key in tab if key != "runtime_dependencies" and canonical_json(tab[key]) !=
+                       canonical_json({"scm_revision": source.get("scm_revision")} if key == "source" else receipt.get(key))}
+            try:
+                original_deps = bottle_runtime_dependencies(keg, tab["runtime_dependencies"], architecture)
+                current_deps = bottle_runtime_dependencies(keg, receipt["runtime_dependencies"], architecture,
+                    installed=canonical_json(tab["runtime_dependencies"]) != canonical_json(receipt["runtime_dependencies"]))
+                if original_deps.keys() != current_deps.keys() or any(
+                        dep["declared_directly"] != current_deps[name]["declared_directly"]
+                        for name, dep in original_deps.items() if name in current_deps):
+                    changed.add("runtime_dependencies names/declarations")
+            except (ValueError, OSError) as error:
+                changed.add("runtime_dependencies: " + str(error))
+            if changed:
+                differences.update(changed)
+                continue
+            selected.append((manifest, raw, values, rebuild, tab["runtime_dependencies"]))
     if len(selected) != 1:
-        raise RuntimeError("selected Homebrew cached bottle build fields are missing or ambiguous: " + str(keg))
-    values = selected[0]
+        raise RuntimeError("selected Homebrew cached bottle build fields are missing or ambiguous: {} (matches={}, differences={})".format(
+            keg, len(selected), "; ".join(sorted(differences)) or "none"))
+    manifest, raw, values, rebuild, original_deps = selected[0]
     reference, digest, size = (values.get(key, "") for key in
                               ("org.opencontainers.image.ref.name", "sh.brew.bottle.digest", "sh.brew.bottle.size"))
-    if not re.fullmatch(re.escape(keg.name) + r"\.[a-z0-9_]+", str(reference)) or \
+    ref = re.fullmatch(re.escape(keg.name) + r"\.([a-z0-9_]+)" + re.escape(rebuild.replace("-", ".")), str(reference))
+    if ref is None or \
             not re.fullmatch(r"[0-9a-f]{64}", str(digest)) or not re.fullmatch(r"[1-9][0-9]{0,9}", str(size)) or \
             not 0 < int(size) <= 2 * 1024 * 1024 * 1024:
         raise RuntimeError("selected Homebrew cached bottle input identity is malformed: " + str(keg))
-    archive = cached_file("{}--{}.bottle.tar.gz".format(keg.parent.name, reference))
+    archive = cached_file("{}--{}.{}.bottle{}.tar.gz".format(keg.parent.name, keg.name, ref[1], rebuild.replace("-", ".")))
     if archive.stat().st_size != int(size) or fingerprint(archive)["sha256"] != digest:
         raise RuntimeError("selected Homebrew cached bottle bytes differ: " + str(keg))
-    print("Verified cached Homebrew input: {} OCIsha256={} bottleSHA256={} bytes={}".format(
-        manifest.name, hashlib.sha256(raw).hexdigest(), digest, size))
+    print("Verified cached Homebrew input: {} OCIsha256={} bottleSHA256={} bytes={} buildDependenciesSHA256={} currentDependenciesSHA256={}".format(
+        manifest.name, hashlib.sha256(raw).hexdigest(), digest, size,
+        hashlib.sha256(canonical_json(original_deps)).hexdigest(),
+        hashlib.sha256(canonical_json(receipt["runtime_dependencies"])).hexdigest()))
     return digest
 
 

@@ -77,6 +77,24 @@ class NativeOriginTests(unittest.TestCase):
                 self.assertEqual(source.name, entry["source_path"])
                 self.assertFalse(Path(entry["path"]).is_absolute())
 
+    def test_nonloadable_elf_objects_are_not_part_of_runtime_origin_coverage(self):
+        _, manifest, _, _ = self.capture("appimage-x86_64")
+        data = bytearray(binary("ELF", "x86_64"))
+        data[16:18] = (1).to_bytes(2, "little")
+        (self.payload / "python.o").write_bytes(data)
+        self.assertIsNone(origins.native_header(data))
+        self.assertEqual((1, 1), origins.audit_native_origins(self.payload, manifest))
+        for kind in (0, 4):
+            data[16:18] = kind.to_bytes(2, "little")
+            with self.subTest(kind=kind), self.assertRaises(ValueError):
+                origins.native_header(data)
+        with self.assertRaises(ValueError):
+            origins.native_header(b"\x7fELF")
+        data[16:18] = (1).to_bytes(2, "little")
+        data[18:20] = (0xffff).to_bytes(2, "little")
+        with self.assertRaises(ValueError):
+            origins.native_header(data)
+
     def test_unknown_missing_and_tampered_native_payload_fail(self):
         _, manifest, _, destination = self.capture()
         destination.write_bytes(destination.read_bytes() + b"tampered")
@@ -323,6 +341,124 @@ class NativeOriginTests(unittest.TestCase):
                 self.assertIn("cached input is " + mutation + ":", str(error.exception))
                 self.assertIn("matches=" + count, str(error.exception))
                 self.assertIn(str(manifest.parent), str(error.exception))
+
+    def test_cached_bottle_optional_build_fields_must_match_the_selected_receipt(self):
+        source, keg, _, manifest, metadata, digest = self.cached_bottle()
+        receipt_file = keg / "INSTALL_RECEIPT.json"
+        receipt = json.loads(receipt_file.read_bytes())
+        receipt["stdlib"] = "libc++"
+        receipt_file.write_text(json.dumps(receipt))
+        tab = json.loads(metadata["manifests"][0]["annotations"]["sh.brew.tab"])
+        tab["stdlib"] = "libc++"
+        metadata["manifests"][0]["annotations"]["sh.brew.tab"] = json.dumps(tab)
+        manifest.write_text(json.dumps(metadata))
+        self.assertTrue(homebrew_origin(source, "arm64")[0]["revision"].endswith(digest))
+        tab["stdlib"] = "another stdlib"
+        metadata["manifests"][0]["annotations"]["sh.brew.tab"] = json.dumps(tab)
+        manifest.write_text(json.dumps(metadata))
+        with self.assertRaises(RuntimeError):
+            homebrew_origin(source, "arm64")
+        tab["stdlib"] = "libc++"
+        tab["unknown-build-field"] = "not ignored"
+        metadata["manifests"][0]["annotations"]["sh.brew.tab"] = json.dumps(tab)
+        manifest.write_text(json.dumps(metadata))
+        with self.assertRaises(RuntimeError):
+            homebrew_origin(source, "arm64")
+
+    def post_pour_fixture(self, suffix="updated"):
+        source, keg, archive, manifest, metadata, digest = self.cached_bottle(name="zstd-" + suffix)
+        _, dependency = self.keg("xz-" + suffix)
+        installed = dict(full_name=dependency.parent.name, version="1.2", revision=1,
+                         pkg_version="1.2_1", bottle_rebuild=2, declared_directly=True)
+        receipt = json.loads((keg / "INSTALL_RECEIPT.json").read_bytes())
+        receipt["runtime_dependencies"] = [installed]
+        (keg / "INSTALL_RECEIPT.json").write_text(json.dumps(receipt))
+        tab = json.loads(metadata["manifests"][0]["annotations"]["sh.brew.tab"])
+        tab["runtime_dependencies"] = [dict(installed, version="1.1", pkg_version="1.1_1", bottle_rebuild=1)]
+        metadata["manifests"][0]["annotations"]["sh.brew.tab"] = json.dumps(tab)
+        manifest.write_text(json.dumps(metadata))
+        return source, keg, dependency, manifest, metadata, digest
+
+    def test_post_pour_runtime_versions_are_verified_against_actual_selected_dependency_kegs(self):
+        source, _, _, _, _, digest = self.post_pour_fixture()
+        self.assertTrue(homebrew_origin(source, "arm64")[0]["revision"].endswith(digest))
+
+    def test_post_pour_dependency_changes_do_not_allow_unknown_or_inconsistent_inputs(self):
+        for mutation in ("name", "missing", "source-built", "architecture", "version", "duplicate",
+                         "pkg-version", "declaration", "unknown-field", "linked-keg", "malformed-source",
+                         "negative-rebuild", "bool-revision", "compatibility"):
+            with self.subTest(mutation=mutation):
+                source, keg, dependency, _, _, _ = self.post_pour_fixture(mutation)
+                file = keg / "INSTALL_RECEIPT.json"
+                receipt = json.loads(file.read_bytes())
+                dep = receipt["runtime_dependencies"][0]
+                dep_file = dependency / "INSTALL_RECEIPT.json"
+                dep_receipt = json.loads(dep_file.read_bytes())
+                if mutation == "name":
+                    dep["full_name"] = "another-package"
+                elif mutation == "missing":
+                    dep_file.unlink()
+                elif mutation == "source-built":
+                    dep_receipt["poured_from_bottle"] = False
+                elif mutation == "architecture":
+                    dep_receipt["arch"] = "x86_64"
+                elif mutation == "version":
+                    dep_receipt["source"]["versions"]["stable"] = "9.9"
+                elif mutation == "duplicate":
+                    receipt["runtime_dependencies"].append(dep)
+                elif mutation == "pkg-version":
+                    dep["pkg_version"] = "1.2_9"
+                elif mutation == "declaration":
+                    dep["declared_directly"] = False
+                elif mutation == "linked-keg":
+                    moved = self.root / "external dependency"
+                    dependency.rename(moved)
+                    dependency.symlink_to(moved, target_is_directory=True)
+                elif mutation == "malformed-source":
+                    dep_receipt["source"] = []
+                elif mutation == "negative-rebuild":
+                    dep["bottle_rebuild"] = -1
+                elif mutation == "bool-revision":
+                    dep["revision"] = True
+                elif mutation == "compatibility":
+                    dep["compatibility_version"] = 3
+                else:
+                    dep["unknown-field"] = "unverified"
+                file.write_text(json.dumps(receipt))
+                if mutation != "missing":
+                    dep_file.write_text(json.dumps(dep_receipt))
+                with self.assertRaises((RuntimeError, ValueError, OSError)):
+                    homebrew_origin(source, "arm64")
+
+    def test_cached_bottle_rebuild_names_bind_index_descriptor_and_archive(self):
+        for architecture, rebuild in (("arm64", 1), ("x86_64", 2)):
+            with self.subTest(architecture=architecture, rebuild=rebuild):
+                source, _, archive, manifest, metadata, digest = self.cached_bottle(architecture, "rebuilt-" + architecture)
+                metadata["annotations"]["org.opencontainers.image.ref.name"] += "-" + str(rebuild)
+                metadata["manifests"][0]["annotations"]["org.opencontainers.image.ref.name"] += "." + str(rebuild)
+                target = manifest.with_name(manifest.name.replace(".bottle_manifest", "-{}.bottle_manifest".format(rebuild)))
+                manifest.rename(target)
+                target.write_text(json.dumps(metadata))
+                archive.rename(archive.with_name(archive.name.replace(".bottle.tar", ".bottle.{}.tar".format(rebuild))))
+                self.assertTrue(homebrew_origin(source, architecture)[0]["revision"].endswith(digest))
+                metadata["manifests"][0]["annotations"]["org.opencontainers.image.ref.name"] += ".99"
+                target.write_text(json.dumps(metadata))
+                with self.assertRaises(RuntimeError):
+                    homebrew_origin(source, architecture)
+
+    def test_other_cached_pkg_versions_do_not_create_false_rebuild_ambiguity(self):
+        source, _, _, manifest, _, digest = self.cached_bottle()
+        shutil.copy2(manifest, manifest.with_name(manifest.name.replace("1.2_1", "1.2_10")))
+        self.assertTrue(homebrew_origin(source, "arm64")[0]["revision"].endswith(digest))
+
+    def test_multiple_matching_bottle_rebuilds_remain_ambiguous(self):
+        source, _, archive, manifest, metadata, _ = self.cached_bottle()
+        metadata["annotations"]["org.opencontainers.image.ref.name"] += "-1"
+        metadata["manifests"][0]["annotations"]["org.opencontainers.image.ref.name"] += ".1"
+        manifest.with_name(manifest.name.replace(".bottle_manifest", "-1.bottle_manifest")).write_text(json.dumps(metadata))
+        shutil.copy2(archive, archive.with_name(archive.name.replace(".bottle.tar", ".bottle.1.tar")))
+        with self.assertRaises(RuntimeError):
+            homebrew_origin(source, "arm64")
 
     def test_cached_bottle_provenance_fails_closed_on_missing_ambiguous_or_changed_inputs(self):
         for index, mutation in enumerate(("missing-archive", "tampered-archive", "linked-archive", "duplicate-archive",
