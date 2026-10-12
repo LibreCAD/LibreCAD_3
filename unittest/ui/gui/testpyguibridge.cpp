@@ -35,6 +35,7 @@
 #include <QListWidget>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QAbstractButton>
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QTemporaryDir>
@@ -97,11 +98,22 @@ struct OpenDialogDriver {
     bool selected = false;
     bool timedOut = false;
     int messages = 0;
+    int ticks = 0;
+    std::string lastModalKind;
     explicit OpenDialogDriver(QString path = {}) {
         QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, true);
         elapsed.start();
+        std::cerr << "OpenDialogDriver begin: " << path.toUtf8().constData() << std::endl;
         QObject::connect(&timer, &QTimer::timeout, [this, path] {
+            ++ticks;
             auto* modal = QApplication::activeModalWidget();
+            const std::string kind = modal ? modal->metaObject()->className() : "<none>";
+            if (kind != lastModalKind) {
+                std::cerr << "OpenDialogDriver modal=" << kind << " elapsed=" << elapsed.elapsed()
+                          << " native-disabled=" << QApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
+                          << std::endl;
+                lastModalKind = kind;
+            }
             if (auto* dialog = qobject_cast<QFileDialog*>(modal)) {
                 selected = true;
                 if (path.isEmpty()) dialog->reject();
@@ -114,9 +126,21 @@ struct OpenDialogDriver {
                 }
             } else if (auto* message = qobject_cast<QMessageBox*>(modal)) {
                 ++messages;
-                message->accept();
+                // A generic QDialog result is not a QMessageBox acknowledgment.
+                auto* button = message->button(QMessageBox::Ok);
+                EXPECT_NE(button, nullptr);
+                if (button) button->click();
+                else message->reject();
             }
             if (elapsed.elapsed() > 5000) {
+                if (!timedOut) {
+                    std::cerr << "OpenDialogDriver deadline: modal=" << kind << " ticks=" << ticks
+                              << " messages=" << messages << std::endl;
+                    for (auto* widget : QApplication::topLevelWidgets())
+                        std::cerr << "  top-level " << widget->metaObject()->className()
+                                  << " visible=" << widget->isVisible() << " modal=" << widget->isModal()
+                                  << std::endl;
+                }
                 timedOut = true;
                 if (auto* dialog = qobject_cast<QDialog*>(modal)) dialog->reject();
             }
@@ -125,11 +149,25 @@ struct OpenDialogDriver {
     }
     ~OpenDialogDriver() {
         timer.stop();
+        std::cerr << "OpenDialogDriver end: selected=" << selected << " messages=" << messages
+                  << " ticks=" << ticks << " timed-out=" << timedOut << std::endl;
         QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, previous);
     }
 };
 
 } // namespace
+
+TEST(PyGuiBridgeTest, DialogDriverAcknowledgesOpenErrorsWithTheActualButton) {
+    ensureUiApplication();
+    for (auto icon : {QMessageBox::Critical, QMessageBox::Warning, QMessageBox::Information}) {
+        OpenDialogDriver driver;
+        QMessageBox message(icon, "Open error", "Malformed drawing diagnostic", QMessageBox::Ok);
+        EXPECT_EQ(message.exec(), int(QMessageBox::Ok));
+        EXPECT_EQ(message.clickedButton(), message.button(QMessageBox::Ok));
+        EXPECT_EQ(driver.messages, 1);
+        EXPECT_FALSE(driver.timedOut);
+    }
+}
 
 TEST(PyGuiBridgeTest, DocumentReplacementCancelsOperationAndIsolatesStorage) {
     ensureUiApplication();
