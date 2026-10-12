@@ -208,6 +208,20 @@ def collect(archive, url, sha256, provider, output, patches=(), metadata=(), ext
         raise ValueError("source provider collection exceeds limits")
     manifest["files"] = [dict(path="notices/" + name, sha256=hashlib.sha256(data).hexdigest(),
                               size_bytes=len(data)) for name, data in sorted(notices.items())]
+    return publish_collection(output, manifest, payload)
+
+
+def publish_collection(output, manifest, payload):
+    """Publish one audited, content-addressed collection; no provenance inference."""
+    output = Path(output)
+    if not payload or len(payload) > MAX_FILES or any(not isinstance(data, bytes) or
+            not 0 < len(data) <= MAX_FILE_BYTES for data in payload.values()) or \
+            sum(map(len, payload.values())) > MAX_TOTAL_BYTES:
+        raise ValueError("provider collection payload is empty or exceeds limits")
+    for name in payload:
+        notice_path(name)
+        if not name.startswith(("notices/", "provenance/")):
+            raise ValueError("provider collection payload is misclassified")
     raw = canonical_json(manifest)
     key = hashlib.sha256(raw).hexdigest()
     if output.is_symlink():

@@ -46,6 +46,17 @@ def unique_json(data, repeated=(), **kwargs):
 
 
 def source_identity(value):
+    if isinstance(value, dict) and value.get("kind") == "dpkg-installed":
+        fields = {"kind", "package", "version", "architecture", "source_package", "source_version", "sha256", "size_bytes"}
+        if set(value) != fields or not re.fullmatch(r"[a-z0-9][a-z0-9+.-]*(?::(?:amd64|arm64))?", str(value.get("package"))) or \
+                not re.fullmatch(r"[a-z0-9][a-z0-9+.-]*", str(value.get("source_package"))) or \
+                value.get("architecture") not in ("x86_64", "arm64") or any(
+                    not isinstance(value.get(key), str) or not re.fullmatch(r"[A-Za-z0-9.+:~_-]{1,256}", value[key])
+                    for key in ("version", "source_version")) or \
+                not re.fullmatch(r"[0-9a-f]{64}", str(value.get("sha256"))) or \
+                type(value.get("size_bytes")) is not int or not 0 < value["size_bytes"] <= MAX_FILE_BYTES:
+            raise ValueError("installed dpkg provenance is incomplete")
+        return
     if not isinstance(value, dict) or not isinstance(value.get("url"), str):
         raise ValueError("source provenance is missing")
     url = urlsplit(value["url"])
@@ -141,6 +152,41 @@ def audit_source_provider_notices(directory):
             raise ValueError("source provider notice tree contains a special file")
     if actual != expected:
         raise ValueError("source provider notice inventory differs from installed files")
+    source = manifest["source"]
+    if source.get("kind") == "dpkg-installed":
+        metadata = read_notice(root / "provenance/dpkg-query.json")
+        record = unique_json(metadata)
+        selected = record.get("selected", {}) if isinstance(record, dict) else {}
+        provider = dict(name=source["package"], version=source["version"], architecture=source["architecture"],
+                        revision="dpkg:{}:{}".format(source["source_package"], source["source_version"]))
+        if hashlib.sha256(metadata).hexdigest() != source["sha256"] or len(metadata) != source["size_bytes"] or \
+                metadata != canonical_json(record) or manifest["provider"] != provider or not isinstance(selected, dict) or \
+                any(selected.get(key) != source[key] for key in ("package", "version", "source_package", "source_version")) or \
+                {"amd64": "x86_64", "arm64": "arm64"}.get(selected.get("architecture")) != source["architecture"] or \
+                selected.get("status") not in ("install ok installed", "hold ok installed") or \
+                not isinstance(record.get("inputs"), dict) or set(record["inputs"]) != {item["path"] for item in files} or \
+                not isinstance(record.get("packages"), dict) or not 0 < len(record["packages"]) <= 128 or \
+                record["packages"].get(source["package"]) != selected:
+            raise ValueError("installed dpkg notice provenance/provider differs")
+        owned = {}
+        for name, package in record["packages"].items():
+            if not isinstance(package, dict) or name != package.get("package") or \
+                    package.get("status") not in ("install ok installed", "hold ok installed") or \
+                    not isinstance(package.get("md5sums"), str) or package.get("show") != "\t".join(
+                        str(package.get(key, "")) for key in ("package", "version", "architecture", "status", "source_package", "source_version")) + "\n":
+                raise ValueError("installed dpkg query/control metadata differs")
+            seen = set()
+            for line in package["md5sums"].splitlines():
+                match = re.fullmatch(r"([0-9a-f]{32})  (.+)", line)
+                if match is None or match[2] in seen:
+                    raise ValueError("installed dpkg control checksums are malformed or duplicated")
+                notice_path(match[2])
+                seen.add(match[2])
+                owned.setdefault("notices/" + match[2], []).append(match[1])
+        for name, checksum in record["inputs"].items():
+            if owned.get(name) != [checksum] or not re.fullmatch(r"[0-9a-f]{32}", str(checksum)) or \
+                    hashlib.md5(read_notice(root / name), usedforsecurity=False).hexdigest() != checksum:
+                raise ValueError("original dpkg notice checksum differs: " + name)
     return manifest["provider"]["name"], len(files)
 
 
