@@ -114,6 +114,19 @@ if(DEFINED LIBRECAD_DEPENDENCY_LICENSE_DIR)
         DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/conan")
 endif()
 # END Conan provider notices
+# BEGIN source provider notices
+# Optional until each platform supplies complete native origin/coverage records.
+# Collections must retain their content-addressed basename for the runtime audit.
+set(LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS "" CACHE STRING
+    "Verified original source-provider notice collections selected by packaging")
+foreach(_lc_provider_notices IN LISTS LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS)
+    if(NOT EXISTS "${_lc_provider_notices}/manifest.json")
+        message(FATAL_ERROR "Selected source-provider notice manifest is missing")
+    endif()
+    install(DIRECTORY "${_lc_provider_notices}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/external")
+endforeach()
+# END source provider notices
 if(MSVC)
     # CMake's runtime dependency set is used by the Windows install/NSIS path
     # to collect Conan, Qt, and CPython DLL dependencies recursively.

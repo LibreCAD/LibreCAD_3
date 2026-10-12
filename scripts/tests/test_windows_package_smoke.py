@@ -406,6 +406,8 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
             ("dialogs/addlayerdialog.h", "AddLayerDialog"),
             ("widgets/layermodel.h", "LayerModel"),
             ("widgets/linepatternpathpart.h", "LinePatternPathPart"),
+            ("cadmdichild.h", "CadMdiChild"),
+            ("lcadpaperviewer.h", "LCADPaperViewer"),
             ("windowmanager.h", "WindowManager"),
         ):
             with self.subTest(name=name):

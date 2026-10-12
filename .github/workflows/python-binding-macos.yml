@@ -121,7 +121,18 @@ jobs:
 
       - name: Install LibreCAD
         shell: bash
-        run: cmake --install build
+        run: |
+          set -euo pipefail
+          cmake --install build 2>&1 | tee build/macos-install.log
+          poison=/__librecad_python_environment_must_not_be_used__
+          cd "$RUNNER_TEMP"
+          env QT_QPA_PLATFORM=offscreen \
+            PYTHONHOME="$poison" PYTHONPATH="$poison" \
+            QT_PLUGIN_PATH="$poison" DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
+            LIBRECAD_SETTINGS_DIR="$RUNNER_TEMP/LibreCAD installed settings Ω" \
+            "$RUNNER_TEMP/LibreCAD install Ω/bin/librecad" --python-smoke \
+            2>&1 | tee "$GITHUB_WORKSPACE/build/macos-installed-smoke.log"
 
       - name: Create and smoke the relocated app bundle
         shell: bash
@@ -138,6 +149,7 @@ jobs:
             PYTHONPATH="$poison" \
             QT_PLUGIN_PATH="$poison" \
             DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
             LIBRECAD_SETTINGS_DIR="$settings" \
             "$app/Contents/MacOS/librecad" --python-smoke 2>&1 | tee build/macos-smoke.log
           ditto "$app" "$relocated_app"
@@ -147,6 +159,7 @@ jobs:
             PYTHONPATH="$poison" \
             QT_PLUGIN_PATH="$poison" \
             DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
             LIBRECAD_SETTINGS_DIR="$settings" \
             "$relocated_app/Contents/MacOS/librecad" --python-smoke 2>&1 | tee build/macos-relocated-smoke.log
 
@@ -167,6 +180,7 @@ jobs:
           env QT_QPA_PLATFORM=offscreen \
             PYTHONHOME="$poison" PYTHONPATH="$poison" \
             QT_PLUGIN_PATH="$poison" DYLD_LIBRARY_PATH="$poison" \
+            LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
             LIBRECAD_SETTINGS_DIR="$RUNNER_TEMP/LibreCAD archive settings Ω" \
             "$extracted/LibreCAD.app/Contents/MacOS/librecad" --python-smoke \
             2>&1 | tee build/macos-archive-smoke.log
@@ -184,6 +198,9 @@ jobs:
             --platform macos-${{ matrix.arch }} --revision "$(git rev-parse HEAD)" \
             --evidence build/macos-artifact-identity.txt \
             --evidence build/macos-archive-smoke.log \
+            --evidence build/macos-installed-smoke.log \
+            --evidence build/macos-smoke.log \
+            --evidence build/macos-relocated-smoke.log \
             --evidence build/python-required-tests.log \
             --evidence build/lua-required-tests.log \
             --output build/macos-artifact-identity.json

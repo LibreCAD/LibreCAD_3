@@ -1,4 +1,5 @@
 #pragma once
+#include "lcui_api.h"
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
@@ -28,7 +29,7 @@ extern "C"
 
 namespace lc {
 namespace ui {
-class CadMdiChild : public QWidget {
+class LC_UI_API CadMdiChild : public QWidget {
     Q_OBJECT
 
 public:

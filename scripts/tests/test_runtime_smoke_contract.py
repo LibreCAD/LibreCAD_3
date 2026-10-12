@@ -41,10 +41,12 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         cls.windows_check = textwrap.dedent(windows_body)
         linux_body = strict_check.split(
             'if sys.platform.startswith("linux"):', 1
-        )[1].split('    elif sys.platform == "win32":', 1)[0]
+        )[1].split('\n    elif ', 1)[0]
         cls.linux_check = "if sys.platform.startswith('linux'):\n" + textwrap.indent(
             textwrap.dedent(linux_body), "    "
         )
+        cls.macos_check = textwrap.dedent(strict_check.split(
+            'elif sys.platform == "darwin":', 1)[1].split('\n    elif ', 1)[0])
         cls.workflow = (REPOSITORY_ROOT / ".github/workflows/main.yml").read_text(
             encoding="utf-8"
         )
@@ -97,6 +99,20 @@ class RuntimeSmokeContractTests(unittest.TestCase):
             strict_check,
         )
         self.assertIn("is_relative_to(_expected_runtime_dir)", strict_check)
+
+    def test_actual_macos_smoke_branch_checks_installed_and_bundle_images(self):
+        for staged, relative in (("share/librecad/python", "lib"),
+                                 ("Contents/Resources/librecad/python", "Contents/Frameworks")):
+            with self.subTest(staged=staged), patch.object(runtimeaudit, "audit_macos_runtime",
+                                                         return_value="loaded/libpython.dylib") as check:
+                root = Path("/private/tmp/LibreCAD origin Ω").resolve()
+                namespace = dict(pathlib=pathlib, expected_staged_python_root=str(root / staged))
+                exec(self.macos_check, namespace)
+                check.assert_called_once_with(root / relative)
+                self.assertIn("loaded/libpython.dylib", namespace["_macos_diagnostics"])
+                check.side_effect = RuntimeError("external Python image")
+                with self.assertRaisesRegex(RuntimeError, "external Python image"):
+                    exec(self.macos_check, namespace)
 
     def _run_windows_check(self, loaded_dll_path, require_extension_closure=False):
         requested_modules = []

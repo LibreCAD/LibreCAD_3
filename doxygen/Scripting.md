@@ -175,6 +175,43 @@ Persistence/libdxfrw, CLI and pybind11 notices follow their build feature flags.
 This does not complete notices for external prebuilt binary providers or
 establish complete release-license compliance; that gate remains open.
 
+When a selected prebuilt provider omits its notices, packaging can collect the
+original bytes from its exact checksummed source archive without building it:
+
+```sh
+python3 scripts/collect_provider_notices.py \
+  --archive "$archive" --url "$official_url" --sha256 "$selected_source_sha256" \
+  --name "$provider" --version "$version" --revision "$binary_provider_revision" \
+  --architecture "$architecture" --output "$notice_output"
+```
+
+Pins and identity must come from the selected binary provider, not another
+installation. Supply each recorded patch with `--patch PATH URL SHA256` and
+retain original selection receipts/SBOMs with repeated `--metadata PATH`.
+The collector does not download or execute source. It verifies the archive
+before parsing, bounds tar/zip expansion and notice sizes, rejects linked,
+unsafe or aliased paths, and preserves notice/attribution bytes and paths.
+Qt attribution [LicenseFile, LicenseFiles and CopyrightFile references](https://wiki.qt.io/Qt_attribution.json)
+are followed, including notices with nonstandard filenames. Missing references
+fail; SPDX identifiers are not converted into substitute license text.
+
+The command prints a content-addressed collection directory. Pass one or more
+such directories in CMake's `LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS` list;
+they install under `licenses/providers/external`. `--python-smoke` verifies
+every present collection's identity, exact bytes and file inventory without
+the source archive or SDK. `LIBRECAD_REQUIRE_PROVIDER_NOTICES=1` also rejects
+an absent/empty collection tree. This validates collected notice bytes only:
+the hook is optional until packaging captures every unmodified native binary's
+selected provider and final path on all platforms. A valid Qt collection alone
+does not prove complete native-provider coverage, redistribution/source-offer
+obligations, or protected release qualification.
+
+On macOS, `LIBRECAD_REQUIRE_BUNDLED_PYTHON=1` also checks the Mach-O image
+actually providing `Py_GetVersion` using the system `dladdr` API. It must be
+inside the installed prefix's `lib` or the app's `Contents/Frameworks`, not a
+build SDK or another Python installation. Native closure/signature checks and
+extension initialization remain separate requirements.
+
 Windows Conan builds select prebuilt shared Lua so states crossing the UI,
 binding and executable DLLs use one core. Lua 5.3's
 [version check](https://www.lua.org/source/5.3/lauxlib.c.html#luaL_checkversion_)

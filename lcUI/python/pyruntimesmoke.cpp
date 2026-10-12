@@ -134,6 +134,7 @@ for _module in (
     assert _origin.is_relative_to(_prefix), \
         f"{_module.__name__} loaded from {_origin}, outside Python prefix {_prefix}"
 _windows_diagnostics = ""
+_macos_diagnostics = ""
 if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
     assert expected_staged_python_root, \
         "cannot verify packaged libpython without an expected staged Python runtime"
@@ -177,6 +178,12 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
                 assert not _external_dependency_paths, \
                     f"Python extension dependency {_dependency_name} loaded outside the packaged usr tree " \
                     f"{_package_usr}: {_external_dependency_paths}"
+    elif sys.platform == "darwin":
+        from lcUIPy._runtimeaudit import audit_macos_runtime
+        _macos_package_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
+        _macos_runtime_dir = _macos_package_root / (
+            "Frameworks" if _macos_package_root.name == "Contents" else "lib")
+        _macos_diagnostics = f"; Mach-O CPython origin: {audit_macos_runtime(_macos_runtime_dir)}"
     elif sys.platform == "win32":
         _kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
         _get_module_handle = _kernel32.GetModuleHandleW
@@ -220,6 +227,18 @@ if os.environ.get("LIBRECAD_REQUIRE_CONAN_NOTICES") == "1":
     _provider_count, _notice_count = audit_conan_notices(_notice_root)
     _notice_diagnostics = f"; Conan provider notices: {_provider_count} providers, {_notice_count} files"
 # END required Conan notices
+# BEGIN original source-provider notices
+_source_notice_diagnostics = ""
+_source_notice_root = _package_root.parent / "licenses/providers/external"
+if _source_notice_root.exists() or _source_notice_root.is_symlink() or \
+        os.environ.get("LIBRECAD_REQUIRE_PROVIDER_NOTICES") == "1":
+    from lcUIPy._providernotices import audit_source_provider_tree
+    assert _source_notice_root.resolve().is_relative_to(_package_root.parent), \
+        "Source-provider notices escape the installed data directory"
+    _source_providers, _source_files = audit_source_provider_tree(_source_notice_root)
+    _source_notice_diagnostics = \
+        f"; collected source-provider notices: {_source_providers} providers, {_source_files} files"
+# END original source-provider notices
 _elf_diagnostics = ""
 if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":
     assert sys.platform.startswith("linux") and expected_staged_python_root and \
@@ -248,7 +267,7 @@ import lcgui
 assert hasattr(lcgui, 'MainWindow'), "embedded lcgui module lacks MainWindow"
 runtime_diagnostics = (
     f"Python runtime: version={sys.version.split()[0]}, prefix={sys.prefix}; "
-    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}{_notice_diagnostics}{_native_diagnostics}"
+    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}{_macos_diagnostics}{_notice_diagnostics}{_source_notice_diagnostics}{_native_diagnostics}"
 )
 )py";
         const std::string importError = python.runString(importsAndProviderCheck.c_str(), ns);

@@ -9,6 +9,34 @@ import subprocess
 import time
 
 
+def audit_macos_runtime(runtime_directory):
+    """Find the Mach-O image actually providing this interpreter's C API."""
+    import sys
+    if sys.platform != "darwin":
+        raise RuntimeError("Mach-O Python origin audit requires macOS")
+    if Path(runtime_directory).is_symlink():
+        raise RuntimeError("packaged Mach-O runtime directory is linked")
+    root = Path(runtime_directory).resolve(strict=True)
+    if not root.is_dir():
+        raise RuntimeError("packaged Mach-O runtime directory is missing")
+
+    class DlInfo(ctypes.Structure):
+        _fields_ = [("dli_fname", ctypes.c_char_p), ("dli_fbase", ctypes.c_void_p),
+                    ("dli_sname", ctypes.c_char_p), ("dli_saddr", ctypes.c_void_p)]
+
+    dladdr = ctypes.CDLL(None).dladdr
+    dladdr.argtypes = (ctypes.c_void_p, ctypes.POINTER(DlInfo))
+    dladdr.restype = ctypes.c_int
+    info = DlInfo()
+    if not dladdr(ctypes.cast(ctypes.pythonapi.Py_GetVersion, ctypes.c_void_p), ctypes.byref(info)) or \
+            not info.dli_fname:
+        raise RuntimeError("could not resolve the loaded CPython Mach-O image")
+    loaded = Path(os.fsdecode(info.dli_fname)).resolve(strict=True)
+    if not loaded.is_file() or not loaded.is_relative_to(root):
+        raise RuntimeError("CPython loaded outside the packaged Mach-O runtime directory: " + str(loaded))
+    return loaded
+
+
 def audit_python_extensions(python_root, timeout_seconds=60):
     """Initialize every staged extension, verifying its configured import origin.
 
