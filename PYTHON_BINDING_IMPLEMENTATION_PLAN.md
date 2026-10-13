@@ -17,7 +17,32 @@ complete-candidate `--worktree`; at PR handoff, also check the tracked diff with
 `--base-ref <actual-base>`. Record each result or blocker in the newest receipt.
 These checks prove plan synchronization, not product behavior.
 
-**Current correction (2026-10-12):** retained red tests reproduce eight valid
+Reading order: the master-alignment review in section 3, S5's dependency contract,
+and the work/platform ledgers are the current requirements. Dated checkpoints
+and prior review receipts retain their original revision scope; their use of
+“current”, “next”, or “queued” is historical unless reaffirmed in the newest
+receipt. A plan-only review does not rebase source, advance a gitlink, or qualify
+an artifact.
+
+**Latest master pin (2026-10-12 local / 2026-10-13 UTC):** this requested PR
+update advances the committed libdxfrw gitlink from
+`ceaf64143010626e393d956c62fb4b47f0d4be26` to fetched standalone `origin/master`
+HEAD `d68fb1ed937ad2a74a54f6208277ec10a1b031b0`. Its parent `8bdaf90b` merged
+PR #103; the only tracked difference from the previously tested local `9b268562`
+checkpoint is eight README lines from PR #104. Full trees differ (`bb8324b1`
+versus `bc0530a7`), but the strict 244-input implementation digest remains
+`45690883cb101663b384d1ca952e622ecfa05e4b03f077e5df36feb1effa0f7e`.
+UTF-8 and ATTRIB/ATTDEF fixes are upstream; do not reapply them. Exact-head
+push `38326096296` passes all three focused native jobs; broad/fuzz are skipped.
+Only the gitlink and this synchronized plan belong to this publication slice.
+The six unrelated dirty source/workflow/test paths remain local and unstaged.
+The user authorized publishing this pin, not choosing D1's radius policy or
+bundling those unfinished changes. Full/broad consumer, notice and release
+gates stay open; retained test failures are not waived. A fresh isolated
+committed-main24e1+d68 headless build passes; all six persistence suites execute
+95 tests, 94 pass, zero skips, with the same D1 recovery-policy failure.
+
+**Historical provider correction (2026-10-12):** retained red tests reproduce eight valid
 post-pour table rejections across ARM64/x86_64 and one ambiguous diagnostic.
 Authoritative Homebrew source regenerates the entire runtime dependency table,
 including names and direct-declaration flags. The previous receipt-edge policy
@@ -94,9 +119,27 @@ installed contexts; a read-only selected-original capture records368 candidates/
 Archive5388360b remains the earlier frozen legacy artifact, not guard-head proof.
 Published source-only guard a286a65ec8f12629c161fcf8b8cbbaa901465f02 byte-matches
 that frozen source; PR445 head/base/title/OPEN/draft/body and attachment verify.
-New Mac38261206935/main38261206936/PLAN38261206945/CodeQL38261206933 queued.
-Now address the portable nested-warning driver
-and exact Unicode export path before native Windows/provider/NSIS qualification.
+Those guard-head CI handles remain independently scoped.
+
+**Portable dialog follow-up (2026-10-12):** published
+24e1d5c7d5a0281e8b7f36b1b8232a570a0c23eb exact2 paths byte-matches
+parenta286 plus test-only diff236b64684284a436d217a32b3a536521cbacdb6ab68218190f1803739c66ec76.
+Retained real missing-file15s red; queued acceptance once now acknowledges the
+actual nested warning and preserves the existing5s driver deadline. Focused3,
+exact unchanged Windows mixed177/21 suites on Mac, full472/80/no-skips on Mac
+offscreen/Cocoa/native-ARM Linux and265 scripts/no skips/real Conan PASS.
+Exact Qt Unicode export-path existence/reopen PASS portably, not native Windows.
+PR445 full head/base/title/OPEN/draft/body bytes and attachment verify.
+New main38263345398/Windows114859210402 and Mac38263345426/ARM114859210289/
+Intel114859210018 queued; PLAN38263345428/CodeQL38263345455 queued. No restart.
+Next native UTF8/readers/atomic target+temporary/sniff/symlink boundary proof,
+then native Windows/NSIS and all-five producer/provider acceptance. Dependency
+PR103's advanced97a8bdba is preserved as the parent of the published UTF8
+checkpoint9b2685620ebda2f4a70c2042177be32b6abbe1c0; the project candidate now
+pins that checkpoint for consumer qualification, not acceptance. Oldceaf proof
+is not relabeled. The full
+goal remains active, including all-provider notices/API/modules/legal/protected
+release requirements; no platform or release gate is promoted.
 
 **Revision boundary (2026-10-11):** this isolated worktree contains the committed
 candidate, based on `origin/master` at
@@ -360,6 +403,134 @@ complete maintained-plugin lifecycle and module/delay-load behavior; broad
 libdxfrw qualification without rewriting frozen evidence; and protected release
 signing/required-check enforcement. The dated diagnostic checkpoints below are
 historical, retaining failures superseded by later receipts, not fresh diagnoses.
+
+### Master-alignment and completeness review (2026-10-12)
+
+The dependency foundation is **standalone `LibreCAD/libdxfrw:origin/master`**,
+explicitly refreshed at `d68fb1ed937ad2a74a54f6208277ec10a1b031b0`, not a fresh
+import of LibreCAD 2's bundled library. This incorporates the already-converged
+3D/FreeCAD master `a05e4f0d` and merged
+[PR #103](https://github.com/LibreCAD/libdxfrw/pull/103). Its ATTRIB/ATTDEF and
+UTF-8 fixes are **now in master**. The clean project dependency checkout now
+selects the full `d68fb1ed937ad2a74a54f6208277ec10a1b031b0` SHA, not a floating
+branch. Squashed master8bd and earlier checkpoint9b have identical tracked tree
+`bc0530a78432fcd4a0fde6cdd33eebebdf442a9c`; latest masterd68 adds only README
+documentation and has tree `bb8324b1d99e12e38b054d2692dbcc8632f4fd7d`.
+History is master-only2/checkpoint-only5, not missing implementation. No
+re-import, cherry-pick or re-merge is needed. Earlier a05/8bd reviews retain
+their historical scope.
+This bounded publication is parent `24e1d5c7` on actual PR base `f972953`, plus
+the gitlink and accumulated synchronized plan. The six pending source/workflow/
+test paths are preserved unstaged with binary diff SHA
+`e2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038`
+(excluding plan and gitlink). The older `d2d9cffe` freeze included gitlink9b;
+do not relabel it as the new-pin source or as this two-path publication.
+
+Review corrections and implementation-ready order:
+
+| Packet / gates | Smallest implementation boundary | Acceptance and negative control |
+|---|---|---|
+| D0 / S0, S1, S5, PLAN-SYNC | Freeze fetched master, exact candidate, main base/HEAD/gitlink and dependency diff separately; local proof may use an exact retained parent+diff, not an unidentified dirty tree. Keep CMake 3.28/C++17 floors and existing prebuilt-provider policy; no new clone/build resolver. | Verify ancestry/source identity before each batch; reject unrecorded changes, incompatible toolchains and mismatched gitlinks. A moved master requires delta review, not automatic invalidation of unchanged pinned-source evidence. Stale only affected proof when selected inputs/requirements change; never silently substitute a floating branch. |
+| D1 / S5, S7 | Resolve strict rejection versus explicitly tolerant recovery for malformed ARC/CIRCLE before changing the old regression. Reuse ImportResult, DocumentSource and existing parser boundaries. This review does not choose the policy. | Generate ASCII/binary cases with valid records before/after invalid records; check diagnostics, delivered count, `ok`, `partial`, and unchanged source bytes. Strict mode must stop without publishing invalid geometry; tolerant mode must report the skipped record and prove later valid delivery. Both must prevent silent lossy overwrite. Missing required fields/non-finite values remain negative cases. |
+| D2 / S2, S4, S5 | Exercise the existing Python/Lua result bindings and real GUI import/save paths; no duplicate persistence facade. Preserve `ext=true` in the existing 2D adapter. | Require typed diagnostics/loss/variant identity, ATTRIB plus ATTDEF behavior, all 14 DXF variants, custom-entity reconstruction/parity, cancellation/error document identity and save policy. Copy borrowed callback data before return. `ext=false` 3D data delivery, opaque SAB retention and FreeCAD examples do not establish LibreCAD 3D editing or general DWG support. |
+| D3 / S1, S5, S7, all source platforms | Execute the ON/OFF consumer matrix below on the exact selected gitlink, using existing required-test runner and prebuilt dependencies. | Full required suites must discover and execute with zero skips; keep original failure logs. Focused Unicode/DWG success, a compile-only job, dependency-only CTest, or an older-pin full suite cannot replace this gate. |
+| D4 / S5, S7 | Repair the baseline fixture-admission schema mismatch in a separate reviewed follow-up based on selected masterd68, not by amending/reopening merged PR103. Then reconcile current-digest receipts and broad qualification without altering archived evidence. | Actual checked-in registry plus positive/negative payload/alias/archive controls must pass, not only a synthetic self-test. Require exact digest, checkout/event, run/job/attempt/platform, test inventory, artifact bytes and API join. PR merge receipts must not be relabeled as branch-head receipts. Broad and fuzz jobs skipped by focused workflow selection are not executed coverage. |
+| D5 / S3, S6, S7, all package platforms, DOC | Rebuild AppImage, own-root Snap, NSIS and both Mac bundles from the final selected source. Extend existing origin/notice adapters and package smokes; do not add a dependency builder or second loader. | Each final inner artifact needs its own SHA/revision/provider inventory, original/final native-byte joins, every redistributed provider's original notices, clean/relocated runtime and maintained-plugin/API/module checks. Parent-head artifacts, emulation, metadata consistency and ad-hoc signatures cannot satisfy native/protected release requirements. |
+
+Dependencies are D0 → D1/D2 → D3 → D5; D4 can proceed independently but remains
+a dependency/release acceptance gate. Provider-origin and notice work may also
+continue independently of D1. Keep changes compact: one focused regression and
+minimal existing-boundary repair per behavior, shared ledgers/runner/adapters,
+and no fresh general framework or migration of already-integrated master code.
+
+Current evidence, checked directly from GitHub on this review:
+
+- Latest master push `38326096296` at `d68fb1e` is terminal SUCCESS: workflow
+  contract `115064996123`, Mac `115065035392`, Linux `115065035394`, and
+  Windows `115065035404`. Broad/fuzz are selection-skipped. Strict digest
+  checking on the clean selected submodule passes with the unchanged digest
+  below and zero accepted native/broad receipt references. Its README-only
+  delta does not manufacture new main-project or final-artifact qualification.
+- Earlier master push `38309528576` at `8bdaf90b` is terminal SUCCESS: workflow
+  contract `115011579396`, Mac `115013118386`, Windows `115013118545`, and
+  Linux `115013118635`. Broad/fuzz remain selection-skipped. The merged tree's
+  implementation digest remains `45690883cb101663b384d1ca952e622ecfa05e4b03f077e5df36feb1effa0f7e`
+  over 244 inputs; native and broad receipt-reference arrays remain empty.
+  This is historical parent CI evidence, not a completed artifact/API join.
+- Dependency push `38269988696` and PR `38269995258` at `9b268562` are terminal
+  SUCCESS for workflow contract and all three focused native jobs. Broad/fuzz
+  are selection-skipped. The mutable status accepts zero receipts; the retained
+  Windows PR-merge artifact verification is not the completed three-platform
+  live acceptance join. Prefer exact-head push evidence for that join.
+- Main run `38263345398` at published `24e1d5c7` is terminal FAILURE: Windows
+  fails the two recorded Unicode/reopen tests; Linux, ARM, sanitizer and the
+  old compile-only persistence lane succeed. Mac run `38263345426` succeeds
+  on both architectures. These are parent-head results, not this candidate's
+  updated gitlink/headless job or final artifact acceptance.
+- Retained local latest-pin full Qt/Python-ON, DWG-OFF runs execute 473 tests
+  (472 pass, one invalid-radius recovery failure); headless DWG-ON runs execute
+  97 (96 pass, same failure), on Mac and native-ISA ARM Linux. Focused Unicode/
+  DWG 10/10 does not supersede either red. Existing 470/471/472-test green rows
+  remain historical. All platform, provider/legal and protected-release gates
+  stay open; none is promoted by this plan review.
+- Fresh scoped-publication proof exports committed main24e1 plus exact d68,
+  without the six pending source paths. Native Mac arm64 headless DWG-ON build
+  passes; the unchanged required six-suite filter discovers and executes95,
+  with94 pass/zero skips and only
+  `DxfRoundTripTest.DegenerateRecordsAreSkippedNotFatal` failing. This is not
+  the larger unpublished97-test candidate. Its source script suite passes265
+  with real Conan/zero skips; the initial Git-less archive run had one harness
+  failure resolving HEAD, corrected by supplying isolated parent Git metadata
+  without editing source. Working-copy scripts separately pass266/zero skips.
+
+Two source-level completeness gaps need compact follow-ups, not green claims:
+both language bridges omit `File::Type::LIBDXFRW_DWG_IMPORT` (stable value 15)
+and `ImportResult.failures`/`ImportFailure`, although C++ exposes them. Add only
+these declarations/readonly fields in the existing bridge translation units;
+test known-DWG legacy/result conversions with DWG ON and the diagnostic/refusal
+with DWG OFF, plus exact failure kind/handle/layer/block/reason through both
+languages. Preserve all old enum values and signatures. Also the required-test
+runner currently checks nonzero execution and skips, but does not require its
+discovered count to equal its executed count. Add a negative fixture for a
+selected disabled or otherwise unexecuted test and enforce complete required
+execution; do not solve that discrepancy by narrowing the product filter.
+The existing runner's gap is reproduced with explicitly SYNTHETIC subprocess
+outputs: two discovered tests, one executed, no skips, and current exit 0.
+Its existing 11 regressions pass, which does not cover or repair this missing
+negative case. Lua persistence tests currently compile only inside the Python-ON
+CMake branch, so the Python-OFF headless lane cannot prove either script bridge.
+The matrix therefore includes a separate Python-ON/DWG-ON binding lane.
+
+For D1 strict rejection, zero delivered entities means `ok=false, partial=false`;
+valid entities before the failure mean `ok=false, partial=true`. Both must mark
+the source unsafe to overwrite. The GUI's transactional failed replacement must
+preserve its prior document/path/undo state, independently of direct facade
+partial-import semantics. A future tolerant path must not label skipped data
+loss as a clean lossless import or permit silent source overwrite merely because
+parsing reached EOF. Keep that design decision explicit before implementing it.
+
+### Next bounded implementation changes
+
+The latest user request authorizes D0.1's pin/plan publication only. Other READY
+rows identify inputs and checks, not work performed or newly authorized by that
+request. Use the existing same-change plan/checker transaction for each later
+implementation; preserve unrelated local edits.
+
+| Slice / readiness | Exact edit boundary | Exit proof and failure case |
+|---|---|---|
+| D0.1 / implemented; bounded publication | `third_party/libdxfrw` gitlink plus this plan: advance committed ceaf to fetched masterd68, preserving the six dirty consumer/workflow/test paths unstaged. | Clean exact submodule d68, reviewed README-only9b→d68 delta, unchanged strict digest456/244 and own upstream three-platform focused SUCCESS. Validate an isolated export of committed main24e1 plus d68, not the unpublished consumer patch. Retain radius-policy red and every receipt's original source identity; no platform/artifact gate promotion. |
+| D3.1 / READY, independently | `scripts/run_required_gtests.py` and its existing test file only: enforce discovered/executed equality before declaring required success. | Existing11 controls plus positive plain/typed/parameterized listings and negative missing/disabled/unexecuted tests, missing/ambiguous summaries, zero/skip/nonzero/timeout. Preserve command prefix, suite requirements, full output, filters and default1800s. Synthetic controls test the runner, not application behavior. |
+| D2.1 / READY, independently | Existing Python/Lua persistence bridge files and `unittest/python/persistence_test.cpp`, `unittest/scripting/luapersistence_test.cpp`: add enum15, register ImportFailure before binding its readonly result vector. | Prove exact fields and owned-copy lifetime with a C++-constructed result passed through the existing namespace seam; do not invent a drawing that forces a kernel exception. Also verify actual import success/failure/DWG-ON/OFF and stable legacy returns. Upstream rejection before callbacks may legitimately leave failures empty but must retain the operation diagnostic. |
+| D4.1 / READY, independently | Standalone `tools/check_fixture_admission.py` plus existing admission checks: align with actual numeric-schema1 registry/field names, fail closed on unknown/incomplete/duplicate proof. | Actual registry and positive/negative file, payload, archive and alias controls pass. Preserve fixture bytes/origins/hashes; no metadata waiver or replacement corpus. The tool/registry are digest-selected inputs: a repair creates a new digest and requires fresh native receipts, even if parser C++ is unchanged. |
+| D4.2 / WAIT for final D4.1 digest | Existing native qualification workflow/verifier, new immutable receipt files and mutable status overlay; retain master38309528576 as baseline evidence, then join final-head Linux/Mac/Windows and broad receipts. | Validate exact API/run/job/attempt/platform/checkout, seven-file artifact, digest and test inventory; reject stale/tampered/missing evidence. Preserve archived master/9b/PR-merge receipts unchanged. Never attach the old456 receipts to the post-repair digest. Support promotion remains separate. |
+| D5.1 / READY, independently | Existing CMake install/package mapping plus rooted `DpkgOrigins` and shared `OriginLedger`: capture selected project/Python original→prefix paths before deployment rewrites. | Fresh-prefix tests, exact source-root/ISA/package identity, unknown/ambiguous/changed-original negatives, actual x64 selected inputs. Prefix capture alone does not seal an AppImage. Next bind linuxdeploy's explicit original/copy paths; Snap must use its own selected roots/archives, never an unrelated host database. Windows/Mac producer/notices gates remain separate. |
+| D1 / HOLD: user policy choice | Existing malformed-radius regression and minimal existing import/save boundaries only after strict-vs-tolerant direction. | Keep both retained full473/headless97 failures visible until selected behavior and safety controls pass. No pin downgrade, invalid geometry publication, hidden test exclusion or upstream-check removal. Independent READY slices may continue; the policy hold does not block all plan work. |
+
+After D2.1/D3.1 and the D1 decision, run the complete S5 source/feature
+matrix; after D4's final digest and all producer integrations, qualify the five
+final packages. Keep maintained API/lifecycle/module behavior, all-provider
+notices/static/legal obligations, required branch protection and protected
+release signing in the terminal contract. No compact slice shortens that scope.
 
 Historical hosted checkpoint (2026-10-11, candidate `ad543a97`; superseded by
 the current work/platform ledgers and newer receipts): plan-sync run
@@ -852,13 +1023,19 @@ actionable, rather than deleting cases or weakening required filters.
 dependency pins/recipes used by Linux, Snap, Windows, and macOS.
 
 1. Require the ordinary Python DXF save/open test after S1.
-2. Validate the base `third_party/libdxfrw` revision
-   `423cf99fd26bc9938dc259907e2889666d672d1f` with the candidate multiline-ATTRIB
-   fix pinned at `ceaf64143010626e393d956c62fb4b47f0d4be26`, published in
-   [libdxfrw draft PR #103](https://github.com/LibreCAD/libdxfrw/pull/103).
+2. Base dependency work on fetched standalone libdxfrw master
+   `d68fb1ed937ad2a74a54f6208277ec10a1b031b0`, whose parent8bd merged
+   [libdxfrw PR #103](https://github.com/LibreCAD/libdxfrw/pull/103).
+   D0.1 now pins that exact fetched master; the only tracked delta from earlier
+   tested checkpoint9b is PR104's README addition. Strict implementation digest
+   remains45690883/244 despite the full-tree change bc0530a7→bb8324b1. Do not
+   duplicate merged fixes or reinterpret squash ancestry as missing code.
+   The older `423cf99f`/`ceaf6414` pins and their passing receipts are historical,
+   not the selected baseline or proof of the advanced geometry behavior.
    Its `DRW_Entity` parser dispatches group 102 into bounded `parseDxfGroups`.
-   Latest-base macOS arm64 Python custom-entity reconstruction and Lua/Python
-   parity tests pass on this provider. Every platform workflow must use this
+   Requalify Python custom-entity reconstruction and Lua/Python parity on this
+   exact provider; the retained full-suite radius failure keeps acceptance open.
+   Every platform workflow must use this
    recursively checked-out target; do not clone or build the older external
    `f7debf4` revision, which CMake no longer links. Run the same DXF and parity
    regressions on Linux, Windows, and Snap. If a lane fails, make a reviewed
@@ -903,11 +1080,32 @@ dependency pins/recipes used by Linux, Snap, Windows, and macOS.
    including group-3 continuation chunks before the `AcDbAttribute` subclass.
    Import its formatted value and insertion point as MText with the owning
    attribute's layer/metadata/block; retain the explicit limitation that tags
-   and attribute linkage are not modeled. The required DXF filter must cover
-   the source fixture and a save/reopen round trip on every provider lane.
+   and attribute linkage are not modeled. Cover ATTDEF continuation/prompt
+   separation independently; ATTRIB success does not establish ATTDEF behavior.
+   The required DXF filter must cover the source fixture and a save/reopen
+   round trip on every provider lane.
+
+The master-based consumer matrix is mandatory; preserve existing UI limitations:
+
+| Configuration | Required execution |
+|---|---|
+| Python ON, persistence ON, Qt ON, DWG OFF | Full non-rendering application test suite; binding/parity/custom-entity/UI lifecycle plus OFF refusal contract. Run on Linux x64/native arm64, Windows x64, Mac arm64/x64. |
+| Python OFF, persistence ON, Qt OFF, DWG ON | All six independent persistence suites: DwgImportTest, DxfRoundTripTest, DxfExportTest, FormatTest, DocumentSourceTest, MTextCodecTest; real Unicode DWG/DXF/sniff/symlink behavior. Require native x64 Windows/Linux and both Mac architectures; native arm64 Linux is additional source evidence. |
+| Python ON, persistence ON, Qt OFF, DWG ON | PersistenceTest, LuaFixture persistence/result controls and DwgImportTest, including new bound enum15/failures and actual DWG result/legacy-return conversions. Require the same native source architectures; expose the enum and test clear refusal with DWG OFF too. This is a planned D2/D3 lane, not the existing Python-OFF Windows job. |
+| Python OFF, persistence ON, Qt ON | Application plus required cross-DLL Lua behavior, Python discovery disabled, no Python runtime linked. |
+| Python ON, persistence OFF, Qt OFF | Build the binding target against the selected SDK, with no persistence dependency; do not promise a persistence-OFF UI. |
+| Final packaged default configuration | Existing persistence-ON package policy; do not silently enable DWG import or new 3D editing. All five package identities require their actual installed/relocated smoke, notices, native closure and final-source evidence. |
+
+Use `scripts/run_required_gtests.py`, explicit required suites, the existing
+1800-second default and unchanged GUI filter. Require separate fresh build trees
+and cache/definition checks so OFF and ON evidence cannot be mixed. The current
+headless Windows job implements the second row but has not run at this candidate.
+Standalone package/header/API and broad dependency checks remain independent;
+the source callback compile probe alone proves neither runtime nor binary ABI.
 
 **Exit:** the 14-variant matrix, persistence, and required parity tests run with
-no required-test skips. A dependency blocker remains an explicit unmet release
+no required-test skips, missing selected tests, or unbound result/enum values
+identified by D2. A dependency blocker remains an explicit unmet release
 gate until corrected.
 
 ### S6 — Complete every platform's build and packaging sub-plan
@@ -1298,7 +1496,8 @@ Preserve provider-internal layout where it avoids rewriting Python metadata.
   inventory and keep existing Conan C++ dependencies. Persistence uses the
   recursively checked-out `third_party/libdxfrw` target; do not separately
   clone/build the obsolete external provider.
-- CMake now requires 3.21+ for Windows runtime-dependency collection, installs
+- The project and vendored dependency require CMake 3.28+; Windows runtime-
+  dependency collection uses its supported facilities. CMake installs
   LibreCAD shared DLLs beside the EXE, collects their transitive DLLs, stages
   selected CPython root DLLs, and installs Qt deployment DLLs/plugins after
   `windeployqt`. Verify extension-module (`.pyd`) dependencies and provider
@@ -1446,7 +1645,10 @@ Promote existing deterministic Python/adapters/EventBus/persistence tests to
 required gates, then add only the missing regression cases above. Run selected
 suites in bounded subprocesses so global interpreter/hooks cannot contaminate
 unrelated UI tests. Fail if expected suites discover zero tests, time out, or
-skip a required test. Quarantine individual known flaky cases with a reason.
+skip a required test. Only optional cases may be quarantined with a reviewed
+reason; a required flaky case stays an unmet gate, not a filter exclusion.
+Require discovered and executed required-test counts to agree; a selected
+disabled test must not disappear from execution behind a nonzero summary.
 Retain GoogleTest's per-test RUN/OK output in required-run logs, including the
 partial output on timeout; brief output hides the test that stalls. A diagnostic
 logging change does not fix a timeout or permit a narrower acceptance filter.
@@ -1894,6 +2096,13 @@ record the result in the review log.
 
 ### Work and platform ledgers
 
+Freshness rule from the 2026-10-12 master review: all previously green
+source/package evidence keeps its exact old pin and source identity. Latest-pin
+consumer acceptance is still red. Apply D0-D5 before promoting any row; the
+complete master-based matrix, result-binding and required-runner gaps remain
+open even when a parent-head hosted job succeeds. Prior dated narrative below
+is retained for provenance, not an alternative current-state ledger.
+
 States: `planned`, `active`, `implemented`, `validated`, `blocked`.
 `implemented` means the change exists but required validation is incomplete.
 `validated` requires the stated acceptance criteria and current evidence below.
@@ -2075,28 +2284,34 @@ qualification or protected signing; receipt hashes alone are not native proof.
 
 | Gate | State | Next action / blocker | Evidence |
 |---|---|---|---|
-| S0 | active | Collect complete selected-provider notices/provenance and final hosted artifacts | Canvas3c3 is published; tested parentba36 plus7-path diffae9f preserves exact precommit source identity. Mac/Linux/Cocoa470, OFF293+Lua1, installs76/49,189 scripts and local archive22627c8c PASS. Next implementation reuses existing stager/provider identities for original notices; final hosted provenance remains required. |
-| S1 | active | Require final-source hosted feature and NSIS acceptance | Current native Mac/Linux app/tests build and full470/80/skipped0 PASS; real Cocoa470 also PASS. Discovery-disabled OFF app/tests passes293/58 plus requiredLua1, no Python cache/runtime link. Callbacka983 Windows/NSIS/features now SUCCESS, but current canvas source requires fresh hosted acceptance. |
-| S2 | active | Require final-platform API/lifecycle acceptance and broader combinations | Current native Mac/Linux470 each include the actual maintained gear/point/remove replacement/reopen and supported retained-canvas controls; real Cocoa470 also PASS. Own-painter/observer detachment, reopened drawable initialization and actual signal emissions repair retained native red controls. Final-source all-platform/package and broader document/selection combinations remain required. |
-| S3 | active | Qualify final-source packages and finish broader module/provider coverage | Frozen parent3c3+13-path9771 native Mac/offscreen/Cocoa and native-ISA Linux full470 each PASS; fresh poisoned installs initialize76/49 extensions/offline/plugins/undo/DXF. Mac validates174 original Qt notice files and actual libpython C-API image inside prefix/lib; deliberate SDK image, altered notice and absent tree are rejected. Final bundle/archive5eaec0f0 passes original/Unicode-relocated/extracted required-origin/notice smokes. Full native-provider origin mappings, broader module/delay-load behavior and final hosted package qualification remain open. |
-| S4 | active | Require final-source all-platform lifecycle acceptance | Actual absent/replaced/deleted painter and reopened-null-drawable failures are retained, plus notification and test-isolation reds. Compact repairs pass proof-port-before-controls5/full470/80/skipped0 on Mac/native-ISA Linux, real Cocoa470, OFF293+Lua1 and installs76/49. Gear64-edge radii/undo, point preview cancel/restart, remove selection/undo, no stale listeners/late mutation and independent B tool/scope pass after replacement and real Unicode reopen. Final hosted acceptance remains required. |
-| S5 | active | Close broad dependency debt and final-source qualification | Current native Mac/Linux full470 and fresh installed DXF smokes PASS; final hosted source/packages pending. Dependencyceaf641 focused three-platform proof passes; broad frozen-evidence/README37/40 failures also reproduce on clean upstream423cf99. No immutable evidence rewritten or support promoted; broad qualification remains open. |
-| S6 | active | Finish Windows boundary and all-five producers/notices; require own hosted artifacts | Strict presence guard a286a65e is published and byte-matches parentd1633+diff818df67a: lstat/only FileNotFoundError, four retained denial-I/O reds;40 origins/57 selected-Mac3.14-native-ARM-Linux/265 scripts/no skips/real Conan PASS. Actual Intel no-SBOM/source-only libmng replays use explicitly SYNTHETIC installed contexts and PASS strict controls. Read-only actual selected-original capture368/67 PASS; earlier signed app162/34 unchanged. Archive5388360b/62782834/floor27 remains frozenf2+6851a866 legacy proof, not guard-head/hosted/protected acceptance. New Mac38261206935/main38261206936/PLAN38261206945/CodeQL38261206933 queued. Existing dpkg676 joins still need AppImage/own-root Snap/Windows producer integration. All-five notices/static/API/module/dependency/legal/protected scope active; no gate promoted. |
-| S7 | active | Publish verified portable driver fix; require native Windows path/NSIS proof | Test-only parenta286+diff236b6468 retains real15s missing-file red, queues accept once, acknowledges exactly one nested warning and preserves5s deadline. Focused3 and exact unchanged21-suite Windows mixed177 on Mac PASS; complete Mac offscreen/Cocoa and native-ARM Linux each472/80/skipped0 PASS;265 scripts/no skips/real Conan PASS. Exact QFileInfo Unicode export-path assertion passes portably, not yet on native Windows. Required BAT filter/default1800s/no-skip policy unchanged. Older5f native Windows stalls at drawing Ω after malformed-error acknowledgment; encoding cause still unconfirmed. New latest-head native Windows Unicode/open/reopen/DXF/DWG/sniff/atomic/symlink/NSIS and all-platform/provider/API/module/dependency/legal/protected acceptance remain required. No live job restarted. |
-| DOC | active | Keep capabilities, provenance and qualification limits accurate | Current ledger separates tested merge revisions from branch heads, inner packages from upload wrappers, portable receipts from native qualification, and local Mac floor 27.0.0 from hosted 15.0.0. S6 documents explicit Windows OpenGL/GLU no-payload contracts and unique artifact paths. Qt ownership/application-thread and no-sandbox limitations remain. Full external notices, maintained lifecycle/module behavior, broad qualification and protected release claims stay open. |
-| PLAN-SYNC | implemented | Keep same-change source/evidence synchronization and establish enforcement | Published9466 original-native-prefix/logging batch passes227 scripts/no skips/31 checker/full/worktree/base189/all17/whitespace/scoped relevant-workflow actionlint; new hosted PLAN38204629301 SUCCESS. This plan-only publication checkpoint is retained for the next implementation change; repeat local checks now. Sole generated exclusion build-linux-arm64/. Required protection/rulesets/conjunctive release enforcement remains unchanged/unvalidated. |
+| S0 | active | Freeze exact master pin and complete selected-provider evidence | D0.1 selects fetched libdxfrw masterd68 in a gitlink/plan-only publication, from committed ceaf. It differs from prior local9b only in README; strict implementation digest45690883/244 is unchanged, not full-tree/ancestry identity. Six unrelated dirty paths remain unstaged with source-only hash e2e48f03. Earlier canvas/install/archive/provider proofs retain their original identities; final hosted inventories/originals/all-provider notices remain required. |
+| S1 | active | Execute the exact-pin feature matrix and native NSIS gate | Earlier full470/OFF293+Lua1 and callback Windows feature results are historical. D0.1/D2.1/D3.1 require the explicit S5 configurations, including PythonON/DWGON script results and separate OFF trees; preserve CMake3.28, selected SDK, exports, no-build-dependencies policy and no persistence-OFF UI promise. Main candidate app/tests build, but aggregate full473/headless97 each remains red on D1. |
+| S2 | active | Close additive result bindings and final-platform API behavior | D2.1 is READY: existing bridge/test files only, stable DWG enum15 plus ImportFailure/failures and owned value lifetime. No new binding generator or facade. Historical gear/point/remove/custom-entity and retained-canvas controls remain valid only at recorded revisions; native final-source lifecycle/API/parity and broader document/selection combinations still require acceptance. |
+| S3 | active | Complete original-origin integration and actual module/provider packages | Historical76/49-extension installs,174 Qt notices and archive5eaec0f0 stay source-scoped. D5.1 prefix capture is READY using exact project/Python mappings, DpkgOrigins and OriginLedger, not another resolver. Final AppImage/Snap/NSIS/dual-Mac origins, full notices, SDK-free/relocated runtime and broader module/delay-load behavior remain open. |
+| S4 | active | Require final-source all-platform lifecycle/reopen acceptance | Keep recorded painter/observer/document-replacement/maintained-operation red-to-green controls and isolated-B-window assertions. Parent24e1 Windows177 executes175 pass/two Unicode-reopen failures, not a hang; Mac/Linux aggregate candidate full473/headless97 each still has the D1 radius failure. Preserve actual owner scope, cancellation/path/undo safety and real dialogs. No parent or focused dependency success closes final native lifecycle/package acceptance. |
+| S5 | active | Close D1-D4 consumer/qualification gates on the exact d68 pin | D0.1 advances committed ceaf to fetched masterd68; README-only delta from9b and strict digest45690883/244 verify. Own master38326096296 workflow contract/Linux/Windows/Mac focused jobs SUCCESS; accepted native/broad references remain zero. Retained unpublished consumer candidate full473/headless97 each has one radius-policy red; Unicode/DWG10 is focused proof only. D2.1/D3.1 are READY; D4.1 admission schema debt remains upstream and changes the digest when repaired. No archived evidence or experimental/support limit is rewritten. |
+| S6 | active | Finish D5 final-source all-five producers, origins and notices | Parent24e1 Linux/ARM and both Mac hosted jobs terminal SUCCESS; Windows177 terminates175 pass/two Unicode-reopen failures. No parent result qualifies the new d68 pin or unpublished headless changes. Existing Mac original/final ledgers and dpkg primitives remain scoped proof; AppImage explicit-copy maps, Snap own roots and Windows origin integration still required. Archive5388360b remains frozenf2+6851a866 legacy proof. All-five native closure/original notices/API/modules/legal/protected release requirements remain active. |
+| S7 | active | Require complete discovery/execution and exact-source consumer/artifact gates | Required runner lacks discovered==executed enforcement; add its disabled/unexecuted negative case without narrowing filters, increasing default1800s or allowing skips. Preserve six local source paths at e2e48f03 and retained candidate full473/headless97 radius red until D1 is decided. The authorized pin publication does not decide that policy. Dependency focused-three-platform success is not broad/main/package acceptance. Parent24e1 Windows FAILURE and Linux/dual-Mac SUCCESS remain parent scoped. D3/D4/D5 full acceptance remains required; no job restarted or support promoted. |
+| DOC | active | Keep selected master pin and published/unpublished proof distinct | Section3/S5 select masterd68, prior local9b README-only delta/digest equality, committed parent24e1/basef972 and six dirty paths e2e48f03 separately. PR103 is merged; future dependency repairs start from d68 and cannot relabel older receipts at a new digest. ext=true 2D behavior and all 3D/DWG limits remain unchanged. Pin/plan publication is authorized; other READY slices remain separate. Full notices/API/module/legal/protected release obligations remain required. |
+| PLAN-SYNC | implemented | Keep bounded pin publication synchronized; establish enforcement | Newest receipt records exact source and post-edit checks for the two-path publication. Prior merged-master refresh's266 scripts/31 checker/--full/worktree8/base195/all17 proof remains historical, not automatically new-pin acceptance. Sole generated exclusion stays build-linux-arm64/. Master-focused success does not validate main hosted enforcement; branch protection/rulesets/conjunctive release enforcement remain unvalidated. |
 
 | Platform gate ID | State | Required proof | Evidence / next action |
 |---|---|---|---|
-| LINUX-X64 | active | Require lifecycle-source artifacts and complete provider/module behavior | Published callbacka983 Linux114617341397 now SUCCESS; original current-callback artifact/log receipts remain to retain, and lifecycle source requires its own hosted run after publication. Earlier bootstrap3758 merge895def8 original AppImage/Snap receipts remain independently verified. Full notices/broader module behavior and final lifecycle package acceptance remain required. |
-| LINUX-ARM64 | active | Require final hosted canvas/provider/install identity | Current source-mounted Ubuntu26/aarch64/CPython3.14.4 session33458 terminalSUCCESS at parentba36+7-pathae9f: app/tests build, required proof-port/controls5 and full470/80/skipped0, fresh poisoned49-extension/all offline-native/two-plugin/undo/DXF install smoke PASS. Native-ISA local proof is not final hosted acceptance or ARM AppImage/Snap support. Published lifecycleba36 ARM114630533676 SUCCESS predates canvas source. |
+| LINUX-X64 | active | Require latest-pin native source and final provider/module artifacts | Parent24e1 BuildLinux114859211250 is terminalSUCCESS, not acceptance of d68 or D2/runner follow-ups. D3 needs exact-pin native ON/OFF source execution; D5 requires original AppImage/Snap evidence and all-provider notices/module behavior. Earlier bootstrap/callback artifacts keep their original revisions. |
+| LINUX-ARM64 | active | Require latest-pin source/install evidence without inventing ARM packages | Published24e1 ARM114859210255 is terminalSUCCESS. Native-ISA local candidate full473/headless97 each retains the one radius-policy red; Unicode/DWG10 passes. Earlier49-extension install and full470 remain separately scoped. D3 exact-pin/full installed-prefix proof remains required; this does not add ARM AppImage/Snap support. |
 | APPIMAGE-X64 | active | Wire verified dpkg originals/notices into existing deployment source-copy maps | Frozen025+four-pathba3dac92 dpkg primitive passes258 scripts/no skips/24 Mac-Linux focused, actual six ARM/x64 Python/Qt/TLS/SQLite/zlib inputs and original15-file notice sets, and actual x64 copied-file ledger/notice join6 files/5 providers with tamper rejection. x64 container emulation is input-adapter evidence, not a produced AppImage. Connect explicit existing-deploy original/destination paths and project/Python prefix maps before rewrites, then seal/audit actual final payload/all-provider joins and clean runtime archive. Bootstrap3758/merge895def8 AppImage146ELFs/50extensions/SHA d878cea1/72550904 bytes remains historical, not current source/artifact acceptance. Full API/module/dependency/legal/protected scope active. |
 | SNAP-AMD64 | active | Bind native origins/notices to Snap's own selected package roots/archives | Frozen025+ba3dac92 shares exact installed-dpkg adapter and SDK-free provenance audit; actual x64 copied-file6/5 join/tamper control under snap-amd64 passes, but is not an installed Snap. Snap must supply its own selected original roots or exact extracted package archives/metadata, never host-db identity for unrelated stage bytes. Existing deployment integration, final payload/provider joins and actual installed namespace smoke remain required. Bootstrap3758/merge895def8 core26 Snap339ELFs/50extensions/SHA b2ff2cb2/96559104 bytes remains historical. devmode is not strict-confinement acceptance; full API/module/dependency/legal/protected scope remains active. |
-| WIN-X64 | active | Require native exact Unicode path and NSIS/provider acceptance after portable driver fix | Exact5f Windows114725498035 terminalFAILURE1800s occurs after successful malformed-error acknowledgment, at drawing Ω QFileDialog. Retained portable15s missing-file red now passes with once-only queued accept/actual warning acknowledgment/responsive5s deadline; exact Unicode Qt path and real reopen PASS on Mac. Unchanged Windows mixed177/21 suites PASS on Mac; complete472 Mac offscreen-Cocoa/native-ARM-Linux/no skips PASS. These are not native Windows proof or a confirmed encoding cause. Preserve Unicode/full filters/default1800s/no skips. Own current main38261206936 queued. Native UTF8 DXF/DWG/sniff/atomic target+temp/symlink/reopen and NSIS/provider/all-notice proof remain required; prior callbacka983 NSIS stays separate. |
-| MAC-ARM64 | active | Require strict presence guard's own hosted final artifact | Guard parentd1633+diff818df67a passes40 origins/57 selected Python3.14 Mac and native-ARM-Linux/265 scripts/no skips/real Conan. Read-only actual selected-original capture368/67 and unchanged earlier signed-app162/34 audit PASS. Previous legacy native471 offscreen-Cocoa/prefix101-12/final162-34-42/actual controls/four76-extension smokes/SDK-free/deep signatures/archive5388360b/62782834/floor27 stays frozenf2+6851a866 proof, not guard-head qualification. Current d1633 Mac38258813472 queued; PLAN38258813542 SUCCESS. CaptureOFF. Own hosted final artifact/all-provider notices/protected Developer ID/notarization remain required; no gate promoted. |
-| MAC-X64 | active | Require published legacy support plus strict guard's hosted Intel artifact | Legacy d1633 is published. Guard parentd1633+diff818df67a passes40 origins/57 Mac-native-Linux/265 scripts/no skips/real Conan and actual historical Intel libb2 OCIfa755b8e/archive747d5e72/64578/no-SBOM/nativef993dfdc/138760 replay. Installed receipt/cache context explicitly SYNTHETIC, not recovered CI/native Intel artifact proof; only FileNotFoundError enters fallback, malformed present files and six immutable/archive checks remain strict. Earlier native Mac471/package/archive5388360b proof is ARM/frozen legacy scope, not Intel/guard head. Current d1633 Mac38258813472 queued. Own hosted final artifact/full notices/SDK-free/runtime/protected Developer ID/notarization remain required; no gate promoted. |
+| WIN-X64 | active | Require candidate's native Unicode consumer/NSIS/provider acceptance | Parent24e1 Windows114859210402 is terminalFAILURE with mixed177/175 pass/two reopen failures, exact Unicode export target absent; nested-warning driver succeeds, not a timeout. Its persistence114859209964 SUCCESS is old compile-only/DWGOFF scope. Own dependencyd68 Windows focused SUCCESS does not qualify main/NSIS. Earlier9b PR-merge artifact metadata/Unicode stdout PASS at1cc874cb/digest45690883 is not the completed API join. Six unpublished main paths still add native sniff/Boost-link boundaries, Unicode DXF/DWG/symlink tests and headless DWGON CI; their Mac/Linux focused10 PASS/full473/headless97 one radius-policy red remain local candidate proof. User now authorizes pin/plan publication only; policy choice and those source changes remain separate. Preserve full filters/default1800s/no skips and final native/NSIS/provider/all-notice gates. |
+| MAC-ARM64 | active | Require latest-pin hosted source and final artifact | Parent24e1 Mac38263345426/ARM114859210289 is terminalSUCCESS, not d68/D2 follow-up acceptance. Unpublished candidate offscreen/Cocoa full473 and headless97 each retain the geometry-policy failure; focused Unicode10 passes. Newest receipt separately records the isolated committed-source+d68 check. Earlier capture368/67 and archive5388360b/floor27 remain historical frozen proof. D3/D5 own hosted final source/artifact/all-provider notices, SDK-free audits and protected signing/notarization remain required. |
+| MAC-X64 | active | Require latest-pin native Intel source and final artifact | Parent24e1 Mac38263345426/Intel114859210018 is terminalSUCCESS, not d68/D2 or final-source notice acceptance. Historical Intel libb2 replay remains explicitly synthetic installed context with strict six-field/original-archive controls. ARM local473/headless97/Unicode10 and archive5388360b cannot qualify Intel. Require own D3/D5 native source, final artifact/full notices/SDK-free runtime and protected signing/notarization. |
 
 ### Next Windows reopen diagnosis
+
+Historical diagnostic sequence through parent24e1; the queued-driver fix is
+published, while the six follow-up consumer/workflow/test paths described below
+remain local and excluded from the current pin/plan-only publication. The new
+masterd68 pin includes upstream reader/atomic UTF-8 fixes, but does not itself
+repair the project's pending sniff/Boost-symlink boundary changes or prove NSIS.
 
 The completed5f native job gets through broken-DXF acknowledgment, then stalls
 while accepting the actual Unicode drawing path. Keep that Unicode requirement,
@@ -2118,31 +2333,44 @@ BAT filters and failed discovery before execution; the corrected command selects
 only the existing mixed filter, with no BAT/filter/default1800s policy change.
 Require the latest native Windows job's exact Unicode-path and real-dialog proof;
 portable success does not establish the observed native hang's encoding cause.
+The native consumer flag audit finds both prior full Mac/Linux references use
+DWG_IMPORT=OFF, while the old Windows persistence job only compiles with tests
+and DWG import disabled. Retain those scopes. The updated existing headless
+Windows job now builds lcunittest with DWG_IMPORT/UNITTESTS=ON, Qt/Python=OFF,
+then requires all six Python-independent persistence suites (DWG, DXF round-trip,
+DXF export, format, document source, and MText codec) via
+the standard no-skip/zero-discovery/default1800s runner under conanrun.bat.
+Existing prebuilt gtest/Conan --build=never policy and full GUI mixed filter are
+unchanged. Require native Mac/Linux ON consumer checks as well; this source
+change is not proof that the new Windows job or advanced consumer pin passes.
+The ON consumer lane also includes a real admitted DWG copied to an exact native
+Unicode parent/basename with BMP/non-BMP characters and a misleading .dxf suffix;
+require three imported entities and DWG variant identity, not merely signature
+sniffing or direct dependency-reader success. The OFF lane retains its refusal
+contract. Both new regressions are included in the headless suite selection.
 Do not replace the path with ASCII or bypass the real dialog to obtain green.
-The pinned libdxfrw transaction constructs std::filesystem::path from a narrow
-string and readers/sniffers open narrow paths; project Boost symlink handling
-also uses narrow paths. This is a concrete UTF-8/native-Windows boundary to
-audit, not yet proof of the hosted hang's cause. If reproduced, use one compact
-UTF-8/native-path conversion policy in the dependency and project entry points,
-retain atomic/symlink behavior, update dependency PR/pin with its own proof,
+The old ceaf-pinned libdxfrw transaction/readers used narrow native paths;
+masterd68 now incorporates the tested explicit UTF-8 reader/atomic conversion,
+including native temporary basenames. Project sniff/Boost-symlink changes remain
+unpublished. Keep the recorded boundary failure distinct from proof of the
+hosted hang's cause; retain atomic/symlink behavior and require the project's
+own native consumer proof rather than reapplying the merged dependency fix,
 then require native Windows Unicode DXF/DWG/open/reopen/error and NSIS acceptance.
-The audit must also cover the transaction's temporary filename: its current
-`filename().string()` plus narrow concatenation can reintroduce the host encoding
-even if the target constructor is fixed. Preserve native names or explicitly
-round-trip UTF-8, including project sniff/binary-sniff and Boost symlink boundaries;
-do not change process-global locale in an embedded host. Microsoft's primary
+The prior dependency repair also removed temporary-basename narrow conversion,
+not just the target constructor. Preserve that fix and require project
+sniff/binary-sniff and Boost-symlink Unicode controls; do not change process-global
+locale in an embedded host. Microsoft's primary
 [C++17 u8path documentation](https://learn.microsoft.com/en-us/cpp/standard-library/filesystem-functions?view=msvc-170#u8path)
 specifies explicit UTF-8 input, and its
 [path string conversion documentation](https://learn.microsoft.com/en-us/cpp/standard-library/path-class?view=msvc-170#pathstring)
-distinguishes host char encoding from UTF-8. These guide the next native red
-contracts; they do not establish that encoding caused the observed CI hang.
+distinguishes host char encoding from UTF-8. Those contracts guide retained
+native controls; they do not establish encoding as the observed CI hang's cause.
 Qt's [QString conversion contract](https://doc.qt.io/qt-6/qstring.html#toStdString)
 also explicitly emits UTF-8. Retain that byte contract at filesystem boundaries.
-Dependency PR103 has advanced from pinnedceaf to97a8bdba by four commits,
-including merged MTEXT and3D changes. Preserve that advancement, inspect its
-actual reader/transaction code in a clean checkout, and qualify any new pin with
-its own API/regression/evidence scope; do not overwrite the branch or silently
-relabel oldceaf qualification as latest-head proof.
+Dependency PR103 subsequently merged; masterd68 preserves the MTEXT/3D and
+UTF-8 fixes. Keep qualification bound to its actual API/regression/source scope,
+not oldceaf receipts or rewritten branch history. The current two-path pin/plan
+publication does not publish the six pending consumer changes described above.
 
 ### Latest-base AppImage package check (2026-10-11)
 
@@ -2377,6 +2605,21 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Publish the requested exact origin/master dependency pin and synchronize its plan, excluding unrelated local implementation | Explicit fetch/remote recheck selects d68fb1ed937ad2a74a54f6208277ec10a1b031b0; update committed ceaf gitlink, not floating master. Prior local9b→d68 differs only in eight README lines; strict digest45690883/244 and standalone plan check PASS. Exact upstream push38326096296 workflow115064996123/Mac115065035392/Linux115065035394/Windows115065035404 SUCCESS; broad/fuzz skipped, zero accepted native/broad references. Isolated archive of committed main24e1 plus d68 builds native Mac arm64 with DWG/persistence/tests ON and Qt/Python OFF. Required six suites discover/execute95,94 pass/zero skips, sole DegenerateRecordsAreSkippedNotFatal failure retained; no assertion/filter/policy changed. Source script suite265/no skips/real Conan PASS after supplying missing isolated Git HEAD metadata; initial archive-only265 run had one HEAD-resolution harness failure, retained separately. Working-copy266 scripts/no skips/real Conan and31 checker regressions PASS. Structural/complete worktree8/actual-base195/all17/whitespace checks pass before this receipt and repeat after it. Only plan+gitlink are staged for publication; six dirty source/workflow/test paths remain untouched/unstaged at diffSHA e2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038, excluding plan/gitlink. Prior receipt-tail SHA b518022fcb74ef38aec7b6b532c636d606837e25d42a98e16c413d140eba2fa3 remains exact; original checkout132265a0 unchanged. Evidence /private/tmp/librecad-master-pin.H1A6QD/ and /private/tmp/librecad-master-pin-script-tests.log. PR445 retains OPEN/draft/basef972/title; publish only this requested slice, retain earlier description as history and record actual new SHA there. D1 choice, unpublished consumer patch, all native/package/provider/notices/API/module/legal/protected gates remain open; no job restart or support promotion. Sole generated exclusion build-linux-arm64/. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Refresh the plan for merged libdxfrw master and make the independent implementation queue explicit | Plan-only request; fetch at22:52:58UTC resolves master8bdaf90b0b184d118d67ebae6699d1561abd8f37. GitHub confirms PR103 MERGED at21:15:51UTC, squash commit8bd/parenta05; current main PR445 remains OPEN/draft24e1/basef972. Git trees for master8bd and actual checkpoint/gitlink9b both equalbc0530a78432fcd4a0fde6cdd33eebebdf442a9c, tracked diff empty, history master-only1/checkpoint-only5. No source/gitlink move or duplicate fix made. Fresh master push38309528576 terminalSUCCESS: workflow115011579396, Mac115013118386, Windows115013118545, Linux115013118635; broad/fuzz selection-skipped. Exact digest45690883/244 verified through tree equality and existing strict checker; merged status has zero native/broad refs. Main parent Linux/ARM/dual-Mac SUCCESS and Windows FAILURE remain unchanged. Reconciled S0-S5/DOC stale historical-current rows; specified D0.1 pin, D3.1 runner, D2.1 bridges, D4.1 schema, D4.2 new-digest immutable receipts and D5.1 prefix-origin boundaries with positives/negatives. D1 alone remains policy-held; independent READY work is not blocked, and plan-only readiness is not implementation authorization. Retained full473/headless97 geometry red and all final-platform/provider/legal/protected requirements; old receipts preserved. All266 scripts/no skips/real Conan PASS in18.626s, retained /private/tmp/librecad-plan-master-8bdaf90-script-tests.log; --full/checker31/worktree8/actual-base195/all17/whitespace PASS. Non-plan diffSHA d2d9cffe remains exact; clean actual submodule9b unchanged. Sole generated exclusion build-linux-arm64/. Repeat structural/checker/coverage/whitespace/freeze checks after this finalized receipt; script/plan passes do not supersede the retained product red or promote any gate. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Deep-review the Python roadmap against fetched standalone libdxfrw origin/master; correct baseline, complete D0-D5 packets and acceptance matrix | Plan-only change. Explicit fetch resolves mastera05e4f0d02f1b9c83872c04294031d9d3ea48776; candidate9b is ahead5/behind0 and PR103 actual base/head agree. Main PR445 remains24e1/basef972; non-plan diffSHA d2d9cffe unchanged. Actual current push/PR dependency focused three-platform jobs SUCCESS; main parent Linux/ARM/dual-Mac SUCCESS and Windows FAILURE. No artifact/API receipt accepted or gate promoted. Existing numeric-registry/admission failure reproduced unchanged against master, strict244-input digest45690883 verified, standalone plan check PASS. Reviewed master 3D/ownership/read-mode contracts plus C++/Python/Lua persistence and required-runner source: stable DWG enum15 and ImportFailure/failures are unbound. SYNTHETIC runner reproducer confirms discovered2/executed1/exit0; existing11 runner tests pass but do not repair it. Added separate PythonON/DWGON planned lane because Lua result tests compile only with Python ON; required headless six-suite scope remains distinct. Strict-versus-tolerant radius choice is unresolved, with exact zero/partial delivery and unsafe-source/transactional-GUI checks specified; no assertion/filter/pin or source changed. All266 scripts/no skips/real Conan pass (retained /private/tmp/librecad-plan-master-review-script-tests.log), checker31/--full/worktree8/actual-base195/all17/whitespace pass, source-freeze SHA d2d9cffe and clean submodule9b verify. Sole generated-output exclusion build-linux-arm64/. Repeat same-change plan checks after final receipt; product full473/headless97 retained geometry failure is not superseded by these structural/script results. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Validate final evidence ledger and retain the policy decision without claiming completion | Final266 scripts/no skips/real Conan,31 checker regressions, --full, complete --worktree8 with sole generated exclusion build-linux-arm64/, actual --base-ref f972953 diff195/all17, whitespace and scoped headless workflow actionlint PASS. Source diff remains exactlyd2d9cffe; submodule clean at published9b, external dependency checkout only has a live plan-evidence update. Reconcile S5/S6/S7/WIN-X64 with terminal Windows177/175/two failures, verified dependency native Windows Unicode artifact, and completed native Mac/Linux full473/headless97 single geometry-policy red plus focused10 green. No original assertion, strict validation, filters/default1800s, artifact identity or support claim changed. User choice pending; main candidate not committed/pushed, auth32185 expired/no approval, goal active with full all-five/provider/notices/API/module/dependency/legal/protected scope. Rerun structural/coverage/checker/whitespace checks on this final receipt; product acceptance remains unproven. Evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Complete independent latest-pin native ON/OFF consumer checks while retaining the unresolved geometry-policy red | Goal-turn classification: progress (dependency code committed/published, own native Windows evidence validated, project implementation/pin and real consumer tests added). Frozen main24e1+diffd2d9cffe remains byte-identical. Mac offscreen/Cocoa and native ARM Linux Qt/PythonON-DWGOFF full473/80 each execute with472 pass/one identical invalid-radius recovery failure/no skips. Fresh independent headless Mac and ARM Linux caches verify DWG_IMPORT/UNITTESTS=ON and Qt/Python=OFF; app-side complete six-suite97 each has96 pass/same retained failure/no skips. Dedicated complete DwgImportTest plus exact new Unicode DXF/sniff/symlink regression10 each PASS, discovered10/executed10/skipped0; this is focused behavior proof, never full acceptance. Initial Linux wrapper exits127 only after tests because rg is absent; existing runner logs are copied and read with available grep, no test/build restart, fallback confirms exact outcomes. Mac wrapper terminal0 only means diagnostics completed, not full-suite green. Windows downloaded seven-file artifact11756119051/API ZIP SHAa8050efd verifies schema/canonical observation/JUnit/inventory/detached seals and actual UTF-8 filesystem paths PASS at PR merge1cc874cb/digest45690883; full live API/run join and Mac hosted result remain pending, zero accepted refs. Own dependency plan has an uncommitted live evidence update only; pinned9b remains clean. User strict-vs-explicit-tolerant recovery choice is still pending, old assertion and strict upstream source unchanged; main8-path candidate remains uncommitted and not yet pushed. Auth32185 terminal expired_token, no restart/approval; existing credentials work. Full all-five/provider/notices/API/module/dependency/legal/protected objective stays active. Revalidate full/checker31/worktree8/base195/all17/whitespace/scoped-workflow/266 scripts; evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*; sole generated exclusion build-linux-arm64/. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Retain the latest-pin consumer red and separate strict geometry semantics from the native Windows filename fix | Frozen main24e1+seven-code-path diffd2d9cffe581b49dd481271191ad6f8e65ba95b03d3abce030ab9c61de2fab140 builds app/tests on native Mac and ARM Linux. Both full Qt/PythonON-DWGOFF runs execute473/80/no skips and fail exactly DegenerateRecordsAreSkippedNotFatal:472 pass; no full green or headless/Cocoa result is implied. Advanced upstream3D merge adds positive-radius validity checks at processArc/processCircle before callbacks; zero-radius ARC causes BAD_CODE_PARSED before the later good LINE. Preserve the advanced history and strict source unchanged; do not downgrade the pin or silently weaken/remove the old recovery assertion. User choice requested asynchronously: retain strict rejection with truthful partial-import/error/source-save protection tests (recommended), or explicitly implement tolerant record recovery. Independent ON headless consumer build/exact six-suite diagnostic and focused Unicode/DWG checks can proceed without deciding that policy. Current24e1 Windows114859210402 is terminalFAILURE, not timeout: mixed177 completes with two reopen failures; exact QFileInfo Unicode export path is absent, while the queued nested-warning driver succeeds. Candidate dependency PR38269995258 has Linux114881677837 and Windows114881677871 focused7 SUCCESS; Mac114881677890 queued. Downloaded Windows metadata-only artifact11756119051 SHAa8050efde778563689cea3ea24172725666126d6451b8e448b627e928aa328c3 matches API digest, reports7 passed/zero skipped and strict244-input digest45690883. Its actual PR merge checkout is1cc874cb9b5f3d765f893018eb25e2c5046e3b47, not branch9b; do not conflate identities or accept a receipt before the full API/artifact join. Status overlay still accepts zero receipts. Auth32185 authoritatively exits1 expired_token; no approval/restart, existing keyring access still works. All-five/provider/notices/API/module/dependency/legal/protected goal remains active; main candidate8 paths/base195, sole generated exclusion build-linux-arm64/; evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Publish the preserved-advancement UTF8 dependency checkpoint and advance only the clean project pin for consumer qualification | PR103 now verifies OPEN/draft/unchanged title/base and exact body at9b2685620ebda2f4a70c2042177be32b6abbe1c0, parent97a8bdba; non-force push and attachment succeed. Six-file commit preserves frozen four-code-path diffc60d7ea8; strict244-input digest45690883cb101663b384d1ca952e622ecfa05e4b03f077e5df36feb1effa0f7e refreshes only mutable status, accepting zero receipts. Own plan S15/C2 remains VERIFYING; portable real Unicode native Mac/ARM-Linux focused7+controls3 PASS. Plan/digest/qualification workflow/receipt self-tests/pre-native-zero-receipts/whitespace PASS. Unchanged admission-tool and numeric-registry inputs conclusively fail before candidate scanning; retained schema failure stays open, no frozen/history rewrite or support promotion. Own PR38269995258/push38269988696 queued; no restart. Clean project submodule ceaf was rechecked, fetched and detached at published9b for ON/OFF/full consumer tests. Main current7-path checks before pin: full/checker31/worktree7/base195/all17/whitespace,266 scripts/no skips/real Conan and scoped headless workflow actionlint PASS. Real Unicode DWG consumer case is ON-only, includes misleading .dxf suffix and three actual entities. Recheck current8-path candidate/base195 before builds, then require full UI/PythonON-DWGOFF on Mac/Linux plus independent headless DWGON-PythonOFF six-suite consumers and latest artifacts/native Windows. Current24e1 LinuxARM/persistence/sanitizer CI SUCCESS, Windows/Linux in progress; persistence success remains old compile-only scope. Goal remains all-five/provider/notices/API/module/dependency/legal/protected; sole generated exclusion build-linux-arm64/; evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Reconcile actual candidate native dependency results and correct headless test membership before execution | Same live handles116/120 now authoritatively terminate0: frozen97+c60d7ea8 candidate focused7/controls3 PASS on native Mac and Ubuntu26/aarch64; each focused log prints UTF-8 filesystem paths PASS. Exact Linux trust is process-scoped, no global change; original prep128 remains retained. This is portable dirty-source contract evidence, not native Windows red/green or immutable qualification. Source audit finds PersistenceTest lives only under WITH_PYTHONSCRIPT, so the prior proposed PythonOFF filter would fail discovery; correct it before execution to all six actual Python-independent persistence suites and add a workflow/source-membership contract. Existing --build=never/default1800s/no-skip policy and shipping DWG default unchanged. Fresh human-requested GitHub auth32185 is confirmed live awaiting approval, not success; no automatic restart. Next run focused workflow/plan checks, update dependency S15 to VERIFYING with these results, publish its own candidate without overwriting advanced97, then advance main pin and require ON/OFF consumer/full/artifact/native Windows proof. Scope remains all-five/provider/notices/API/module/dependency/legal/protected. Evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*; sole generated exclusion build-linux-arm64/. Current candidate6 main paths; rerun authoritative base inventory rather than forecasting. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Require actual headless Windows DWG/Unicode consumer behavior with existing prebuilt dependencies | Source audit confirms prior Mac/Linux full references use DWG_IMPORT=OFF; old WindowsPersistence job uses UNITTESTS/DWG_IMPORT=OFF and only compiles, so its success cannot prove ON behavior. Extend that existing job to DWG_IMPORT/UNITTESTS=ON, Qt/Python/CLI=OFF, build lcunittest, call conanrun.bat, then require full DwgImportTest/DxfRoundTripTest/PersistenceTest filters with default1800s/zero-discovery/no-skip checks. Existing prebuilt gtest1.14/Conan --build=never and unchanged GUI mixed filter retained; no new dependency-source build or support-default change. New UI-independent Unicode regression tests actual variants/sniff/native-link save, with no skip waiver. Actual current accumulated diff is195 paths, correcting prior197 forecast; current candidate5 main paths once workflow included. Dependency native Mac candidate remains live; Linux ownership prep failure is retained and exact owned snapshot resumes with process-scoped exact-directory trust only. Next focused dependency results, own commit/PR and native Windows receipt, main advanced pin and complete UI-on/OFF, DWG-on/OFF native consumer proof plus actual artifact scope. All-five/provider/notices/API/module/dependency/legal/protected goal remains active. Evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*; sole generated exclusion build-linux-arm64/. Run full/checker31/worktree5/base195/all17/whitespace and workflow lint/contract tests before qualification; record results in-flight. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Close project UTF8 sniff and native Boost symlink boundaries without changing semantics | Frozen dependency candidate97+c60d7ea8b79f557233cbbe5645d905fb0d524c9c628f1377de31e1f20f4d76ef contains4 non-plan paths; Mac qualification live. Native-ARM Linux copy is complete but first prep exits128 at Git ownership safety before configuration/build/tests, not a code failure or green; resume that exact owned temporary checkout with process-scoped trust for its exact path only, no global or wildcard exception and no recopy/restart of live Mac work. Main file.cpp now opens sniff/binary-sniff via standard u8path; Boost link resolution keeps its existing algorithm/error policy, accepts native path input and returns resolved native names to UTF8. File facade documents UTF8. Add one UI-independent persistence regression for Unicode parent/BMP/non-BMP names, ASCII+binary variant detection/readback, DWG signature sniffing, and a real native Unicode symlink whose target receives a changed two-line drawing; existing ASCII link test retained. No required skip/ASCII workaround. Main submodule still cleanceaf; dependency commit/pin pending own checks, so portable positives cannot qualify Windows yet. Cache audit records prior complete Mac472 uses DWG_IMPORT=OFF; retain that scope and require an ON consumer check as well as Windows persistence ON lane, without changing default feature policy. Full all-five/provider/notices/API/module/dependency/legal/protected goal active. Evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*; sole generated exclusion build-linux-arm64/. Run main full/checker31/worktree4/base197/all17/whitespace before next candidate tests; reconcile actual path count rather than assuming it. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Implement explicit UTF8 entry points and native temporary basenames | New dependency test-only diff8bea476f8c4bb75f3efd4bfad9a2a72c0a46c124748d6232261da873af445a8f executes actual Unicode parent/basename/non-BMP/DWG/ASCII-binary-DXF/atomic/rollback/cleanup vectors on native Mac before fix and PASS; this is expected portable behavior, not proof of a Windows failure or its root cause. Existing focused target/inventories unchanged; new dependency plan S15 ACTIVE and full-history checker PASS. Now implement five DXF/DWG opens plus transaction target with standard u8path, retain native basename and append only existing ASCII random suffixes in both platform branches. No exclusive-create/identity/atomic/permission algorithm or process-global locale change. Exact advanced97 baseline and existing MTEXT/3D source preserved; no frozen evidence rewritten. Next native Mac focused7 plus writer/hardening/DXF3 and actual Unicode verbose execution, native-ARM Linux equivalents, current hosted Windows, dependency plan/checker/fixture guards, then own exact commit/PR and consumer pin/sniff/Boost conversion with UI-off/GUI proof. Main pin still cleanceaf, no latest-artifact/native Windows acceptance. Full goal active; evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*; sole generated exclusion build-linux-arm64/. Run main full/checker31/worktree1/base194/all17/whitespace before candidate validation; update affected ledgers with results before publication. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Establish advanced dependency baseline and add focused Unicode filesystem contracts | Exact clean97a8bdba baseline now configures with actual existing LIBDXFRW_PYTHON_EXECUTABLE3.14.8 and builds all selected targets: native Mac focused7/7 plus writer-primitives/hardening/DXF3/3 PASS, no skips. Full history fetched without moving HEAD; existing dependency plan check PASS. Initial wrong-selector setup failure remains retained. Add one compact Unicode parent+basename+non-BMP regression inside the existing focused DWG fixture target: admitted DWG copy/read, ASCII+binary DXF write/read/exact target, atomic original visibility/commit, destructor rollback and native-basename temporary cleanup. Existing7/49 frozen inventories unchanged; no drawing payloads committed/uploaded. Portable old implementation may pass by design; native Windows red/green is still required and not inferred. Open dependency plan follow-up S15 without rewriting historical evidence, then explicit u8path at five input opens/transaction target and native basename plus ASCII suffix; main Boost/sniff boundaries follow with UI-off and GUI proof. Full goal remains active; evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-baseline-*-corrected.log; sole generated exclusion build-linux-arm64/. Run main full/checker31/worktree1/base194/all17/whitespace after this receipt before dependency edits and reconcile candidate results before publication/pin update. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Correct baseline interpreter selection without changing dependency build requirements | Start full/checker31/worktree1/base194/all17/whitespace PASS. Exact97 baseline configure terminates before compilation because Python3_EXECUTABLE is not this dependency's selector; unchanged CMake140-157 uses LIBDXFRW_PYTHON_EXECUTABLE and correctly rejects host3.9. Select actual3.14.8 with that existing variable and retain failed configure log; no source/build-policy waiver or product regression claimed. Baseline focused7 plus writer/hardening/DXF controls still required before source changes. Fetch full commit history without moving checkout so dependency plan trailer checks remain authoritative. Existing native Windows job queued/ARM live, no restart. Full goal unchanged; evidence /private/tmp/librecad-windows-path.WXbCZP/utf8-*; sole generated exclusion build-linux-arm64/. Rerun plan checks on this receipt and continue exact97 baseline. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Start compact UTF8/native filesystem boundary implementation on preserved latest dependency | Previous goal turn made progress: guard a286 and portable driver24e1 published with actual red/472 portable tests and exact PR verification. Current isolated main HEAD24e1 has only own plan checkpoint plus generated build-linux-arm64/; submodule cleanceaf, separate dependency checkout clean97a8bdba, public PR103 still OPEN/draft/exact97/basea05/branch unchanged. Current main24e1 ARM114859210255 live; Windows114859210402 and other jobs queued, no restart. Implement UTF8 decoding at five dependency DXF/DWG input opens and transaction target; preserve native target basename while appending only ASCII random suffixes on both OS branches, with unchanged exclusive-create/identity/atomic/permission behavior. Reuse std::filesystem::u8path rather than inventing a converter or changing process-global locale. Add Unicode parent/basename/non-BMP DXF ASCII+binary/DWG and transaction commit/rollback/cleanup coverage inside existing focused dwg-fixture target, keeping immutable test inventories and all gates. First baseline native Mac focused7 plus writer/hardening/DXF controls on exact97, then candidate/native-ARM Linux and own hosted Windows proof; local positives alone are not a native Windows red/green or final artifact. Project sniff and Boost symlink boundaries must preserve the same explicit UTF8/native conversion policy, with UI-off persistence and exact Qt reopen contracts. Preserve external MTEXT/3D advancement and qualify new dependency/pin independently; no frozen historical qualification evidence or release claims rewritten. Full all-five/provider/notices/API/module/dependency/legal/protected scope active. Auth5376 terminalexpired_token/no restart, existing credentials work. Evidence /private/tmp/librecad-windows-path.WXbCZP; sole generated exclusion build-linux-arm64/. Run full/checker31/worktree1/base194/all17/whitespace before dependency edits and update results in-flight. |
+| 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Publish verified portable dialog fix and preserve advanced dependency for next boundary batch | Published24e1d5c7d5a0281e8b7f36b1b8232a570a0c23eb exact2 paths/194 accumulated byte-matches frozena286+236b6468. Final full/checker31/worktree2/base194/all17/both whitespace/staged+committed identity PASS;472/80/skipped0 Mac offscreen-Cocoa/native-ARM Linux, exact unchanged mixed177 and focused3 on Mac,265/no-skip/real-Conan proof retained. Push succeeds; stale immediate PR head safely stops body edit, fresh same-PR recheck verifies full head/base/title/OPEN/draft/body bytes/attachment. Main38263345398 Windows114859210402/persistence114859209964/Linux114859211250/ARM114859210255/sanitizer114859210309 queued; Mac38263345426 ARM114859210289/Intel114859210018 queued; PLAN38263345428/CodeQL38263345455 queued. No restart/cancel. Separate clean dependency checkout /private/tmp/librecad-windows-path.WXbCZP/libdxfrw-latest is exact advanced97a8bdba/no AGENTS; pin remains cleanceaf and original dirty dependency untouched. Read-only latest audit still finds narrow DXF opens1795/1815/1835, DWG716/3358 and transaction target46/temp basename64/Windows71; use existing DXF/DWG fixtures/writer-primitives/hardening tests for compact UTF8/native boundary work, preserve target+temp/atomic/symlink policy and qualify any new pin independently. Native Windows encoding cause/NSIS and all-five producer/provider/notices/API/module/dependency/legal/protected goal remain open. Auth5376 terminalexit1 expired_token/no approval, no restart; existing credentials published both commits. Evidence /private/tmp/librecad-windows-path.WXbCZP; sole generated exclusion build-linux-arm64/. Publication checkpoint is plan-only pending next batch; rerun full/checker31/worktree1/base194/all17/whitespace. |
 | 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Qualify minimal queued driver and exact Unicode-path contract for publication | Two-path candidate plan/testpyguibridge.cpp at parenta286a65e; sole non-plan diffSHA236b64684284a436d217a32b3a536521cbacdb6ab68218190f1803739c66ec76. Retained actual missing-file15s red; once-only queued acceptance now yields one real nested QMessageBox acknowledgment and responsive existing5s cancellation. Mac focused3/zero skips and exact unchanged BAT mixed177/21 suites/default1800s PASS. Complete Mac offscreen/Cocoa and native-ARM Linux each472/80/skipped0 PASS;265 scripts/no skips/real Conan PASS. Exact Qt Unicode export path and actual reopen/error/cancel PASS portably; native Windows encoding/root cause/NSIS still unqualified. Initial local mixed filter extraction failure retained, corrected command does not change CI. No production library/dependency/pin/package changed; earlier archive5388360b retains earlier frozen legacy scope. Fresh guard a286 CI allfour queued, PR445 exact head/base/title/OPEN/draft/body bytes unchanged. Dependency PR103 current97a8bdba is four commits ahead of ceaf (MTEXT/3D/ATTDEF/merge),113 returned changed paths; inspect/preserve advancement before any dependency mutation or pin update. Auth5376/cell56 authoritatively terminates exit1 expired_token/no approval; existing credentials work, no automatic restart/success claim. Next exact2-path commit/push/PR verification, latest native Windows path proof and compact UTF8/native boundary work preserving atomic/symlink policy, plus all-five/provider/API/module/dependency/legal/protected goal. Evidence /private/tmp/librecad-windows-path.WXbCZP/green-*, red-* and dependency-advance.json; sole generated exclusion build-linux-arm64/. Full/checker31/worktree2/base194/all17/whitespace passed before receipt; rerun after this plan edit before commit. |
 | 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Verify real queued-warning behavior and native Linux; correct local mixed-filter extraction | Frozen test-only parenta286+diffSHA236b64684284a436d217a32b3a536521cbacdb6ab68218190f1803739c66ec76 builds on Mac/native-ARM Linux. Mac required focused3 discovered/executed/skipped0 PASS: real QMessageBox at44ms acknowledged once, file dialog regains control,498 timer ticks and existing5s deadline rejects missing input; actual Unicode export/reopen/error/cancel contracts PASS. Native Linux3.14.4/aarch64 complete472/80/skipped0 PASS. Mac local mixed harness then incorrectly concatenates four BAT filters with newlines and fails required-suite discovery before execution (PythonFixture missing); this is neither product failure nor green. Correct the diagnostic extraction to the one existing21-suite mixed filter, verify one line, and rerun with unchanged default1800s timeout, then Mac complete472 offscreen/Cocoa and265 scripts/no skips/real Conan. Full/checker31/worktree2/base194/all17/whitespace PASS before these tests and must rerun after receipt. No production API/dependency/pin/CI filter changed; no final artifact or native Windows acceptance. Fresh read-only dependency PR103 reports head97a8bdba beyond pinnedceaf; inspect/preserve that external advancement before any dependency work, never overwrite it. Full goal active; evidence /private/tmp/librecad-windows-path.WXbCZP/green-*; sole generated exclusion build-linux-arm64/. |
 | 2026-10-12 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Retain actual missing-file driver timeout and queue acceptance once | Red native Mac build PASS at parenta286a65e+test diffSHAa3f679005bfc335bd0dbb4ada2d86a78829b44025d454a9504fb81f7a107bb97. Required runner discovers1 real nested-missing-Unicode-warning test, then terminalexit1 after diagnostic15s: last modal QFileDialog at190ms, neither message acknowledgment nor existing5s driver deadline runs. This is a retained expected red, never acceptance; CI full mixed filter/1800s unchanged. Full/checker31/worktree2/base194/all17/whitespace PASS before build. Change only test driver to guard selected and queue accept outside its own timer slot; retain exact QFileInfo Unicode export assertion and real nested-warning contract. Next focused diagnostic green, unchanged Windows mixed filter, complete472 expected/no-skips offscreen-Cocoa and native-ARM Linux,265 scripts/real Conan and plan checks. Windows UTF8/native-path cause remains unconfirmed; no Windows/NSIS/final artifact promoted. Evidence /private/tmp/librecad-windows-path.WXbCZP/red-*; sole generated exclusion build-linux-arm64/; full all-five/provider/API/module/dependency/legal/protected goal active. Auth5376/cell56 last confirmedlive; no restart/success claim. |
