@@ -644,6 +644,7 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
         std::ifstream written(path, std::ios::binary);
         const std::string head(
             (std::istreambuf_iterator<char>(written)), std::istreambuf_iterator<char>());
+        written.close();
         const bool isBinary = head.find(kBinarySentinel) != std::string::npos;
 
         EXPECT_EQ(isBinary, lc::persistence::File::isBinaryType(type))
@@ -1215,6 +1216,7 @@ TEST(DxfRoundTripTest, AsciiRoundTripStaysAscii) {
         std::ifstream written(resaved, std::ios::binary);
         const std::string body((std::istreambuf_iterator<char>(written)),
                                std::istreambuf_iterator<char>());
+        written.close();
         EXPECT_EQ(body.find(kBinarySentinel), std::string::npos)
             << acadVersion << " came back binary after a plain Save.";
 
@@ -1879,6 +1881,7 @@ TEST(DxfRoundTripTest, AttributedInsertSurfacesItsValues) {
     std::ifstream written(path);
     const std::string body((std::istreambuf_iterator<char>(written)),
                            std::istreambuf_iterator<char>());
+    written.close();
     EXPECT_EQ(body.find("\nATTRIB\n"), std::string::npos)
         << "Without an attribute model there is nothing to write an ATTRIB from; "
            "they go back as TEXT, which is what the import note warns about.";
@@ -3141,6 +3144,7 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
             }
         }
 
+        written.close();
         EXPECT_EQ(insUnits, c.insUnits) << c.what << ": the drawing was rescaled by saving it";
         EXPECT_EQ(measurement, c.measurement) << c.what;
 

@@ -24,7 +24,35 @@ and prior review receipts retain their original revision scope; their use of
 receipt. A plan-only review does not rebase source, advance a gitlink, or qualify
 an artifact.
 
-**Current CI repair (2026-10-13):** at parent `b8736c9d`, actual base55d6,
+**Current Windows fixture CI repair (2026-10-13):** parent70bb888f, base55d6,
+pin d68 unchanged. The user-supplied Downloads ZIP is visible but macOS denies
+its contents even outside the shell sandbox; attachment/project-copy requested.
+Use the live GitHub log, run38442567798/job115452605720, rather than claiming
+the unreadable archive was inspected. Parent Linux x64/ARM, sanitizer, plan and
+Windows compile-only persistence pass their selected checks; Windows now links
+and passes its29+4+1+179 selections, then executes100 persistence/settings/Lua
+tests with94 pass/six failures. Five tests delete files while their own input
+streams remain open, producing Windows sharing violation32. Close those five
+readers before cleanup without ignoring remove errors or relaxing assertions.
+The Lua missing-file fixture injects an unescaped Windows path into source and
+ignores the setup error; bind it through existing Kaguya values instead. A native
+quote/backslash/space path matrix first reproduces the syntax error, then passes
+with exact string round-trip and all original import-result assertions. Use
+unique nonexistent paths, not removal of a fixed shared filename.
+Two new source regressions first fail all five missing-close cases plus path
+injection, then all6 coverage/export/fixture checks pass. Frozen candidate builds
+Qt/DWG ON and Qt/DWG OFF; native offscreen and unsandboxed Cocoa each490/490,
+headless353/353 and scripts278/278 with real Conan all pass/zero skips. Keep the
+original six dirty edits unpublished: clean candidate blob indexing excludes
+their Unicode additions, and reverse-merge reconstructs the exact prior working
+file blobee2230b3afbf8e144873aff7827834573397f1af. The old six-path patch
+SHA406b1856 remains historical because new cleanup lines shift diff offsets.
+Sync/check/commit only the three fixture files, source regression and this plan;
+no production parser/facade, gitlink, filter, deadline or support claim changes.
+Native Windows execution of this new candidate and exact ZIP review remain
+pending. Keep draft/all broader artifact/provider/legal/protected gates open.
+
+**Historical strict-contract CI repair (2026-10-13):** at parent `b8736c9d`, actual base55d6,
 the completed Linux x64/ARM64 jobs each execute360 with359 pass and the same
 obsolete malformed-radius recovery expectation failing. Windows fails linking
 the settings signal test to `CustomizeToolbar::staticMetaObject`; it does not
@@ -587,9 +615,10 @@ parsing reached EOF. Keep that design decision explicit before implementing it.
 
 ### Next bounded implementation changes
 
-The current user request is to fix PR445 CI. Keep this repair scoped to the
-observed linker error and tests for the pinned reader's existing strict contract;
-it does not authorize a new tolerant parser or broad qualification shortcuts.
+The current user request is to fix CI errors in the supplied log. Downloads
+access is blocked, so the current PR445 GitHub Windows log is the inspected
+source pending attachment. Keep this repair scoped to the six observed fixture
+failures; it does not authorize new parser behavior or qualification shortcuts.
 Other READY rows identify inputs/checks, not completed work. Use the existing
 same-change plan/checker transaction and preserve unrelated local edits.
 
@@ -2682,6 +2711,7 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Repair six Windows fixture failures from the accessible current CI log | Parent70bb888f/base55d6/pind68 unchanged. Downloads ZIP logs_104164664960.zip is visible/12767112 bytes but macOS content access is denied; requested attachment/project copy, never claim its contents read. Inspected GitHub run38442567798/job115452605720:29+4+1+179 selected tests pass, then full persistence/settings/Lua100 executes94 pass/six failures. Five std::ifstream handles remain live at boost::filesystem::remove (Windows sharing violation32); close each before cleanup without retries/ignored errors. Lua setup injects unescaped Windows path and returns nil after ignored syntax error; native quote/backslash/space matrix reproduces the red, then Kaguya value binding/exact round-trip retains all failure-result assertions. Two source regressions first fail five close controls and one value-binding control; all6 then pass. Fresh candidate Qt/DWG-ON and headless DWG-OFF builds pass; offscreen490/490, native unsandboxed Cocoa490/490, headless353/353 and all278 scripts/real Conan/no skips pass. Preserve original six dirty edits with clean candidate indexing; reverse-merge recovers exact original working-file blobee2230b3afbf8e144873aff7827834573397f1af (prior patch SHA406b1856 is historical due new line offsets). Evidence /private/tmp/pr445-master-refresh.7vjxZE/ci-fixtures-* and /private/tmp/pr445-windows-70bb-ci.log. Five scoped publication paths only: dxfexporttest, dxfroundtriptest, luapersistence_test, source coverage test and plan. Full/checker31/complete-worktree10/actual-base55d6/actionlint/whitespace and staged-byte checks PASS; rerun on this final receipt, publish existing branch and verify newly triggered hosted checks; native Windows results and exact ZIP review remain pending. Sole generated exclusion build-linux-arm64/. No production/parser/facade/pin/filter/default1800s/support/artifact/provider/legal/protected gate or unrelated work changed. |
 | 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Fix observed PR445 Linux and Windows CI failures without parser or coverage weakening | Parentb873, actual base55d6, exact d68 pin unchanged. Completed Linux x64/ARM360 each359 pass/one old recovery expectation; Windows LNK2019 names CustomizeToolbar::staticMetaObject. New export regression first fails, then existing LC_UI_API annotation fixes the data import/export boundary; all276 scripts/real Conan/no skips pass. Replace obsolete skip/recovery expectation with eight independent malformed ARC/CIRCLE radius/prefix safety cases, keeping strict production behavior. Native offscreen490/490, Qt-OFF/DWG-OFF353/353 and focused14/14 pass with zero skips; initial census-vs-count compile error repaired with exact typed entity maps. Cocoa full sandbox run is -11 in QCocoaGLContext/QScreen after desktop-service denials; native unsandboxed Cocoa full490/490 passes with zero skips, retaining both logs and no product workaround. Preserve six original dirty edits: stage the clean candidate test blob only, reverse-merge reconstructs exact prior working-file blob1ea58d0180a9effb4adb4ed93a3230ec4178f311; original six-path e2e48f03 patch identity is historical because scoped edits shift diff context/line offsets. Frozen candidate /private/tmp/pr445-master-refresh.7vjxZE excludes all original dirty changes. Five intended publication paths: class export, source regression, strict test, scripting docs and plan. Final full/checker31/complete-worktree10/actual-base55d6/actionlint/whitespace and exact staged-source-byte checks PASS; all276 scripts rerun PASS with real Conan/no skips. Commit/push the five scoped paths on the existing branch and verify PR body/head and newly triggered hosted checks; those hosted results are pending, not accepted. Sole generated exclusion build-linux-arm64/. No parser, pin, filters, default1800s, support, artifact/provider/legal/protected gate or unrelated files changed. |
 | 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Integrate merged PR446 and complete existing persistence bindings/required coverage | Actual base55d6bb0f, parent1414, gitlinkd68 unchanged. Preserve the six original unstaged paths and their binary diff SHAe2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038. Resolve the settings conflict retaining selected-directory/bundled/relocated defaults and always-object recovery; inherit bounds/GUI tests, use the shared QApplication fixture and add default-directory precedence. Both existing bridges gain enum15 and readonly typed per-record failures; nonempty/readonly/lifetime and actual known-DWG ON/OFF tests pass. Getter-only Kaguya silently accepts writes: retain this first red and repair with explicit rejecting setters, no vendor edit. Missing Kaguya test include and getter function-pointer deduction errors are repaired. Require full persistence/settings/Lua suites on Mac/Windows and missing MTextCodecTest on Linux; three new source-selection tests retain their first red before repair. Frozen index-only export excluding all six dirty paths builds native Qt/Python/persistence/DWG ON and Qt OFF/DWG OFF; full Qt490 executes/489 pass/zero skips/sole unchanged D1 failure, headless109/109 and Cocoa23/23 including settings8/8 pass. All275 scripts with real Conan/no skips pass; actionlint and shell syntax pass. Full/checker31/complete-worktree/actual-base55d6/whitespace checks pass and must be rerun on the final receipt. Evidence /private/tmp/pr445-master-refresh.7vjxZE; local staged-parent proof, not eventual-commit/hosted/artifact qualification. D1 awaits the requested strict-versus-tolerant policy; do not change radius assertion, parser, pin, deadlines or filter it out. Publish only the16 scoped staged paths in the master merge, refresh the draft PR body and verify remote ancestry/head. Sole generated exclusion build-linux-arm64/. No platform/artifact/provider/legal/protected gate is promoted. |
 | 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Publish the scoped review fixes while independently refreshing open PR446 | Actual master remains f972953; remote PR445 still5a2d43a9 and selected upstream master remainsd68fb1ed. Seven non-plan implementation/doc/test paths byte-match the isolated parent+fix export: 272 scripts/zero skips/real Conan, fresh headless Python/DWG-ON build,30 runtime/binding/parity and2 QtCore runtime tests pass. Focused32 rerun passes on this turn. Virtualenv escape and disabled/sharded real-probe negative controls remain retained. D1 is deliberately unresolved and the complete persistence filter remains94/95; neither parser nor assertion/filter/pin is weakened. Stage only those seven paths plus this synchronized plan; six original dirty paths retain binary diff SHAe2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038. Full/checker31/worktree/actual-base/staged-whitespace/source identity checks are required before commit and again on the committed slice. Sole generated exclusion build-linux-arm64/. New own-head CI is pending publication, not accepted; preserve draft and all broader platform/package/notices/release gates. |

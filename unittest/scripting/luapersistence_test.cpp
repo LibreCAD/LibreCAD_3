@@ -86,13 +86,17 @@ assert(binary.formatId == 'dxf')
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST_F(LuaFixture, ImportResultIsReadable) {
-    const std::string missing =
-        (boost::filesystem::temp_directory_path() / "lc3-lua-not-here.dxf").string();
-    boost::filesystem::remove(missing);
+    for (const char* suffix : {".dxf", R"( O'Brien\new\tabs\drawing space.dxf)"}) {
+        const std::string missing = (boost::filesystem::temp_directory_path()
+            / boost::filesystem::unique_path("lc3-lua-not-here-%%%%%%%%-%%%%%%%%")).string() + suffix;
+        SCOPED_TRACE(missing);
+        ASSERT_FALSE(boost::filesystem::exists(missing));
 
-    lcLua->runString(("missing_path = '" + missing + "'").c_str());
+        kaguya::State state(L);
+        state["missing_path"] = missing;
+        EXPECT_EQ(state["missing_path"].get<std::string>(), missing);
 
-    EXPECT_EQ(lcLua->runString(R"LUA(
+        EXPECT_EQ(lcLua->runString(R"LUA(
 local result = lc.persistence.File.importFile(document, missing_path,
                                               lc.persistence.File.LIBDXFRW)
 assert(result.ok == false, 'a file that is not there did not fail')
@@ -106,6 +110,7 @@ assert(result.loss:empty() == true)
 assert(result.loss:total() == 0)
 assert(result.variantId ~= '', 'the recorded variant must never be blank')
 )LUA"), "");
+    }
 }
 
 TEST_F(LuaFixture, ImportFailuresAreReadonlyAndRetained) {

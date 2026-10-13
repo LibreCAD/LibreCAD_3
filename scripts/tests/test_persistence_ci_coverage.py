@@ -40,3 +40,23 @@ class PersistenceCiCoverageTests(unittest.TestCase):
         self.assertIn("Q_OBJECT", header)
         cmake = (ROOT / "lcUI/CMakeLists.txt").read_text()
         self.assertIn("target_compile_definitions(lcui PUBLIC LC_UI_SHARED)", cmake)
+
+    def test_fixture_readers_close_before_windows_cleanup(self):
+        for relative, suite, name, stream, path in (
+            ("dxfexporttest.cpp", "DxfExportTest", "Phase3TablesAndHeaderFidelity", "in", "dxfPath"),
+            ("dxfroundtriptest.cpp", "DxfRoundTripTest", "EveryAdvertisedSaveTypeProducesAFile", "written", "path"),
+            ("dxfroundtriptest.cpp", "DxfRoundTripTest", "AsciiRoundTripStaysAscii", "written", "resaved"),
+            ("dxfroundtriptest.cpp", "DxfRoundTripTest", "AttributedInsertSurfacesItsValues", "written", "path"),
+            ("dxfroundtriptest.cpp", "DxfRoundTripTest", "DrawingUnitsSurviveASave", "written", "resaved"),
+        ):
+            with self.subTest(name=name):
+                source = (ROOT / "unittest/persistence" / relative).read_text()
+                body = source.split(f"TEST({suite}, {name})", 1)[1].split("\nTEST(", 1)[0]
+                self.assertLess(body.index(f"{stream}.close();"),
+                                body.rindex(f"boost::filesystem::remove({path});"))
+
+    def test_lua_missing_path_is_passed_as_a_value_not_source(self):
+        source = (ROOT / "unittest/scripting/luapersistence_test.cpp").read_text()
+        body = source.split("TEST_F(LuaFixture, ImportResultIsReadable)", 1)[1].split("\nTEST_F(", 1)[0]
+        self.assertIn('state["missing_path"] = missing;', body)
+        self.assertNotIn('"missing_path = \'"', body)

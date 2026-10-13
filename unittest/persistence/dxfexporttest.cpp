@@ -451,6 +451,7 @@ TEST(DxfExportTest, Phase3TablesAndHeaderFidelity) {
     std::ifstream in(dxfPath);
     std::string blob((std::istreambuf_iterator<char>(in)),
                      std::istreambuf_iterator<char>());
+    in.close(); // Windows cannot remove a file while this reader owns its handle.
 
     EXPECT_NE(blob.find("MYCUSTOMPATTERN"), std::string::npos)
         << "User-defined line pattern was not emitted in the LTYPE table.";
