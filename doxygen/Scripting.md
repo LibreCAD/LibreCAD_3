@@ -121,7 +121,13 @@ Opening a file imports into a separate candidate first: canceling or failing
 without recovered entities preserves the current drawing, filename, undo
 history, and active operation. A canceled or failed new-window open does not
 register an empty window. Successful adoption notifies observers only after
-the drawing and its source path are coherent. Shared documents and previews
+the drawing and its source path are coherent. Malformed ARC/CIRCLE radii are
+strictly rejected, not silently skipped to continue parsing: `File.importFile`
+reports `ok=false`, diagnostics and `partial=true` only when entities arrived
+before the failure. Normal UI Save asks for another target for an incomplete
+import, including a failed import with no entities. Scripts must inspect the
+result and choose a new destination for recovered data instead of overwriting
+the original. Shared documents and previews
 may outlive their window; deleted UI and undo observers must not receive their
 callbacks. The actual bound replacement/reopen/retained-object regressions
 exercise this contract; final platform and packaged acceptance remains tracked

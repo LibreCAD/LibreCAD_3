@@ -32,3 +32,11 @@ class PersistenceCiCoverageTests(unittest.TestCase):
         self.assertIn("LC_UNITTEST_WITH_QT", cmake)
         self.assertIn("#ifdef LC_UNITTEST_WITH_QT\n#include <python_runtime_config.h>", runtime)
         self.assertIn("ui/testuisettings.cpp", cmake)
+
+    def test_settings_signal_metaobject_is_exported_to_windows_consumers(self):
+        header = (ROOT / "lcUI/widgets/customizeToolbar/customizetoolbar.h").read_text()
+        self.assertIn('#include "lcui_api.h"', header)
+        self.assertIn("class LC_UI_API CustomizeToolbar : public QDialog", header)
+        self.assertIn("Q_OBJECT", header)
+        cmake = (ROOT / "lcUI/CMakeLists.txt").read_text()
+        self.assertIn("target_compile_definitions(lcui PUBLIC LC_UI_SHARED)", cmake)
