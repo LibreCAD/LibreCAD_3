@@ -32,7 +32,7 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iomanip>
 #include <memory>
@@ -48,7 +48,7 @@ std::string findTestPy() {
     if (const char* env = std::getenv("LIBRECAD_TEST_PY")) {
         return env;
     }
-    namespace fs = std::filesystem;
+    namespace fs = boost::filesystem;
     fs::path here = fs::path(__FILE__).parent_path();
     return (here.parent_path().parent_path()
             / "luacmdinterface" / "test.py").string();

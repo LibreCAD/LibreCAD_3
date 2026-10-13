@@ -5,18 +5,20 @@
 
 #include <QComboBox>
 #include <QFileInfo>
+#include <QMessageBox>
 
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <qt_keywords_pop.h>
 #include <lcpython.h>   // PythonInit
 // Phase 5 PR-5.1 fixup: pyeventhooks.h include no longer needed here —
 // installEventHooks() moved to MainWindow ctor.
+namespace py = pybind11;
 #endif
 
 using namespace lc::ui::widgets;
-
-namespace py = pybind11;
 
 // Phase 3 PR-3.1 — the language combo entries are indexed by combo
 // row order to keep the isPythonSelected check trivial.
@@ -26,6 +28,20 @@ namespace {
 }
 
 #ifdef LC_WITH_PYTHONSCRIPT
+
+struct LC_PYTHON_LOCAL ScriptDock::PyNamespace {
+    // A py::object, not a py::dict: a default py::object holds no
+    // reference, whereas a default py::dict calls PyDict_New.  Members
+    // are constructed before, and destroyed after, the bodies below
+    // that hold the GIL, so a py::dict member touched Python with no
+    // thread state and crashed.  The dict is created, and dropped,
+    // inside those bodies instead.
+    py::object ns;
+    PyNamespace();
+    ~PyNamespace();
+    PyNamespace(const PyNamespace&) = delete;
+    PyNamespace& operator=(const PyNamespace&) = delete;
+};
 
 ScriptDock::PyNamespace::PyNamespace() {
     // Per phase-1's permanent-release GIL pattern: the main thread does
@@ -47,8 +63,9 @@ ScriptDock::PyNamespace::PyNamespace() {
 ScriptDock::PyNamespace::~PyNamespace() {
     // GIL-holding destruction: the main thread's Qt event loop runs
     // GIL-free between Python calls, so ~py::dict must reacquire.
+    // Leave `ns` empty, so its own destructor has nothing to release.
     py::gil_scoped_acquire gil;
-    ns = py::dict();
+    ns = py::object();
 }
 
 #endif   // LC_WITH_PYTHONSCRIPT
@@ -165,7 +182,12 @@ void ScriptDock::on_open_clicked() {
     if(!fileName.isEmpty()) {
         QFile file(fileName);
 
-        file.open(QFile::ReadOnly | QFile::Text);
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Open File"),
+                                 tr("Could not open '%1': %2")
+                                     .arg(fileName, file.errorString()));
+            return;
+        }
         QTextStream stream(&file);
 
         ui->luaInput->setPlainText(stream.readAll());
@@ -198,7 +220,12 @@ void ScriptDock::on_save_clicked() {
     if(!fileName.isEmpty()) {
         QFile file(fileName);
 
-        file.open(QFile::WriteOnly | QFile::Text);
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Save File"),
+                                 tr("Could not write '%1': %2")
+                                     .arg(fileName, file.errorString()));
+            return;
+        }
         QTextStream stream(&file);
 
         stream << ui->luaInput->toPlainText();

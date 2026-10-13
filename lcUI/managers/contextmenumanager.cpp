@@ -194,6 +194,13 @@ void ContextMenuManager::selectedCommands(api::Menu* menu, const std::vector<lc:
     // mainWindow:copySelectedEntities(mainWindow:cadMdiChild():selection()) end`.
     // The nested call reads the current selection at click time, not
     // menu-generation time — preserved by resolving inside the lambda.
+    api::MenuItem* cutItem = new api::MenuItem("Cut");
+    cutItem->addCallback(
+        lc::scripting::nativeCallback([self]() {
+            self->cutSelectedEntities(self->cadMdiChild()->selection());
+        }));
+    menu->addItem(cutItem);
+
     api::MenuItem* copyItem = new api::MenuItem("Copy");
     copyItem->addCallback(
         lc::scripting::nativeCallback([self]() {

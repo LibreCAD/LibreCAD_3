@@ -16,7 +16,9 @@ class Area : public Base, virtual public Visitable {
 public:
     /**
       * Create a new Area. The coordinates coordA and coordB will be ordered so that minP will always be < maxP
-      * The coordinates are not allowed to describe a volume
+      * The corners may differ in z: every predicate below (width, height, inArea,
+      * overlaps, intersection, ...) reads x and y only, so a non-planar pair simply
+      * yields the axis-aligned bounding box of the two points.
       *
       * @param CoordA First coordinate of a area
       * @param CoordB Second coordinate of a area
@@ -24,10 +26,6 @@ public:
     explicit Area(const Coordinate& coordA, const Coordinate& coordB) :
         _minP(Coordinate(std::min(coordA.x(), coordB.x()), std::min(coordA.y(), coordB.y()), std::min(coordA.z(), coordB.z()))),
         _maxP(Coordinate(std::max(coordA.x(), coordB.x()), std::max(coordA.y(), coordB.y()), std::max(coordA.z(), coordB.z()))) {
-        if (coordA.x() != coordB.x() && coordA.y() != coordB.y() && coordA.z() != coordB.z()) {
-            throw "Points describe a volume, not a area.";
-        }
-
     }
 
     explicit Area() : _minP(0., 0.), _maxP(0., 0.) {

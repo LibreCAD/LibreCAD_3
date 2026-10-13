@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT (LC)
 
 message("***** LibreCAD Qt user interface *****")
@@ -12,18 +12,13 @@ set(CMAKE_AUTORCC ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
-set(QT_USE_QTOPENGL TRUE)
-
-find_package(Qt5Widgets)
-find_package(Qt5Core)
-find_package(Qt5Designer)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5UiTools REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-
-SET(QT_USE_QTDESIGNER ON)
+# OpenGLWidgets is asked for explicitly: Qt6 split QOpenGLWidget out of
+# QtWidgets into its own module, and lcadviewer.h derives from it. It has been
+# resolving through another component's transitive link, which is luck rather
+# than a dependency.
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Svg UiTools Widgets)
 
 # HEADERS
 set(UI_hdrs
@@ -31,6 +26,7 @@ cadmdichild.h
 const.h
 luainterface.h
 lcadviewer.h
+glewsupport.h
 lcadviewerproxy.h
 lcadmodelviewerimpl.h
 lcadpaperviewerimpl.h
@@ -101,6 +97,7 @@ cadmdichild.cpp
 main.cpp
 luainterface.cpp
 lcadviewer.cpp
+glewsupport.cpp
 lcadviewerproxy.cpp
 lcadmodelviewerimpl.cpp
 lcadpaperviewerimpl.cpp
@@ -184,7 +181,7 @@ if(WITH_PYTHONSCRIPT)
     list(APPEND UI_hdrs python/pypluginloader.h)
 endif()
 
-QT5_WRAP_UI(UI_HEADERS
+qt_wrap_ui(UI_HEADERS
 mainwindow.ui
 widgets/clicommand.ui
 widgets/scriptdock.ui
@@ -208,8 +205,18 @@ dialogs/addlayerdialog.ui
 dialogs/addlinepatterndialog.ui
 dialogs/linepatternmanager.ui)
 
-qt5_add_resources(UI_RESOURCES
+qt_add_resources(UI_RESOURCES
 ui/resource.qrc)
+
+# cadmdichild.h, luainterface.h and several widgets/guiAPI headers include
+# <lcscripting/...> unconditionally (lcscripting is a Lua/Python-neutral
+# layer, so this isn't behind WITH_PYTHONSCRIPT). This directory only ever
+# got the repo root on its include path incidentally, through
+# lcpythonscript's target_include_directories(... PUBLIC ...) when
+# WITH_PYTHONSCRIPT links it in -- so it silently broke the moment a build
+# turns Python scripting off, which is exactly what the Windows/Conan build
+# does. Same fix, same reason, as lcadluascript's identical line.
+include_directories("${CMAKE_SOURCE_DIR}")  # for <lcscripting/…>
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -228,7 +235,10 @@ link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
 #Lua
-find_package(Lua 5.3 EXACT REQUIRED)
+# Lua 5.3 or newer.  Was EXACT 5.3, which made the build unusable on any
+# distribution shipping a newer Lua (Homebrew now defaults to 5.5).
+# kaguya supports 5.4+ as of the submodule bump in this commit.
+find_package(Lua 5.3 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 
@@ -246,8 +256,7 @@ set(SEPARATE_BUILD OFF)
 find_package(GLEW REQUIRED)
 
 include_directories(
-    ${GLEW_INCLUDE_DIR}
-    ${QT_QTOPENGL_INCLUDE_DIR})
+    ${GLEW_INCLUDE_DIR})
 #--------------------------------------------------
 
 
@@ -280,12 +289,13 @@ set(EXTRA_LIBS
         persistence
         lckernel
         ${LUA_LIBRARIES}
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::UiTools
-        Qt5::OpenGL
-		Qt5::Svg
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::UiTools
+        Qt6::OpenGL
+        Qt6::OpenGLWidgets
+		Qt6::Svg
         ${APR_LIBRARIES})
 
 # Phase 3 PR-3.1 — ScriptDock's Python leg needs lcpythonscript +
@@ -313,6 +323,7 @@ endif()
 if(WITH_UNITTESTS)
     add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
     set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
+    target_compile_options(lcui PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
@@ -323,10 +334,22 @@ else()
     add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 endif()
 
-qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(librecad PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 
-target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
+target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})
+
+# Boost.System has been header-only since Boost 1.69, and 1.92 ships no
+# libboost_system at all -- a literal -lboost_system here failed the final link
+# with "library 'boost_system' not found".  Link the imported target when Boost
+# defines one, which covers both the old real library and the modern stub, and
+# nothing otherwise.
+if(TARGET Boost::system)
+    target_link_libraries(librecad Boost::system)
+endif()
 
 if (MSVC)
     target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
@@ -351,4 +374,3 @@ endif()
 # the executable instead, which is where portable mode expects them.
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-

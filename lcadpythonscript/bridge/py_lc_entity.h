@@ -2,7 +2,9 @@
 
 // Bridge — lc.entity.* (mirrors lcadluascript/bridge/lc_entity.h). Slice 1.6.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {
@@ -11,8 +13,8 @@ namespace python {
 /// (Snapable/Draggable/Splitable/UnmanagedDraggable/Tangentable), and every
 /// concrete entity (Arc, Circle, Point, Ellipse, Line, LWVertex2D, LWPolyline,
 /// Spline, TextBase, Text, MText, Image, Insert, CustomEntity, DimAligned,
-/// DimAngular, DimDiametric, DimLinear, DimRadial, Dimension).  Also
-/// registers `lc.EntityDispatch` — deferred from slice 1.3 because its
+/// DimAngular, DimDiametric, DimLinear, DimOrdinate, DimRadial, Dimension).
+/// Also registers `lc.EntityDispatch` — deferred from slice 1.3 because its
 /// visit() overloads need the entity Python types available.
 ///
 /// All py::classh — every entity crosses as shared_ptr<const T>.  The Day-1

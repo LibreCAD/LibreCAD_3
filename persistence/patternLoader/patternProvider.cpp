@@ -41,8 +41,17 @@ PatternProvider::PatternProvider() {
 void PatternProvider::loadPattern(std::string filename) {
     auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
     auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
-    auto availableLibraries = File::getAvailableLibrariesForFormat("dxf");
-    lc::persistence::File::open(document, _patternLocation.at(filename), availableLibraries.begin()->first);
+    // getAvailableLibrariesForFormat answers with an empty map for a format
+    // nothing can read -- which is what "dwg" does in a default build -- so
+    // begin() here was a dereference waiting for the day DXF joined it.
+    const auto availableLibraries = File::getAvailableLibrariesForFormat("dxf");
+    if (availableLibraries.empty()) {
+        LOG_ERROR << "No reader for DXF; hatch pattern " << filename << " cannot be loaded";
+        return;
+    }
+
+    lc::persistence::File::open(document, _patternLocation.at(filename),
+                                availableLibraries.begin()->first);
     auto entityContainer = document->entitiesByBlock(nullptr);
     Pattern x;
     x.name = filename;
@@ -66,8 +75,10 @@ const Pattern& PatternProvider::getPattern(std::string filename) {
             return pos->second;
         }
     } catch(const std::out_of_range& e) {
-        //Unsupported pattern, return whatever is in cache
-        return _patterns.begin()->second;
+        // Unsupported pattern. The constructor puts "NULL" in the cache for
+        // exactly this; returning begin() returned whatever happened to sort
+        // first, which is some other drawing's pattern once one is loaded.
+        return _patterns.at("NULL");
     }
 };
 

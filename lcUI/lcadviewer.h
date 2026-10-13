@@ -1,14 +1,16 @@
 #pragma once
 #define GL_GLEXT_PROTOTYPES
 
-#include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
+// No GL/GLEW includes here.  This header uses no GL type or function -- only
+// Qt's QOpenGLWidget/QOpenGLContext -- and pulling glew.h in ahead of them made
+// Qt warn, once per translation unit that includes this header:
+//
+//   qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
+//   To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h
+//
+// which is not merely noise: Qt undefines GLEW's macros when it wins the race.
+// Code that genuinely needs GLEW uses glewsupport.h, which keeps it in a
+// translation unit free of Qt's OpenGL headers.
 
 #include <map>
 #include <QOpenGLWidget>

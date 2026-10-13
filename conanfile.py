@@ -14,7 +14,6 @@ class LibreCAD3(ConanFile):
         self.requires("glfw/3.3.8")
         self.requires("glm/0.9.9.8")
         self.requires("gtest/1.14.0")
-        self.requires("libdxfrw/2.2.0")
         self.requires("libcurl/8.2.1")
         self.requires("lua/5.3.5")
         self.requires("rapidjson/1.1.0")

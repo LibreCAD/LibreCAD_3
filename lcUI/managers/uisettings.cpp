@@ -32,7 +32,7 @@ const char* defaultUiSettings = R"(
                     {
                         "label": "Dimensions",
                         "width": 3,
-                        "buttons": [ "DimAngularOperations", "DimAlignedOperations", "DimLinearOperations", "DimRadialOperations", "DimDiametricOperations" ]
+                        "buttons": [ "DimAngularOperations", "DimAlignedOperations", "DimLinearOperations", "DimRadialOperations", "DimDiametricOperations", "DimOrdinateOperations" ]
                     },
                     {
                         "label": "Snap Options",

@@ -11,7 +11,7 @@
 #
 # This spike is DELETED or promoted into the slice 1.12 gtest suite after the
 # policy is validated. Nothing in the rest of the tree depends on it.
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(HOLDER_SPIKE CXX)
 
 option(WITH_PYTHONSCRIPT_SPIKE "Build the Day-1 holder-policy spike" ON)
@@ -25,7 +25,7 @@ if(NOT DEFINED LIBRECAD_ROOT)
         "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---- lckernel (compiled here as a mini-library, avoiding the top-level

@@ -6,6 +6,7 @@
 #include "cad/primitive/dimangular.h"
 #include "cad/primitive/dimdiametric.h"
 #include "cad/primitive/dimlinear.h"
+#include "cad/primitive/dimordinate.h"
 #include "cad/primitive/dimradial.h"
 #include "cad/primitive/ellipse.h"
 #include "cad/primitive/line.h"

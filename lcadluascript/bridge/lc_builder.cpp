@@ -1,3 +1,4 @@
+#include <cad/primitive/textconst.h>
 #include <cad/builders/layer.h>
 #include <cad/builders/cadentity.h>
 #include <cad/builders/arc.h>
@@ -7,6 +8,7 @@
 #include <cad/builders/point.h>
 #include <cad/builders/dimangular.h>
 #include <cad/builders/dimdiametric.h>
+#include <cad/builders/dimordinate.h>
 #include <cad/builders/dimradial.h>
 #include <cad/builders/ellipse.h>
 #include <cad/builders/line.h>
@@ -194,6 +196,22 @@ void import_lc_builder_namespace(kaguya::State& state) {
 
 
 
+    state["lc"]["builder"]["DimOrdinateBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimOrdinateBuilder, lc::builder::DimensionBuilder>()
+            .setConstructors<lc::builder::DimOrdinateBuilder()>()
+            .addFunction("build", &lc::builder::DimOrdinateBuilder::build)
+            .addFunction("dimAuto", &lc::builder::DimOrdinateBuilder::dimAuto)
+            .addFunction("featurePoint", &lc::builder::DimOrdinateBuilder::featurePoint)
+            .addFunction("leaderEndPoint", &lc::builder::DimOrdinateBuilder::leaderEndPoint)
+            .addStaticFunction("measuresX", &lc::builder::DimOrdinateBuilder::measuresX)
+            .addFunction("setFeaturePoint", &lc::builder::DimOrdinateBuilder::setFeaturePoint)
+            .addFunction("setLeaderEndPoint", &lc::builder::DimOrdinateBuilder::setLeaderEndPoint)
+            .addFunction("setXType", &lc::builder::DimOrdinateBuilder::setXType)
+            .addFunction("xType", &lc::builder::DimOrdinateBuilder::xType)
+                                                         );
+
+
+
+
     state["lc"]["builder"]["DimRadialBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimRadialBuilder, lc::builder::DimensionBuilder>()
             .setConstructors<lc::builder::DimRadialBuilder()>()
             .addFunction("build", &lc::builder::DimRadialBuilder::build)
@@ -365,6 +383,19 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("setHeight", &lc::builder::TextBaseBuilder::setHeight)
             .addFunction("angle", &lc::builder::TextBaseBuilder::angle)
             .addFunction("setAngle", &lc::builder::TextBaseBuilder::setAngle)
+            // Style, drawing direction and the two alignments were declared on
+            // the builder and reachable from nothing: a script could set a
+            // text's position, content, height and angle, and not how it was
+            // aligned. Alignment is most of what distinguishes one text
+            // placement from another.
+            .addFunction("textStyle", &lc::builder::TextBaseBuilder::textStyle)
+            .addFunction("setTextFont", &lc::builder::TextBaseBuilder::setTextFont)
+            .addFunction("drawingDirection", &lc::builder::TextBaseBuilder::drawingDirection)
+            .addFunction("setDrawingDirection", &lc::builder::TextBaseBuilder::setDrawingDirection)
+            .addFunction("horizontalAlign", &lc::builder::TextBaseBuilder::horizontalAlign)
+            .addFunction("setHorizontalAlign", &lc::builder::TextBaseBuilder::setHorizontalAlign)
+            .addFunction("verticalAlign", &lc::builder::TextBaseBuilder::verticalAlign)
+            .addFunction("setVerticalAlign", &lc::builder::TextBaseBuilder::setVerticalAlign)
                                                   );
 
     state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::TextBaseBuilder>()
@@ -377,5 +408,35 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .setConstructors<lc::builder::MTextBuilder()>()
         .addFunction("build", &lc::builder::MTextBuilder::build)
         .addFunction("copy", &lc::builder::MTextBuilder::copy)
+        // The four flags that make an MText an MText rather than a Text. They
+        // round-trip through the builder and the property editor and were
+        // reachable from neither script language.
+        .addFunction("underlined", &lc::builder::MTextBuilder::underlined)
+        .addFunction("setUnderlined", &lc::builder::MTextBuilder::setUnderlined)
+        .addFunction("strikethrough", &lc::builder::MTextBuilder::strikethrough)
+        .addFunction("setStrikethrough", &lc::builder::MTextBuilder::setStrikethrough)
+        .addFunction("bold", &lc::builder::MTextBuilder::bold)
+        .addFunction("setBold", &lc::builder::MTextBuilder::setBold)
+        .addFunction("italic", &lc::builder::MTextBuilder::italic)
+        .addFunction("setItalic", &lc::builder::MTextBuilder::setItalic)
     );
+
+    // The alignment vocabulary itself. Without it a script can call
+    // setHorizontalAlign and has no name for what to pass; these are the
+    // values lc::TextConst declares, so a script says lc.TextConst.HACenter
+    // rather than guessing that centre is 1.
+    state["lc"]["TextConst"] = kaguya::NewTable();
+    state["lc"]["TextConst"]["VABaseline"] = lc::TextConst::VABaseline;
+    state["lc"]["TextConst"]["VABottom"] = lc::TextConst::VABottom;
+    state["lc"]["TextConst"]["VAMiddle"] = lc::TextConst::VAMiddle;
+    state["lc"]["TextConst"]["VATop"] = lc::TextConst::VATop;
+    state["lc"]["TextConst"]["HALeft"] = lc::TextConst::HALeft;
+    state["lc"]["TextConst"]["HACenter"] = lc::TextConst::HACenter;
+    state["lc"]["TextConst"]["HARight"] = lc::TextConst::HARight;
+    state["lc"]["TextConst"]["HAAligned"] = lc::TextConst::HAAligned;
+    state["lc"]["TextConst"]["HAMiddle"] = lc::TextConst::HAMiddle;
+    state["lc"]["TextConst"]["HAFit"] = lc::TextConst::HAFit;
+    state["lc"]["TextConst"]["None"] = lc::TextConst::None;
+    state["lc"]["TextConst"]["Backward"] = lc::TextConst::Backward;
+    state["lc"]["TextConst"]["UpsideDown"] = lc::TextConst::UpsideDown;
 }

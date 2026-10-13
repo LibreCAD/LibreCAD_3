@@ -1,5 +1,7 @@
 #include "operationdropmodel.h"
 
+#include <QDataStream>
+#include <QIODevice>
 #include <QTableView>
 
 using namespace lc::ui::widgets;

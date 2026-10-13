@@ -3,7 +3,9 @@
 // Bridge — lc.operation.* (mirrors lcadluascript/bridge/lc_operation.h).
 // Slice 1.9.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {

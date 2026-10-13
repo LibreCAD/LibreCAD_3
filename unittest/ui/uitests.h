@@ -6,7 +6,7 @@
 #include <cad/storage/storagemanagerimpl.h>
 #include <cadmdichild.h>
 
-static int argc = 1;
+[[maybe_unused]] static int argc = 1;
 static char* argv[2] = {strdup("lcunittest"), NULL};
 
 using namespace lc;

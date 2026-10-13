@@ -15,9 +15,11 @@
 // Lua loader uses.  Uses the Python adapter to wrap operation classes
 // as ScriptObject for the ordered resolver list.
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/stl.h>
+#include <qt_keywords_pop.h>
 #include <scriptadapter/pythonobject.h>
 #include <iostream>
 #include <algorithm>
@@ -86,8 +88,8 @@ private:
 
 OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState)
     :
-    qmainWindow(qmainWindow),
-    _L(luaState)
+    _L(luaState),
+    qmainWindow(qmainWindow)
 {
     std::string path = FolderFinder{}(luaPath);
     std::cout<<"updated path:: "<<path<<std::endl;

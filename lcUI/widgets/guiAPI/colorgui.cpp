@@ -8,8 +8,8 @@ using namespace lc::ui::api;
 ColorGUI::ColorGUI(std::string label, QWidget* parent)
     :
     InputGUI(label, parent),
-    _color("white"),
-    ui(new Ui::ColorGUI)
+    ui(new Ui::ColorGUI),
+    _color("white")
 {
     ui->setupUi(this);
 

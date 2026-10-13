@@ -19,7 +19,7 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -35,7 +35,7 @@ std::string findTestPy() {
         return env;
     }
     // Two hops up from unittest/python/ lands at repo root.
-    namespace fs = std::filesystem;
+    namespace fs = boost::filesystem;
     fs::path here = fs::path(__FILE__).parent_path();
     fs::path candidate = here.parent_path().parent_path()
                        / "luacmdinterface" / "test.py";

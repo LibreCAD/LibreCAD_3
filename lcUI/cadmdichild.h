@@ -11,6 +11,7 @@
 #include <drawables/lccursor.h>
 
 #include <file.h>
+#include <documentsource.h>
 #include <managers/metainfomanager.h>
 
 extern "C"
@@ -69,6 +70,14 @@ public slots:
     void ctxMenu(const QPoint& pos);
     void saveFile();
     void saveAsFile();
+
+    /**
+     * Show an error when a save was refused; no-op when it succeeded.
+     */
+    static void reportSaveResult(const lc::persistence::ExportResult& result,
+                                 const std::string& path);
+
+    static void reportSaveFailure(bool saved, const std::string& path);
 
 signals:
 
@@ -134,7 +143,10 @@ public:
 
 private:
     std::string _filename;
-    lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
+    // Where this document came from, which is what Save has to know: a
+    // File::Type could only say what format to write, not whether writing it
+    // back over the source would replace a drawing with part of itself.
+    lc::persistence::DocumentSource _source;
 
     lc::scripting::ScriptCallback _destroyCallback;
 

@@ -7,6 +7,7 @@
 #include <widgets/guiAPI/toolbartab.h>
 #include <widgets/guiAPI/toolbargroup.h>
 #include <widgets/guiAPI/toolbarbutton.h>
+#include <scriptadapter/luacallback.h>
 #include "uitests.h"
 
 using namespace lc::ui::widgets;
@@ -74,7 +75,10 @@ TEST(ToolbarTest, SlotTest) {
     EXPECT_EQ(testtab, toolbar->tabByName("NewTab"));
 
     ToolbarButton button("TestButton", "");
-    button.addCallback(cb);
+    // Wrap explicitly.  Passing the LuaRef itself goes through kaguya's
+    // templated conversion operator, which looks for ScriptCallback
+    // userdata, finds a Lua function and throws "type mismatch!!".
+    button.addCallback(lc::lua::makeLuaCallback(cb));
 
     EXPECT_FALSE(state["doesThisExist"].get<bool>());
     button.clicked();

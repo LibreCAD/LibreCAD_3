@@ -38,7 +38,11 @@ LinePatternPathPart::LinePatternPathPart(double value, QWidget* parent) :
         ui->type->setCurrentIndex(typeIndex);
     }
 
-    connect(ui->type, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(onTypeChanged(const QString&)));
+    // Qt6 kept currentIndexChanged(int) and dropped the QString overload;
+    // currentTextChanged carries the text. The string-based connect failed
+    // silently at run time, so the type of a line-pattern path part never
+    // reached onTypeChanged.
+    connect(ui->type, &QComboBox::currentTextChanged, this, &LinePatternPathPart::onTypeChanged);
     connect(ui->value, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged(double)));
 }
 

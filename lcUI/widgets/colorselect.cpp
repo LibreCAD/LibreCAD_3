@@ -29,7 +29,11 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
         addItem(QIcon(pixmap), color);
     }
 
-    connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
+    // Qt6 removed QComboBox::activated(const QString&); textActivated is the
+    // same trigger under the name it kept. The string-based form failed at
+    // run time with "No such signal", so this was never connected at all --
+    // the pointer-to-member form below is checked by the compiler instead.
+    connect(this, &QComboBox::textActivated, this, &ColorSelect::onActivated);
 
     setMetaInfoManager(std::move(metaInfoManager));
 }

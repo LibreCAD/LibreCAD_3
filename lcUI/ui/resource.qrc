@@ -12,6 +12,7 @@
         <file alias="dim_linear.svg">icons/dim_linear.svg</file>
         <file alias="dim_diametric.svg">icons/dim_diametric.svg</file>
         <file alias="dim_angular.svg">icons/dim_angular.svg</file>
+        <file alias="dim_ordinate.svg">icons/dim_ordinate.svg</file>
         <file alias="spline.svg">icons/spline.svg</file>
         <file alias="quit.svg">icons/quit.svg</file>
         <file alias="polylines.svg">icons/polylines.svg</file>
@@ -34,6 +35,7 @@
         <file alias="point.svg">icons/point.svg</file>
         <file alias="infoarea.png">icons/infoarea.png</file>
         <file alias="text.svg">icons/text.svg</file>
+        <file alias="mtext.svg">icons/mtext.svg</file>
         <file alias="mtext_align_bottomcenter.svg">icons/mtext_align_bottomcenter.svg</file>
         <file alias="mtext_align_bottomleft.svg">icons/mtext_align_bottomleft.svg</file>
         <file alias="mtext_align_bottomright.svg">icons/mtext_align_bottomright.svg</file>

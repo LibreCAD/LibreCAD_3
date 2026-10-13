@@ -4,9 +4,11 @@
 
 #include "pypluginloader.h"
 
+#include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <qt_keywords_pop.h>
 
 #include <dirent.h>
 #include <sys/stat.h>

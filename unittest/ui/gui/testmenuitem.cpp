@@ -38,7 +38,9 @@ TEST(MenuItemTest, ItemAddTest) {
 
 TEST(MenuItemTest, ItemLabelTest) {
     QApplication app(argc, argv);
-    MainWindow* mainWindow = new MainWindow();
+    // Constructed for the Qt state the other tests rely on; this one never
+    // touches the window itself.
+    new MainWindow();
 
     lc::ui::api::MenuItem* testItem1 = new lc::ui::api::MenuItem("LABEL_TEST");
 

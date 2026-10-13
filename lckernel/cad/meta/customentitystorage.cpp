@@ -15,6 +15,17 @@ CustomEntityStorage::CustomEntityStorage(std::string pluginName,
     _params(std::move(params)) {
 }
 
+CustomEntityStorage::CustomEntityStorage(std::string blockName,
+        std::string pluginName,
+        std::string entityName,
+        geo::Coordinate base,
+        std::map<std::string, std::string> params) :
+    Block(std::move(blockName), std::move(base)),
+    _pluginName(std::move(pluginName)),
+    _entityName(std::move(entityName)),
+    _params(std::move(params)) {
+}
+
 const std::string& CustomEntityStorage::pluginName() const {
     return _pluginName;
 }

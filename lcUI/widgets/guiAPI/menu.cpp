@@ -7,11 +7,23 @@
 using namespace lc::ui;
 using namespace lc::ui::api;
 
+namespace {
+QList<QWidget*> associatedWidgetList(const QAction* action) {
+    QList<QWidget*> widgets;
+    for (QObject* object : action->associatedObjects()) {
+        if (QWidget* widget = qobject_cast<QWidget*>(object)) {
+            widgets.append(widget);
+        }
+    }
+    return widgets;
+}
+}
+
 Menu::Menu(const char* menuName, QWidget* parent)
     :
     QMenu(QString(menuName), parent),
-    _position(-1),
-    insideMenu(false)
+    insideMenu(false),
+    _position(-1)
 {
     this->setObjectName(menuName);
 }
@@ -19,16 +31,16 @@ Menu::Menu(const char* menuName, QWidget* parent)
 Menu::Menu(QMenuBar* menuBar)
     :
     QMenu(menuBar),
-    _position(-1),
-    insideMenu(false)
+    insideMenu(false),
+    _position(-1)
 {
 }
 
 Menu::Menu(QMenu* menu)
     :
     QMenu(menu),
-    _position(-1),
-    insideMenu(false)
+    insideMenu(false),
+    _position(-1)
 {
 }
 
@@ -187,7 +199,7 @@ void Menu::setPosition(int newPosition) {
         return;
     }
 
-    QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
+    QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
 
     if (!insideMenu) {
         setPositionInsideMenuBar(widgets[0], newPosition);
@@ -198,7 +210,7 @@ void Menu::setPosition(int newPosition) {
 }
 
 void Menu::remove() {
-    QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
+    QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
 
     updateOtherPositionsAfterRemove();
 
@@ -260,7 +272,7 @@ bool Menu::checkForItemOfSameLabel(const char* label, bool isMenu) {
 }
 
 void Menu::updateOtherPositionsAfterRemove() {
-    QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
+    QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
 
     if (insideMenu) {
         for (QWidget* widget : widgets) {

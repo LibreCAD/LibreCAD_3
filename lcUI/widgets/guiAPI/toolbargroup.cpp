@@ -8,8 +8,8 @@ ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent)
     :
     QGroupBox(groupName, parent),
     _width(width),
-    _nonButtonGroup(false),
-    _count(0)
+    _count(0),
+    _nonButtonGroup(false)
 {
     this->setLayout(new QGridLayout());
 }

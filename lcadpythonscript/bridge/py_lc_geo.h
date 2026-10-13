@@ -3,7 +3,9 @@
 // Bridge — lc.geo.* (mirrors lcadluascript/bridge/lc_geo.h). Populated in
 // slice 1.4.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {

@@ -1071,4 +1071,41 @@ assert _fired_state['builder_was_none'] is True, (
     ASSERT_EQ(err, "") << err;
 }
 
+// -----------------------------------------------------------------------------
+// An ordinate dimension through the builder: the axis the leader picks, and
+// the ordinate itself, read back from the entity.
+// -----------------------------------------------------------------------------
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(PythonFixture, DimOrdinateBuilderRoundTrip) {
+    const std::string err = lcpy.runString(R"py(
+layer = lc.meta.Layer('scratch', lc.meta.MetaLineWidthByValue(1.0),
+                      lc.Color(255, 0, 0), None, False)
+b = lc.builder.DimOrdinateBuilder()
+b.setLayer(layer)
+b.setDefinitionPoint(lc.geo.Coordinate(10.0, 20.0))
+
+# A leader running up from the feature measures X.
+b.dimAuto(lc.geo.Coordinate(35.0, 70.0), lc.geo.Coordinate(36.0, 90.0))
+assert b.xType()
+d = b.build()
+assert isinstance(d, lc.entity.DimOrdinate)
+assert isinstance(d, lc.entity.Dimension)
+assert isinstance(d, lc.entity.CADEntity)
+assert d.xType()
+assert abs(d.value() - 25.0) < 1e-12
+assert abs(d.featurePoint().y() - 70.0) < 1e-12
+assert abs(d.leaderEndPoint().x() - 36.0) < 1e-12
+assert abs(d.middleOfText().y() - 90.0) < 1e-12
+
+# One running sideways measures Y.
+b.dimAuto(lc.geo.Coordinate(35.0, 70.0), lc.geo.Coordinate(80.0, 71.0))
+assert not b.xType()
+assert abs(b.build().value() - 50.0) < 1e-12
+assert not lc.builder.DimOrdinateBuilder.measuresX(lc.geo.Coordinate(0.0, 0.0),
+                                                   lc.geo.Coordinate(10.0, 1.0))
+)py",
+        ns);
+    ASSERT_EQ(err, "") << err;
+}
+
 } // namespace

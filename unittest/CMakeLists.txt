@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT (UnitTest)
 
 message("***** LibreCAD unit tests *****")
@@ -17,15 +17,15 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-# LibbDXFRW
-find_package(libdxfrw REQUIRED)
-
 FIND_PACKAGE ( Threads REQUIRED )
 
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
 
-# Boost logging
-find_package(Boost REQUIRED COMPONENTS log)
+# Boost logging, plus filesystem for the path handling in the Python tests
+# (this list is unconditional; the one further down is WITH_RENDERING_UNITTESTS
+# only, so relying on that one left filesystem satisfied merely transitively
+# through Boost::log).
+find_package(Boost REQUIRED COMPONENTS log filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
@@ -71,6 +71,9 @@ lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
+lcviewernoqt/mtextdrawtest.cpp
+lcviewernoqt/mtextlayouttest.cpp
+lcviewernoqt/dimordinatedrawtest.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
@@ -79,10 +82,43 @@ lckernel/operations/layerops.cpp
 lckernel/dochelpers/documentlist.cpp
 lckernel/geometry/testgeoellipse.cpp
 lckernel/primitive/testellipse.cpp
+lckernel/primitive/dimordinatetest.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
+lckernel/logger/loggertest.cpp
 )
+
+# Issue #412 phase 0 — verify the DXF exporter actually writes what the
+# reader can consume.  Independent of the Python bindings (unlike the
+# WITH_PYTHONSCRIPT persistence round-trip test below); needs only libdxfrw
+# runtime.
+#
+# dxfroundtriptest.cpp is the read-path counterpart: it guards the kernel
+# crashes that made File::open unusable on real DXF input (3-D segments,
+# empty hatch loops, fit-points-only splines) and File::save's bool result.
+#
+# Neither source includes a libdxfrw header, and neither adds a library.
+# persistence links libdxfrw PRIVATE on purpose (persistence/CMakeLists.txt),
+# so lcunittest has no way to reach its headers and no reason to.  Keep it that
+# way: parse raw DXF group codes instead of pulling in the library.
+if(WITH_PERSISTENCE)
+    list(APPEND src persistence/dxfexporttest.cpp)
+    list(APPEND src persistence/dxfroundtriptest.cpp)
+    list(APPEND src persistence/formattest.cpp)
+    list(APPEND src persistence/mtextcodectest.cpp)
+    list(APPEND src persistence/documentsourcetest.cpp)
+    list(APPEND src persistence/dwgimporttest.cpp)
+    set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
+    # The read tests that need a real file on disk find it here.  Most cases
+    # build their input in code -- a file that only restates three fit points
+    # adds nothing and has to be maintained -- but the import oracle has to
+    # count records in the same bytes the reader is given.
+    add_compile_definitions(UNITTEST_FIXTURES_DIR="${CMAKE_CURRENT_LIST_DIR}/persistence/fixtures")
+    # The DWG fixtures are libdxfrw's own, so they arrive with the submodule
+    # rather than needing a corpus committed here.
+    add_compile_definitions(DWG_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/third_party/libdxfrw/tests/fixtures/dwg")
+endif()
 
 # Phase 1 slice 1.12 — pythonbindings_test.cpp: gtest exit criteria for phase 1.
 # Phase 2 slice 2.3 — demoscript_test.cpp: verifies luacmdinterface/test.py
@@ -105,10 +141,30 @@ if(WITH_PYTHONSCRIPT)
         # Exercises BOTH the native ScriptCallback fallback path AND the
         # Lua fast path (via a real kaguya::LuaRef calling
         # `insert:position()`).  Needs lcluascript + kaguya headers +
-        # a real Lua 5.3 runtime — hence CI-only (macOS Homebrew ships
-        # Lua 5.5 which breaks kaguya).
+        # a real Lua runtime.  Any Lua from 5.3 up now works, including the
+        # 5.5 that Homebrew defaults to — see the GC-constant mapping in the
+        # top-level CMakeLists.txt.
         scripting/customentitymanager_test.cpp
+        # Lua-side parity for the persistence result types (phase 2
+        # bind-new-persistence-api). Same requirements: lcluascript, kaguya
+        # and a real Lua runtime.
+        scripting/luapersistence_test.cpp
+        scripting/luatextbuilder_test.cpp
+        # The Lua createActions/actions operations: the typed-text decoding
+        # that makes MTextOperations more than a copy of TextOperations, plus
+        # the two cross-file references every operation makes -- a menu action
+        # mainwindow.ui must define, and an icon resource.qrc must alias --
+        # and the other direction: every menu entry is connected to something.
+        scripting/luamtextoperation_test.cpp
+        # The geometry of the operations behind menu entries that used to
+        # be connected to nothing.
+        scripting/luamenuentries_test.cpp
         )
+    # The operation .lua files, mainwindow.ui and resource.qrc are read from
+    # the source tree: nothing compiles them together, so a name that stopped
+    # matching in one of them is silent until the application starts.
+    add_compile_definitions(LCUILUA_SOURCE_DIR="${CMAKE_SOURCE_DIR}/lcUILua")
+    add_compile_definitions(LCUI_SOURCE_DIR="${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${CMAKE_SOURCE_DIR}/lcadpythonscript")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
     include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")  # Phase 6 PR-6.1
@@ -128,20 +184,16 @@ lckernel/geometry/comparecoordinate.h
 )
 
 if(WITH_QT_UI)
-    find_package(Qt5Widgets)
-    find_package(Qt5Core)
-    find_package(Qt5Gui REQUIRED)
-    find_package(Qt5Test)
-    find_package(Qt5UiTools REQUIRED)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui Test UiTools Widgets)
 
     set(EXTRA_LIBS
             ${EXTRA_LIBS}
             lcui
-            Qt5::Core
-            Qt5::Gui
-            Qt5::Widgets
-            Qt5::UiTools
-            Qt5::Test)
+            Qt6::Core
+            Qt6::Gui
+            Qt6::Widgets
+            Qt6::UiTools
+            Qt6::Test)
     set(hdrs
             ${hdrs}
             ui/clicommandtest.h
@@ -154,6 +206,7 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
+            ui/testuisettings.cpp
             # Phase 4 PR-10 — dead LuaIntf-era test files retired.
             # Phase 3 PR-3.4 — dual-language ScriptDock test.
             ui/testscriptdock.cpp
@@ -165,6 +218,9 @@ if(WITH_QT_UI)
             ui/testlinewidthselect.cpp
             ui/testmainwindow.cpp
             ui/testwindowmanager.cpp
+            # Menu entries MainWindow connects natively: Cut, Copy, Paste
+            # and the Add Random entries.
+            ui/testmenuentries.cpp
             ui/gui/testmenuitem.cpp
             ui/gui/testmenu.cpp
             ui/gui/testtoolbartab.cpp
@@ -185,7 +241,10 @@ if(WITH_QT_UI)
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
 
     #Lua
-    find_package(Lua 5.3 EXACT REQUIRED)
+    # Lua 5.3 or newer.  Was EXACT 5.3, which made the build unusable on any
+    # distribution shipping a newer Lua (Homebrew now defaults to 5.5).
+    # kaguya supports 5.4+ as of the submodule bump in this commit.
+    find_package(Lua 5.3 REQUIRED)
     include_directories(${LUA_INCLUDE_DIR})
 endif(WITH_QT_UI)
 
@@ -194,7 +253,8 @@ if(WITH_RENDERING_UNITTESTS)
 
     # Boost
     set(Boost_USE_MULTITHREADED ON)
-    find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
+    # See luacmdinterface/CMakeLists.txt: no "system" component.
+    find_package(Boost COMPONENTS program_options filesystem log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 
@@ -232,5 +292,9 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 # Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
 include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})

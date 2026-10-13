@@ -12,8 +12,8 @@ using namespace lc::ui::widgets;
 
 CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWidget* parent)
     :
-    _label(toolbarTab->label()),
-    QTabWidget(parent)
+    QTabWidget(parent),
+    _label(toolbarTab->label())
 {
     init();
 
@@ -31,8 +31,8 @@ CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWid
 
 CustomizeParentTab::CustomizeParentTab(QString label, QWidget* parent)
     :
-    _label(label.toStdString()),
-    QTabWidget(parent)
+    QTabWidget(parent),
+    _label(label.toStdString())
 {
     init();
 

@@ -161,11 +161,14 @@ public:
     EntityContainer entitiesByMetaType(const std::string& metaName) const {
         EntityContainer container;
 
-        for (auto i : asVector(std::numeric_limits<short>::max())) {
-            //       if (i->metaInfo(metaName) != nullptr) {
-            //           container.insert(i);
-            // }
-        }
+        // Unimplemented: the filter below was never written, so this walked
+        // every entity and discarded the result.  Left as the intended shape.
+        //
+        // for (auto i : asVector(std::numeric_limits<short>::max())) {
+        //     if (i->metaInfo(metaName) != nullptr) {
+        //         container.insert(i);
+        //     }
+        // }
 
         return container;
     }

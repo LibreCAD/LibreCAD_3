@@ -69,6 +69,9 @@ DECLARE_SHORT_SHARED_PTR(DimDiametric)
 class DimLinear;
 DECLARE_SHORT_SHARED_PTR(DimLinear)
 
+class DimOrdinate;
+DECLARE_SHORT_SHARED_PTR(DimOrdinate)
+
 class DimRadial;
 DECLARE_SHORT_SHARED_PTR(DimRadial)
 
@@ -166,6 +169,11 @@ template <typename IVisitor, typename C, typename...Ts> struct IVisitorImpl;
 template <typename IVisitor, typename C, typename T, typename...Ts>
 struct IVisitorImpl<IVisitor, C, T, Ts...> : IVisitorImpl<IVisitor, C, Ts...>
 {
+    // Keep the overloads inherited from the remaining visitor types visible.
+    // Without this, each generated visit(T) hides visit(U) from its base,
+    // triggering -Woverloaded-virtual whenever the dispatcher is instantiated.
+    using IVisitorImpl<IVisitor, C, Ts...>::visit;
+
     void visit(const T& t) override {
         C::visit(t);    // NOLINT
     }
@@ -174,6 +182,10 @@ struct IVisitorImpl<IVisitor, C, T, Ts...> : IVisitorImpl<IVisitor, C, Ts...>
 template <typename IVisitor, typename C, typename T>
 struct IVisitorImpl<IVisitor, C, T> : IVisitor, C
 {
+    // This is the bottom of the recursive adapter, so retain the overloads
+    // declared directly by the visitor interface as well.
+    using IVisitor::visit;
+
     void visit(const T& t) override {
         C::visit(t);    // NOLINT
     }

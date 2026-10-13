@@ -25,9 +25,9 @@ using namespace lc::ui::widgets;
 CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     :
     QDialog(parent),
+    ui(new Ui::CustomizeToolbar),
     _toolbar(toolbar),
-    _saveOnClose(CloseMode::Ask),
-    ui(new Ui::CustomizeToolbar)
+    _saveOnClose(CloseMode::Ask)
 {
     ui->setupUi(this);
 
@@ -299,7 +299,8 @@ void CustomizeToolbar::readData(rapidjson::Document& document) {
     for (rapidjson::SizeType currentTab = 0; currentTab < jsonTabs.Size(); currentTab++) {
         const rapidjson::Value& jsonTab = jsonTabs[currentTab];
 
-        if (!jsonTab.IsObject() || !jsonTab.HasMember("label") || !jsonTab["label"].IsString()) {
+        if (!jsonTab.IsObject() || !jsonTab.HasMember("label") || !jsonTab["label"].IsString()
+            || jsonTab["label"].GetString()[0] == '\0') {
             continue;
         }
 
@@ -322,12 +323,18 @@ void CustomizeToolbar::readData(rapidjson::Document& document) {
             std::string groupLabel = "New Group";
             int newWidth = 3;
 
-            if (jsonGroup.HasMember("label") && jsonGroup["label"].IsString()) {
+            if (jsonGroup.HasMember("label") && jsonGroup["label"].IsString()
+                && jsonGroup["label"].GetString()[0] != '\0') {
                 groupLabel = jsonGroup["label"].GetString();
             }
 
             if (jsonGroup.HasMember("width") && jsonGroup["width"].IsInt()) {
-                newWidth = jsonGroup["width"].GetInt();
+                // Match the column spinbox's 1..99 range before allocating the
+                // model or dividing by the width in CustomizeGroupTab::setWidth.
+                const int width = jsonGroup["width"].GetInt();
+                if (width >= 1 && width <= 99) {
+                    newWidth = width;
+                }
             }
 
             CustomizeGroupTab* groupTab = parentTab->addGroupTabManual(groupLabel, newWidth);

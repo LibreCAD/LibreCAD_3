@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT (LCLUASCRIPT)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -77,7 +77,10 @@ else ()
 endif ()
 
 #Lua
-find_package(Lua 5.3 EXACT REQUIRED)
+# Lua 5.3 or newer.  Was EXACT 5.3, which made the build unusable on any
+# distribution shipping a newer Lua (Homebrew now defaults to 5.5).
+# kaguya supports 5.4+ as of the submodule bump in this commit.
+find_package(Lua 5.3 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 
 # Logging
@@ -104,6 +107,11 @@ else()
 endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
+
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(lcluascript PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel lcscripting)
 
 if(WITH_PERSISTENCE)
@@ -119,4 +127,5 @@ endif()
 install(TARGETS lcluascript 
 	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )

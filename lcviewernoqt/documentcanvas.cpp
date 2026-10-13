@@ -25,6 +25,7 @@
 #include "drawitems/lcdimlinear.h"
 #include "drawitems/lcdimaligned.h"
 #include "drawitems/lcdimangular.h"
+#include "drawitems/lcdimordinate.h"
 #include "drawitems/lclwpolyline.h"
 #include "drawitems/lcvspline.h"
 #include "drawitems/lcimage.h"
@@ -45,6 +46,7 @@ using namespace lc::viewer;
 
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
     _document(document),
+    _painterPtr(nullptr),
     _zoomMin(0.005),
     _zoomMax(200.0),
     _deviceWidth(0),
@@ -52,7 +54,6 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
     _selectedArea(nullptr),
     _selectedAreaIntersects(false),
     _deviceToUser(std::move(deviceToUser)),
-    _painterPtr(nullptr),
     _viewport(viewport)
 {
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
@@ -751,6 +752,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
 
     if (dimAngular != nullptr) {
         return std::make_shared<LCDimAngular>(dimAngular);
+    }
+
+    // Add 'DimOrdinate'
+    auto dimOrdinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity);
+
+    if (dimOrdinate != nullptr) {
+        return std::make_shared<LCDimOrdinate>(dimOrdinate);
     }
 
     // Add 'LWPolyline'

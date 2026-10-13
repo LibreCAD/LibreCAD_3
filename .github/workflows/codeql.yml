@@ -13,9 +13,9 @@ jobs:
   analyze:
     name: Analyze
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
-      platform_version: 22.04
+      platform_version: 24.04
 
     permissions:
       actions: read
@@ -55,13 +55,40 @@ jobs:
         sudo apt-get -y update
         # `python3-dev` added for lcadpythonscript (WITH_PYTHONSCRIPT=ON) —
         # phase 1 slice 1.2.
-        sudo apt-get -qq install -y -qq cmake qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev git gcc \
+        sudo apt-get -qq install -y -qq cmake qt6-base-dev qt6-tools-dev qt6-tools-dev-tools libqt6opengl6-dev liblua5.3-dev git gcc \
         libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-dev libboost-all-dev libboost-program-options-dev \
-        libqt5svg5-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev \
-        libbz2-dev libglfw3-dev libglm-dev libfltk1.3-dev doxygen mkdocs qtchooser freeglut3-dev fuse \
+        qt6-svg-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev rapidjson-dev \
+        libbz2-dev libglfw3-dev libglm-dev libfltk1.3-dev doxygen mkdocs freeglut3-dev fuse \
         python3-dev python3
-        sudo ln -snf /usr/lib/x86_64-linux-gnu/qtchooser/qt5.conf /usr/lib/x86_64-linux-gnu/qtchooser/default.conf
         sudo rm -rf /usr/local/lib/android
+
+    # libdxfrw is a third-party submodule, so its target is built here --
+    # BEFORE Initialize CodeQL -- in the same build directory and with the same
+    # configure arguments as the Building step.  That step then finds it up to
+    # date and never recompiles it inside the traced window, which would put
+    # third-party translation units into the C++ database and report their
+    # findings as alerts on this repository.
+    - name: Build libdxfrw
+      if: matrix.language == 'cpp'
+      run: |
+        source "${{ github.workspace }}/scripts/ci/configure-build.sh"
+        make -j 4 dxfrw
+
+    # Must run BEFORE the build: for compiled languages CodeQL builds its
+    # database by tracing the compiler as the build runs.  With the build
+    # ahead of this step there is nothing left to trace, and the analysis
+    # below fails with "No source code was seen during the build" even when
+    # the build itself is perfectly clean.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+
+        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+        # queries: security-extended,security-and-quality
 
     - name: Building
       # Phase 6 PR-6.6 — skip the C++ build step for the `python` matrix
@@ -74,41 +101,26 @@ jobs:
         # re-run --init --recursive so any subsequently-added path is safe.
         git submodule update --init --recursive
 
-        # libdxfrw is not a submodule, so it has to be cloned explicitly the
-        # same way scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
-        # does.  Without it `mkdir -p libdxfrw/release` just created an empty
-        # directory and cmake failed on the missing CMakeLists.txt.
-        git clone --branch LibreCAD_3 https://github.com/LibreCAD/libdxfrw
-        mkdir -p libdxfrw/release
-        pushd libdxfrw/release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On ..
-        make -j 4
-        echo "installing dxfrw"
-        sudo make install
-        popd
-
         echo "building LibreCAD"
-        mkdir build
-        pushd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=On
-        make -j 4
+        source "${{ github.workspace }}/scripts/ci/configure-build.sh"
+        # Fail loudly if a libdxfrw translation unit compiles here: that means
+        # the configure arguments drifted between this step and the one before
+        # Initialize CodeQL, and third-party code is entering the database.
+        make -j 4 2>&1 | tee ../codeql-build.log
+        if grep -q "third_party/libdxfrw" ../codeql-build.log; then
+            echo "ERROR: libdxfrw compiled inside the traced build; configure arguments drifted." >&2
+            grep -m5 "third_party/libdxfrw" ../codeql-build.log >&2
+            exit 1
+        fi
+        # install/fast, not install: the plain install target depends on `all`,
+        # and lckernel regenerates build_constants.cpp on every make, so a
+        # plain `sudo make install` recompiles inside sudo.  sudo strips LD_*
+        # from the environment, which is how the CodeQL tracer is injected, so
+        # anything compiled there is silently missing from the database.
         echo "installing LibreCAD"
-        sudo make install DESTDIR=AppDir
-        popd
+        sudo make install/fast DESTDIR=AppDir
 
         sudo apt-get -qq install clang-15 clang-tools-15
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-
-        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-        # queries: security-extended,security-and-quality
-
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

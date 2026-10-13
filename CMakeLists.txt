@@ -1,5 +1,11 @@
-# Bumped from 3.8 to 3.15 for pybind11 v3.x's CMake floor (phase 1 slice 1.2).
-cmake_minimum_required(VERSION 3.15...3.27)
+# 3.28 is the floor of the vendored libdxfrw, which this project adds with
+# add_subdirectory below; anything less fails there rather than here, naming a
+# third_party path instead of this line.  (Previously 3.15, for pybind11 v3.x's
+# CMake floor -- phase 1 slice 1.2 -- which this supersedes.)
+#
+# The upper bound stays at the floor deliberately.  Raising it to 3.30+ would
+# set CMP0167 NEW and remove the FindBoost module this project still relies on.
+cmake_minimum_required(VERSION 3.28)
 if (MSVC)
     project(LibreCAD3)
 else()
@@ -18,7 +24,6 @@ option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
-option(WITH_LIBOPENCAD "Use libopencad" OFF)
 option(WITH_CAIRO "Compile with Cairo painter" OFF)
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
 
@@ -30,6 +35,36 @@ option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
 option(WITH_DOCUMENTATION "Build documentation" OFF)
 
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
+
+# DWG import through libdxfrw's own dwgRW, off by default.
+#
+# The reader works -- all eight of libdxfrw's DWG fixtures read cleanly into a
+# document -- but DWG is a format LibreCAD can read and cannot write, and the
+# consequences of offering it (a drawing that cannot be saved back where it came
+# from) deserve a release's worth of deliberate exposure before it is on for
+# everyone. Off means .dwg is not offered at all; the format table, the file
+# dialog and the sniffer all follow this one switch.
+option(WITH_DWG_IMPORT "Read DWG files through libdxfrw (experimental)" OFF)
+
+if(WITH_DWG_IMPORT)
+    add_definitions(-DUSE_DWG_IMPORT=1)
+else()
+    add_definitions(-DUSE_DWG_IMPORT=0)
+endif()
+
+# USE_PERSISTENCE has to be defined here, before any add_subdirectory().
+#
+# The Lua and Python bridges register lc.persistence behind `#if
+# USE_PERSISTENCE`, and both are configured (lines ~279 and ~283) long before
+# the persistence subdirectory is. Defining it down there meant the bridges
+# compiled with it undefined, `#if USE_PERSISTENCE` was 0, and neither language
+# ever had lc.persistence -- while still compiling the bridge and linking the
+# library, so nothing looked wrong.
+if(WITH_PERSISTENCE)
+    add_definitions(-DUSE_PERSISTENCE=1)
+else()
+    add_definitions(-DUSE_PERSISTENCE=0)
+endif()
 
 # Define compiler warnings
 if (NOT MSVC) # Too much warnings on MSVC
@@ -66,7 +101,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
     #include(${CMAKE_SOURCE_DIR}/conan_toolchain.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
     
-    set(WITH_LIBOPENCAD OFF)
     set(WITH_LUACMDINTERFACE FALSE)
     set(WITH_RENDERING_UNITTESTS OFF)
     set(WITH_CAIRO OFF)
@@ -124,8 +158,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
  
     set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
 
-    set(LIBDXFRW_PATH "${CONAN_LIBDXFRW_ROOT}")
-    
 else()
     set(Boost_USE_STATIC_LIBS OFF)
     add_definitions(-DBOOST_ALL_DYN_LINK)
@@ -134,18 +166,20 @@ endif()
 if(MSVC)
     find_package(Eigen3 REQUIRED)
     include_directories(${EIGEN3_INCLUDE_DIR})
-    find_package(libdxfrw REQUIRED)
-    include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
     find_package(freetype REQUIRED)
     include_directories(${freetype_INCLUDE_DIR})
     find_package(glew REQUIRED)
     include_directories(${glew_INCLUDE_DIR})
     find_package(glm REQUIRED)
-    include_directories(${glm_INCLUDE_DIR})
+	include_directories(${glm_INCLUDE_DIR})
     add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " /w /wd4710 /wd4711 /wd4668 /wd5045 /wd9002 /wd4365 /wd4242")
-    SET(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} " /w /wd4710 /wd4711")
+    # Keep inherited toolchain flags as one string.  set(VAR ${VAR} "...")
+    # creates a CMake list and inserts a semicolon into options such as /EHsc,
+    # which MSVC then rejects as /EH;.  Do not use /w here: it conflicts with
+    # the toolchain's /W1, and warning C9002 cannot be disabled with /wd.
+    string(APPEND CMAKE_CXX_FLAGS " /wd4710 /wd4711 /wd4668 /wd5045 /wd4365 /wd4242")
+    string(APPEND CMAKE_C_FLAGS " /wd4710 /wd4711")
     # Kaguya uses a pointer to a local variable (in object.hpp file) to store class conversions.
 	# When used in different modules, the variable doesn't have the same address, preventing to mix kernel and UI bindings
 	add_definitions("-DKAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1")
@@ -153,7 +187,7 @@ endif()
 
 # Set C++ version
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if (NOT MSVC)
     set(Boost_USE_MULTITHREADED ON)
@@ -167,8 +201,24 @@ if(MSVC)
     #SET(Boost_USE_STATIC_LIBS ON)
     FIND_PACKAGE(Boost COMPONENTS log log_setup REQUIRED)
     find_package(Eigen3 REQUIRED)
-    include_directories("${EIGEN3_INCLUDE_DIR}")
-    include_directories("${EIGEN3_INCLUDE_DIR}")
+    # Conan's Eigen3Config.cmake exports the Eigen3::Eigen target and leaves the
+    # legacy FindEigen3 variable unset, so EIGEN3_INCLUDE_DIR was empty on the
+    # Windows/Conan build and cmake rejected the quoted empty string:
+    #
+    #   CMakeLists.txt:170 (include_directories):
+    #     include_directories given empty-string as include directory.
+    #
+    # The unquoted spelling earlier in this file fails more quietly: it expands
+    # to nothing, so Eigen's headers were never on the include path at all.
+    # Take the directory from whichever form the config actually provided.
+    if(NOT EIGEN3_INCLUDE_DIR AND TARGET Eigen3::Eigen)
+        get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+    endif()
+    if(EIGEN3_INCLUDE_DIR)
+        include_directories(${EIGEN3_INCLUDE_DIR})
+    else()
+        message(FATAL_ERROR "Eigen3 found but neither EIGEN3_INCLUDE_DIR nor Eigen3::Eigen yielded an include directory")
+    endif()
     message("${CMAKE_SOURCE_DIR}/include")
     include_directories("third_party/msvc_dirent")
 endif()
@@ -185,13 +235,13 @@ message("***** LibreCAD *****")
 message("Version: ${VERSION_MAJOR}.${VERSION_MINOR}\n")
 message("Options:")
 message("  - Qt user interface: ${WITH_QT_UI}")
+message("  - Read DWG (experimental): ${WITH_DWG_IMPORT}")
 message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
 message("  - Python scripting support: ${WITH_PYTHONSCRIPT}")
 message("  - Unit tests: ${WITH_UNITTESTS}")
 message("  - Rendering unit tests: ${WITH_RENDERING_UNITTESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
-message("  - Use libopencad: ${WITH_LIBOPENCAD}")
 message("  - Use Cairo: ${WITH_CAIRO}")
 
 message("\n")
@@ -207,9 +257,78 @@ endif(WITH_CAIRO)
 # diagnostic globally, before any add_subdirectory(), if the compiler
 # supports the flag.
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-Wno-missing-template-arg-list-after-template-kw" HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
-if(HAS_WNO_MISSING_TEMPLATE_ARG_LIST)
+# Probe the POSITIVE spelling even though the negative one is what gets added.
+# GCC accepts any unrecognised -Wno-* silently, so probing "-Wno-..." succeeds
+# there and the flag gets added to a compiler that does not know it -- GCC then
+# reports, on every file that emits any other diagnostic:
+#
+#   cc1plus: note: unrecognized command-line option
+#   '-Wno-missing-template-arg-list-after-template-kw' may have been intended
+#   to silence earlier diagnostics
+#
+# GCC does reject the positive spelling outright, so probing that tells the two
+# compilers apart and the flag reaches Clang only.
+check_cxx_compiler_flag("-Wmissing-template-arg-list-after-template-kw" HAS_MISSING_TEMPLATE_ARG_LIST_WARNING)
+if(HAS_MISSING_TEMPLATE_ARG_LIST_WARNING)
     add_definitions("-Wno-missing-template-arg-list-after-template-kw")
+endif()
+
+# kaguya's native_function.hpp uses uint8_t without including <cstdint>. It
+# compiled while libstdc++ and libc++ still pulled that header in transitively;
+# GCC 13 and newer do not, so the build fails with "'uint8_t' does not name a
+# type" and a cascade of template-body errors behind it.
+#
+# Force-included rather than patched, because kaguya is a submodule pinned at
+# an upstream revision. Applied before any add_subdirectory(), for the same
+# reason as the GC-constant mapping below: every target that compiles a kaguya
+# header has to see it. Drop this once kaguya includes <cstdint> upstream.
+# Applied per target, by the targets that actually compile kaguya headers --
+# see LIBDXFRW_KAGUYA_CSTDINT below. Every project-wide form was tried first
+# and each reached a C compilation, which fails outright: the tree builds C as
+# well (tinyspline at -std=c89), giving "'cstdint' file not found" on GCC and
+# Clang, and STL1003 "Unexpected compiler, expected C++ compiler" on MSVC.
+# Neither add_compile_options($<COMPILE_LANGUAGE:CXX>:...) nor CMAKE_CXX_FLAGS
+# scopes to C++ under the Visual Studio generators, which put both at project
+# level in a .vcxproj that mixes .c and .cpp.
+if(MSVC)
+    set(LIBDXFRW_KAGUYA_CSTDINT /FIcstdint)
+else()
+    set(LIBDXFRW_KAGUYA_CSTDINT -include cstdint)
+endif()
+
+# Lua 5.5 removed LUA_GCSETPAUSE and LUA_GCSETSTEPMUL in favour of the
+# parameterised LUA_GCPARAM.  kaguya still uses the old names, in exactly two
+# places (State::steppause and State::setstepmul in state.hpp) and nowhere
+# else.  lua_gc() is variadic, so expanding each removed constant to the pair
+# "LUA_GCPARAM, <5.5 parameter id>" rewrites the call into precisely the 5.5
+# spelling:
+#
+#   lua_gc(L, LUA_GCSETPAUSE, v)  ->  lua_gc(L, LUA_GCPARAM, LUA_GCPPAUSE, v)
+#
+# That is the real replacement API, not a way to quiet the error, so the two
+# functions keep working rather than silently doing something else.  Applied
+# before any add_subdirectory() so every target compiling a kaguya header sees
+# it.  Drop this once kaguya handles 5.5 upstream.
+find_package(Lua 5.3 REQUIRED)
+# Same mismatch as Eigen3 above: Conan's toolchain sets
+# CMAKE_FIND_PACKAGE_PREFER_CONFIG ON, so this resolves via Conan's
+# lua-config.cmake (target lua::lua) rather than CMake's bundled
+# FindLua.cmake module, and the config package never sets the legacy
+# LUA_INCLUDE_DIR/LUA_LIBRARIES variables every subdirectory below links
+# against. That leaves them empty without erroring here -- find_package still
+# reports success -- so it surfaces later as a compile-time
+# "cannot open include file: 'lua.h'" instead of a configure-time error.
+# Verified end-to-end (configure, compile, link, run) against a real
+# Conan-generated lua-config.cmake before applying this.
+if(NOT LUA_INCLUDE_DIR AND TARGET lua::lua)
+    get_target_property(LUA_INCLUDE_DIR lua::lua INTERFACE_INCLUDE_DIRECTORIES)
+    set(LUA_LIBRARIES lua::lua)
+endif()
+if(LUA_VERSION_STRING VERSION_GREATER_EQUAL "5.5")
+    message(STATUS "Lua ${LUA_VERSION_STRING}: mapping kaguya's removed GC constants onto LUA_GCPARAM")
+    add_compile_definitions(
+        "LUA_GCSETPAUSE=LUA_GCPARAM,LUA_GCPPAUSE"
+        "LUA_GCSETSTEPMUL=LUA_GCPARAM,LUA_GCPSTEPMUL")
 endif()
 
 #Add each LibreCAD component
@@ -232,10 +351,30 @@ if(WITH_PYTHONSCRIPT)
 endif()
 
 if(WITH_PERSISTENCE)
+    # libdxfrw is a submodule, built in-tree so every platform uses the same
+    # pinned revision. Cache entries so its option() calls keep these defaults.
+    set(LIBDXFRW_BUILD_DOC OFF CACHE BOOL "Build libdxfrw documentation")
+    set(LIBDXFRW_BUILD_DWG2DXF OFF CACHE BOOL "Build libdxfrw's dwg2dxf tool")
+    # Install the library itself (the AppImage and the snap need the .so) but
+    # none of its development files: LibreCAD is not a place to get libdxfrw's
+    # headers, pkg-config file or CMake package from.
+    set(LIBDXFRW_INSTALL_DEV OFF CACHE BOOL "Install libdxfrw's development files")
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/libdxfrw/CMakeLists.txt")
+        message(FATAL_ERROR
+            "third_party/libdxfrw is empty. This is a git submodule; run\n"
+            "  git submodule update --init --recursive\n"
+            "or configure with -DWITH_PERSISTENCE=OFF to build without DXF support.")
+    endif()
+    add_subdirectory("third_party/libdxfrw")
+    # Linked into the shared persistence library even when built static.
+    set_target_properties(dxfrw PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    # libdxfrw builds with -Werror; newer compilers than it is tested with
+    # (e.g. GCC 16) must not fail LibreCAD's build over its warnings.
+    if(NOT MSVC)
+        target_compile_options(dxfrw PRIVATE -Wno-error)
+    endif()
+    add_library(libdxfrw::libdxfrw ALIAS dxfrw)
     add_subdirectory("persistence")
-    add_definitions(-DUSE_PERSISTENCE=1)
-else()
-    add_definitions(-DUSE_PERSISTENCE=0)
 endif()
 
 add_subdirectory("lcviewernoqt")

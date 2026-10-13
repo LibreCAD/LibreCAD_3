@@ -15,9 +15,11 @@
 // Phase 5 PR-5.3 — path.py execution + lcUIPy autoregister.
 // Phase 5 PR-5.5 — Python plugin loader called from initLua.
 #ifdef LC_WITH_PYTHONSCRIPT
+#include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <qt_keywords_pop.h>
 #include <lcpython.h>   // PythonInit
 #include "python/pypluginloader.h"
 #endif
@@ -64,7 +66,11 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     registerGlobalFunctions(mainWindow);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
-    bool s = _L.dofile(luaFile.toStdString().c_str());
+    // kaguya's dofile puts the stack back the way it found it, so nothing
+    // path.lua returns is left on it to read.
+    if (!_L.dofile(luaFile.toStdString().c_str())) {
+        LOG_WARNING << "Could not run " << luaFile.toStdString() << std::endl;
+    }
 
     std::string luaPath = _L["lua_path"];
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
@@ -150,17 +156,6 @@ except Exception as _e:
         }
     }
 #endif
-
-    if (s) {
-        const char* out = lua_tostring(_L.state(), -1);
-        if (out == nullptr) {
-            LOG_WARNING << "Lua output null" << std::endl;
-        }
-        else {
-            LOG_INFO << "Lua output:" << out << std::endl;
-        }
-        lua_pop(_L.state(), 1);
-    }
 
     _pluginManager.loadPlugins();
 

@@ -3,7 +3,10 @@
 // Bridge — top-level lc.* names (mirrors lcadluascript/bridge/lc.h).
 // Populated in slice 1.3.
 
+#include "../lcpython_api.h"
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 #include <functional>
 #include <string>
@@ -49,12 +52,12 @@ using RegisterPluginHook = std::function<void(const std::string&, pybind11::obje
 /// Install a hook fired by `lc.register_plugin(name, fn)`.  Later
 /// installations overwrite; one hook per process (same policy as the
 /// event hooks).
-void setRegisterPluginHook(RegisterPluginHook hook);
+LC_PYTHON_API void setRegisterPluginHook(RegisterPluginHook hook);
 
 /// Query for the current hook.  Used by tests that need to verify a
 /// hook was installed.  Non-const so the hook can be invoked directly
 /// in test scaffolding.
-const RegisterPluginHook& registerPluginHook();
+LC_PYTHON_API const RegisterPluginHook& registerPluginHook();
 
 } // namespace python
 } // namespace lc

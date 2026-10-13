@@ -15,7 +15,25 @@ DECLARE_SHORT_SHARED_PTR(CustomEntityStorage);
  */
 class CustomEntityStorage : public Block {
 public:
+    /**
+     * Create storage under a generated block name, for a custom entity that
+     * does not come from a file.
+     */
     CustomEntityStorage(std::string pluginName,
+                        std::string entityName,
+                        geo::Coordinate base,
+                        std::map<std::string, std::string> params = std::map<std::string, std::string>()
+                       );
+
+    /**
+     * Create storage under a block name that already exists.
+     *
+     * A custom entity read back from a drawing must keep the block name the
+     * drawing uses, because that is what its INSERTs reference. Generating a
+     * new one leaves every INSERT pointing at a block nothing defines.
+     */
+    CustomEntityStorage(std::string blockName,
+                        std::string pluginName,
                         std::string entityName,
                         geo::Coordinate base,
                         std::map<std::string, std::string> params = std::map<std::string, std::string>()

@@ -1,5 +1,7 @@
 #include "operationdragmodel.h"
 
+#include <QDataStream>
+#include <QIODevice>
 #include <QMimeData>
 #include <QTableView>
 #include "operationdropmodel.h"

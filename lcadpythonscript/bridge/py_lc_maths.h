@@ -2,7 +2,9 @@
 
 // Bridge — lc.maths.* (mirrors lcadluascript/bridge/lc_maths.h).  Slice 1.10.
 
+#include "../qt_keywords_push.h"
 #include <pybind11/pybind11.h>
+#include "../qt_keywords_pop.h"
 
 namespace lc {
 namespace python {

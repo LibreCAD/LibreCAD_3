@@ -7,6 +7,18 @@
 using namespace lc::ui;
 using namespace lc::ui::api;
 
+namespace {
+QList<QWidget*> associatedWidgetList(const QAction* action) {
+    QList<QWidget*> widgets;
+    for (QObject* object : action->associatedObjects()) {
+        if (QWidget* widget = qobject_cast<QWidget*>(object)) {
+            widgets.append(widget);
+        }
+    }
+    return widgets;
+}
+}
+
 MenuItem::MenuItem(const char* menuItemName, lc::scripting::ScriptCallback callback, QWidget* parent)
     :
     MenuItem(menuItemName, parent)
@@ -80,7 +92,7 @@ void MenuItem::setPosition(int newPosition) {
         newPosition = 0;
     }
 
-    QList<QWidget*> widgets = this->associatedWidgets();
+    QList<QWidget*> widgets = associatedWidgetList(this);
     QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
 
     if (menu == nullptr) {
@@ -132,7 +144,7 @@ void MenuItem::setPosition(int newPosition) {
 void MenuItem::remove() {
     updateOtherPositionsAfterRemove();
 
-    QList<QWidget*> widgets = this->associatedWidgets();
+    QList<QWidget*> widgets = associatedWidgetList(this);
 
     for (QWidget* widget : widgets) {
         QMenu* menu = qobject_cast<QMenu*>(widget);
@@ -147,7 +159,7 @@ void MenuItem::updatePositionVariable(int pos) {
 }
 
 void MenuItem::updateOtherPositionsAfterRemove() {
-    QList<QWidget*> widgets = this->associatedWidgets();
+    QList<QWidget*> widgets = associatedWidgetList(this);
 
     for (QWidget* widget : widgets) {
         QMenu* menu = qobject_cast<QMenu*>(widget);
@@ -179,13 +191,13 @@ void MenuItem::updateOtherPositionsAfterRemove() {
 
 void MenuItem::itemTriggered() {
     // Phase 4 PR-4 — invoke neutral callbacks (nil-safe: nil returns Nil).
-    for (int i = 0; i < callbacks.size(); i++) {
+    for (size_t i = 0; i < callbacks.size(); i++) {
         callbacks[i].invoke();
     }
 }
 
 void MenuItem::itemToggled(bool toggle) {
-    for (int i = 0; i < _checkedCallbacks.size(); i++) {
+    for (size_t i = 0; i < _checkedCallbacks.size(); i++) {
         _checkedCallbacks[i].call(toggle);
     }
 }

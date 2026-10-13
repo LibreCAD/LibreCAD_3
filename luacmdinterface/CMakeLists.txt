@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT (LuaCmdInterface)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -21,14 +21,22 @@ else ()
 endif ()
 
 # Boost
-find_package(Boost COMPONENTS program_options filesystem system log date_time thread log_setup REQUIRED)
+# No "system" component: Boost.System has been header-only since Boost 1.69
+# and BoostConfig.cmake ships no boost_system component package, so asking
+# for it REQUIRED is a hard configure error on a modern Boost -- "Could not
+# find a package configuration file provided by boost_system". Everything
+# that needs it gets it through the components that depend on it.
+find_package(Boost COMPONENTS program_options filesystem log date_time thread log_setup REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 message(boost_dirs="${Boost_LIBRARY_DIRS}")
 
 #Lua
-find_package(Lua 5.3 EXACT REQUIRED)
+# Lua 5.3 or newer.  Was EXACT 5.3, which made the build unusable on any
+# distribution shipping a newer Lua (Homebrew now defaults to 5.5).
+# kaguya supports 5.4+ as of the submodule bump in this commit.
+find_package(Lua 5.3 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 
@@ -58,6 +66,11 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
+
+# kaguya's headers use uint8_t without including <cstdint>; see the top-level
+# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+# compilation, where forcing a C++ header is a hard error.
+target_compile_options(luacmdinterface PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_link_libraries(luacmdinterface
         ${CMAKE_THREAD_LIBS_INIT}
         ${Boost_LIBRARIES}

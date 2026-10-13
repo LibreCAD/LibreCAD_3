@@ -18,6 +18,7 @@ public:
     virtual void visit(entity::DimAngular_CSPtr) = 0;
     virtual void visit(entity::DimDiametric_CSPtr) = 0;
     virtual void visit(entity::DimLinear_CSPtr) = 0;
+    virtual void visit(entity::DimOrdinate_CSPtr) = 0;
     virtual void visit(entity::DimRadial_CSPtr) = 0;
     virtual void visit(entity::LWPolyline_CSPtr) = 0;
     virtual void visit(entity::Image_CSPtr) = 0;

@@ -12,7 +12,6 @@
 #include <functional>
 
 #include <QMainWindow>
-#include <QShortcut>
 #include "widgets/clicommand.h"
 #include "widgets/layers.h"
 #include "widgets/linepatternselect.h"
@@ -170,11 +169,31 @@ namespace lc
             * \brief Copy selected entities to the clipboard
             */
             void copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
-            
+
             /**
-            * \brief Paste entities from the clipboard
+            * \brief Copy selected entities to the clipboard and remove them from the drawing
+            */
+            void cutSelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
+
+            /**
+            * \brief Paste entities from the clipboard: start PasteOperation, which asks where
             */
             void pasteEvent();
+
+            /**
+            * \brief The clipboard entities a paste into this window adds copies of
+            */
+            std::vector<lc::entity::CADEntity_CSPtr> clipboardEntities() const;
+
+            /**
+            * \brief The point of the clipboard entities that a paste puts where the user clicks
+            */
+            lc::geo::Coordinate clipboardBasePoint() const;
+
+            /**
+            * \brief Add copies of the clipboard entities, moved by offset, as one undo step
+            */
+            void pasteClipboard(const lc::geo::Coordinate& offset);
 
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
@@ -305,6 +324,12 @@ namespace lc
             void clearUndoableStack();
             void autoScale();
 
+            // Create menu: many random entities in one undo step, to see how
+            // the drawing and the viewer cope with a lot of them
+            void addRandomLines();
+            void addRandomCircles();
+            void addRandomArcs();
+
             // Customize toolbar slots
             void runCustomizeToolbar();
             void writeSettings();
@@ -314,6 +339,15 @@ namespace lc
             void point(lc::geo::Coordinate coordinate);
 
         protected:
+            /**
+            * \brief Add count entities made by make, as one undo step
+            * \param make given the active layer, a meta info (a random colour one time in three, else none) and the active viewport, returns one entity
+            */
+            void addRandomEntities(int count,
+                                   const std::function<lc::entity::CADEntity_CSPtr(const lc::meta::Layer_CSPtr&,
+                                                                                    const lc::meta::MetaInfo_CSPtr&,
+                                                                                    const lc::meta::Block_CSPtr&)>& make);
+
             Ui::MainWindow* ui;
             lc::ui::LuaInterface _luaInterface;
 
@@ -350,10 +384,6 @@ namespace lc
 
             // Phase 4 PR-7 — ordered resolver list; last-registered wins.
             std::vector<OperationResolver> _operationResolvers;
-
-            // Shortcuts
-            QShortcut* copyShortcut;
-            QShortcut* pasteShortcut;
         };
     }
 }
