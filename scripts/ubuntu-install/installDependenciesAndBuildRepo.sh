@@ -60,6 +60,9 @@ make -j 4
 # visibility, guarded by `|| echo` so it can't take the build down.
 CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityDxfRoundTrip.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DocumentSourceTest.*:DxfExportTest.*:DwgImportTest.*:DxfRoundTripTest.*:EIGEN.*:EntityBuilderTest.*:FormatTest.*:IntersectTest.*:LayerOps.*:LoggerTest.*:LuaFixture.*:MathTest.*:Maths.*:Matrix.*:QM.*:SPLINE.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
 
+# Settings recovery and malformed-toolbar regressions must block packaging too.
+CORE_SUITES="${CORE_SUITES}:UiSettingsTest.*"
+
 if [ -x ./bin/lcunittest ]; then
     echo "running lcunittest (core suites — blocking)"
     xvfb-run -a ./bin/lcunittest --gtest_filter="${CORE_SUITES}"
