@@ -173,6 +173,48 @@ class RunRequiredGoogleTests(unittest.TestCase):
         self.assertEqual(1, status)
         self.assertIn("summary was missing", errors)
 
+    def test_disabled_test_cannot_silently_reduce_required_execution(self):
+        status, output, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n  DISABLED_Second\n"),
+            SimpleNamespace(returncode=0, stdout=(
+                "[ DISABLED ] Sample.DISABLED_Second\n"
+                "[==========] 1 test from 1 test suite ran.\n"
+                "[  PASSED  ] 1 test.\n\n  YOU HAVE 1 DISABLED TEST\n")),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("discovered 2, executed 1", errors)
+        self.assertNotIn("filter passed", output)
+
+    def test_sharding_cannot_silently_reduce_required_execution(self):
+        status, output, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n  Second\n"),
+            SimpleNamespace(returncode=0, stdout=(
+                "Note: This is test shard 1 of 2.\n"
+                "[==========] 1 test from 1 test suite ran.\n"
+                "[  PASSED  ] 1 test.\n")),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("discovered 2, executed 1", errors)
+        self.assertNotIn("filter passed", output)
+
+    def test_executing_more_than_discovered_tests_fails_closed(self):
+        status, _, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
+            SimpleNamespace(returncode=0,
+                            stdout="[==========] 2 tests from 1 test suite ran.\n"),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("discovered 1, executed 2", errors)
+
+    def test_multiple_summaries_fail_closed(self):
+        status, _, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
+            SimpleNamespace(returncode=0, stdout=(
+                "[==========] 1 test from 1 test suite ran.\n" * 2)),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("summary was ambiguous", errors)
+
     def test_listing_timeout_fails_with_partial_output(self):
         status, output, errors, invoke = self._run(
             [

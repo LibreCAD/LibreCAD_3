@@ -13,6 +13,12 @@ Required libraries
 6) Eigen 3
 7) Lua == 5.3 (see `find_package(Lua 5.3 EXACT REQUIRED)` in the root CMakeLists — the "5.2" wording in this doc is historical and superseded)
 8) Python 3.9+ development headers (`python3-dev` on Debian/Ubuntu, `python3-devel` on Fedora/RHEL) — added for phase-5 Python scripting (`WITH_PYTHONSCRIPT=ON` by default, can be OFF for a Lua-only build).  pybind11 comes from the vendored submodule at `third_party/pybind11`; you do NOT need pybind11 installed system-wide.
+
+For embedded Python, select the base CPython SDK with
+`-DPython_EXECUTABLE=/path/to/base/python`, not a virtual environment. The
+interpreter, headers, library, standard library and dynamic modules must belong
+to a matching provider. Configuration rejects runtime trees outside that
+provider's home so installation cannot escape the package staging directory.
 9) Curl
 10) Boost
 11) LibDxfRW -- vendored as a submodule at `third_party/libdxfrw`; nothing to install

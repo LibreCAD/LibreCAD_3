@@ -188,6 +188,7 @@ lckernel/geometry/comparecoordinate.h
 )
 
 if(WITH_QT_UI)
+    add_compile_definitions(LC_UNITTEST_WITH_QT)
     find_package(Qt6 REQUIRED COMPONENTS Core Gui Test UiTools Widgets)
 
     set(EXTRA_LIBS

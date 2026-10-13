@@ -167,8 +167,8 @@ def run_required_filter(
         )
         return result.returncode if result.returncode > 0 else 1
 
-    summary = _RUN_SUMMARY.search(result.stdout)
-    if summary is None:
+    summaries = _RUN_SUMMARY.findall(result.stdout)
+    if not summaries:
         print(
             "ERROR: GoogleTest run summary was missing for filter: {}".format(
                 test_filter
@@ -176,7 +176,10 @@ def run_required_filter(
             file=sys.stderr,
         )
         return 1
-    executed = int(summary.group(1))
+    if len(summaries) != 1:
+        print("ERROR: GoogleTest run summary was ambiguous", file=sys.stderr)
+        return 1
+    executed = int(summaries[0])
     if executed == 0:
         print(
             "ERROR: required GoogleTest filter executed zero tests: {}".format(
@@ -189,6 +192,15 @@ def run_required_filter(
         print(
             "ERROR: required GoogleTest filter skipped one or more tests: {}".format(
                 test_filter
+            ),
+            file=sys.stderr,
+        )
+        return 1
+    if executed != discovered:
+        print(
+            "ERROR: required GoogleTest filter execution was incomplete: "
+            "discovered {}, executed {} (disabled tests or sharding may omit tests): {}".format(
+                discovered, executed, test_filter
             ),
             file=sys.stderr,
         )

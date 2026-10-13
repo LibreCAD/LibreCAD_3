@@ -2,6 +2,12 @@
 
 #include <lcpython.h>
 #include <pybind11/embed.h>
+
+namespace py = pybind11;
+
+// The isolated-provider test is headless. Only the package/child-process
+// fixture below needs QtCore, which the Qt-disabled test target does not link.
+#ifdef LC_UNITTEST_WITH_QT
 #include <python_runtime_config.h>
 
 #include <QDir>
@@ -11,8 +17,6 @@
 #include <QTemporaryDir>
 
 #include <string>
-
-namespace py = pybind11;
 
 extern std::string lcUnitTestExecutablePath;
 
@@ -68,6 +72,7 @@ QProcess::ExitStatus runRuntimeProbe(const QStringList& arguments,
 }
 
 } // namespace
+#endif
 
 TEST(PythonRuntime, IsolatedProviderIgnoresAmbientPaths) {
     EXPECT_NO_THROW(lc::python::PythonInit::configureForApplication());
@@ -88,6 +93,7 @@ assert json.dumps({'ready': True}) == '{"ready": true}'
 )py");
 }
 
+#ifdef LC_UNITTEST_WITH_QT
 TEST(PythonRuntime, RuntimeConfigurationIsValidatedInFreshProcesses) {
     ASSERT_FALSE(lcUnitTestExecutablePath.empty());
     QTemporaryDir temporaryDirectory;
@@ -133,3 +139,4 @@ TEST(PythonRuntime, RuntimeConfigurationIsValidatedInFreshProcesses) {
     EXPECT_TRUE(QString::fromLocal8Bit(lateSelection.readAllStandardError())
                     .contains("must be selected before initialization"));
 }
+#endif

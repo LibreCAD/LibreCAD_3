@@ -49,6 +49,22 @@ file(RELATIVE_PATH LC_PYTHON_STAGED_STDARCH_REL
     "${LC_PYTHON_RUNTIME_HOME}" "${Python_STDARCH}")
 file(RELATIVE_PATH LC_PYTHON_STAGED_DYNLIBS_REL
     "${LC_PYTHON_RUNTIME_HOME}" "${LC_PYTHON_RUNTIME_DYNLIBS}")
+# BEGIN Python staged layout validation
+# Virtual environments can report a base interpreter's stdlib outside their
+# sys.prefix. Never use such relative paths as install destinations or runtime
+# search paths: they would escape the package (and possibly the install prefix).
+foreach(_lc_staged_path LC_PYTHON_STAGED_STDLIB_REL LC_PYTHON_STAGED_STDARCH_REL
+        LC_PYTHON_STAGED_DYNLIBS_REL)
+    if(IS_ABSOLUTE "${${_lc_staged_path}}" OR
+       "${${_lc_staged_path}}" MATCHES "^\\.\\.(/|$)")
+        message(FATAL_ERROR
+            "Selected Python runtime layout escapes its staging directory: "
+            "${_lc_staged_path}=${${_lc_staged_path}} is outside "
+            "${LC_PYTHON_RUNTIME_HOME}. Select the base CPython interpreter "
+            "with -DPython_EXECUTABLE=<base interpreter>, not a virtual environment.")
+    endif()
+endforeach()
+# END Python staged layout validation
 # Root install-time origin capture consumes this exact selected layout too;
 # do not introduce a second Python/sysconfig path resolver in packaging.
 foreach(_lc_runtime_layout LC_PYTHON_STAGED_STDLIB_REL LC_PYTHON_STAGED_STDARCH_REL
