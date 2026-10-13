@@ -29,6 +29,7 @@
 #include "scriptvalue.h"
 
 #include <memory>
+#include <exception>
 #include <string>
 #include <vector>
 
@@ -59,12 +60,51 @@ public:
     virtual std::shared_ptr<ScriptObjectImpl>
     instantiate(const std::vector<ScriptValue>& args) = 0;
 
+    /// Checked boundary for operation startup. Adapters with protected-call
+    /// status (notably Python) override this to distinguish a raised
+    /// exception from a constructor that legitimately returns a value.
+    virtual bool instantiateChecked(
+        const std::vector<ScriptValue>& args,
+        std::shared_ptr<ScriptObjectImpl>& result,
+        std::string& error) {
+        error.clear();
+        try {
+            result = instantiate(args);
+            if (result) return true;
+            error = "script constructor did not produce an instance";
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "script constructor failed with an unknown exception";
+        }
+        return false;
+    }
+
     /// Read a named attribute.  Returns Nil for absent (matches Lua's
     /// `t[k]` on a missing key — no distinction between nil and absent).
     virtual ScriptValue getAttr(const std::string& name) = 0;
 
     /// Write a named attribute.
     virtual void setAttr(const std::string& name, const ScriptValue& value) = 0;
+
+    /// Checked attribute write. Runtime adapters may override this to report
+    /// language exceptions and conversion failures without throwing through
+    /// a Qt callback. The default preserves existing adapters and converts
+    /// C++ exceptions into an error string.
+    virtual bool setAttrChecked(const std::string& name,
+                                const ScriptValue& value,
+                                std::string& error) {
+        error.clear();
+        try {
+            setAttr(name, value);
+            return true;
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "script attribute assignment failed with an unknown exception";
+        }
+        return false;
+    }
 
     /// True iff the attribute exists.  For Lua: `type(t[k]) ~= 'nil'`.
     /// For Python: `hasattr(obj, name)`.
@@ -75,6 +115,24 @@ public:
     /// `_init_` prefix used by runOperation is the caller's job.
     virtual ScriptValue callMethod(const std::string& name,
                                    const std::vector<ScriptValue>& args) = 0;
+
+    /// Checked method boundary. Absence and a legitimate Nil return remain
+    /// successful; runtime adapters report exceptions through @p error.
+    virtual bool callMethodChecked(const std::string& name,
+                                   const std::vector<ScriptValue>& args,
+                                   ScriptValue& result,
+                                   std::string& error) {
+        error.clear();
+        try {
+            result = callMethod(name, args);
+            return true;
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "script method failed with an unknown exception";
+        }
+        return false;
+    }
 
     /// Equality with another impl.  Lua: LuaRef ==.  Python: is OR equal
     /// (same design decision as ScriptCallback).
@@ -115,12 +173,43 @@ public:
         return _impl ? ScriptObject(_impl->instantiate(args)) : ScriptObject{};
     }
 
+    bool instantiateChecked(ScriptObject& result,
+                           std::string& error,
+                           const std::vector<ScriptValue>& args = {}) const {
+        result = ScriptObject{};
+        if (!_impl) {
+            error = "cannot instantiate a nil script object";
+            return false;
+        }
+        std::shared_ptr<ScriptObjectImpl> instance;
+        if (!_impl->instantiateChecked(args, instance, error)) return false;
+        if (!instance) {
+            if (error.empty()) {
+                error = "script constructor did not produce an instance";
+            }
+            return false;
+        }
+        result = ScriptObject(std::move(instance));
+        return true;
+    }
+
     ScriptValue getAttr(const std::string& name) const {
         return _impl ? _impl->getAttr(name) : ScriptValue{};
     }
 
     void setAttr(const std::string& name, const ScriptValue& value) const {
         if (_impl) _impl->setAttr(name, value);
+    }
+
+    bool setAttrChecked(const std::string& name,
+                        const ScriptValue& value,
+                        std::string& error) const {
+        error.clear();
+        if (!_impl) {
+            error = "cannot set an attribute on a nil script object";
+            return false;
+        }
+        return _impl->setAttrChecked(name, value, error);
     }
 
     bool hasAttr(const std::string& name) const {
@@ -130,6 +219,17 @@ public:
     ScriptValue callMethod(const std::string& name,
                            const std::vector<ScriptValue>& args = {}) const {
         return _impl ? _impl->callMethod(name, args) : ScriptValue{};
+    }
+
+    bool callMethodChecked(const std::string& name,
+                           ScriptValue& result,
+                           std::string& error,
+                           const std::vector<ScriptValue>& args = {}) const {
+        if (!_impl) {
+            error = "cannot call a method on a nil script object";
+            return false;
+        }
+        return _impl->callMethodChecked(name, args, result, error);
     }
 
     bool operator==(const ScriptObject& other) const {

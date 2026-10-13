@@ -74,8 +74,19 @@ set -euo pipefail
 # -- fetching the target once, in its amd64v3 form, and leaving no plain-amd64
 # list on disk at all. A distinct URI makes it a distinct target, so apt
 # downloads the binary-amd64 index alongside the variant one.
+plain_amd64_sources=/etc/apt/sources.list.d/librecad-plain-amd64.sources
+if sudo test -e "$plain_amd64_sources"; then
+    echo "Refusing to overwrite existing apt source: $plain_amd64_sources" >&2
+    exit 1
+fi
+cleanup_plain_amd64_sources() {
+    sudo rm -f "$plain_amd64_sources"
+}
+trap cleanup_plain_amd64_sources EXIT
+
+# shellcheck disable=SC1091 # This script runs on Ubuntu, where the file is provided.
 . /etc/os-release
-sudo tee /etc/apt/sources.list.d/librecad-plain-amd64.sources >/dev/null <<SOURCE
+sudo tee "$plain_amd64_sources" >/dev/null <<SOURCE
 Types: deb
 URIs: http://archive.ubuntu.com/ubuntu
 Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates
@@ -87,8 +98,18 @@ sudo apt-get update
 
 # And say whether it worked, because the failure mode is silent.
 echo "Ubuntu plain-amd64 indexes now present:"
-ls /var/lib/apt/lists/ | grep -E "_binary-amd64_Packages" | grep -v -E "microsoft|google" || \
+found_plain_amd64_indexes=false
+for index in /var/lib/apt/lists/*_binary-amd64_Packages*; do
+    [[ -e "$index" ]] || continue
+    case "${index##*/}" in
+        *microsoft*|*google*) continue ;;
+    esac
+    echo "  ${index##*/}"
+    found_plain_amd64_indexes=true
+done
+if [[ "$found_plain_amd64_indexes" == false ]]; then
     echo "  NONE -- the stage-package resolve below will find nothing"
+fi
 
 if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.snap; then
     # "Stage package not found in part 'librecad': <name>" names whichever
@@ -109,7 +130,17 @@ if ! sudo env "PATH=$PATH" snapcraft pack --destructive-mode --output librecad.s
     echo "--- apt architecture ---"
     apt-config dump 2>/dev/null | grep -iE "^APT::Architecture" || true
     echo "--- package lists apt has actually fetched ---"
-    ls /var/lib/apt/lists/ 2>/dev/null | grep -i packages | head -20 || true
+    listed_packages=0
+    for index in /var/lib/apt/lists/*; do
+        [[ -e "$index" ]] || continue
+        case "${index##*/}" in
+            *[Pp]ackages*)
+                echo "  ${index##*/}"
+                ((listed_packages += 1))
+                ((listed_packages < 20)) || break
+                ;;
+        esac
+    done
     echo "--- snapcraft's own execution log ---"
     # The glob has to be expanded as root, or the unprivileged shell resolves
     # it against a directory it cannot read and tail gets the literal pattern.
@@ -124,5 +155,20 @@ fi
 # The pack ran as root, so the snap belongs to root; the upload step reads it
 # as the runner user.
 sudo chown "$(id -u):$(id -g)" librecad.snap
+
+# Keep the Snap's configure-selected provider separate from the earlier
+# AppImage/system build. Never substitute build/python-runtime-inventory.txt.
+snap_inventory=parts/librecad/build/python-runtime-inventory.txt
+sudo test -s "$snap_inventory"
+mkdir -p build
+sudo cat "$snap_inventory" | tee build/snap-python-runtime-inventory.txt >/dev/null
+python3 scripts/validate_python_inventory.py \
+    --inventory build/snap-python-runtime-inventory.txt \
+    --expected-root /usr --expected-version 3.14 --expected-architecture x86_64
+cat build/snap-python-runtime-inventory.txt
+{
+    sha256sum librecad.snap
+    snap list core26 mesa-2604 snapcraft
+} > build/snap-runtime-identity.txt
 
 sudo snap install ./librecad.snap --devmode --dangerous

@@ -71,6 +71,7 @@ lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
+lcviewernoqt/fontbooktest.cpp
 lcviewernoqt/mtextdrawtest.cpp
 lcviewernoqt/mtextlayouttest.cpp
 lcviewernoqt/dimordinatedrawtest.cpp
@@ -127,10 +128,12 @@ endif()
 # Only included when WITH_PYTHONSCRIPT is ON; the test files start with
 # `#include <lcpython.h>` which needs pybind11.
 if(WITH_PYTHONSCRIPT)
+    include_directories("${CMAKE_BINARY_DIR}/lcadpythonscript/generated")
     list(APPEND src
         python/pythonbindings_test.cpp
         python/demoscript_test.cpp
         python/parity_test.cpp             # Phase 2 slice 2.4 parity dump
+        python/python_runtime_test.cpp     # isolated selected-provider startup
         scripting/scriptcallback_test.cpp  # Phase 4 slice 4.1
         scripting/scriptobject_test.cpp    # Phase 4 slice 4.1 follow-on
         scripting/eventbus_test.cpp        # Phase 4 slice 4.1 follow-on
@@ -169,6 +172,7 @@ if(WITH_PYTHONSCRIPT)
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")  # Phase 6 PR-6.1 — kaguya-fronted headers
     include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")  # Phase 6 PR-6.1
     include_directories("${CMAKE_SOURCE_DIR}")   # for <lcscripting/...>
+    include_directories(${LUA_INCLUDE_DIR}) # customentitymanager_test uses the Lua runtime API
     set(EXTRA_LIBS ${EXTRA_LIBS} lcpythonscript lcscripting lcluascript)
     # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
     # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
@@ -184,6 +188,7 @@ lckernel/geometry/comparecoordinate.h
 )
 
 if(WITH_QT_UI)
+    add_compile_definitions(LC_UNITTEST_WITH_QT)
     find_package(Qt6 REQUIRED COMPONENTS Core Gui Test UiTools Widgets)
 
     set(EXTRA_LIBS
@@ -297,4 +302,6 @@ add_executable(lcunittest ${src} ${hdrs})
 # CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
 # compilation, where forcing a C++ header is a hard error.
 target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+target_compile_features(lcunittest PRIVATE cxx_std_17)
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS}
+    ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})

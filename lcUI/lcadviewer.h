@@ -74,7 +74,9 @@ struct MouseEvent {
     int scale;
 };
 
-class LCADViewer : public QOpenGLWidget
+// Retained documents/previews may outlive the Qt view. Disconnect their Nano
+// subscriptions automatically instead of leaving callbacks to deleted widgets.
+class LCADViewer : public QOpenGLWidget, public Nano::Observer
 {
     Q_OBJECT
 
@@ -92,7 +94,9 @@ public:
     std::shared_ptr<lc::viewer::DocumentCanvas> documentCanvas() const;
 
     void autoScale() const {
-        documentCanvas()->autoScale(*_documentPainter);
+        if (_docCanvas != nullptr && _documentPainter != nullptr) {
+            _docCanvas->autoScale(*_documentPainter);
+        }
     }
 
     void setOperationActive(bool operationActiveIn);

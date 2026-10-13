@@ -4,14 +4,10 @@
 //   "a dump of entity count + coordinates from the .lua run and the .py
 //    run of the same drawing diffs empty."
 //
-// This test provides the *Python half* of that diff — it produces a stable,
-// language-independent representation of the document state after running
-// test.py, and writes it to a text file (or stdout) that a CI job can diff
-// against a matching Lua-side dump.  The Lua half will land alongside the
-// full luacmdinterface CI job that actually runs `luacmdinterface -i file:test.lua`
-// under xvfb — that's out of scope for this dev machine (no Lua 5.3 EXACT,
-// no headless GL), but the sub-plan calls it out as a CI-only manual check
-// on the Lua side.
+// This test runs both test.py and test.lua against independent real documents
+// in-process, then compares canonical geometry, layer metadata, and undo/redo
+// outcomes. This makes language parity a required local/product test rather
+// than a manually diffed CI artifact.
 //
 // The diffable format: `<entity_class>\t<field1>=<val1>\t<field2>=<val2>...`,
 // one entity per line, sorted by class then coordinates.  Any drift in
@@ -20,6 +16,8 @@
 #include <gtest/gtest.h>
 
 #include <lcpython.h>
+#include <lclua.h>
+#include <kaguya/kaguya.hpp>
 
 #include <cad/base/cadentity.h>
 #include <cad/primitive/arc.h>
@@ -29,6 +27,7 @@
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/entitycontainer.h>
 #include <cad/storage/storagemanagerimpl.h>
+#include <cad/storage/undomanagerimpl.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -52,6 +51,16 @@ std::string findTestPy() {
     fs::path here = fs::path(__FILE__).parent_path();
     return (here.parent_path().parent_path()
             / "luacmdinterface" / "test.py").string();
+}
+
+std::string findTestLua() {
+    if (const char* env = std::getenv("LIBRECAD_TEST_LUA")) {
+        return env;
+    }
+    namespace fs = boost::filesystem;
+    fs::path here = fs::path(__FILE__).parent_path();
+    return (here.parent_path().parent_path()
+            / "luacmdinterface" / "test.lua").string();
 }
 
 std::string slurp(const std::string& path) {
@@ -106,7 +115,8 @@ dumpEntities(const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
         } else {
             // Unknown entity type — dump the C++ typeid so a diff still shows
             // something meaningful.
-            row << "Other\ttype=" << typeid(*e).name();
+            const auto* entity = e.get();
+            row << "Other\ttype=" << typeid(*entity).name();
         }
         out.push_back(row.str());
     }
@@ -115,7 +125,54 @@ dumpEntities(const std::vector<lc::entity::CADEntity_CSPtr>& entities) {
     return out;
 }
 
+std::vector<std::string>
+dumpLayers(const std::shared_ptr<lc::storage::StorageManagerImpl>& manager) {
+    std::vector<std::string> out;
+    for (const auto& [name, layer] : manager->allLayers()) {
+        const auto color = layer->color();
+        std::ostringstream row;
+        row << "Layer\tname=" << name
+            << "\tlineWidth=" << fmt(layer->lineWidth().width())
+            << "\tcolor=(" << fmt(color.red()) << "," << fmt(color.green())
+            << "," << fmt(color.blue()) << "," << fmt(color.alpha()) << ")"
+            << "\tfrozen=" << (layer->isFrozen() ? "true" : "false");
+        const auto pattern = layer->linePattern();
+        if (pattern == nullptr) {
+            row << "\tlinePattern=<null>";
+        } else {
+            row << "\tlinePattern=" << pattern->name()
+                << "\tdescription=" << pattern->description()
+                << "\tlength=" << fmt(pattern->length())
+                << "\tpath=";
+            for (const double segment : pattern->path()) {
+                row << fmt(segment) << ",";
+            }
+        }
+        out.push_back(row.str());
+    }
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
+std::string runLuaScript(const std::string& script,
+                         const lc::storage::Document_SPtr& document) {
+    kaguya::State state;
+    lc::lua::LCLua lua(state.state());
+    lua.addLuaLibs();
+    lua.importLCKernel();
+    lua.setDocument(document);
+    return lua.runString(script.c_str());
+}
+
 } // namespace
+
+TEST(LuaRuntimeTest, NonStringErrorsReturnDiagnostic) {
+    kaguya::State state;
+    lc::lua::LCLua lua(state.state());
+
+    EXPECT_EQ(lua.runString("error({})"),
+              "Lua script failed with non-string error value of type table");
+}
 
 // -----------------------------------------------------------------------------
 // The parity dump test — runs test.py, dumps entity list, verifies the shape.
@@ -166,4 +223,71 @@ TEST(ParityTest, TestPyProducesStableEntityDump) {
             f << row << '\n';
         }
     }
+}
+
+TEST(ParityTest, LuaAndPythonScriptsMatchCanonicalDocumentAndUndoRedo) {
+    auto undoPy = std::make_shared<lc::storage::UndoManagerImpl>(8);
+    auto smPy = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto docPy = std::make_shared<lc::storage::DocumentImpl>(smPy);
+    docPy->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(undoPy.get());
+
+    auto undoLua = std::make_shared<lc::storage::UndoManagerImpl>(8);
+    auto smLua = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto docLua = std::make_shared<lc::storage::DocumentImpl>(smLua);
+    docLua->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(undoLua.get());
+
+    lc::python::LCPython python;
+    auto pythonNamespace = python.makeNamespace();
+    python.setDocument(pythonNamespace, docPy);
+    const std::string pythonScript = slurp(findTestPy());
+    ASSERT_FALSE(pythonScript.empty()) << "test.py path resolution failed";
+    ASSERT_EQ(python.runString(pythonScript.c_str(), pythonNamespace), "");
+
+    const std::string luaScript = slurp(findTestLua());
+    ASSERT_FALSE(luaScript.empty()) << "test.lua path resolution failed";
+    ASSERT_EQ(runLuaScript(luaScript, docLua), "");
+
+    const auto pythonEntities = dumpEntities(smPy->entityContainer().asVector());
+    const auto luaEntities = dumpEntities(smLua->entityContainer().asVector());
+    const auto pythonLayers = dumpLayers(smPy);
+    const auto luaLayers = dumpLayers(smLua);
+    ASSERT_EQ(pythonEntities, luaEntities);
+    ASSERT_EQ(pythonLayers, luaLayers);
+    ASSERT_GE(pythonEntities.size(), 502u);
+    ASSERT_LE(pythonEntities.size(), 512u);
+    ASSERT_FALSE(pythonLayers.empty());
+    ASSERT_TRUE(undoPy->canUndo());
+    ASSERT_TRUE(undoLua->canUndo());
+
+    const auto expectSameState = [&]() {
+        EXPECT_EQ(dumpEntities(smPy->entityContainer().asVector()),
+                  dumpEntities(smLua->entityContainer().asVector()));
+        EXPECT_EQ(dumpLayers(smPy), dumpLayers(smLua));
+    };
+
+    // The scripts produce three committed operations (layer, spiral, and
+    // circle+arc). Compare after each undo as well as at the empty state.
+    for (int i = 0; i < 3; ++i) {
+        ASSERT_TRUE(undoPy->canUndo());
+        ASSERT_TRUE(undoLua->canUndo());
+        undoPy->undo();
+        undoLua->undo();
+        expectSameState();
+    }
+    EXPECT_TRUE(smPy->entityContainer().asVector().empty());
+    EXPECT_TRUE(smLua->entityContainer().asVector().empty());
+
+    for (int i = 0; i < 3; ++i) {
+        ASSERT_TRUE(undoPy->canRedo());
+        ASSERT_TRUE(undoLua->canRedo());
+        undoPy->redo();
+        undoLua->redo();
+        expectSameState();
+    }
+    EXPECT_EQ(dumpEntities(smPy->entityContainer().asVector()), pythonEntities);
+    EXPECT_EQ(dumpEntities(smLua->entityContainer().asVector()), luaEntities);
+    EXPECT_EQ(dumpLayers(smPy), pythonLayers);
+    EXPECT_EQ(dumpLayers(smLua), luaLayers);
 }

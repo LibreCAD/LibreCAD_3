@@ -93,6 +93,13 @@ void MenuItem::setPosition(int newPosition) {
     }
 
     QList<QWidget*> widgets = associatedWidgetList(this);
+    if (widgets.isEmpty()) {
+        // A standalone item can be configured before it is inserted into a
+        // menu. Preserve the requested position until it has a parent menu.
+        _position = newPosition;
+        return;
+    }
+
     QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
 
     if (menu == nullptr) {

@@ -8,7 +8,6 @@
 #include <managers/uisettings.h>
 #include <widgets/customizeToolbar/customizetoolbar.h>
 #include <widgets/toolbar.h>
-#include <memory>
 
 #include "uitests.h"
 
@@ -23,11 +22,8 @@ public:
 class UiSettingsTest : public ::testing::Test {
 protected:
     static void SetUpTestSuite() {
-        if (!QApplication::instance()) {
-            application = std::make_unique<QApplication>(argc, argv);
-        }
+        (void)ensureUiApplication();
     }
-    static void TearDownTestSuite() { application.reset(); }
     void SetUp() override { ASSERT_TRUE(directory.isValid()); }
 
     void writeSettingsFile(const QByteArray& bytes) {
@@ -55,16 +51,14 @@ protected:
         return document;
     }
 
-    static std::unique_ptr<QApplication> application;
     QTemporaryDir directory;
     TestUiSettings settings{directory.path()};
     lc::ui::widgets::Toolbar toolbar{nullptr};
     lc::ui::widgets::CustomizeToolbar customize{&toolbar};
 };
-std::unique_ptr<QApplication> UiSettingsTest::application;
 }
 
-TEST_F(UiSettingsTest, DefaultButtonUsesEmbeddedSettingsWhenFileIsMissing) {
+TEST_F(UiSettingsTest, DefaultButtonUsesSafeDefaultsWhenUserFileIsMissing) {
     auto* button = customize.findChild<QPushButton*>("defaultButton");
     ASSERT_NE(button, nullptr);
     int requests = 0;
@@ -94,6 +88,19 @@ TEST_F(UiSettingsTest, MalformedToolbarDocumentsNeverAbort) {
         customize.readData(input);
         auto output = generated();
         ASSERT_TRUE(output["toolbar"]["tabs"].IsArray());
+    }
+}
+
+TEST_F(UiSettingsTest, ConfiguredDefaultDirectoryPrecedesBundledDefaults) {
+    QFile file(QDir(directory.path()).filePath("default_ui_settings.json"));
+    ASSERT_TRUE(file.open(QIODevice::WriteOnly));
+    ASSERT_GT(file.write(R"({"toolbar":{"tabs":[{"label":"Configured","groups":[]}]}})"), 0);
+    file.close();
+    for (bool defaults : {false, true}) {
+        settings.readSettings(&customize, defaults);
+        auto output = generated();
+        ASSERT_EQ(output["toolbar"]["tabs"].Size(), 1u);
+        EXPECT_STREQ(output["toolbar"]["tabs"][0]["label"].GetString(), "Configured");
     }
 }
 

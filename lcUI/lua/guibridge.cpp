@@ -434,19 +434,12 @@ void addLuaGUIAPIBindings(lua_State* L) {
     })
                                        );
 
-    // Phase 4 PR-3 — ToolbarButton's Lua-facing constructors and
-    // addCallback overloads take a LuaRef; wrap into ScriptCallback
-    // before forwarding.  The 3 callback-taking constructor arities are
-    // exposed as `gui.ToolbarButton.new(...)` static factory shapes
-    // (kaguya's setConstructors can't emit lambdas per arity, but
-    // `.addStaticFunction("new", ...)` can — Lua callers can either use
-    // the 3-arg + optional args new() variants or the ctor overloads
-    // that don't take a callback).
-    //
-    // The constructor shapes and the callback factory are one overloaded
-    // `new`: setConstructors registers `new` too, and kaguya throws on a
-    // second registration of a name.  A string third argument is a
-    // tooltip, so that overload comes before the callback one.
+    // Phase 4 PR-3 — ToolbarButton's constructors and callback-taking
+    // factory share one `new` overload set; Kaguya rejects registering
+    // constructors and a static factory under the same name separately.
+    // Callback arguments are converted to ScriptCallback before forwarding;
+    // the tooltip overload precedes callback overloads because both can take
+    // a string in the third position.
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
     .addOverloadedFunctions("new",
         [](const char* label, const char* icon) {

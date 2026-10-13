@@ -106,6 +106,109 @@ TEST(ScriptValueRoundTrip, CoordinateThroughScriptCallback) {
     EXPECT_DOUBLE_EQ(rt_coord.asCoordinate().z(), 3.0);
 }
 
+TEST(ScriptValueRoundTrip, CoordinateListThroughScriptCallback) {
+    {
+        py::gil_scoped_acquire gil;
+        py::module_::import("lc");
+    }
+    auto echo = makePyCbFromExpr("lambda x: x");
+    const std::vector<lc::geo::Coordinate> expected{
+        lc::geo::Coordinate(1.0, 2.0, 3.0),
+        lc::geo::Coordinate(4.0, 5.0, 6.0)};
+
+    const auto result = echo.call(lcs::ScriptValue(expected));
+    ASSERT_EQ(result.kind(), lcs::ScriptValue::Kind::CoordinateList);
+    ASSERT_EQ(result.asCoordinateList().size(), expected.size());
+    EXPECT_EQ(result.asCoordinateList(), expected);
+}
+
+TEST(ScriptValueRoundTrip, EntityListThroughScriptCallback) {
+    lc::python::PythonInit::initialize();
+    lc::entity::CADEntity_CSPtr point;
+    {
+        py::gil_scoped_acquire gil;
+        py::module_::import("lc");
+        py::exec(R"PY(
+import lc
+_scriptvalue_layer = lc.meta.Layer(
+    'ScriptValueList', lc.meta.MetaLineWidthByValue(1.0),
+    lc.Color(0, 0, 0), None, False)
+_scriptvalue_builder = lc.builder.PointBuilder()
+_scriptvalue_builder.setLayer(_scriptvalue_layer)
+_scriptvalue_builder.setCoordinate(lc.geo.Coordinate(7.0, 8.0, 9.0))
+_scriptvalue_point = _scriptvalue_builder.build()
+)PY", py::globals());
+        point = py::globals()["_scriptvalue_point"]
+                   .cast<lc::entity::CADEntity_CSPtr>();
+    }
+
+    auto echo = makePyCbFromExpr("lambda x: x");
+    const auto result = echo.call(
+        lcs::ScriptValue(std::vector<lc::entity::CADEntity_CSPtr>{point}));
+    ASSERT_EQ(result.kind(), lcs::ScriptValue::Kind::EntityList);
+    ASSERT_EQ(result.asEntityList().size(), 1u);
+    EXPECT_EQ(result.asEntityList().front(), point);
+}
+
+TEST(ScriptCallbackInvoke, UnsupportedPythonValuesReportConversionErrors) {
+    auto callback = makePyCbFromExpr("lambda event, args: [1, 2, 3]");
+    std::string diagnostic;
+    const auto result = callback.invokeEvent(
+        "conversion", lcs::ScriptValue{},
+        [&](const std::string& message) { diagnostic = message; });
+
+    EXPECT_TRUE(result.isNil());
+    EXPECT_NE(diagnostic.find("Python sequences must contain only"),
+              std::string::npos);
+}
+
+TEST(ScriptCallbackInvoke, EmptySequenceReportsAmbiguousConversion) {
+    auto callback = makePyCbFromExpr("lambda event, args: []");
+    std::string diagnostic;
+    const auto result = callback.invokeEvent(
+        "conversion", lcs::ScriptValue{},
+        [&](const std::string& message) { diagnostic = message; });
+
+    EXPECT_TRUE(result.isNil());
+    EXPECT_NE(diagnostic.find("empty Python sequence is ambiguous"),
+              std::string::npos);
+}
+
+TEST(ScriptCallbackInvoke, PythonNoneRemainsSuccessfulNil) {
+    auto callback = makePyCbFromExpr("lambda event, args: None");
+    std::string diagnostic;
+    const auto result = callback.invokeEvent(
+        "conversion", lcs::ScriptValue{},
+        [&](const std::string& message) { diagnostic = message; });
+
+    EXPECT_TRUE(result.isNil());
+    EXPECT_TRUE(diagnostic.empty());
+}
+
+TEST(ScriptCallbackInvoke, IntegerOverflowReportsConversionError) {
+    auto callback = makePyCbFromExpr("lambda event, args: 2 ** 40");
+    std::string diagnostic;
+    const auto result = callback.invokeEvent(
+        "conversion", lcs::ScriptValue{},
+        [&](const std::string& message) { diagnostic = message; });
+
+    EXPECT_TRUE(result.isNil());
+    EXPECT_NE(diagnostic.find("outside the ScriptValue int range"),
+              std::string::npos);
+}
+
+TEST(ScriptCallbackInvoke, NonStringMapKeysReportConversionError) {
+    auto callback = makePyCbFromExpr("lambda event, args: {1: 'value'}");
+    std::string diagnostic;
+    const auto result = callback.invokeEvent(
+        "conversion", lcs::ScriptValue{},
+        [&](const std::string& message) { diagnostic = message; });
+
+    EXPECT_TRUE(result.isNil());
+    EXPECT_NE(diagnostic.find("ScriptValue maps require string keys"),
+              std::string::npos);
+}
+
 TEST(ScriptValueRoundTrip, MapAliasingPreserved) {
     // Map is shared_ptr-backed so two ScriptValues holding the same Map
     // SHARE the underlying storage.  ListGUI and PropertyEditor rely on
@@ -138,6 +241,27 @@ TEST(ScriptValueRoundTrip, MapThroughScriptCallback) {
     ASSERT_TRUE(rt.asMap());
     EXPECT_EQ(rt.asMap()->at("x").asInt(), 1);
     EXPECT_EQ(rt.asMap()->at("y").asString(), "y-val");
+}
+
+TEST(ScriptValueRoundTrip, NestedCoordinateListInMapThroughScriptCallback) {
+    {
+        py::gil_scoped_acquire gil;
+        py::module_::import("lc");
+    }
+    auto echo = makePyCbFromExpr("lambda d: d");
+    auto map = lcs::makeMap();
+    (*map)["points"] = lcs::ScriptValue(
+        std::vector<lc::geo::Coordinate>{
+            lc::geo::Coordinate(1.0, 2.0),
+            lc::geo::Coordinate(3.0, 4.0)});
+
+    const auto result = echo.call(lcs::ScriptValue(map));
+    ASSERT_EQ(result.kind(), lcs::ScriptValue::Kind::MapKind);
+    ASSERT_TRUE(result.asMap());
+    const auto& points = result.asMap()->at("points");
+    ASSERT_EQ(points.kind(), lcs::ScriptValue::Kind::CoordinateList);
+    ASSERT_EQ(points.asCoordinateList().size(), 2u);
+    EXPECT_DOUBLE_EQ(points.asCoordinateList()[1].x(), 3.0);
 }
 
 // -----------------------------------------------------------------------------

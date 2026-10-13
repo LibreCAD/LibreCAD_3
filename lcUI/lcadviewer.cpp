@@ -115,64 +115,72 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 LCADViewer::~LCADViewer()
 {
     deletePainters();
-    _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    if (_document)
+        _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
 void LCADViewer::initializeGL()
 {
-    QOpenGLWidget::makeCurrent();
-    QOpenGLContext *CC= QOpenGLContext::currentContext();
+    makeCurrent();
+    QOpenGLContext* glContext = QOpenGLContext::currentContext();
+    if (glContext == nullptr) {
+        LOG_ERROR << "LCADViewer initialized without a current OpenGL context" << std::endl;
+        return;
+    }
 
-    QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
-    logger->initialize();
-
-    connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
-    logger->startLogging();
+    QOpenGLDebugLogger* logger = new QOpenGLDebugLogger(this);
+    if (logger->initialize()) {
+        connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
+        logger->startLogging();
+    }
+    else {
+        LOG_WARNING << "OpenGL debug logger could not be initialized" << std::endl;
+    }
 
 
     int width = size().width();
     int height = size().height();
 
-    if (CC != 0)
-    {
-        std::string glewError;
-
-        if (!initialiseGlew(glewError)) {
-            LOG_ERROR << glewError << std::endl;
-            exit(1);
-        }
-
-        deletePainters();
-        createPainters(width, height);
-        _documentPainter->create_resources();
+    std::string glewError;
+    if (!initialiseGlew(glewError)) {
+        LOG_ERROR << glewError << std::endl;
+        return;
     }
 
-    else
-    {
-        deletePainters();
-        createPainters(width, height);
+    deletePainters();
+    createPainters(width, height);
+    _documentPainter->create_resources();
+    if (_docCanvas != nullptr) {
+        _docCanvas->autoScale(*_documentPainter);
     }
 }
 
 
 void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport)
 {
-    int width = size().width();
-    int height = size().height();
-
+    if (_document)
+        _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    if (_docCanvas)
+        _docCanvas->selectionChanged().disconnect<LCADViewer, &LCADViewer::_selectionChanged>(this);
+    QOpenGLContext* widgetContext = context();
+    const bool hasValidContext = widgetContext != nullptr && widgetContext->isValid();
+    if (hasValidContext) {
+        makeCurrent();
+    }
     deletePainters();
-    createPainters(width, height);
 
-    _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, [this](double* x, double* y) {
-        _documentPainter->device_to_user(x, y);
-    }, viewport);
+    // Use this canvas's painter, not a closure borrowing a future/dead viewer.
+    _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, nullptr, viewport);
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
     _docCanvas->selectionChanged().connect<LCADViewer, &LCADViewer::_selectionChanged>(this);
 
-    if(_docCanvas != nullptr)
-        _docCanvas->setPainter(_documentPainter);  //passing pointer to painter to doc canvas
+    if (hasValidContext && QOpenGLContext::currentContext() == widgetContext) {
+        createPainters(size().width(), size().height());
+        _documentPainter->create_resources();
+        doneCurrent();
+    }
 }
 
 void LCADViewer::setSnapManager(std::shared_ptr<lc::viewer::manager::SnapManager> snapmanager) {
@@ -251,6 +259,10 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
 
 void LCADViewer::resizeGL(int width, int height)
 {
+    if (_docCanvas == nullptr || _documentPainter == nullptr) {
+        return;
+    }
+
     _docCanvas->newDeviceSize(width,height);
     _documentPainter->new_device_size(width,height);
     updateBackground();
@@ -425,6 +437,10 @@ bool LCADViewer::operationActive() const {
 
 void LCADViewer::paintGL()
 {
+    if (_docCanvas == nullptr || _documentPainter == nullptr) {
+        return;
+    }
+
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_BACKGROUND);
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_DOCUMENT);
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_FOREGROUND);
@@ -443,11 +459,15 @@ void LCADViewer::createPainters(unsigned int width, unsigned int height) {
 
 void LCADViewer::deletePainters()
 {
+    if (_docCanvas) _docCanvas->setPainter(nullptr);
     for(auto pair : imagemaps) {
         delete pair.first;
         delete pair.second;
     }
     imagemaps.clear();
+    _backgroundPainter = nullptr;
+    _documentPainter = nullptr;
+    _foregroundPainter = nullptr;
 }
 
 void LCADViewer::updateBackground()

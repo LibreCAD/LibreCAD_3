@@ -22,6 +22,8 @@
 
 #include <atomic>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace py = pybind11;
@@ -50,6 +52,33 @@ TEST(EventBus, RegisterAndTriggerNative) {
 
     // Trigger of an event with no listeners: no-op, no crash.
     bus.triggerEvent("nonexistent");
+}
+
+TEST(EventBus, ReportsNativeFailureAndContinuesToOtherListeners) {
+    lcs::EventBus bus;
+    std::vector<std::string> diagnostics;
+    std::atomic<int> laterListenerHits{0};
+    bus.setDiagnosticSink([&](const std::string& message) {
+        diagnostics.push_back(message);
+    });
+
+    bus.registerEvent("point", lcs::nativeCallback(
+        [](const std::vector<lcs::ScriptValue>&) -> lcs::ScriptValue {
+            throw std::runtime_error("expected native event failure");
+        }));
+    bus.registerEvent("point", lcs::nativeCallback(
+        [&]() { laterListenerHits.fetch_add(1); }));
+
+    EXPECT_NO_THROW(bus.triggerEvent("point"));
+    EXPECT_EQ(laterListenerHits.load(), 1);
+    ASSERT_EQ(diagnostics.size(), 1u);
+    EXPECT_NE(diagnostics.front().find("event 'point'"), std::string::npos);
+    EXPECT_NE(diagnostics.front().find("expected native event failure"),
+              std::string::npos);
+    EXPECT_EQ(bus.listenerCount("point"), 1u);
+    EXPECT_NO_THROW(bus.triggerEvent("point"));
+    EXPECT_EQ(laterListenerHits.load(), 2);
+    EXPECT_EQ(diagnostics.size(), 1u);
 }
 
 TEST(EventBus, DuplicateRegistrationAllowed) {
@@ -108,6 +137,32 @@ TEST(EventBus, DeleteEventMissReturnsFalse) {
     EXPECT_EQ(bus.listenerCount("point"), 1u);
 }
 
+TEST(EventBus, TrackedRegistrationsHaveMonotonicDistinctIdsAndExactRemoval) {
+    lcs::EventBus bus;
+    auto callback = lcs::nativeCallback([]() {});
+
+    const auto first = bus.registerEventTracked("point", callback);
+    const auto second = bus.registerEventTracked("point", callback);
+    ASSERT_LT(first, second);
+
+    const auto snapshot = bus.snapshotEntries("point");
+    ASSERT_EQ(snapshot.size(), 2u);
+    EXPECT_EQ(snapshot[0].id, first);
+    EXPECT_EQ(snapshot[1].id, second);
+    EXPECT_TRUE(snapshot[0].callback == callback);
+    EXPECT_TRUE(snapshot[1].callback == callback);
+
+    EXPECT_TRUE(bus.deleteRegistration("point", second));
+    EXPECT_FALSE(bus.deleteRegistration("point", second));
+    const auto remaining = bus.snapshotEntries("point");
+    ASSERT_EQ(remaining.size(), 1u);
+    EXPECT_EQ(remaining.front().id, first);
+
+    bus.clear();
+    const auto third = bus.registerEventTracked("point", callback);
+    EXPECT_GT(third, second) << "IDs remain monotonic across clear()";
+}
+
 TEST(EventBus, TriggerCopiesBeforeDispatch) {
     // Preserved verbatim from luainterface.cpp:134.  If a callback
     // registers ANOTHER callback mid-trigger, that new callback must
@@ -147,6 +202,41 @@ TEST(EventBus, TriggerCopiesBeforeDispatch) {
     bus.triggerEvent("point");
     EXPECT_EQ(outer_hits.load(), 2);
     EXPECT_EQ(inner_hits.load(), 1);
+}
+
+TEST(EventBus, NestedTriggerUsesIndependentSnapshot) {
+    // Re-entering the same EventBus from a callback must not retain the
+    // registry mutex, and each nested trigger must observe its own snapshot.
+    // A listener registered by the outer callback is visible to the nested
+    // trigger but not retroactively added to the already-copied outer list.
+    lcs::EventBus bus;
+    std::vector<std::string> order;
+    bool inNestedDispatch = false;
+
+    auto late = lcs::nativeCallback([&]() {
+        order.push_back("late:nested");
+    });
+    auto first = lcs::nativeCallback([&]() {
+        order.push_back(inNestedDispatch ? "first:nested" : "first:outer");
+        if (!inNestedDispatch) {
+            inNestedDispatch = true;
+            bus.registerEvent("point", late);
+            bus.triggerEvent("point");
+            inNestedDispatch = false;
+        }
+    });
+    auto second = lcs::nativeCallback([&]() {
+        order.push_back(inNestedDispatch ? "second:nested" : "second:outer");
+    });
+
+    bus.registerEvent("point", first);
+    bus.registerEvent("point", second);
+    bus.triggerEvent("point");
+
+    EXPECT_EQ(order, (std::vector<std::string>{
+        "first:outer", "first:nested", "second:nested", "late:nested",
+        "second:outer"}));
+    EXPECT_EQ(bus.listenerCount("point"), 3u);
 }
 
 TEST(EventBus, TriggerAllowsMidDispatchDeregister) {
@@ -220,6 +310,57 @@ TEST(EventBus, PythonCallbackReceivesEventArgs) {
 
     // Clean up so subsequent runs don't accumulate.
     py::module_::import("builtins").attr("_lc_test_hits") = py::list();
+}
+
+TEST(EventBus, ReportsPythonTracebackOutsideGilAndContinuesDispatch) {
+    lc::python::PythonInit::initialize();
+
+    lcs::EventBus bus;
+    std::vector<std::string> diagnostics;
+    bool sinkRanWithoutGil = false;
+    std::atomic<int> laterListenerHits{0};
+    bus.setDiagnosticSink([&](const std::string& message) {
+        sinkRanWithoutGil = PyGILState_Check() == 0;
+        diagnostics.push_back(message);
+    });
+
+    lcs::ScriptCallback failingPythonCallback;
+    {
+        py::gil_scoped_acquire gil;
+        py::dict ns;
+        ns["__builtins__"] = py::module_::import("builtins");
+        py::exec(
+            "_failure_count = 0\n"
+            "def _fail(ev, args):\n"
+            "    global _failure_count\n"
+            "    _failure_count += 1\n"
+            "    raise RuntimeError('expected event callback failure')\n",
+            ns);
+        failingPythonCallback = lc::python::makePythonCallback(ns["_fail"]);
+        py::module_::import("builtins").attr("_lc_event_failure_ns") = ns;
+    }
+
+    bus.registerEvent("mouseMove", failingPythonCallback);
+    bus.registerEvent("mouseMove", lcs::nativeCallback(
+        [&]() { laterListenerHits.fetch_add(1); }));
+    EXPECT_NO_THROW(bus.triggerEvent("mouseMove", lcs::ScriptValue(7)));
+
+    EXPECT_TRUE(sinkRanWithoutGil);
+    EXPECT_EQ(laterListenerHits.load(), 1);
+    EXPECT_EQ(bus.listenerCount("mouseMove"), 1u);
+    EXPECT_NO_THROW(bus.triggerEvent("mouseMove", lcs::ScriptValue(8)));
+    EXPECT_EQ(laterListenerHits.load(), 2);
+    ASSERT_EQ(diagnostics.size(), 1u);
+    EXPECT_NE(diagnostics.front().find("Python event 'mouseMove'"),
+              std::string::npos);
+    EXPECT_NE(diagnostics.front().find("RuntimeError: expected event callback failure"),
+              std::string::npos);
+    {
+        py::gil_scoped_acquire gil;
+        py::dict ns = py::module_::import("builtins").attr("_lc_event_failure_ns");
+        EXPECT_EQ(ns["_failure_count"].cast<int>(), 1);
+        py::delattr(py::module_::import("builtins"), "_lc_event_failure_ns");
+    }
 }
 
 TEST(EventBus, SnapshotReturnsCallbackList) {

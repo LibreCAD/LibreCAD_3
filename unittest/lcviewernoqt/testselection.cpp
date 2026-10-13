@@ -10,6 +10,30 @@
 #include <cad/primitive/line.h>
 #include "drawitems/lcvdrawitem.h"
 
+TEST(SelectionTest, MutatorsNotifyObservers) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
+    auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+    builder->appendEntity(std::make_shared<lc::entity::Line>(
+        lc::geo::Coordinate(0, 0), lc::geo::Coordinate(0, 10), document->layerByName("0")));
+    builder->execute();
+    struct Counter : Nano::Observer {
+        int count = 0;
+        void changed() { ++count; }
+    } counter;
+    canvas->selectionChanged().connect<Counter, &Counter::changed>(counter);
+    canvas->selectAll();
+    EXPECT_EQ(canvas->selectedEntities().asVector().size(), 1u);
+    EXPECT_EQ(counter.count, 1);
+    canvas->removeSelection();
+    EXPECT_TRUE(canvas->selectedEntities().asVector().empty());
+    EXPECT_EQ(counter.count, 2);
+    canvas->inverseSelection();
+    EXPECT_EQ(canvas->selectedEntities().asVector().size(), 1u);
+    EXPECT_EQ(counter.count, 3);
+}
+
 TEST(SelectionTest, NormalSelection) {
     auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
     auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);

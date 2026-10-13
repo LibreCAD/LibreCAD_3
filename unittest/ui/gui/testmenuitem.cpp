@@ -11,7 +11,7 @@
 #include "../uitests.h"
 
 TEST(MenuItemTest, ItemAddTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
@@ -37,7 +37,7 @@ TEST(MenuItemTest, ItemAddTest) {
 }
 
 TEST(MenuItemTest, ItemLabelTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     // Constructed for the Qt state the other tests rely on; this one never
     // touches the window itself.
     new MainWindow();
@@ -52,7 +52,7 @@ TEST(MenuItemTest, ItemLabelTest) {
 }
 
 TEST(MenuItemTest, ItemCallbackTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
@@ -92,7 +92,7 @@ TEST(MenuItemTest, ItemCallbackTest) {
 }
 
 TEST(MenuItemTest, ItemPositionTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TestMenu");
@@ -130,7 +130,7 @@ TEST(MenuItemTest, ItemPositionTest) {
 }
 
 TEST(MenuItemTest, ItemRemoveTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TestMenu");

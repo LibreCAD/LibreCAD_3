@@ -8,7 +8,7 @@
 #include "dialogs/addlinepatterndialog.h"
 
 TEST(LinePatternTest, Creation) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto document = createDocument();
     ASSERT_EQ(0, document->linePatterns().size()) << "Document already contains line patterns";
 
@@ -33,7 +33,7 @@ TEST(LinePatternTest, Creation) {
 }
 
 TEST(LinePatternTest, Edition) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto document = createDocument();
 
     auto linePattern = std::make_shared<const lc::meta::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double> {1, -1, 0, -1}, 3);
@@ -64,7 +64,7 @@ TEST(LinePatternTest, Edition) {
 }
 
 TEST(LinePatternTest, Selection) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto document = createDocument();
 
     auto linePatternSelect = new lc::ui::widgets::LinePatternSelect(document);

@@ -16,6 +16,9 @@ extern "C"
 #include <QTextStream>
 #include <QtUiTools/QUiLoader>
 #include <QCoreApplication>
+#include <QPointer>
+#include <utility>
+#include <vector>
 #include <managers/pluginmanager.h>
 
 #include <kaguya/kaguya.hpp>
@@ -34,6 +37,7 @@ extern "C"
 
 namespace lc {
 namespace ui {
+class MainWindow;
 /**
  * \brief Lua initializer
  */
@@ -45,6 +49,8 @@ public:
     LuaInterface();
 
     ~LuaInterface();
+
+    QObject* ownerObject() const;
 
     /**
      * \brief Read and execute Lua files
@@ -94,6 +100,27 @@ public:
 
     void finishOperation();
 
+    /// Invoke a method on the active operation with its owning-window scope
+    /// and operation-event tracking active. UI callbacks/actions use this
+    /// instead of calling ScriptObject directly.
+    bool callOperationMethodChecked(
+        const std::string& method,
+        const std::vector<lc::scripting::ScriptValue>& args,
+        lc::scripting::ScriptValue& result,
+        std::string& error);
+    lc::scripting::ScriptValue getOperationAttribute(const std::string& name);
+    bool setOperationAttributeChecked(
+        const std::string& name,
+        const lc::scripting::ScriptValue& value,
+        std::string& error);
+
+    /// Track registrations created during operation initialization and scoped
+    /// action, callback, property-access, and close execution. They are removed
+    /// on normal finish or failure.
+    void beginOperationEventTracking();
+    void endOperationEventTracking();
+    void cancelOperationEventTracking();
+
     /**
      * \brief Register a Lua-side callback for @p event.  Phase 4 PR-9a:
      * wraps the LuaRef via makeLuaCallback and delegates to EventBus.
@@ -109,6 +136,9 @@ public:
      */
     void registerEvent(const std::string& event, lc::scripting::ScriptCallback callback);
 
+    lc::scripting::EventBus::RegistrationId registerEventTracked(
+        const std::string& event, lc::scripting::ScriptCallback callback);
+
     void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
 
     /**
@@ -118,6 +148,9 @@ public:
      */
     bool deleteEvent(const std::string& event,
                      const lc::scripting::ScriptCallback& callback);
+
+    bool deleteEvent(const std::string& event,
+                     lc::scripting::EventBus::RegistrationId id);
 
     /**
      * \brief Trigger @p event with a LuaRef payload.  Phase 4 PR-9a:
@@ -148,6 +181,10 @@ private:
      */
     void registerGlobalFunctions(QMainWindow* mainWindow);
 
+    bool isOperationEventRegistration(
+        lc::scripting::EventBus::RegistrationId id) const;
+    void failOperationAfterCallbackFailure();
+
 private:
     kaguya::State _L;
     lc::lua::PluginManager _pluginManager;
@@ -157,6 +194,11 @@ private:
     // its per-callback shape dispatch.  The ScriptCallback adapter
     // handles function-vs-table-with-onEvent per language.
     lc::scripting::EventBus _eventBus;
+    QPointer<MainWindow> _owner;
+    bool _trackOperationEvents = false;
+    std::vector<std::pair<std::string,
+                          lc::scripting::EventBus::RegistrationId>>
+        _operationEventRegistrations;
 };
 }
 }

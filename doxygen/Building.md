@@ -13,6 +13,12 @@ Required libraries
 6) Eigen 3
 7) Lua == 5.3 (see `find_package(Lua 5.3 EXACT REQUIRED)` in the root CMakeLists — the "5.2" wording in this doc is historical and superseded)
 8) Python 3.9+ development headers (`python3-dev` on Debian/Ubuntu, `python3-devel` on Fedora/RHEL) — added for phase-5 Python scripting (`WITH_PYTHONSCRIPT=ON` by default, can be OFF for a Lua-only build).  pybind11 comes from the vendored submodule at `third_party/pybind11`; you do NOT need pybind11 installed system-wide.
+
+For embedded Python, select the base CPython SDK with
+`-DPython_EXECUTABLE=/path/to/base/python`, not a virtual environment. The
+interpreter, headers, library, standard library and dynamic modules must belong
+to a matching provider. Configuration rejects runtime trees outside that
+provider's home so installation cannot escape the package staging directory.
 9) Curl
 10) Boost
 11) LibDxfRW -- vendored as a submodule at `third_party/libdxfrw`; nothing to install
@@ -117,25 +123,22 @@ practice that means GCC 8 or newer, Clang 7 or newer, or MSVC 2019 16.8 or
 newer -- and a Qt6 that provides Core, Gui, OpenGL, OpenGLWidgets, Svg,
 UiTools, Widgets and Test.
 
-### AppImage packaging (phase 6 PR-6.3)
-The Ubuntu build script (`scripts/ubuntu-install/createAppImage.sh`)
-uses `linuxdeploy` + the Qt plugin to produce a distributable AppImage.
+### AppImage packaging
 
-**Python scripting in the current AppImage:** the librecad binary is
-linked against libpython3.X.so, so `linuxdeploy` bundles the shared
-library automatically.  The Python **standard library** (~30 MB of .py
-files under `/usr/lib/python3.X/`) is NOT a shared-library dependency
-and is not bundled.  A user running the AppImage on a system without
-matching Python installed will get `ImportError` on `import os` (etc.)
-in Python scripts that reach for stdlib modules.
+The Ubuntu build enables Python scripting by default. CMake's selected-provider
+install rules stage the matching CPython standard library and dynamic modules
+under the `AppDir` prefix; `scripts/ubuntu-install/createAppImage.sh` then uses
+`linuxdeploy` and its Qt plugin to package that staged tree. A source build can
+still opt out with `-DWITH_PYTHONSCRIPT=OFF`.
 
-Two ways to work around this today:
-1. Ship the AppImage with `-DWITH_PYTHONSCRIPT=OFF` for a Lua-only
-   binary.  Python-authored operations won't be available, but Lua
-   ones work fully.
-2. Add a `linuxdeploy-plugin-python` step to `createAppImage.sh` that
-   bundles libpython + a stdlib subset (~30-50 MB AppImage size
-   increase).  Deferred; not blocking the Python scripting phase.
+The Ubuntu workflow is configured to smoke both the installed `AppDir` and the
+final AppImage with `PYTHONHOME` and `PYTHONPATH` poisoned. This checks that
+startup uses the staged provider instead of ambient Python paths. It does not
+by itself prove the artifact is independent of every host library: Python
+extension-module dependencies and final hosted artifact results remain part of
+the open AppImage validation gate. Consult the Python scripting support table
+for the current tested platform status rather than assuming that a successful
+local packaging command establishes release-ready closure.
 
 Windows
 =======

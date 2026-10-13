@@ -1,4 +1,5 @@
 #pragma once
+#include "lcui_api.h"
 
 #include <vector>
 
@@ -11,7 +12,7 @@ namespace lc
 {
     namespace ui
     {
-        class WindowManager
+        class LC_UI_API WindowManager
         {
         public:
             /**

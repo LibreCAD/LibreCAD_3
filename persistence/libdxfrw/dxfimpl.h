@@ -517,7 +517,7 @@ public:
     PreservedRecords _preserved;
     std::vector<ImportFailure> _failures;
     std::size_t _entitiesDelivered{0};
-    std::size_t _attributesAsText{0};
+    std::size_t _attributesWithoutTags{0};
     std::size_t _mtextsAsText{0};
 
     void recordLoss(const char* recordKind) {
@@ -622,6 +622,10 @@ private:
     // this function adds layer too if not found: issue with some files
     lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data) const;
 
+    /** Build an MText value using the owning entity's layer, metadata and block. */
+    std::shared_ptr<lc::entity::MText> makeMText(
+        const DRW_MText& data, const DRW_Entity& owner);
+
     /**
     * Convert from a DRW_Coord to a geo::Coordinate
     */
@@ -633,7 +637,7 @@ private:
     lc::iColor icol;
 
     std::vector<DRW_Image> imageMapCache;
-    //std::map<std::string, lc::meta::Block_CSPtr> _blocks;
+    std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;
 
     const static std::map<int, lc::Units> _dxfToLCUnits;

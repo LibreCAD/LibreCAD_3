@@ -21,11 +21,8 @@ namespace lc {
 namespace lua {
 class LuaCustomEntityManager {
 public:
-    static LuaCustomEntityManager& getInstance() {
-        static LuaCustomEntityManager _instance;
-
-        return _instance;
-    }
+    // Both language bridges and the UI must share the lcluascript instance.
+    static LuaCustomEntityManager& getInstance();
 
     LuaCustomEntityManager(LuaCustomEntityManager const&) = delete;
 

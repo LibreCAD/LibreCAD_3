@@ -9,12 +9,15 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <gtest/gtest.h>
 
 #include <lua.hpp>
+#include <kaguya/kaguya.hpp>
 
 #include <lclua.h>
+#include <persistence/file.h>
 
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
@@ -83,23 +86,69 @@ assert(binary.formatId == 'dxf')
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST_F(LuaFixture, ImportResultIsReadable) {
-    const std::string missing =
-        (boost::filesystem::temp_directory_path() / "lc3-lua-not-here.dxf").string();
-    boost::filesystem::remove(missing);
+    for (const char* suffix : {".dxf", R"( O'Brien\new\tabs\drawing space.dxf)"}) {
+        const std::string missing = (boost::filesystem::temp_directory_path()
+            / boost::filesystem::unique_path("lc3-lua-not-here-%%%%%%%%-%%%%%%%%")).string() + suffix;
+        SCOPED_TRACE(missing);
+        ASSERT_FALSE(boost::filesystem::exists(missing));
 
-    lcLua->runString(("missing_path = '" + missing + "'").c_str());
+        kaguya::State state(L);
+        state["missing_path"] = missing;
+        EXPECT_EQ(state["missing_path"].get<std::string>(), missing);
 
-    EXPECT_EQ(lcLua->runString(R"LUA(
+        EXPECT_EQ(lcLua->runString(R"LUA(
 local result = lc.persistence.File.importFile(document, missing_path,
                                               lc.persistence.File.LIBDXFRW)
 assert(result.ok == false, 'a file that is not there did not fail')
 assert(result.partial == false, 'nothing arrived, so nothing is partial')
 assert(result.entitiesDelivered == 0)
+assert(#result.failures == 0)
 assert(result.sourceVersionTag == '')
 assert(#result.diagnostics >= 1, 'a failure must be explained')
 assert(result.diagnostics[1].code ~= '', 'a diagnostic needs a code to match on')
 assert(result.loss:empty() == true)
 assert(result.loss:total() == 0)
 assert(result.variantId ~= '', 'the recorded variant must never be blank')
+)LUA"), "");
+    }
+}
+
+TEST_F(LuaFixture, ImportFailuresAreReadonlyAndRetained) {
+    kaguya::State state(L);
+    lc::persistence::ImportResult result;
+    result.failures.push_back({"HATCH", 0xffffffffUL, "Layer", "Block", "Invalid geometry"});
+    state["result"] = std::move(result);
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local failure = result.failures[1]
+assert(failure.recordKind == 'HATCH' and failure.handle == 4294967295)
+assert(failure.layer == 'Layer' and failure.block == 'Block')
+assert(failure.reason == 'Invalid geometry')
+for _, name in ipairs({'recordKind','handle','layer','block','reason'}) do
+    assert(not pcall(function() failure[name] = 0 end))
+end
+assert(not pcall(function() result.failures = {} end))
+result = nil
+collectgarbage('collect')
+assert(failure.reason == 'Invalid geometry')
+)LUA"), "");
+}
+
+TEST_F(LuaFixture, DwgImportIdentityMatchesEnabledAndDisabledBuilds) {
+    kaguya::State state(L);
+    state["dwg_path"] = std::string(DWG_FIXTURES_DIR) + "/ordinary_enc_AC1015.dwg";
+    state["enabled"] = USE_DWG_IMPORT != 0;
+    lc::storage::Document_SPtr legacy = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    state["legacy_document"] = legacy;
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local F = lc.persistence.File
+assert(F.LIBDXFRW_DWG_IMPORT == 15)
+assert(F.variantIdForType(F.LIBDXFRW_DWG_IMPORT) == 'dwg.libdxfrw')
+assert(F.typeForVariantId('dwg.libdxfrw') == F.LIBDXFRW_DWG_IMPORT)
+local result = F.importFile(document, dwg_path, F.LIBDXFRW)
+assert(result.ok == enabled and result.variantId == 'dwg.libdxfrw')
+assert(#result.failures == 0)
+assert(enabled and result.entitiesDelivered > 0 or not enabled and #result.diagnostics > 0)
+assert(F.open(legacy_document, dwg_path, F.LIBDXFRW) == F.LIBDXFRW_DWG_IMPORT)
 )LUA"), "");
 }

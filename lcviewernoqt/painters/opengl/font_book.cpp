@@ -1,4 +1,5 @@
 #include "font_book.h"
+#include "gl_font.h"
 
 using namespace lc::viewer::opengl;
 
@@ -57,7 +58,7 @@ bool Font_Book::createFont(const std::string& name,const std::string& file_path)
 
 GL_Font* Font_Book::pickFont(const std::string& font_name, FontType fontType)
 {
-    std::map<const std::string, GL_Font*>* fontMap;
+    std::map<std::string, GL_Font*>* fontMap;
 
     if (fontType == FontType::BOLD) {
         fontMap = &_font_bold_map;
@@ -72,7 +73,7 @@ GL_Font* Font_Book::pickFont(const std::string& font_name, FontType fontType)
         fontMap = &_font_map;
     }
 
-    std::map<const std::string, GL_Font* >::iterator it;
+    std::map<std::string, GL_Font*>::iterator it;
 
     it = fontMap->find(font_name);
 

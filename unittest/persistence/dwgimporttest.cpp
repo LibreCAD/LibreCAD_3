@@ -57,7 +57,9 @@ std::string dwgFixture(const char* name) {
 
 std::string tmpPath(const char* tag) {
     return (boost::filesystem::temp_directory_path()
-            / (std::string("lc3-dwg-") + tag + "-" + std::to_string(::getpid()) + ".dxf")).string();
+            / boost::filesystem::unique_path(
+                std::string("lc3-dwg-") + tag + "-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
 }
 
 // Every fixture that ships with the submodule.

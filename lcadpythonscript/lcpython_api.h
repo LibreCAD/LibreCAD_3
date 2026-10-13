@@ -26,14 +26,19 @@
 // Marking these few boundary functions default-visibility exports them while
 // leaving pybind11's hidden-visibility protection intact everywhere else, which
 // matters because that protection is what keeps separately-built extension
-// modules from clashing inside the embedded interpreter.
+// modules from clashing inside the embedded interpreter. On Windows, producers
+// export the symbol and consumers import it through the target-specific define.
 //
 // lckernel/build_constants.h's EXPORT_API cannot be reused: it is
 // __declspec(dllexport) on MSVC and empty everywhere else, so it does nothing
 // on the GCC/Clang builds where this problem occurs.
 
 #if defined(_WIN32)
+#if defined(LC_PYTHONSCRIPT_BUILD)
 #define LC_PYTHON_API __declspec(dllexport)
+#else
+#define LC_PYTHON_API __declspec(dllimport)
+#endif
 #define LC_PYTHON_LOCAL
 #elif defined(__GNUC__)
 #define LC_PYTHON_API __attribute__((visibility("default")))

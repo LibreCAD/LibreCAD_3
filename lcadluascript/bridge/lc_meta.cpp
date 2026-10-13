@@ -5,6 +5,8 @@
 #include <cad/meta/layer.h>
 #include <cad/meta/customentitystorage.h>
 #include "lc_meta.h"
+#include <memory>
+#include <utility>
 
 void import_lc_meta_namespace(kaguya::State& state) {
     state["lc"]["meta"] = kaguya::NewTable();
@@ -114,6 +116,18 @@ void import_lc_meta_namespace(kaguya::State& state) {
 
     state["lc"]["meta"]["CustomEntityStorage"].setClass(kaguya::UserdataMetatable<lc::meta::CustomEntityStorage, lc::meta::Block>()
             .setConstructors<lc::meta::CustomEntityStorage(std::string, std::string, lc::geo::Coordinate, std::map<std::string, std::string>)>()
+            // The value constructor above is useful for direct metadata
+            // access, but document/build APIs take shared block pointers.
+            // Provide an owning factory for those APIs; otherwise Kaguya
+            // converts the value userdata to a null Block_CSPtr.
+            .addStaticFunction("create", [](std::string pluginName,
+                                          std::string entityName,
+                                          lc::geo::Coordinate base,
+                                          std::map<std::string, std::string> params) {
+                return std::make_shared<lc::meta::CustomEntityStorage>(
+                    std::move(pluginName), std::move(entityName), base,
+                    std::move(params));
+            })
             .addFunction("entityName", &lc::meta::CustomEntityStorage::entityName)
             .addFunction("param", &lc::meta::CustomEntityStorage::param)
             .addFunction("params", &lc::meta::CustomEntityStorage::params)

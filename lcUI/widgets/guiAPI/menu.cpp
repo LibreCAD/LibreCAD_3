@@ -63,14 +63,14 @@ void Menu::addItem(MenuItem* item) {
 }
 
 MenuItem* Menu::addItem(const char* menuItemLabel) {
-    MenuItem* newItem = new MenuItem(menuItemLabel);
+    MenuItem* newItem = new MenuItem(menuItemLabel, this);
     addItem(newItem);
 
     return newItem;
 }
 
 MenuItem* Menu::addItem(const char* menuItemLabel, lc::scripting::ScriptCallback callback) {
-    MenuItem* newItem = new MenuItem(menuItemLabel, std::move(callback));
+    MenuItem* newItem = new MenuItem(menuItemLabel, std::move(callback), this);
     addItem(newItem);
 
     return newItem;
@@ -89,7 +89,7 @@ void Menu::addMenu(Menu* newMenu) {
 }
 
 Menu* Menu::addMenu(const char* menuLabel) {
-    Menu* newMenu = new Menu(menuLabel);
+    Menu* newMenu = new Menu(menuLabel, this);
     addMenu(newMenu);
     return newMenu;
 }
@@ -200,6 +200,13 @@ void Menu::setPosition(int newPosition) {
     }
 
     QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
+    if (widgets.isEmpty()) {
+        // A script may configure a menu before adding it to a menu bar or
+        // parent menu. Remember the requested position; there is nothing to
+        // reorder until the QAction is associated with a widget.
+        _position = newPosition;
+        return;
+    }
 
     if (!insideMenu) {
         setPositionInsideMenuBar(widgets[0], newPosition);
@@ -211,6 +218,9 @@ void Menu::setPosition(int newPosition) {
 
 void Menu::remove() {
     QList<QWidget*> widgets = associatedWidgetList(this->menuAction());
+    if (widgets.isEmpty()) {
+        return;
+    }
 
     updateOtherPositionsAfterRemove();
 

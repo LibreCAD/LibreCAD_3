@@ -8,7 +8,7 @@
 //REMEMBER THAT MAINWINDOWS IS COMMON FOR ALL TESTS, SO KEEP THAT IN MIND
 
 TEST(WindowManagerTest, InitializationTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::WindowManager::init();
     lc::ui::WindowManager::getMainWindows()[0]->hide();
 
@@ -18,7 +18,7 @@ TEST(WindowManagerTest, InitializationTest) {
 }
 
 TEST(WindowManagerTest, NewFileTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::WindowManager::init();
 
     lc::ui::MainWindow* prevWindow = lc::ui::WindowManager::getMainWindows()[0];

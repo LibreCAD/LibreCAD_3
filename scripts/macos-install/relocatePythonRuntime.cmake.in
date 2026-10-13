@@ -1,0 +1,72 @@
+# Install-time relocation of the selected CPython dylib into the LibreCAD
+# prefix. Keep the source install ID available so all consumers are rewritten
+# consistently after the files have been installed.
+
+set(_install_prefix "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}")
+set(_python_runtime "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@/@LC_PYTHON_RUNTIME_LIBRARY_NAME@")
+set(_python_origin_args)
+if("@LIBRECAD_RECORD_NATIVE_ORIGINS@" STREQUAL "ON")
+    set(_origin_manifest "${_install_prefix}/@CMAKE_INSTALL_DATADIR@/librecad/licenses/providers/native-origins.json")
+    if(EXISTS "${_origin_manifest}" OR IS_SYMLINK "${_origin_manifest}")
+        message(FATAL_ERROR "Native origin capture requires a fresh install prefix, not a previous manifest")
+    endif()
+    include("@CMAKE_BINARY_DIR@/native-origin-project-files-${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+    list(APPEND _python_origin_args
+        --origin-manifest "${_origin_manifest}"
+        --origin-platform "@LC_NATIVE_ORIGIN_PLATFORM@"
+        --project-root "@CMAKE_BINARY_DIR@"
+        --project-version "@VERSION_MAJOR@.@VERSION_MINOR@"
+        --project-revision "@LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION@"
+        --source-file "${_python_runtime}" "@LC_PYTHON_RUNTIME_ORIGINAL_LIBRARY@"
+        --source-tree
+        "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@/@LC_PYTHON_STAGED_STDLIB_REL@" "@Python_STDLIB@"
+        --source-tree
+        "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@/@LC_PYTHON_STAGED_STDARCH_REL@" "@Python_STDARCH@"
+        --source-tree
+        "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@/@LC_PYTHON_STAGED_DYNLIBS_REL@" "@LC_PYTHON_RUNTIME_DYNLIBS@"
+        ${_python_origin_project_args})
+endif()
+if(NOT EXISTS "${_python_runtime}")
+    message(FATAL_ERROR "Staged CPython runtime is missing: ${_python_runtime}")
+endif()
+
+# Stage non-system dylibs needed by the copied stdlib extensions and libpython.
+# The existing walker now also relocates libpython and its consumers, AFTER
+# capturing selected originals and BEFORE signing/sealing final byte hashes.
+set(_python_stage_root
+    "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@")
+set(_python_library_dir "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@")
+set(_python_stage_search_args)
+if(NOT "@LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY@" STREQUAL "")
+    list(APPEND _python_stage_search_args
+        --search-directory "@LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY@")
+endif()
+execute_process(
+    COMMAND "@LC_PYTHON_RUNTIME_EXECUTABLE@"
+            "@LC_PYTHON_DEPENDENCY_STAGER@"
+            "${_install_prefix}"
+            "${_python_stage_root}"
+            "${_python_library_dir}"
+            "@LC_PYTHON_RUNTIME_OTOOL@"
+            "@LC_PYTHON_RUNTIME_INSTALL_NAME_TOOL@"
+            "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@"
+            ${_python_stage_search_args}
+            ${_python_origin_args}
+            --relocate-python-runtime "${_python_runtime}" "@LC_PYTHON_RUNTIME_OLD_INSTALL_ID@"
+            --application-binary
+            "${_install_prefix}/@CMAKE_INSTALL_BINDIR@/librecad"
+            --defer-frameworks
+    RESULT_VARIABLE _stage_result
+    OUTPUT_VARIABLE _stage_output
+    ERROR_VARIABLE _stage_error)
+if(NOT _stage_result EQUAL 0)
+    message(FATAL_ERROR
+        "Could not stage Python runtime dependencies: ${_stage_output}${_stage_error}")
+endif()
+message(STATUS "${_stage_output}")
+
+# The stager signs/verifies EVERY processed Mach-O after its last rewrite,
+# before sealing final byte hashes. Do not sign these a second time afterwards:
+# signing again would invalidate the just-recorded final-byte identity.
+
+message(STATUS "Staged CPython runtime at ${_python_runtime}")

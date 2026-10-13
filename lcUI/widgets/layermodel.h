@@ -1,4 +1,5 @@
 #pragma once
+#include "lcui_api.h"
 
 #include <QAbstractTableModel>
 #include <QIcon>
@@ -11,7 +12,7 @@ namespace widgets {
 /**
  * \brief Model to display a list of layers in a QTableView
  */
-class LayerModel : public QAbstractTableModel {
+class LC_UI_API LayerModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:

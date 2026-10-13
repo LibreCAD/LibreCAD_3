@@ -17,7 +17,9 @@ namespace storage {
  * undo or re-do operations that where done on a canvas
  * @param maximumUndoLevels
  */
-class UndoManagerImpl : public UndoManager {
+// Nano disconnects raw document subscriptions when this manager dies, including
+// when scripts retain the old document after a view switches to another one.
+class UndoManagerImpl : public UndoManager, public Nano::Observer {
 public:
     UndoManagerImpl(unsigned int maximumUndoLevels);
 

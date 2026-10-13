@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <string>
@@ -78,6 +79,7 @@
 #include <cad/primitive/spline.h>
 
 #include "persistence/file.h"
+#include "persistence/documentsource.h"
 #include "persistence/format.h"
 #include "persistence/readguard.h"
 
@@ -85,8 +87,9 @@ namespace {
 
 std::string uniqueTmpDxf(const char* tag) {
     return (boost::filesystem::temp_directory_path()
-            / (std::string("lc3-roundtrip-") + tag + "-"
-               + std::to_string(::getpid()) + ".dxf")).string();
+            / boost::filesystem::unique_path(
+                std::string("lc3-roundtrip-") + tag + "-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
 }
 
 std::shared_ptr<lc::storage::DocumentImpl> newDocument() {
@@ -641,6 +644,7 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
         std::ifstream written(path, std::ios::binary);
         const std::string head(
             (std::istreambuf_iterator<char>(written)), std::istreambuf_iterator<char>());
+        written.close();
         const bool isBinary = head.find(kBinarySentinel) != std::string::npos;
 
         EXPECT_EQ(isBinary, lc::persistence::File::isBinaryType(type))
@@ -666,37 +670,75 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-TEST(DxfRoundTripTest, DegenerateRecordsAreSkippedNotFatal) {
-    const std::string path = uniqueTmpDxf("degenerate");
-    boost::filesystem::remove(path);
+TEST(DxfRoundTripTest, MalformedGeometryRejectsImportAndProtectsSource) {
+    using File = lc::persistence::File;
+    struct RemoveFile {
+        std::string path;
+        ~RemoveFile() { boost::system::error_code ignored; boost::filesystem::remove(path, ignored); }
+    };
+    const std::string goodLine =
+        "0\nLINE\n8\n0\n10\n1.0\n20\n2.0\n30\n0.0\n11\n7.0\n21\n11.0\n31\n0.0\n";
 
-    // Hand-written R12 ASCII: a zero-radius ARC, a negative-radius CIRCLE, an
-    // empty LWPOLYLINE, and one good LINE that must survive all three.
-    {
-        std::ofstream dxf(path);
-        dxf << "0\nSECTION\n2\nENTITIES\n"
-            << "0\nARC\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n40\n0.0\n50\n0.0\n51\n90.0\n"
-            << "0\nCIRCLE\n8\n0\n10\n5.0\n20\n5.0\n30\n0.0\n40\n-5.0\n"
-            << "0\nLWPOLYLINE\n8\n0\n90\n0\n70\n0\n"
-            << "0\nLINE\n8\n0\n10\n1.0\n20\n2.0\n30\n0.0\n11\n7.0\n21\n11.0\n31\n0.0\n"
-            << "0\nENDSEC\n0\nEOF\n";
-    }
+    // Retain upstream's strict validation: no invalid geometry is published,
+    // and reaching an invalid record does not silently recover later records.
+    // Exercise both radius failures independently, with/without a valid prefix.
+    for (const char* kind : {"ARC", "CIRCLE"}) {
+        for (const char* radius : {"0.0", "-5.0"}) {
+            for (bool prefix : {false, true}) {
+                SCOPED_TRACE(::testing::Message() << kind << " radius=" << radius << " prefix=" << prefix);
+                const std::string path = uniqueTmpDxf("strict-radius");
+                RemoveFile cleanup{path};
+                const std::string payload =
+                    "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                    "0\nSECTION\n2\nENTITIES\n" + (prefix ? goodLine : std::string())
+                    + "0\n" + kind + "\n8\n0\n10\n0.0\n20\n0.0\n30\n0.0\n40\n" + radius
+                    + "\n50\n0.0\n51\n90.0\n" + goodLine + "0\nENDSEC\n0\nEOF\n";
+                { std::ofstream dxf(path, std::ios::binary); ASSERT_TRUE(dxf << payload); }
 
-    auto doc = newDocument();
-    ASSERT_NO_THROW(lc::persistence::File::open(
-        doc, path, lc::persistence::File::Library::LIBDXFRW))
-        << "A degenerate record must not abort the open.";
+                auto doc = newDocument();
+                lc::persistence::ImportResult result;
+                ASSERT_NO_THROW(result = File::importFile(doc, path, File::LIBDXFRW));
+                EXPECT_FALSE(result.ok);
+                EXPECT_EQ(result.partial, prefix);
+                EXPECT_EQ(result.entitiesDelivered, prefix ? 1u : 0u);
+                const std::map<std::string, std::size_t> expected = prefix
+                    ? std::map<std::string, std::size_t>{{"Line", 1}}
+                    : std::map<std::string, std::size_t>{};
+                EXPECT_EQ(entitiesInDocument(doc), expected);
+                EXPECT_TRUE(result.failures.empty()) << "parser rejection precedes entity callbacks";
+                EXPECT_EQ(result.variantId, "dxf.ac1015.ascii");
+                ASSERT_FALSE(result.diagnostics.empty());
+                EXPECT_EQ(result.diagnostics.front().severity, lc::persistence::Severity::Error);
+                EXPECT_EQ(result.diagnostics.front().code, "code-parsed");
+                EXPECT_FALSE(result.diagnostics.front().message.empty());
 
-    bool foundLine = false;
-    for (const auto& entity : doc->entityContainer().asVector()) {
-        if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
-            foundLine = true;
+                const auto source = lc::persistence::sourceFromImport(path, result);
+                EXPECT_TRUE(source.partial) << "even an empty failed import is unsafe to overwrite";
+                const auto save = lc::persistence::decideSave(source);
+                EXPECT_EQ(save.action, lc::persistence::SaveAction::AskForTarget);
+                EXPECT_TRUE(save.path.empty());
+                EXPECT_FALSE(save.reason.empty());
+
+                auto legacy = newDocument();
+                File::Type legacyType = File::LIBDXFRW_DXF_R12;
+                ASSERT_NO_THROW(legacyType = File::open(legacy, path, File::LIBDXFRW));
+                EXPECT_EQ(legacyType, File::LIBDXFRW_DXF_R2000);
+                EXPECT_EQ(entitiesInDocument(legacy), expected);
+                if (prefix) {
+                    const std::string recoveredPath = uniqueTmpDxf("recovered-prefix");
+                    RemoveFile recoveredCleanup{recoveredPath};
+                    ASSERT_TRUE(File::exportFile(doc, recoveredPath, File::LIBDXFRW_DXF_R2000).ok);
+                    auto recovered = newDocument();
+                    ASSERT_TRUE(File::importFile(recovered, recoveredPath, File::LIBDXFRW).ok);
+                    EXPECT_EQ(entitiesInDocument(recovered), expected);
+                }
+                std::ifstream original(path, std::ios::binary);
+                const std::string bytes((std::istreambuf_iterator<char>(original)),
+                                        std::istreambuf_iterator<char>());
+                EXPECT_EQ(bytes, payload) << "import/recovery must leave the source byte-identical";
+            }
         }
     }
-    EXPECT_TRUE(foundLine)
-        << "The good LINE must still be imported after the skipped records.";
-
-    boost::filesystem::remove(path);
 }
 
 // LWPolyline::generateEntities() walked off an empty vertex vector: begin() was
@@ -1174,6 +1216,7 @@ TEST(DxfRoundTripTest, AsciiRoundTripStaysAscii) {
         std::ifstream written(resaved, std::ios::binary);
         const std::string body((std::istreambuf_iterator<char>(written)),
                                std::istreambuf_iterator<char>());
+        written.close();
         EXPECT_EQ(body.find(kBinarySentinel), std::string::npos)
             << acadVersion << " came back binary after a plain Save.";
 
@@ -1838,10 +1881,54 @@ TEST(DxfRoundTripTest, AttributedInsertSurfacesItsValues) {
     std::ifstream written(path);
     const std::string body((std::istreambuf_iterator<char>(written)),
                            std::istreambuf_iterator<char>());
+    written.close();
     EXPECT_EQ(body.find("\nATTRIB\n"), std::string::npos)
         << "Without an attribute model there is nothing to write an ATTRIB from; "
            "they go back as TEXT, which is what the import note warns about.";
 
+    boost::filesystem::remove(path);
+}
+
+// R2018 multiline ATTRIB stores its value in an embedded MText object rather
+// than DRW_Attrib::text. It must not become an empty Text when inserted.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, MultilineInsertAttributeRetainsItsLines) {
+    auto doc = newDocument();
+    const auto imported = lc::persistence::File::importFile(
+        doc, fixture("multiline_attributed_insert.dxf"),
+        lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+
+    std::vector<lc::entity::MText_CSPtr> values;
+    for (const auto& entity : doc->entityContainer().asVector()) {
+        if (auto text = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            values.push_back(text);
+        }
+    }
+    ASSERT_EQ(values.size(), 1u) << "The embedded MText value must be delivered.";
+    EXPECT_EQ(values.front()->text_value(), "FIRST LINE\nSECOND LINE");
+    EXPECT_DOUBLE_EQ(values.front()->insertion_point().x(), 101.0);
+    EXPECT_DOUBLE_EQ(values.front()->insertion_point().y(), 202.0);
+    ASSERT_EQ(imported.loss.notes.size(), 1u);
+    EXPECT_NE(imported.loss.notes.front().find("tags are not kept"), std::string::npos);
+
+    const std::string path = uniqueTmpDxf("multiline-attributed-insert");
+    boost::filesystem::remove(path);
+    ASSERT_TRUE(lc::persistence::File::save(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R2000));
+
+    auto reopened = newDocument();
+    const auto roundTrip = lc::persistence::File::importFile(
+        reopened, path, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(roundTrip.ok);
+    std::vector<lc::entity::MText_CSPtr> reloadedValues;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto text = std::dynamic_pointer_cast<const lc::entity::MText>(entity)) {
+            reloadedValues.push_back(text);
+        }
+    }
+    ASSERT_EQ(reloadedValues.size(), 1u);
+    EXPECT_EQ(reloadedValues.front()->text_value(), values.front()->text_value());
     boost::filesystem::remove(path);
 }
 
@@ -2465,7 +2552,7 @@ TEST(DxfRoundTripTest, ASaveThroughALinkLandsOnTheRealFile) {
     // one, and `link.string()` then resolves to a member of a function type.
     const boost::filesystem::path directory =
         boost::filesystem::temp_directory_path()
-        / ("libdxfrw-link-save-" + std::to_string(::getpid()));
+        / boost::filesystem::unique_path("libdxfrw-link-save-%%%%%%%%-%%%%%%%%");
     boost::system::error_code ignored;
     boost::filesystem::remove_all(directory, ignored);
     boost::filesystem::create_directories(directory, ignored);
@@ -3057,6 +3144,7 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
             }
         }
 
+        written.close();
         EXPECT_EQ(insUnits, c.insUnits) << c.what << ": the drawing was rescaled by saving it";
         EXPECT_EQ(measurement, c.measurement) << c.what;
 

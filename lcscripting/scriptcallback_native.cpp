@@ -5,8 +5,27 @@
 
 #include "scriptcallback.h"
 
+#include <iostream>
+
 namespace lc {
 namespace scripting {
+
+void reportScriptDiagnostic(const ScriptDiagnosticSink& sink,
+                            const std::string& message) noexcept {
+    try {
+        if (sink) {
+            sink(message);
+        } else {
+            std::cerr << message << '\n';
+        }
+    } catch (const std::exception& error) {
+        std::cerr << "Script diagnostic sink failed: " << error.what()
+                  << "\n" << message << '\n';
+    } catch (...) {
+        std::cerr << "Script diagnostic sink failed with an unknown exception\n"
+                  << message << '\n';
+    }
+}
 
 namespace {
 
@@ -27,7 +46,8 @@ public:
     // EventBus fire native callbacks the same way as language callbacks.
     // Subclasses implement invoke().
     ScriptValue invokeEvent(const std::string& event,
-                            const ScriptValue& args) override {
+                            const ScriptValue& args,
+                            const ScriptDiagnosticSink& /*diagnostics*/) override {
         return invoke({ScriptValue(event), args});
     }
 };

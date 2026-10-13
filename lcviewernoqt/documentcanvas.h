@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <stdexcept>
 #include <utility>
 
 #include "painters/lcpainter.h"
@@ -34,6 +35,8 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
 public:
     DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document,
     std::function<void(double*, double*)> deviceToUser = [](double* x,double* y) {},meta::Block_CSPtr viewport=nullptr);
+    // An empty deviceToUser uses the current painter. Its owner must clear
+    // setPainter(nullptr) before deleting it; detached point selection fails.
 
     virtual ~DocumentCanvas();
 
@@ -302,7 +305,12 @@ private:
 };
 
 void DocumentCanvas::device_to_user(double* x, double* y) const {
-    _deviceToUser(x, y);
+    if (_deviceToUser) {
+        _deviceToUser(x, y);
+    } else {
+        if (!_painterPtr) throw std::runtime_error("DocumentCanvas has no active painter");
+        _painterPtr->device_to_user(x, y);
+    }
 }
 
 DECLARE_SHORT_SHARED_PTR(DocumentCanvas)

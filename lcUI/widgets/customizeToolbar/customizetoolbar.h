@@ -12,6 +12,7 @@
 #include <rapidjson/ostreamwrapper.h>
 
 #include <widgets/toolbar.h>
+#include "lcui_api.h"
 #include "customizeparenttab.h"
 
 QT_BEGIN_NAMESPACE
@@ -27,7 +28,7 @@ namespace widgets {
 /**
 * \brief Toolbar customization widget
 */
-class CustomizeToolbar : public QDialog
+class LC_UI_API CustomizeToolbar : public QDialog
 {
     Q_OBJECT
 

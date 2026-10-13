@@ -132,9 +132,10 @@ private:
 };
 
 std::string uniqueTmpDxf(const char* tag) {
-    auto pid = std::to_string(::getpid());
     return (boost::filesystem::temp_directory_path()
-            / (std::string("lc3-issue412-") + tag + "-" + pid + ".dxf")).string();
+            / boost::filesystem::unique_path(
+                std::string("lc3-issue412-") + tag + "-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
 }
 
 // Populate a document with one entity of every reader-producible kind.
@@ -450,6 +451,7 @@ TEST(DxfExportTest, Phase3TablesAndHeaderFidelity) {
     std::ifstream in(dxfPath);
     std::string blob((std::istreambuf_iterator<char>(in)),
                      std::istreambuf_iterator<char>());
+    in.close(); // Windows cannot remove a file while this reader owns its handle.
 
     EXPECT_NE(blob.find("MYCUSTOMPATTERN"), std::string::npos)
         << "User-defined line pattern was not emitted in the LTYPE table.";

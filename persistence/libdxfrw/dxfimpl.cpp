@@ -302,6 +302,10 @@ void DXFimpl::addBlock(const DRW_Block& data) {
                 || (_sourceIsDwg && isAnonymousDimensionBlockName(data.name));
             _currentBlock = std::make_shared<lc::meta::Block>(data.name, base, anonymous);
         }
+        // Blocks are parsed before the top-level Builder executes, so the
+        // document's name lookup does not yet include this definition. Keep
+        // the parsed block indexed by its file name while the read is active.
+        _blocks[data.name] = _currentBlock;
         _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
         // May need to check if the block already exists: not sure
@@ -782,127 +786,132 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
     });
 }
 
+std::shared_ptr<lc::entity::MText> DXFimpl::makeMText(
+    const DRW_MText& data, const DRW_Entity& owner) {
+    auto layer = getLayer(owner);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(owner);
+    lc::TextConst::HAlign halign;
+    lc::TextConst::VAlign valign;
+    //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
+    lc::TextConst::DrawingDirection drawingDir;
+
+    switch (data.textgen % 3) {
+    default:
+    case 1:
+        halign = lc::TextConst::HAlign::HALeft;
+        break;
+    case 2:
+        halign = lc::TextConst::HAlign::HACenter;
+        break;
+    case 0:
+        halign = lc::TextConst::HAlign::HARight;
+        break;
+    }
+
+    switch ((int)(std::ceil(data.textgen / 3.0))) {
+    default:
+    case 1:
+        valign = lc::TextConst::VAlign::VATop;
+        break;
+    case 2:
+        valign = lc::TextConst::VAlign::VAMiddle;
+        break;
+    case 3:
+        valign = lc::TextConst::VAlign::VABottom;
+        break;
+    }
+
+    if (data.alignH == 1) {
+        drawingDir = lc::TextConst::DrawingDirection::Backward;
+    }
+    else if (data.alignH == 3) {
+        drawingDir = lc::TextConst::DrawingDirection::UpsideDown;
+    }
+    else {
+        drawingDir = lc::TextConst::DrawingDirection::None;
+    }
+
+    // Code 73, line spacing style: 1 = at least, 2 = exact.  Neither the
+    // enum's own ordering nor a cast gets this right, and real files carry
+    // values the specification does not define -- over 150 drawings here,
+    // 269 of 877 MTEXT records say 73 = 0 and 4 omit it.  Anything that is
+    // not 2 takes the DXF default.
+    const auto lineSpacingStyle = (data.linespacingStyle == 2)
+        ? lc::TextConst::LineSpacingStyle::Exact
+        : lc::TextConst::LineSpacingStyle::AtLeast;
+
+    // Code 44, line spacing factor, 0.25 to 4.  libdxfrw defaults it to 1
+    // when the group is absent, which is also the DXF default, so an
+    // out-of-range value is the only thing worth refusing.
+    const double lineSpacingFactor =
+        (data.interlin >= 0.25 && data.interlin <= 4.0) ? data.interlin : 1.0;
+
+    // Code 72, drawing direction: 1 left-to-right, 3 top-to-bottom, 5 by
+    // style.  libdxfrw routes it into DRW_Text::alignH, whose type has
+    // nothing to do with it.  Do not cast: in the same 150 drawings, 456
+    // of 877 MTEXT records carry 72 = 2, which is not a defined value.
+    // An undefined direction becomes ByStyle, which is what the file is
+    // effectively asking for.
+    lc::TextConst::MTextDrawingDirection mtextDirection;
+    switch (static_cast<int>(data.alignH)) {
+    case lc::TextConst::MTextDrawingDirection::LeftToRight:
+        mtextDirection = lc::TextConst::MTextDrawingDirection::LeftToRight;
+        break;
+    case lc::TextConst::MTextDrawingDirection::TopToBottom:
+        mtextDirection = lc::TextConst::MTextDrawingDirection::TopToBottom;
+        break;
+    default:
+        mtextDirection = lc::TextConst::MTextDrawingDirection::ByStyle;
+        break;
+    }
+
+    // Code 41, the reference rectangle width.  libdxfrw carries it in
+    // DRW_Text::widthscale, which is TEXT's width FACTOR -- a different
+    // quantity in the same member -- and DRW_Text's constructor defaults
+    // it to 1, so an MTEXT with no group 41 is indistinguishable from one
+    // that asks to wrap at one drawing unit.  Every one of the 877 MTEXT
+    // records in the corpus carries group 41 and none of them carries 1.0,
+    // so the ambiguity is not one real files reach.
+    const double width = (data.widthscale > 0.0) ? data.widthscale : 0.0;
+
+    auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
+                  lc::persistence::mtextToPlain(data.text), data.height,
+                  data.angle * M_PI / 180, data.style,
+                  lc::TextConst::DrawingDirection(drawingDir),
+                  lc::TextConst::HAlign(halign),
+                  lc::TextConst::VAlign(valign),
+                  false,
+                  false,
+                  false,
+                  false,
+                  width,
+                  mtextDirection,
+                  lineSpacingFactor,
+                  lineSpacingStyle,
+                  layer,
+                  mf,
+                  getBlock(owner)
+                                                    );
+
+    // MTEXT columns and background fill are XDATA, not AcDbMText group
+    // codes, and libdxfrw has already captured them into extData. Keep
+    // them on the document's shelf so a save can hand them back: this is
+    // the one place the adapter carries something it does not model, and
+    // nothing here interprets a single variant.
+    if (!data.extData.empty()) {
+        PreservedRecords::MTextExtendedData carried;
+        carried.text = lcMText->text_value();
+        carried.data = data.extData;
+        _preserved.mtextExtendedData.emplace(lcMText->id(), std::move(carried));
+    }
+
+    return lcMText;
+}
+
 void DXFimpl::addMText(const DRW_MText& data) {
     guarded("MTEXT", &data, [&] {
         LOG_TRACE << "addMText";
-        auto layer = getLayer(data);
-        std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
-        lc::TextConst::HAlign halign;
-        lc::TextConst::VAlign valign;
-        //lc::TextConst::AttachmentPoint attachmentPoint = lc::TextConst::AttachmentPoint(data.textgen);
-        lc::TextConst::DrawingDirection drawingDir;
-
-        switch (data.textgen % 3) {
-        default:
-        case 1:
-            halign = lc::TextConst::HAlign::HALeft;
-            break;
-        case 2:
-            halign = lc::TextConst::HAlign::HACenter;
-            break;
-        case 0:
-            halign = lc::TextConst::HAlign::HARight;
-            break;
-        }
-
-        switch ((int)(std::ceil(data.textgen / 3.0))) {
-        default:
-        case 1:
-            valign = lc::TextConst::VAlign::VATop;
-            break;
-        case 2:
-            valign = lc::TextConst::VAlign::VAMiddle;
-            break;
-        case 3:
-            valign = lc::TextConst::VAlign::VABottom;
-            break;
-        }
-
-        if (data.alignH == 1) {
-            drawingDir = lc::TextConst::DrawingDirection::Backward;
-        }
-        else if (data.alignH == 3) {
-            drawingDir = lc::TextConst::DrawingDirection::UpsideDown;
-        }
-        else {
-            drawingDir = lc::TextConst::DrawingDirection::None;
-        }
-
-        // Code 73, line spacing style: 1 = at least, 2 = exact.  Neither the
-        // enum's own ordering nor a cast gets this right, and real files carry
-        // values the specification does not define -- over 150 drawings here,
-        // 269 of 877 MTEXT records say 73 = 0 and 4 omit it.  Anything that is
-        // not 2 takes the DXF default.
-        const auto lineSpacingStyle = (data.linespacingStyle == 2)
-            ? lc::TextConst::LineSpacingStyle::Exact
-            : lc::TextConst::LineSpacingStyle::AtLeast;
-
-        // Code 44, line spacing factor, 0.25 to 4.  libdxfrw defaults it to 1
-        // when the group is absent, which is also the DXF default, so an
-        // out-of-range value is the only thing worth refusing.
-        const double lineSpacingFactor =
-            (data.interlin >= 0.25 && data.interlin <= 4.0) ? data.interlin : 1.0;
-
-        // Code 72, drawing direction: 1 left-to-right, 3 top-to-bottom, 5 by
-        // style.  libdxfrw routes it into DRW_Text::alignH, whose type has
-        // nothing to do with it.  Do not cast: in the same 150 drawings, 456
-        // of 877 MTEXT records carry 72 = 2, which is not a defined value.
-        // An undefined direction becomes ByStyle, which is what the file is
-        // effectively asking for.
-        lc::TextConst::MTextDrawingDirection mtextDirection;
-        switch (static_cast<int>(data.alignH)) {
-        case lc::TextConst::MTextDrawingDirection::LeftToRight:
-            mtextDirection = lc::TextConst::MTextDrawingDirection::LeftToRight;
-            break;
-        case lc::TextConst::MTextDrawingDirection::TopToBottom:
-            mtextDirection = lc::TextConst::MTextDrawingDirection::TopToBottom;
-            break;
-        default:
-            mtextDirection = lc::TextConst::MTextDrawingDirection::ByStyle;
-            break;
-        }
-
-        // Code 41, the reference rectangle width.  libdxfrw carries it in
-        // DRW_Text::widthscale, which is TEXT's width FACTOR -- a different
-        // quantity in the same member -- and DRW_Text's constructor defaults
-        // it to 1, so an MTEXT with no group 41 is indistinguishable from one
-        // that asks to wrap at one drawing unit.  Every one of the 877 MTEXT
-        // records in the corpus carries group 41 and none of them carries 1.0,
-        // so the ambiguity is not one real files reach.
-        const double width = (data.widthscale > 0.0) ? data.widthscale : 0.0;
-
-        auto lcMText = std::make_shared<lc::entity::MText>(coord(data.basePoint),
-                      lc::persistence::mtextToPlain(data.text), data.height,
-                      data.angle * M_PI / 180, data.style,
-                      lc::TextConst::DrawingDirection(drawingDir),
-                      lc::TextConst::HAlign(halign),
-                      lc::TextConst::VAlign(valign),
-                      false,
-                      false,
-                      false,
-                      false,
-                      width,
-                      mtextDirection,
-                      lineSpacingFactor,
-                      lineSpacingStyle,
-                      layer,
-                      mf,
-                      getBlock(data)
-                                                        );
-
-        // MTEXT columns and background fill are XDATA, not AcDbMText group
-        // codes, and libdxfrw has already captured them into extData. Keep
-        // them on the document's shelf so a save can hand them back: this is
-        // the one place the adapter carries something it does not model, and
-        // nothing here interprets a single variant.
-        if (!data.extData.empty()) {
-            PreservedRecords::MTextExtendedData carried;
-            carried.text = lcMText->text_value();
-            carried.data = data.extData;
-            _preserved.mtextExtendedData.emplace(lcMText->id(), std::move(carried));
-        }
-
-        deliver(lcMText);
+        deliver(makeMText(data, data));
     });
 }
 
@@ -1210,10 +1219,9 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
         //
         // LibreCAD has no attribute model: nothing ties a value to the INSERT
         // it belongs to, or remembers its tag. What it does have is text at a
-        // position, which is what an ATTRIB draws, so each visible one arrives
-        // as a Text. The tag does not survive, and a later save writes TEXT
-        // rather than ATTRIB -- the note records that rather than leaving the
-        // user to discover it on the next round trip.
+        // position, which is what an ATTRIB draws, so visible values arrive as
+        // Text or MText. The tag does not survive, and a later save writes the
+        // text value rather than ATTRIB -- the note records that limitation.
         for (const auto& attrib : data.attlist) {
             if (attrib == nullptr) {
                 continue;
@@ -1225,22 +1233,27 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
                 continue;
             }
 
-            deliver(std::make_shared<lc::entity::Text>(
-                coord(attrib->basePoint),
-                attrib->text, attrib->height,
-                attrib->angle * M_PI / 180, attrib->style,
-                lc::TextConst::DrawingDirection(attrib->textgen),
-                lc::TextConst::HAlign(attrib->alignH),
-                lc::TextConst::VAlign(attrib->alignV),
-                getLayer(*attrib),
-                getMetaInfo(*attrib),
-                getBlock(data)));
+            if (attrib->mtext) {
+                deliver(makeMText(*attrib->mtext, *attrib));
+            }
+            else {
+                deliver(std::make_shared<lc::entity::Text>(
+                    coord(attrib->basePoint),
+                    attrib->text, attrib->height,
+                    attrib->angle * M_PI / 180, attrib->style,
+                    lc::TextConst::DrawingDirection(attrib->textgen),
+                    lc::TextConst::HAlign(attrib->alignH),
+                    lc::TextConst::VAlign(attrib->alignV),
+                    getLayer(*attrib),
+                    getMetaInfo(*attrib),
+                    getBlock(data)));
+            }
 
-            if (_attributesAsText++ == 0) {
+            if (_attributesWithoutTags++ == 0) {
                 _loss.notes.push_back(
-                    "Block attributes were imported as plain text: LibreCAD has no "
-                    "attribute model, so their tags are not kept and a save writes "
-                    "them as TEXT.");
+                    "Block attributes were imported without their tags: LibreCAD has "
+                    "no attribute model, so tags are not kept and a save writes their "
+                    "values as TEXT or MTEXT.");
             }
         }
     });

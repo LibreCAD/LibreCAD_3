@@ -69,6 +69,13 @@ lc::scripting::ScriptCallback makeLuaCallback(kaguya::LuaRef ref);
 /// routes through ScriptValue.
 kaguya::LuaRef unwrapLuaCallback(const lc::scripting::ScriptCallback& cb);
 
+/// Invoke a Lua-backed event with its original LuaRef payload. Returns false
+/// and reports a protected-call failure through @p diagnostics.
+bool invokeLuaEventRaw(const kaguya::LuaRef& callback,
+                       const std::string& event,
+                       const kaguya::LuaRef& args,
+                       const lc::scripting::ScriptDiagnosticSink& diagnostics);
+
 /// Wrap a kaguya::LuaRef (typically a table representing an operation
 /// instance) in a ScriptObject.
 lc::scripting::ScriptObject makeLuaObject(kaguya::LuaRef ref);

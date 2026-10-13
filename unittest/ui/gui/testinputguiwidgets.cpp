@@ -25,7 +25,7 @@
 // ScriptValue::Map; verify each widget's typed entry via ScriptValue
 // accessors.  The old kaguya-based readback was TestGetLuaValue.
 TEST(InputGUIWidgetsTest, TestGetValueMap) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::api::AngleGUI angleGUI("TestAngle");
     angleGUI.setKey("testangle");
     lc::ui::api::TextGUI textGUI("TestText");
@@ -77,7 +77,7 @@ TEST(InputGUIWidgetsTest, TestGetValueMap) {
 TEST(InputGUIWidgetsTest, AngleGUITest) {
     kaguya::State state;
 
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::api::DialogWidget dialogWidget("TestDialog", nullptr);
     lc::ui::api::AngleGUI angleGUI("TestAngle");
 
@@ -99,7 +99,7 @@ TEST(InputGUIWidgetsTest, AngleGUITest) {
 
 TEST(InputGUIWidgetsTest, TextAndNumberGUITest) {
     kaguya::State state;
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::api::TextGUI textGUI("TestText");
     lc::ui::api::NumberGUI numberGUI("TestNumber");
 
@@ -120,7 +120,7 @@ TEST(InputGUIWidgetsTest, TextAndNumberGUITest) {
 }
 
 TEST(InputGUIWidgetsTest, HorizontalGroupTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::api::HorizontalGroupGUI horizGroupGUI("TestGroup");
 
     lc::ui::api::TextGUI textGUI("TestText");
@@ -148,7 +148,7 @@ TEST(InputGUIWidgetsTest, HorizontalGroupTest) {
 }
 
 TEST(InputGUIWidgetsTest, RadioGroupTest) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::api::RadioGroupGUI radioGroupGUI("TestRadioGroup");
 
     lc::ui::api::RadioButtonGUI radioButton1("RadioButton1");

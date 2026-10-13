@@ -79,7 +79,7 @@ size_t countOf(lc::ui::MainWindow& window) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, CutCopyAndPasteHaveTheirShortcuts) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
 
     EXPECT_EQ(window->findMenuItemByObjectName("actionCut")->shortcut(), QKeySequence(QKeySequence::Cut));
@@ -91,7 +91,7 @@ TEST(MenuEntriesTest, CutCopyAndPasteHaveTheirShortcuts) {
 // and takes one Undo to take back.
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, CopyThenPastePutsTheCopiesWhereTheUserClicks) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
     const auto layer = window->cadMdiChild()->activeLayer();
 
@@ -115,7 +115,7 @@ TEST(MenuEntriesTest, CopyThenPastePutsTheCopiesWhereTheUserClicks) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, CutRemovesTheSelectionInOneUndoStepAndPastesBack) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
     const auto layer = window->cadMdiChild()->activeLayer();
 
@@ -143,7 +143,7 @@ TEST(MenuEntriesTest, CutRemovesTheSelectionInOneUndoStepAndPastesBack) {
 // layer happens to be active there.
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, PastingIntoAnotherDrawingBringsTheLayerAlong) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* from = new lc::ui::MainWindow();
     auto* to = new lc::ui::MainWindow();
 
@@ -172,7 +172,7 @@ TEST(MenuEntriesTest, PastingIntoAnotherDrawingBringsTheLayerAlong) {
 // each, as one undo step.
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, AddRandomEntriesAddAThousandOfTheirKindInOneUndoStep) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
     const size_t before = entitiesOf(*window).size();
 
@@ -193,7 +193,7 @@ TEST(MenuEntriesTest, AddRandomEntriesAddAThousandOfTheirKindInOneUndoStep) {
 // went, and ends where the user says.
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, ContinueDrawsAnArcOnFromTheLastLineOrArc) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
     addLine(*window, {0, 0}, {10, 0}, window->cadMdiChild()->activeLayer());
 
@@ -222,7 +222,7 @@ TEST(MenuEntriesTest, ContinueDrawsAnArcOnFromTheLastLineOrArc) {
 // Dimension > ANG2LN: click on two lines, then where the arc goes.
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, AngularDimensionFromTwoLinesPickedByClicking) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
     const auto layer = window->cadMdiChild()->activeLayer();
     addLine(*window, {2, 2}, {12, 2}, layer);
@@ -247,7 +247,7 @@ TEST(MenuEntriesTest, AngularDimensionFromTwoLinesPickedByClicking) {
 // Two lines already selected are the two lines: only the arc is asked for.
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MenuEntriesTest, AngularDimensionFromTwoSelectedLines) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     auto* window = new lc::ui::MainWindow();
     const auto layer = window->cadMdiChild()->activeLayer();
     addLine(*window, {0, 0}, {10, 0}, layer);

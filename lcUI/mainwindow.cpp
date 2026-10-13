@@ -8,6 +8,7 @@
 
 #include <QKeySequence>
 #include <QStandardPaths>
+#include <exception>
 #include <cmath>
 #include <random>
 
@@ -33,10 +34,9 @@
 // wraps kaguya::LuaRef via makeLuaObject.
 #include <scriptadapter/luacallback.h>
 
-// Phase 5 PR-5.1 fixup — installEventHooks() called unconditionally
-// at MainWindow ctor.
 #ifdef LC_WITH_PYTHONSCRIPT
 #include "python/pyeventhooks.h"
+#include "python/pypluginloader.h"
 #endif
 
 // Phase 4 PR-9b — trigger* slots build ScriptValue::Map payloads
@@ -57,6 +57,12 @@ MainWindow::MainWindow()
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _copyManager(&_cadMdiChild)
 {
+#ifdef LC_WITH_PYTHONSCRIPT
+    // Also support direct construction by embedders/tests, before entering
+    // this window's scope. Normal app startup has already bootstrapped.
+    lc::ui::python::bootstrapPythonPlugins();
+    lc::ui::python::MainWindowExecutionScope ownerScope(this);
+#endif
     ContextMenuManager::GetContextMenuManager(this);
     _contextMenuManagerId = ContextMenuManager::GetInstanceId(this);
 
@@ -105,20 +111,6 @@ MainWindow::MainWindow()
         }
         return lc::lua::makeLuaObject(std::move(ref));
     });
-
-    // Phase 5 PR-5.1 fixup — install the lc.event.register /
-    // lc.event.deregister hooks HERE, not lazily from ScriptDock's
-    // ctor.  Python operations registered via lc.event.register at
-    // startup (PR-5.2's OperationLoader second source calls a
-    // Python operation's `__init__` which registers listeners) fire
-    // BEFORE the ScriptDock has ever been opened, so the hook slots
-    // were previously still default-constructed (falsy) and every
-    // early registration silently no-op'd.  MUST be installed BEFORE
-    // initLua so Python ops that register listeners at load time see
-    // live hook slots.
-#ifdef LC_WITH_PYTHONSCRIPT
-    lc::ui::python::installEventHooks();
-#endif
 
     // open qt bridge and run lua scripts — this triggers OperationLoader
     // which pushes the Python-registry resolver ONTO the resolver list
@@ -211,6 +203,9 @@ void MainWindow::addOtherMenus() {
 
 void MainWindow::runOperation(lc::scripting::ScriptObject operation,
                               const std::string& init_method) {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(this);
+#endif
     // Phase 4 PR-7 — routed through ScriptObject / ScriptCallback.
     //   * `finish_op` dostring gone → native Cancel-button lambda calling
     //     `_luaInterface.finishOperation()` directly.
@@ -221,6 +216,7 @@ void MainWindow::runOperation(lc::scripting::ScriptObject operation,
     //     (the Lua adapter prepends `self` implicitly — see luacallback.cpp).
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
+    _luaInterface.setOperation(lc::scripting::ScriptObject{});
     _cadMdiChild.viewer()->setOperationActive(true);
 
     // Extra option toolbar icons.  Two-tier key: first "cmdLine+init",
@@ -248,15 +244,56 @@ void MainWindow::runOperation(lc::scripting::ScriptObject operation,
         }),
         "Cancel");
 
-    // Instantiate the operation class + run its init method.
-    lc::scripting::ScriptObject instance = operation.instantiate();
-    _luaInterface.setOperation(instance);
-    if (init_method.empty()) {
-        if (instance.hasAttr("_init_default")) {
-            instance.callMethod("_init_default");
+    // Registrations made by an operation constructor/init belong to this
+    // operation and must be removed if construction fails or it later closes.
+    _luaInterface.beginOperationEventTracking();
+    try {
+        // Instantiate the operation class + run its init method.
+        lc::scripting::ScriptObject instance;
+        std::string startupError;
+        if (!operation.instantiateChecked(instance, startupError)) {
+            _luaInterface.cancelOperationEventTracking();
+            _cliCommand.write("Could not instantiate script operation" +
+                              (startupError.empty() ? std::string(".\n")
+                                                    : ": " + startupError + "\n"));
+            operationFinished();
+            return;
         }
-    } else {
-        instance.callMethod(init_method);
+        _luaInterface.setOperation(instance);
+        bool initSucceeded = true;
+        if (init_method.empty()) {
+            if (instance.hasAttr("_init_default")) {
+                lc::scripting::ScriptValue ignored;
+                initSucceeded = instance.callMethodChecked(
+                    "_init_default", ignored, startupError);
+            }
+        } else {
+            lc::scripting::ScriptValue ignored;
+            initSucceeded = instance.callMethodChecked(
+                init_method, ignored, startupError);
+        }
+        if (!initSucceeded) {
+            _luaInterface.finishOperation();
+            _luaInterface.setOperation(lc::scripting::ScriptObject{});
+            _cliCommand.write("Script operation initialization failed: " +
+                              startupError + "\n");
+            operationFinished();
+            return;
+        }
+        _luaInterface.endOperationEventTracking();
+    } catch (const std::exception& error) {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.write(std::string("Script operation startup failed: ") +
+                          error.what() + "\n");
+        operationFinished();
+        return;
+    } catch (...) {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.write("Script operation startup failed.\n");
+        operationFinished();
+        return;
     }
 
     _oldOperation = std::move(operation);
@@ -324,6 +361,17 @@ int MainWindow::contextMenuManagerId() {
 
 void MainWindow::ConnectInputEvents()
 {
+    QObject::connect(&_cadMdiChild, &CadMdiChild::documentAboutToChange, this, [this] {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.returnText(false);
+        _cliCommand.commandActive(false);
+        operationFinished();
+        _layers.setMdiChild(nullptr);
+    });
+    QObject::connect(&_cadMdiChild, &CadMdiChild::documentChanged, this, [this] {
+        _layers.setMdiChild(&_cadMdiChild);
+    });
     // CadMdiChild connections, main window should not know about proxy
     QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
@@ -556,7 +604,9 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
         return nullptr;
     }
 
-    api::Menu* newMenu = new api::Menu(menuName.c_str());
+    // QMenuBar::addMenu(QMenu*) does not take ownership. Parent menus we
+    // create here so window teardown also destroys their script callbacks.
+    api::Menu* newMenu = new api::Menu(menuName.c_str(), menuBar());
     addMenu(newMenu);
 
     return newMenu;

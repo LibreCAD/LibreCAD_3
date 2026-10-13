@@ -1,4 +1,5 @@
 #pragma once
+#include "lcui_api.h"
 
 #include <QWidget>
 
@@ -18,7 +19,7 @@ namespace widgets {
 /**
  * \brief Model used to construct line pattern path
  */
-class LinePatternPathPart : public QWidget {
+class LC_UI_API LinePatternPathPart : public QWidget {
     Q_OBJECT
 
 public:

@@ -4,7 +4,7 @@
 #include <widgets/linewidthselect.h>
 
 TEST(LineWidthSelectTest, Selection) {
-    QApplication app(argc, argv);
+    ensureUiApplication();
     lc::ui::widgets::LineWidthSelect lineWidthSelect(nullptr, 0, false, false);
     lc::ui::widgets::LineWidthSelect lineWidthSelect_ByBlock_ByLayer(nullptr, 0, true, true);
 

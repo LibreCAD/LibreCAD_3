@@ -34,6 +34,15 @@
 namespace lc {
 namespace scripting {
 
+/// Receives already-formatted diagnostic text. Adapters must release
+/// interpreter locks before calling it; UI sinks can then queue presentation.
+using ScriptDiagnosticSink = std::function<void(const std::string&)>;
+
+/// Report a callback failure without allowing a sink failure to unwind through
+/// event dispatch. With no sink, diagnostics go to stderr.
+void reportScriptDiagnostic(const ScriptDiagnosticSink& sink,
+                            const std::string& message) noexcept;
+
 /// Per-runtime pImpl for ScriptCallback.  Adapters implement this in their
 /// own TUs so lcscripting doesn't need to depend on any language runtime.
 class ScriptCallbackImpl {
@@ -55,7 +64,8 @@ public:
     ///   * callable → call
     ///   * object   → obj.onEvent(event, args).
     virtual ScriptValue invokeEvent(const std::string& event,
-                                    const ScriptValue& args) = 0;
+                                    const ScriptValue& args,
+                                    const ScriptDiagnosticSink& diagnostics) = 0;
 
     /// Equality comparison, adapter-specific.  See the master plan's
     /// bound-method-identity note for Python.
@@ -86,6 +96,9 @@ public:
 
     bool isNil() const { return !_impl; }
 
+    /// Stable runtime tag for adapter dispatch; nil callbacks report "native".
+    const char* runtime() const { return _impl ? _impl->runtime() : "native"; }
+
     /// Generic invoke.  On nil this returns Nil silently (matches
     /// LuaInterface's LuaRef::call behavior on unresolved refs).
     ScriptValue invoke(const std::vector<ScriptValue>& args = {}) const {
@@ -104,8 +117,9 @@ public:
 
     /// Event dispatch — see the impl's onEvent contract.
     ScriptValue invokeEvent(const std::string& event,
-                            const ScriptValue& args = ScriptValue{}) const {
-        return _impl ? _impl->invokeEvent(event, args) : ScriptValue{};
+                            const ScriptValue& args = ScriptValue{},
+                            const ScriptDiagnosticSink& diagnostics = {}) const {
+        return _impl ? _impl->invokeEvent(event, args, diagnostics) : ScriptValue{};
     }
 
     /// Equality.  Nil == Nil is true.  Nil == non-nil is false.  Two

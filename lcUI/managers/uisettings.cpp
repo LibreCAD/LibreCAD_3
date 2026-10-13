@@ -4,6 +4,10 @@
 #include <rapidjson/schema.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/istreamwrapper.h>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QStringList>
 
 #include <memory>
 #include <fstream>
@@ -255,17 +259,30 @@ rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
     std::unique_ptr<std::istream> settingsFile = std::make_unique<std::ifstream>(_filePaths["settings_load"] + fileName);
 
     if (settingsFile->fail() && fileName == settingsFileName) {
-        std::cout <<__func__<<"("<<settingsFileName<<"): No settings file found, loading default settings." << std::endl;
         fileName = defaultSettingsFileName;
-        std::cout << "Loading default settings: "<<_filePaths["settings_load"] + fileName<<std::endl;
-        static_cast<std::ifstream*>(settingsFile.get())->open(_filePaths["settings_load"] + fileName);
+        settingsFile = std::make_unique<std::ifstream>(_filePaths["settings_load"] + fileName);
+    }
+
+    if (settingsFile->fail() && fileName == defaultSettingsFileName) {
+        const QString appDir = QCoreApplication::applicationDirPath();
+        const QString defaultSettingsName = QString::fromStdString(defaultSettingsFileName);
+        const QStringList candidates = {
+            QDir(appDir).filePath(defaultSettingsName),
+            QDir(appDir).filePath("../share/librecad/lcUI/" + defaultSettingsName),
+            QDir(appDir).filePath("../Resources/librecad/lcUI/" + defaultSettingsName),
+        };
+        for (const QString& candidate : candidates) {
+            if (QFileInfo(candidate).isFile()) {
+                settingsFile = std::make_unique<std::ifstream>(candidate.toStdString());
+                if (!settingsFile->fail()) break;
+            }
+        }
     }
 
     // The default settings file can be missing too (a relocated executable, an
     // incomplete install). Fall back on the settings compiled into the binary
     // rather than handing the caller an unusable document.
     if (settingsFile->fail()) {
-        std::cout <<__func__<<"("<<fileName<<"): Settings file not found, using built-in default settings." << std::endl;
         settingsFile = std::make_unique<std::istringstream>(defaultUiSettings);
 
         if (settingsFile->fail()) {

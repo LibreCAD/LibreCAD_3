@@ -4,19 +4,15 @@
 // lc.event.deregister hooks defined in lcadpythonscript's
 // bridge/py_lc_event.h.
 //
-// The hooks route py::object callbacks into the ACTIVE MainWindow's
-// LuaInterface EventBus via `makePythonCallback`.  Installed once at
-// MainWindow construction (or lazily from ScriptDock's Python setup) —
-// re-install replaces the previous hook (matches the OpaquePtr encoder
-// registry semantics in lcadluascript).
-//
-// Which MainWindow the hook picks up is defined by
-// `WindowManager::getMainWindows().back()` — most recently added, which
-// is the "current" one in the single-window-at-a-time use case.  Multi-
-// window is out of scope for this phase; phase 6 revisits window
-// lifecycle.
+// The hooks route py::object callbacks into the owning MainWindow's
+// LuaInterface EventBus via `makePythonCallback`. Process-wide hook functions
+// consult a nested execution scope rather than guessing from window insertion
+// order, so constructor-time registration and multiple windows are supported.
 
 #ifdef LC_WITH_PYTHONSCRIPT
+
+#include <QPointer>
+#include <lcscripting/scriptcallback.h>
 
 namespace lc {
 namespace ui {
@@ -25,27 +21,38 @@ class MainWindow;
 
 namespace python {
 
-/// Install both hooks.  Idempotent — later calls overwrite.  Safe to
-/// call at MainWindow construction or from ScriptDock's Python init.
-/// Phase 5 PR-5.1 fixup: MUST be called unconditionally at MainWindow
-/// startup — the ScriptDock-only install site was broken because
-/// Python operations registering via `lc.event.register` at startup
-/// arrived BEFORE the ScriptDock had ever been opened, so the hook
-/// slots were still default-constructed (falsy) and every registration
-/// silently no-op'd.
+/// Temporarily bind Python's current-window lookup to the UI owner whose
+/// code is executing. Scopes nest and restore their predecessor.
+class MainWindowExecutionScope {
+public:
+    explicit MainWindowExecutionScope(MainWindow* window);
+    ~MainWindowExecutionScope();
+
+    MainWindowExecutionScope(const MainWindowExecutionScope&) = delete;
+    MainWindowExecutionScope& operator=(const MainWindowExecutionScope&) = delete;
+
+private:
+    QPointer<MainWindow> _previous;
+};
+
+/// Install the process hook functions. Idempotent; safe to call at startup.
+/// Bootstrap installs these before process-global plugin definitions and
+/// per-window operation init; installing only when ScriptDock opens is too late.
 void installEventHooks();
 
-/// Return the currently-active MainWindow (most-recently-added in
-/// WindowManager::mainWindows).  Returns nullptr when no window
-/// exists (headless CLI mode).
-///
-/// Phase 5 PR-5.1 fixup: this is what CreateOperations's
-/// `_get_main_window()` calls INSTEAD of frame-walking.  The frame
-/// walk failed for event-driven dispatch — PythonCallbackImpl::invokeEvent
-/// calls onEvent fresh from C++ (Qt slot → EventBus → invoke), so
-/// there's no Python frame containing `mainWindow` to find.  The
-/// direct C++-side lookup works from any calling context.
+/// Return the MainWindow bound to the current execution scope, or nullptr
+/// when no UI owner is active (including headless calls). Do not infer an
+/// owner from vector insertion order: a window runs Python during its
+/// constructor, before it can be inserted into WindowManager.
 lc::ui::MainWindow* currentMainWindow();
+
+/// Bind a GUI callback to its weak Qt receiver/window, restoring outer scopes.
+/// An initially owner-free receiver can bind once after late Qt adoption;
+/// dead bound owners/unbound receivers are inert. Bound toolbar clones retain
+/// the registering window even if the original button dies. Global entity
+/// callbacks do not use it.
+lc::scripting::ScriptCallback scopedUiCallback(
+    lc::scripting::ScriptCallback callback, QObject* receiver);
 
 } // namespace python
 } // namespace ui

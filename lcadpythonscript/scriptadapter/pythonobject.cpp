@@ -5,72 +5,12 @@
 
 #include <pybind11/embed.h>
 #include <pybind11/stl.h>
+#include <exception>
 
 namespace py = pybind11;
 namespace lcs = lc::scripting;
 
 namespace {
-
-// Forward-declared conversion helpers from pythoncallback.cpp.  We
-// intentionally do NOT expose these publicly (they require the GIL held
-// at the call site; safe adapter code calls them from inside a
-// gil_scoped_acquire scope only).
-py::object toPyLocked(const lcs::ScriptValue& v);
-lcs::ScriptValue fromPyLocked(py::handle o);
-
-// Copy from pythoncallback.cpp.  Duplicated intentionally: pybind11
-// forbids externally-linked template helpers in different TUs for its
-// type-registry lookups (they'd resolve in different translation-unit
-// caches).  Keeping copies local avoids the "different type_info per
-// TU" hazard the plan warns about in the pybind11 sub-DLL notes.
-py::object toPyLocked(const lcs::ScriptValue& v) {
-    using K = lcs::ScriptValue::Kind;
-    switch (v.kind()) {
-    case K::Nil:            return py::none();
-    case K::Bool:           return py::bool_(v.asBool());
-    case K::Int:            return py::int_(v.asInt());
-    case K::Double:         return py::float_(v.asDouble());
-    case K::String:         return py::str(v.asString());
-    case K::Coordinate:     return py::cast(v.asCoordinate());
-    case K::Color:          return py::cast(v.asColor());
-    case K::Entity:         return py::cast(v.asEntity());
-    case K::CoordinateList: return py::cast(v.asCoordinateList());
-    case K::EntityList:     return py::cast(v.asEntityList());
-    case K::Opaque:         return py::none();
-    case K::MapKind: {
-        py::dict d;
-        if (v.asMap()) {
-            for (const auto& kv : *v.asMap()) {
-                d[py::str(kv.first)] = toPyLocked(kv.second);
-            }
-        }
-        return d;
-    }
-    }
-    return py::none();
-}
-
-lcs::ScriptValue fromPyLocked(py::handle o) {
-    if (o.is_none()) return lcs::ScriptValue{};
-    if (py::isinstance<py::bool_>(o))  return lcs::ScriptValue(o.cast<bool>());
-    if (py::isinstance<py::int_>(o))   return lcs::ScriptValue(o.cast<int>());
-    if (py::isinstance<py::float_>(o)) return lcs::ScriptValue(o.cast<double>());
-    if (py::isinstance<py::str>(o))    return lcs::ScriptValue(o.cast<std::string>());
-    if (py::isinstance<py::dict>(o)) {
-        auto m = lcs::makeMap();
-        for (auto item : o.cast<py::dict>()) {
-            (*m)[py::str(item.first).cast<std::string>()] = fromPyLocked(item.second);
-        }
-        return lcs::ScriptValue(std::move(m));
-    }
-    try { return lcs::ScriptValue(o.cast<lc::geo::Coordinate>()); }
-    catch (const py::cast_error&) {}
-    try { return lcs::ScriptValue(o.cast<lc::Color>()); }
-    catch (const py::cast_error&) {}
-    try { return lcs::ScriptValue(o.cast<lc::entity::CADEntity_CSPtr>()); }
-    catch (const py::cast_error&) {}
-    return lcs::ScriptValue{};
-}
 
 class PythonObjectImpl : public lcs::ScriptObjectImpl {
 public:
@@ -91,12 +31,28 @@ public:
     const char* runtime() const override { return "python"; }
 
     lcs::ScriptValue call(const std::vector<lcs::ScriptValue>& args) override {
-        py::gil_scoped_acquire gil;
-        try {
-            return fromPyLocked(callRawLocked(args));
-        } catch (py::error_already_set& /*e*/) {
-            return lcs::ScriptValue{};
+        lcs::ScriptValue result;
+        std::string diagnostic;
+        {
+            py::gil_scoped_acquire gil;
+            try {
+                result = lc::python::fromPy(callRawLocked(args));
+            } catch (py::error_already_set& exception) {
+                diagnostic =
+                    "Python callable failed or returned an unsupported value:\n" +
+                    std::string(exception.what());
+            } catch (const std::exception& exception) {
+                diagnostic =
+                    "Python callable returned an unsupported value: " +
+                    std::string(exception.what());
+            } catch (...) {
+                diagnostic = "Python callable returned an unsupported value";
+            }
         }
+        if (!diagnostic.empty()) {
+            lcs::reportScriptDiagnostic({}, diagnostic);
+        }
+        return result;
     }
 
     std::shared_ptr<lcs::ScriptObjectImpl>
@@ -106,35 +62,88 @@ public:
         // this to hand MainWindow::runOperation a real Python instance
         // whose methods stay callable — the Value round-trip that
         // `call` does would drop the Python identity.
+        std::shared_ptr<lcs::ScriptObjectImpl> result;
+        std::string error;
+        (void)instantiateChecked(args, result, error);
+        return result;
+    }
+
+    bool instantiateChecked(
+        const std::vector<lcs::ScriptValue>& args,
+        std::shared_ptr<lcs::ScriptObjectImpl>& result,
+        std::string& error) override {
         py::gil_scoped_acquire gil;
+        result.reset();
+        error.clear();
         try {
-            py::object result = callRawLocked(args);
-            if (result.is_none()) return nullptr;
-            return std::make_shared<PythonObjectImpl>(std::move(result));
-        } catch (py::error_already_set& /*e*/) {
-            return nullptr;
+            py::object instance = callRawLocked(args);
+            if (instance.is_none()) {
+                error = "Python operation constructor returned None";
+                return false;
+            }
+            result = std::make_shared<PythonObjectImpl>(std::move(instance));
+            return true;
+        } catch (py::error_already_set& exception) {
+            error = exception.what();
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "Python operation constructor failed with an unknown exception";
         }
+        return false;
     }
 
     lcs::ScriptValue getAttr(const std::string& name) override {
-        py::gil_scoped_acquire gil;
-        try {
-            if (!py::hasattr(_obj, name.c_str())) return lcs::ScriptValue{};
-            return fromPyLocked(_obj.attr(name.c_str()));
-        } catch (py::error_already_set& /*e*/) {
-            return lcs::ScriptValue{};
+        lcs::ScriptValue result;
+        std::string diagnostic;
+        {
+            py::gil_scoped_acquire gil;
+            try {
+                if (py::hasattr(_obj, name.c_str())) {
+                    result = lc::python::fromPy(_obj.attr(name.c_str()));
+                }
+            } catch (py::error_already_set& exception) {
+                diagnostic = "Python attribute '" + name +
+                             "' could not be read or converted:\n" +
+                             std::string(exception.what());
+            } catch (const std::exception& exception) {
+                diagnostic = "Python attribute '" + name +
+                             "' has an unsupported value: " + exception.what();
+            } catch (...) {
+                diagnostic = "Python attribute '" + name +
+                             "' has an unsupported value";
+            }
         }
+        if (!diagnostic.empty()) {
+            lcs::reportScriptDiagnostic({}, diagnostic);
+        }
+        return result;
     }
 
     void setAttr(const std::string& name, const lcs::ScriptValue& value) override {
-        py::gil_scoped_acquire gil;
-        try {
-            _obj.attr(name.c_str()) = toPyLocked(value);
-        } catch (py::error_already_set& /*e*/) {
-            // Some Python objects are frozen (dataclass frozen=True,
-            // namedtuple, ...).  Silently swallow so the caller's
-            // setAttr doesn't propagate a Python exception through Qt.
+        std::string error;
+        if (!setAttrChecked(name, value, error)) {
+            lcs::reportScriptDiagnostic(
+                {}, "Python attribute '" + name + "' could not be set:\n" + error);
         }
+    }
+
+    bool setAttrChecked(const std::string& name,
+                        const lcs::ScriptValue& value,
+                        std::string& error) override {
+        py::gil_scoped_acquire gil;
+        error.clear();
+        try {
+            _obj.attr(name.c_str()) = lc::python::toPy(value);
+            return true;
+        } catch (py::error_already_set& exception) {
+            error = exception.what();
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "Python attribute assignment failed with an unknown exception";
+        }
+        return false;
     }
 
     bool hasAttr(const std::string& name) override {
@@ -148,18 +157,36 @@ public:
 
     lcs::ScriptValue callMethod(const std::string& name,
                                 const std::vector<lcs::ScriptValue>& args) override {
+        lcs::ScriptValue result;
+        std::string error;
+        (void)callMethodChecked(name, args, result, error);
+        return result;
+    }
+
+    bool callMethodChecked(const std::string& name,
+                           const std::vector<lcs::ScriptValue>& args,
+                           lcs::ScriptValue& result,
+                           std::string& error) override {
         py::gil_scoped_acquire gil;
+        result = lcs::ScriptValue{};
+        error.clear();
         try {
-            if (!py::hasattr(_obj, name.c_str())) return lcs::ScriptValue{};
+            if (!py::hasattr(_obj, name.c_str())) return true;
             py::object method = _obj.attr(name.c_str());
             py::tuple pyArgs(args.size());
             for (std::size_t i = 0; i < args.size(); ++i) {
-                pyArgs[i] = toPyLocked(args[i]);
+                pyArgs[i] = lc::python::toPy(args[i]);
             }
-            return fromPyLocked(method(*pyArgs));
-        } catch (py::error_already_set& /*e*/) {
-            return lcs::ScriptValue{};
+            result = lc::python::fromPy(method(*pyArgs));
+            return true;
+        } catch (py::error_already_set& exception) {
+            error = exception.what();
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "Python method failed with an unknown exception";
         }
+        return false;
     }
 
     bool equals(const ScriptObjectImpl& other) const override {
@@ -181,7 +208,7 @@ private:
     py::object callRawLocked(const std::vector<lcs::ScriptValue>& args) {
         py::tuple pyArgs(args.size());
         for (std::size_t i = 0; i < args.size(); ++i) {
-            pyArgs[i] = toPyLocked(args[i]);
+            pyArgs[i] = lc::python::toPy(args[i]);
         }
         return _obj(*pyArgs);
     }

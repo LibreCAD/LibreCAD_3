@@ -53,6 +53,12 @@ namespace python {
  */
 class PythonInit {
 public:
+    /// Select the configure-time Python provider and its stdlib paths before
+    /// interpreter initialization. Application/CLI entry points call this
+    /// first; tests and explicit developer clients may retain the no-argument
+    /// system initializer. A conflicting late selection is an error.
+    static void configureForApplication(
+        const std::string& applicationDirectory = {});
     /// Initialize the singleton (idempotent — safe to call repeatedly).
     static void initialize();
     /// Access the singleton; asserts initialize() has been called.

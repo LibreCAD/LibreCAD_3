@@ -4,8 +4,16 @@
 #include <persistence/file.h>
 #include <persistence/format.h>
 #include "lc_persistence.h"
+#include <stdexcept>
 
 using lc::persistence::File;
+
+namespace {
+template <typename T>
+void rejectResultWrite(T&, kaguya::LuaRef) {
+    throw std::runtime_error("Persistence result field is read-only");
+}
+}
 
 void import_lc_persistence_namespace(kaguya::State& state) {
     state["lc"]["persistence"] = kaguya::NewTable();
@@ -31,6 +39,20 @@ void import_lc_persistence_namespace(kaguya::State& state) {
             .addFunction("total", &lc::persistence::LossSummary::total)
     );
 
+    state["lc"]["persistence"]["ImportFailure"].setClass(
+        kaguya::UserdataMetatable<lc::persistence::ImportFailure>()
+            .addProperty("recordKind", +[](const lc::persistence::ImportFailure& f) { return f.recordKind; },
+                         &rejectResultWrite<lc::persistence::ImportFailure>)
+            .addProperty("handle", +[](const lc::persistence::ImportFailure& f) { return f.handle; },
+                         &rejectResultWrite<lc::persistence::ImportFailure>)
+            .addProperty("layer", +[](const lc::persistence::ImportFailure& f) { return f.layer; },
+                         &rejectResultWrite<lc::persistence::ImportFailure>)
+            .addProperty("block", +[](const lc::persistence::ImportFailure& f) { return f.block; },
+                         &rejectResultWrite<lc::persistence::ImportFailure>)
+            .addProperty("reason", +[](const lc::persistence::ImportFailure& f) { return f.reason; },
+                         &rejectResultWrite<lc::persistence::ImportFailure>)
+    );
+
     state["lc"]["persistence"]["ImportResult"].setClass(
         kaguya::UserdataMetatable<lc::persistence::ImportResult>()
             .addProperty("ok", &lc::persistence::ImportResult::ok)
@@ -38,6 +60,8 @@ void import_lc_persistence_namespace(kaguya::State& state) {
             .addProperty("variantId", &lc::persistence::ImportResult::variantId)
             .addProperty("sourceVersionTag", &lc::persistence::ImportResult::sourceVersionTag)
             .addProperty("entitiesDelivered", &lc::persistence::ImportResult::entitiesDelivered)
+            .addProperty("failures", +[](const lc::persistence::ImportResult& r) { return r.failures; },
+                         &rejectResultWrite<lc::persistence::ImportResult>)
             .addProperty("diagnostics", &lc::persistence::ImportResult::diagnostics)
             .addProperty("loss", &lc::persistence::ImportResult::loss)
     );
@@ -125,6 +149,7 @@ void import_lc_persistence_namespace(kaguya::State& state) {
     state["lc"]["persistence"]["File"]["LIBDXFRW_DXB_R2010"] = static_cast<int>(File::LIBDXFRW_DXB_R2010);
     state["lc"]["persistence"]["File"]["LIBDXFRW_DXB_R2013"] = static_cast<int>(File::LIBDXFRW_DXB_R2013);
     state["lc"]["persistence"]["File"]["LIBOPENCAD_DWG"]     = static_cast<int>(File::LIBOPENCAD_DWG);
+    state["lc"]["persistence"]["File"]["LIBDXFRW_DWG_IMPORT"] = static_cast<int>(File::LIBDXFRW_DWG_IMPORT);
 
     state["lc"]["persistence"]["File"]["LIBDXFRW"]   = static_cast<int>(File::LIBDXFRW);
     state["lc"]["persistence"]["File"]["LIBOPENCAD"] = static_cast<int>(File::LIBOPENCAD);

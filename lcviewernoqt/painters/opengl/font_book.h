@@ -1,7 +1,7 @@
 #ifndef GL_FONT_BOOK_H
 #define GL_FONT_BOOK_H
-#include "gl_font.h"
 #include <map>
+#include <string>
 #include <vector>
 #include <boost/filesystem.hpp>
 
@@ -11,6 +11,8 @@ namespace viewer
 {
 namespace opengl
 {
+class GL_Font;
+
 class Font_Book
 {
 public:
@@ -22,10 +24,10 @@ public:
     };
 
 private:
-    std::map<const std::string, GL_Font* > _font_map;
-    std::map<const std::string, GL_Font*> _font_bold_map;
-    std::map<const std::string, GL_Font*> _font_italic_map;
-    std::map<const std::string, GL_Font*> _font_bold_italic_map;
+    std::map<std::string, GL_Font*> _font_map;
+    std::map<std::string, GL_Font*> _font_bold_map;
+    std::map<std::string, GL_Font*> _font_italic_map;
+    std::map<std::string, GL_Font*> _font_bold_italic_map;
     GL_Font* _default_font=NULL;
 
 public:

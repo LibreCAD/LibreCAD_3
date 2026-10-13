@@ -230,7 +230,9 @@ int main(int argc, char** argv) {
         // Parity with the Lua path: PythonInit + fresh namespace +
         // setDocument. `document` is the ONLY name injected, matching
         // LCLua::setDocument's single-binding contract (plan sub-plan 2.2).
-        // No plugins / no path.py in phase 2 — those land in phase 5.
+        // The CLI evaluates the requested script directly; GUI plugins and
+        // operation discovery are initialized by LuaInterface.
+        lc::python::PythonInit::configureForApplication();
         lc::python::LCPython lcpy;
         auto ns = lcpy.makeNamespace();
         lcpy.setDocument(ns, _document);

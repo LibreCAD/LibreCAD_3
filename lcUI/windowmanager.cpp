@@ -2,6 +2,11 @@
 
 #include <QObject>
 #include <QMetaObject>
+#include <memory>
+
+#ifdef LC_WITH_PYTHONSCRIPT
+#include "python/pyeventhooks.h"
+#endif
 
 using namespace lc::ui;
 
@@ -24,10 +29,15 @@ void WindowManager::newFile(MainWindow* prevWindow)
 
 void WindowManager::openFile()
 {
-    MainWindow* window = new MainWindow();
-    window->cadMdiChild()->openFile();
+    std::unique_ptr<MainWindow> window(new MainWindow());
+#ifdef LC_WITH_PYTHONSCRIPT
+    // File loading happens before this window is inserted into mainWindows.
+    // Keep callback/event routing attached to its owner throughout dispatch.
+    lc::ui::python::MainWindowExecutionScope ownerScope(window.get());
+#endif
+    if (!window->cadMdiChild()->openFile()) return;
     window->showMaximized();
-    mainWindows.push_back(window);
+    mainWindows.push_back(window.release());
 }
 
 void WindowManager::removeWindow(MainWindow* mainWindow) 

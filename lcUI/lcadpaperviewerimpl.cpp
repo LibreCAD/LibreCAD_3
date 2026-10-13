@@ -13,6 +13,9 @@ LCADPaperViewerImpl::LCADPaperViewerImpl(QWidget* parent):_document(nullptr),_pa
 };
 
 void LCADPaperViewerImpl::setDocument(std::shared_ptr<lc::storage::Document> document) {
+    for (auto* viewer : _viewers) delete viewer;
+    _viewers.clear();
+    _activeView = 0;
     _document = document;
 }
 

@@ -21,7 +21,6 @@
 #include <pybind11/stl.h>
 #include <qt_keywords_pop.h>
 #include <scriptadapter/pythonobject.h>
-#include <iostream>
 #include <algorithm>
 #include <vector>
 #endif
@@ -57,7 +56,8 @@ public:
 private:
     std::string searchSubFolders(std::string folder) const
     {
-        for (const char* subFolder: {"/lcUILua", "/../share/librecad/lcUILua"})
+        for (const char* subFolder: {"/lcUILua", "/../share/librecad/lcUILua",
+                                     "/../Resources/librecad/lcUILua"})
             if (isValid(folder + subFolder))
                 return folder + subFolder;
 
@@ -359,7 +359,15 @@ void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const 
                 "cancel", iconPath.c_str(), "Current operation",
                 lc::scripting::nativeCallback([mWindow, action]() {
                     lc::scripting::ScriptObject op = mWindow->currentOperation();
-                    if (!op.isNil()) op.callMethod(action);
+                    if (op.isNil()) return;
+                    lc::scripting::ScriptValue result;
+                    std::string error;
+                    if (!mWindow->luaInterface()->callOperationMethodChecked(
+                            action, {}, result, error)) {
+                        mWindow->cliCommand()->write(
+                            "Lua operation toolbar action '" + action +
+                            "' failed: " + error + "\n");
+                    }
                 }),
                 label.c_str());
         });
@@ -463,6 +471,24 @@ std::string pyOperationGroup(const py::object& cls, const std::string& name) {
     return "Creation";
 }
 
+std::string pyOperationModuleDirectory(const py::object& cls) {
+    try {
+        if (!py::hasattr(cls, "__module__")) return {};
+        const std::string moduleName = py::str(cls.attr("__module__"));
+        py::object module = py::module_::import(moduleName.c_str());
+        if (!py::hasattr(module, "__file__")) return {};
+        const std::string moduleFile = py::str(module.attr("__file__"));
+        const std::size_t separator = moduleFile.find_last_of("/\\");
+        return separator == std::string::npos
+            ? std::string{}
+            : moduleFile.substr(0, separator);
+    } catch (const py::error_already_set&) {
+        // Resource-backed icons remain usable if a module has no filesystem
+        // origin (for example, a built-in or test operation).
+        return {};
+    }
+}
+
 } // namespace
 
 void OperationLoader::loadPythonOperations() {
@@ -549,6 +575,8 @@ void OperationLoader::loadPythonOperations() {
         }
 
         const std::string group = pyOperationGroup(cls, name);
+        const std::string operationModuleDirectory =
+            pyOperationModuleDirectory(cls);
         // Record the group so ContextMenuManager iteration finds it
         // (mirrors the Lua path's groupNames map).
         groupNames[name] = group;
@@ -674,37 +702,6 @@ void OperationLoader::loadPythonOperations() {
                         : name.substr(0, name.find("Operation"));
                 const std::string iconPath = ":/icons/" + icon;
 
-                // Phase 5 PR-5.4 — capture the registering module's
-                // directory as the icon fallback path.  If the qrc
-                // lookup misses (icon isn't baked into resource.qrc,
-                // e.g. plugin-supplied), ToolbarButton::changeIcon
-                // tries `<fallbackDir>/icons/<name>` as an absolute
-                // filesystem path.  For a Python class defined in
-                // `lcUIPy/plugins/myop/myop.py`, __module__ resolves
-                // to `lcUIPy.plugins.myop.myop` and `__file__` is that
-                // .py; the fallback dir is the parent directory.
-                std::string fallbackDir;
-                try {
-                    if (py::hasattr(cls, "__module__")) {
-                        std::string modName =
-                            py::str(cls.attr("__module__"));
-                        py::object mod =
-                            py::module_::import(modName.c_str());
-                        if (py::hasattr(mod, "__file__")) {
-                            std::string modFile =
-                                py::str(mod.attr("__file__"));
-                            std::size_t slash = modFile.find_last_of("/\\");
-                            if (slash != std::string::npos) {
-                                fallbackDir = modFile.substr(0, slash);
-                            }
-                        }
-                    }
-                } catch (const py::error_already_set&) {
-                    // Best-effort — leave fallbackDir empty on any
-                    // resolution failure.  qrc lookup + empty fallback
-                    // = same behavior as pre-PR-5.4.
-                }
-
                 toolbar->addButton(name.c_str(), iconPath.c_str(),
                                    group.c_str(),
                                    lc::scripting::nativeCallback(
@@ -714,9 +711,171 @@ void OperationLoader::loadPythonOperations() {
                                    tooltip.c_str(),
                                    /*checkable=*/false,
                                    /*tabName=*/"Quick Access",
-                                   fallbackDir.empty()
+                                   operationModuleDirectory.empty()
                                        ? nullptr
-                                       : fallbackDir.c_str());
+                                       : operationModuleDirectory.c_str());
+            }
+        }
+
+        // ---- Operation-option toolbar buttons ----
+        // Match the Lua schema: operation_options maps option labels to
+        // {icon, action}. A key containing `_init` scopes those options to
+        // that init method; MainWindow checks command_line + init_method
+        // before falling back to the command-wide options.
+        if (py::hasattr(cls, "operation_options")) {
+            try {
+                py::object rawOptions = cls.attr("operation_options");
+                if (!py::isinstance<py::dict>(rawOptions)) {
+                    std::cerr << "[OperationLoader] Python operation '"
+                              << name
+                              << "' operation_options must be a dict."
+                              << std::endl;
+                } else {
+                    const py::dict scopes =
+                        py::reinterpret_borrow<py::dict>(rawOptions);
+                    const std::string commandLine =
+                        pyAttrString(cls, "command_line");
+                    std::vector<std::string> scopeNames;
+                    for (const auto item : scopes) {
+                        if (!py::isinstance<py::str>(item.first)) {
+                            std::cerr << "[OperationLoader] Python operation '"
+                                      << name
+                                      << "' has a non-string operation_options key; skipping it."
+                                      << std::endl;
+                            continue;
+                        }
+                        scopeNames.emplace_back(py::cast<std::string>(item.first));
+                    }
+                    std::sort(scopeNames.begin(), scopeNames.end());
+
+                    auto appendOptionCallback = [&] (
+                            std::vector<lc::scripting::ScriptCallback>& callbacks,
+                            const std::string& optionName, py::handle rawOption) {
+                        if (!py::isinstance<py::dict>(rawOption)) {
+                            std::cerr << "[OperationLoader] Python operation '"
+                                      << name << "' option '" << optionName
+                                      << "' must be a dict with icon/action."
+                                      << std::endl;
+                            return;
+                        }
+                        const py::dict fields =
+                            py::reinterpret_borrow<py::dict>(rawOption);
+                        const py::str iconKey("icon");
+                        const py::str actionKey("action");
+                        if (!fields.contains(iconKey) ||
+                            !fields.contains(actionKey) ||
+                            !py::isinstance<py::str>(fields[iconKey]) ||
+                            !py::isinstance<py::str>(fields[actionKey])) {
+                            std::cerr << "[OperationLoader] Python operation '"
+                                      << name << "' option '" << optionName
+                                      << "' requires string icon and action fields."
+                                      << std::endl;
+                            return;
+                        }
+
+                        const std::string icon =
+                            py::cast<std::string>(fields[iconKey]);
+                        const std::string action =
+                            py::cast<std::string>(fields[actionKey]);
+                        if (icon.empty() || action.empty()) {
+                            std::cerr << "[OperationLoader] Python operation '"
+                                      << name << "' option '" << optionName
+                                      << "' requires non-empty icon and action fields."
+                                      << std::endl;
+                            return;
+                        }
+
+                        const std::string iconPath = ":/icons/" + icon;
+                        callbacks.push_back(lc::scripting::nativeCallback(
+                            [mWindow, iconPath, operationModuleDirectory,
+                             optionName, action]() {
+                                mWindow->toolbar()->addButton(
+                                    "cancel", iconPath.c_str(),
+                                    "Current operation",
+                                    lc::scripting::nativeCallback(
+                                        [mWindow, action]() {
+                                            const auto operation =
+                                                mWindow->currentOperation();
+                                            if (operation.isNil()) return;
+                                            if (!operation.hasAttr(action)) {
+                                                mWindow->cliCommand()->write(
+                                                    "Python operation has no toolbar action '" +
+                                                    action + "'.\n");
+                                                return;
+                                            }
+                                            lc::scripting::ScriptValue result;
+                                            std::string error;
+                                            if (!mWindow->luaInterface()
+                                                     ->callOperationMethodChecked(
+                                                         action, {}, result, error)) {
+                                                mWindow->cliCommand()->write(
+                                                    "Python toolbar action '" +
+                                                    action + "' failed: " +
+                                                    error + "\n");
+                                            }
+                                        }),
+                                    optionName.c_str(), false, "Quick Access",
+                                    operationModuleDirectory.empty()
+                                        ? nullptr
+                                        : operationModuleDirectory.c_str());
+                            }));
+                    };
+
+                    auto makeOptionCallbacks = [&](const std::string& scope,
+                                                   py::handle rawEntries) {
+                        std::vector<lc::scripting::ScriptCallback> callbacks;
+                        if (!py::isinstance<py::dict>(rawEntries)) {
+                            std::cerr << "[OperationLoader] Python operation '"
+                                      << name << "' operation_options['" << scope
+                                      << "'] must be a dict."
+                                      << std::endl;
+                            return callbacks;
+                        }
+                        const py::dict entries =
+                            py::reinterpret_borrow<py::dict>(rawEntries);
+                        std::vector<std::string> optionNames;
+                        for (const auto item : entries) {
+                            if (!py::isinstance<py::str>(item.first)) {
+                                std::cerr << "[OperationLoader] Python operation '"
+                                          << name << "' option in scope '" << scope
+                                          << "' has a non-string label; skipping it."
+                                          << std::endl;
+                                continue;
+                            }
+                            optionNames.emplace_back(
+                                py::cast<std::string>(item.first));
+                        }
+                        std::sort(optionNames.begin(), optionNames.end());
+                        for (const std::string& optionName : optionNames) {
+                            appendOptionCallback(callbacks, optionName,
+                                                 entries[py::str(optionName)]);
+                        }
+                        return callbacks;
+                    };
+
+                    std::vector<lc::scripting::ScriptCallback> defaultOptions;
+                    for (const std::string& scope : scopeNames) {
+                        py::object option = scopes[py::str(scope)];
+                        if (scope.find("_init") != std::string::npos) {
+                            auto callbacks = makeOptionCallbacks(scope, option);
+                            if (!callbacks.empty() && !commandLine.empty()) {
+                                mWindow->addOperationOptions(
+                                    commandLine + scope,
+                                    std::move(callbacks));
+                            }
+                        } else {
+                            appendOptionCallback(defaultOptions, scope, option);
+                        }
+                    }
+                    if (!defaultOptions.empty() && !commandLine.empty()) {
+                        mWindow->addOperationOptions(commandLine,
+                                                     std::move(defaultOptions));
+                    }
+                }
+            } catch (const py::error_already_set& e) {
+                std::cerr << "[OperationLoader] Python operation '"
+                          << name << "' operation_options raised: "
+                          << e.what() << std::endl;
             }
         }
 
@@ -740,14 +899,8 @@ void OperationLoader::loadPythonOperations() {
             }
         }
 
-        // (`operation_options` toolbar-option-icon binding is deferred
-        // to a future slice — matches the Lua wiring shape but needs
-        // more surface than PR-5.2's minimum viable delivery.  The
-        // scaffolding above is what the sub-plan's "Reuse the SAME
-        // wiring calls" clause requires; option icons are covered by
-        // the Lua path today and the phase-5 sub-plan flags them for
-        // the wiring-completeness pass alongside PR-5.6's gui.*
-        // bindings.)
+        // Operation-option definitions are converted to delayed toolbar
+        // callbacks so actions target the active operation instance.
     }
 }
 

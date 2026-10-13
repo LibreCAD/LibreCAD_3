@@ -9,6 +9,16 @@ optional Python scripting.
 > LibreCAD 3 is under active development. For stable releases and assets, see
 > the [releases page](https://github.com/LibreCAD/LibreCAD_3/releases).
 
+## Scripting
+
+LibreCAD 3 supports embedded Lua and Python scripting, including bundled Python
+plugins and script-defined custom entities. Lua and Python share the neutral
+scripting layer, but their API coverage and distribution status are not
+identical. See [doxygen/Scripting.md](doxygen/Scripting.md) for tested
+capabilities, runtime selection, platform status, and plugin authoring notes.
+Python is enabled by default in ordinary CMake builds (`WITH_PYTHONSCRIPT=ON`);
+individual build configurations may disable it.
+
 ## Requirements
 
 - CMake 3.28 or newer
@@ -91,7 +101,7 @@ Common CMake options are:
 | `WITH_QT_UI` | `ON` | Build the Qt desktop application. |
 | `WITH_PERSISTENCE` | `ON` | Build DXF/DWG persistence support. |
 | `WITH_DWG_IMPORT` | `OFF` | Enable experimental DWG reading through libdxfrw. |
-| `WITH_PYTHONSCRIPT` | `ON` | Enable embedded Python scripting. Conan/Windows builds disable it until Python bundling is available. |
+| `WITH_PYTHONSCRIPT` | `ON` | Enable embedded Python scripting. Windows builds must provide a matching CPython SDK/runtime; packaged-artifact validation remains part of the implementation plan. |
 | `WITH_LUACMDINTERFACE` | `ON` | Build the Lua command-line interface. |
 | `WITH_UNITTESTS` | `ON` | Build `lcunittest`. |
 | `WITH_RENDERING_UNITTESTS` | `ON` | Build rendering tests that require a graphics environment. |
@@ -124,12 +134,11 @@ the remaining UI suites for visibility. See
 [`.github/workflows/main.yml`](.github/workflows/main.yml) for the current CI
 matrix and packaging jobs.
 
-## Scripting
-
-LibreCAD 3 embeds Lua and Python. Scripts, plugins, and custom entities share
-the event bus, operation registry, and kernel API. See
-[`doxygen/Scripting.md`](doxygen/Scripting.md) for architecture, API parity,
-and plugin authoring notes.
+For a Python-enabled build or installed application, run `librecad --python-smoke`
+from outside the checkout. It checks the selected runtime, shipped plugins,
+document undo/redo and DXF round-trip. Installed runtimes also initialize the
+staged native-extension catalog and exercise offline native stdlib operations.
+See [scripting validation](doxygen/Scripting.md) for scope and platform limits.
 
 ## Contributing
 

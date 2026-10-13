@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+appdir="$(CDPATH= cd -P -- "$(dirname -- "$0")" && pwd -P)"
+private_library_path="$appdir/usr/lib:$appdir/usr/lib/x86_64-linux-gnu:$appdir/usr/lib64"
+if [ -n "${LD_LIBRARY_PATH:-}" ]; then
+    export LD_LIBRARY_PATH="$private_library_path:$LD_LIBRARY_PATH"
+else
+    export LD_LIBRARY_PATH="$private_library_path"
+fi
+
+exec "$appdir/usr/bin/librecad" "$@"

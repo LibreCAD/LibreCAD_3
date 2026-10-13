@@ -9,8 +9,15 @@ cmake_minimum_required(VERSION 3.28)
 if (MSVC)
     project(LibreCAD3)
 else()
-    project(LC)
+project(LC)
 endif()
+
+# Kaguya's default metatable registry keys types by a module-local address.
+# LibreCAD registers Lua-visible types in the kernel/binding libraries and
+# uses them from the UI and executable, so the default breaks value types such
+# as geo::Coordinate across shared-library boundaries on Unix as well as MSVC.
+# Use Kaguya's cross-module registry consistently in every build target.
+add_compile_definitions(KAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1)
 
 # https://stackoverflow.com/questions/7229571/cmake-visual-studio-debug-folder
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -27,8 +34,7 @@ option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_CAIRO "Compile with Cairo painter" OFF)
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
 
-# Python scripting support (phase 1 slice 1.2).  Off in Conan branch until
-# phase 6 lands the embeddable-CPython bundling.
+# Python scripting support uses the selected build-time CPython SDK/runtime.
 option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
 
 #make doc/tests ?
@@ -62,53 +68,95 @@ endif()
 # library, so nothing looked wrong.
 if(WITH_PERSISTENCE)
     add_definitions(-DUSE_PERSISTENCE=1)
+    set(LC_USE_PERSISTENCE 1)
 else()
     add_definitions(-DUSE_PERSISTENCE=0)
+    set(LC_USE_PERSISTENCE 0)
 endif()
 
-# Define compiler warnings
+# Define compiler warnings and standard install directories.
+include(GNUInstallDirs)
+if(NOT CMAKE_INSTALL_DATADIR)
+    # Conan can leave its resdirs override empty. All platforms need the same
+    # prefix-relative data root, including notices installed before subdirs.
+    set(CMAKE_INSTALL_DATADIR "share")
+endif()
+
+# BEGIN source license installation
+# Preserve upstream text and source-relative paths in every artifact. Binary
+# provider notices (Qt, Lua, CPython extension libraries, etc.) are separate.
+set(_lc_source_license_files
+    LICENSE lckernel/LICENSE lcadluascript/LICENSE lcviewernoqt/LICENSE
+    third_party/kaguya/LICENSE_1_0.txt
+    lckernel/nano-signal-slot/LICENSE lckernel/tinyspline/LICENSE)
+if(WITH_PERSISTENCE)
+    list(APPEND _lc_source_license_files persistence/LICENSE third_party/libdxfrw/COPYING)
+endif()
+if(WITH_LUACMDINTERFACE)
+    list(APPEND _lc_source_license_files luacmdinterface/LICENSE)
+endif()
+if(WITH_PYTHONSCRIPT)
+    list(APPEND _lc_source_license_files third_party/pybind11/LICENSE)
+endif()
+foreach(_lc_source_license IN LISTS _lc_source_license_files)
+    get_filename_component(_lc_license_directory "${_lc_source_license}" DIRECTORY)
+    install(FILES "${CMAKE_SOURCE_DIR}/${_lc_source_license}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/source/${_lc_license_directory}")
+endforeach()
+# END source license installation
+
+# BEGIN Conan provider notices
+if(DEFINED LIBRECAD_DEPENDENCY_LICENSE_DIR)
+    if(NOT EXISTS "${LIBRECAD_DEPENDENCY_LICENSE_DIR}/manifest.json")
+        message(FATAL_ERROR "Selected Conan provider notice manifest is missing")
+    endif()
+    install(DIRECTORY "${LIBRECAD_DEPENDENCY_LICENSE_DIR}/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/conan")
+endif()
+# END Conan provider notices
+# BEGIN source provider notices
+# Optional until each platform supplies complete native origin/coverage records.
+# Collections must retain their content-addressed basename for the runtime audit.
+set(LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS "" CACHE STRING
+    "Verified original source-provider notice collections selected by packaging")
+foreach(_lc_provider_notices IN LISTS LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS)
+    if(NOT EXISTS "${_lc_provider_notices}/manifest.json")
+        message(FATAL_ERROR "Selected source-provider notice manifest is missing")
+    endif()
+    install(DIRECTORY "${_lc_provider_notices}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/external")
+endforeach()
+# END source provider notices
+if(MSVC)
+    # CMake's runtime dependency set is used by the Windows install/NSIS path
+    # to collect Conan, Qt, and CPython DLL dependencies recursively.
+    if(CMAKE_VERSION VERSION_LESS 3.21)
+        message(FATAL_ERROR "Windows runtime packaging requires CMake 3.21 or newer")
+    endif()
+    set(LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS
+        RUNTIME_DEPENDENCY_SET LibreCADRuntimeDependencies)
+endif()
 if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
-     include(GNUInstallDirs)
 endif()
 
 set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/conan_toolchain.cmake")
+if(CMAKE_TOOLCHAIN_FILE AND
+   CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$" AND
+   EXISTS "${CMAKE_TOOLCHAIN_FILE}")
     set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
     set(CMAKE_INSTALL_BINDIR "bin")
     
-    #SET(CPACK_GENERATOR "ZIP;TGZ")
-    SET(CPACK_BINARY_NSIS True)
-    SET(CPACK_NSIS_DISPLAY_NAME "LibreCAD3")
-    set(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_PACKAGE_VENDOR "librecad.org")
-    set(CPACK_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_SOURCE_DIR}/build/bin;.")
-    set(CPACK_BUILD_SOURCE_DIRS "${CMAKE_SOURCE_DIR}/build/bin")
-
-    SET(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_SOURCE_DIR}/res/librecad.ico")
-    SET(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_CREATE_DESKTOP_LINKS "LibreCAD3")
-    set(CPACK_PACKAGE_EXECUTABLES "librecad;LibreCAD3")
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "LibreCAD3")
-    set(CPACK_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_INSTALL_CMAKE_PROJECTS "build/bin;LibreCAD3;ALL;/")
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-    file(COPY "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "${FINAL_INSTALL_DIR}")
-    include(CPack)
-
     #include(${CMAKE_SOURCE_DIR}/conan_toolchain.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
     
     set(WITH_LUACMDINTERFACE FALSE)
     set(WITH_RENDERING_UNITTESTS OFF)
     set(WITH_CAIRO OFF)
-    # Python scripting stays OFF in the Conan branch until phase 6 bundles an
-    # embeddable CPython (Windows) — the plan's WITH_PYTHONSCRIPT default is
-    # forced OFF here so the Windows/Conan CI keeps building.
-    set(WITH_PYTHONSCRIPT OFF)
-    #set(WITH_UNITTESTS ON)
+    # WITH_PYTHONSCRIPT remains an explicit user option in this dependency-
+    # provider branch. Windows CI supplies a matching CPython SDK; install
+    # rules stage the selected runtime beside the application.
 
     #set(Boost_NO_SYSTEM_PATHS true)
     #set (Boost_USE_STATIC_LIBS OFF CACHE BOOL "use static libraries from Boost")
@@ -180,9 +228,6 @@ if(MSVC)
     # the toolchain's /W1, and warning C9002 cannot be disabled with /wd.
     string(APPEND CMAKE_CXX_FLAGS " /wd4710 /wd4711 /wd4668 /wd5045 /wd4365 /wd4242")
     string(APPEND CMAKE_C_FLAGS " /wd4710 /wd4711")
-    # Kaguya uses a pointer to a local variable (in object.hpp file) to store class conversions.
-	# When used in different modules, the variable doesn't have the same address, preventing to mix kernel and UI bindings
-	add_definitions("-DKAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1")
 endif()
 
 # Set C++ version
@@ -339,25 +384,11 @@ add_subdirectory("lckernel")
 # and Python both link it).
 add_subdirectory("lcscripting")
 
-add_subdirectory("lcUILua")
-add_subdirectory("lcadluascript")
-
-if(WITH_PYTHONSCRIPT)
-    add_definitions(-DLC_WITH_PYTHONSCRIPT)
-    add_subdirectory("lcadpythonscript")
-    # Phase 5 PR-5.3 — path bootstrap sibling to lcUILua.  Generates
-    # path.py at build time and stages the lcUIPy package for install.
-    add_subdirectory("lcUIPy")
-endif()
-
+# Persistence is a dependency of both language bindings. Build its pinned
+# provider and create the target before configuring either language bridge.
 if(WITH_PERSISTENCE)
-    # libdxfrw is a submodule, built in-tree so every platform uses the same
-    # pinned revision. Cache entries so its option() calls keep these defaults.
     set(LIBDXFRW_BUILD_DOC OFF CACHE BOOL "Build libdxfrw documentation")
     set(LIBDXFRW_BUILD_DWG2DXF OFF CACHE BOOL "Build libdxfrw's dwg2dxf tool")
-    # Install the library itself (the AppImage and the snap need the .so) but
-    # none of its development files: LibreCAD is not a place to get libdxfrw's
-    # headers, pkg-config file or CMake package from.
     set(LIBDXFRW_INSTALL_DEV OFF CACHE BOOL "Install libdxfrw's development files")
     if(NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/libdxfrw/CMakeLists.txt")
         message(FATAL_ERROR
@@ -366,15 +397,29 @@ if(WITH_PERSISTENCE)
             "or configure with -DWITH_PERSISTENCE=OFF to build without DXF support.")
     endif()
     add_subdirectory("third_party/libdxfrw")
-    # Linked into the shared persistence library even when built static.
     set_target_properties(dxfrw PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    # libdxfrw builds with -Werror; newer compilers than it is tested with
-    # (e.g. GCC 16) must not fail LibreCAD's build over its warnings.
     if(NOT MSVC)
         target_compile_options(dxfrw PRIVATE -Wno-error)
     endif()
     add_library(libdxfrw::libdxfrw ALIAS dxfrw)
     add_subdirectory("persistence")
+endif()
+
+# Resolve Python in the root directory so the imported embed target is visible
+# to both the binding target and the app's install-time runtime relocation.
+if(WITH_PYTHONSCRIPT)
+    find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Embed)
+    set(PYBIND11_FINDPYTHON ON CACHE BOOL "" FORCE)
+endif()
+
+add_subdirectory("lcUILua")
+add_subdirectory("lcadluascript")
+
+if(WITH_PYTHONSCRIPT)
+    add_subdirectory("lcadpythonscript")
+    # Package installation is kept alongside the bindings and is resolved
+    # from the executable/bundle at runtime.
+    add_subdirectory("lcUIPy")
 endif()
 
 add_subdirectory("lcviewernoqt")
@@ -394,6 +439,198 @@ if(WITH_UNITTESTS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
+if(MSVC)
+    # VirtualRunEnv makes Conan DLLs available to tests via PATH, but CMake's
+    # install-time dependency scanner needs their selected directories.
+    set(_lc_runtime_dependency_directories ${CONAN_RUNTIME_LIB_DIRS})
+    if(WITH_PYTHONSCRIPT)
+        get_filename_component(_lc_python_runtime_bin "${Python_EXECUTABLE}" DIRECTORY)
+        list(APPEND _lc_runtime_dependency_directories "${_lc_python_runtime_bin}")
+    endif()
+    if(DEFINED ENV{QT_ROOT_DIR})
+        list(APPEND _lc_runtime_dependency_directories "$ENV{QT_ROOT_DIR}/bin")
+    elseif(DEFINED ENV{QTDIR})
+        list(APPEND _lc_runtime_dependency_directories "$ENV{QTDIR}/bin")
+    endif()
+    if(_lc_runtime_dependency_directories)
+        set(_lc_runtime_dependency_directory_args
+            DIRECTORIES ${_lc_runtime_dependency_directories})
+    endif()
+    install(RUNTIME_DEPENDENCY_SET LibreCADRuntimeDependencies
+        ${_lc_runtime_dependency_directory_args}
+        PRE_EXCLUDE_REGEXES "^api-ms-win-.*\\.dll$" "^ext-ms-win-.*\\.dll$"
+        POST_EXCLUDE_REGEXES ".*[Ww]indows.*[Ss]ystem32.*"
+                             ".*[Ww]indows.*[Ss]ysWOW64.*"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
+
+# The installed executable and LibreCAD shared libraries refer to one another
+# with install names (including @rpath on macOS). Keep the install tree
+# relocatable by resolving app dependencies from its sibling lib directory and
+# library-to-library dependencies from each library's own directory.
+if(APPLE)
+    foreach(_librecad_shared_target
+            lckernel lcscripting persistence lcluascript lcpythonscript
+            lcviewernoqt lcui)
+        if(TARGET ${_librecad_shared_target})
+            set_target_properties(${_librecad_shared_target} PROPERTIES
+                INSTALL_RPATH "@loader_path")
+        endif()
+    endforeach()
+    if(TARGET librecad)
+        set_target_properties(librecad PROPERTIES
+            INSTALL_RPATH "@executable_path/../${CMAKE_INSTALL_LIBDIR}")
+    endif()
+elseif(UNIX)
+    foreach(_librecad_shared_target
+            lckernel lcscripting persistence lcluascript lcpythonscript
+            lcviewernoqt lcui)
+        if(TARGET ${_librecad_shared_target})
+            set_target_properties(${_librecad_shared_target} PROPERTIES
+                INSTALL_RPATH "$ORIGIN")
+        endif()
+    endforeach()
+    if(TARGET librecad)
+        set_target_properties(librecad PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+    endif()
+endif()
+
+# On macOS, Python's embed target often has an absolute install name outside
+# the app prefix. Copy the exact selected runtime dylib and rewrite only the
+# installed consumers to a prefix-relative load name.
+if(APPLE AND WITH_PYTHONSCRIPT AND TARGET Python::Python)
+    option(LIBRECAD_RECORD_NATIVE_ORIGINS
+        "Record selected original/final native bytes in a fresh macOS install (not notice qualification)" OFF)
+    set(LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION "" CACHE STRING
+        "Exact clean revision or frozen parent+diff context for the original project binaries")
+    if(LIBRECAD_RECORD_NATIVE_ORIGINS)
+        if(NOT LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION)
+            message(FATAL_ERROR "Native origin capture requires an explicit project revision/source context")
+        endif()
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
+            set(LC_NATIVE_ORIGIN_PLATFORM "macos-arm64")
+        elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$")
+            set(LC_NATIVE_ORIGIN_PLATFORM "macos-x86_64")
+        else()
+            message(FATAL_ERROR "Native origin capture requires a supported native macOS architecture")
+        endif()
+        set(_lc_native_project_args "")
+        foreach(_lc_origin_target librecad lckernel lcscripting persistence
+                lcluascript lcpythonscript lcviewernoqt dxfrw)
+            if(NOT TARGET ${_lc_origin_target})
+                continue()
+            endif()
+            get_target_property(_lc_origin_type ${_lc_origin_target} TYPE)
+            if(NOT _lc_origin_type MATCHES "^(SHARED_LIBRARY|EXECUTABLE)$")
+                continue()
+            endif()
+            set(_lc_origin_destination "${CMAKE_INSTALL_LIBDIR}")
+            if(_lc_origin_type STREQUAL "EXECUTABLE")
+                set(_lc_origin_destination "${CMAKE_INSTALL_BINDIR}")
+            endif()
+            string(APPEND _lc_native_project_args
+                "\n --project-file \"\${_install_prefix}/${_lc_origin_destination}/$<TARGET_FILE_NAME:${_lc_origin_target}>\" \"$<TARGET_FILE:${_lc_origin_target}>\"")
+        endforeach()
+        file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/native-origin-project-files-$<CONFIG>.cmake"
+            CONTENT "set(_python_origin_project_args${_lc_native_project_args}\n)\n")
+    endif()
+    get_target_property(_lc_python_configs Python::Python IMPORTED_CONFIGURATIONS)
+    set(_lc_python_library "")
+    foreach(_lc_python_config IN LISTS _lc_python_configs)
+        string(TOUPPER "${_lc_python_config}" _lc_python_config_upper)
+        get_target_property(_lc_python_candidate Python::Python
+            "IMPORTED_LOCATION_${_lc_python_config_upper}")
+        if(_lc_python_candidate AND EXISTS "${_lc_python_candidate}")
+            set(_lc_python_library "${_lc_python_candidate}")
+            break()
+        endif()
+    endforeach()
+    if(NOT _lc_python_library)
+        get_target_property(_lc_python_library Python::Python IMPORTED_LOCATION)
+    endif()
+    if(NOT _lc_python_library OR NOT EXISTS "${_lc_python_library}")
+        message(FATAL_ERROR "Could not locate the selected Python embed runtime library")
+    endif()
+
+    get_filename_component(_lc_python_library_name "${_lc_python_library}" NAME)
+    get_filename_component(_lc_python_library_real "${_lc_python_library}" REALPATH)
+    find_program(_lc_otool_executable otool)
+    if(NOT _lc_otool_executable)
+        message(FATAL_ERROR "Could not locate otool for CPython install-name inspection")
+    endif()
+    find_program(_lc_codesign_executable codesign)
+    if(NOT _lc_codesign_executable)
+        message(FATAL_ERROR "Could not locate codesign for CPython runtime relocation")
+    endif()
+    find_program(_lc_install_name_tool_executable install_name_tool)
+    if(NOT _lc_install_name_tool_executable)
+        message(FATAL_ERROR "Could not locate install_name_tool for CPython dependency staging")
+    endif()
+    execute_process(
+        COMMAND "${_lc_otool_executable}" -D "${_lc_python_library_real}"
+        RESULT_VARIABLE _lc_otool_result
+        OUTPUT_VARIABLE _lc_python_install_id_output
+        ERROR_VARIABLE _lc_otool_error)
+    if(NOT _lc_otool_result EQUAL 0)
+        message(FATAL_ERROR "Could not read Python runtime install name: ${_lc_otool_error}")
+    endif()
+    string(REPLACE "\r" "" _lc_python_install_id_output
+        "${_lc_python_install_id_output}")
+    string(REPLACE "\n" ";" _lc_python_install_id_lines
+        "${_lc_python_install_id_output}")
+    list(LENGTH _lc_python_install_id_lines _lc_python_install_id_line_count)
+    if(_lc_python_install_id_line_count LESS 2)
+        message(FATAL_ERROR "Python embed library has no Mach-O install ID")
+    endif()
+    list(GET _lc_python_install_id_lines 1 _lc_python_original_install_id)
+    string(STRIP "${_lc_python_original_install_id}" _lc_python_original_install_id)
+    if(NOT _lc_python_original_install_id)
+        message(FATAL_ERROR "Python embed library has an empty Mach-O install ID")
+    endif()
+
+    set(_lc_python_relocated_install_id "@rpath/${_lc_python_library_name}")
+    install(FILES "${_lc_python_library_real}"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RENAME "${_lc_python_library_name}")
+
+    set(LC_PYTHON_RUNTIME_LIBRARY_NAME "${_lc_python_library_name}")
+    set(LC_PYTHON_RUNTIME_ORIGINAL_LIBRARY "${_lc_python_library_real}")
+    set(LC_PYTHON_RUNTIME_OLD_INSTALL_ID "${_lc_python_original_install_id}")
+    set(LC_PYTHON_RUNTIME_NEW_INSTALL_ID "${_lc_python_relocated_install_id}")
+    set(LC_PYTHON_RUNTIME_CODESIGN_TOOL "${_lc_codesign_executable}")
+    set(LC_PYTHON_RUNTIME_EXECUTABLE "${Python_EXECUTABLE}")
+    set(LC_PYTHON_DEPENDENCY_STAGER
+        "${CMAKE_SOURCE_DIR}/scripts/macos-install/stagePythonDependencies.py")
+    set(LC_PYTHON_RUNTIME_STAGED_ROOT
+        "${CMAKE_INSTALL_DATADIR}/librecad/python")
+    # The app's installed @rpath entries no longer include the build-time
+    # dependency prefixes. When libdxfrw is shared, give the runtime relocator
+    # its in-tree build directory so it can stage that dylib and its closure.
+    set(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY "")
+    if(TARGET dxfrw)
+        get_target_property(_lc_dxfrw_type dxfrw TYPE)
+        if(_lc_dxfrw_type STREQUAL "SHARED_LIBRARY")
+            get_target_property(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY
+                dxfrw LIBRARY_OUTPUT_DIRECTORY)
+            if(NOT LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY)
+                set(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY
+                    "${CMAKE_BINARY_DIR}/third_party/libdxfrw")
+            endif()
+        endif()
+    elseif(DEFINED LIBDXFRW_LIBRARY AND EXISTS "${LIBDXFRW_LIBRARY}")
+        get_filename_component(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY
+            "${LIBDXFRW_LIBRARY}" DIRECTORY)
+    endif()
+    set(LC_PYTHON_RUNTIME_OTOOL "${_lc_otool_executable}")
+    set(LC_PYTHON_RUNTIME_INSTALL_NAME_TOOL "${_lc_install_name_tool_executable}")
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/scripts/macos-install/relocatePythonRuntime.cmake.in"
+        "${CMAKE_BINARY_DIR}/relocatePythonRuntime.cmake"
+        @ONLY)
+    install(SCRIPT "${CMAKE_BINARY_DIR}/relocatePythonRuntime.cmake")
+endif()
+
 # clang-tidy
 find_file(
         RUN_CLANG_TIDY_PY
@@ -404,3 +641,22 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+
+# Configure the binary installer after vendor subdirectories. CPack mutates its
+# variables for source packaging; an inherited second include (tinyspline) can
+# otherwise overwrite our binary config with a build-output directory copy.
+if(MSVC AND CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$")
+    set(CPACK_BINARY_NSIS TRUE)
+    set(CPACK_NSIS_DISPLAY_NAME "LibreCAD3")
+    set(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
+    set(CPACK_PACKAGE_VENDOR "librecad.org")
+    set(CPACK_PACKAGE_NAME "LibreCAD3")
+    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_SOURCE_DIR}/res/librecad.ico")
+    set(CPACK_CREATE_DESKTOP_LINKS "LibreCAD3")
+    set(CPACK_PACKAGE_EXECUTABLES "librecad;LibreCAD3")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "LibreCAD3")
+    set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${PROJECT_NAME};ALL;/")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+    include(CPack)
+endif()
