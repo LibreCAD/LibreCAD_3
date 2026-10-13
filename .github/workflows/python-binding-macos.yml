@@ -121,6 +121,15 @@ jobs:
             --filter='LuaRuntimeTest.*' \
             --require-suite 'LuaRuntimeTest.' 2>&1 | tee build/lua-required-tests.log
 
+      - name: Require persistence parity and settings regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          QT_QPA_PLATFORM=offscreen "$PYTHON_EXECUTABLE" scripts/run_required_gtests.py \
+            --binary "$GITHUB_WORKSPACE/build/bin/lcunittest" \
+            --filter='LuaFixture.*:UiSettingsTest.*:DxfRoundTripTest.*:DxfExportTest.*:FormatTest.*:DocumentSourceTest.*:MTextCodecTest.*' \
+            2>&1 | tee build/persistence-settings-required-tests.log
+
       - name: Install LibreCAD
         shell: bash
         run: |

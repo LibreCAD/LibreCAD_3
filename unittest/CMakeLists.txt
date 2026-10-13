@@ -211,6 +211,7 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
+            ui/testuisettings.cpp
             # Phase 4 PR-10 — dead LuaIntf-era test files retired.
             # Phase 3 PR-3.4 — dual-language ScriptDock test.
             ui/testscriptdock.cpp

@@ -81,6 +81,11 @@ REM blocking before WinDeployQt and NSIS packaging.
 "%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="PythonFixture.*:PythonRuntime.*:ParityTest.*:ScriptValueRoundTrip.*:ScriptCallbackInvoke.*:ScriptCallbackEquality.*:ScriptCallbackLifecycle.*:ScriptObject.*:EventBus.*:LuaCustomEntityManager.*:ScriptCustomEntity.*:ScriptCustomEntityBuilder.*:CustomEntityDxfRoundTrip.*:ScriptCustomEntityLuaRegistration.*:DwgImportTest.*:PersistenceTest.*:ScriptDockTest.*:MWindowTest.*:ToolbarButtonTest.*:PyGuiBridgeTest.*:MenuEntriesTest.*" --require-suite "PythonFixture." --require-suite "PythonRuntime." --require-suite "ParityTest." --require-suite "ScriptValueRoundTrip." --require-suite "ScriptCallbackInvoke." --require-suite "ScriptCallbackEquality." --require-suite "ScriptCallbackLifecycle." --require-suite "ScriptObject." --require-suite "EventBus." --require-suite "LuaCustomEntityManager." --require-suite "ScriptCustomEntity." --require-suite "ScriptCustomEntityBuilder." --require-suite "CustomEntityDxfRoundTrip." --require-suite "ScriptCustomEntityLuaRegistration." --require-suite "DwgImportTest." --require-suite "PersistenceTest." --require-suite "ScriptDockTest." --require-suite "MWindowTest." --require-suite "ToolbarButtonTest." --require-suite "PyGuiBridgeTest." --require-suite "MenuEntriesTest."
 if errorlevel 1 exit /b 1
 
+REM Keep the full persistence contract and Lua parity/settings tests required,
+REM not only the scripting smoke subset. The runner rejects absent suites.
+"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="LuaFixture.*:UiSettingsTest.*:DxfRoundTripTest.*:DxfExportTest.*:FormatTest.*:DocumentSourceTest.*:MTextCodecTest.*"
+if errorlevel 1 exit /b 1
+
 WinDeployQt --include-plugins qoffscreen librecad.exe
 if errorlevel 1 exit /b 1
 

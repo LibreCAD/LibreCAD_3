@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 
 #include <lcpython.h>
+#include <persistence/file.h>
 
 #include <cad/base/cadentity.h>
 #include <cad/primitive/arc.h>
@@ -26,6 +27,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -240,6 +242,58 @@ assert missing.diagnostics[0].code != ''
     ASSERT_EQ(lcpy.runString(read.c_str(), ns2), "") << "reading back failed";
 
     boost::filesystem::remove(dxfPath);
+}
+
+TEST(PersistenceTest, ImportFailuresAreTypedReadonlyAndRetainTheirLifetime) {
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    lc::persistence::ImportResult result;
+    result.failures.push_back({"HATCH", 0xffffffffUL, "Layer", "Block", "Invalid geometry"});
+    ns.set("result", std::move(result));
+    ASSERT_EQ(python.runString(R"PY(
+failure = result.failures[0]
+assert isinstance(failure, lc.persistence.ImportFailure)
+assert (failure.recordKind, failure.handle, failure.layer, failure.block, failure.reason) == \
+       ('HATCH', 4294967295, 'Layer', 'Block', 'Invalid geometry')
+for obj, attr, value in [(failure, 'recordKind', 'LINE'), (failure, 'handle', 0),
+                         (failure, 'layer', ''), (failure, 'block', ''),
+                         (failure, 'reason', ''), (result, 'failures', [])]:
+    try:
+        setattr(obj, attr, value)
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('writable result field: ' + attr)
+del obj, result
+import gc
+gc.collect()
+assert failure.reason == 'Invalid geometry'
+)PY", ns), "");
+}
+
+TEST(PersistenceTest, DwgImportIdentityMatchesEnabledAndDisabledBuilds) {
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    python.setDocument(ns, std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>()));
+    lc::storage::Document_SPtr legacy = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    ns.set("legacy_document", legacy);
+    ns.set("dwg_path", std::string(DWG_FIXTURES_DIR) + "/ordinary_enc_AC1015.dwg");
+    ns.set("enabled", USE_DWG_IMPORT != 0);
+    ASSERT_EQ(python.runString(R"PY(
+F = lc.persistence.File
+assert int(F.Type.LIBDXFRW_DWG_IMPORT) == 15
+assert F.LIBDXFRW_DWG_IMPORT == F.Type.LIBDXFRW_DWG_IMPORT
+assert F.variantIdForType(F.Type.LIBDXFRW_DWG_IMPORT) == 'dwg.libdxfrw'
+assert F.typeForVariantId('dwg.libdxfrw') == F.Type.LIBDXFRW_DWG_IMPORT
+result = F.importFile(document, dwg_path, F.Library.LIBDXFRW)
+assert result.ok == enabled
+assert result.variantId == 'dwg.libdxfrw'
+assert result.failures == []
+assert result.entitiesDelivered > 0 if enabled else len(result.diagnostics) > 0
+assert F.open(legacy_document, dwg_path, F.Library.LIBDXFRW) == F.Type.LIBDXFRW_DWG_IMPORT
+)PY", ns), "");
 }
 
 TEST(PersistenceTest, AllWritableDxfVariantsRoundTripThroughPython) {

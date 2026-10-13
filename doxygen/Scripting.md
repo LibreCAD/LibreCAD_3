@@ -138,7 +138,13 @@ drawing likewise must not access a deleted painter cache.
 Core namespace organization intentionally parallels Lua: Python exposes
 `lc.entity.*`, `lc.builder.*`, `lc.operation.*`, `lc.geo.*`, `lc.meta.*`,
 `lc.storage.*`, `lc.event.*`, and `lc.maths.*`; persistence-enabled builds also
-expose `lc.persistence.*`. The GUI surface is `gui` in Lua and `lcgui` in
+expose `lc.persistence.*`. `ImportResult.failures` contains typed, readonly
+`ImportFailure` records (`recordKind`, unsigned `handle`, `layer`, `block`,
+`reason`) in both languages, distinct from parser diagnostics and unsupported
+entity losses. The import-only DWG identity is `File.LIBDXFRW_DWG_IMPORT` (15;
+also `File.Type.LIBDXFRW_DWG_IMPORT` in Python), mapping to `dwg.libdxfrw` even
+when DWG reading is disabled; inspect `ok` and diagnostics rather than assuming
+the enum enables a reader. The GUI surface is `gui` in Lua and `lcgui` in
 Python.
 
 Hosted checkpoint (2026-10-11): PR candidate `783266c3` on Linux x64 passes the

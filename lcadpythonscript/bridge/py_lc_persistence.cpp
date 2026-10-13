@@ -49,6 +49,13 @@ void import_py_lc_persistence_namespace(py::module_& m_persistence) {
         .def("empty", &lc::persistence::LossSummary::empty)
         .def("total", &lc::persistence::LossSummary::total);
 
+    py::class_<lc::persistence::ImportFailure>(m_persistence, "ImportFailure")
+        .def_readonly("recordKind", &lc::persistence::ImportFailure::recordKind)
+        .def_readonly("handle", &lc::persistence::ImportFailure::handle)
+        .def_readonly("layer", &lc::persistence::ImportFailure::layer)
+        .def_readonly("block", &lc::persistence::ImportFailure::block)
+        .def_readonly("reason", &lc::persistence::ImportFailure::reason);
+
     py::class_<lc::persistence::ImportResult>(m_persistence, "ImportResult")
         .def_readonly("ok", &lc::persistence::ImportResult::ok)
         .def_readonly("partial", &lc::persistence::ImportResult::partial,
@@ -58,6 +65,7 @@ void import_py_lc_persistence_namespace(py::module_& m_persistence) {
         .def_readonly("sourceVersionTag", &lc::persistence::ImportResult::sourceVersionTag,
                       "The file's own $ACADVER, empty when it carries none.")
         .def_readonly("entitiesDelivered", &lc::persistence::ImportResult::entitiesDelivered)
+        .def_readonly("failures", &lc::persistence::ImportResult::failures)
         .def_readonly("diagnostics", &lc::persistence::ImportResult::diagnostics)
         .def_readonly("loss", &lc::persistence::ImportResult::loss);
 
@@ -111,6 +119,7 @@ void import_py_lc_persistence_namespace(py::module_& m_persistence) {
         .value("LIBDXFRW_DXB_R2010",  lc::persistence::File::LIBDXFRW_DXB_R2010)
         .value("LIBDXFRW_DXB_R2013",  lc::persistence::File::LIBDXFRW_DXB_R2013)
         .value("LIBOPENCAD_DWG",      lc::persistence::File::LIBOPENCAD_DWG)
+        .value("LIBDXFRW_DWG_IMPORT", lc::persistence::File::LIBDXFRW_DWG_IMPORT)
         .export_values();
 
     py::enum_<lc::persistence::File::Library>(file, "Library")

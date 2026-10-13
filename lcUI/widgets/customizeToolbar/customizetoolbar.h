@@ -79,6 +79,9 @@ public:
 
     /**
     * \brief Read and update buttons from data
+    *
+    * Malformed or missing entries are skipped, so an empty or partial document
+    * simply leaves the widget empty instead of aborting.
     */
     void readData(rapidjson::Document& document);
 

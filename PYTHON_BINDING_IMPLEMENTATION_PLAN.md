@@ -1,6 +1,6 @@
 # Python binding implementation plan
 
-Status: implementation roadmap; reviewed against the current checkout on 2026-10-12.
+Status: implementation roadmap; reviewed against the current checkout on 2026-10-13.
 Scope: finish the existing embedded Python implementation and ship it across Linux,
 Windows, and macOS. This plan does not require rewriting the bindings.
 Maintenance: this is a change-triggered, self-updating implementation record.
@@ -24,7 +24,33 @@ and prior review receipts retain their original revision scope; their use of
 receipt. A plan-only review does not rebase source, advance a gitlink, or qualify
 an artifact.
 
-**Open-PR refresh (2026-10-13):** publish the eight-path review-fix slice below
+**Current master integration and binding-completeness refresh (2026-10-13):**
+PR446 merged as `55d6bb0f858af1a6281f38c944bd964ce1cf23c3`; this is the new
+actual base, superseding f972953 for current comparison checks. Integrate it into
+parent1414 without rewriting published history. Resolve settings recovery by
+retaining selected settings-directory precedence, bundled/relocated default
+lookup and the new always-object failure contract. Inherit the checked-in
+settings regressions and add default-directory precedence coverage.
+Expose `LIBDXFRW_DWG_IMPORT` and typed readonly `ImportResult.failures` in both
+existing language bridges, with nonempty lifetime/readonly tests and actual
+DWG legacy/result identity checks in ON/OFF builds. Require complete persistence,
+Lua parity and settings suites on Windows and both Mac architectures; include
+the previously missing MText codec suite in Linux. No second persistence facade.
+The frozen index-only candidate builds natively with Qt/Python/persistence/DWG ON
+and separately Qt OFF/DWG OFF. The full Qt run executes490, passes489 and retains
+only the D1 malformed-radius recovery failure; zero skips. Headless scripting
+executes109/109 and focused Cocoa settings/persistence/runtime/parity executes
+23/23, including all8 settings cases. Retain the first-red Lua write-rejection
+test: getter-only Kaguya properties silently accept assignments, so explicit
+rejecting setters now preserve the readonly contract without modifying Kaguya.
+Merge regressions use the shared QApplication fixture, not obsolete argc/argv.
+All275 scripts pass with real Conan/no skips. D1 still awaits the requested
+strict-versus-tolerant policy choice. Keep the exact d68 upstream pin and all six
+original dirty paths outside publication. Existing1414 CI is parent evidence;
+no restart, all-platform/artifact claim or acceptance promotion. Historical
+f972953/1414 receipts below retain their original scope.
+
+**Historical open-PR refresh (2026-10-13):** publish the eight-path review-fix slice below
 against unchanged master `f972953aa3295543550a90f4c6ed1c4609124c59`.
 Both open LibreCAD_3 PRs are in scope: #445 remains draft with D1 unresolved;
 #446 is refreshed independently against master, not folded into this branch.
@@ -514,21 +540,13 @@ Current evidence, checked directly from GitHub on this review:
   failure resolving HEAD, corrected by supplying isolated parent Git metadata
   without editing source. Working-copy scripts separately pass266/zero skips.
 
-Two source-level completeness gaps need compact follow-ups, not green claims:
-both language bridges omit `File::Type::LIBDXFRW_DWG_IMPORT` (stable value 15)
-and `ImportResult.failures`/`ImportFailure`, although C++ exposes them. Add only
-these declarations/readonly fields in the existing bridge translation units;
-test known-DWG legacy/result conversions with DWG ON and the diagnostic/refusal
-with DWG OFF, plus exact failure kind/handle/layer/block/reason through both
-languages. Preserve all old enum values and signatures. Also the required-test
-runner currently checks nonzero execution and skips, but does not require its
-discovered count to equal its executed count. Add a negative fixture for a
-selected disabled or otherwise unexecuted test and enforce complete required
-execution; do not solve that discrepancy by narrowing the product filter.
-The existing runner's gap is reproduced with explicitly SYNTHETIC subprocess
-outputs: two discovered tests, one executed, no skips, and current exit 0.
-Its existing 11 regressions pass, which does not cover or repair this missing
-negative case. Lua persistence tests currently compile only inside the Python-ON
+The earlier binding omissions are implemented in the current refresh through
+the existing bridges: enum15 and typed readonly per-record failure data. New
+nonempty/readonly/lifetime and known-DWG legacy/result tests require ON/OFF
+qualification; do not claim broad DWG support from declaration completeness.
+The runner discrepancy was fixed in committed1414 with exact counts, a unique
+summary and real disabled/sharded controls; its earlier synthetic red and
+11-test baseline remain historical. Lua persistence tests compile inside the Python-ON
 CMake branch, so the Python-OFF headless lane cannot prove either script bridge.
 The matrix therefore includes a separate Python-ON/DWG-ON binding lane.
 
@@ -2636,6 +2654,7 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Integrate merged PR446 and complete existing persistence bindings/required coverage | Actual base55d6bb0f, parent1414, gitlinkd68 unchanged. Preserve the six original unstaged paths and their binary diff SHAe2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038. Resolve the settings conflict retaining selected-directory/bundled/relocated defaults and always-object recovery; inherit bounds/GUI tests, use the shared QApplication fixture and add default-directory precedence. Both existing bridges gain enum15 and readonly typed per-record failures; nonempty/readonly/lifetime and actual known-DWG ON/OFF tests pass. Getter-only Kaguya silently accepts writes: retain this first red and repair with explicit rejecting setters, no vendor edit. Missing Kaguya test include and getter function-pointer deduction errors are repaired. Require full persistence/settings/Lua suites on Mac/Windows and missing MTextCodecTest on Linux; three new source-selection tests retain their first red before repair. Frozen index-only export excluding all six dirty paths builds native Qt/Python/persistence/DWG ON and Qt OFF/DWG OFF; full Qt490 executes/489 pass/zero skips/sole unchanged D1 failure, headless109/109 and Cocoa23/23 including settings8/8 pass. All275 scripts with real Conan/no skips pass; actionlint and shell syntax pass. Full/checker31/complete-worktree/actual-base55d6/whitespace checks pass and must be rerun on the final receipt. Evidence /private/tmp/pr445-master-refresh.7vjxZE; local staged-parent proof, not eventual-commit/hosted/artifact qualification. D1 awaits the requested strict-versus-tolerant policy; do not change radius assertion, parser, pin, deadlines or filter it out. Publish only the16 scoped staged paths in the master merge, refresh the draft PR body and verify remote ancestry/head. Sole generated exclusion build-linux-arm64/. No platform/artifact/provider/legal/protected gate is promoted. |
 | 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Publish the scoped review fixes while independently refreshing open PR446 | Actual master remains f972953; remote PR445 still5a2d43a9 and selected upstream master remainsd68fb1ed. Seven non-plan implementation/doc/test paths byte-match the isolated parent+fix export: 272 scripts/zero skips/real Conan, fresh headless Python/DWG-ON build,30 runtime/binding/parity and2 QtCore runtime tests pass. Focused32 rerun passes on this turn. Virtualenv escape and disabled/sharded real-probe negative controls remain retained. D1 is deliberately unresolved and the complete persistence filter remains94/95; neither parser nor assertion/filter/pin is weakened. Stage only those seven paths plus this synchronized plan; six original dirty paths retain binary diff SHAe2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038. Full/checker31/worktree/actual-base/staged-whitespace/source identity checks are required before commit and again on the committed slice. Sole generated exclusion build-linux-arm64/. New own-head CI is pending publication, not accepted; preserve draft and all broader platform/package/notices/release gates. |
 | 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Validate review fixes and repair the newly reproduced headless test build | Parent 5a2d43a9 plus scoped changes in lcadpythonscript/CMakeLists.txt, scripts/run_required_gtests.py, scripts/tests/test_run_required_gtests.py, scripts/tests/test_python_runtime_layout.py, doxygen/Building.md, unittest/CMakeLists.txt and unittest/python/python_runtime_test.cpp. Isolated exact-parent/submodule export excludes the six unrelated dirty files. All272 scripts/zero skips/real Conan pass after the headless fix. Actual virtualenv configure rejects safely; base CPython 3.14 configures. Real GoogleTest complete/disabled/sharded probes return0/1/1. Fresh native Mac arm64 Python/DWG-ON Qt-OFF build passes after scoping only Qt-dependent fixture code; runtime/binding/parity30/30 and separate QtCore runtime-only harness2/2 pass with zero skips. Persistence six suites95 discovered/executed,94 pass/zero skips, sole unchanged malformed-radius recovery failure. D1 awaits the requested strict-versus-recovery choice; no dependency/parser/assertion policy change, commit or push. Original six-file binary diff SHAe2e48f0363ab09765f7810536893b3fbe9d1d262d775816cd50474b9c3093038 remains unchanged. Evidence /private/tmp/pr445-fixes.esNCyF/. Full/checker31/worktree/actual-base/whitespace pass; sole generated exclusion build-linux-arm64/. New test is covered by worktree inventory, not the tracked-only base diff. No native Linux/Windows/full-Qt/package/protected gate is promoted. |
 | 2026-10-13 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Fix staging escape and incomplete required-test acceptance; retain D1 policy choice | Parent 5a2d43a9 plus scoped fixes in lcadpythonscript/CMakeLists.txt, scripts/run_required_gtests.py, scripts/tests/test_run_required_gtests.py, scripts/tests/test_python_runtime_layout.py and doxygen/Building.md. Exact isolated parent export with these code/test fixes passes 272 scripts/zero skips/real Conan; 32 focused tests pass. Real CPython 3.14 virtualenv configure now fails with an actionable staging-escape diagnostic before installation; base CPython configure passes. Real GoogleTest probes pass a complete 2/2 run and reject disabled 3/2 and sharded 2/1 runs. A fresh headless Python/DWG-ON build is in progress, not yet qualified. Published 5a Linux x64/ARM64 each fail recovery (335/336); Windows, both Macs, sanitizer, PLAN and CodeQL pass selected checks. D1 still requires the requested strict-versus-recovery choice; no assertion weakening, parser change, dependency pin movement, commit or push. Six pre-existing dirty source/workflow/test paths remain unchanged; sole generated exclusion build-linux-arm64/. Run full/checker31/worktree/actual-base/whitespace after this receipt; no platform/package/release gate is promoted. |

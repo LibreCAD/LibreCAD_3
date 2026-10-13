@@ -65,6 +65,9 @@ make -j 4
 # installed-runtime smoke. Failures/timeouts stay visible but informational.
 CORE_SUITES="BEZIER_CUBIC.*:BEZIER_QAUDRATIC.*:BEZIER_QUADRATIC.*:BlockOps.*:BuilderTest.*:CustomEntityDxfRoundTrip.*:CustomEntityStorageTest.*:DispatchTest.*:DocumentList.*:DocumentSourceTest.*:DxfExportTest.*:DwgImportTest.*:DxfRoundTripTest.*:EIGEN.*:EntityBuilderTest.*:FormatTest.*:IntersectTest.*:LayerOps.*:LoggerTest.*:LuaFixture.*:LuaCustomEntityManager.*:LuaRuntimeTest.*:MathTest.*:Maths.*:Matrix.*:ParityTest.*:PersistenceTest.*:PythonFixture.*:PythonRuntime.*:QM.*:SPLINE.*:ScriptCallbackInvoke.*:ScriptCallbackEquality.*:ScriptCallbackLifecycle.*:ScriptCustomEntity.*:ScriptCustomEntityBuilder.*:ScriptDockTest.*:ScriptObject.*:PyGuiBridgeTest.*:ToolbarButtonTest.*:MWindowTest.*:EventBus.*:SelectionTest.*:entitytest.*:iColor.*:lc__entity__EllipseTest.*:lc__geo__ArcTest.*:lc__geo__CircleTest.*:lc__geo__EllipseTest.*:lc__geo__RegionTest.*:test.*"
 
+# Settings recovery and malformed-toolbar regressions must block packaging too.
+CORE_SUITES="${CORE_SUITES}:UiSettingsTest.*:MTextCodecTest.*"
+
 if [ -x ./bin/lcunittest ]; then
     echo "running lcunittest (core suites — blocking)"
     python3 ../scripts/run_required_gtests.py \

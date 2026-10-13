@@ -44,6 +44,11 @@ private:
 
     /**
     * \brief Get the settings document by reading the given file
+    *
+    * Falls back on the default settings file and then on the settings built into
+    * the binary. The returned document is always a json object, possibly empty:
+    * callers may use HasMember()/AddMember() on it without first checking, which
+    * rapidjson would otherwise assert on.
     */
     rapidjson::Document getSettingsDocument(std::string fileName);
 
