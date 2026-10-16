@@ -229,6 +229,18 @@ public:
 
     void setPainter(LcPainter* painter);
 
+    /**
+     * @brief Set the painter background color
+     * @param color
+     */
+    void setPainterBgColor(lc::Color color);
+
+    /**
+     * @brief Get the painter background color
+     * @returns lc::Color
+     */
+    lc::Color getPainterBgColor();
+
     lc::viewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
     meta::Block_CSPtr viewport() {
@@ -271,6 +283,7 @@ private:
 
     // Painter
     lc::viewer::LcPainter* _painterPtr;
+    lc::Color _painterBgColor;
 
     //Signals
     Nano::Signal<void(event::DrawEvent const& event)> _background;
