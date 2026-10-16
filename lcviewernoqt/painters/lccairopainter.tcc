@@ -632,6 +632,14 @@ public:
         }
     }
 
+    /**
+     * @brief Get the Cairo surface
+     * @returns cairo_surface_t*
+     */
+    cairo_surface_t *getCairoSurface() {
+        return _surface;
+    };
+
     // TODO: move this somewhere more universal but without lib dependencies
     static std::string tolower(std::string data) {
         std::transform(data.begin(), data.end(), data.begin(), ::tolower);
