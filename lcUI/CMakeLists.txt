@@ -331,6 +331,9 @@ if(WITH_UNITTESTS)
     if(WITH_PYTHONSCRIPT)
         add_dependencies(lcui lcuipy_build_tree)
     endif()
+
+    collect_lib("lcui")
+    install_headers("${CMAKE_CURRENT_LIST_DIR}")
 endif(WITH_UNITTESTS)
 
 if (MSVC)
@@ -387,6 +390,7 @@ else()
 	install(FILES default_ui_settings.json settings_schema.json
 		DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
+
 # SETTINGS_PATH is the runtime lookup path baked into the binary and is
 # intentionally empty for portable mode, so it can't be used as a build-time
 # copy destination (file(COPY) rejects an empty DESTINATION).  Copy next to

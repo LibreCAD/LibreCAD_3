@@ -92,3 +92,5 @@ if(WITH_PYTHONSCRIPT)
         "${CMAKE_SOURCE_DIR}/lcadpythonscript")
     target_link_libraries(luacmdinterface lcpythonscript)
 endif()
+
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

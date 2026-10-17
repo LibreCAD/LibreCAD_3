@@ -81,3 +81,6 @@ install(TARGETS persistence
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("persistence")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

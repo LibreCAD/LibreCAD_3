@@ -2,6 +2,8 @@ CMakeFiles/
 *_autogen/
 kerneldev.pro.user
 *.cmake
+!/.cmake
+!/.cmake/*.cmake
 *.autosave
 demo.*
 *generated*

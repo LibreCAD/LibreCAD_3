@@ -305,3 +305,5 @@ target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_compile_features(lcunittest PRIVATE cxx_std_17)
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS}
     ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})
+
+install_headers(${CMAKE_CURRENT_LIST_DIR})
