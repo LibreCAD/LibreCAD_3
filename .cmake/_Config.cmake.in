@@ -4,25 +4,53 @@ include(CMakeFindDependencyMacro)
 set_and_check(@PROJECT_ALIAS@_INC_DIR @PACKAGE_INC_DIR@)
 set_and_check(@PROJECT_ALIAS@_LIB_DIR @PACKAGE_LIB_DIR@)
 set_and_check(@PROJECT_ALIAS@_BIN_DIR @PACKAGE_BIN_DIR@)
-set(@PROJECT_ALIAS@_LIBS "@LC_COLLECT_LIBS@")
+set(@PROJECT_ALIAS@_LIBS)
 set(@PROJECT_ALIAS@_INC_DIRS "@LC_COLLECT_INCDIRS@")
 set(_NAME_ @PROJECT_ALIAS@)
 
 find_dependency(PkgConfig)
 find_dependency(Eigen3)
-
 get_target_property(EIGEN_INC_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-include_directories(SYSTEM ${EIGEN_INC_DIRS} ${${_NAME_}_INC_DIRS})
-# set(TARGET_PROPS) if(WIN32) set(LIB_SHARED
-# "${${_NAME_}_BIN_DIR}/lib${_NAME_}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-# set(LIB_IMP "${LIB_LOC}/lib${_NAME_}${CMAKE_SHARED_LIBRARY_SUFFIX}.a")
-# list(APPEND TARGET_PROPS IMPORTED_IMPLIB "${LIB_IMP}") else() set(LIB_SHARED
-# "${${_NAME_}_LIB_DIR}/lib${_NAME_}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-# endif()
+list(APPEND @PROJECT_ALIAS@_INC_DIRS ${EIGEN_INC_DIRS})
+list(APPEND @PROJECT_ALIAS@_LIBS Eigen3::Eigen)
 
-# add_library(@PROJECT_ALIAS@ SHARED IMPORTED) set_target_properties(
-# @PROJECT_ALIAS@ PROPERTIES IMPORTED_LOCATION "${LIB_SHARED}"
-# INTERFACE_INCLUDE_DIRECTORIES "${${_NAME_}_INC_DIRS};${EIGEN_INC_DIRS}"
-# ${TARGET_PROPS})
+if(NOT TARGET @PROJECT_ALIAS@)
+  set(inc_dirs ${${_NAME_}_INC_DIRS})
+  set(lib_dir ${${_NAME_}_LIB_DIR})
+  set(lib_names "@LC_COLLECT_LIBS@")
+
+  foreach(lib IN LISTS lib_names)
+    set(target_lib @PROJECT_ALIAS@::${lib})
+
+    if(NOT TARGET ${target_lib})
+      add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)
+      if(${lib} STREQUAL "dxfrw")
+        set(suffix ${CMAKE_STATIC_LIBRARY_SUFFIX})
+      else()
+        set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
+      endif()
+      set(libname ${CMAKE_SHARED_LIBRARY_PREFIX}${lib}${suffix})
+      set(location "${lib_dir}/${libname}")
+
+      set_target_properties(
+        ${target_lib} PROPERTIES IMPORTED_LOCATION "${location}"
+                                 INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+      list(APPEND ${_NAME_}_LIBS ${target_lib})
+    endif()
+  endforeach()
+
+  add_library(@PROJECT_ALIAS@ INTERFACE IMPORTED GLOBAL)
+  set_target_properties(
+    @PROJECT_ALIAS@
+    PROPERTIES INTERFACE_LINK_LIBRARIES "${${_NAME_}_LIBS}"
+               INTERFACE_LINK_OPTIONS "-Wl,-rpath,${lib_dir}"
+               INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+
+  unset(target_lib)
+  unset(lib_names)
+  unset(lib_dir)
+  unset(suffix)
+  unset(inc_dirs)
+endif()
 
 check_required_components(@PROJECT_ALIAS@)

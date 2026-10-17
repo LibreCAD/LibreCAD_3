@@ -1,9 +1,9 @@
 set_property(GLOBAL PROPERTY LC_COLLECT_LIBS "")
 set_property(GLOBAL PROPERTY LC_COLLECT_INCDIRS "")
 
-macro(collect_lib)
+macro(collect_lib libname)
   if(WITH_HEADERS)
-    set_property(GLOBAL APPEND PROPERTY LC_COLLECT_LIBS ${ARGN})
+    set_property(GLOBAL APPEND PROPERTY LC_COLLECT_LIBS ${libname})
   endif(WITH_HEADERS)
 endmacro()
 
