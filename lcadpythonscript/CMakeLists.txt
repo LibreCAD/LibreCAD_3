@@ -377,3 +377,6 @@ if(EXISTS "${LC_PYTHON_RUNTIME_DYNLIBS}")
             PATTERN "__pycache__" EXCLUDE)
     endif()
 endif()
+
+collect_lib("lcpythonscript")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")
