@@ -1,12 +1,15 @@
 set_property(GLOBAL PROPERTY LC_COLLECT_LIBS "")
 set_property(GLOBAL PROPERTY LC_COLLECT_INCDIRS "")
 
+# Collect the name of each LibreCAD library that is being built
 macro(collect_lib libname)
   if(WITH_HEADERS)
     set_property(GLOBAL APPEND PROPERTY LC_COLLECT_LIBS ${libname})
   endif(WITH_HEADERS)
 endmacro()
 
+# The hardcoded header file definitions in each package's CMakeLists.txt is not
+# always complete, so we explicitly parse for header files on disk.
 macro(find_header_files subdir header_files)
   file(
     GLOB_RECURSE file_paths CONFIGURE_DEPENDS
@@ -25,6 +28,7 @@ macro(find_header_files subdir header_files)
   endforeach()
 endmacro()
 
+# Install the header files for each LibreCAD module that is being built
 macro(install_headers subdir)
   if(WITH_HEADERS)
     set(SUBDIR ${subdir})
