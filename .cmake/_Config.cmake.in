@@ -17,39 +17,84 @@ list(APPEND @PROJECT_ALIAS@_LIBS Eigen3::Eigen)
 if(NOT TARGET @PROJECT_ALIAS@)
   set(inc_dirs ${${_NAME_}_INC_DIRS})
   set(lib_dir ${${_NAME_}_LIB_DIR})
+  set(bin_dir ${${_NAME_}_BIN_DIR})
   set(lib_names "@LC_COLLECT_LIBS@")
 
   foreach(lib IN LISTS lib_names)
     set(target_lib @PROJECT_ALIAS@::${lib})
 
     if(NOT TARGET ${target_lib})
-      add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)
-      if(${lib} STREQUAL "dxfrw")
-        set(suffix ${CMAKE_STATIC_LIBRARY_SUFFIX})
-      else()
-        set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
-      endif()
-      set(libname ${CMAKE_SHARED_LIBRARY_PREFIX}${lib}${suffix})
-      set(location "${lib_dir}/${libname}")
-
-      set_target_properties(
-        ${target_lib} PROPERTIES IMPORTED_LOCATION "${location}"
-                                 INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
       list(APPEND ${_NAME_}_LIBS ${target_lib})
+
+      if(${lib} STREQUAL "dxfrw")
+        add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)
+        set(suffix ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(prefix ${CMAKE_STATIC_LIBRARY_PREFIX})
+        set(libname ${prefix}${lib}${suffix})
+        set(location "${lib_dir}/${libname}")
+
+        set_target_properties(
+          ${target_lib} PROPERTIES IMPORTED_LOCATION "${location}"
+                                   INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+
+      elseif(WIN32)
+        add_library(${target_lib} SHARED IMPORTED GLOBAL)
+        set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(prefix ${CMAKE_SHARED_LIBRARY_PREFIX})
+        set(imp_suffix ${CMAKE_IMPORT_LIBRARY_SUFFIX})
+        set(imp_prefix ${CMAKE_IMPORT_LIBRARY_PREFIX})
+        set(dll_name ${prefix}${lib}${suffix})
+        set(imp_name ${imp_prefix}${lib}${imp_suffix})
+        set(imp_location "${lib_dir}/${imp_name}")
+        set(dll_location "${bin_dir}/${dll_name}")
+
+        set_target_properties(
+          ${target_lib}
+          PROPERTIES IMPORTED_LOCATION "${dll_location}"
+                     IMPORTED IMPLIB
+                     "${imp_location}" INTERFACE_INCLUDE_DIRECTORIES
+                     "${inc_dirs}")
+
+      else()
+        add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)
+        set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(prefix ${CMAKE_SHARED_LIBRARY_PREFIX})
+        set(libname ${prefix}${lib}${suffix})
+        set(location "${lib_dir}/${libname}")
+
+        set_target_properties(
+          ${target_lib} PROPERTIES IMPORTED_LOCATION "${location}"
+                                   INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+      endif()
+
     endif()
   endforeach()
 
   add_library(@PROJECT_ALIAS@ INTERFACE IMPORTED GLOBAL)
+  if(WIN32)
+    set(rpath_opt "")
+  else()
+    set(rpath_opt "-Wl,-rpath,${lib_dir}")
+  endif()
+
   set_target_properties(
     @PROJECT_ALIAS@
     PROPERTIES INTERFACE_LINK_LIBRARIES "${${_NAME_}_LIBS}"
-               INTERFACE_LINK_OPTIONS "-Wl,-rpath,${lib_dir}"
+               INTERFACE_LINK_OPTIONS "${rpath_opt}"
                INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
 
   unset(target_lib)
   unset(lib_names)
+  unset(libname)
   unset(lib_dir)
   unset(suffix)
+  unset(suffix)
+  unset(imp_prefix)
+  unset(imp_prefix)
+  unset(dll_name)
+  unset(imp_name)
+  unset(imp_location)
+  unset(dll_location)
   unset(inc_dirs)
 endif()
 
