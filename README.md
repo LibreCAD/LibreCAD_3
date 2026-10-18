@@ -135,7 +135,7 @@ endif()
 target_link_libraries(Your_TARGET PRIVATE LibreCAD3)
 
 ```
-Librecad transatives are automatically propagated.
+Librecad transitives are automatically propagated.
 
 ## Tests
 

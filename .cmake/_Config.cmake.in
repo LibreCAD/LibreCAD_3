@@ -51,9 +51,8 @@ if(NOT TARGET @PROJECT_ALIAS@)
         set_target_properties(
           ${target_lib}
           PROPERTIES IMPORTED_LOCATION "${dll_location}"
-                     IMPORTED IMPLIB
-                     "${imp_location}" INTERFACE_INCLUDE_DIRECTORIES
-                     "${inc_dirs}")
+                     IMPORTED_IMPLIB "${imp_location}"
+                     INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
 
       else()
         add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)

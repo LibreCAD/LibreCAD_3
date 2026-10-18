@@ -9,7 +9,7 @@ macro(collect_lib libname)
 endmacro()
 
 # The hardcoded header file definitions in each package's CMakeLists.txt is not
-# always complete, so we explicitly parse for header files on disk.
+# always complete, so we explicitly parse for header files on file.
 macro(find_header_files subdir header_files)
   file(
     GLOB_RECURSE file_paths CONFIGURE_DEPENDS
