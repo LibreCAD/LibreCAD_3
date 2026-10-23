@@ -39,8 +39,6 @@
 # Indent multi-line preprocessor definitions ending with a backslash.
 # Should be used with --convert-tabs for proper results.
 --indent-preproc-define
---indent-preproc-cond
---indent-preproc-block
 #--indent-preprocessor // deprecated in AStyle 2.04 November 2013
 
 # Indent C++ comments beginning in column one.
