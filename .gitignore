@@ -14,6 +14,7 @@ lcdemo*
 *.so
 .idea
 build
+/build-r1/
 install
 release
 CMakeLists.txt.user

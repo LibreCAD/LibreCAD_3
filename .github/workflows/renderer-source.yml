@@ -260,7 +260,9 @@ jobs:
                   command+=['--generator','Visual Studio 17 2022','--cmake-option',
                       'CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',case,'conan_toolchain.cmake').resolve())]
               if platform.startswith('MAC-'):
-                  command+=['--cmake-option','CMAKE_PREFIX_PATH='+os.environ['R1_BREW_PREFIX']]
+                  prefix=os.environ['R1_BREW_PREFIX']
+                  if kind!='cli' or profile.startswith('dual'):prefix=os.environ['QT_ROOT_DIR']+';'+prefix
+                  command+=['--cmake-option','CMAKE_PREFIX_PATH='+prefix]
                   for name,variable in (('LUA_INCLUDE_DIR','R1_LUA_INCLUDE'),('LUA_LIBRARY','R1_LUA_LIBRARY')):
                       command+=['--cmake-option',name+'='+os.environ[variable]]
               if kind!='cli' or profile.startswith('dual'):

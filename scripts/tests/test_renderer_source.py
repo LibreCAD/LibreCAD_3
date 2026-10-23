@@ -304,6 +304,16 @@ class InstalledCliTests(unittest.TestCase):
         main=(inventory.REPO_ROOT/'luacmdinterface/main.cpp').read_text()
         self.assertLess(main.index('writeRendererModuleInventory()'),main.index('// Create Librecad document'))
 
+    @unittest.skipUnless(shutil.which('cmake'),'CMake syntax check requires CMake')
+    def test_runtime_dependency_search_arguments_parse_before_artifact_options(self):
+        source=(inventory.REPO_ROOT/'CMakeLists.txt').read_text()
+        block=source[source.index('    install(RUNTIME_DEPENDENCY_SET LibreCADRuntimeDependencies'):]
+        block=block[:block.index('\nendif()')]
+        (self.root/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.21)\nproject(Syntax NONE)\n'
+            'set(CMAKE_INSTALL_BINDIR bin)\nset(_lc_runtime_dependency_directory_args DIRECTORIES /sdk/bin)\n'+block+'\n')
+        result=subprocess.run(['cmake','-S',str(self.root),'-B',str(self.root/'syntax')],capture_output=True,text=True,timeout=30)
+        self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+
 
 class HostSourceTests(unittest.TestCase):
     def setUp(self):
@@ -320,7 +330,7 @@ class HostSourceTests(unittest.TestCase):
             flags={v[2:].split(':BOOL=')[0]:v.endswith('=ON') for v in command if ':BOOL=' in v}
             self.host_flags=flags
             host_graph(Path(command[command.index('-B')+1]),flags)
-        if where.name in ('libraries','ui-objects','hosts','tests','install-prerequisites'):
+        if where.name.startswith('library-') or where.name in ('ui-objects','hosts','tests','install-prerequisites'):
             build=Path(command[2])
             for target in runner.source_targets(build).values():
                 for a in target.get('artifacts',[]):
@@ -384,6 +394,9 @@ class HostSourceTests(unittest.TestCase):
                     for command,env in self.commands:
                         for name in ('GTEST_FILTER','DISPLAY','PYTHONPATH'):self.assertNotIn(name,env)
                     self.assertEqual('offscreen',self.commands[-1][1]['QT_QPA_PLATFORM'])
+                    libraries=[c for c,e in self.commands if '--target' in c and c[c.index('--target')+1]=='lcluascript']
+                    self.assertEqual(1,len(libraries))
+                    self.assertEqual(['lcluascript','--parallel','3'],libraries[0][libraries[0].index('--target')+1:])
 
     def test_cli_installs_move_before_loading_and_preserve_owned_artifacts(self):
         self.args.host_kind='cli';self.args.host_no_persistence=True;self.args.host_install=True
@@ -433,6 +446,27 @@ class HostSourceTests(unittest.TestCase):
             original=path.read_text();data=json.loads(original);change(data);path.write_text(json.dumps(data))
             with self.subTest(path=path),self.assertRaises(ValueError):runner.host_object_graph(build,flags)
             path.write_text(original)
+
+    def test_in_checkout_generated_object_sources_use_source_not_build_base(self):
+        directory=self.execute();build=directory/'build';reply=build/'.cmake/api/v1/reply'
+        flags=json.loads((directory/'host-build.json').read_text())['options']
+        expected=runner.host_object_graph(build,flags)
+        for name in ('librecad','lcui'):
+            path=reply/(name+'.json');data=json.loads(path.read_text())
+            for item in data['sources']:
+                item['path']=str(Path(item['path']).relative_to(self.root.resolve()))
+            path.write_text(json.dumps(data))
+        model=reply/'model.json';data=json.loads(model.read_text())
+        data['paths']['source']=str(self.root.resolve());model.write_text(json.dumps(data))
+        with patch.object(inventory,'REPO_ROOT',self.root.resolve()):
+            self.assertEqual(expected,runner.host_object_graph(build,flags))
+
+    def test_ci_generated_source_tree_is_ignored_but_renderer_inputs_are_not(self):
+        result=subprocess.run(['git','check-ignore','--no-index','--stdin'],cwd=inventory.REPO_ROOT,
+            input='build-r1/hosts/build/lckernel/build_constants.cpp\nlcrenderer/rhi/src/factory.cpp\n',
+            capture_output=True,text=True,timeout=10)
+        self.assertEqual(0,result.returncode,result.stderr)
+        self.assertEqual(['build-r1/hosts/build/lckernel/build_constants.cpp'],result.stdout.splitlines())
 
     def test_compiled_selection_handles_header_parameterized_and_conditional_tests(self):
         source=(self.root/'fixture-source').resolve();folder=source/'unittest';folder.mkdir(parents=True)
@@ -891,7 +925,7 @@ class SourceWorkflowTests(unittest.TestCase):
                     self.assertEqual(profile,command[command.index('--host-profile')+1])
                     self.assertNotIn('--rhi-contracts',command);self.assertNotIn('--production-builds',command)
                     self.assertNotIn('--provider-prefix',command);self.assertNotIn('--xvfb-run',command)
-                    if platform.startswith('MAC-'):self.assertIn('CMAKE_PREFIX_PATH=/brew',command)
+                    if platform.startswith('MAC-'):self.assertIn('CMAKE_PREFIX_PATH='+('/qt;' if tests=='ON' else '')+'/brew',command)
 
     def test_linux_dependency_arrays_select_cli_without_qt_and_only_requested_gtest(self):
         text=self.text.split('- name: Install Linux binary dependencies',1)[1]

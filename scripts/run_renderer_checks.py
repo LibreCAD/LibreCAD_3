@@ -766,7 +766,9 @@ def host_object_graph(build,flags):
         if targets['lcviewer_opengl']['id'] not in deps or (flags['WITH_RHI_RENDERER'] and targets['lcrenderer_rhi']['id'] in deps):
             raise ValueError('Host must retain its legacy, not RHI, factory dependency')
         if name=='luacmdinterface':continue
-        actual=[(build/s['path']).resolve() for s in target.get('sources',[]) if Path(s['path']).suffix.lower() in ('.o','.obj')]
+        # File API source paths are relative to the top-level source tree,
+        # including generated objects when CI builds inside the checkout.
+        actual=[(inventory.REPO_ROOT/s['path']).resolve() for s in target.get('sources',[]) if Path(s['path']).suffix.lower() in ('.o','.obj')]
         if (objects['id'] not in deps or len(actual)!=len(outputs) or set(actual)!=set(outputs) or
                 any('compileGroupIndex' in s for s in target.get('sources',[])) or name+'_autogen' in targets):
             raise ValueError('Host recompiles or omits shared UI objects: '+name)
@@ -934,7 +936,12 @@ def build_host_source(args):
     # Stage actual dependency targets explicitly; each command keeps its cap and
     # the entire profile shares the same 1,200-second deadline, including tests.
     host_names=(['librecad']+(['lcui'] if tests else []) if ui else [])+(['luacmdinterface'] if cli else [])
-    for label,names in (('libraries',libraries),('ui-objects',['lcui_objects'] if ui else []),
+    # Each independent library retains the command cap; combined cold Python
+    # and Lua compilation must not exhaust it before either target finishes.
+    # All stages still share the original total profile deadline.
+    for name in libraries:
+        step([cmake,'--build',str(build),'--config','Release','--target',name,'--parallel','3'],'library-'+name)
+    for label,names in (('ui-objects',['lcui_objects'] if ui else []),
             ('hosts',host_names),
             ('tests',['lcunittest','lcviewer_cpu_headercheck'] if tests else [])):
         if names:step([cmake,'--build',str(build),'--config','Release','--target',*names,'--parallel','3'],label)
