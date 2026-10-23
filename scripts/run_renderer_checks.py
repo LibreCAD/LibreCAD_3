@@ -578,7 +578,7 @@ def library_profile_graph(build,flags,hosts=False):
     expected={'lcviewer_opengl':flags['WITH_LEGACY_OPENGL_RENDERER'],'lcrenderer_rhi':flags['WITH_RHI_RENDERER'],
               'lcunittest':flags['WITH_UNITTESTS'],'lcluascript':True,'lcscripting':True,'lcviewernoqt':True,'lckernel':True,
               'lcviewer_cpu_headercheck':flags['WITH_UNITTESTS'],'lcbuildcontracttest':flags['WITH_UNITTESTS'],
-              'librecad':ui,'lcui':ui and flags['WITH_UNITTESTS'],'lcui_objects':ui,
+              'librecad':ui,'lcui':ui and flags['WITH_UNITTESTS'],'lcui_objects':ui,'lcui_bindings_objects':ui,
               'luacmdinterface':cli,'persistence':flags['WITH_PERSISTENCE'],
               'lcpythonscript':flags['WITH_PYTHONSCRIPT'],'lcuipy':False,
               'lcuipy_build_tree':flags['WITH_PYTHONSCRIPT'],
@@ -786,23 +786,33 @@ def production_inputs(hosts=False):
 
 def host_object_graph(build,flags):
     """Audit actual File API objects, independent of Make/Ninja/MSVC syntax."""
-    targets=source_targets(build);objects=targets.get('lcui_objects',{});compiled=[];outputs=[]
-    if not flags['WITH_QT_UI'] and any(n in targets for n in ('lcui_objects','lcui','librecad')):
+    targets=source_targets(build);object_names=('lcui_bindings_objects','lcui_objects');compiled=[];outputs=[]
+    if not flags['WITH_QT_UI'] and any(n in targets for n in (*object_names,'lcui','librecad')):
         raise ValueError('CLI-only host graph contains UI targets')
     if flags['WITH_QT_UI']:
-        groups=objects.get('compileGroups',[])
-        if objects.get('type')!='OBJECT_LIBRARY' or not groups or any(
+        for name in object_names:
+            objects=targets.get(name,{})
+            groups=objects.get('compileGroups',[])
+            if objects.get('type')!='OBJECT_LIBRARY' or not groups or any(
                 g.get('language')!='CXX' or int(g.get('languageStandard',{}).get('standard','0'))<17 or
                 (any(d['define'].split('=')[0]=='LC_WITH_PYTHONSCRIPT' for d in g.get('defines',[]))
                  !=flags['WITH_PYTHONSCRIPT']) for g in groups):
-            raise ValueError('Missing UI object C++17/Python compile requirements')
-        if flags['WITH_PYTHONSCRIPT'] and targets['lcuipy_build_tree']['id'] not in {
+                raise ValueError('Missing UI object C++17/Python compile requirements: '+name)
+            if flags['WITH_PYTHONSCRIPT'] and targets['lcuipy_build_tree']['id'] not in {
                 d['id'] for d in objects.get('dependencies',[])}:
-            raise ValueError('UI compilation lacks Python module-generation dependency')
-        compiled=[s for s in objects.get('sources',[]) if 'compileGroupIndex' in s]
+                raise ValueError('UI compilation lacks Python module-generation dependency: '+name)
+            units=[s for s in objects.get('sources',[]) if 'compileGroupIndex' in s]
+            artifacts=[(build/a['path']).resolve() for a in objects.get('artifacts',[])]
+            if not units or len(units)!=len(artifacts):raise ValueError('Missing compiled UI objects: '+name)
+            if name=='lcui_bindings_objects':
+                expected={'lcUI/lua/guibridge.cpp','lcUI/managers/copymanager.cpp'}
+                if flags['WITH_PYTHONSCRIPT']:expected.add('lcUI/python/pyguibridge.cpp')
+                actual={(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve() for s in units}
+                if actual!={(inventory.REPO_ROOT/p).resolve() for p in expected} or name+'_autogen' in targets:
+                    raise ValueError('Binding objects omit, duplicate or generate UI code')
+            compiled+=units;outputs+=artifacts
         names=[Path(s['path']).name for s in compiled]
         inputs=[(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve() for s in compiled]
-        outputs=[(build/a['path']).resolve() for a in objects.get('artifacts',[])]
         if (len(outputs)!=len(compiled) or len(set(outputs))!=len(outputs) or
                 len(set(inputs))!=len(inputs) or any(not (p.is_relative_to(inventory.REPO_ROOT) or p.is_relative_to(build.resolve())) for p in inputs) or
                 any(not p.is_relative_to(build.resolve()) for p in outputs) or
@@ -822,7 +832,7 @@ def host_object_graph(build,flags):
         # including generated objects when CI builds inside the checkout.
         actual=[(inventory.REPO_ROOT/s['path'].replace('$(Configuration)','Release')).resolve()
             for s in target.get('sources',[]) if Path(s['path']).suffix.lower() in ('.o','.obj')]
-        if (objects['id'] not in deps or len(actual)!=len(outputs) or set(actual)!=set(outputs) or
+        if (not {targets[n]['id'] for n in object_names}<=deps or len(actual)!=len(outputs) or set(actual)!=set(outputs) or
                 any('compileGroupIndex' in s for s in target.get('sources',[])) or name+'_autogen' in targets):
             raise ValueError('Host recompiles or omits shared UI objects: '+name)
     for name in ('lckernel','lcviewernoqt'):
@@ -999,7 +1009,8 @@ def build_host_source(args):
     # All stages still share the original total profile deadline.
     for name in libraries:
         step([cmake,'--build',str(build),'--config','Release','--target',name,'--parallel',source_parallelism()],'library-'+name)
-    for label,names in (('ui-objects',['lcui_objects'] if ui else []),
+    for label,names in (('ui-bindings',['lcui_bindings_objects'] if ui else []),
+            ('ui-objects',['lcui_objects'] if ui else []),
             ('hosts',host_names),
             ('tests',['lcunittest','lcviewer_cpu_headercheck'] if tests else [])):
         if names:step([cmake,'--build',str(build),'--config','Release','--target',*names,'--parallel',source_parallelism()],label)
@@ -1009,7 +1020,7 @@ def build_host_source(args):
         # build would regenerate kernel build timestamps and relink consumers.
         step([cmake,'--build',str(build),'--config','Release','--target','tinyspline','--parallel',source_parallelism()],
             'install-prerequisites')
-    artifacts=library_artifacts(build,libraries+(['lcui_objects'] if ui else [])+host_names+(['lcunittest'] if tests else []),
+    artifacts=library_artifacts(build,libraries+(['lcui_bindings_objects','lcui_objects'] if ui else [])+host_names+(['lcunittest'] if tests else []),
         types=('STATIC_LIBRARY','SHARED_LIBRARY','OBJECT_LIBRARY','EXECUTABLE'))
     app=lambda name:build/'bin'/(name+('.exe' if sys.platform=='win32' else ''))
     if cli:

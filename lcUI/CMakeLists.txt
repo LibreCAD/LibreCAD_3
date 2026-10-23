@@ -89,9 +89,12 @@ managers/contextmenumanager.h
 managers/copymanager.h
 managers/metainfomanager.h)
 
-set(UI_srcs
+set(UI_BINDING_srcs
 lua/guibridge.cpp
 managers/copymanager.cpp
+)
+
+set(UI_srcs
 cadmdichild.cpp
 main.cpp
 luainterface.cpp
@@ -168,10 +171,8 @@ managers/metainfomanager.cpp
 # adding conditionally avoids any pybind11 include-path requirement
 # leaking into the OFF-build).
 if(WITH_PYTHONSCRIPT)
-    # Start Lua/Python binding and serialization templates before small UI
-    # sources so they do not become a serial tail after other workers idle.
-    list(INSERT UI_srcs 1 python/pyguibridge.cpp)
-    list(INSERT UI_srcs 3 python/pyeventhooks.cpp python/pypluginloader.cpp python/pyruntimesmoke.cpp)
+    list(APPEND UI_BINDING_srcs python/pyguibridge.cpp)
+    list(PREPEND UI_srcs python/pyeventhooks.cpp python/pypluginloader.cpp python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyguibridge.h)
     # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
     list(APPEND UI_hdrs python/pyeventhooks.h)
@@ -321,30 +322,35 @@ if (MSVC)
     include_directories("${RapidJSON_INCLUDE_DIR}")
 endif()
 
-# Compile the UI (including Qt-generated code) once for the application and
-# optional test library. PIC is required by lcui; dependency usage requirements
-# must reach this target, where Python/Qt headers are actually compiled.
+# Keep template-heavy bindings/serialization separately schedulable, without
+# recompiling either group for the application and optional test library.
+# Only the ordinary group owns Qt-generated code.
 add_library(lcui_objects OBJECT ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
-set_target_properties(lcui_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_compile_definitions(lcui_objects PRIVATE LCUI_BUILDING)
-lc_parallel_msvc_compile(lcui_objects)
-target_link_libraries(lcui_objects PRIVATE ${EXTRA_LIBS})
-if(WITH_PYTHONSCRIPT)
-    add_dependencies(lcui_objects lcuipy_build_tree)
-endif()
+add_library(lcui_bindings_objects OBJECT ${UI_BINDING_srcs})
+set_target_properties(lcui_bindings_objects PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+foreach(ui_objects lcui_objects lcui_bindings_objects)
+    set_target_properties(${ui_objects} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    target_compile_definitions(${ui_objects} PRIVATE LCUI_BUILDING)
+    lc_parallel_msvc_compile(${ui_objects})
+    target_link_libraries(${ui_objects} PRIVATE ${EXTRA_LIBS})
+    if(WITH_PYTHONSCRIPT)
+        add_dependencies(${ui_objects} lcuipy_build_tree)
+    endif()
+endforeach()
+set(UI_OBJECTS $<TARGET_OBJECTS:lcui_objects> $<TARGET_OBJECTS:lcui_bindings_objects>)
 
 # Create library for unit tests without recompiling the application sources.
 if(WITH_UNITTESTS)
-    add_library(lcui SHARED $<TARGET_OBJECTS:lcui_objects>)
+    add_library(lcui SHARED ${UI_OBJECTS})
     set_target_properties(lcui PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
 if (MSVC)
-    add_executable(librecad $<TARGET_OBJECTS:lcui_objects>)
+    add_executable(librecad ${UI_OBJECTS})
 else()
     set(UI_icon "${CMAKE_SOURCE_DIR}/res/librecad.rc")
-    add_executable(librecad ${UI_icon} $<TARGET_OBJECTS:lcui_objects>)
+    add_executable(librecad ${UI_icon} ${UI_OBJECTS})
 endif()
 
 set_target_properties(librecad PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)

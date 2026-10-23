@@ -175,13 +175,15 @@ class RendererBuildOptionsTests(unittest.TestCase):
         self.assertIn('CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"',block);self.assertIn('^Visual Studio',block)
         self.assertIn('target_compile_options(${target} PRIVATE /MP${_jobs})',block)
         self.assertIn('_jobs GREATER 4',block);self.assertIn('_jobs LESS 1',block);self.assertNotIn('CMAKE_CXX_FLAGS',block)
-        self.assertIn('lc_parallel_msvc_compile(lcui_objects)',(ROOT/'lcUI/CMakeLists.txt').read_text())
+        cmake=(ROOT/'lcUI/CMakeLists.txt').read_text()
+        self.assertIn('foreach(ui_objects lcui_objects lcui_bindings_objects)',cmake)
+        self.assertIn('lc_parallel_msvc_compile(${ui_objects})',cmake)
         self.assertIn('lc_parallel_msvc_compile(lcunittest)',(ROOT/'unittest/CMakeLists.txt').read_text())
 
     def test_shared_ui_static_data_has_explicit_export_import_ownership(self):
         header=(ROOT/'lcUI/lcuiexport.h').read_text()
         self.assertIn('#ifdef LCUI_BUILDING',header);self.assertIn('Q_DECL_EXPORT',header);self.assertIn('Q_DECL_IMPORT',header)
-        self.assertIn('target_compile_definitions(lcui_objects PRIVATE LCUI_BUILDING)',(ROOT/'lcUI/CMakeLists.txt').read_text())
+        self.assertIn('target_compile_definitions(${ui_objects} PRIVATE LCUI_BUILDING)',(ROOT/'lcUI/CMakeLists.txt').read_text())
         for path,name in [('dialogs/addlayerdialog.h','AddLayerDialog'),('widgets/layermodel.h','LayerModel'),
                           ('widgets/linepatternpathpart.h','LinePatternPathPart'),('windowmanager.h','WindowManager')]:
             self.assertIn('class LCUI_API '+name,(ROOT/'lcUI'/path).read_text())
@@ -194,16 +196,16 @@ class RendererBuildOptionsTests(unittest.TestCase):
             self.assertIn('#include <ui_'+form+'.h>',source)
             self.assertNotIn('.cpp>',source)
 
-    def test_heavy_python_bindings_are_scheduled_first_without_duplicate_sources(self):
+    def test_heavy_bindings_are_separate_without_duplicate_sources(self):
         cmake=(ROOT/'lcUI/CMakeLists.txt').read_text()
-        self.assertIn('set(UI_srcs\nlua/guibridge.cpp\nmanagers/copymanager.cpp\n',cmake)
+        self.assertIn('set(UI_BINDING_srcs\nlua/guibridge.cpp\nmanagers/copymanager.cpp\n)',cmake)
         body=cmake.split('# Phase 3 PR-3.2',1)[1].split(
             'if(WITH_PYTHONSCRIPT)',1)[1].split('endif()',1)[0]
         with tempfile.TemporaryDirectory(prefix='renderer-source-order-') as tmp:
             script=Path(tmp)/'order.cmake'
-            script.write_text('set(UI_srcs lua/guibridge.cpp managers/copymanager.cpp ordinary.cpp)\n'+body+'\n'
-                'if(NOT UI_srcs STREQUAL "lua/guibridge.cpp;python/pyguibridge.cpp;managers/copymanager.cpp;python/pyeventhooks.cpp;'
-                'python/pypluginloader.cpp;python/pyruntimesmoke.cpp;ordinary.cpp")\n'
+            script.write_text('set(UI_BINDING_srcs lua/guibridge.cpp managers/copymanager.cpp)\nset(UI_srcs ordinary.cpp)\n'+body+'\n'
+                'if(NOT UI_BINDING_srcs STREQUAL "lua/guibridge.cpp;managers/copymanager.cpp;python/pyguibridge.cpp" OR\n'
+                '   NOT UI_srcs STREQUAL "python/pyeventhooks.cpp;python/pypluginloader.cpp;python/pyruntimesmoke.cpp;ordinary.cpp")\n'
                 '  message(FATAL_ERROR "Lost, duplicated or delayed UI sources: ${UI_srcs}")\nendif()\n')
             result=subprocess.run(['cmake','-P',str(script)],capture_output=True,text=True,timeout=30)
             self.assertEqual(0,result.returncode,result.stdout+result.stderr)
@@ -313,8 +315,8 @@ class UiObjectBuildTests(unittest.TestCase):
                 (source / 'res').mkdir()
                 (source / 'res/librecad.rc').write_text('')
                 (source / 'main.cpp').write_text(
-                    'int ui_value();\nint main() { return ui_value() == 17 ? 0 : 1; }\n')
-                (source / 'ui.cpp').write_text(
+                    'int ui_value(); int binding_value();\nint main() { return ui_value() == 17 && binding_value() == 17 ? 0 : 1; }\n')
+                shared_source=(
                     '#include <type_traits>\n'
                     '#ifndef UI_DEPENDENCY\n#error Missing compile usage requirement\n#endif\n'
                     '#if EXPECT_PYTHON\n'
@@ -322,7 +324,9 @@ class UiObjectBuildTests(unittest.TestCase):
                     '#include "python-ready.h"\n'
                     '#elif defined(LC_WITH_PYTHONSCRIPT)\n#error Python leaked into OFF\n#endif\n'
                     'static_assert(std::is_same_v<int, int>, "C++17 dependency");\n'
-                    'int ui_value() { return UI_DEPENDENCY; }\n')
+                    'int FUNCTION() { return UI_DEPENDENCY; }\n')
+                for path,function in [('ui.cpp','ui_value'),('binding.cpp','binding_value')]:
+                    (source/path).write_text(shared_source.replace('FUNCTION',function))
                 (source / 'CMakeLists.txt').write_text(
                     'cmake_minimum_required(VERSION 3.15)\nproject(UiObjects LANGUAGES CXX)\n'
                     'function(lc_parallel_msvc_compile target)'+OPTIONS.read_text().split(
@@ -338,9 +342,9 @@ class UiObjectBuildTests(unittest.TestCase):
                     '  target_compile_definitions(ui_dependencies INTERFACE LC_WITH_PYTHONSCRIPT)\n'
                     '  add_custom_target(lcuipy_build_tree COMMAND "${CMAKE_COMMAND}" -E touch\n'
                     '      "${CMAKE_BINARY_DIR}/python-ready.h")\n'
-                    'endif()\nset(UI_srcs main.cpp ui.cpp)\n'
+                    'endif()\nset(UI_srcs main.cpp ui.cpp)\nset(UI_BINDING_srcs binding.cpp)\n'
                     'set(EXTRA_LIBS ui_dependencies)\n' + declarations +
-                    'foreach(consumer lcui librecad)\n'
+                    'foreach(consumer lcui librecad lcui_bindings_objects)\n'
                     '  if(TARGET ${consumer})\n'
                     '    foreach(generator AUTOMOC AUTOUIC AUTORCC)\n'
                     '      get_target_property(value ${consumer} ${generator})\n'
@@ -369,18 +373,22 @@ class UiObjectBuildTests(unittest.TestCase):
                 targets = {item['name']: json.loads((reply / item['jsonFile']).read_text())
                            for item in model['configurations'][0]['targets']}
                 self.assertEqual('OBJECT_LIBRARY', targets['lcui_objects']['type'])
+                self.assertEqual('OBJECT_LIBRARY', targets['lcui_bindings_objects']['type'])
                 self.assertEqual(tests, 'lcui' in targets)
                 for name in ('librecad', 'lcui') if tests else ('librecad',):
                     target = targets[name]
                     self.assertNotIn(name + '_autogen', targets)
                     self.assertIn('lcui_objects', {dep['id'].split('::', 1)[0]
                                                 for dep in target['dependencies']})
-                    self.assertFalse(any(Path(item['path']).name in ('main.cpp', 'ui.cpp')
+                    self.assertIn('lcui_bindings_objects', {dep['id'].split('::', 1)[0]
+                                                for dep in target['dependencies']})
+                    self.assertFalse(any(Path(item['path']).name in ('main.cpp', 'ui.cpp','binding.cpp')
                                          for item in target.get('sources', [])))
                 if (build / 'compile_commands.json').exists():
                     commands = json.loads((build / 'compile_commands.json').read_text())
-                    self.assertEqual(2, len(commands))
-                    self.assertTrue(all('lcui_objects.dir' in item['command'] for item in commands))
+                    self.assertEqual(3, len(commands))
+                    self.assertEqual(2,sum('lcui_objects.dir' in item['command'] for item in commands))
+                    self.assertEqual(1,sum('lcui_bindings_objects.dir' in item['command'] for item in commands))
                 executable = build / ('librecad.exe' if sys.platform == 'win32' else 'librecad')
                 if not executable.exists():
                     executable = build / 'Debug' / executable.name

@@ -176,29 +176,34 @@ def host_graph(build,flags):
     if flags['WITH_PERSISTENCE']:names.add('persistence')
     if flags['WITH_LUACMDINTERFACE']:names.add('luacmdinterface')
     if flags['WITH_QT_UI']:
-        names.update(('librecad','lcui_objects'))
+        names.update(('librecad','lcui_objects','lcui_bindings_objects'))
         if flags['WITH_UNITTESTS']:names.add('lcui')
     if flags['WITH_PYTHONSCRIPT']:names.add('lcuipy_build_tree')
     model['configurations'][1]['targets']=[dict(name=n,id=n+'::fixture',jsonFile=n+'.json') for n in sorted(names)]
     (reply/'model.json').write_text(json.dumps(model))
     object_paths=['lcUI/CMakeFiles/lcui_objects.dir/'+n+'.o' for n in ('main.cpp','mocs_compilation.cpp','qrc_resource.cpp')]
+    bindings=['lcUI/lua/guibridge.cpp','lcUI/managers/copymanager.cpp']+(
+        ['lcUI/python/pyguibridge.cpp'] if flags['WITH_PYTHONSCRIPT'] else [])
+    binding_paths=['lcUI/CMakeFiles/lcui_bindings_objects.dir/'+Path(n).name+'.o' for n in bindings]
     for name in names:
         path=reply/(name+'.json')
         data=json.loads(path.read_text()) if path.exists() else dict(name=name,sources=[],artifacts=[dict(path='lib/'+name+'.fixture')])
         data.update(id=name+'::fixture',type='SHARED_LIBRARY',dependencies=[])
         if name=='lcviewer_cpu_headercheck':data['type']='OBJECT_LIBRARY'
         if name in ('lckernel','lcviewernoqt'):data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard='14'))]
-        if name=='lcui_objects':
-            data.update(type='OBJECT_LIBRARY',artifacts=[dict(path=p) for p in object_paths],
-                sources=[dict(path=str(build/'lcUI'/n),compileGroupIndex=0) for n in ('main.cpp','mocs_compilation.cpp','qrc_resource.cpp')],
+        if name in ('lcui_objects','lcui_bindings_objects'):
+            sources=([str(build/'lcUI'/n) for n in ('main.cpp','mocs_compilation.cpp','qrc_resource.cpp')]
+                if name=='lcui_objects' else bindings)
+            data.update(type='OBJECT_LIBRARY',artifacts=[dict(path=p) for p in (object_paths if name=='lcui_objects' else binding_paths)],
+                sources=[dict(path=p,compileGroupIndex=0) for p in sources],
                 compileGroups=[dict(language='CXX',languageStandard=dict(standard='17'),
                     defines=[dict(define='LC_WITH_PYTHONSCRIPT')] if flags['WITH_PYTHONSCRIPT'] else [])],
                 dependencies=[dict(id='lcuipy_build_tree::fixture')] if flags['WITH_PYTHONSCRIPT'] else [])
         if name in ('librecad','luacmdinterface','lcui'):
             data['dependencies']=[dict(id='lcviewer_opengl::fixture')]
             if name!='luacmdinterface':
-                data['dependencies'].append(dict(id='lcui_objects::fixture'))
-                data['sources']=[dict(path=str(build/p),isGenerated=True) for p in object_paths]
+                data['dependencies'] += [dict(id=n+'::fixture') for n in ('lcui_objects','lcui_bindings_objects')]
+                data['sources']=[dict(path=str(build/p),isGenerated=True) for p in object_paths+binding_paths]
         if name in ('librecad','luacmdinterface','lcunittest'):
             data.update(type='EXECUTABLE',artifacts=[dict(path='bin/'+name+('.exe' if sys.platform=='win32' else ''))])
         if name=='lcunittest':
@@ -351,7 +356,7 @@ class HostSourceTests(unittest.TestCase):
             flags={v[2:].split(':BOOL=')[0]:v.endswith('=ON') for v in command if ':BOOL=' in v}
             self.host_flags=flags
             host_graph(Path(command[command.index('-B')+1]),flags)
-        if where.name.startswith('library-') or where.name in ('ui-objects','hosts','tests','install-prerequisites'):
+        if where.name.startswith('library-') or where.name in ('ui-bindings','ui-objects','hosts','tests','install-prerequisites'):
             build=Path(command[2])
             for target in runner.source_targets(build).values():
                 for a in target.get('artifacts',[]):
@@ -407,7 +412,11 @@ class HostSourceTests(unittest.TestCase):
                     self.assertFalse(record['phase_or_platform_accepted']);self.assertFalse(record['runtime_graphics_executed'])
                     self.assertEqual(['S.A','S.B'] if tests=='ON' else [],record['executed_non_widget_ids'])
                     self.assertEqual(['UI.Unexecuted'] if tests=='ON' else [],record['unexecuted_widget_ids'])
-                    self.assertIn('lcui_objects',record['artifacts_sha256']);self.assertEqual(1200,record['profile_budget_seconds'])
+                    for name in ('lcui_objects','lcui_bindings_objects'):self.assertIn(name,record['artifacts_sha256'])
+                    self.assertEqual(1200,record['profile_budget_seconds'])
+                    stages=[c[c.index('--target')+1] for c,e in self.commands if '--target' in c]
+                    self.assertLess(stages.index('lcui_bindings_objects'),stages.index('lcui_objects'))
+                    self.assertLess(stages.index('lcui_objects'),stages.index('librecad'))
                     configure=self.commands[0][0]
                     for flag in ('WITH_QT_UI','WITH_LUACMDINTERFACE','WITH_PERSISTENCE'):
                         self.assertIn('-D'+flag+':BOOL=ON',configure)
@@ -468,6 +477,19 @@ class HostSourceTests(unittest.TestCase):
             with self.subTest(path=path),self.assertRaises(ValueError):runner.host_object_graph(build,flags)
             path.write_text(original)
 
+    def test_bindings_group_cannot_be_missing_duplicated_or_regenerated(self):
+        directory=self.execute();build=directory/'build';reply=build/'.cmake/api/v1/reply'
+        flags=json.loads((directory/'host-build.json').read_text())['options']
+        bindings=reply/'lcui_bindings_objects.json';consumer=reply/'librecad.json'
+        for path,change in ((bindings,lambda d:d['sources'].pop()),
+                (bindings,lambda d:d['sources'].append(d['sources'][0])),
+                (bindings,lambda d:d['compileGroups'][0]['languageStandard'].update(standard='14')),
+                (bindings,lambda d:d['sources'][0].update(path='lcUI/main.cpp')),
+                (consumer,lambda d:d['dependencies'].pop())):
+            original=path.read_text();data=json.loads(original);change(data);path.write_text(json.dumps(data))
+            with self.subTest(path=path),self.assertRaises(ValueError):runner.host_object_graph(build,flags)
+            path.write_text(original)
+
     def test_in_checkout_generated_object_sources_use_source_not_build_base(self):
         directory=self.execute();build=directory/'build';reply=build/'.cmake/api/v1/reply'
         flags=json.loads((directory/'host-build.json').read_text())['options']
@@ -492,15 +514,16 @@ class HostSourceTests(unittest.TestCase):
     def test_visual_studio_ui_objects_bind_release_configuration_exactly(self):
         directory=self.execute();build=directory/'build';reply=build/'.cmake/api/v1/reply'
         flags=json.loads((directory/'host-build.json').read_text())['options']
-        objects=reply/'lcui_objects.json';data=json.loads(objects.read_text())
-        for source in data['sources']:source['path']=source['path'].replace('mocs_compilation.cpp','mocs_compilation_Release.cpp')
-        for artifact in data['artifacts']:artifact['path']=artifact['path'].replace('.dir/','.dir/Release/')
-        objects.write_text(json.dumps(data))
+        for name in ('lcui_objects','lcui_bindings_objects'):
+            objects=reply/(name+'.json');data=json.loads(objects.read_text())
+            for source in data['sources']:source['path']=source['path'].replace('mocs_compilation.cpp','mocs_compilation_Release.cpp')
+            for artifact in data['artifacts']:artifact['path']=artifact['path'].replace('.dir/','.dir/Release/')
+            objects.write_text(json.dumps(data))
         for name in ('librecad','lcui'):
             path=reply/(name+'.json');data=json.loads(path.read_text())
             for source in data['sources']:source['path']=source['path'].replace('.dir/','.dir/$(Configuration)/')
             path.write_text(json.dumps(data))
-        self.assertEqual(3,runner.host_object_graph(build,flags)['ui_compilations'])
+        self.assertEqual(5,runner.host_object_graph(build,flags)['ui_compilations'])
         path=reply/'lcui.json';path.write_text(path.read_text().replace('$(Configuration)','Debug'))
         with self.assertRaisesRegex(ValueError,'shared UI objects'):runner.host_object_graph(build,flags)
 
@@ -534,7 +557,7 @@ class HostSourceTests(unittest.TestCase):
                         names=record['artifacts_sha256']
                         self.assertEqual(kind=='ui','librecad' in names);self.assertEqual(kind=='cli','luacmdinterface' in names)
                         self.assertEqual(not no_persistence,'persistence' in names)
-                        self.assertEqual(3 if kind=='ui' else 0,record['ui_objects']['ui_compilations'])
+                        self.assertEqual((6 if 'python' in profile else 5) if kind=='ui' else 0,record['ui_objects']['ui_compilations'])
                         self.assertEqual(['UI.Unexecuted'] if kind=='ui' and tests=='ON' else [],record['unexecuted_widget_ids'])
         self.args.host_kind='ui';self.args.host_no_persistence=True
         with self.assertRaisesRegex(ValueError,'Persistence OFF'):self.execute()
@@ -542,7 +565,7 @@ class HostSourceTests(unittest.TestCase):
     def test_missing_generation_dependency_and_empty_cpu_groups_are_rejected(self):
         self.args.host_profile='legacy-python';directory=self.execute();build=directory/'build'
         reply=build/'.cmake/api/v1/reply';flags=json.loads((directory/'host-build.json').read_text())['options']
-        for name,key in (('lcui_objects','dependencies'),('lcviewernoqt','compileGroups')):
+        for name,key in (('lcui_objects','dependencies'),('lcui_bindings_objects','dependencies'),('lcviewernoqt','compileGroups')):
             path=reply/(name+'.json');original=path.read_text();data=json.loads(original);data[key]=[];path.write_text(json.dumps(data))
             with self.subTest(name=name),self.assertRaises(ValueError):runner.host_object_graph(build,flags)
             path.write_text(original)
