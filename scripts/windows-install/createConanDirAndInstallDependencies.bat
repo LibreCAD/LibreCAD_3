@@ -47,7 +47,9 @@ if errorlevel 1 (popd & exit /b 1)
 cmake --install "%LIBDXFRW_SOURCE%\build" --config Release
 if errorlevel 1 (popd & exit /b 1)
 
-conan install .. -s build_type=Release --build missing
+REM GoogleTest 1.18 requires C++17; keep this dependency-specific so the
+REM application's C++14 library baseline and other package settings stay intact.
+conan install .. -s build_type=Release -s "gtest/*:compiler.cppstd=17" --build missing
 REM Without this the step reported success even when conan had failed, and the
 REM build only broke later, somewhere unrelated.
 if errorlevel 1 (popd & exit /b 1)

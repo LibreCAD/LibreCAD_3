@@ -20,7 +20,10 @@ else()
     set(BUILD_INFO "Release")
 endif()
 
-configure_file(${DIR}/build_constants.cpp.in ${DIR}/build_constants.cpp)
+if(NOT DEFINED OUTPUT_FILE OR NOT IS_ABSOLUTE "${OUTPUT_FILE}")
+    message(FATAL_ERROR "SetBuildInfo requires an absolute build-tree OUTPUT_FILE")
+endif()
+configure_file("${DIR}/build_constants.cpp.in" "${OUTPUT_FILE}")
 
 message(STATUS "Build date: ${BUILD_DATE}")
 message(STATUS "Build info: ${BUILD_INFO}")

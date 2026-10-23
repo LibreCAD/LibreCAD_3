@@ -27,6 +27,7 @@ cmake -S %cd% ^
 -DPython_EXECUTABLE="%Python_EXECUTABLE%" ^
 -DWITH_PYTHONSCRIPT=ON ^
 -DWITH_UNITTESTS=ON ^
+-DWITH_LUACMDINTERFACE=OFF ^
 -Dlibdxfrw_DIR="%cd%\build\dependencies\libdxfrw\lib\cmake\libdxfrw" ^
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ^
 -DWITH_RENDERING_UNITTESTS=OFF ^

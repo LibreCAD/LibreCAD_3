@@ -1,0 +1,715 @@
+name: Renderer feasibility and contract checks
+'on':
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master, ci_dev]
+  workflow_dispatch: null
+
+permissions:
+  contents: read
+
+# R0 runtime scaffold plus initial R1 CPU/source contracts, NOT the full R1-R7
+# option/host/package/hardware aggregate. Source jobs reuse the same runner.
+# No production default is changed and no release/publish credential is present.
+jobs:
+  r1-source:
+    name: R1 initial native source contracts
+    uses: ./.github/workflows/renderer-source.yml
+
+  renderer-contracts:
+    name: Renderer manifest and rejection fixtures
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: python3 -B -m unittest scripts.tests.test_renderer_inventory scripts.tests.test_renderer_cases scripts.tests.test_renderer_build scripts.tests.test_renderer_runner scripts.tests.test_renderer_build_contracts scripts.tests.test_renderer_source scripts.tests.test_renderer_conan_graph scripts.tests.test_renderer_wayland scripts.tests.test_renderer_process scripts.tests.test_restore_renderer_qt683_macos scripts.tests.test_restore_renderer_qt6102_linux_arm64 scripts.tests.test_restore_renderer_swiftshader_windows scripts.tests.test_validate_python_binding_plan
+      # Metadata only: no native tests, provider-route or phase acceptance.
+      - run: python3 -B scripts/validate_renderer_inventory.py --cases unittest/rendering/renderer_cases.json
+
+  renderer-linux:
+    name: R0 Vulkan software / X11 and Wayland (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            arch: x86_64
+            triplet: x86_64-linux-gnu
+          - runner: ubuntu-26.04-arm
+            arch: arm64
+            triplet: aarch64-linux-gnu
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: xcb
+      VK_DRIVER_FILES: /usr/share/vulkan/icd.d/lvp_icd.json
+      # x64 retains its existing distro route; ARM64 overrides this after restore.
+      QT_ROOT_DIR: /usr
+      R0_VULKAN_VALIDATION_MANIFEST: /usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+      R0_VULKAN_VALIDATION_LIBRARY: /usr/lib/${{ matrix.triplet }}/libVkLayer_khronos_validation.so
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install versioned binary Qt / software Vulkan provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            cmake ninja-build g++ xvfb xauth \
+            qt6-base-dev=6.10.2+dfsg-7 qt6-base-private-dev=6.10.2+dfsg-7 \
+            qt6-shadertools-dev=6.10.2-1 qt6-shader-baker=6.10.2-1 \
+            libqt6shadertools6=6.10.2-1 libvulkan-dev=1.4.341.0-1 vulkan-validationlayers=1.4.341.0-1 \
+            mesa-vulkan-drivers=26.0.8-1ubuntu0.3 \
+            libfreetype-dev=2.14.2+dfsg-1ubuntu0.2 libfreetype6=2.14.2+dfsg-1ubuntu0.2 \
+            qt6-wayland=6.10.2-4 libqt6waylandclient6=6.10.2+dfsg-7 \
+            weston=14.0.2-5 xdotool=1:3.20160805.1-5.1build1
+      - name: Cold restore pinned ARM64 Qt modules without a provider cache
+        if: matrix.arch == 'arm64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider_root="$(mktemp -d "$RUNNER_TEMP/renderer-qt6102.XXXXXX")"
+          mkdir "$provider_root/archives"
+          mkdir -p build-rhi
+          python3 -B - "$provider_root/archives" <<'PY'
+          import json, pathlib, shutil, sys, urllib.parse, urllib.request
+          class HttpsOnly(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, fp, code, message, headers, newurl):
+                  if urllib.parse.urlsplit(newurl).scheme != 'https':
+                      raise ValueError('Provider download cannot downgrade HTTPS')
+                  return super().redirect_request(request, fp, code, message, headers, newurl)
+          pin = json.loads(pathlib.Path('lcrenderer/rhi/providers/qt6102-linux-arm64.json').read_text())
+          opener = urllib.request.build_opener(HttpsOnly())
+          for item in pin['packages']:
+              if pathlib.Path(item['filename']).name != item['filename'] or not item['url'].startswith('https://ports.ubuntu.com/ubuntu-ports/pool/'):
+                  raise ValueError('Invalid pinned Ubuntu package path/URL')
+              path = pathlib.Path(sys.argv[1]) / item['filename']
+              with opener.open(item['url'], timeout=60) as response, path.open('xb') as target:
+                  shutil.copyfileobj(response, target)
+          PY
+          python3 -B scripts/restore_renderer_qt6102_linux_arm64.py \
+            --archives "$provider_root/archives" --destination "$provider_root/sdk" \
+            > build-rhi/provider-restore.json 2> build-rhi/provider-restore.stderr.log
+          cp lcrenderer/rhi/providers/qt6102-linux-arm64.json build-rhi/provider-restore.pin.json
+          printf 'QT_ROOT_DIR=%s\nLD_LIBRARY_PATH=%s\nQT_PLUGIN_PATH=%s\n' \
+            "$provider_root/sdk/usr" "$provider_root/sdk/usr/lib/aarch64-linux-gnu" \
+            "$provider_root/sdk/usr/lib/aarch64-linux-gnu/qt6/plugins" >> "$GITHUB_ENV"
+      - name: Require native process cleanup, including real display failure paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v xvfb-run Xvfb xauth
+          python3 -B - <<'PY'
+          import unittest
+          for module in ('scripts.tests.test_renderer_process', 'scripts.tests.test_renderer_cases', 'scripts.tests.test_renderer_build', 'scripts.tests.test_restore_renderer_qt6102_linux_arm64'):
+              suite = unittest.defaultTestLoader.loadTestsFromName(module)
+              if not suite.countTestCases():
+                  raise SystemExit('Required contract module is empty: ' + module)
+              result = unittest.TextTestRunner(verbosity=2).run(suite)
+              if not result.wasSuccessful() or result.skipped:
+                  raise SystemExit('Native contracts failed or skipped: ' + module)
+          PY
+      - name: Require restored ARM64 Qt modules and native provider negatives
+        if: matrix.arch == 'arm64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S lcrenderer/rhi/providerprobe -B build-rhi/provider-modules -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DPROBE_QT_VERSION=6.10.2 \
+            -DPROBE_QT_PREFIX="$QT_ROOT_DIR" -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" \
+            -DQt6_DIR="$QT_ROOT_DIR/lib/aarch64-linux-gnu/cmake/Qt6"
+          cmake --build build-rhi/provider-modules --parallel 3
+          ctest --test-dir build-rhi/provider-modules --show-only=json-v1 > build-rhi/provider-modules/discovery.json
+          python3 -B - <<'PY'
+          import json
+          from pathlib import Path
+          tests = json.loads(Path('build-rhi/provider-modules/discovery.json').read_text())['tests']
+          if len(tests) != 2 or {test['name'] for test in tests} != {'r0-qt-required-modules', 'r0-qt-provider-negatives'}:
+              raise SystemExit('Missing or unexpected native Qt module CTest IDs')
+          PY
+          ctest --test-dir build-rhi/provider-modules --no-tests=error --output-on-failure \
+            --output-junit "$GITHUB_WORKSPACE/build-rhi/provider-modules/results.xml"
+          python3 -B - <<'PY'
+          import xml.etree.ElementTree as ET
+          tests = list(ET.parse('build-rhi/provider-modules/results.xml').getroot().iter('testcase'))
+          if len(tests) != 2 or {test.attrib['name'] for test in tests} != {'r0-qt-required-modules', 'r0-qt-provider-negatives'}:
+              raise SystemExit('Native Qt module CTest execution IDs differ from discovery')
+          if any(test.find(tag) is not None for test in tests for tag in ('failure', 'error', 'skipped')):
+              raise SystemExit('Native Qt module CTest failed or skipped')
+          PY
+          QT_QPA_PLATFORM=offscreen QT_SCALE_FACTOR=1 build-rhi/provider-modules/lcrhiproviderprobe \
+            "$QT_ROOT_DIR" "$QT_ROOT_DIR/lib/aarch64-linux-gnu/qt6/plugins" > build-rhi/provider-modules/modules.json
+      - name: Configure and build standalone proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S lcrenderer/rhi/spike -B build-rhi -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" -DQt6_DIR="$QT_ROOT_DIR/lib/${{ matrix.triplet }}/cmake/Qt6"
+          cmake --build build-rhi --parallel 3
+          dpkg-query -W > build-rhi/provider-packages.txt
+          sha256sum "$VK_DRIVER_FILES" "/usr/lib/${{ matrix.triplet }}/libvulkan_lvp.so" >> build-rhi/provider-packages.txt
+      - name: Audit native CPU font metrics and owned glyph pixels without Qt or a GPU
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S lcrenderer/rhi/fontprobe -B build-rhi/font-probe -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Qt6=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_OpenGL=TRUE \
+            -DCMAKE_DISABLE_FIND_PACKAGE_GLEW=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_glfw3=TRUE
+          cmake --build build-rhi/font-probe --parallel 3
+          ctest --test-dir build-rhi/font-probe --show-only=json-v1 > build-rhi/font-probe/discovery.json
+          python3 -B - <<'PY'
+          import json
+          from pathlib import Path
+          tests = json.loads(Path('build-rhi/font-probe/discovery.json').read_text())['tests']
+          expected = {'r0-freetype-font-contracts', 'r0-font-config-negatives'}
+          if len(tests) != 2 or {test['name'] for test in tests} != expected:
+              raise SystemExit('Missing or unexpected native font CTest IDs')
+          PY
+          ctest --test-dir build-rhi/font-probe --no-tests=error --output-on-failure \
+            --output-junit "$GITHUB_WORKSPACE/build-rhi/font-probe/results.xml"
+          python3 -B - <<'PY'
+          import xml.etree.ElementTree as ET
+          tests = list(ET.parse('build-rhi/font-probe/results.xml').getroot().iter('testcase'))
+          if len(tests) != 2 or {test.attrib['name'] for test in tests} != {'r0-freetype-font-contracts', 'r0-font-config-negatives'}:
+              raise SystemExit('Native font CTest execution IDs differ from discovery')
+          if any(test.find(tag) is not None for test in tests for tag in ('failure', 'error', 'skipped')):
+              raise SystemExit('Native font CTest failed or skipped')
+          PY
+          build-rhi/font-probe/lcfontprobe > build-rhi/font-probe/probe.json
+      - name: Verify exact native API / pixels / exposed resized MDI views
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          for background in opaque transparent; do
+            for scenario in standard lifecycle; do
+              for mode in offscreen widget; do
+                LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+                  --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+                  --app "build-rhi/lcrhispike_$mode" --backend vulkan --device software --mode "$mode" \
+                  --background "$background" --scenario "$scenario" \
+                  --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$source_sha" \
+                  --expected-arch '${{ matrix.arch }}' --expected-qpa xcb \
+                  --report-dir "build-rhi/evidence-$background-$scenario-$mode"
+              done
+            done
+          done
+          for background in opaque transparent; do
+            LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+              --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+              --app build-rhi/lcrhispike_offscreen --backend vulkan --device software --mode offscreen \
+              --background "$background" --scenario recovery \
+              --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$source_sha" \
+              --expected-arch '${{ matrix.arch }}' --expected-qpa xcb \
+              --report-dir "build-rhi/evidence-$background-recovery-offscreen"
+            LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+              --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+              --app build-rhi/lcrhispike_widget --backend vulkan --device software --mode widget \
+              --background "$background" --scenario reparent \
+              --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$source_sha" \
+              --expected-arch '${{ matrix.arch }}' --expected-qpa xcb \
+              --report-dir "build-rhi/evidence-$background-reparent-widget"
+          done
+          for dpr in 1.25 1.5 2; do
+            for scenario in lifecycle reparent; do
+              QT_SCALE_FACTOR="$dpr" LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+                --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+                --app build-rhi/lcrhispike_widget --backend vulkan --device software --mode widget \
+                --background transparent --scenario "$scenario" \
+                --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$source_sha" \
+                --expected-arch '${{ matrix.arch }}' --expected-dpr "$dpr" --expected-qpa xcb \
+                --report-dir "build-rhi/evidence-widget-$scenario-dpr-$dpr"
+            done
+          done
+      - name: Verify terminal widget failures reject successful output
+        shell: bash
+        run: |
+          set -euo pipefail
+          for background in opaque transparent; do
+            for point in render readback shutdown; do
+              LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+                --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+                --app build-rhi/lcrhispike_widget --backend vulkan --device software --mode widget \
+                --background "$background" --scenario standard --expect-failure "$point" \
+                --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$(git rev-parse HEAD)" \
+                --expected-arch '${{ matrix.arch }}' --expected-qpa xcb \
+                --report-dir "build-rhi/evidence-terminal-$background-$point"
+            done
+          done
+      - name: Verify fresh Gui-only build
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S lcrenderer/rhi/spike -B build-rhi-noui -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DWITH_SPIKE_WIDGET=OFF \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" -DQt6_DIR="$QT_ROOT_DIR/lib/${{ matrix.triplet }}/cmake/Qt6"
+          cmake --build build-rhi-noui --parallel 3
+          ldd build-rhi-noui/lcrhispike_offscreen > build-rhi-noui/linked-libraries.txt
+          if grep -E 'Qt6Widgets|libGLEW|libglfw' build-rhi-noui/linked-libraries.txt; then
+            echo 'Unexpected UI/legacy dependency in standalone Gui-only proof' >&2
+            exit 1
+          fi
+          for background in opaque transparent; do
+            for scenario in standard lifecycle recovery; do
+              LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+                --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+                --app build-rhi-noui/lcrhispike_offscreen --backend vulkan --device software --mode offscreen \
+                --background "$background" --scenario "$scenario" \
+                --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$(git rev-parse HEAD)" \
+                --expected-arch '${{ matrix.arch }}' --expected-qpa xcb \
+                --report-dir "build-rhi-noui/evidence-$background-$scenario"
+            done
+          done
+      - name: Verify real Wayland Vulkan with a private compositor seat
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_wayland() {
+            local app="$1" mode="$2" background="$3" scenario="$4" output="$5"
+            shift 5
+            local input=()
+            if [[ "$mode" == widget && "$scenario" == lifecycle ]]; then
+              input=(--weston-input-tool /usr/bin/xdotool)
+            fi
+            LD_DEBUG=libs python3 -B scripts/run_renderer_checks.py --spike --xvfb-run /usr/bin/xvfb-run \
+              --vulkan-validation-manifest "$R0_VULKAN_VALIDATION_MANIFEST" --vulkan-validation-library "$R0_VULKAN_VALIDATION_LIBRARY" \
+              --app "$app" --backend vulkan --device software --mode "$mode" \
+              --background "$background" --scenario "$scenario" --report-dir "$output" \
+              --icd-manifest "$VK_DRIVER_FILES" --expected-revision "$(git rev-parse HEAD)" \
+              --expected-arch '${{ matrix.arch }}' --expected-qpa wayland \
+              --weston /usr/bin/weston --weston-backend x11 "${input[@]}" "$@"
+          }
+          for background in opaque transparent; do
+            for scenario in standard lifecycle; do
+              for mode in offscreen widget; do
+                run_wayland "build-rhi/lcrhispike_$mode" "$mode" "$background" "$scenario" \
+                  "build-rhi/evidence-wayland-$background-$scenario-$mode"
+              done
+            done
+            run_wayland build-rhi/lcrhispike_offscreen offscreen "$background" recovery "build-rhi/evidence-wayland-$background-recovery"
+            run_wayland build-rhi/lcrhispike_widget widget "$background" reparent "build-rhi/evidence-wayland-$background-reparent"
+            for point in render readback shutdown; do
+              run_wayland build-rhi/lcrhispike_widget widget "$background" standard \
+                "build-rhi/evidence-wayland-failure-$background-$point" --expect-failure "$point"
+            done
+            for scenario in standard lifecycle recovery; do
+              run_wayland build-rhi-noui/lcrhispike_offscreen offscreen "$background" "$scenario" \
+                "build-rhi-noui/evidence-wayland-$background-$scenario"
+            done
+          done
+          for dpr in 1.25 1.5 2; do
+            for scenario in lifecycle reparent; do
+              QT_SCALE_FACTOR="$dpr" run_wayland build-rhi/lcrhispike_widget widget transparent "$scenario" \
+                "build-rhi/evidence-wayland-$scenario-dpr-$dpr" --expected-dpr "$dpr"
+            done
+          done
+      - name: Require all 60 clean Vulkan validation receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import argparse, json, math, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          import run_renderer_checks as runner
+          profile = runner.validation_inputs(argparse.Namespace(backend='vulkan',
+              vulkan_validation_manifest=Path(os.environ['R0_VULKAN_VALIDATION_MANIFEST']),
+              vulkan_validation_library=Path(os.environ['R0_VULKAN_VALIDATION_LIBRARY'])))
+          paths = sorted([*Path('build-rhi').glob('evidence-*/run-*/checks.json'),
+                          *Path('build-rhi-noui').glob('evidence-*/run-*/checks.json')])
+          # Exact native tuples, not 60 arbitrary reports with the right QPA counts.
+          expected = {(qpa, build, mode, bg, scenario, 1, None)
+              for qpa in ('xcb', 'wayland') for bg in ('opaque', 'transparent')
+              for build, mode, scenarios in (
+                  ('build-rhi', 'offscreen', ('standard', 'lifecycle', 'recovery')),
+                  ('build-rhi', 'widget', ('standard', 'lifecycle', 'reparent')),
+                  ('build-rhi-noui', 'offscreen', ('standard', 'lifecycle', 'recovery')))
+              for scenario in scenarios}
+          expected.update((qpa, 'build-rhi', 'widget', 'transparent', scenario, dpr, None)
+              for qpa in ('xcb', 'wayland') for dpr in (1.25, 1.5, 2) for scenario in ('lifecycle', 'reparent'))
+          expected.update((qpa, 'build-rhi', 'widget', bg, 'standard', 1, point)
+              for qpa in ('xcb', 'wayland') for bg in ('opaque', 'transparent') for point in ('render', 'readback', 'shutdown'))
+          records, seen = [], set()
+          for path in paths:
+              evidence = json.loads(path.read_text())
+              report = evidence['app_report']
+              runtime, build = report['runtime'], path.parts[0]
+              failure = {'r0-spike-runner': False, 'r0-spike-expected-failure': True}[evidence['evidence_kind']]
+              native = path.parent / ('failure.json' if failure else 'app.json')
+              app = (Path(build) / ('lcrhispike_' + runtime['mode'])).resolve(strict=True)
+              if (json.loads(native.read_text()) != report or runner.sha256(native.read_bytes()) != evidence['app_report_sha256'] or
+                      Path(evidence['command'][0]).resolve(strict=True) != app or runner.sha256(app.read_bytes()) != evidence['app_sha256'] or
+                      report['evidence_kind'] != ('r0-spike-failure' if failure else 'r0-spike') or
+                      type(report['build']['options']['widget']) is not bool or report['build']['options']['widget'] != (build == 'build-rhi')):
+                  raise SystemExit('Changed/misbound native report or build: ' + str(path))
+              point = report['failure']['requested'] if failure else None
+              if failure and point not in ('render', 'readback', 'shutdown'):
+                  raise SystemExit('Unqualified native failure point: ' + str(path))
+              views = [report['failure']['view']] if failure else runtime['views']
+              dprs = [view['dpr'] for view in views]
+              matching = [dpr for dpr in (1, 1.25, 1.5, 2) if dprs and all(type(value) in (int, float) and
+                  math.isfinite(value) and math.isclose(value, dpr, rel_tol=0, abs_tol=0.001) for value in dprs)]
+              if len(matching) != 1:
+                  raise SystemExit('Missing/mixed/unqualified native DPR: ' + str(path))
+              case = (runtime['qpa'], build, runtime['mode'], runtime['background'], runtime['scenario'], matching[0], point)
+              if case not in expected or case in seen:
+                  raise SystemExit('Unexpected or duplicate native case: ' + str(case))
+              seen.add(case)
+              checked = runner.validate_vulkan_validation(profile, path.parent)
+              if evidence.get('vulkan_validation') != checked or evidence['runner_sha256'] != runner.helper_digests()['runner_sha256']:
+                  raise SystemExit('Missing or changed Vulkan validation receipt: ' + str(path))
+              records.append({'checks': str(path), 'checks_sha256': runner.sha256(path.read_bytes()), 'case': case, 'validation': checked})
+          if len(paths) != 60 or seen != expected:
+              raise SystemExit('Incomplete XCB/Wayland Vulkan validation cohorts')
+          Path('build-rhi/vulkan-validation.json').write_text(json.dumps(records, indent=2) + '\n')
+          PY
+      - name: Verify private ARM64 Qt runtime receipts across both QPAs
+        if: matrix.arch == 'arm64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          prefix = Path(os.environ['QT_ROOT_DIR']).resolve(strict=True)
+          paths = sorted([*Path('build-rhi').glob('evidence-*/run-*/checks.json'),
+                          *Path('build-rhi-noui').glob('evidence-*/run-*/checks.json')])
+          counts = {qpa: {'positive': 0, 'expected_failure': 0} for qpa in ('xcb', 'wayland')}
+          records = []
+          for path in paths:
+              raw = path.read_bytes()
+              report = json.loads(raw)
+              qpa = report['app_report']['runtime']['qpa']
+              kind = {'r0-spike-runner': 'positive', 'r0-spike-expected-failure': 'expected_failure'}[report['evidence_kind']]
+              counts[qpa][kind] += 1
+              trace = (path.parent / 'stderr.log').read_text()
+              loaded = sorted({str(Path(p.strip()).resolve(strict=True)) for p in
+                               re.findall(r'calling init:\s+([^\n]*(?:libQt6|/qt6/plugins/)[^\n]*)', trace)})
+              if not loaded or any(not Path(p).is_relative_to(prefix) for p in loaded):
+                  raise SystemExit('Missing/foreign Qt runtime receipt: ' + str(path))
+              records.append({'checks': str(path), 'checks_sha256': hashlib.sha256(raw).hexdigest(),
+                              'loaded_qt_paths': loaded})
+          if len(paths) != 60 or any(value != {'positive': 24, 'expected_failure': 6} for value in counts.values()):
+              raise SystemExit('Incomplete private-provider XCB/Wayland cohorts')
+          Path('build-rhi/private-qt-loader-paths.json').write_text(json.dumps(records, indent=2) + '\n')
+          PY
+      - name: Retain R0 evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: renderer-r0-linux-${{ matrix.arch }}
+          path: |
+            build-rhi/evidence-*/
+            build-rhi/provider-packages.txt
+            build-rhi/provider-restore.json
+            build-rhi/provider-restore.pin.json
+            build-rhi/provider-restore.stderr.log
+            build-rhi/private-qt-loader-paths.json
+            build-rhi/vulkan-validation.json
+            build-rhi/provider-modules/CMakeCache.txt
+            build-rhi/provider-modules/provider-imports.txt
+            build-rhi/provider-modules/discovery.json
+            build-rhi/provider-modules/results.xml
+            build-rhi/provider-modules/modules.json
+            build-rhi/provider-modules/config-negatives-*/
+            build-rhi/provider-modules/Testing/Temporary/
+            build-rhi/CMakeCache.txt
+            build-rhi/source-inputs.sha256
+            build-rhi/font-probe/probe.json
+            build-rhi/font-probe/discovery.json
+            build-rhi/font-probe/results.xml
+            build-rhi/font-probe/source-inputs.sha256
+            build-rhi/font-probe/CMakeCache.txt
+            build-rhi/font-probe/ABeeZee-OFL.txt
+            build-rhi/font-probe/Testing/Temporary/
+            build-rhi-noui/evidence-*/
+            build-rhi-noui/linked-libraries.txt
+          if-no-files-found: warn
+
+  minimum-qt-provider-build:
+    name: R0 Qt 6.8.3 provider (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: mac-arm64
+            qt_arch: clang_64
+            cmake_arch: arm64
+          - runner: macos-15-intel
+            arch: mac-x86_64
+            qt_arch: clang_64
+            cmake_arch: x86_64
+          - runner: windows-2022
+            arch: windows-x86_64
+            qt_arch: win64_msvc2022_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - name: Require painter and source-register contracts without a GPU
+        shell: python -B {0}
+        run: |
+          import unittest
+          for module in ('scripts.tests.test_renderer_cases', 'scripts.tests.test_renderer_build', 'scripts.tests.test_restore_renderer_qt683_macos', 'scripts.tests.test_restore_renderer_qt6102_linux_arm64', 'scripts.tests.test_restore_renderer_swiftshader_windows', 'scripts.tests.test_renderer_inventory.MacModuleProviderTests', 'scripts.tests.test_renderer_inventory.MacModuleCIResultTests'):
+              suite = unittest.defaultTestLoader.loadTestsFromName(module)
+              if not suite.countTestCases():
+                  raise SystemExit('Required contracts are empty: ' + module)
+              result = unittest.TextTestRunner(verbosity=2).run(suite)
+              if not result.wasSuccessful() or result.skipped:
+                  raise SystemExit('Required contracts failed or skipped: ' + module)
+      # Direct pinned entry point avoids the composite wrapper's mutable sub-action.
+      - uses: jurplel/install-qt-action/action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
+        if: runner.os == 'Windows'
+        with:
+          version: '6.8.3'
+          arch: ${{ matrix.qt_arch }}
+          modules: qtshadertools
+          aqtversion: '==3.3.0'
+          py7zrversion: '==1.0.0'
+          cache: false
+      - name: Restore exact Mac required-module archives without a provider cache
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider_root="$(mktemp -d "$RUNNER_TEMP/renderer-qt683.XXXXXX")"
+          mkdir "$provider_root/archives"
+          python3 -B - "$provider_root/archives" <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          pin = json.loads(Path('lcrenderer/rhi/providers/qt683-macos.json').read_text())
+          for item in pin['archives']:
+              subprocess.run(['curl', '--fail', '--location', '--proto', '=https', '--proto-redir', '=https',
+                              '--connect-timeout', '30', '--max-time', '180', '--retry', '3', '--output',
+                              str(Path(sys.argv[1]) / (item['module'] + '.7z')), item['url']], check=True)
+          PY
+          python3 -B scripts/restore_renderer_qt683_macos.py \
+            --archives "$provider_root/archives" --destination "$provider_root/sdk" > "$provider_root/restore.json"
+          # A second real same-version prefix drives the native mixed-provider negatives.
+          python3 -B scripts/restore_renderer_qt683_macos.py \
+            --archives "$provider_root/archives" --destination "$provider_root/compare-sdk" > "$provider_root/compare-restore.json"
+          # Retain identities, not unreviewed redistribution of the Qt SDK payload.
+          mkdir -p build-rhi
+          cp "$provider_root/restore.json" build-rhi/provider-restore.json
+          cp "$provider_root/compare-restore.json" build-rhi/provider-compare-restore.json
+          printf 'QT_ROOT_DIR=%s\nQT_COMPARE_ROOT_DIR=%s\n' \
+            "$provider_root/sdk" "$provider_root/compare-sdk" >> "$GITHUB_ENV"
+      - name: Stage immutable Vulkan headers (no dependency compilation)
+        if: runner.os == 'Windows'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b5c8f996196ba4aa6d8f97e52b5d3b6e70f7e4e2 # v1.4.341
+          path: .r0-vulkan-headers
+          persist-credentials: false
+      - name: Build native macOS targets with minimum Qt
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S lcrenderer/rhi/spike -B build-rhi -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" -DQt6_DIR="$QT_ROOT_DIR/lib/cmake/Qt6" \
+            -DCMAKE_OSX_ARCHITECTURES='${{ matrix.cmake_arch }}'
+          cmake --build build-rhi --parallel 3
+          # Native CPU module checks are separate from any graphics/session acceptance.
+          cmake -S lcrenderer/rhi/providerprobe -B build-rhi/provider-modules \
+            -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DPROBE_QT_VERSION=6.8.3 \
+            -DPROBE_QT_PREFIX="$QT_ROOT_DIR" -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" \
+            -DPROBE_OTHER_QT="$QT_COMPARE_ROOT_DIR/lib/cmake/Qt6" \
+            -DQt6_DIR="$QT_ROOT_DIR/lib/cmake/Qt6" -DCMAKE_OSX_ARCHITECTURES='${{ matrix.cmake_arch }}'
+          cmake --build build-rhi/provider-modules --parallel 3
+          shasum -a 256 lcrenderer/rhi/providerprobe/CMakeLists.txt \
+            lcrenderer/rhi/providerprobe/providerprobe.cpp \
+            lcrenderer/rhi/providerprobe/check_config.py \
+            lcrenderer/rhi/spike/cmake/LegacyQtMacSdk.cmake > build-rhi/provider-modules/source-inputs.sha256
+          python3 -B - <<'PY'
+          import json
+          from pathlib import Path
+          pin = json.loads(Path('lcrenderer/rhi/providers/qt683-macos.json').read_text())
+          build = json.loads(Path('build-rhi/build.json').read_text())
+          if build['qt_version'] != pin['qt_version'] or build['qsb_sha256'] != pin['qsb_sha256']:
+              raise SystemExit('Minimum-Qt Mac tool/provider identity differs from the recorded pin')
+          PY
+          cp lcrenderer/rhi/providers/qt683-macos.json build-rhi/provider-pin.json
+      - name: Require native macOS Qt modules without a graphics device
+        if: runner.os == 'macOS'
+        env:
+          EXPECTED_RENDERER_ARCH: ${{ matrix.cmake_arch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ctest --test-dir build-rhi/provider-modules --show-only=json-v1 > build-rhi/provider-modules/discovery.json
+          ctest --test-dir build-rhi/provider-modules --no-tests=error --output-on-failure \
+            --output-junit "$GITHUB_WORKSPACE/build-rhi/provider-modules/results.xml"
+          QT_QPA_PLATFORM=offscreen QT_SCALE_FACTOR=1 build-rhi/provider-modules/lcrhiproviderprobe \
+            "$QT_ROOT_DIR" "$QT_ROOT_DIR/plugins" > build-rhi/provider-modules/modules.json
+          python3 -B - <<'PY'
+          import ctypes, errno, hashlib, json, os, platform
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          def require(ok, reason):
+              if not ok:
+                  raise SystemExit('R0 Mac module gate: ' + reason)
+          def sha(path):
+              with path.open('rb') as stream:
+                  value = hashlib.sha256()
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                      value.update(chunk)
+                  return value.hexdigest()
+          def read(path):
+              return json.loads(Path(path).read_text())
+          arch = os.environ['EXPECTED_RENDERER_ARCH']
+          require(platform.system() == 'Darwin' and arch in ('arm64', 'x86_64') and platform.machine() == arch,
+                  'requires the requested native Mac host architecture')
+          translated = ctypes.c_int()
+          size = ctypes.c_size_t(ctypes.sizeof(translated))
+          sysctl = ctypes.CDLL(None, use_errno=True).sysctlbyname
+          sysctl.argtypes = [ctypes.c_char_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_size_t), ctypes.c_void_p, ctypes.c_size_t]
+          sysctl.restype = ctypes.c_int
+          ctypes.set_errno(0)
+          status = sysctl(b'sysctl.proc_translated', ctypes.byref(translated), ctypes.byref(size), None, 0)
+          native_errno = ctypes.get_errno()
+          require((status == 0 and size.value == ctypes.sizeof(translated) and translated.value == 0)
+                  or (status == -1 and native_errno == errno.ENOENT), 'translated or unqualified native process')
+          prefix = Path(os.environ['QT_ROOT_DIR']).resolve(strict=True)
+          compare = Path(os.environ['QT_COMPARE_ROOT_DIR']).resolve(strict=True)
+          require(prefix != compare, 'comparison provider must be distinct')
+          pin_path = Path('lcrenderer/rhi/providers/qt683-macos.json')
+          pin = read(pin_path)
+          for sdk, name in ((prefix, 'provider-restore.json'), (compare, 'provider-compare-restore.json')):
+              data = read('build-rhi/' + name)
+              require(data['pin_sha256'] == sha(pin_path) and data['restore_helper_sha256'] == sha(Path('scripts/restore_renderer_qt683_macos.py'))
+                      and Path(data['destination']).resolve() == sdk and data['qt_version'] == pin['qt_version']
+                      and data['qsb_version'] == 'qsb ' + pin['qt_version'] and data['references'] == pin['reference_files_sha256']
+                      and data['archives'] == {p['module'] + '.7z': p['sha256'] for p in pin['archives']},
+                      'restored input/helper/provider identity mismatch')
+              for ref, expected in pin['reference_files_sha256'].items():
+                  path = (sdk / ref).resolve(strict=True)
+                  require(path.is_relative_to(sdk) and sha(path) == expected, 'provider reference changed')
+          root = Path('build-rhi/provider-modules')
+          expected = {'r0-qt-required-modules', 'r0-qt-provider-negatives'}
+          tests = read(root / 'discovery.json')['tests']
+          require(len(tests) == 2 and {t['name'] for t in tests} == expected, 'CTest discovery IDs differ')
+          tests = list(ET.parse(root / 'results.xml').getroot().iter('testcase'))
+          require(len(tests) == 2 and {t.attrib['name'] for t in tests} == expected
+                  and all(t.get('status') == 'run' for t in tests)
+                  and not any(t.find(tag) is not None for t in tests for tag in ('failure', 'error', 'skipped')),
+                  'CTest failed, skipped or has different IDs')
+          report = read(root / 'modules.json')
+          require(type(report['schema_version']) is int and report['schema_version'] == 1
+                  and report['evidence_kind'] == 'r0-macos-qt-modules' and report['architecture'] == arch
+                  and report['qt_build_version'] == report['qt_runtime_version'] == pin['qt_version']
+                  and report['qpa'] == 'offscreen' and Path(report['qt_prefix']).resolve() == prefix
+                  and Path(report['plugin_directory']).resolve() == prefix / 'plugins'
+                  and report['application_created_graphics_device'] is False and report['legacy_context_qualified'] is False,
+                  'module producer/version/architecture/scope mismatch')
+          files = {'QtCore', 'QtGui', 'QtWidgets', 'QtSvg', 'QtSvgWidgets', 'QtUiTools', 'QtTest',
+                   'QtOpenGL', 'QtOpenGLWidgets', 'libqoffscreen.dylib', 'libqsvg.dylib', 'libqsvgicon.dylib'}
+          checks = {'qt-build-runtime-version', 'cpu-offscreen-qpa', 'private-rhi-header-link', 'legacy-widget-link-only',
+                    'legacy-opengl-link-only', 'svg-widget-link-only', 'form-buffer-open', 'uitools-form-load',
+                    'uitools-properties', 'test-signal-spy-valid', 'test-signal-observed', 'svg-document',
+                    'svg-cpu-pixel', 'svg-buffer-open', 'svg-image-plugin-pixel', 'private-asset-directory',
+                    'svg-icon-write', 'svg-icon-plugin-pixel', 'native-loader-map-readable', 'loaded-qt-paths-private'} | files
+          require(len(report['checks']) == 32 and set(report['checks']) == checks, 'module check IDs differ')
+          paths = [Path(p).resolve(strict=True) for p in report['loaded_qt_paths']]
+          require(paths and len(paths) == len(set(paths)) and all(p.is_file() and p.is_relative_to(prefix) for p in paths)
+                  and files <= {p.name for p in paths}, 'missing or foreign Qt runtime paths')
+          result = dict(scope='R0 native Mac CPU modules only; not graphics/platform/release acceptance',
+                        translation_probe=dict(status=status, errno=native_errno, value=translated.value if status == 0 else None),
+                        architecture=arch, pin_sha256=sha(pin_path), app_sha256=sha(root / 'lcrhiproviderprobe'),
+                        report_sha256=sha(root / 'modules.json'), ctest_ids=sorted(expected), checks=32,
+                        loaded_qt_files={str(p): sha(p) for p in paths})
+          (root / 'module-identity.json').write_text(json.dumps(result, indent=2) + '\n')
+          PY
+      - name: Restore pinned Windows Vulkan inputs and probe the native loader
+        if: runner.os == 'Windows'
+        shell: python -B {0}
+        run: |
+          import json, os, shutil, subprocess, sys, tempfile, urllib.parse, urllib.request
+          from pathlib import Path
+          class HttpsOnly(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, fp, code, message, headers, newurl):
+                  if urllib.parse.urlsplit(newurl).scheme != 'https':
+                      raise ValueError('Provider download cannot downgrade HTTPS')
+                  return super().redirect_request(request, fp, code, message, headers, newurl)
+          pin_path = Path('lcrenderer/rhi/providers/swiftshader-windows-x64.json')
+          pin = json.loads(pin_path.read_text())
+          item = pin['archive']
+          if not item['url'].startswith('https://storage.googleapis.com/chrome-for-testing-public/'):
+              raise ValueError('Unexpected pinned provider host')
+          root = Path(tempfile.mkdtemp(prefix='renderer-winvulkan-', dir=os.environ['RUNNER_TEMP']))
+          archive = root / 'chrome-headless-shell-win64.zip'
+          with urllib.request.build_opener(HttpsOnly()).open(item['url'], timeout=120) as response, archive.open('xb') as target:
+              shutil.copyfileobj(response, target)
+          evidence = Path('build-rhi/windows-vulkan-inputs')
+          evidence.mkdir(parents=True)
+          shutil.copy2(pin_path, evidence / 'pin.json')
+          command = [sys.executable, '-B', 'scripts/restore_renderer_swiftshader_windows.py',
+                     '--archive', str(archive), '--destination', str(root / 'inputs'), '--native-probe']
+          with (evidence / 'restore.json').open('wb') as out, (evidence / 'restore.stderr.log').open('wb') as err:
+              subprocess.run(command, check=True, stdout=out, stderr=err, timeout=60)
+          # Loader input preparation is NOT an ICD/device/graphics or platform pass.
+      - name: Build native Windows targets with minimum Qt
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -S lcrenderer/rhi/spike -B build-rhi -G 'Visual Studio 17 2022' -A x64 `
+            "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR" `
+            "-DVulkan_INCLUDE_DIR=$env:GITHUB_WORKSPACE/.r0-vulkan-headers/include" `
+            "-DSPIKE_VULKAN_INCLUDE_DIR=$env:GITHUB_WORKSPACE/.r0-vulkan-headers/include"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build-rhi --config Release --parallel 3
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Retain provider/build/CPU evidence; not graphics acceptance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: renderer-r0-minimum-qt-build-${{ matrix.arch }}
+          path: |
+            build-rhi/CMakeCache.txt
+            build-rhi/build.json
+            build-rhi/source-inputs.sha256
+            build-rhi/.qsb/
+            build-rhi/provider-pin.json
+            build-rhi/provider-restore.json
+            build-rhi/provider-compare-restore.json
+            build-rhi/provider-modules/CMakeCache.txt
+            build-rhi/provider-modules/provider-imports.txt
+            build-rhi/provider-modules/source-inputs.sha256
+            build-rhi/provider-modules/discovery.json
+            build-rhi/provider-modules/results.xml
+            build-rhi/provider-modules/modules.json
+            build-rhi/provider-modules/module-identity.json
+            build-rhi/provider-modules/config-negatives-*/
+            build-rhi/provider-modules/Testing/Temporary/
+            build-rhi/windows-vulkan-inputs/
+          if-no-files-found: warn
+
+  r0-scaffold:
+    name: R0 scaffolding (not migration acceptance)
+    if: always()
+    needs: [renderer-contracts, renderer-linux, minimum-qt-provider-build]
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Require every scaffold job
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          results = json.loads(os.environ['NEEDS_JSON'])
+          if not results or any(item['result'] != 'success' for item in results.values()):
+              raise SystemExit('R0 scaffold job failed/missing/skipped: ' + str(results))
+          print('R0 scaffolding passed; cross-platform GPU, production and package gates remain open')
+          PY

@@ -2,6 +2,9 @@ CMakeFiles/
 *_autogen/
 kerneldev.pro.user
 *.cmake
+# Hand-maintained R0 source, required by the standalone renderer CMake project.
+!lcrenderer/rhi/spike/cmake/LegacyQtMacSdk.cmake
+!lcviewernoqt/cmake/RendererOptions.cmake
 *.autosave
 demo.*
 *generated*

@@ -14,7 +14,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Svg UiTools Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Svg UiTools Widgets)
+find_package(OpenGL REQUIRED)
 
 # HEADERS
 set(UI_hdrs
@@ -285,6 +286,9 @@ link_directories(${PANGO_LIBRARY_DIRS})
 set(EXTRA_LIBS
         lcluascript
         lcviewernoqt
+        lcviewer_opengl
+        OpenGL::GL
+        GLEW::GLEW
         persistence
         lckernel
         ${LUA_LIBRARIES}
@@ -293,6 +297,7 @@ set(EXTRA_LIBS
         Qt6::Widgets
         Qt6::UiTools
         Qt6::OpenGL
+        Qt6::OpenGLWidgets
 		Qt6::Svg
         ${APR_LIBRARIES})
 
@@ -316,29 +321,33 @@ if (MSVC)
     include_directories("${RapidJSON_INCLUDE_DIR}")
 endif()
 
-#Create library for unit tests
+# Compile the UI (including Qt-generated code) once for the application and
+# optional test library. PIC is required by lcui; dependency usage requirements
+# must reach this target, where Python/Qt headers are actually compiled.
+add_library(lcui_objects OBJECT ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+set_target_properties(lcui_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(lcui_objects PRIVATE ${EXTRA_LIBS})
+if(WITH_PYTHONSCRIPT)
+    add_dependencies(lcui_objects lcuipy_build_tree)
+endif()
+
+# Create library for unit tests without recompiling the application sources.
 if(WITH_UNITTESTS)
-    add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
-    set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
+    add_library(lcui SHARED $<TARGET_OBJECTS:lcui_objects>)
+    set_target_properties(lcui PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
     target_link_libraries(lcui ${EXTRA_LIBS})
-    if(WITH_PYTHONSCRIPT)
-        add_dependencies(lcui lcuipy_build_tree)
-    endif()
 endif(WITH_UNITTESTS)
 
 if (MSVC)
-    add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+    add_executable(librecad $<TARGET_OBJECTS:lcui_objects>)
 else()
     set(UI_icon "${CMAKE_SOURCE_DIR}/res/librecad.rc")
-    add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+    add_executable(librecad ${UI_icon} $<TARGET_OBJECTS:lcui_objects>)
 endif()
 
+set_target_properties(librecad PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})
-if(WITH_PYTHONSCRIPT)
-    add_dependencies(librecad lcuipy_build_tree)
-endif()
-
 if(WITH_PYTHONSCRIPT AND WITH_PERSISTENCE)
     set_source_files_properties(python/pyruntimesmoke.cpp PROPERTIES
         COMPILE_DEFINITIONS LC_PYTHON_SMOKE_WITH_PERSISTENCE)

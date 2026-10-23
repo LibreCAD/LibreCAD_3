@@ -1,0 +1,14 @@
+// One independently compiled CPU-facing header; never linked into production.
+#include "@LC_CPU_HEADER@"
+
+#ifdef _MSVC_LANG
+static_assert(_MSVC_LANG == 201402L, "CPU public headers require exactly C++14 in this check");
+#else
+static_assert(__cplusplus == 201402L, "CPU public headers require exactly C++14 in this check");
+#endif
+
+#if defined(QT_VERSION) || defined(GL_VERSION) || defined(GL_VERSION_1_0) || defined(GL_ES_VERSION_2_0) || \
+    defined(GLM_VERSION) || defined(GLFW_VERSION_MAJOR) || defined(VK_VERSION_1_0) || \
+    defined(CAIRO_VERSION) || defined(PY_MAJOR_VERSION) || defined(PYBIND11_VERSION_MAJOR)
+#error CPU public headers must not expose graphics or Python SDK headers
+#endif

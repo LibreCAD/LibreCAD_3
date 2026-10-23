@@ -6,7 +6,7 @@ message("***** LibreCAD unit tests *****")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTORCC ${WITH_QT_UI})
 
 
 # Eigen 3
@@ -17,8 +17,10 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-# LibbDXFRW
-find_package(libdxfrw REQUIRED)
+# Persistence owns the DXF dependency; a CPU/RHI test-only build does not need it.
+if(WITH_PERSISTENCE)
+    find_package(libdxfrw REQUIRED)
+endif()
 
 FIND_PACKAGE ( Threads REQUIRED )
 
@@ -39,12 +41,41 @@ include_directories(${GLEW_INCLUDE_DIR})
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
+find_package(GTest REQUIRED)
 
 if (MSVC)
 	#gtest
-	find_package(GTest REQUIRED)
 	include_directories(${GTest_INCLUDE_DIRS})
 	include_directories(${RapidJSON_INCLUDE_DIRS})
+endif()
+
+# Source/build contracts are a separate, Qt-free executable. The shared runner
+# prepares real CMake cases; these native IDs inspect their unmodified outputs.
+set(_build_contract_fixture "${CMAKE_SOURCE_DIR}/unittest/rendering/fixtures/renderer_contracts.json")
+file(SHA256 "${_build_contract_fixture}" BUILD_CONTRACT_FIXTURE_SHA256)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_build_contract_fixture}")
+configure_file("${_build_contract_fixture}" renderer-build-contracts.json COPYONLY)
+set(BUILD_CONTRACT_SOURCES "")
+foreach(_input CMakeLists.txt lcviewernoqt/cmake/RendererOptions.cmake unittest/CMakeLists.txt
+        unittest/rendering/buildcontracts.cpp unittest/rendering/buildcontracts_config.h.in)
+    file(SHA256 "${CMAKE_SOURCE_DIR}/${_input}" _digest)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/${_input}")
+    string(APPEND BUILD_CONTRACT_SOURCES "${_digest}  ${_input}\n")
+endforeach()
+configure_file(rendering/buildcontracts_config.h.in buildcontracts_config.h @ONLY)
+add_executable(lcbuildcontracttest rendering/buildcontracts.cpp)
+target_compile_features(lcbuildcontracttest PRIVATE cxx_std_17)
+target_include_directories(lcbuildcontracttest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+# FindGTest before CMake 3.20 provides GTest::GTest, not GTest::gtest.
+if(TARGET GTest::gtest)
+    set(_build_contract_gtest GTest::gtest)
+else()
+    set(_build_contract_gtest GTest::GTest)
+endif()
+target_link_libraries(lcbuildcontracttest PRIVATE ${_build_contract_gtest} Boost::filesystem)
+unset(_build_contract_gtest)
+if(MSVC)
+    target_compile_options(lcbuildcontracttest PRIVATE /utf-8)
 endif()
 
 
@@ -74,6 +105,7 @@ lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
+lcviewernoqt/testrenderframe.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
@@ -91,6 +123,10 @@ luacmdinterface/dispatch_test.cpp
 # reader can consume.  Independent of the Python bindings (unlike the
 # WITH_PYTHONSCRIPT persistence round-trip test below); needs only libdxfrw
 # runtime.
+if(WITH_CAIRO)
+    list(APPEND src lcviewernoqt/testcairofactory.cpp)
+endif()
+
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
     set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
@@ -216,11 +252,16 @@ if(WITH_RENDERING_UNITTESTS)
     link_directories(${Boost_LIBRARY_DIRS})
 
     find_package(glfw3 3.2 REQUIRED)
+    find_package(OpenGL REQUIRED)
+    find_package(GLEW REQUIRED)
 
     set(EXTRA_LIBS
         ${EXTRA_LIBS}
         ${Boost_LIBRARIES}
         glfw
+        lcviewer_opengl
+        GLEW::GLEW
+        OpenGL::GL
     )
 
     set(src

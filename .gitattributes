@@ -1,1 +1,12 @@
 *.dxf binary
+
+# Pinned renderer contract inputs must retain identical bytes across checkouts.
+/lcviewernoqt/painters/lcpainter.h text eol=lf
+/unittest/rendering/renderer_cases.json text eol=lf
+/unittest/rendering/fixtures/** text eol=lf
+/LICENSE text eol=lf
+/unittest/rendering/res/1.dxf -text
+/unittest/rendering/res/2.dxf -text
+/lcviewernoqt/painters/opengl/resources/fonts/ABeeZee-Regular.otf binary
+/lcUIPy/plugins/rectangle/plugin.py text eol=lf
+/lcUILua/plugins_disabled/rectangle/plugin.lua text eol=lf

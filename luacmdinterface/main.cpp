@@ -16,6 +16,7 @@
 #include <GLFW/glfw3.h>
 
 #include "dispatch.h"
+#include "moduleinventory.h"
 
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <lcpython.h>
@@ -112,6 +113,12 @@ int main(int argc, char** argv) {
     }
 
     if (vm.count("help") != 0u) {
+#ifdef _WIN32
+        if (!writeRendererModuleInventory()) {
+            std::cerr << "Could not record loaded renderer modules\n";
+            return 2;
+        }
+#endif
         std::cout << desc << "\n";
         return 1;
     }

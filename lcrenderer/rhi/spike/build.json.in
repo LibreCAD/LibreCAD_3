@@ -1,0 +1,16 @@
+{
+  "source_revision": "@SOURCE_REVISION@",
+  "source_dirty": @SOURCE_DIRTY@,
+  "source_diff_sha256": "@SOURCE_DIFF_SHA256@",
+  "source_inputs_sha256": "@SOURCE_INPUTS_SHA256@",
+  "source_inputs": @INPUT_MANIFEST_JSON@,
+  "qt_version": "@Qt6_VERSION@",
+  "qsb_version": "@QSB_VERSION@",
+  "qsb_sha256": "@QSB_SHA256@",
+  "compiler": @COMPILER@,
+  "generator": @GENERATOR_JSON@,
+  "deployment_target": @DEPLOYMENT_JSON@,
+  "target_arch": @TARGET_ARCH@,
+  "options": {"standalone_spike": true, "widget": @WIDGET_FLAG@, "production_rhi": false,
+              "legacy_agl_link_workaround": @SPIKE_AGL_COMPAT@}
+}

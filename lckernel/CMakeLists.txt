@@ -30,7 +30,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # SOURCE FILES
 set(lckernel_srcs
-build_constants.cpp
+"${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp"
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -274,8 +274,11 @@ endif()
 #Create version.cpp
 add_custom_command(
         PRE_BUILD
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp
-        COMMAND ${CMAKE_COMMAND} -DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -DSETTINGS_PATH=${SETTINGS_PATH} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp"
+        COMMAND "${CMAKE_COMMAND}" "-DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH}"
+            "-DDIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DSETTINGS_PATH=${SETTINGS_PATH}"
+            "-DOUTPUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
         DEPENDS always_rebuild
 )
 

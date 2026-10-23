@@ -1,0 +1,87 @@
+{
+  "format": "librecad-r0-provider-v1",
+  "scope": "Standalone R0 provider inputs; not release or package acceptance",
+  "qt_version": "6.8.3",
+  "package_version": "6.8.3-0-202503201723",
+  "platform": "macos",
+  "payload_architectures": [
+    "arm64",
+    "x86_64"
+  ],
+  "components": [
+    "Core",
+    "Gui",
+    "GuiPrivate",
+    "Widgets",
+    "Svg",
+    "SvgWidgets",
+    "UiTools",
+    "Test",
+    "OpenGL",
+    "OpenGLWidgets",
+    "ShaderTools"
+  ],
+  "metadata_url": "https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_683/qt6_683/Updates.xml",
+  "metadata_sha256": "b62cef0fe5cc68d9fc08931f9f13869329cec8f413af182a2e906dca3d72246d",
+  "qsb_sha256": "b5cfd05045ca18485ac897001e53df88d28c72472fd002e99173eb11c212eab3",
+  "archives": [
+    {
+      "module": "qtbase",
+      "url": "https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_683/qt6_683/qt.qt6.683.clang_64/6.8.3-0-202503201723qtbase-MacOS-MacOS_14-Clang-MacOS-MacOS_14-X86_64-ARM64.7z",
+      "bytes": 189943470,
+      "published_sha1": "a1fa62a9926faf80bc4b0ad51c60f8ca77b70d93",
+      "sha256": "c4dfc40f1be702eaa08e08cf87a749c44c55e5eb09e46a7933f18ab4b7ca7ac7"
+    },
+    {
+      "module": "qtshadertools",
+      "url": "https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_683/qt6_683/qt.qt6.683.addons.qtshadertools.clang_64/6.8.3-0-202503201723qtshadertools-MacOS-MacOS_14-Clang-MacOS-MacOS_14-X86_64-ARM64.7z",
+      "bytes": 21677985,
+      "published_sha1": "53fe9deb2de22ba484c9420404534f2cb56604ce",
+      "sha256": "89718349bad70845f023012f426e984f08d2e67c7721d82545b120a93eda63c7"
+    },
+    {
+      "module": "qtsvg",
+      "url": "https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_683/qt6_683/qt.qt6.683.clang_64/6.8.3-0-202503201723qtsvg-MacOS-MacOS_14-Clang-MacOS-MacOS_14-X86_64-ARM64.7z",
+      "bytes": 4143407,
+      "published_sha1": "54717f5ea2103c8820e524f14a071e64e3a6992f",
+      "sha256": "14f0e28662ba3d2d6b297916746e5b45197cf5cca408de7c5249ce628aecdd02"
+    },
+    {
+      "module": "qttools",
+      "url": "https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_683/qt6_683/qt.qt6.683.clang_64/6.8.3-0-202503201723qttools-MacOS-MacOS_14-Clang-MacOS-MacOS_14-X86_64-ARM64.7z",
+      "bytes": 150901080,
+      "published_sha1": "f5dba30b5a7a4e1f32bd6fea0e8409a1ca105173",
+      "sha256": "ee98096c12c8a4026a550182fdd37d8546ec780c1a60a1a5b5d60d216e53a445"
+    }
+  ],
+  "reference_files_sha256": {
+    "bin/qsb": "b5cfd05045ca18485ac897001e53df88d28c72472fd002e99173eb11c212eab3",
+    "lib/QtCore.framework/Versions/A/QtCore": "f1aed141519ad7055de3a6d03a84cd0409f0c050d404f9c68e6043f591ffc728",
+    "lib/QtGui.framework/Versions/A/QtGui": "8dd78a4089b16822f2403df081c8fa2cefc915e3634f3b6a15eb9778b0a497a4",
+    "lib/QtWidgets.framework/Versions/A/QtWidgets": "5c4c4594348ca3727827b7a132e8fabdb137d30f347441aae6472c25fe6fdaa3",
+    "lib/QtShaderTools.framework/Versions/A/QtShaderTools": "6d8b1c741b0a314b0a004ac834a4d26c74223e1a80f299e564e86887cad1f379",
+    "lib/QtGui.framework/Versions/A/Headers/6.8.3/QtGui/rhi/qrhi.h": "95671ed4d4a810ed58e1550e22cd994962241424c17fe5b49edd2e2d52058be1",
+    "lib/cmake/Qt6/FindWrapOpenGL.cmake": "2ace1ceb59e7fb5b18d1defc8da11f7a8978684783237714080d563b04b227e6",
+    "libexec/moc": "7942152964d77a445286fe05eaf4efb61049a511d524bdd15cabb8dff9658328",
+    "libexec/rcc": "82aaa1f32d149a07ced4bbe606cc7418476bf3b73493855a65c7f0a491f30feb",
+    "libexec/uic": "11611f2a5cd7bb30e1bd94234aa87fa51e3ccf71b72af6bc7384575e66776f13",
+    "plugins/platforms/libqoffscreen.dylib": "c7be666e66173321f3fd7ef9b8890e3d886795aec88413cbd9ffbbee71d40951",
+    "plugins/platforms/libqcocoa.dylib": "5d6d35e42d6687690c884cdcc965199e196d513ecadba5abb192a1556e2389c1",
+    "plugins/imageformats/libqsvg.dylib": "18c92ee522009e5ec95ebf5d6da4791daaad38f48b35a853854f2a034abfc512",
+    "plugins/iconengines/libqsvgicon.dylib": "f32196894909c909130ba1f26a973ea7e742d47b0c1da50e3ec1a81962bfe83c",
+    "lib/cmake/Qt6UiTools/Qt6UiToolsDependencies.cmake": "f6fa224ea93a2756d8194d1100fa87a37fdc69944a340d14b82fd524045447e8",
+    "lib/cmake/Qt6Svg/Qt6SvgDependencies.cmake": "40582ab2d5bc28e8017918d52691e363ccdf58ee9a7e047dd032bb1daa727d58",
+    "lib/QtSvg.framework/Versions/A/QtSvg": "26fbf798b52639ceb8d6d7b5450d0c72d6184d22d98e4f6fe925c9460fa25fa7",
+    "lib/QtSvgWidgets.framework/Versions/A/QtSvgWidgets": "aea9da7eb36fddbbe68f38f698cebc5dfc7194fa9c3993dd3c3fbe215e7aeff6",
+    "lib/QtUiTools.framework/Versions/A/QtUiTools": "546f74fa09857dedbdd2e0ff10362fe45ff4b6d20936df6120d55d8219dd50bc",
+    "lib/QtTest.framework/Versions/A/QtTest": "4a9a9b2b9f0cef34fb0d7ee7e0ee38e01ec0136bc6330f6fbf14fd8631d3ccdf",
+    "lib/QtOpenGL.framework/Versions/A/QtOpenGL": "140ec7a0ea1ac86fc1d3746c4e912db5867901b8de652880f277703bdf3c313b",
+    "lib/QtOpenGLWidgets.framework/Versions/A/QtOpenGLWidgets": "cb1e96473aa864e33520342b7f8a1e4c7263184b55c42df81115d85722259911"
+  },
+  "notes": [
+    "Archives were obtained over HTTPS from Qt and checked against published SHA1; SHA256 pins bind subsequent downloads.",
+    "Reference hashes describe raw extracted required-module payloads before installer postprocessing; full system, graphics and package qualification remain separate.",
+    "Qt 6.8/6.9 needs the R0 legacy-AGL consumer-link adjustment on SDKs without AGL link stubs; provider binaries remain unchanged.",
+    "A universal SDK is not proof of native Intel execution. Redistribution/license, deployment-OS and release-provider review remain open."
+  ]
+}

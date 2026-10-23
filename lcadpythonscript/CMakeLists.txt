@@ -282,11 +282,19 @@ if(WITH_BUNDLED_PYTHON_RUNTIME)
     install(FILES "${LC_PYTHON_STAGED_RUNTIME_LIBRARY}"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 endif()
-install(DIRECTORY "${Python_STDLIB}/"
-    DESTINATION "${LC_PYTHON_STAGED_RUNTIME_DIR}/${LC_PYTHON_STAGED_STDLIB_REL}"
+# Development trees contain provider-relative libpython links that become
+# dangling after a prefix move. Host site/user customization is not runtime
+# payload and may link outside the package (for example into /etc on Ubuntu).
+set(_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES
     PATTERN "__pycache__" EXCLUDE
     PATTERN "site-packages" EXCLUDE
-    PATTERN "dist-packages" EXCLUDE)
+    PATTERN "dist-packages" EXCLUDE
+    PATTERN "config-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}*" EXCLUDE
+    PATTERN "sitecustomize.py" EXCLUDE
+    PATTERN "usercustomize.py" EXCLUDE)
+install(DIRECTORY "${Python_STDLIB}/"
+    DESTINATION "${LC_PYTHON_STAGED_RUNTIME_DIR}/${LC_PYTHON_STAGED_STDLIB_REL}"
+    ${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES})
 
 # Some Python distributions split architecture-specific stdlib files and
 # extension modules into a second tree (Windows DLLs, for example). Avoid
@@ -296,9 +304,7 @@ file(RELATIVE_PATH _LC_PYTHON_STDARCH_FROM_STDLIB
 if(_LC_PYTHON_STDARCH_FROM_STDLIB MATCHES "^\\.\\.")
     install(DIRECTORY "${Python_STDARCH}/"
         DESTINATION "${LC_PYTHON_STAGED_RUNTIME_DIR}/${LC_PYTHON_STAGED_STDARCH_REL}"
-        PATTERN "__pycache__" EXCLUDE
-        PATTERN "site-packages" EXCLUDE
-        PATTERN "dist-packages" EXCLUDE)
+        ${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES})
 endif()
 
 if(EXISTS "${LC_PYTHON_RUNTIME_DYNLIBS}")
@@ -307,6 +313,6 @@ if(EXISTS "${LC_PYTHON_RUNTIME_DYNLIBS}")
     if(_LC_PYTHON_DYNLIBS_FROM_STDLIB MATCHES "^\\.\\.")
         install(DIRECTORY "${LC_PYTHON_RUNTIME_DYNLIBS}/"
             DESTINATION "${LC_PYTHON_STAGED_RUNTIME_DIR}/${LC_PYTHON_STAGED_DYNLIBS_REL}"
-            PATTERN "__pycache__" EXCLUDE)
+            ${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES})
     endif()
 endif()

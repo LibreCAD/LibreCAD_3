@@ -1,0 +1,172 @@
+{
+  "format": "librecad-r0-provider-v1",
+  "scope": "Diagnostic-only Linux ARM64 Qt 6.8.3 candidate; required Wayland widgets fail on the tested stack; not an approved CI/release provider",
+  "qt_version": "6.8.3",
+  "package_version": "6.8.3-0-202503201345",
+  "platform": "linux",
+  "payload_architectures": [
+    "arm64"
+  ],
+  "components": [
+    "Core",
+    "Gui",
+    "GuiPrivate",
+    "Widgets",
+    "ShaderTools",
+    "WaylandClient"
+  ],
+  "metadata_url": "https://download.qt.io/online/qtsdkrepository/linux_arm64/desktop/qt6_683/qt6_683/Updates.xml",
+  "metadata_sha256": "7df08fb451f8730be36ab5e78753cc074314a2901906f56edf768648f73611f5",
+  "qsb_sha256": "623607fb1fd9740a1701290bcad4ee7833f990cf65eb9a2cfff15458ecb11b85",
+  "archives": [
+    {
+      "module": "qtbase",
+      "url": "https://download.qt.io/online/qtsdkrepository/linux_arm64/desktop/qt6_683/qt6_683/qt.qt6.683.linux_gcc_arm64/6.8.3-0-202503201345qtbase-Linux-Ubuntu_24_04-GCC-Linux-Ubuntu_24_04-AARCH64.7z",
+      "bytes": 23683807,
+      "published_sha1": "97562cf6307bcb81d6ee52f56544373defdf19f8",
+      "sha256": "299c1286a9eb8f8e7f15dabdf16d8b805109973bb859898cc757b6a0d5a99e19",
+      "extract_subdir": "."
+    },
+    {
+      "module": "icu",
+      "url": "https://download.qt.io/online/qtsdkrepository/linux_arm64/desktop/qt6_683/qt6_683/qt.qt6.683.linux_gcc_arm64/6.8.3-0-202503201345icu-linux-Debian11.6-arm64.7z",
+      "bytes": 9440659,
+      "published_sha1": "66642b8635c8eae854da1c2f393d27bcfdcb3c1e",
+      "sha256": "f310c8a539c515703349e32147759df3c7da5012473442ac4ace7c7d6f6278ee",
+      "extract_subdir": "lib"
+    },
+    {
+      "module": "qtwayland",
+      "url": "https://download.qt.io/online/qtsdkrepository/linux_arm64/desktop/qt6_683/qt6_683/qt.qt6.683.linux_gcc_arm64/6.8.3-0-202503201345qtwayland-Linux-Ubuntu_24_04-GCC-Linux-Ubuntu_24_04-AARCH64.7z",
+      "bytes": 600489,
+      "published_sha1": "ba6b440fdc2dd13a3a2de2e5d836ec0a02662ec4",
+      "sha256": "c23de4dba02428e641c3e0261cf0886e78aada239773f482d3f24bdb24bf6875",
+      "extract_subdir": "."
+    },
+    {
+      "module": "qtshadertools",
+      "url": "https://download.qt.io/online/qtsdkrepository/linux_arm64/desktop/qt6_683/qt6_683/qt.qt6.683.addons.qtshadertools.linux_gcc_arm64/6.8.3-0-202503201345qtshadertools-Linux-Ubuntu_24_04-GCC-Linux-Ubuntu_24_04-AARCH64.7z",
+      "bytes": 1415402,
+      "published_sha1": "23b5cc6540c80015685dd26fddde6a5a2b81640b",
+      "sha256": "002c681d210100d5b4234f8744edca691e3460075778603229b74df7c0ef3df8",
+      "extract_subdir": "."
+    }
+  ],
+  "reference_files_sha256": {
+    "bin/qsb": "623607fb1fd9740a1701290bcad4ee7833f990cf65eb9a2cfff15458ecb11b85",
+    "lib/libQt6Core.so.6.8.3": "c22265315a70f4b8944b532baaaba68d1da663c0deeab368011014ebefaeee87",
+    "lib/libQt6Gui.so.6.8.3": "14563f31392210bffca0274a80a97a3d749c91900f621f9bae5bb2d8aef067f9",
+    "lib/libQt6Widgets.so.6.8.3": "889e35d925ec3e5c3ea3cafdc934e6698e2f9bbe030c0a231b686f49ef848a4e",
+    "lib/libQt6ShaderTools.so.6.8.3": "0185c00c17a72b279296ab0b4026b28c82ceda3aea8d8d670518ec23ce921a8b",
+    "lib/libQt6WaylandClient.so.6.8.3": "ed43f6d2a0a713054efa3806c85ec6903f3165a99f0fa0e2a550973415acbecf",
+    "lib/libicui18n.so.73.2": "ef4973f53c366e405290b3298df9fc29873c4b1523071946ca0f87a7e90d03ec",
+    "lib/libicuuc.so.73.2": "855483047d925a64b333d150153267b2f6e72aa71e94fe1b579d70764fbd84e4",
+    "lib/libicudata.so.73.2": "4c071749d8964d4ea4b1066f44dcc7956db9d6c4221c797c6421ed04b81bdebc",
+    "include/QtGui/6.8.3/QtGui/rhi/qrhi.h": "95671ed4d4a810ed58e1550e22cd994962241424c17fe5b49edd2e2d52058be1",
+    "plugins/platforms/libqxcb.so": "52e0f56f171cbae2503e395c27ce612c71bb2ff875d0f304db2ca7bd707b54ed",
+    "plugins/platforms/libqwayland-generic.so": "d7f22e980ae8a216ad82a8672477a7a4f7087226a233c22e39d3c58943e5a5b7"
+  },
+  "local_results": {
+    "build_host": "Ubuntu 26.04 ARM64 user-space in native-ISA Linux VM",
+    "mesa_version": "26.0.8-1ubuntu0.3",
+    "weston_version": "14.0.2",
+    "xcb": {
+      "positive_invocations": 24,
+      "positive_assertions": 1384,
+      "expected_failures": 6,
+      "failure_assertions": 18
+    },
+    "wayland_offscreen": {
+      "positive_invocations": 12,
+      "positive_assertions": 512
+    },
+    "required_wayland_widgets_passed": false,
+    "widget_native_exit_status": -11,
+    "qt_only_reproducer_crashes": true,
+    "current_qt_only_control": {
+      "qt_version": "6.10.2",
+      "native_exit_status": 0,
+      "r0_smoke_qualified": false
+    },
+    "validation_diagnostic": {
+      "observed_date": "2026-10-22",
+      "scope": "Qt-only Wayland diagnostic; not renderer or provider acceptance",
+      "validation_provider": {
+        "package": "vulkan-validationlayers",
+        "version": "1.4.341.0-1",
+        "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/v/vulkan-validationlayers/vulkan-validationlayers_1.4.341.0-1_arm64.deb",
+        "api_version": "1.4.341",
+        "architecture": "arm64",
+        "bytes": 6698616,
+        "sha256": "045596d3ced7fb462f0afc6a8cc576606c50719ee1708f66f1a0e92e851bf9ad",
+        "manifest_sha256": "9c1ad32382836d329a4bdfcd54ef408c777cef7969c50f891816003f3e942449",
+        "library_sha256": "8fcb2bfc3808641fe7cb8a884116c2be1e410e1eaca90d6fca9ef2f543fd8cab",
+        "private_extraction_only": true
+      },
+      "surface_lifetime_vuid": "VUID-vkDestroySurfaceKHR-surface-01266",
+      "secondary_vuid": "VUID-VkPresentInfoKHR-pImageIndices-01430",
+      "observations": {
+        "minimum-plain": {
+          "wrapper_exit_code": 0,
+          "validation_enabled": false,
+          "validation_library_loaded": false,
+          "mesa_queue_warning": true,
+          "vuid_ids": [],
+          "r0_smoke_qualified": false,
+          "strict_r0_helper_exit": 1
+        },
+        "minimum-validation": {
+          "wrapper_exit_code": 139,
+          "validation_enabled": true,
+          "validation_library_loaded": true,
+          "mesa_queue_warning": true,
+          "vuid_ids": [
+            "VUID-VkPresentInfoKHR-pImageIndices-01430",
+            "VUID-vkDestroySurfaceKHR-surface-01266"
+          ],
+          "r0_smoke_qualified": false,
+          "strict_r0_helper_exit": 1
+        },
+        "current-plain": {
+          "wrapper_exit_code": 0,
+          "validation_enabled": false,
+          "validation_library_loaded": false,
+          "mesa_queue_warning": false,
+          "vuid_ids": [],
+          "r0_smoke_qualified": false,
+          "strict_r0_helper_exit": 1
+        },
+        "current-validation": {
+          "wrapper_exit_code": 0,
+          "validation_enabled": true,
+          "validation_library_loaded": true,
+          "mesa_queue_warning": false,
+          "vuid_ids": [],
+          "r0_smoke_qualified": false,
+          "strict_r0_helper_exit": 1
+        }
+      },
+      "upstream_sources": {
+        "683": {
+          "url": "https://raw.githubusercontent.com/qt/qtwayland/v6.8.3/src/client/qwaylandwindow.cpp",
+          "sha256": "c0a41d680756a51e74e537dc335c238210bc610e1f388e83598489e0c77fb00f"
+        },
+        "6102": {
+          "url": "https://raw.githubusercontent.com/qt/qtbase/v6.10.2/src/plugins/platforms/wayland/qwaylandwindow.cpp",
+          "sha256": "c0541d57f39ea54e87bf7fcbee7bd9b4b852eb6072d9657d10cb885824662129"
+        }
+      },
+      "valid_usage_url": "https://docs.vulkan.org/refpages/latest/refpages/source/vkDestroySurfaceKHR.html",
+      "candidate_qualified": false,
+      "minimum_selection_changed": false
+    }
+  },
+  "notes": [
+    "Verified official HTTPS archives against published SHA1, then pinned raw bytes by SHA256. ICU's top-level libraries extract under SDK lib, not the SDK root.",
+    "Native minimum main/Gui-only builds pass, but required Wayland widgets fail. A private 1.4.341 validation layer confirms a surface-before-swapchain destruction violation and also reports a present-layout violation in the Qt-only candidate. The hide/reset source differs from the 6.10.2 control. Exact subsequent Mesa memory-fault mechanics and the secondary violation are not independently isolated.",
+    "The identical Qt-only source on the current 6.10.2 provider closes normally on the same Mesa/Weston path. It is a diagnostic control, not an R0 smoke success record.",
+    "Do not waive mandatory Wayland widgets, select XCB/GL silently, or add this candidate as a passing required CI provider. D2/D4 must qualify a fixed exact provider/runtime tuple; no support floor is changed by this record.",
+    "The Ubuntu 24.04 archive build label is not deployment-floor execution. Full SDK/transitive package closure, redistribution, hardware, deployment and independent acceptance remain open.",
+    "A fresh plain Qt-only 6.8.3 observation exited zero but warned that Mesa Wayland proxies remained attached; exit zero cannot qualify this tuple. With validation it exited 139 and emitted VUID-vkDestroySurfaceKHR-surface-01266. The 6.10.2 control exited zero with/without the same layer and emitted no VUIDs. All four strict R0 attempts were rejected because these are diagnostics without renderer reports. No Qt binary, source dependency, production setting or minimum selection changed."
+  ]
+}

@@ -1,0 +1,8 @@
+#pragma once
+namespace build_contract {
+constexpr auto source = R"LCBuild(@CMAKE_SOURCE_DIR@)LCBuild";
+constexpr auto fixture = R"LCBuild(@_build_contract_fixture@)LCBuild";
+constexpr auto pinnedFixture = R"LCBuild(@CMAKE_CURRENT_BINARY_DIR@/renderer-build-contracts.json)LCBuild";
+constexpr auto fixtureHash = "@BUILD_CONTRACT_FIXTURE_SHA256@";
+constexpr auto sources = R"LCBuild(@BUILD_CONTRACT_SOURCES@)LCBuild";
+}

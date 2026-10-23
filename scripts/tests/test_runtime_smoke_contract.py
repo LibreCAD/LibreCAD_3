@@ -125,6 +125,13 @@ class RuntimeSmokeContractTests(unittest.TestCase):
             'install(FILES "${CMAKE_SOURCE_DIR}/LICENSE"', self.cmake
         )
 
+    def test_staged_python_omits_host_customization_and_development_symlinks(self):
+        source=(REPOSITORY_ROOT/'lcadpythonscript/CMakeLists.txt').read_text()
+        for pattern in ('config-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}*','sitecustomize.py','usercustomize.py'):
+            self.assertIn('PATTERN "'+pattern+'" EXCLUDE',source)
+        self.assertEqual(3,source.count('${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES}'))
+        self.assertIn('"third_party/libdxfrw/COPYING" "libdxfrw-COPYING"',self.cmake)
+
     def test_all_platform_workflows_run_runtime_smoke_contracts(self):
         test_command = "scripts.tests.test_runtime_smoke_contract"
         self.assertGreaterEqual(self.workflow.count(test_command), 3)

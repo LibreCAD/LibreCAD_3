@@ -1,0 +1,381 @@
+name: Renderer R1 source contracts
+'on':
+  workflow_call: null
+  workflow_dispatch: null
+  push:
+    branches: [codex/r1-platform-ci]
+
+permissions:
+  contents: read
+
+# R1 native source/host matrix, not UI interaction, packaging or phase acceptance.
+# Only the pinned patched libdxfrw source submodule builds as a dependency.
+jobs:
+  contracts:
+    name: R1 source protocols and plan
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - run: python3 -B -m unittest discover -s scripts/tests
+      - run: python3 -B scripts/validate_python_binding_plan.py --full
+      - run: python3 -B scripts/validate_renderer_inventory.py --cases unittest/rendering/renderer_cases.json
+  source:
+    name: R1 source (${{ matrix.contract_scope }}, ${{ matrix.platform }}, tests ${{ matrix.tests }})
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [LINUX-X64, LINUX-ARM64, MAC-ARM64, MAC-X64, WIN-X64]
+        tests: ['ON', 'OFF']
+        contract_scope: [libraries, cli, cli-persistence, ui, both]
+        include:
+          - runner: ubuntu-26.04
+            platform: LINUX-X64
+            triplet: x86_64-linux-gnu
+            python: /usr/bin/python3
+          - runner: ubuntu-26.04-arm
+            platform: LINUX-ARM64
+            triplet: aarch64-linux-gnu
+            python: /usr/bin/python3
+          - runner: macos-15
+            platform: MAC-ARM64
+            python: python
+          - runner: macos-15-intel
+            platform: MAC-X64
+            python: python
+          - runner: windows-2022
+            platform: WIN-X64
+            python: python
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: ${{ matrix.python }} -B {0}
+    timeout-minutes: 60 # Library profiles keep 300 s; the separate CLI scope keeps its 1,200 s total cap.
+    env:
+      R1_PLATFORM: ${{ matrix.platform }}
+      R1_TESTS: ${{ matrix.tests }}
+      R1_SCOPE: ${{ matrix.contract_scope }}
+      # Libraries exercise all eight independent modes internally. Host ON
+      # covers dual/Python ON; OFF covers legacy/Python OFF on every platform.
+      R1_HOST_PROFILE: ${{ matrix.tests == 'ON' && 'dual-python' || 'legacy' }}
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        if: runner.os != 'Linux' # 3.12.10 has no Ubuntu 26.04 release artifact.
+        with:
+          python-version: '3.12.10'
+      - name: Prepare evidence directory
+        run: |
+          from pathlib import Path
+          Path('build-r1').mkdir()
+      - name: Install Linux binary dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          test_dependencies=()
+          if test "$R1_TESTS" = ON; then test_dependencies=(libgtest-dev libgmock-dev); fi
+          scoped_dependencies=()
+          if test "$R1_SCOPE" = cli || test "$R1_SCOPE" = cli-persistence || test "$R1_SCOPE" = both; then
+            scoped_dependencies+=(libboost-program-options-dev libcurl4-gnutls-dev libglfw3-dev)
+          fi
+          if test "$R1_SCOPE" = libraries || test "$R1_SCOPE" = ui || test "$R1_SCOPE" = both || test "$R1_TESTS" = ON; then
+            scoped_dependencies+=(xvfb xauth weston=14.0.2-5
+              qt6-base-dev=6.10.2+dfsg-7 qt6-base-private-dev=6.10.2+dfsg-7
+              qt6-shadertools-dev=6.10.2-1 qt6-shader-baker=6.10.2-1
+              libqt6shadertools6=6.10.2-1 libvulkan-dev=1.4.341.0-1
+              vulkan-validationlayers=1.4.341.0-1 mesa-vulkan-drivers=26.0.8-1ubuntu0.3
+              qt6-wayland=6.10.2-4 libqt6waylandclient6=6.10.2+dfsg-7)
+          fi
+          if test "$R1_SCOPE" = ui || test "$R1_SCOPE" = both; then
+            scoped_dependencies+=(qt6-tools-dev=6.10.2-1 qt6-svg-dev=6.10.2-2)
+          fi
+          sudo apt-get install --no-install-recommends -y cmake ninja-build g++ \
+            libboost-log-dev libboost-filesystem-dev libeigen3-dev liblua5.3-dev libglew-dev libglm-dev libfreetype-dev \
+            rapidjson-dev "${test_dependencies[@]}" python3-dev "${scoped_dependencies[@]}"
+          dpkg-query -W > build-r1/debian-packages.txt
+          if test "$R1_SCOPE" = libraries || test "$R1_SCOPE" = ui || test "$R1_SCOPE" = both || test "$R1_TESTS" = ON; then
+            printf 'QT_ROOT_DIR=/usr\nVK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json\n' >> "$GITHUB_ENV"
+          fi
+      - name: Install Mac binary core dependencies without recursive source fallback
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Install every runtime dependency explicitly with --force-bottle and
+          # --ignore-dependencies, in dependency order. A missing bottle is fatal.
+          core=(boost eigen rapidjson lua glew glm freetype)
+          if test "$R1_SCOPE" = cli || test "$R1_SCOPE" = cli-persistence || test "$R1_SCOPE" = both; then core+=(glfw); fi
+          if test "$R1_TESTS" = ON; then core+=(googletest); fi
+          dependencies="$(brew deps --formula --union --topological "${core[@]}")"
+          while IFS= read -r formula; do
+            if test -n "$formula"; then brew install --formula --force-bottle --ignore-dependencies "$formula"; fi
+          done <<< "$dependencies"
+          brew install --formula --force-bottle --ignore-dependencies "${core[@]}"
+          brew info --json=v2 --installed > build-r1/homebrew-packages.json
+          lua_root="$(brew --prefix lua)"
+          lua_include="$(find "$lua_root/include" -maxdepth 1 -type d -name 'lua5.*' -print -quit)"
+          test -n "$lua_include"
+          printf 'R1_LUA_INCLUDE=%s\nR1_LUA_LIBRARY=%s\nR1_BREW_PREFIX=%s\n' \
+            "$lua_include" "$lua_root/lib/liblua.dylib" "$(brew --prefix)" >> "$GITHUB_ENV"
+      - name: Restore pinned Mac Qt modules
+        if: runner.os == 'macOS' && (matrix.contract_scope == 'libraries' || matrix.contract_scope == 'ui' || matrix.contract_scope == 'both' || matrix.tests == 'ON')
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider_root="$(mktemp -d "$RUNNER_TEMP/renderer-r1-qt683.XXXXXX")"
+          mkdir "$provider_root/archives"
+          python -B - "$provider_root/archives" <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          pin = json.loads(Path('lcrenderer/rhi/providers/qt683-macos.json').read_text())
+          for item in pin['archives']:
+              subprocess.run(['curl', '--fail', '--location', '--proto', '=https', '--proto-redir', '=https',
+                              '--connect-timeout', '30', '--max-time', '180', '--retry', '3', '--output',
+                              str(Path(sys.argv[1]) / (item['module'] + '.7z')), item['url']], check=True)
+          PY
+          python -B scripts/restore_renderer_qt683_macos.py --archives "$provider_root/archives" \
+            --destination "$provider_root/sdk" > build-r1/qt-restore.json
+          cp lcrenderer/rhi/providers/qt683-macos.json build-r1/qt-pin.json
+          printf 'QT_ROOT_DIR=%s\n' "$provider_root/sdk" >> "$GITHUB_ENV"
+      - uses: jurplel/install-qt-action/action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005
+        if: runner.os == 'Windows'
+        with:
+          version: '6.8.3'
+          arch: win64_msvc2022_64
+          modules: qtshadertools
+          aqtversion: '==3.3.0'
+          py7zrversion: '==1.0.0'
+          cache: false
+      - name: Stage immutable Vulkan headers without compiling a dependency
+        if: runner.os == 'Windows'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b5c8f996196ba4aa6d8f97e52b5d3b6e70f7e4e2 # v1.4.341 peeled commit
+          path: .r1-vulkan-headers
+          persist-credentials: false
+      - name: Restore Windows core binaries and exact per-case toolchains
+        if: runner.os == 'Windows'
+        run: |
+          import os, subprocess, sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          from validate_renderer_conan_graph import CASES, HOST_CASES, case_options
+          subprocess.run([sys.executable, '-m', 'pip', 'install', '--only-binary=:all:', 'conan==2.33.0'], check=True)
+          # Fresh cache. --build=never forbids a source-build fallback, including
+          # transitive requirements. Static core binaries avoid hidden run-env DLLs.
+          os.environ['CONAN_HOME'] = str(Path(os.environ['RUNNER_TEMP']) / 'renderer-r1-conan')
+          subprocess.run(['conan', 'profile', 'detect'], check=True)
+          scope=os.environ['R1_SCOPE'];tests=os.environ['R1_TESTS']=='ON'
+          if scope=='libraries':
+              names=[n for n,(t,_) in CASES.items() if n not in HOST_CASES and (t==tests or n=='empty')]
+          else:
+              kind='cli' if scope.startswith('cli') else scope
+              names=[kind+'-'+os.environ['R1_HOST_PROFILE']+('' if tests else '-no-tests')]
+          for name in names:
+              options=case_options(name)
+              common = ['.', '--build=never','-s:h','arch=x86_64','-s:h','compiler=msvc',
+                         '-s:h','compiler.version=194','-s:h','compiler.cppstd=17','-s:h','compiler.runtime=dynamic',
+                         '-s:h','compiler.runtime_type=Release','-s:h','build_type=Release',
+                         '-o','*:shared=False']
+              for key,value in options.items(): common += ['-o','&:'+key+'='+str(value)]
+              graph=Path('build-r1')/('conan-'+name+'-preflight.json')
+              lock=Path('build-r1')/('conan-'+name+'.lock')
+              route=Path('build-r1')/('conan-'+name+'-route.json')
+              subprocess.run(['conan','graph','info',*common,'--format=json','--out-file',str(graph),
+                              '--lockfile-out',str(lock)],check=True)
+              # graph info may exit zero despite Missing binaries. Inspect its
+              # actual nodes before install; never infer availability from rc=0.
+              validate=[sys.executable,'-B','scripts/validate_renderer_conan_graph.py',
+                        '--case',name,'--lockfile',str(lock)]
+              subprocess.run([*validate,'--graph',str(graph),'--report',str(route)],check=True)
+              installed=Path('build-r1')/('conan-'+name+'-installed.json')
+              subprocess.run(['conan','install',*common,'--lockfile',str(lock),
+                              '-of',str(Path('build-r1/conan')/name),'--format=json','--out-file',str(installed)],check=True)
+              subprocess.run([*validate,'--graph',str(installed),'--expected-route',str(route),
+                              '--report',str(Path('build-r1')/('conan-'+name+'-installed-route.json'))],check=True)
+          with open(os.environ['GITHUB_ENV'],'a') as out:out.write('CONAN_HOME='+os.environ['CONAN_HOME']+'\n')
+      - name: Restore pinned Windows software Vulkan inputs
+        if: runner.os == 'Windows' && matrix.tests == 'ON' && matrix.contract_scope == 'libraries'
+        run: |
+          import json, os, shutil, subprocess, sys, tempfile, urllib.request
+          from pathlib import Path
+          class HttpsOnly(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,request,fp,code,message,headers,newurl):
+                  if not newurl.startswith('https://'): raise ValueError('HTTPS downgrade')
+                  return super().redirect_request(request,fp,code,message,headers,newurl)
+          pin_path=Path('lcrenderer/rhi/providers/swiftshader-windows-x64.json')
+          item=json.loads(pin_path.read_text())['archive']
+          if not item['url'].startswith('https://storage.googleapis.com/chrome-for-testing-public/'):raise ValueError('Unexpected provider host')
+          root=Path(tempfile.mkdtemp(prefix='renderer-r1-vulkan-',dir=os.environ['RUNNER_TEMP']))
+          archive=root/'provider.zip'
+          with urllib.request.build_opener(HttpsOnly()).open(item['url'],timeout=120) as response,archive.open('xb') as out:shutil.copyfileobj(response,out)
+          subprocess.run([sys.executable,'-B','scripts/restore_renderer_swiftshader_windows.py','--archive',str(archive),
+                          '--destination',str(root/'inputs'),'--native-probe'],check=True,stdout=Path('build-r1/vulkan-restore.json').open('wb'))
+          shutil.copy2(pin_path,'build-r1/vulkan-pin.json')
+          manifest=root/'inputs/vk_swiftshader_icd.json'
+          if not manifest.is_file():raise ValueError('Missing restored ICD')
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write('VK_DRIVER_FILES='+str(manifest)+'\nR1_VULKAN_ROOT='+str(root/'inputs')+'\n')
+      - name: Build pinned source-submodule persistence SDK
+        if: matrix.contract_scope != 'libraries' && matrix.contract_scope != 'cli'
+        run: |
+          import os, subprocess, sys
+          from pathlib import Path
+          result=subprocess.run([sys.executable,'-B','scripts/build_libdxfrw.py',
+              '--platform',os.environ['R1_PLATFORM'],'--report-dir',str(Path('build-r1/dxfrw').resolve()),
+              '--timeout','180'],check=True,capture_output=True,text=True)
+          Path('build-r1/libdxfrw-sdk.json').write_text(result.stdout)
+      - name: Run selected library or CLI source contracts
+        run: |
+          import json, os, subprocess, sys
+          from pathlib import Path
+          platform=os.environ['R1_PLATFORM'];scope=os.environ['R1_SCOPE']
+          base=[sys.executable,'-B','scripts/run_renderer_checks.py']
+          if scope not in ('libraries','cli','cli-persistence','ui','both'):raise ValueError('Unknown source contract scope')
+          if scope!='libraries':
+              kind='cli' if scope.startswith('cli') else scope
+              profile=os.environ['R1_HOST_PROFILE']
+              command=base+['--host-builds','--platform',platform,'--host-profile',profile,
+                  '--host-kind',kind,'--host-tests',os.environ['R1_TESTS'],
+                  '--report-dir',str(Path('build-r1/hosts').resolve()),'--timeout','300']
+              if kind=='cli':command+=['--host-install']
+              if profile.endswith('-python'):command+=[
+                  '--cmake-option','Python_EXECUTABLE='+sys.executable]
+              if scope=='cli':command+=['--host-no-persistence']
+              else:
+                  sdk=json.loads(Path('build-r1/libdxfrw-sdk.json').read_text())
+                  for name,value in sdk['cmake_options'].items():command+=['--cmake-option',name+'='+value]
+              if platform=='WIN-X64':
+                  case=kind+'-'+profile+('' if os.environ['R1_TESTS']=='ON' else '-no-tests')
+                  command+=['--generator','Visual Studio 17 2022','--cmake-option',
+                      'CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',case,'conan_toolchain.cmake').resolve())]
+              if platform.startswith('MAC-'):
+                  command+=['--cmake-option','CMAKE_PREFIX_PATH='+os.environ['R1_BREW_PREFIX']]
+                  for name,variable in (('LUA_INCLUDE_DIR','R1_LUA_INCLUDE'),('LUA_LIBRARY','R1_LUA_LIBRARY')):
+                      command+=['--cmake-option',name+'='+os.environ[variable]]
+              if kind!='cli' or profile.startswith('dual'):
+                  qt=Path(os.environ['QT_ROOT_DIR']).resolve()
+                  qt_cmake=qt/('lib/'+os.environ.get('R1_TRIPLET','')+'/cmake/Qt6' if platform.startswith('LINUX-') else 'lib/cmake/Qt6')
+                  command+=['--cmake-option','Qt6_DIR='+str(qt_cmake)]
+              if platform=='WIN-X64':
+                  if profile.startswith('dual'):command+=['--cmake-option','LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('.r1-vulkan-headers/include').resolve())]
+                  os.environ['PATH']=str(Path(os.environ['QT_ROOT_DIR'])/'bin')+os.pathsep+os.environ['PATH']
+              subprocess.run(command,check=True)
+              sys.exit(0) # Explicit CLI/OFF-path proof, not a UI or provider fallback.
+          qt=Path(os.environ['QT_ROOT_DIR']).resolve()
+          cpu=base+['--build-contracts','--configuration','cpu-source/'+platform+'/cpu/cpu/none/none',
+                    '--report-dir',str(Path('build-r1/cpu').resolve()),'--timeout','300']
+          sdk=[]
+          if platform.startswith('MAC-'):
+              sdk=['LUA_INCLUDE_DIR='+os.environ['R1_LUA_INCLUDE'],'LUA_LIBRARY='+os.environ['R1_LUA_LIBRARY']]
+          if platform=='WIN-X64':
+              for variant in ('ordinary','empty'):
+                  cpu+=['--case-cmake-option',variant+':CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',variant,'conan_toolchain.cmake').resolve())]
+              cpu+=['--generator','Visual Studio 17 2022']
+          for option in sdk:cpu+=['--cmake-option',option]
+          qt_cmake=qt/('lib/'+os.environ.get('R1_TRIPLET','')+'/cmake/Qt6' if platform.startswith('LINUX-') else 'lib/cmake/Qt6')
+          options=sdk+['CMAKE_PREFIX_PATH='+str(qt),'Qt6_DIR='+str(qt_cmake),'Python_EXECUTABLE='+sys.executable]
+          if os.environ['R1_TESTS']=='OFF':
+              command=base+['--production-builds','--platform',platform,'--report-dir',str(Path('build-r1/production').resolve()),'--timeout','300']
+              for option in options:command+=['--cmake-option',option]
+              if platform=='WIN-X64':
+                  command+=['--generator','Visual Studio 17 2022','--cmake-option',
+                            'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('.r1-vulkan-headers/include').resolve())]
+                  for profile in ('cpu','legacy','dual','rhi','cpu-python','legacy-python','dual-python','rhi-python'):
+                      graph='empty' if profile=='cpu' else profile+'-no-tests'
+                      command+=['--case-cmake-option',profile+':CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',graph,'conan_toolchain.cmake').resolve())]
+              subprocess.run(command,check=True)
+              sys.exit(0) # Compile-only evidence, not manifest/runtime GTest acceptance.
+          subprocess.run(cpu,check=True)
+          if platform=='WIN-X64':
+              options+=['CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan/rhi/conan_toolchain.cmake').resolve()),
+                        'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('.r1-vulkan-headers/include').resolve())]
+              os.environ['PATH']=os.environ['R1_VULKAN_ROOT']+os.pathsep+str(qt/'bin')+os.pathsep+os.environ['PATH']
+          api='metal' if platform.startswith('MAC-') else 'vulkan'
+          device='hardware' if api=='metal' else 'software'
+          host='macos' if api=='metal' else 'windows' if platform=='WIN-X64' else 'linux'
+          for qpa in (['xcb','wayland'] if host=='linux' else ['cocoa' if api=='metal' else 'windows']):
+              command=base+['--rhi-contracts','--build-source','--configuration',
+                  'gui-less-'+host+'/'+platform+'/rhi-offscreen/offscreen/'+qpa+'/'+device,
+                  '--provider-prefix',str(qt),'--backend',api,'--device',device,'--mode','offscreen','--expected-qpa',qpa,
+                  '--report-dir',str(Path('build-r1/rhi-'+qpa).resolve()),'--timeout','300']
+              for option in options:command+=['--cmake-option',option]
+              # Build the library truth table once, not once per Linux QPA.
+              if qpa!='wayland':
+                  command+=['--library-matrix']
+                  if host=='windows':
+                      for profile,graph in [('cpu','ordinary'),('legacy','legacy'),('dual','dual')]+[(p,p) for p in
+                              ('cpu-python','legacy-python','dual-python','rhi-python')]:
+                          command+=['--case-cmake-option',profile+':CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',graph,'conan_toolchain.cmake').resolve())]
+              if host=='windows':command+=['--generator','Visual Studio 17 2022']
+              if api=='vulkan':command+=['--icd-manifest',os.environ['VK_DRIVER_FILES']]
+              if host=='linux':
+                  command+=['--xvfb-run','/usr/bin/xvfb-run','--vulkan-validation-manifest',
+                      '/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json','--vulkan-validation-library',
+                      '/usr/lib/'+os.environ['R1_TRIPLET']+'/libVkLayer_khronos_validation.so']
+                  if qpa=='wayland':command+=['--weston','/usr/bin/weston','--weston-backend','headless']
+              subprocess.run(command,check=True)
+        env:
+          R1_TRIPLET: ${{ matrix.triplet }}
+      - name: Retain selected source/provider/build/test/process evidence on failure too
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: renderer-r1-source-${{ matrix.contract_scope }}-${{ matrix.platform }}-tests-${{ matrix.tests }}
+          include-hidden-files: true # Required client-owned .cmake/api/v1/reply graphs.
+          path: |
+            build-r1/**/relocated-prefix/**
+            build-r1/**/install_manifest.txt
+            build-r1/**/*.json
+            build-r1/**/*.jsonl
+            build-r1/**/*.log
+            build-r1/**/*.xml
+            build-r1/**/modules.txt
+            build-r1/**/bin/librecad*
+            build-r1/**/*.lock
+            build-r1/**/CMakeCache.txt
+            build-r1/**/flags.make
+            build-r1/**/link.txt
+            build-r1/**/cpu-headers/**
+            build-r1/**/lcviewer_cpu_headercheck.dir/**
+            build-r1/**/lib*.so*
+            build-r1/**/lib*.dylib
+            build-r1/**/*.a
+            build-r1/**/*.dll
+            build-r1/**/*.lib
+            build-r1/**/*.qsb
+            build-r1/**/python-runtime-inventory.txt
+            build-r1/**/bin/luacmdinterface*
+            build-r1/**/bin/lcunittest*
+            build-r1/**/bin/lcrenderertest*
+            build-r1/**/bin/lcbuildcontracttest*
+            build-r1/**/original.bin
+            build-r1/**/mutated.bin
+            build-r1/debian-packages.txt
+          if-no-files-found: warn
+  r1-source-contracts:
+    name: R1 initial source contracts (not phase acceptance)
+    if: always()
+    needs: [contracts, source]
+    runs-on: ubuntu-26.04
+    steps:
+      - env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json,os
+          results=json.loads(os.environ['NEEDS_JSON'])
+          if set(results)!={'contracts','source'} or any(value['result']!='success' for value in results.values()):
+              raise SystemExit('Required source tuple failed/missing/skipped: '+str(results))
+          print('R1 library/UI/CLI source matrix passed on all five platforms; widget/runtime/package and R0/R1 acceptance remain separate')
+          PY

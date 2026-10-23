@@ -1,0 +1,2324 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "renderer-contract-inputs",
+  "datasets": {
+    "path-state": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "closed": {"type":"boolean","unit":"none","value":true},
+          "operations": {"type":"strings","unit":"none","value":["new-path","move-to","line-to","line-to","close-path","stroke","stroke"]}
+        },
+        "assertions": [
+          {"observed":"closed-length","expected":{"type":"number","unit":"model","value":12},"oracle":"model-error"},
+          {"observed":"stroke-draw-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"path-consumed","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]},"operations":{"type":"strings","unit":"none","value":["new-path","stroke","fill"]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"vertex-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "restore": {
+        "inputs": {
+          "operations": {"type":"strings","unit":"none","value":["save","source-rgba-red","line-width-two","dash-one-two","scale-two","restore"]},
+          "path": {"type":"points2","unit":"model","value":[[0,0],[3,4]]}
+        },
+        "assertions": [
+          {"observed":"style-restored","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"path-preserved-by-restore","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      }
+    },
+    "line": {
+      "ordinary": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[[0,0],[3,4]]},"selected":{"type":"boolean","unit":"none","value":false}},
+        "assertions": [
+          {"observed":"length","expected":{"type":"number","unit":"model","value":5},"oracle":"model-error"},
+          {"observed":"endpoint","expected":{"type":"vec2","unit":"model","value":[3,4]},"oracle":"model-error"},
+          {"observed":"bounds","expected":{"type":"numbers","unit":"model","value":[0,0,3,4]},"oracle":"model-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[[1,1],[1,1]]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"vertex-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "point": {
+      "ordinary": {
+        "inputs": {
+          "position": {"type":"vec2","unit":"model","value":[2,3]},
+          "size": {"type":"number","unit":"physical-pixel","value":5},
+          "device-coordinates": {"type":"boolean","unit":"none","value":true}
+        },
+        "assertions": [
+          {"observed":"center","expected":{"type":"vec2","unit":"model","value":[2,3]},"oracle":"model-error"},
+          {"observed":"diameter","expected":{"type":"number","unit":"physical-pixel","value":5},"oracle":"curve-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"position":{"type":"vec2","unit":"model","value":[0,0]},"size":{"type":"number","unit":"physical-pixel","value":0}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"physical-pixel","value":64},"requested":{"type":"integer","unit":"physical-pixel","value":65}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"point-size-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "arc": {
+      "ordinary": {
+        "inputs": {
+          "center": {"type":"vec2","unit":"model","value":[0,0]},
+          "radius": {"type":"number","unit":"model","value":2},
+          "angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]},
+          "direction": {"type":"text","unit":"none","value":"counterclockwise"}
+        },
+        "assertions": [
+          {"observed":"start","expected":{"type":"vec2","unit":"model","value":[2,0]},"oracle":"model-error"},
+          {"observed":"end","expected":{"type":"vec2","unit":"model","value":[0,2]},"oracle":"model-error"},
+          {"observed":"length","expected":{"type":"number","unit":"model","value":3.141592653589793},"oracle":"model-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "center": {"type":"vec2","unit":"model","value":[0,0]},
+          "radius": {"type":"number","unit":"model","value":0},
+          "angles": {"type":"numbers","unit":"radian","value":[0,0]}
+        },
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"subdivision-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "clockwise": {
+        "inputs": {
+          "center": {"type":"vec2","unit":"model","value":[0,0]},
+          "radius": {"type":"number","unit":"model","value":2},
+          "angles": {"type":"numbers","unit":"radian","value":[0,-1.5707963267948966]},
+          "direction": {"type":"text","unit":"none","value":"clockwise"}
+        },
+        "assertions": [
+          {"observed":"end","expected":{"type":"vec2","unit":"model","value":[0,-2]},"oracle":"model-error"},
+          {"observed":"sweep","expected":{"type":"number","unit":"radian","value":-1.5707963267948966},"oracle":"angle-error"}
+        ]
+      }
+    },
+    "circle": {
+      "ordinary": {
+        "inputs": {"center":{"type":"vec2","unit":"model","value":[0,0]},"radius":{"type":"number","unit":"model","value":2}},
+        "assertions": [
+          {"observed":"bounds","expected":{"type":"numbers","unit":"model","value":[-2,-2,2,2]},"oracle":"model-error"},
+          {"observed":"area","expected":{"type":"number","unit":"model-squared","value":12.566370614359172},"oracle":"area-error"},
+          {"observed":"max-display-error","expected":{"type":"number","unit":"physical-pixel","value":0},"oracle":"curve-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"center":{"type":"vec2","unit":"model","value":[0,0]},"radius":{"type":"number","unit":"model","value":0}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"subdivision-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "ellipse": {
+      "ordinary": {
+        "inputs": {
+          "center": {"type":"vec2","unit":"model","value":[0,0]},
+          "radii": {"type":"vec2","unit":"model","value":[3,1]},
+          "rotation": {"type":"number","unit":"radian","value":0.5235987755982988},
+          "angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]}
+        },
+        "assertions": [
+          {"observed":"start","expected":{"type":"vec2","unit":"model","value":[2.598076211353316,1.5]},"oracle":"model-error"},
+          {"observed":"end","expected":{"type":"vec2","unit":"model","value":[-0.5,0.8660254037844386]},"oracle":"model-error"},
+          {"observed":"max-display-error","expected":{"type":"number","unit":"physical-pixel","value":0},"oracle":"curve-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"center":{"type":"vec2","unit":"model","value":[0,0]},"radii":{"type":"vec2","unit":"model","value":[0,0]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"subdivision-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "lwpolyline": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[-1,0],[1,0]]},
+          "bulges": {"type":"numbers","unit":"ratio","value":[1]},
+          "closed": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [
+          {"observed":"bulge-radius","expected":{"type":"number","unit":"model","value":1},"oracle":"model-error"},
+          {"observed":"absolute-sweep","expected":{"type":"number","unit":"radian","value":3.141592653589793},"oracle":"angle-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]},"bulges":{"type":"numbers","unit":"ratio","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"vertex-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "negative-bulge": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[-1,0],[1,0]]},
+          "bulges": {"type":"numbers","unit":"ratio","value":[-1]},
+          "closed": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [
+          {"observed":"bulge-radius","expected":{"type":"number","unit":"model","value":1},"oracle":"model-error"},
+          {"observed":"absolute-sweep","expected":{"type":"number","unit":"radian","value":3.141592653589793},"oracle":"angle-error"}
+        ]
+      },
+      "closed": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "bulges": {"type":"numbers","unit":"ratio","value":[0,0,0]},
+          "closed": {"type":"boolean","unit":"none","value":true}
+        },
+        "assertions": [
+          {"observed":"length","expected":{"type":"number","unit":"model","value":12},"oracle":"model-error"},
+          {"observed":"closed","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      }
+    },
+    "spline": {
+      "ordinary": {
+        "inputs": {
+          "span-control-counts": {"type":"integers","unit":"count","value":[2,3,4]},
+          "control-points": {"type":"points2","unit":"model","value":[[0,0],[3,4],[0,0],[1,2],[2,0],[0,0],[1,3],[2,-3],[3,0]]}
+        },
+        "assertions": [
+          {"observed":"endpoints","expected":{"type":"points2","unit":"model","value":[[3,4],[2,0],[3,0]]},"oracle":"model-error"},
+          {"observed":"quadratic-midpoint","expected":{"type":"vec2","unit":"model","value":[1,1]},"oracle":"model-error"},
+          {"observed":"cubic-midpoint","expected":{"type":"vec2","unit":"model","value":[1.5,0]},"oracle":"model-error"},
+          {"observed":"max-display-error","expected":{"type":"number","unit":"physical-pixel","value":0},"oracle":"curve-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"control-points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"subdivision-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "closed": {
+        "inputs": {
+          "span-control-counts": {"type":"integers","unit":"count","value":[4]},
+          "control-points": {"type":"points2","unit":"model","value":[[0,0],[1,0],[1,1],[0,0]]}
+        },
+        "assertions": [
+          {"observed":"end","expected":{"type":"vec2","unit":"model","value":[0,0]},"oracle":"model-error"},
+          {"observed":"closed","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "periodic": {
+        "inputs": {
+          "span-control-counts": {"type":"integers","unit":"count","value":[4,4,4,4]},
+          "control-points": {
+            "type": "points2",
+            "unit": "model",
+            "value": [
+              [1,0],
+              [1,0.5522847498307936],
+              [0.5522847498307936,1],
+              [0,1],
+              [0,1],
+              [-0.5522847498307936,1],
+              [-1,0.5522847498307936],
+              [-1,0],
+              [-1,0],
+              [-1,-0.5522847498307936],
+              [-0.5522847498307936,-1],
+              [0,-1],
+              [0,-1],
+              [0.5522847498307936,-1],
+              [1,-0.5522847498307936],
+              [1,0]
+            ]
+          }
+        },
+        "assertions": [
+          {"observed":"seam-tangent-gap","expected":{"type":"vec2","unit":"model","value":[0,0]},"oracle":"model-error"},
+          {"observed":"closed","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "high-curvature": {
+        "inputs": {
+          "span-control-counts": {"type":"integers","unit":"count","value":[4]},
+          "control-points": {"type":"points2","unit":"model","value":[[0,0],[1,0],[-1,0],[0,0]]},
+          "zoom-dpr": {"type":"numbers","unit":"ratio","value":[128,2]}
+        },
+        "assertions": [
+          {"observed":"max-display-error","expected":{"type":"number","unit":"physical-pixel","value":0},"oracle":"curve-error"},
+          {"observed":"finite-output","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "rational-domain": {
+        "inputs": {
+          "document-provider": {"type":"text","unit":"none","value":"current-bezier-spans"},
+          "control-points": {"type":"points2","unit":"model","value":[[0,0],[1,2],[2,0]]},
+          "weights": {"type":"numbers","unit":"ratio","value":[1,2,1]}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"unsupported-rational-provider"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "stroke": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,4],[6,0]]},
+          "width": {"type":"number","unit":"physical-pixel","value":2},
+          "dash": {"type":"numbers","unit":"physical-pixel","value":[1,2,3]},
+          "offset": {"type":"number","unit":"physical-pixel","value":7},
+          "cap": {"type":"text","unit":"none","value":"butt"},
+          "join": {"type":"text","unit":"none","value":"miter"},
+          "miter-limit": {"type":"number","unit":"ratio","value":4}
+        },
+        "assertions": [
+          {"observed":"normalized-dash","expected":{"type":"numbers","unit":"physical-pixel","value":[1,2,3,1,2,3]},"oracle":"curve-error"},
+          {"observed":"phase","expected":{"type":"number","unit":"physical-pixel","value":7},"oracle":"curve-error"},
+          {"observed":"ordered-alpha","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]},"dash":{"type":"numbers","unit":"physical-pixel","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"vertex-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "invalid-dash": {
+        "inputs": {"dash":{"type":"numbers","unit":"physical-pixel","value":[1,-1,0]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-dash"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "closed-seam": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "closed": {"type":"boolean","unit":"none","value":true},
+          "dash": {"type":"numbers","unit":"model","value":[2,1]},
+          "offset": {"type":"number","unit":"model","value":0}
+        },
+        "assertions": [
+          {"observed":"path-length","expected":{"type":"number","unit":"model","value":12},"oracle":"model-error"},
+          {"observed":"seam-phase","expected":{"type":"number","unit":"model","value":0},"oracle":"model-error"}
+        ]
+      }
+    },
+    "transform": {
+      "ordinary": {
+        "inputs": {
+          "transform": {"type":"matrix3","unit":"none","value":[0,-2,10,2,0,20,0,0,1]},
+          "point": {"type":"vec2","unit":"model","value":[3,4]},
+          "distance": {"type":"vec2","unit":"model","value":[3,4]}
+        },
+        "assertions": [
+          {"observed":"device-point","expected":{"type":"vec2","unit":"physical-pixel","value":[2,26]},"oracle":"curve-error"},
+          {"observed":"device-distance","expected":{"type":"vec2","unit":"physical-pixel","value":[-8,6]},"oracle":"curve-error"},
+          {"observed":"roundtrip-point","expected":{"type":"vec2","unit":"model","value":[3,4]},"oracle":"model-error"},
+          {"observed":"scale","expected":{"type":"number","unit":"ratio","value":2},"oracle":"scale-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"transform":{"type":"matrix3","unit":"none","value":[1,0,0,0,1,0,0,0,1]},"point":{"type":"vec2","unit":"model","value":[0,0]}},
+        "assertions": [{"observed":"roundtrip-point","expected":{"type":"vec2","unit":"model","value":[0,0]},"oracle":"model-error"}]
+      },
+      "limit": {
+        "inputs": {"transform":{"type":"matrix3","unit":"none","value":[0,0,0,0,0,0,0,0,1]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-transform"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "large-origin": {
+        "inputs": {
+          "origin": {"type":"vec2","unit":"model","value":[1000000000000,-1000000000000]},
+          "local-points": {"type":"points2","unit":"model","value":[[0,0],[0.125,0.25]]},
+          "pixels-per-model": {"type":"number","unit":"ratio","value":64}
+        },
+        "assertions": [{"observed":"device-delta","expected":{"type":"vec2","unit":"physical-pixel","value":[8,16]},"oracle":"curve-error"}]
+      },
+      "nonfinite": {
+        "inputs": {"scale":{"type":"nonfinite","unit":"ratio","value":"NaN"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-transform"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "hatch-fill": {
+      "ordinary": {
+        "inputs": {
+          "vertices": {"type":"points2","unit":"model","value":[[0,0],[4,0],[4,4],[0,4],[1,1],[1,3],[3,3],[3,1]]},
+          "contour-starts": {"type":"integers","unit":"count","value":[0,4]},
+          "fill-rule": {"type":"text","unit":"none","value":"even-odd"},
+          "sample-points": {"type":"points2","unit":"model","value":[[0.5,0.5],[2,2]]}
+        },
+        "assertions": [
+          {"observed":"area","expected":{"type":"number","unit":"model-squared","value":12},"oracle":"area-error"},
+          {"observed":"membership","expected":{"type":"strings","unit":"none","value":["inside","outside"]},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"vertices":{"type":"points2","unit":"model","value":[[0,0],[4,0]]},"pattern-scale":{"type":"number","unit":"ratio","value":1}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"hatch-expansion-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "concave": {
+        "inputs": {
+          "vertices": {"type":"points2","unit":"model","value":[[0,0],[2,0],[2,1],[1,1],[1,2],[0,2]]},
+          "fill-rule": {"type":"text","unit":"none","value":"even-odd"}
+        },
+        "assertions": [{"observed":"area","expected":{"type":"number","unit":"model-squared","value":3},"oracle":"area-error"}]
+      },
+      "reversed-hole": {
+        "inputs": {
+          "vertices": {"type":"points2","unit":"model","value":[[0,0],[4,0],[4,4],[0,4],[3,1],[3,3],[1,3],[1,1]]},
+          "contour-starts": {"type":"integers","unit":"count","value":[0,4]},
+          "fill-rule": {"type":"text","unit":"none","value":"even-odd"}
+        },
+        "assertions": [{"observed":"area","expected":{"type":"number","unit":"model-squared","value":12},"oracle":"area-error"}]
+      },
+      "invalid-pattern": {
+        "inputs": {"pattern-scale":{"type":"number","unit":"ratio","value":0}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-hatch-scale"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "gradient": {
+      "ordinary": {
+        "inputs": {
+          "axis": {"type":"points2","unit":"model","value":[[0,0],[4,0]]},
+          "offsets": {"type":"numbers","unit":"ratio","value":[0,0.5,1]},
+          "colors": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,0,255,0,255,0,0,255,255]},
+          "sample-points": {"type":"points2","unit":"model","value":[[1,0],[2,0],[3,0]]}
+        },
+        "assertions": [
+          {
+            "observed": "landmark-rgba",
+            "expected": {"type":"bytes","unit":"8bit-channel","value":[128,128,0,255,0,255,0,255,0,128,128,255]},
+            "oracle": "pixels"
+          }
+        ]
+      },
+      "empty": {
+        "inputs": {"offsets":{"type":"numbers","unit":"ratio","value":[]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"empty-gradient"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"gradient-stop-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "degenerate-axis": {
+        "inputs": {"axis":{"type":"points2","unit":"model","value":[[0,0],[0,0]]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"degenerate-gradient"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "invalid-stop": {
+        "inputs": {"offsets":{"type":"numbers","unit":"ratio","value":[-0.1,1]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-gradient-stop"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "text": {
+      "ordinary": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-family": {"type":"text","unit":"none","value":"ABeeZee"},
+          "units-per-em": {"type":"integer","unit":"font-unit","value":1000},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[72]},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "hinting": {"type":"boolean","unit":"none","value":false},
+          "baseline": {"type":"vec2","unit":"model","value":[2,3]},
+          "font-style": {"type":"text","unit":"none","value":"Regular"},
+          "metrics-query-before-frame": {"type":"boolean","unit":"none","value":true},
+          "operations": {"type":"strings","unit":"none","value":["add-fonts-from-path","get-font-list","select-font-face","font-size","text-extends","text","completed-readback"]},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[32,32]},
+          "model-to-device": {"type":"matrix3","unit":"none","value":[1,0,0,0,-1,32,0,0,1]},
+          "glyph-probe-region": {"type":"numbers","unit":"physical-pixel","value":[2,21,10,31]},
+          "glyph-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,255,255,255]},
+          "background-rgba": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]}
+        },
+        "assertions": [
+          {"observed":"glyph-ids","expected":{"type":"integers","unit":"count","value":[61]},"oracle":"contracts"},
+          {"observed":"raw-advances","expected":{"type":"integers","unit":"font-unit","value":[715]},"oracle":"font-metrics"},
+          {"observed":"raw-left-bearings","expected":{"type":"integers","unit":"font-unit","value":[90]},"oracle":"font-metrics"},
+          {"observed":"model-advance","expected":{"type":"number","unit":"model","value":7.15},"oracle":"model-error"},
+          {"observed":"baseline","expected":{"type":"vec2","unit":"model","value":[2,3]},"oracle":"model-error"},
+          {"observed":"font-list-contains","expected":{"type":"strings","unit":"none","value":["ABeeZee"]},"oracle":"contracts"},
+          {"observed":"metrics-ready-before-frame","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"glyph-readback-has-ink","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[]}
+        },
+        "assertions": [
+          {"observed":"raw-advance","expected":{"type":"integer","unit":"font-unit","value":0},"oracle":"font-metrics"},
+          {"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {
+          "page-limit": {"type":"integer","unit":"count","value":1},
+          "requested-pages": {"type":"integer","unit":"count","value":2}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"glyph-atlas-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "latin": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[195,169]}
+        },
+        "assertions": [
+          {"observed":"decoded-codepoints","expected":{"type":"integers","unit":"codepoint","value":[233]},"oracle":"contracts"},
+          {"observed":"glyph-ids","expected":{"type":"integers","unit":"count","value":[189]},"oracle":"contracts"},
+          {"observed":"raw-advance","expected":{"type":"integer","unit":"font-unit","value":544},"oracle":"font-metrics"}
+        ]
+      },
+      "supplementary": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[240,159,153,130]},
+          "fallback-policy": {"type":"text","unit":"none","value":"visible-notdef"}
+        },
+        "assertions": [
+          {"observed":"decoded-codepoints","expected":{"type":"integers","unit":"codepoint","value":[128578]},"oracle":"contracts"},
+          {"observed":"glyph-ids","expected":{"type":"integers","unit":"count","value":[0]},"oracle":"contracts"},
+          {"observed":"raw-advance","expected":{"type":"integer","unit":"font-unit","value":600},"oracle":"font-metrics"},
+          {"observed":"missing-glyph-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"}
+        ]
+      },
+      "invalid-utf8": {
+        "inputs": {
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[192,175]}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-utf8"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "missing-font": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "asset-fault": {"type":"text","unit":"none","value":"font-open-unavailable"}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"font-unavailable"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "cache-retained": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-family": {"type":"text","unit":"none","value":"ABeeZee"},
+          "units-per-em": {"type":"integer","unit":"font-unit","value":1000},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[72]},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "hinting": {"type":"boolean","unit":"none","value":false},
+          "baseline": {"type":"vec2","unit":"model","value":[2,3]},
+          "font-style": {"type":"text","unit":"none","value":"Regular"},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[32,32]},
+          "model-to-device": {"type":"matrix3","unit":"none","value":[1,0,0,0,-1,32,0,0,1]},
+          "glyph-probe-region": {"type":"numbers","unit":"physical-pixel","value":[2,21,10,31]},
+          "glyph-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,255,255,255]},
+          "background-rgba": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},
+          "next-font-size": {"type":"number","unit":"model","value":20},
+          "operations": {"type":"strings","unit":"none","value":["record-cached-h","record-uncached-h","change-font-size","submit-recorded-snapshots","readback-both","drain","release-cache-and-host"]}
+        },
+        "assertions": [
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"glyph-readback-has-ink","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"recorded-model-advance","expected":{"type":"number","unit":"model","value":7.15},"oracle":"model-error"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "reload": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-family": {"type":"text","unit":"none","value":"ABeeZee"},
+          "units-per-em": {"type":"integer","unit":"font-unit","value":1000},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[72]},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "hinting": {"type":"boolean","unit":"none","value":false},
+          "baseline": {"type":"vec2","unit":"model","value":[2,3]},
+          "font-style": {"type":"text","unit":"none","value":"Regular"},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[32,32]},
+          "model-to-device": {"type":"matrix3","unit":"none","value":[1,0,0,0,-1,32,0,0,1]},
+          "glyph-probe-region": {"type":"numbers","unit":"physical-pixel","value":[2,21,10,31]},
+          "glyph-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,255,255,255]},
+          "background-rgba": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},
+          "next-font-size": {"type":"number","unit":"model","value":20},
+          "asset-revisions": {"type":"integers","unit":"count","value":[1,2]},
+          "revision-kind": {"type":"text","unit":"none","value":"injected-asset-revision"},
+          "operations": {"type":"strings","unit":"none","value":["record-cached-h-revision-1","change-font-size","reload-same-pinned-font-revision-2","submit-old-snapshot","record-cached-and-uncached-h-revision-2","readback-old-and-new","drain","release-cache-and-host"]}
+        },
+        "assertions": [
+          {"observed":"retained-model-advance","expected":{"type":"number","unit":"model","value":7.15},"oracle":"model-error"},
+          {"observed":"current-model-advance","expected":{"type":"number","unit":"model","value":14.3},"oracle":"model-error"},
+          {"observed":"current-font-revision","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"cache-invalidated-for-new-revision","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"old-and-new-glyph-readback-have-ink","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "eviction": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-family": {"type":"text","unit":"none","value":"ABeeZee"},
+          "units-per-em": {"type":"integer","unit":"font-unit","value":1000},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[72]},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "hinting": {"type":"boolean","unit":"none","value":false},
+          "baseline": {"type":"vec2","unit":"model","value":[2,3]},
+          "font-style": {"type":"text","unit":"none","value":"Regular"},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[32,32]},
+          "model-to-device": {"type":"matrix3","unit":"none","value":[1,0,0,0,-1,32,0,0,1]},
+          "glyph-probe-region": {"type":"numbers","unit":"physical-pixel","value":[2,21,10,31]},
+          "glyph-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,255,255,255]},
+          "background-rgba": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},
+          "codepoints": {"type":"integers","unit":"codepoint","value":[72,233,128578]},
+          "fallback-policy": {"type":"text","unit":"none","value":"visible-notdef"},
+          "page-limit": {"type":"integer","unit":"count","value":2},
+          "test-page-glyph-capacity": {"type":"integer","unit":"count","value":1},
+          "limit-kind": {"type":"text","unit":"none","value":"injected-renderer-policy"},
+          "operations": {"type":"strings","unit":"none","value":["cache-h-and-pin-its-page","render-e-acute","drain-and-release-e-acute-command","render-visible-notdef-evicting-only-unreferenced-page","render-cached-and-uncached-h","readback-glyphs","drain","release-cache-and-host"]}
+        },
+        "assertions": [
+          {"observed":"peak-live-pages","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"eviction-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"pinned-page-evicted","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"requested-glyphs-readback-have-ink","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "owner-recreate": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-family": {"type":"text","unit":"none","value":"ABeeZee"},
+          "units-per-em": {"type":"integer","unit":"font-unit","value":1000},
+          "utf8-bytes": {"type":"bytes","unit":"byte","value":[72]},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "hinting": {"type":"boolean","unit":"none","value":false},
+          "baseline": {"type":"vec2","unit":"model","value":[2,3]},
+          "font-style": {"type":"text","unit":"none","value":"Regular"},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[32,32]},
+          "model-to-device": {"type":"matrix3","unit":"none","value":[1,0,0,0,-1,32,0,0,1]},
+          "glyph-probe-region": {"type":"numbers","unit":"physical-pixel","value":[2,21,10,31]},
+          "glyph-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,255,255,255]},
+          "background-rgba": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},
+          "owners": {"type":"strings","unit":"none","value":["device-a","device-b"]},
+          "owner-generations": {"type":"integers","unit":"count","value":[1,1]},
+          "entity-id": {"type":"integer","unit":"count","value":42},
+          "operations": {"type":"strings","unit":"none","value":["render-cached-and-uncached-on-both-owners","drain-both","destroy-owner-a","readback-surviving-owner-b","recreate-owner-a-generation-2","reupload-font-pages-on-a","readback-recreated-a-and-surviving-b","drain","close-both"]}
+        },
+        "assertions": [
+          {"observed":"recreated-owner-generation","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"unaffected-owner-generation","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"survivor-readback-unchanged","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"recreated-cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"cross-device-resource-sharing","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"glyph-readback-has-ink","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      }
+    },
+    "mtext": {
+      "ordinary": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "text": {"type":"text","unit":"none","value":"H\nH"},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "line-height": {"type":"number","unit":"model","value":12},
+          "baseline": {"type":"vec2","unit":"model","value":[0,0]},
+          "coordinate-system": {"type":"text","unit":"none","value":"model-y-up"}
+        },
+        "assertions": [
+          {"observed":"line-count","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"baselines","expected":{"type":"points2","unit":"model","value":[[0,0],[0,-12]]},"oracle":"model-error"},
+          {"observed":"line-advances","expected":{"type":"numbers","unit":"model","value":[7.15,7.15]},"oracle":"model-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"text":{"type":"text","unit":"none","value":""},"font-asset":{"type":"asset","unit":"none","value":"abeezee"}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"text-line-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "image": {
+      "ordinary": {
+        "inputs": {
+          "png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="},
+          "file-name": {"type":"text","unit":"none","value":"odd alpha ü.png"},
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "stride": {"type":"integer","unit":"byte","value":12},
+          "uv-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "insertion": {"type":"vec2","unit":"model","value":[10,20]}
+        },
+        "assertions": [
+          {"observed":"decoded-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,0,255,0,128,0,0,255,0,255,255,0,255,0,255,255,255,255,0,255,255]},"oracle":"decoded-pixels"},
+          {"observed":"corners","expected":{"type":"points2","unit":"model","value":[[10,20],[16,20],[17,18],[11,18]]},"oracle":"model-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "file-name": {"type":"text","unit":"none","value":""}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"image-unavailable"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {
+          "decoded-byte-limit": {"type":"integer","unit":"byte","value":16},
+          "requested-bytes": {"type":"integer","unit":"byte","value":24}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"decoded-image-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "mirrored": {
+        "inputs": {
+          "png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="},
+          "uv-basis": {"type":"points2","unit":"model","value":[[-2,0],[0.5,-1]]},
+          "insertion": {"type":"vec2","unit":"model","value":[10,20]},
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]}
+        },
+        "assertions": [
+          {"observed":"corners","expected":{"type":"points2","unit":"model","value":[[10,20],[4,20],[5,18],[11,18]]},"oracle":"model-error"}
+        ]
+      },
+      "retained": {
+        "inputs": {
+          "png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="},
+          "file-name": {"type":"text","unit":"none","value":"odd alpha ü.png"},
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "stride": {"type":"integer","unit":"byte","value":12},
+          "uv-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "insertion": {"type":"vec2","unit":"model","value":[10,20]},
+          "acquire-count": {"type":"integer","unit":"count","value":1000},
+          "operations": {"type":"strings","unit":"none","value":["reacquire-same-image","record-cached-and-uncached-image","destroy-public-handle","evict-unreferenced-assets","submit-retained-snapshots","readback-both","drain","release-cache-and-host"]}
+        },
+        "assertions": [
+          {"observed":"decode-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"retained-image-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"retained-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},"oracle":"pixels"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "stale": {
+        "inputs": {
+          "operations": {"type":"strings","unit":"none","value":["create-image","destroy-handle","use-destroyed-handle"]}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"stale-image-handle"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "owner-recreate": {
+        "inputs": {
+          "png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="},
+          "file-name": {"type":"text","unit":"none","value":"odd alpha ü.png"},
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "stride": {"type":"integer","unit":"byte","value":12},
+          "uv-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "insertion": {"type":"vec2","unit":"model","value":[10,20]},
+          "owners": {"type":"strings","unit":"none","value":["device-a","device-b"]},
+          "owner-generations": {"type":"integers","unit":"count","value":[1,1]},
+          "entity-id": {"type":"integer","unit":"count","value":42},
+          "operations": {"type":"strings","unit":"none","value":["render-cached-and-uncached-on-both-owners","drain-both","destroy-owner-a","readback-surviving-owner-b","recreate-owner-a-generation-2","reupload-image-on-a","readback-recreated-a-and-surviving-b","drain","close-both"]}
+        },
+        "assertions": [
+          {"observed":"recreated-owner-generation","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"unaffected-owner-generation","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"survivor-readback-unchanged","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"recreated-cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"cross-device-resource-sharing","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"survivor-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},"oracle":"pixels"},
+          {"observed":"recreated-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},"oracle":"pixels"}
+        ]
+      },
+      "reload": {
+        "inputs": {
+          "png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="},
+          "file-name": {"type":"text","unit":"none","value":"odd alpha ü.png"},
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "stride": {"type":"integer","unit":"byte","value":12},
+          "uv-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "insertion": {"type":"vec2","unit":"model","value":[10,20]},
+          "replacement-png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGUlEQVR4nGNgYPj/n+E/QwOQhjL//wdR/wGRkQ10gyUZewAAAABJRU5ErkJggg=="},
+          "asset-revisions": {"type":"integers","unit":"count","value":[1,2]},
+          "operations": {"type":"strings","unit":"none","value":["record-cached-and-uncached-image-revision-1","overwrite-same-file-and-notify-revision-2","record-current-cached-and-uncached-image","submit-old-and-current-snapshots","readback-old-and-current","drain","release-cache-and-host"]}
+        },
+        "assertions": [
+          {"observed":"retained-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},"oracle":"pixels"},
+          {"observed":"current-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[0,0,255,255]},"oracle":"pixels"},
+          {"observed":"current-asset-revision","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"cache-invalidated-for-new-revision","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "eviction": {
+        "inputs": {
+          "png-base64": {"type":"text","unit":"none","value":"iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="},
+          "file-name": {"type":"text","unit":"none","value":"odd alpha ü.png"},
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "stride": {"type":"integer","unit":"byte","value":12},
+          "uv-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "insertion": {"type":"vec2","unit":"model","value":[10,20]},
+          "png-payloads": {"type":"strings","unit":"none","value":["iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII=","iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGUlEQVR4nGNgYPj/n+E/QwOQhjL//wdR/wGRkQ10gyUZewAAAABJRU5ErkJggg==","iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGElEQVR4nGNg+A+GDQxAguE/mPMfRP0HAJKQDXT6wU57AAAAAElFTkSuQmCC"]},
+          "file-names": {"type":"strings","unit":"none","value":["pinned ü.png","evictable.png","incoming.png"]},
+          "decoded-byte-limit": {"type":"integer","unit":"byte","value":48},
+          "limit-kind": {"type":"text","unit":"none","value":"injected-renderer-policy"},
+          "operations": {"type":"strings","unit":"none","value":["record-cached-image-a-and-destroy-its-public-handle","render-image-b","drain-and-destroy-b-handle","load-image-c-evicting-only-unreferenced-b","render-cached-and-uncached-image-a-and-image-c","readback-pinned-and-incoming","drain","release-cache-and-host"]}
+        },
+        "assertions": [
+          {"observed":"decoded-byte-limit-respected","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"eviction-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"pinned-image-evicted","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"pinned-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},"oracle":"pixels"},
+          {"observed":"incoming-opaque-pixel","expected":{"type":"bytes","unit":"8bit-channel","value":[0,255,0,255]},"oracle":"pixels"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "antialias": {
+      "ordinary": {
+        "inputs": {
+          "samples": {"type":"integer","unit":"count","value":1},
+          "width": {"type":"number","unit":"physical-pixel","value":1},
+          "operations": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["clear-transparent","disable-antialias","draw-line","capture-hard","clear-transparent","enable-antialias","draw-line","capture-antialiased"]
+          },
+          "center-line": {"type":"points2","unit":"physical-pixel","value":[[8,0],[8,8]]},
+          "probe": {"type":"vec2","unit":"physical-pixel","value":[8.5,4.5]},
+          "edge-inclusive": {"type":"boolean","unit":"none","value":true}
+        },
+        "assertions": [
+          {"observed":"hard-edge-alpha","expected":{"type":"bytes","unit":"8bit-channel","value":[255]},"oracle":"pixels"},
+          {"observed":"half-covered-alpha","expected":{"type":"bytes","unit":"8bit-channel","value":[128]},"oracle":"pixels"},
+          {"observed":"target-sample-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"operations":{"type":"strings","unit":"none","value":["enable-antialias","disable-antialias"]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"requested":{"type":"integer","unit":"count","value":64},"supported":{"type":"integers","unit":"count","value":[1,4]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"unsupported-sample-count"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "dimension-aligned": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,4]]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"model","value":10}
+        },
+        "assertions": [
+          {"observed":"measurement","expected":{"type":"number","unit":"model","value":5},"oracle":"model-error"},
+          {"observed":"label-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-layout-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "dimension-linear": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[4,3]]},
+          "measurement-axis": {"type":"vec2","unit":"model","value":[1,0]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"model","value":10}
+        },
+        "assertions": [
+          {"observed":"measurement","expected":{"type":"number","unit":"model","value":4},"oracle":"model-error"},
+          {"observed":"label-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-layout-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "dimension-angular": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[1,0],[0,0],[0,1]]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"model","value":10}
+        },
+        "assertions": [
+          {"observed":"measurement","expected":{"type":"number","unit":"radian","value":1.5707963267948966},"oracle":"angle-error"},
+          {"observed":"label-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-layout-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "dimension-radial": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[2,0]]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"model","value":10}
+        },
+        "assertions": [
+          {"observed":"measurement","expected":{"type":"number","unit":"model","value":2},"oracle":"model-error"},
+          {"observed":"label-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-layout-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "dimension-diametric": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[-2,0],[2,0]]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"model","value":10}
+        },
+        "assertions": [
+          {"observed":"measurement","expected":{"type":"number","unit":"model","value":4},"oracle":"model-error"},
+          {"observed":"label-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-layout-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "endcaps": {
+      "ordinary": {
+        "inputs": {
+          "cap-types": {"type":"integers","unit":"count","value":[0,1,2,3,4,5,6,7,8,9]},
+          "cap-names": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["NOCAP","OPENARROW","CLOSEDARROW","OPENROUND","CLOSEDROUND","OPENSQUARE","CLOSEDSQUARE","TICK","OPENTRIANGLE","CLOSEDTRIANGLE"]
+          },
+          "start": {"type":"vec2","unit":"model","value":[0,0]},
+          "end": {"type":"vec2","unit":"model","value":[4,0]},
+          "size": {"type":"number","unit":"model","value":1},
+          "tick-angle": {"type":"number","unit":"radian","value":0.7853981633974483},
+          "operations": {"type":"strings","unit":"none","value":["render-cap","stroke-pending-path"]}
+        },
+        "assertions": [
+          {"observed":"visible-cap-count","expected":{"type":"integer","unit":"count","value":9},"oracle":"contracts"},
+          {
+            "observed": "tick-endpoints",
+            "expected": {"type":"points2","unit":"model","value":[[3.646446609406726,-0.3535533905932738],[4.353553390593274,0.3535533905932738]]},
+            "oracle": "model-error"
+          },
+          {"observed":"closed-caps-filled-and-outlined","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"cap-types":{"type":"integers","unit":"count","value":[0]},"size":{"type":"number","unit":"model","value":1}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"cap-batch-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "unknown": {
+        "inputs": {"cap-types":{"type":"integers","unit":"count","value":[10]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"unsupported-cap-type"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "insert": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[1,2]]},
+          "block-chain": {"type":"strings","unit":"none","value":["outer","inner"]},
+          "layer-inheritance": {"type":"text","unit":"none","value":"insert-context"},
+          "outer-transform": {"type":"matrix3","unit":"none","value":[2,0,10,0,2,20,0,0,1]},
+          "inner-transform": {"type":"matrix3","unit":"none","value":[0,-1,0,1,0,0,0,0,1]}
+        },
+        "assertions": [
+          {"observed":"transformed-point","expected":{"type":"vec2","unit":"model","value":[6,22]},"oracle":"model-error"},
+          {"observed":"visible-layer","expected":{"type":"text","unit":"none","value":"insert-layer"},"oracle":"contracts"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"block-chain":{"type":"strings","unit":"none","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"insert-depth-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "cycle": {
+        "inputs": {"block-chain":{"type":"strings","unit":"none","value":["a","b","a"]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"cyclic-block-insert"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "layers": {
+      "ordinary": {
+        "inputs": {
+          "operations": {"type":"strings","unit":"none","value":["clear-black","draw-half-red","draw-half-blue"]},
+          "colors": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,128,0,0,255,128]},
+          "blend-space": {"type":"text","unit":"none","value":"SDR-unorm-no-sRGB-transfer"}
+        },
+        "assertions": [
+          {"observed":"overlap-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[64,0,128,255]},"oracle":"pixels"},
+          {"observed":"pass-order","expected":{"type":"strings","unit":"none","value":["background","document","foreground"]},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"operations":{"type":"strings","unit":"none","value":["clear-black"]}},
+        "assertions": [{"observed":"background-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},"oracle":"pixels"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"command-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "transparent": {
+        "inputs": {
+          "operations": {"type":"strings","unit":"none","value":["clear-transparent","draw-half-red","draw-half-blue"]},
+          "output-alpha": {"type":"text","unit":"none","value":"straight"}
+        },
+        "assertions": [{"observed":"overlap-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[85,0,170,191]},"oracle":"pixels"}]
+      },
+      "ordered-clear": {
+        "inputs": {"operations":{"type":"strings","unit":"none","value":["clear-black","draw-half-red","clear-green","draw-half-blue"]}},
+        "assertions": [{"observed":"overlap-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[0,128,128,255]},"oracle":"pixels"}]
+      }
+    },
+    "uniform-ranges": {
+      "ordinary": {
+        "inputs": {
+          "rectangle": {"type":"points2","unit":"model","value":[[0,0],[2,0],[2,2],[0,2]]},
+          "transform-a": {"type":"matrix3","unit":"none","value":[1,0,0,0,1,0,0,0,1]},
+          "transform-b": {"type":"matrix3","unit":"none","value":[1,0,2,0,1,0,0,0,1]},
+          "transform-c": {"type":"matrix3","unit":"none","value":[1,0,4,0,1,0,0,0,1]},
+          "colors": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,0,255,0,255,0,0,255,255]},
+          "probes": {"type":"points2","unit":"model","value":[[1,1],[3,1],[5,1]]}
+        },
+        "assertions": [
+          {"observed":"landmark-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,0,255,0,255,0,0,255,255]},"oracle":"pixels"},
+          {"observed":"distinct-uniform-ranges","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"commands":{"type":"integer","unit":"count","value":0}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"range-limit":{"type":"integer","unit":"count","value":2},"requested-ranges":{"type":"integer","unit":"count","value":3}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"uniform-range-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cache": {
+      "ordinary": {
+        "inputs": {
+          "documents": {"type":"strings","unit":"none","value":["doc-a","doc-b"]},
+          "views": {"type":"strings","unit":"none","value":["view-a","view-b"]},
+          "owners": {"type":"strings","unit":"none","value":["device-a","device-b"]},
+          "owner-generations": {"type":"integers","unit":"count","value":[1,1]},
+          "entity-id": {"type":"integer","unit":"count","value":42},
+          "events": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["render-both","edit-a","undo-a","reinsert-id-a","select-a","evict-a","close-a","render-b","close-b","drain"]
+          }
+        },
+        "assertions": [
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"unaffected-owner-generation","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"cross-device-resource-sharing","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"entity-count":{"type":"integer","unit":"count","value":0},"events":{"type":"strings","unit":"none","value":["delete-unknown-cache-id"]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"entry-limit":{"type":"integer","unit":"count","value":4},"requested-entries":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"cache-budget-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "zoom-dpr": {
+        "inputs": {
+          "zoom": {"type":"number","unit":"ratio","value":128},
+          "dpr": {"type":"number","unit":"ratio","value":2},
+          "events": {"type":"strings","unit":"none","value":["cache-at-unit-zoom","change-zoom-dpr","render"]}
+        },
+        "assertions": [
+          {"observed":"max-display-error","expected":{"type":"number","unit":"physical-pixel","value":0},"oracle":"curve-error"},
+          {"observed":"retessellated","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      }
+    },
+    "grid": {
+      "ordinary": {
+        "inputs": {
+          "bounds": {"type":"numbers","unit":"model","value":[-2,-2,2,2]},
+          "spacing": {"type":"number","unit":"model","value":1},
+          "include-boundary": {"type":"boolean","unit":"none","value":true}
+        },
+        "assertions": [
+          {"observed":"vertical-grid-positions","expected":{"type":"numbers","unit":"model","value":[-2,-1,0,1,2]},"oracle":"model-error"},
+          {"observed":"horizontal-grid-positions","expected":{"type":"numbers","unit":"model","value":[-2,-1,0,1,2]},"oracle":"model-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"viewport":{"type":"integers","unit":"physical-pixel","value":[0,0]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"line-limit":{"type":"integer","unit":"count","value":4},"requested-lines":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"grid-expansion-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "paper": {
+      "ordinary": {
+        "inputs": {"size":{"type":"vec2","unit":"model","value":[297,210]},"origin":{"type":"vec2","unit":"model","value":[0,0]}},
+        "assertions": [
+          {"observed":"corners","expected":{"type":"points2","unit":"model","value":[[0,0],[297,0],[297,210],[0,210]]},"oracle":"model-error"},
+          {"observed":"layer","expected":{"type":"text","unit":"none","value":"background"},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"size":{"type":"vec2","unit":"model","value":[0,0]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"path-point-limit":{"type":"integer","unit":"count","value":3},"requested-path-points":{"type":"integer","unit":"count","value":4}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"path-point-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cursor": {
+      "ordinary": {
+        "inputs": {
+          "position": {"type":"vec2","unit":"model","value":[1,2]},
+          "arm-length": {"type":"number","unit":"logical-pixel","value":7},
+          "dpr": {"type":"number","unit":"ratio","value":2}
+        },
+        "assertions": [
+          {"observed":"reported-position","expected":{"type":"vec2","unit":"model","value":[1,2]},"oracle":"model-error"},
+          {"observed":"physical-arm-length","expected":{"type":"number","unit":"physical-pixel","value":14},"oracle":"curve-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"cursor-visible":{"type":"boolean","unit":"none","value":false}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"overlay-command-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cursor-location": {
+      "ordinary": {
+        "inputs": {
+          "position": {"type":"vec2","unit":"model","value":[1,2]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"logical-pixel","value":10}
+        },
+        "assertions": [
+          {"observed":"reported-position","expected":{"type":"vec2","unit":"model","value":[1,2]},"oracle":"model-error"},
+          {"observed":"text-painter-called","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"cursor-visible":{"type":"boolean","unit":"none","value":false}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"overlay-command-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "grips": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,4]]},
+          "active-index": {"type":"integer","unit":"count","value":1},
+          "marker-size": {"type":"number","unit":"logical-pixel","value":6},
+          "dpr": {"type":"number","unit":"ratio","value":1.5}
+        },
+        "assertions": [
+          {"observed":"marker-count","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"active-index","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"physical-marker-size","expected":{"type":"number","unit":"physical-pixel","value":9},"oracle":"curve-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"overlay-command-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "temporary-preview": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,4]]},
+          "events": {"type":"strings","unit":"none","value":["preview-begin","preview-update","cancel"]}
+        },
+        "assertions": [
+          {"observed":"preview-count-after-cancel","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"document-count-after-cancel","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"events":{"type":"strings","unit":"none","value":["cancel-without-operation"]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"preview-command-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "commit": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,4]]},
+          "events": {"type":"strings","unit":"none","value":["preview-begin","preview-update","commit","undo"]}
+        },
+        "assertions": [
+          {"observed":"undo-entry-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"document-count-after-undo","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"preview-count-after-commit","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "widget-routing": {
+      "ordinary": {
+        "inputs": {
+          "views": {"type":"strings","unit":"none","value":["view-0","view-1"]},
+          "events": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["expose","focus-view-0","click-view-0","key-space","context-menu","resize","reparent-view-0","close-view-0","render-view-1"]
+          },
+          "dprs": {"type":"numbers","unit":"ratio","value":[1,1.25,1.5,2]}
+        },
+        "assertions": [
+          {"observed":"input-recipient","expected":{"type":"text","unit":"none","value":"view-0"},"oracle":"contracts"},
+          {"observed":"other-view-input-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"popup-exposed","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"surviving-view-fresh","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"stale-delivery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "document-present": {"type":"boolean","unit":"none","value":false},
+          "events": {"type":"strings","unit":"none","value":["construct-view","query-coordinates","close"]}
+        },
+        "assertions": [
+          {"observed":"safe-without-document","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"retained-callback-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"capture-limit":{"type":"integer","unit":"count","value":2},"requested-captures":{"type":"integer","unit":"count","value":3}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"pending-capture-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cpu-build-options": {
+      "ordinary": {
+        "inputs": {
+          "rhi": {"type":"boolean","unit":"none","value":false},
+          "legacy": {"type":"boolean","unit":"none","value":false},
+          "ui": {"type":"boolean","unit":"none","value":false},
+          "cli": {"type":"boolean","unit":"none","value":false},
+          "python": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [
+          {"observed":"qt-discovery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"legacy-discovery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"cpu-contract-target-exists","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "rhi": {"type":"boolean","unit":"none","value":false},
+          "legacy": {"type":"boolean","unit":"none","value":false},
+          "ui": {"type":"boolean","unit":"none","value":false},
+          "cli": {"type":"boolean","unit":"none","value":false},
+          "tests-enabled": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [{"observed":"gpu-target-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {
+          "rhi": {"type":"boolean","unit":"none","value":false},
+          "legacy": {"type":"boolean","unit":"none","value":false},
+          "ui": {"type":"boolean","unit":"none","value":true}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"no-renderer-for-host"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cairo-compatibility": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[3,4]]},
+          "size": {"type":"integers","unit":"physical-pixel","value":[32,32]},
+          "buffer-format": {"type":"text","unit":"none","value":"cairo-argb32-native"}
+        },
+        "assertions": [
+          {"observed":"length","expected":{"type":"number","unit":"model","value":5},"oracle":"model-error"},
+          {"observed":"cpu-buffer-ready","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"qrhi-owner-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"byte-limit":{"type":"integer","unit":"byte","value":64},"requested-bytes":{"type":"integer","unit":"byte","value":65}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"cpu-buffer-size-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "readback": {
+      "ordinary": {
+        "inputs": {
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "stride": {"type":"integer","unit":"byte","value":16},
+          "padded-rgba": {
+            "type": "bytes",
+            "unit": "8bit-channel",
+            "value": [255,0,0,255,0,255,0,128,0,0,255,0,165,165,165,165,255,255,0,255,0,255,255,255,255,0,255,255,165,165,165,165]
+          },
+          "origin": {"type":"text","unit":"none","value":"top-left"},
+          "alpha": {"type":"text","unit":"none","value":"straight"}
+        },
+        "assertions": [
+          {
+            "observed": "normalized-rgba",
+            "expected": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,0,255,0,128,0,0,255,0,255,255,0,255,0,255,255,255,255,0,255,255]},
+            "oracle": "decoded-pixels"
+          },
+          {"observed":"snapshot-ready","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"events":{"type":"strings","unit":"none","value":["construct-painter","query-data-before-capture"]}},
+        "assertions": [
+          {"observed":"snapshot-ready","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"status","expected":{"type":"text","unit":"none","value":"not-ready"},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"byte-limit":{"type":"integer","unit":"byte","value":16},"requested-bytes":{"type":"integer","unit":"byte","value":24}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"readback-byte-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "overflow": {
+        "inputs": {"size":{"type":"integers","unit":"physical-pixel","value":[4294967295,4294967295]},"byte-limit":{"type":"integer","unit":"byte","value":64}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "stale": {
+        "inputs": {
+          "captured-generation": {"type":"integer","unit":"count","value":1},
+          "current-generation": {"type":"integer","unit":"count","value":2},
+          "events": {"type":"strings","unit":"none","value":["capture","resize","deliver-old-payload"]}
+        },
+        "assertions": [
+          {"observed":"stale-delivery-drop-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"snapshot-ready","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"}
+        ]
+      },
+      "write-error": {
+        "inputs": {"output-target-kind":{"type":"text","unit":"none","value":"existing-directory"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"write-failed"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cli-lua": {
+      "ordinary": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"lua"},
+          "script": {
+            "type": "text",
+            "unit": "none",
+            "value": "local lb = lc.builder.LayerBuilder()\nlb:setName(\"renderer-fixture\")\nlb:setLineWidth(lc.meta.MetaLineWidthByValue(1.0))\nlb:setColor(lc.Color(255, 0, 0, 255))\nlocal layer = lb:build()\nlc.operation.AddLayer.new(document, layer):execute()\nlocal b = lc.builder.LineBuilder()\nb:setLayer(layer)\nb:setStartPoint(lc.geo.Coordinate(0.0, 0.0))\nb:setEndPoint(lc.geo.Coordinate(3.0, 4.0))\nlocal eb = lc.operation.EntityBuilder.new(document)\neb:appendEntity(b:build())\neb:execute()\n"
+          },
+          "globals": {"type":"strings","unit":"none","value":["lc","document"]},
+          "size": {"type":"integers","unit":"physical-pixel","value":[257,193]},
+          "file-name": {"type":"text","unit":"none","value":"output ü.png"}
+        },
+        "assertions": [
+          {"observed":"line-endpoint","expected":{"type":"vec2","unit":"model","value":[3,4]},"oracle":"model-error"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"encoded-size","expected":{"type":"integers","unit":"physical-pixel","value":[257,193]},"oracle":"curve-error"},
+          {"observed":"origin","expected":{"type":"text","unit":"none","value":"top-left"},"oracle":"contracts"},
+          {"observed":"widgets-loaded","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"lua"},
+          "script": {"type":"text","unit":"none","value":""},
+          "size": {"type":"integers","unit":"physical-pixel","value":[257,193]}
+        },
+        "assertions": [
+          {"observed":"document-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"size":{"type":"integers","unit":"physical-pixel","value":[0,193]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-output-size"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "script-error": {
+        "inputs": {"script":{"type":"text","unit":"none","value":"error(\"renderer-fixture-error\")\n"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"script-error"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cli-python": {
+      "ordinary": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"python"},
+          "script": {
+            "type": "text",
+            "unit": "none",
+            "value": "layer = lc.meta.Layer(\"renderer-fixture\", lc.meta.MetaLineWidthByValue(1.0), lc.Color(255, 0, 0, 255), None, False)\nlc.operation.AddLayer.new(document, layer).execute()\nb = lc.builder.LineBuilder()\nb.setLayer(layer)\nb.setStartPoint(lc.geo.Coordinate(0.0, 0.0))\nb.setEndPoint(lc.geo.Coordinate(3.0, 4.0))\neb = lc.operation.EntityBuilder.new(document)\neb.appendEntity(b.build())\neb.execute()\n"
+          },
+          "globals": {"type":"strings","unit":"none","value":["lc","document"]},
+          "size": {"type":"integers","unit":"physical-pixel","value":[257,193]},
+          "file-name": {"type":"text","unit":"none","value":"output ü.png"}
+        },
+        "assertions": [
+          {"observed":"line-endpoint","expected":{"type":"vec2","unit":"model","value":[3,4]},"oracle":"model-error"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"encoded-size","expected":{"type":"integers","unit":"physical-pixel","value":[257,193]},"oracle":"curve-error"},
+          {"observed":"origin","expected":{"type":"text","unit":"none","value":"top-left"},"oracle":"contracts"},
+          {"observed":"widgets-loaded","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"python"},
+          "script": {"type":"text","unit":"none","value":""},
+          "size": {"type":"integers","unit":"physical-pixel","value":[257,193]}
+        },
+        "assertions": [
+          {"observed":"document-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"size":{"type":"integers","unit":"physical-pixel","value":[0,193]}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"invalid-output-size"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "script-error": {
+        "inputs": {"script":{"type":"text","unit":"none","value":"raise RuntimeError(\"renderer-fixture-error\")\n"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"script-error"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "lua-callbacks": {
+      "ordinary": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"lua"},
+          "script": {
+            "type": "text",
+            "unit": "none",
+            "value": "local lb = lc.builder.LayerBuilder()\nlb:setName(\"renderer-fixture\")\nlb:setLineWidth(lc.meta.MetaLineWidthByValue(1.0))\nlb:setColor(lc.Color(255, 0, 0, 255))\nlocal layer = lb:build()\nlc.operation.AddLayer.new(document, layer):execute()\nlocal b = lc.builder.LineBuilder()\nb:setLayer(layer)\nb:setStartPoint(lc.geo.Coordinate(0.0, 0.0))\nb:setEndPoint(lc.geo.Coordinate(3.0, 4.0))\nlocal eb = lc.operation.EntityBuilder.new(document)\neb:appendEntity(b:build())\neb:execute()\n"
+          },
+          "globals": {"type":"strings","unit":"none","value":["lc","document"]},
+          "plugin-asset": {"type":"asset","unit":"none","value":"lua-rectangle"},
+          "documents": {"type":"strings","unit":"none","value":["doc-0","doc-1"]},
+          "owner-window": {"type":"text","unit":"none","value":"view-0"},
+          "rectangle-size": {"type":"vec2","unit":"model","value":[4,3]},
+          "dragged-corner": {"type":"vec2","unit":"model","value":[5,6]},
+          "events": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["load-plugin","preview","cancel","create-commit","drag","undo-drag","redo-drag","switch-active-view","close-owner","deliver-stale-callback"]
+          }
+        },
+        "assertions": [
+          {"observed":"line-endpoint","expected":{"type":"vec2","unit":"model","value":[3,4]},"oracle":"model-error"},
+          {"observed":"custom-rectangle-area","expected":{"type":"number","unit":"model-squared","value":30},"oracle":"area-error"},
+          {"observed":"owner-window","expected":{"type":"text","unit":"none","value":"view-0"},"oracle":"contracts"},
+          {"observed":"other-document-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"preview-leaked-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"drag-undo-entry-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"stale-callback-delivery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"lua"},
+          "script": {"type":"text","unit":"none","value":""},
+          "events": {"type":"strings","unit":"none","value":["close-without-operation"]}
+        },
+        "assertions": [{"observed":"callback-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"callback-limit":{"type":"integer","unit":"count","value":2},"requested-callbacks":{"type":"integer","unit":"count","value":3}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"callback-queue-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "python-callbacks": {
+      "ordinary": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"python"},
+          "script": {
+            "type": "text",
+            "unit": "none",
+            "value": "layer = lc.meta.Layer(\"renderer-fixture\", lc.meta.MetaLineWidthByValue(1.0), lc.Color(255, 0, 0, 255), None, False)\nlc.operation.AddLayer.new(document, layer).execute()\nb = lc.builder.LineBuilder()\nb.setLayer(layer)\nb.setStartPoint(lc.geo.Coordinate(0.0, 0.0))\nb.setEndPoint(lc.geo.Coordinate(3.0, 4.0))\neb = lc.operation.EntityBuilder.new(document)\neb.appendEntity(b.build())\neb.execute()\n"
+          },
+          "globals": {"type":"strings","unit":"none","value":["lc","document"]},
+          "plugin-asset": {"type":"asset","unit":"none","value":"python-rectangle"},
+          "documents": {"type":"strings","unit":"none","value":["doc-0","doc-1"]},
+          "owner-window": {"type":"text","unit":"none","value":"view-0"},
+          "rectangle-size": {"type":"vec2","unit":"model","value":[4,3]},
+          "dragged-corner": {"type":"vec2","unit":"model","value":[5,6]},
+          "events": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["load-plugin","preview","cancel","create-commit","drag","undo-drag","redo-drag","switch-active-view","close-owner","deliver-stale-callback"]
+          }
+        },
+        "assertions": [
+          {"observed":"line-endpoint","expected":{"type":"vec2","unit":"model","value":[3,4]},"oracle":"model-error"},
+          {"observed":"custom-rectangle-area","expected":{"type":"number","unit":"model-squared","value":30},"oracle":"area-error"},
+          {"observed":"owner-window","expected":{"type":"text","unit":"none","value":"view-0"},"oracle":"contracts"},
+          {"observed":"other-document-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"preview-leaked-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"drag-undo-entry-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"stale-callback-delivery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"python"},
+          "script": {"type":"text","unit":"none","value":""},
+          "events": {"type":"strings","unit":"none","value":["close-without-operation"]}
+        },
+        "assertions": [{"observed":"callback-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"callback-limit":{"type":"integer","unit":"count","value":2},"requested-callbacks":{"type":"integer","unit":"count","value":3}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"callback-queue-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "device-lifetime": {
+      "ordinary": {
+        "inputs": {
+          "events": {"type":"strings","unit":"none","value":["initialize","render","capture","resize","recreate-host","render","close","drain"]},
+          "host-mode": {"type":"text","unit":"none","value":"selected-configuration"}
+        },
+        "assertions": [
+          {"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"},
+          {"observed":"owner-generation","expected":{"type":"integer","unit":"count","value":2},"oracle":"contracts"},
+          {"observed":"borrowed-device-destruction-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"late-delivery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"events":{"type":"strings","unit":"none","value":["construct","close-before-initialize"]}},
+        "assertions": [
+          {"observed":"device-create-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"late-delivery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"capture-limit":{"type":"integer","unit":"count","value":2},"requested-captures":{"type":"integer","unit":"count","value":3}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"pending-capture-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "submit-failure": {
+        "inputs": {
+          "fault": {"type":"text","unit":"none","value":"host-result-substitution"},
+          "document-dirty": {"type":"boolean","unit":"none","value":true},
+          "physical-device-loss": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"device-lost-injected"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "missing-backend": {
+        "inputs": {"fault":{"type":"text","unit":"none","value":"backend-initialization-unavailable"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"requested-backend-unavailable"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "app-canvas-smoke": {
+      "ordinary": {
+        "inputs": {
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "size": {"type":"integers","unit":"physical-pixel","value":[64,64]},
+          "dpr": {"type":"number","unit":"ratio","value":1},
+          "model-to-device": {"type":"matrix3","unit":"none","value":[1,0,0,0,-1,64,0,0,1]},
+          "line": {"type":"points2","unit":"model","value":[[16,16],[20,16]]},
+          "line-width": {"type":"number","unit":"physical-pixel","value":2},
+          "line-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-text": {"type":"text","unit":"none","value":"H"},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "png-base64": {
+            "type": "text",
+            "unit": "none",
+            "value": "iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="
+          },
+          "image-insertion": {"type":"vec2","unit":"model","value":[32,32]},
+          "image-basis": {"type":"points2","unit":"model","value":[[1,0],[0,-1]]},
+          "probe-pixels": {"type":"points2","unit":"physical-pixel","value":[[18,48],[32,32]]},
+          "font-baseline": {"type":"vec2","unit":"model","value":[8,8]},
+          "font-rgba": {"type":"bytes","unit":"8bit-channel","value":[255,255,255,255]},
+          "glyph-probe-region": {"type":"numbers","unit":"physical-pixel","value":[8,48,17,57]}
+        },
+        "assertions": [
+          {"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"},
+          {"observed":"landmark-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,255,0,0,255]},"oracle":"pixels"},
+          {"observed":"font-advance","expected":{"type":"integer","unit":"font-unit","value":715},"oracle":"font-metrics"},
+          {"observed":"completed-current-frame","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"source-only-asset-load-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"glyph-readback-has-ink","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "document-entity-count": {"type":"integer","unit":"count","value":0},
+          "background": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]}
+        },
+        "assertions": [
+          {"observed":"background-rgba","expected":{"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},"oracle":"pixels"},
+          {"observed":"completed-current-frame","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"command-limit":{"type":"integer","unit":"count","value":4},"requested-commands":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"scene-command-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "installed-isolation": {
+      "ordinary": {
+        "inputs": {
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "launch-path": {"type":"text","unit":"none","value":"installed ü path with spaces"},
+          "removed-environment-paths": {"type":"strings","unit":"none","value":["QT_PLUGIN_PATH","QML2_IMPORT_PATH","BUILD_QT_PREFIX","SOURCE_ASSET_PREFIX"]},
+          "events": {"type":"strings","unit":"none","value":["install","relocate","launch","capture","write-to-user-directory"]}
+        },
+        "assertions": [
+          {"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"},
+          {"observed":"checkout-independent","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"unexpected-sdk-dependency-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"offline-assets-loaded","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"},
+          {"observed":"output-directory-writable","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"install-directory-read-only":{"type":"boolean","unit":"none","value":true},"document-entity-count":{"type":"integer","unit":"count","value":0}},
+        "assertions": [{"observed":"writes-to-install-directory","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"byte-limit":{"type":"integer","unit":"byte","value":64},"requested-bytes":{"type":"integer","unit":"byte","value":65}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"user-cache-budget-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "legacy-compatibility": {
+      "ordinary": {
+        "inputs": {"renderer-request":{"type":"text","unit":"none","value":"legacy-opengl"},"compatibility-release":{"type":"boolean","unit":"none","value":true}},
+        "assertions": [
+          {"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"},
+          {"observed":"fallback-used","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"},
+          {"observed":"submitted-exposed-frame","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"renderer-request":{"type":"text","unit":"none","value":"legacy-opengl"},"document-entity-count":{"type":"integer","unit":"count","value":0}},
+        "assertions": [{"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"fault":{"type":"text","unit":"none","value":"compiled-out-legacy-request"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"legacy-backend-unavailable"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "default-policy": {
+      "ordinary": {
+        "inputs": {
+          "renderer-request": {"type":"text","unit":"none","value":"auto"},
+          "cutover-policy": {"type":"text","unit":"none","value":"R6-approved-platform-api"}
+        },
+        "assertions": [
+          {"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"},
+          {"observed":"fallback-used","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "renderer-request": {"type":"text","unit":"none","value":"auto"},
+          "document-entity-count": {"type":"integer","unit":"count","value":0},
+          "cutover-policy": {"type":"text","unit":"none","value":"R6-approved-platform-api"}
+        },
+        "assertions": [{"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {
+          "fault": {"type":"text","unit":"none","value":"platform-driver-unavailable"},
+          "renderer-request": {"type":"text","unit":"none","value":"auto"},
+          "automatic-api-retry-permitted": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"requested-backend-unavailable"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "retirement": {
+      "ordinary": {
+        "inputs": {
+          "rhi": {"type":"boolean","unit":"none","value":true},
+          "legacy": {"type":"boolean","unit":"none","value":false},
+          "audit-scope": {"type":"text","unit":"none","value":"application-direct-dependencies-not-Qt-internals"}
+        },
+        "assertions": [
+          {"observed":"application-gl-discovery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"application-glew-glfw-link-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"legacy-factory-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "rhi": {"type":"boolean","unit":"none","value":false},
+          "legacy": {"type":"boolean","unit":"none","value":false},
+          "ui": {"type":"boolean","unit":"none","value":false},
+          "cli": {"type":"boolean","unit":"none","value":false}
+        },
+        "assertions": [
+          {"observed":"qt-discovery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"legacy-factory-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {
+          "rhi": {"type":"boolean","unit":"none","value":true},
+          "legacy": {"type":"boolean","unit":"none","value":false},
+          "renderer-request": {"type":"text","unit":"none","value":"legacy-opengl"}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"legacy-retired"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "workload-mixed": {
+      "ordinary": {
+        "inputs": {
+          "generator": {"type":"text","unit":"none","value":"lcg32-v1"},
+          "seed": {"type":"integer","unit":"count","value":73},
+          "multiplier": {"type":"integer","unit":"count","value":1664525},
+          "increment": {"type":"integer","unit":"count","value":1013904223},
+          "modulus": {"type":"integer","unit":"count","value":4294967296},
+          "coordinate-modulus": {"type":"integer","unit":"count","value":1024},
+          "coordinate-step": {"type":"number","unit":"model","value":1},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[1024,1024]},
+          "primitive-cycle": {"type":"strings","unit":"none","value":["line","circle","arc","lwpolyline","bezier"]},
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "entity-count": {"type":"integer","unit":"count","value":10000},
+          "real-drawing": {"type":"asset","unit":"none","value":"cad-line"},
+          "real-drawing-run": {"type":"text","unit":"none","value":"separate-baseline-case"},
+          "pan-step": {"type":"vec2","unit":"model","value":[1,0]},
+          "zoom-factor": {"type":"number","unit":"ratio","value":1.01},
+          "dpr": {"type":"number","unit":"ratio","value":1},
+          "camera-origin": {"type":"vec2","unit":"model","value":[0,0]},
+          "initial-zoom": {"type":"number","unit":"ratio","value":1},
+          "placement-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Advance unsigned LCG32 twice per entity; x=state1%1024, y=state2%1024. Place canonical geometry at (x,y), in manifest kind/count order."
+          },
+          "line-delta": {"type":"vec2","unit":"model","value":[3,4]},
+          "circle-radius": {"type":"number","unit":"model","value":2},
+          "arc-angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]},
+          "triangle": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "cubic": {"type":"points2","unit":"model","value":[[0,0],[1,3],[2,-3],[3,0]]},
+          "line-width": {"type":"number","unit":"model","value":1},
+          "rgba": {"type":"bytes","unit":"8bit-channel","value":[51,102,204,255]},
+          "interaction-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Reset camera per sample i; pan=((i%16)-8,((i//16)%16)-8) physical pixels, zoom=[1,2,4,2][(i//32)%4] around (512,512). Measure event entry through submit."
+          }
+        },
+        "assertions": [
+          {"observed":"generated-entity-count","expected":{"type":"integer","unit":"count","value":10000},"oracle":"contracts"},
+          {"observed":"repository-drawing-entity-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"renderer-error-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"first-positions","expected":{"type":"points2","unit":"model","value":[[276,355],[870,909],[904,327]]},"oracle":"model-error"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "generator": {"type":"text","unit":"none","value":"lcg32-v1"},
+          "seed": {"type":"integer","unit":"count","value":73},
+          "multiplier": {"type":"integer","unit":"count","value":1664525},
+          "increment": {"type":"integer","unit":"count","value":1013904223},
+          "modulus": {"type":"integer","unit":"count","value":4294967296},
+          "coordinate-modulus": {"type":"integer","unit":"count","value":1024},
+          "coordinate-step": {"type":"number","unit":"model","value":1},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[1024,1024]},
+          "primitive-cycle": {"type":"strings","unit":"none","value":["line","circle","arc","lwpolyline","bezier"]},
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "entity-count": {"type":"integer","unit":"count","value":0},
+          "dpr": {"type":"number","unit":"ratio","value":1},
+          "camera-origin": {"type":"vec2","unit":"model","value":[0,0]},
+          "initial-zoom": {"type":"number","unit":"ratio","value":1},
+          "placement-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Advance unsigned LCG32 twice per entity; x=state1%1024, y=state2%1024. Place canonical geometry at (x,y), in manifest kind/count order."
+          },
+          "line-delta": {"type":"vec2","unit":"model","value":[3,4]},
+          "circle-radius": {"type":"number","unit":"model","value":2},
+          "arc-angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]},
+          "triangle": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "cubic": {"type":"points2","unit":"model","value":[[0,0],[1,3],[2,-3],[3,0]]},
+          "line-width": {"type":"number","unit":"model","value":1},
+          "rgba": {"type":"bytes","unit":"8bit-channel","value":[51,102,204,255]},
+          "interaction-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Reset camera per sample i; pan=((i%16)-8,((i//16)%16)-8) physical pixels, zoom=[1,2,4,2][(i//32)%4] around (512,512). Measure event entry through submit."
+          }
+        },
+        "assertions": [
+          {"observed":"generated-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"renderer-error-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {"entity-limit":{"type":"integer","unit":"count","value":4},"requested-entities":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"scene-entity-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "dense": {
+        "inputs": {
+          "generator": {"type":"text","unit":"none","value":"lcg32-v1"},
+          "seed": {"type":"integer","unit":"count","value":73},
+          "multiplier": {"type":"integer","unit":"count","value":1664525},
+          "increment": {"type":"integer","unit":"count","value":1013904223},
+          "modulus": {"type":"integer","unit":"count","value":4294967296},
+          "coordinate-modulus": {"type":"integer","unit":"count","value":1024},
+          "coordinate-step": {"type":"number","unit":"model","value":1},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[1024,1024]},
+          "primitive-cycle": {"type":"strings","unit":"none","value":["line","circle","arc","lwpolyline","bezier"]},
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "entity-count": {"type":"integer","unit":"count","value":100000},
+          "pan-step": {"type":"vec2","unit":"model","value":[1,0]},
+          "zoom-factor": {"type":"number","unit":"ratio","value":1.01},
+          "dpr": {"type":"number","unit":"ratio","value":1},
+          "camera-origin": {"type":"vec2","unit":"model","value":[0,0]},
+          "initial-zoom": {"type":"number","unit":"ratio","value":1},
+          "placement-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Advance unsigned LCG32 twice per entity; x=state1%1024, y=state2%1024. Place canonical geometry at (x,y), in manifest kind/count order."
+          },
+          "line-delta": {"type":"vec2","unit":"model","value":[3,4]},
+          "circle-radius": {"type":"number","unit":"model","value":2},
+          "arc-angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]},
+          "triangle": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "cubic": {"type":"points2","unit":"model","value":[[0,0],[1,3],[2,-3],[3,0]]},
+          "line-width": {"type":"number","unit":"model","value":1},
+          "rgba": {"type":"bytes","unit":"8bit-channel","value":[51,102,204,255]},
+          "interaction-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Reset camera per sample i; pan=((i%16)-8,((i//16)%16)-8) physical pixels, zoom=[1,2,4,2][(i//32)%4] around (512,512). Measure event entry through submit."
+          }
+        },
+        "assertions": [
+          {"observed":"generated-entity-count","expected":{"type":"integer","unit":"count","value":100000},"oracle":"contracts"},
+          {"observed":"renderer-error-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"first-positions","expected":{"type":"points2","unit":"model","value":[[276,355],[870,909],[904,327]]},"oracle":"model-error"}
+        ]
+      }
+    },
+    "workload-assets": {
+      "ordinary": {
+        "inputs": {
+          "generator": {"type":"text","unit":"none","value":"lcg32-v1"},
+          "seed": {"type":"integer","unit":"count","value":73},
+          "multiplier": {"type":"integer","unit":"count","value":1664525},
+          "increment": {"type":"integer","unit":"count","value":1013904223},
+          "modulus": {"type":"integer","unit":"count","value":4294967296},
+          "coordinate-modulus": {"type":"integer","unit":"count","value":1024},
+          "coordinate-step": {"type":"number","unit":"model","value":1},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[1024,1024]},
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "kind-cycle": {"type":"strings","unit":"none","value":["text","image","hatch","insert","spline"]},
+          "kind-counts": {"type":"integers","unit":"count","value":[5000,50,100,1000,500]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "png-base64": {
+            "type": "text",
+            "unit": "none",
+            "value": "iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGklEQVR4nGP4z8DwHwgbQBTDfxDz/38Q9R8Ak48NdAfIRCIAAAAASUVORK5CYII="
+          },
+          "real-drawing": {"type":"asset","unit":"none","value":"cad-mixed"},
+          "real-drawing-run": {"type":"text","unit":"none","value":"separate-baseline-case"},
+          "edit-index": {"type":"integer","unit":"count","value":42},
+          "dpr": {"type":"number","unit":"ratio","value":1},
+          "camera-origin": {"type":"vec2","unit":"model","value":[0,0]},
+          "initial-zoom": {"type":"number","unit":"ratio","value":1},
+          "placement-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Advance unsigned LCG32 twice per entity; x=state1%1024, y=state2%1024. Place canonical geometry at (x,y), in manifest kind/count order."
+          },
+          "line-delta": {"type":"vec2","unit":"model","value":[3,4]},
+          "circle-radius": {"type":"number","unit":"model","value":2},
+          "arc-angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]},
+          "triangle": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "cubic": {"type":"points2","unit":"model","value":[[0,0],[1,3],[2,-3],[3,0]]},
+          "line-width": {"type":"number","unit":"model","value":1},
+          "rgba": {"type":"bytes","unit":"8bit-channel","value":[51,102,204,255]},
+          "interaction-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Reset camera per sample i; pan=((i%16)-8,((i//16)%16)-8) physical pixels, zoom=[1,2,4,2][(i//32)%4] around (512,512). Measure event entry through submit."
+          },
+          "kind-order": {
+            "type": "text",
+            "unit": "none",
+            "value": "Contiguous groups in kind-cycle order; one document entity per item; shared block definitions are not extra top-level entities."
+          },
+          "text": {"type":"text","unit":"none","value":"H"},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "image-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "hatch-vertices": {"type":"points2","unit":"model","value":[[0,0],[4,0],[4,4],[0,4],[1,1],[1,3],[3,3],[3,1]]},
+          "hatch-contour-starts": {"type":"integers","unit":"count","value":[0,4]},
+          "fill-rule": {"type":"text","unit":"none","value":"even-odd"},
+          "insert-depth": {"type":"integer","unit":"count","value":2},
+          "insert-inner-rotation": {"type":"number","unit":"radian","value":1.5707963267948966},
+          "insert-outer-scale": {"type":"number","unit":"ratio","value":2},
+          "spline-control-counts": {"type":"integers","unit":"count","value":[2,3,4]},
+          "spline-control-points": {"type":"points2","unit":"model","value":[[0,0],[3,4],[0,0],[1,2],[2,0],[0,0],[1,3],[2,-3],[3,0]]},
+          "edit-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "After each 60 measured interactions, recolor top-level entity 42 to RGBA(255,0,0,255), undo, redo, then undo; settle before the next sample."
+          }
+        },
+        "assertions": [
+          {"observed":"generated-entity-count","expected":{"type":"integer","unit":"count","value":6650},"oracle":"contracts"},
+          {"observed":"repository-drawing-entity-count","expected":{"type":"integer","unit":"count","value":5},"oracle":"contracts"},
+          {"observed":"missing-asset-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"cached-uncached-equal","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {
+          "generator": {"type":"text","unit":"none","value":"lcg32-v1"},
+          "seed": {"type":"integer","unit":"count","value":73},
+          "multiplier": {"type":"integer","unit":"count","value":1664525},
+          "increment": {"type":"integer","unit":"count","value":1013904223},
+          "modulus": {"type":"integer","unit":"count","value":4294967296},
+          "coordinate-modulus": {"type":"integer","unit":"count","value":1024},
+          "coordinate-step": {"type":"number","unit":"model","value":1},
+          "viewport": {"type":"integers","unit":"physical-pixel","value":[1024,1024]},
+          "through-document-canvas": {"type":"boolean","unit":"none","value":true},
+          "kind-cycle": {"type":"strings","unit":"none","value":["text","image","hatch","insert","spline"]},
+          "kind-counts": {"type":"integers","unit":"count","value":[0,0,0,0,0]},
+          "dpr": {"type":"number","unit":"ratio","value":1},
+          "camera-origin": {"type":"vec2","unit":"model","value":[0,0]},
+          "initial-zoom": {"type":"number","unit":"ratio","value":1},
+          "placement-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Advance unsigned LCG32 twice per entity; x=state1%1024, y=state2%1024. Place canonical geometry at (x,y), in manifest kind/count order."
+          },
+          "line-delta": {"type":"vec2","unit":"model","value":[3,4]},
+          "circle-radius": {"type":"number","unit":"model","value":2},
+          "arc-angles": {"type":"numbers","unit":"radian","value":[0,1.5707963267948966]},
+          "triangle": {"type":"points2","unit":"model","value":[[0,0],[3,0],[3,4]]},
+          "cubic": {"type":"points2","unit":"model","value":[[0,0],[1,3],[2,-3],[3,0]]},
+          "line-width": {"type":"number","unit":"model","value":1},
+          "rgba": {"type":"bytes","unit":"8bit-channel","value":[51,102,204,255]},
+          "interaction-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "Reset camera per sample i; pan=((i%16)-8,((i//16)%16)-8) physical pixels, zoom=[1,2,4,2][(i//32)%4] around (512,512). Measure event entry through submit."
+          },
+          "kind-order": {
+            "type": "text",
+            "unit": "none",
+            "value": "Contiguous groups in kind-cycle order; one document entity per item; shared block definitions are not extra top-level entities."
+          },
+          "text": {"type":"text","unit":"none","value":"H"},
+          "font-size": {"type":"number","unit":"model","value":10},
+          "image-basis": {"type":"points2","unit":"model","value":[[2,0],[0.5,-1]]},
+          "hatch-vertices": {"type":"points2","unit":"model","value":[[0,0],[4,0],[4,4],[0,4],[1,1],[1,3],[3,3],[3,1]]},
+          "hatch-contour-starts": {"type":"integers","unit":"count","value":[0,4]},
+          "fill-rule": {"type":"text","unit":"none","value":"even-odd"},
+          "insert-depth": {"type":"integer","unit":"count","value":2},
+          "insert-inner-rotation": {"type":"number","unit":"radian","value":1.5707963267948966},
+          "insert-outer-scale": {"type":"number","unit":"ratio","value":2},
+          "spline-control-counts": {"type":"integers","unit":"count","value":[2,3,4]},
+          "spline-control-points": {"type":"points2","unit":"model","value":[[0,0],[3,4],[0,0],[1,2],[2,0],[0,0],[1,3],[2,-3],[3,0]]},
+          "edit-contract": {
+            "type": "text",
+            "unit": "none",
+            "value": "After each 60 measured interactions, recolor top-level entity 42 to RGBA(255,0,0,255), undo, redo, then undo; settle before the next sample."
+          }
+        },
+        "assertions": [{"observed":"generated-entity-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"asset-limit":{"type":"integer","unit":"count","value":4},"requested-assets":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"scene-asset-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "workload-lifecycle": {
+      "ordinary": {
+        "inputs": {
+          "views": {"type":"integer","unit":"count","value":2},
+          "cycles-per-sample": {"type":"integer","unit":"count","value":1},
+          "events": {
+            "type": "strings",
+            "unit": "none",
+            "value": ["open-two-views","add-assets","edit","undo","resize","suspend","resume","recreate-host","close-both","drain"]
+          }
+        },
+        "assertions": [
+          {"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"stale-delivery-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"unsaved-geometry-preserved","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"views":{"type":"integer","unit":"count","value":0},"events":{"type":"strings","unit":"none","value":["close-before-initialize"]}},
+        "assertions": [{"observed":"settled-live-resources","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"pending-limit":{"type":"integer","unit":"count","value":2},"requested-pending":{"type":"integer","unit":"count","value":3}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"lifecycle-request-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "workload-idle": {
+      "ordinary": {
+        "inputs": {
+          "observe-seconds": {"type":"number","unit":"second","value":30},
+          "events": {"type":"strings","unit":"none","value":["render-current-view","drain-scheduled-work","observe-without-input"]},
+          "exclude-os-expose-resize": {"type":"boolean","unit":"none","value":true}
+        },
+        "assertions": [{"observed":"unsolicited-view-submissions","expected":{"type":"integer","unit":"count","value":0},"oracle":"idle-budget"}]
+      },
+      "empty": {
+        "inputs": {"observe-seconds":{"type":"number","unit":"second","value":1},"view-visible":{"type":"boolean","unit":"none","value":false}},
+        "assertions": [{"observed":"unsolicited-view-submissions","expected":{"type":"integer","unit":"count","value":0},"oracle":"idle-budget"}]
+      },
+      "limit": {
+        "inputs": {"request-limit":{"type":"integer","unit":"count","value":4},"requested-updates":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"update-request-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "rhi-build-options": {
+      "ordinary": {
+        "inputs": {
+          "size": {"type":"integers","unit":"physical-pixel","value":[3,2]},
+          "vertices": {"type":"points2","unit":"physical-pixel","value":[[0,0],[3,0],[3,2],[0,2]]},
+          "indices": {"type":"integers","unit":"count","value":[0,1,2,0,2,3]},
+          "rgba": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,255]},
+          "operations": {"type":"strings","unit":"none","value":["create-qualified-rhi","clear-black","upload-quad","draw-indexed","completed-readback"]},
+          "sample-count": {"type":"integer","unit":"count","value":1},
+          "format": {"type":"text","unit":"none","value":"RGBA8"},
+          "background-rgba": {"type":"bytes","unit":"8bit-channel","value":[0,0,0,255]},
+          "output-origin": {"type":"text","unit":"none","value":"top-left"},
+          "dpr": {"type":"number","unit":"ratio","value":1}
+        },
+        "assertions": [
+          {
+            "observed": "normalized-rgba",
+            "expected": {"type":"bytes","unit":"8bit-channel","value":[255,0,0,255,255,0,0,255,255,0,0,255,255,0,0,255,255,0,0,255,255,0,0,255]},
+            "oracle": "pixels"
+          },
+          {"observed":"draw-count","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"actual-backend","expected":{"type":"configuration","unit":"none","value":"backend"},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"size":{"type":"integers","unit":"physical-pixel","value":[0,0]}},
+        "assertions": [
+          {"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"target-ready","expected":{"type":"boolean","unit":"none","value":false},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {
+          "texture-limit": {"type":"integer","unit":"physical-pixel","value":4},
+          "requested-width": {"type":"integer","unit":"physical-pixel","value":5},
+          "limit-kind": {"type":"text","unit":"none","value":"injected-renderer-policy"}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"texture-size-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
+    "cli-python-disabled": {
+      "ordinary": {
+        "inputs": {"language":{"type":"text","unit":"none","value":"python"},"script":{"type":"text","unit":"none","value":"pass\n"}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"python-unavailable"},"oracle":"contracts"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"renderer-initialization-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"language":{"type":"text","unit":"none","value":"python"},"script":{"type":"text","unit":"none","value":""}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"python-unavailable"},"oracle":"contracts"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"renderer-initialization-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      },
+      "limit": {
+        "inputs": {
+          "language": {"type":"text","unit":"none","value":"python"},
+          "script-byte-limit": {"type":"integer","unit":"byte","value":4},
+          "requested-bytes": {"type":"integer","unit":"byte","value":5}
+        },
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"python-unavailable"},"oracle":"contracts"},
+          {"observed":"exit-code","expected":{"type":"integer","unit":"count","value":1},"oracle":"contracts"},
+          {"observed":"renderer-initialization-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    }
+  }
+}
