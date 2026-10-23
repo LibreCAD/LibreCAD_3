@@ -38,7 +38,8 @@
 
 # Indent multi-line preprocessor definitions ending with a backslash.
 # Should be used with --convert-tabs for proper results.
---indent-preprocessor
+--indent-preproc-define
+#--indent-preprocessor // deprecated in AStyle 2.04 November 2013
 
 # Indent C++ comments beginning in column one.
 --indent-col1-comments
@@ -48,7 +49,8 @@
 
 # Set the  maximum of # spaces to indent a continuation line.
 # The # indicates a number of columns and must not be greater than 120.
---max-instatement-indent=60
+--max-continuation-indent=60
+#--max-instatement-indent=60 // deprecated in AStyle 3.0 April 2017
 
 # Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...).
 --break-blocks
@@ -115,7 +117,8 @@
 # The statement must be on a single line. The brackets will be added according to the
 # currently requested predefined style. If no style is requested the brackets will be attached.
 # If --add-one-line-brackets is also used the result will be one line brackets.
---add-brackets
+--add-braces
+#--add-brackets // deprecated in AStyle 3.0 April 2017
 
 
 # Add one line brackets to unbracketed one line conditional statements 
