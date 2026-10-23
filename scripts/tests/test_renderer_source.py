@@ -114,6 +114,7 @@ class SourceBuildTests(unittest.TestCase):
         self.args.app=Path('/owned/app');self.args.build_dir=Path('/owned/build')
         argv=['--rhi-contracts','--build-source','--generator','Ninja Multi-Config','--cmake=/sdk/cmake',
               '--library-matrix','--case-cmake-option','dual:CMAKE_TOOLCHAIN_FILE=/sdk/dual',
+              '--library-group','python','--library-group=core',
               '--case-cmake-option=cpu:CMAKE_TOOLCHAIN_FILE=/sdk/cpu',
               '--cmake-option','Qt6_DIR=/sdk path','--cmake-option=LUA_LIBRARY=/sdk/lib',
               '--weston','/owned/weston','--timeout','200']
@@ -122,7 +123,8 @@ class SourceBuildTests(unittest.TestCase):
         with self.assertRaises(ValueError):runner.source_worker_argv(['--cmake-option'],self.args)
 
     def test_cli_source_mode_is_explicit_not_a_spike_or_cpu_alias(self):
-        for flags in (['--build-source'],['--build-source','--spike'],['--build-source','--build-contracts'],['--library-matrix']):
+        for flags in (['--build-source'],['--build-source','--spike'],['--build-source','--build-contracts'],['--library-matrix'],
+                ['--build-contracts','--library-group','python']):
             result=subprocess.run([sys.executable,'-B',runner.__file__,*flags,'--report-dir',str(self.root)],capture_output=True,timeout=10)
             self.assertEqual(2,result.returncode)
 
@@ -791,6 +793,24 @@ class LibraryMatrixTests(unittest.TestCase):
         with patch.object(runner,'build_library_matrix',return_value=[dict(cpu_ids=['S.A'])]):
             with self.assertRaisesRegex(ValueError,'different CPU IDs'):self.execute()
 
+    def test_required_library_groups_cover_all_profiles_and_keep_exact_cpu_parity(self):
+        groups={}
+        for group in ('core','python'):
+            self.args.app=None;self.args.build_dir=None
+            self.args.library_group=group;directory=self.execute()
+            record=json.loads((directory/'source-build.json').read_text())
+            groups[group]={r['profile'] for r in record['library_matrix']}
+            self.assertEqual(group,record['library_group'])
+            for r in record['library_matrix']:
+                self.assertEqual(group,r['library_group']);self.assertEqual(record['cpu_executed_ids'],r['base_cpu_ids'])
+                self.assertEqual(1200,r['profile_budget_seconds'])
+        self.assertEqual({'cpu','legacy','dual'},groups['core'])
+        self.assertEqual({'cpu','cpu-python','legacy-python','dual-python','rhi-python'},groups['python'])
+        self.assertEqual(set(runner.LIBRARY_PROFILES),groups['core']|groups['python'])
+        self.assertEqual({'cpu'},groups['core']&groups['python'])
+        self.args.app=None;self.args.build_dir=None;self.omit_probe=True
+        with self.assertRaises(ValueError):self.execute()
+
     def test_profile_sdk_overrides_cannot_change_owned_flags_or_select_subset(self):
         for values in (['rhi:Qt6_DIR=/sdk'],['dual:WITH_UNITTESTS=OFF'],['cpu:Qt6_DIR=/one','cpu:Qt6_DIR=/two']):
             self.args.case_cmake_option=values
@@ -870,6 +890,22 @@ class ProductionBuildTests(unittest.TestCase):
         for command,env in self.commands:
             self.assertNotIn('GTEST_FILTER',env);self.assertNotIn('--gtest_list_tests',command)
             if '-S' in command:self.assertIn('-DCMAKE_DISABLE_FIND_PACKAGE_GTest=ON',command)
+
+    def test_required_compile_only_groups_partition_all_eight_modes_without_tests(self):
+        groups={}
+        for group in ('core','python'):
+            self.args.library_group=group;directory=self.execute()
+            record=json.loads((directory/'production-build.json').read_text());self.assertEqual(group,record['library_group'])
+            groups[group]={r['profile'] for r in record['profiles']}
+            self.assertEqual(4,len(groups[group]))
+            for r in record['profiles']:
+                self.assertEqual(group=='python',r['options']['WITH_PYTHONSCRIPT'])
+                self.assertFalse(r['runtime_tests_executed']);self.assertEqual(group,r['library_group'])
+        self.assertFalse(groups['core']&groups['python'])
+        self.assertEqual(set(runner.LIBRARY_PROFILES)|{'rhi'},groups['core']|groups['python'])
+        self.args.library_group='missing';self.commands=[]
+        with self.assertRaisesRegex(ValueError,'library group'):self.execute()
+        self.assertEqual([],self.commands)
 
     def test_project_test_targets_and_gtest_discovery_are_forbidden(self):
         directory=self.execute();build=directory/'library-matrix/cpu/build'
@@ -981,14 +1017,17 @@ class SourceWorkflowTests(unittest.TestCase):
         self.assertIn('platform: [LINUX-X64, LINUX-ARM64, MAC-ARM64, MAC-X64, WIN-X64]',self.text)
         self.assertIn('R1_TESTS: ${{ matrix.tests }}',self.text)
         self.assertIn('name: renderer-r1-source-${{ matrix.contract_scope }}-${{ matrix.platform }}-tests-${{ matrix.tests }}',self.text)
-        self.assertIn('contract_scope: [libraries, cli, cli-persistence, ui, both]',self.text)
+        self.assertIn('contract_scope: [libraries-core, libraries-python, cli, cli-persistence, ui, both]',self.text)
         self.assertNotIn('        exclude:',self.text)
         platforms=[p.strip() for p in re.search(r'(?m)^        platform: \[([^\]]+)\]',self.text).group(1).split(',')]
         scopes=[p.strip() for p in re.search(r'(?m)^        contract_scope: \[([^\]]+)\]',self.text).group(1).split(',')]
         configurations={(p,t,s) for p in platforms for t in ('ON','OFF') for s in scopes}
-        self.assertEqual(50,len(configurations));self.assertEqual(10,sum(s=='cli' for _,_,s in configurations))
+        self.assertEqual(60,len(configurations));self.assertEqual(10,sum(s=='cli' for _,_,s in configurations))
+        for group in ('libraries-core','libraries-python'):self.assertEqual(10,sum(s==group for _,_,s in configurations))
+        self.assertIn("R1_SCOPE: ${{ startsWith(matrix.contract_scope, 'libraries-') && 'libraries' || matrix.contract_scope }}",self.text)
+        self.assertIn("R1_LIBRARY_GROUP: ${{ matrix.contract_scope == 'libraries-core' && 'core' || matrix.contract_scope == 'libraries-python' && 'python' || 'all' }}",self.text)
         self.assertEqual(10,sum(s=='cli-persistence' for _,_,s in configurations))
-        self.assertIn("if: runner.os == 'macOS' && (matrix.contract_scope == 'libraries'",self.text)
+        self.assertIn("if: runner.os == 'macOS' && (startsWith(matrix.contract_scope, 'libraries-')",self.text)
         self.assertIn('branches: [codex/r1-platform-ci]',self.text)
         for executable in ('luacmdinterface','lcunittest','lcrenderertest','lcbuildcontracttest'):
             self.assertIn('build-r1/**/bin/'+executable+'*',self.text)
@@ -1048,6 +1087,24 @@ class SourceWorkflowTests(unittest.TestCase):
         self.assertIn('test_dependencies=(libgtest-dev libgmock-dev)',self.text)
         self.assertIn('if test "$R1_TESTS" = ON; then core+=(googletest); fi',self.text)
 
+    def test_each_required_library_group_is_forwarded_without_weakening_qpa_checks(self):
+        code=self.text.split('- name: Run selected library or CLI source contracts',1)[1]
+        code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n        env:',1)[0])
+        for group in ('core','python'):
+            for tests in ('ON','OFF'):
+                env=dict(R1_SCOPE='libraries',R1_LIBRARY_GROUP=group,R1_PLATFORM='LINUX-ARM64',R1_TESTS=tests,
+                    QT_ROOT_DIR='/provider',R1_TRIPLET='aarch64-linux-gnu',VK_DRIVER_FILES='/vulkan/icd.json')
+                with self.subTest(group=group,tests=tests),patch.dict(os.environ,env),patch.object(subprocess,'run') as run:
+                    if tests=='OFF':
+                        with self.assertRaises(SystemExit):exec(compile(code,'grouped libraries','exec'),{})
+                    else:exec(compile(code,'grouped libraries','exec'),{})
+                    commands=[c.args[0] for c in run.call_args_list]
+                    grouped=[c for c in commands if '--library-group' in c]
+                    self.assertEqual(1,len(grouped));self.assertEqual(group,grouped[0][grouped[0].index('--library-group')+1])
+                    if tests=='ON':
+                        self.assertEqual(3,len(commands));self.assertIn('--library-matrix',commands[1])
+                        self.assertIn('--weston',commands[2]);self.assertNotIn('--library-group',commands[2])
+
     def test_actual_cli_ci_scope_has_eight_explicit_binary_only_off_path_commands(self):
         code=self.text.split('- name: Run selected library or CLI source contracts',1)[1]
         code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n        env:',1)[0])
@@ -1087,6 +1144,22 @@ class SourceWorkflowTests(unittest.TestCase):
                 self.assertEqual(scope in ('cli','cli-persistence','both'),'libglfw3-dev' in packages)
                 self.assertEqual(scope in ('libraries','ui','both') or tests=='ON',any(p.startswith('qt6-base-dev=') for p in packages))
                 self.assertEqual(scope in ('ui','both'),'qt6-svg-dev=6.10.2-2' in packages)
+
+    def test_linux_x64_mirror_replacement_preserves_other_providers_and_priorities(self):
+        sed=shutil.which('sed')
+        if not sed:self.skipTest('Linux mirror rewrite requires sed, not used by Windows')
+        block=self.text.split('- name: Install Linux binary dependencies',1)[1].split('sudo apt-get update',1)[0]
+        self.assertIn('if test "$R1_PLATFORM" = LINUX-X64; then',block)
+        expression=re.search(r"sudo sed -i '([^']+)' /etc/apt/apt-mirrors.txt",block).group(1)
+        source=('http://azure.archive.ubuntu.com/ubuntu priority:1\n'
+            'https://archive.ubuntu.com/ubuntu priority:2\n'
+            'http://ports.ubuntu.com/ubuntu-ports priority:1\n'
+            'https://packages.microsoft.com/ubuntu/26.04/prod priority:1\n'
+            'http://azureXarchiveXubuntuXcom/ubuntu priority:3\n')
+        result=subprocess.run([sed,expression],input=source,capture_output=True,text=True,timeout=10)
+        self.assertEqual(0,result.returncode,result.stderr)
+        self.assertEqual(source.replace('http://azure.archive.ubuntu.com/ubuntu','https://archive.ubuntu.com/ubuntu'),result.stdout)
+        self.assertNotRegex(block,r'(?i)allow-unauthenticated|trusted=yes|check-valid-until')
 
     def test_persistence_cli_uses_the_source_submodule_sdk_without_binary_or_off_path_fallback(self):
         code=self.text.split('- name: Run selected library or CLI source contracts',1)[1]

@@ -200,14 +200,19 @@ class RendererBuildOptionsTests(unittest.TestCase):
     def test_heavy_bindings_are_separate_without_duplicate_sources(self):
         cmake=(ROOT/'lcUI/CMakeLists.txt').read_text()
         self.assertIn('set(UI_BINDING_srcs\nlua/guibridge.cpp\nmanagers/copymanager.cpp\n)',cmake)
+        sources=cmake.split('set(UI_srcs\n',1)[1].split('\n)',1)[0]
+        sources='\n'.join(line for line in sources.splitlines() if not line.startswith('#'))
         body=cmake.split('# Phase 3 PR-3.2',1)[1].split(
             'if(WITH_PYTHONSCRIPT)',1)[1].split('endif()',1)[0]
         with tempfile.TemporaryDirectory(prefix='renderer-source-order-') as tmp:
             script=Path(tmp)/'order.cmake'
-            script.write_text('set(UI_BINDING_srcs lua/guibridge.cpp managers/copymanager.cpp)\nset(UI_srcs ordinary.cpp)\n'+body+'\n'
+            script.write_text('set(UI_BINDING_srcs lua/guibridge.cpp managers/copymanager.cpp)\nset(UI_srcs\n'+sources+'\n)\n'+body+'\n'
                 'if(NOT UI_BINDING_srcs STREQUAL "lua/guibridge.cpp;managers/copymanager.cpp;python/pyguibridge.cpp" OR\n'
-                '   NOT UI_srcs STREQUAL "python/pyeventhooks.cpp;python/pypluginloader.cpp;python/pyruntimesmoke.cpp;ordinary.cpp")\n'
-                '  message(FATAL_ERROR "Lost, duplicated or delayed UI sources: ${UI_srcs}")\nendif()\n')
+                '   NOT UI_srcs MATCHES "^dialogs/textdialog.cpp;managers/uisettings.cpp;managers/contextmenumanager.cpp;python/pyeventhooks.cpp;'
+                'python/pypluginloader.cpp;python/pyruntimesmoke.cpp;cadmdichild.cpp;")\n'
+                '  message(FATAL_ERROR "Lost, duplicated or delayed UI sources: ${UI_srcs}")\nendif()\n'
+                'set(unique ${UI_srcs})\nlist(REMOVE_DUPLICATES unique)\n'
+                'if(NOT unique STREQUAL UI_srcs)\n message(FATAL_ERROR "Duplicated ordinary UI sources")\nendif()\n')
             result=subprocess.run(['cmake','-P',str(script)],capture_output=True,text=True,timeout=30)
             self.assertEqual(0,result.returncode,result.stdout+result.stderr)
 

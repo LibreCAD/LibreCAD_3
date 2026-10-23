@@ -450,8 +450,8 @@ def source_worker_argv(argv,args):
     for value in argv:
         if skip:skip=False;continue
         if value in ('--build-source','--library-matrix'):continue
-        if value in ('--cmake','--generator','--cmake-option','--case-cmake-option'):skip=True;continue
-        if value.startswith(('--cmake=','--generator=','--cmake-option=','--case-cmake-option=')):continue
+        if value in ('--cmake','--generator','--cmake-option','--case-cmake-option','--library-group'):skip=True;continue
+        if value.startswith(('--cmake=','--generator=','--cmake-option=','--case-cmake-option=','--library-group=')):continue
         result.append(value)
     if skip:raise ValueError('Missing source-build argument value')
     return result+['--app',str(args.app),'--build-dir',str(args.build_dir)]
@@ -701,6 +701,8 @@ def library_artifacts(build,names,types=('STATIC_LIBRARY','SHARED_LIBRARY')):
 def build_library_matrix(args,selected,sdk,parent,tests=True):
     profiles=dict(LIBRARY_PROFILES)
     if not tests:profiles['rhi']=(False,True,False)
+    group=getattr(args,'library_group','all')
+    if group not in ('all','core','python'):raise ValueError('Unknown source library group')
     overrides={p:{} for p in profiles}
     for value in args.case_cmake_option:
         profile,separator,option=value.partition(':')
@@ -711,6 +713,10 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
     records=[];common_ids={};python_provider=None
     env={k:v for k,v in os.environ.items() if not k.startswith('GTEST_') and k not in ('DISPLAY','XAUTHORITY','WAYLAND_DISPLAY','WAYLAND_SOCKET')}
     for profile,(legacy,rhi,python) in profiles.items():
+        # Python test profiles retain a fresh CPU baseline for exact ID parity.
+        # CI requires both groups; the default standalone matrix remains whole.
+        if group!='all' and python!=(group=='python') and not (tests and profile=='cpu'):continue
+        print('R1 library '+profile+': starting (group '+group+', tests '+('ON' if tests else 'OFF')+')',flush=True)
         directory=parent/'library-matrix'/profile;build=directory/'build'
         query=build/'.cmake/api/v1/query/client-renderer-source';query.mkdir(parents=True);(query/'codemodel-v2').touch()
         flags=dict(selected['configuration']['expected_options'],WITH_LEGACY_OPENGL_RENDERER=legacy,WITH_RHI_RENDERER=rhi,WITH_PYTHONSCRIPT=python,
@@ -748,7 +754,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
                 if python_provider not in (None,observed['python_provider']):raise ValueError('Python profiles selected different providers')
                 python_provider=observed['python_provider']
             record=dict(schema_version=1,evidence_kind='r1-library-compile-only',phase_or_platform_accepted=False,
-                runtime_tests_executed=False,profile=profile,options=flags,observed=observed,commands=commands,
+                runtime_tests_executed=False,profile=profile,library_group=group,options=flags,observed=observed,commands=commands,
                 artifacts_sha256=artifacts,profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
             (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
             continue
@@ -768,7 +774,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
             python_provider=observed['python_provider']
         if sha256(app.read_bytes())!=binary or library_profile_graph(build,flags)!=observed:raise ValueError('Library build evidence changed')
         record=dict(schema_version=1,evidence_kind='r1-library-option-build',phase_or_platform_accepted=False,
-            profile=profile,options=flags,observed=observed,commands=commands,cpu_ids=found,
+            profile=profile,library_group=group,options=flags,observed=observed,commands=commands,cpu_ids=found,
             base_cpu_ids=common_ids[False],python_ids=python_ids,app_sha256=binary,cpu_headers=cpu_header_contract(build,True),
             profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
         (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
@@ -1095,9 +1101,9 @@ def build_production_libraries(args):
     if helpers!=helper_digests() or inputs!=production_inputs():raise ValueError('Production source/helper changed during execution')
     record=dict(schema_version=1,evidence_kind='r1-production-build-matrix',phase_or_platform_accepted=False,
         runtime_tests_executed=False,platform=args.platform,source_revision=revision,source_sha256=inputs,
-        **helpers,profiles=records)
+        **helpers,library_group=getattr(args,'library_group','all'),profiles=records)
     (directory/'production-build.json').write_text(json.dumps(record,indent=2)+'\n')
-    print('R1 tests-OFF libraries: PASS (8 compile-only modes; no runtime acceptance); '+str(directory))
+    print('R1 tests-OFF libraries: PASS ('+str(len(records))+' compile-only modes; no runtime acceptance); '+str(directory))
     return directory
 
 
@@ -1155,6 +1161,7 @@ def build_rhi_source(args):
         configuration=selected['configuration_id'],**helpers,commands=commands,options=flags,
         cpu_discovered_ids=discovered,cpu_executed_ids=sorted(tests),cpu_binary_sha256=binary,
         cmake=str(cmake),cmake_sha256=sha256(cmake.read_bytes()),artifacts_sha256=artifacts,library_matrix=libraries,
+        library_group=getattr(args,'library_group','all'),
         cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs)
     (directory/'source-build.json').write_text(json.dumps(record,indent=2)+'\n')
     args.build_dir=build;args.app=build/'bin'/('lcrenderertest'+('.exe' if sys.platform=='win32' else ''))
@@ -1600,6 +1607,8 @@ def main():
     parser.add_argument('--platform',choices=sorted(inventory.CASE_PLATFORMS),help='Exact native platform for production/host builds')
     parser.add_argument('--build-source',action='store_true',help='With --rhi-contracts, build fresh GUI-less source and run all CPU tests first')
     parser.add_argument('--library-matrix',action='store_true',help='With --build-source, also build/test fresh CPU, legacy and dual libraries; not host/pixel acceptance')
+    parser.add_argument('--library-group',choices=('all','core','python'),default='all',
+        help='Required CI partitions cover the full matrix; Python tests repeat the CPU baseline')
     parser.add_argument('--configuration',help='Exact manifest configuration ID for R1; no hand-picked case subsets')
     parser.add_argument('--build-dir',type=Path,help='R1 CMake build containing the tested offline shader packages')
     parser.add_argument('--provider-prefix',type=Path,help='Required actual Qt/qsb provider boundary for R1')
@@ -1634,6 +1643,8 @@ def main():
     args = parser.parse_args()
     if args.build_source and not args.rhi_contracts:parser.error('--build-source requires --rhi-contracts')
     if args.library_matrix and not args.build_source:parser.error('--library-matrix requires --build-source')
+    if args.library_group!='all' and not (args.library_matrix or args.production_builds):
+        parser.error('--library-group requires --library-matrix or --production-builds')
     if args.host_builds:
         if not args.host_profile:parser.error('--host-builds requires --host-profile')
         if args.host_kind is None:args.host_kind='both'

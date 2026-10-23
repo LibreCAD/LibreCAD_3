@@ -33,7 +33,7 @@ jobs:
       matrix:
         platform: [LINUX-X64, LINUX-ARM64, MAC-ARM64, MAC-X64, WIN-X64]
         tests: ['ON', 'OFF']
-        contract_scope: [libraries, cli, cli-persistence, ui, both]
+        contract_scope: [libraries-core, libraries-python, cli, cli-persistence, ui, both]
         include:
           - runner: ubuntu-26.04
             platform: LINUX-X64
@@ -60,8 +60,10 @@ jobs:
     env:
       R1_PLATFORM: ${{ matrix.platform }}
       R1_TESTS: ${{ matrix.tests }}
-      R1_SCOPE: ${{ matrix.contract_scope }}
-      # Libraries exercise all eight independent modes internally. Host ON
+      R1_SCOPE: ${{ startsWith(matrix.contract_scope, 'libraries-') && 'libraries' || matrix.contract_scope }}
+      R1_LIBRARY_GROUP: ${{ matrix.contract_scope == 'libraries-core' && 'core' || matrix.contract_scope == 'libraries-python' && 'python' || 'all' }}
+      # Both required library groups cover all eight modes within the job cap.
+      # Python tests repeat the CPU baseline for exact ID parity. Host ON
       # covers dual/Python ON; OFF covers legacy/Python OFF on every platform.
       R1_HOST_PROFILE: ${{ matrix.tests == 'ON' && 'dual-python' || 'legacy' }}
       HOMEBREW_NO_AUTO_UPDATE: '1'
@@ -84,6 +86,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # The Azure mirror throttled a 184 MB restore to 41 minutes. Keep the
+          # same signed Ubuntu suites/pins, using the official HTTPS archive.
+          if test "$R1_PLATFORM" = LINUX-X64; then
+            sudo sed -i 's|http://azure\.archive\.ubuntu\.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
+          fi
           sudo apt-get update
           test_dependencies=()
           if test "$R1_TESTS" = ON; then test_dependencies=(libgtest-dev libgmock-dev); fi
@@ -131,7 +138,7 @@ jobs:
           printf 'R1_LUA_INCLUDE=%s\nR1_LUA_LIBRARY=%s\nR1_BREW_PREFIX=%s\n' \
             "$lua_include" "$lua_root/lib/liblua.dylib" "$(brew --prefix)" >> "$GITHUB_ENV"
       - name: Restore pinned Mac Qt modules
-        if: runner.os == 'macOS' && (matrix.contract_scope == 'libraries' || matrix.contract_scope == 'ui' || matrix.contract_scope == 'both' || matrix.tests == 'ON')
+        if: runner.os == 'macOS' && (startsWith(matrix.contract_scope, 'libraries-') || matrix.contract_scope == 'ui' || matrix.contract_scope == 'both' || matrix.tests == 'ON')
         shell: bash
         run: |
           set -euo pipefail
@@ -209,7 +216,7 @@ jobs:
                               '--report',str(Path('build-r1')/('conan-'+name+'-installed-route.json'))],check=True)
           with open(os.environ['GITHUB_ENV'],'a') as out:out.write('CONAN_HOME='+os.environ['CONAN_HOME']+'\n')
       - name: Restore pinned Windows software Vulkan inputs
-        if: runner.os == 'Windows' && matrix.tests == 'ON' && matrix.contract_scope == 'libraries'
+        if: runner.os == 'Windows' && matrix.tests == 'ON' && startsWith(matrix.contract_scope, 'libraries-')
         run: |
           import json, os, shutil, subprocess, sys, tempfile, urllib.request
           from pathlib import Path
@@ -231,7 +238,7 @@ jobs:
           with open(os.environ['GITHUB_ENV'],'a') as out:
               out.write('VK_DRIVER_FILES='+str(manifest)+'\nR1_VULKAN_ROOT='+str(root/'inputs')+'\n')
       - name: Build pinned source-submodule persistence SDK
-        if: matrix.contract_scope != 'libraries' && matrix.contract_scope != 'cli'
+        if: ${{ !startsWith(matrix.contract_scope, 'libraries-') && matrix.contract_scope != 'cli' }}
         run: |
           import os, subprocess, sys
           from pathlib import Path
@@ -295,7 +302,8 @@ jobs:
           qt_cmake=qt/('lib/'+os.environ.get('R1_TRIPLET','')+'/cmake/Qt6' if platform.startswith('LINUX-') else 'lib/cmake/Qt6')
           options=sdk+['CMAKE_PREFIX_PATH='+str(qt),'Qt6_DIR='+str(qt_cmake),'Python_EXECUTABLE='+sys.executable]
           if os.environ['R1_TESTS']=='OFF':
-              command=base+['--production-builds','--platform',platform,'--report-dir',str(Path('build-r1/production').resolve()),'--timeout','300']
+              command=base+['--production-builds','--library-group',os.environ.get('R1_LIBRARY_GROUP','all'),
+                  '--platform',platform,'--report-dir',str(Path('build-r1/production').resolve()),'--timeout','300']
               for option in options:command+=['--cmake-option',option]
               if platform=='WIN-X64':
                   command+=['--generator','Visual Studio 17 2022','--cmake-option',
@@ -321,7 +329,7 @@ jobs:
               for option in options:command+=['--cmake-option',option]
               # Build the library truth table once, not once per Linux QPA.
               if qpa!='wayland':
-                  command+=['--library-matrix']
+                  command+=['--library-matrix','--library-group',os.environ.get('R1_LIBRARY_GROUP','all')]
                   if host=='windows':
                       for profile,graph in [('cpu','ordinary'),('legacy','legacy'),('dual','dual')]+[(p,p) for p in
                               ('cpu-python','legacy-python','dual-python','rhi-python')]:

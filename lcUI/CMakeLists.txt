@@ -95,6 +95,10 @@ managers/copymanager.cpp
 )
 
 set(UI_srcs
+# Schedule template-heavy dialogs/settings before the small widget sources.
+dialogs/textdialog.cpp
+managers/uisettings.cpp
+managers/contextmenumanager.cpp
 cadmdichild.cpp
 main.cpp
 luainterface.cpp
@@ -158,10 +162,7 @@ dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-dialogs/textdialog.cpp
 managers/hookmanager.cpp
-managers/uisettings.cpp
-managers/contextmenumanager.cpp
 managers/metainfomanager.cpp
 )
 
@@ -172,7 +173,7 @@ managers/metainfomanager.cpp
 # leaking into the OFF-build).
 if(WITH_PYTHONSCRIPT)
     list(APPEND UI_BINDING_srcs python/pyguibridge.cpp)
-    list(PREPEND UI_srcs python/pyeventhooks.cpp python/pypluginloader.cpp python/pyruntimesmoke.cpp)
+    list(INSERT UI_srcs 3 python/pyeventhooks.cpp python/pypluginloader.cpp python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyguibridge.h)
     # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
     list(APPEND UI_hdrs python/pyeventhooks.h)
