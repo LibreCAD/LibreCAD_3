@@ -241,6 +241,9 @@ jobs:
           from pathlib import Path
           platform=os.environ['R1_PLATFORM'];scope=os.environ['R1_SCOPE']
           base=[sys.executable,'-B','scripts/run_renderer_checks.py']
+          # Ninja schedules multiple requested targets as one graph, avoiding
+          # Make's repeated kernel build-info regeneration and consumer relinks.
+          if platform!='WIN-X64':base+=['--generator','Ninja']
           if scope not in ('libraries','cli','cli-persistence','ui','both'):raise ValueError('Unknown source contract scope')
           if scope!='libraries':
               kind='cli' if scope.startswith('cli') else scope

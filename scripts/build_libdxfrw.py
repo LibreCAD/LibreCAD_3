@@ -59,6 +59,9 @@ def build(args):
         target=source/name;target.parent.mkdir(parents=True,exist_ok=True)
         shutil.copy2(REPO_ROOT/SUBMODULE/name,target)
     env={k:v for k,v in os.environ.items() if not k.startswith('GIT_') and k!='DESTDIR'}
+    # CI stages sources inside the parent checkout. Without a discovery floor,
+    # git apply can find that repository and silently skip these staged paths.
+    env['GIT_CEILING_DIRECTORIES']=str(source.parent)
     commands=[];deadline=time.monotonic()+600
     def step(command,label):
         where=directory/label;where.mkdir();remaining=deadline-time.monotonic()
@@ -70,6 +73,8 @@ def build(args):
         step([git_executable,'-C',str(source),'apply','--check',str(patch)],name+'-check')
         step([git_executable,'-C',str(source),'apply',str(patch)],name+'-apply')
     patched={name:sha256((source/name).read_bytes()) for name in identity['source_sha256']}
+    if patched==identity['source_sha256']:
+        raise ValueError('Required libdxfrw patches did not modify the staged sources')
     cmake=str(Path(args.cmake or shutil.which('cmake')).resolve(strict=True))
     command=[cmake,'-S',str(source),'-B',str(binary),'-DCMAKE_BUILD_TYPE=Release',
         '-DCMAKE_CONFIGURATION_TYPES=Release','-DCMAKE_POLICY_VERSION_MINIMUM=3.5',

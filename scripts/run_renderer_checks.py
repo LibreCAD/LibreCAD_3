@@ -456,10 +456,23 @@ def source_targets(build):
         raise ValueError('Foreign source File API model')
     configs=[c for c in model['configurations'] if c['name']=='Release']
     if len(configs)!=1:raise ValueError('Missing/ambiguous Release source configuration')
-    targets={}
+    targets={};identities=set()
     for ref in configs[0]['targets']:
         item=document(ref);name=item['name']
-        if name!=ref['name'] or name in targets:raise ValueError('Duplicate/misbound source target')
+        identifier=item.get('id')
+        if (name!=ref['name'] or not isinstance(identifier,str) or not identifier or
+                identifier!=ref.get('id') or identifier in identities):
+            raise ValueError('Duplicate/misbound source target')
+        identities.add(identifier)
+        # Visual Studio emits a distinct ALL_BUILD utility for each project.
+        # Ignore only identified generator utilities, never application targets.
+        if item.get('isGeneratorProvided'):
+            if (name not in ('ALL_BUILD','ZERO_CHECK','INSTALL','RUN_TESTS','PACKAGE') or
+                    item.get('type')!='UTILITY' or item.get('artifacts') or item.get('compileGroups')):
+                raise ValueError('Unexpected generator-provided source target')
+            continue
+        if name in targets or name in ('ALL_BUILD','ZERO_CHECK','INSTALL','RUN_TESTS','PACKAGE'):
+            raise ValueError('Duplicate/misbound source target')
         targets[name]=item
     return targets
 
@@ -642,9 +655,17 @@ def library_artifacts(build,names,types=('STATIC_LIBRARY','SHARED_LIBRARY')):
         result[name]={}
         for item in outputs:
             path=Path(item['path']);path=(path if path.is_absolute() else build/path).resolve()
-            if not path.is_relative_to(build.resolve()) or path in seen or not path.is_file() or path.stat().st_size==0:
+            if not path.is_relative_to(build.resolve()) or path in seen:
                 raise ValueError('Foreign/duplicate/uncompiled production library artifact: '+name)
-            seen.add(path);result[name][str(path.relative_to(build.resolve()))]=sha256(path.read_bytes())
+            seen.add(path)
+            # MSVC advertises a PDB even for Release configurations without
+            # debug-information flags. Actual DLL/import/object outputs remain
+            # mandatory, and any emitted PDB is fingerprinted too.
+            if sys.platform=='win32' and path.suffix.lower()=='.pdb' and not path.exists():continue
+            if not path.is_file() or path.stat().st_size==0:
+                raise ValueError('Foreign/duplicate/uncompiled production library artifact: '+name)
+            result[name][str(path.relative_to(build.resolve()))]=sha256(path.read_bytes())
+        if not result[name]:raise ValueError('Missing production library artifacts: '+name)
     return result
 
 
@@ -754,7 +775,7 @@ def host_object_graph(build,flags):
         if (len(outputs)!=len(compiled) or len(set(outputs))!=len(outputs) or
                 len(set(inputs))!=len(inputs) or any(not (p.is_relative_to(inventory.REPO_ROOT) or p.is_relative_to(build.resolve())) for p in inputs) or
                 any(not p.is_relative_to(build.resolve()) for p in outputs) or
-                names.count('mocs_compilation.cpp')!=1 or names.count('qrc_resource.cpp')!=1):
+                sum(n in ('mocs_compilation.cpp','mocs_compilation_Release.cpp') for n in names)!=1 or names.count('qrc_resource.cpp')!=1):
             raise ValueError('Missing, duplicated or foreign compiled UI/Qt objects')
     hosts=(['librecad']+(['lcui'] if flags['WITH_UNITTESTS'] else []) if flags['WITH_QT_UI'] else [])+(
         ['luacmdinterface'] if flags['WITH_LUACMDINTERFACE'] else [])
@@ -768,7 +789,8 @@ def host_object_graph(build,flags):
         if name=='luacmdinterface':continue
         # File API source paths are relative to the top-level source tree,
         # including generated objects when CI builds inside the checkout.
-        actual=[(inventory.REPO_ROOT/s['path']).resolve() for s in target.get('sources',[]) if Path(s['path']).suffix.lower() in ('.o','.obj')]
+        actual=[(inventory.REPO_ROOT/s['path'].replace('$(Configuration)','Release')).resolve()
+            for s in target.get('sources',[]) if Path(s['path']).suffix.lower() in ('.o','.obj')]
         if (objects['id'] not in deps or len(actual)!=len(outputs) or set(actual)!=set(outputs) or
                 any('compileGroupIndex' in s for s in target.get('sources',[])) or name+'_autogen' in targets):
             raise ValueError('Host recompiles or omits shared UI objects: '+name)

@@ -124,19 +124,19 @@ def library_graph(build,flags):
     for name in names:
         sources=[dict(path='lcviewernoqt/painters/opengl/createpainter.cpp' if name=='lcviewer_opengl' else name+'/fixture.cpp')]
         if name=='lcunittest' and flags['WITH_PYTHONSCRIPT']:sources+=[dict(path=p) for p in runner.PYTHON_TEST_SOURCES]
-        (reply/(name+'.json')).write_text(json.dumps(dict(name=name,sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
+        (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
         if name=='lcuipy_build_tree':
-            (reply/(name+'.json')).write_text(json.dumps(dict(name=name,sources=[],type='UTILITY')))
+            (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=[],type='UTILITY')))
     directory=build/'lcviewernoqt/cpu-headers';directory.mkdir(parents=True)
     template=(inventory.REPO_ROOT/runner.CPU_HEADER_TEMPLATE).read_text();sources=[];objects=[]
     for header in runner.CPU_PUBLIC_HEADERS:
         path=directory/(re.sub(r'[^A-Za-z0-9_]','_',header)+'.cpp');path.write_text(template.replace('@LC_CPU_HEADER@',header))
         sources.append(dict(path=str(path),compileGroupIndex=0));objects.append(str(path)+'.o')
     (directory/'objects-Release.txt').write_text('\n'.join(objects)+'\n')
-    (reply/'lcviewer_cpu_headercheck.json').write_text(json.dumps(dict(name='lcviewer_cpu_headercheck',type='OBJECT_LIBRARY',
+    (reply/'lcviewer_cpu_headercheck.json').write_text(json.dumps(dict(name='lcviewer_cpu_headercheck',id='lcviewer_cpu_headercheck::fixture',type='OBJECT_LIBRARY',
         sources=sources,compileGroups=[dict(language='CXX',languageStandard={'standard':'14'})])))
     model=dict(kind='codemodel',version={'major':2},paths=dict(source=str(inventory.REPO_ROOT),build=str(build)),
-        configurations=[dict(name='Debug',targets=[]),dict(name='Release',targets=[dict(name=n,jsonFile=n+'.json') for n in names])])
+        configurations=[dict(name='Debug',targets=[]),dict(name='Release',targets=[dict(name=n,id=n+'::fixture',jsonFile=n+'.json') for n in names])])
     (reply/'model.json').write_text(json.dumps(model))
     (reply/'index-fixture.json').write_text(json.dumps(dict(reply={'client-renderer-source':{'codemodel-v2':{'jsonFile':'model.json'}}})))
     (build/'renderer-preflight.json').write_text(json.dumps(dict(evidence_kind='renderer-option-preflight',options=flags)))
@@ -165,7 +165,7 @@ def host_graph(build,flags):
         names.update(('librecad','lcui_objects'))
         if flags['WITH_UNITTESTS']:names.add('lcui')
     if flags['WITH_PYTHONSCRIPT']:names.add('lcuipy_build_tree')
-    model['configurations'][1]['targets']=[dict(name=n,jsonFile=n+'.json') for n in sorted(names)]
+    model['configurations'][1]['targets']=[dict(name=n,id=n+'::fixture',jsonFile=n+'.json') for n in sorted(names)]
     (reply/'model.json').write_text(json.dumps(model))
     object_paths=['lcUI/CMakeFiles/lcui_objects.dir/'+n+'.o' for n in ('main.cpp','mocs_compilation.cpp','qrc_resource.cpp')]
     for name in names:
@@ -468,6 +468,21 @@ class HostSourceTests(unittest.TestCase):
         self.assertEqual(0,result.returncode,result.stderr)
         self.assertEqual(['build-r1/hosts/build/lckernel/build_constants.cpp'],result.stdout.splitlines())
 
+    def test_visual_studio_ui_objects_bind_release_configuration_exactly(self):
+        directory=self.execute();build=directory/'build';reply=build/'.cmake/api/v1/reply'
+        flags=json.loads((directory/'host-build.json').read_text())['options']
+        objects=reply/'lcui_objects.json';data=json.loads(objects.read_text())
+        for source in data['sources']:source['path']=source['path'].replace('mocs_compilation.cpp','mocs_compilation_Release.cpp')
+        for artifact in data['artifacts']:artifact['path']=artifact['path'].replace('.dir/','.dir/Release/')
+        objects.write_text(json.dumps(data))
+        for name in ('librecad','lcui'):
+            path=reply/(name+'.json');data=json.loads(path.read_text())
+            for source in data['sources']:source['path']=source['path'].replace('.dir/','.dir/$(Configuration)/')
+            path.write_text(json.dumps(data))
+        self.assertEqual(3,runner.host_object_graph(build,flags)['ui_compilations'])
+        path=reply/'lcui.json';path.write_text(path.read_text().replace('$(Configuration)','Debug'))
+        with self.assertRaisesRegex(ValueError,'shared UI objects'):runner.host_object_graph(build,flags)
+
     def test_compiled_selection_handles_header_parameterized_and_conditional_tests(self):
         source=(self.root/'fixture-source').resolve();folder=source/'unittest';folder.mkdir(parents=True)
         (folder/'code.h').write_text('TEST(Headers, Kept) {}\n');(folder/'code.cpp').write_text('#if 0\nTEST(Core, NotCompiled) {}\n#endif\nTEST_P(Core, Kept) {}\n')
@@ -591,6 +606,23 @@ class LibraryMatrixTests(unittest.TestCase):
             model.write_text(original);self.json_edit(model,change)
             with self.assertRaises(ValueError):runner.source_targets(self.build)
 
+    def test_visual_studio_generator_utilities_are_id_bound_not_application_duplicates(self):
+        reply=self.build/'.cmake/api/v1/reply';path=reply/'model.json';model=json.loads(path.read_text())
+        for suffix in ('root','nested'):
+            name='utility-'+suffix;identifier='ALL_BUILD::'+suffix
+            (reply/(name+'.json')).write_text(json.dumps(dict(name='ALL_BUILD',id=identifier,
+                type='UTILITY',isGeneratorProvided=True,sources=[])))
+            model['configurations'][1]['targets'].append(dict(name='ALL_BUILD',id=identifier,jsonFile=name+'.json'))
+        path.write_text(json.dumps(model))
+        self.assertNotIn('ALL_BUILD',runner.source_targets(self.build))
+        item=reply/'utility-nested.json';original=item.read_text()
+        for change in (lambda d:d.update(id='ALL_BUILD::root'),lambda d:d.update(type='SHARED_LIBRARY'),
+                       lambda d:d.update(name='lckernel'),lambda d:d.update(isGeneratorProvided=False),
+                       lambda d:d.update(artifacts=[dict(path='foreign.dll')])):
+            data=json.loads(original);change(data);item.write_text(json.dumps(data))
+            with self.subTest(data=data),self.assertRaises(ValueError):runner.source_targets(self.build)
+        item.write_text(original)
+
     def test_effective_normal_options_and_cache_are_both_required(self):
         preflight=self.build/'renderer-preflight.json';original=preflight.read_text()
         for key in ('WITH_CAIRO','WITH_PERSISTENCE','WITH_RHI_RENDERER','WITH_PYTHONSCRIPT'):
@@ -599,6 +631,17 @@ class LibraryMatrixTests(unittest.TestCase):
         preflight.write_text(original)
         cache=self.build/'CMakeCache.txt';cache.write_text(cache.read_text().replace('WITH_CAIRO:BOOL=OFF','WITH_CAIRO:BOOL=ON'))
         with self.assertRaisesRegex(ValueError,'cache option'):runner.library_profile_graph(self.build,self.flags)
+
+    def test_msvc_optional_debug_symbols_never_replace_required_library_bytes(self):
+        target=self.build/'.cmake/api/v1/reply/lckernel.json';data=json.loads(target.read_text())
+        binary=self.build/data['artifacts'][0]['path'];binary.parent.mkdir();binary.write_bytes(b'synthetic library')
+        data['artifacts'].append(dict(path='lib/lckernel.pdb'));target.write_text(json.dumps(data))
+        with patch.object(sys,'platform','win32'):
+            self.assertEqual(1,len(runner.library_artifacts(self.build,['lckernel'])['lckernel']))
+            pdb=self.build/'lib/lckernel.pdb';pdb.write_bytes(b'synthetic symbols')
+            self.assertEqual(2,len(runner.library_artifacts(self.build,['lckernel'])['lckernel']))
+            binary.unlink()
+            with self.assertRaises(ValueError):runner.library_artifacts(self.build,['lckernel'])
 
     def test_missing_target_and_legacy_factory_in_cpu_target_rejected(self):
         reply=self.build/'.cmake/api/v1/reply';model=reply/'model.json';original=model.read_text()
@@ -735,8 +778,8 @@ class ProductionBuildTests(unittest.TestCase):
         flags=json.loads((directory/'library-matrix/cpu/library-build.json').read_text())['options']
         model=build/'.cmake/api/v1/reply/model.json';original=model.read_text()
         for target in ('lcunittest','lcbuildcontracttest','lcviewer_cpu_headercheck','lcrenderertest','lcrenderer_headercheck'):
-            value=json.loads(original);value['configurations'][1]['targets'].append(dict(name=target,jsonFile='injected.json'))
-            (model.parent/'injected.json').write_text(json.dumps(dict(name=target)))
+            value=json.loads(original);value['configurations'][1]['targets'].append(dict(name=target,id=target+'::injected',jsonFile='injected.json'))
+            (model.parent/'injected.json').write_text(json.dumps(dict(name=target,id=target+'::injected')))
             model.write_text(json.dumps(value))
             with self.subTest(target=target),self.assertRaisesRegex(ValueError,'target mismatch'):runner.library_profile_graph(build,flags)
         model.write_text(original);trace=build.parent/'trace.jsonl';original=trace.read_text()
@@ -925,6 +968,8 @@ class SourceWorkflowTests(unittest.TestCase):
                     self.assertEqual(profile,command[command.index('--host-profile')+1])
                     self.assertNotIn('--rhi-contracts',command);self.assertNotIn('--production-builds',command)
                     self.assertNotIn('--provider-prefix',command);self.assertNotIn('--xvfb-run',command)
+                    self.assertEqual('Visual Studio 17 2022' if platform=='WIN-X64' else 'Ninja',
+                        command[command.index('--generator')+1])
                     if platform.startswith('MAC-'):self.assertIn('CMAKE_PREFIX_PATH='+('/qt;' if tests=='ON' else '')+'/brew',command)
 
     def test_linux_dependency_arrays_select_cli_without_qt_and_only_requested_gtest(self):

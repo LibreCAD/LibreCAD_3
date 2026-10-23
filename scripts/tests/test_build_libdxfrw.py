@@ -5,6 +5,8 @@ import copy
 import json
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -41,8 +43,10 @@ class LibdxfrwProviderTests(unittest.TestCase):
 
     def command(self,command,where,timeout,env):
         self.commands.append((command,where,env));self.assertLessEqual(timeout,self.args.timeout)
-        for key in env:self.assertFalse(key.startswith('GIT_'));self.assertNotIn('DESTDIR',env)
         source=where.parent/'source'
+        self.assertEqual(str(source.parent),env.get('GIT_CEILING_DIRECTORIES'))
+        for key in env:self.assertFalse(key.startswith('GIT_') and key!='GIT_CEILING_DIRECTORIES')
+        self.assertNotIn('DESTDIR',env)
         if where.name.endswith('-apply'):(source/'CMakeLists.txt').write_text('# patched synthetic input\n')
         if where.name=='install':
             prefix=where.parent/'sdk';include=prefix/'include/libdxfrw';include.mkdir(parents=True)
@@ -103,6 +107,25 @@ class LibdxfrwProviderTests(unittest.TestCase):
     def test_foreign_native_tuple_is_rejected_before_copying_sources(self):
         with patch.object(builder,'native_platform',return_value='OTHER'),self.assertRaisesRegex(ValueError,'matching native'):self.execute()
         self.assertFalse(self.args.report_dir.exists())
+
+    def test_silent_patch_skip_never_publishes_an_unpatched_sdk(self):
+        with patch.object(builder,'run_command',return_value=dict(synthetic_only=True)):
+            with self.assertRaisesRegex(ValueError,'did not modify'):builder.build(self.args)
+        self.assertEqual([],list(self.args.report_dir.rglob('provider.json')))
+
+    @unittest.skipUnless(shutil.which('git'),'Git patch isolation regression requires Git')
+    def test_git_discovery_floor_patches_the_staged_tree_inside_parent_checkout(self):
+        subprocess.run(['git','init','--quiet',str(self.root)],check=True,timeout=10)
+        nested=self.root/'evidence/source';nested.mkdir(parents=True)
+        (nested/'file.txt').write_text('before\n')
+        patchfile=self.root/'fixture.patch'
+        patchfile.write_text('diff --git a/file.txt b/file.txt\n--- a/file.txt\n+++ b/file.txt\n@@ -1 +1 @@\n-before\n+after\n')
+        env={k:v for k,v in os.environ.items() if not k.startswith('GIT_')}
+        env['GIT_CEILING_DIRECTORIES']=str(nested.parent)
+        subprocess.run(['git','-C',str(nested),'apply','--check',str(patchfile)],env=env,check=True,timeout=10)
+        subprocess.run(['git','-C',str(nested),'apply',str(patchfile)],env=env,check=True,timeout=10)
+        self.assertEqual('after\n',(nested/'file.txt').read_text())
+        self.assertFalse((self.root/'file.txt').exists())
 
 
 if __name__=='__main__':unittest.main()
