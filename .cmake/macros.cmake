@@ -37,9 +37,7 @@ macro(install_headers subdir)
 
     cmake_path(GET SUBDIR FILENAME dir_name)
     set(install_root "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_ALIAS}/${dir_name}")
-    set_property(
-      GLOBAL APPEND PROPERTY LC_COLLECT_INCDIRS
-                             "${CMAKE_INSTALL_PREFIX}/${install_root}")
+    set_property(GLOBAL APPEND PROPERTY LC_COLLECT_INCDIRS "${dir_name}")
 
     foreach(header_file IN LISTS HEADER_FILES)
       get_filename_component(header_dir "${header_file}" DIRECTORY)

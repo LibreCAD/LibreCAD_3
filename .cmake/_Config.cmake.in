@@ -3,13 +3,22 @@
 include(CMakeFindDependencyMacro)
 set_and_check(@PROJECT_ALIAS@_INC_DIR @PACKAGE_INC_DIR@)
 set_and_check(@PROJECT_ALIAS@_LIB_DIR @PACKAGE_LIB_DIR@)
-set_and_check(@PROJECT_ALIAS@_BIN_DIR @PACKAGE_BIN_DIR@)
+# Only Windows installs anything into bin/ (the DLLs), so it is not checked.
+set(@PROJECT_ALIAS@_BIN_DIR @PACKAGE_BIN_DIR@)
 set(@PROJECT_ALIAS@_LIBS)
-set(@PROJECT_ALIAS@_INC_DIRS "@LC_COLLECT_INCDIRS@")
+# Both include/LibreCAD3 (for <persistence/...>, <lcscripting/...>) and each
+# module's directory under it (for <cad/...>, <documentcanvas.h>), relative to
+# wherever the package is installed.
+set(@PROJECT_ALIAS@_INC_DIRS ${@PROJECT_ALIAS@_INC_DIR})
+foreach(module IN ITEMS @LC_COLLECT_INCDIRS@)
+  list(APPEND @PROJECT_ALIAS@_INC_DIRS ${@PROJECT_ALIAS@_INC_DIR}/${module})
+endforeach()
 set(_NAME_ @PROJECT_ALIAS@)
 
-find_dependency(PkgConfig)
 find_dependency(Eigen3)
+# The kernel's public headers include Boost.Log (cad/logger/logger.h).
+find_dependency(Boost COMPONENTS log)
+list(APPEND @PROJECT_ALIAS@_LIBS Boost::log)
 get_target_property(EIGEN_INC_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND @PROJECT_ALIAS@_INC_DIRS ${EIGEN_INC_DIRS})
 list(APPEND @PROJECT_ALIAS@_LIBS Eigen3::Eigen)

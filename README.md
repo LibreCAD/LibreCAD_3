@@ -106,7 +106,7 @@ Common CMake options are:
 | `WITH_UNITTESTS` | `ON` | Build `lcunittest`. |
 | `WITH_RENDERING_UNITTESTS` | `ON` | Build rendering tests that require a graphics environment. |
 | `WITH_DOCUMENTATION` | `OFF` | Build documentation. |
-| `WITH_HEADERS` | `OFF` | Install header files and LibreCAD3Conf.cmake. |
+| `WITH_HEADERS` | `OFF` | Install header files and LibreCAD3Config.cmake. |
 
 For example, a headless core build can be configured with:
 
