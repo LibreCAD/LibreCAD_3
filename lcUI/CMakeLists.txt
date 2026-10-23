@@ -90,6 +90,8 @@ managers/copymanager.h
 managers/metainfomanager.h)
 
 set(UI_srcs
+lua/guibridge.cpp
+managers/copymanager.cpp
 cadmdichild.cpp
 main.cpp
 luainterface.cpp
@@ -149,7 +151,6 @@ widgets/customizeToolbar/deleteiconarea.cpp
 widgets/customizeToolbar/customizetoolbar.cpp
 widgets/customizeToolbar/customizeparenttab.cpp
 widgets/customizeToolbar/customizegrouptab.cpp
-lua/guibridge.cpp
 dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
@@ -158,7 +159,6 @@ dialogs/textdialog.cpp
 managers/hookmanager.cpp
 managers/uisettings.cpp
 managers/contextmenumanager.cpp
-managers/copymanager.cpp
 managers/metainfomanager.cpp
 )
 
@@ -168,10 +168,10 @@ managers/metainfomanager.cpp
 # adding conditionally avoids any pybind11 include-path requirement
 # leaking into the OFF-build).
 if(WITH_PYTHONSCRIPT)
-    # Start the template-heavy bindings before the many small UI sources so
-    # they do not become a serial tail after the other compiler workers idle.
-    list(PREPEND UI_srcs python/pyguibridge.cpp python/pyeventhooks.cpp
-        python/pypluginloader.cpp python/pyruntimesmoke.cpp)
+    # Start Lua/Python binding and serialization templates before small UI
+    # sources so they do not become a serial tail after other workers idle.
+    list(INSERT UI_srcs 1 python/pyguibridge.cpp)
+    list(INSERT UI_srcs 3 python/pyeventhooks.cpp python/pypluginloader.cpp python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyguibridge.h)
     # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
     list(APPEND UI_hdrs python/pyeventhooks.h)

@@ -195,12 +195,14 @@ class RendererBuildOptionsTests(unittest.TestCase):
             self.assertNotIn('.cpp>',source)
 
     def test_heavy_python_bindings_are_scheduled_first_without_duplicate_sources(self):
-        body=(ROOT/'lcUI/CMakeLists.txt').read_text().split('# Phase 3 PR-3.2',1)[1].split(
+        cmake=(ROOT/'lcUI/CMakeLists.txt').read_text()
+        self.assertIn('set(UI_srcs\nlua/guibridge.cpp\nmanagers/copymanager.cpp\n',cmake)
+        body=cmake.split('# Phase 3 PR-3.2',1)[1].split(
             'if(WITH_PYTHONSCRIPT)',1)[1].split('endif()',1)[0]
         with tempfile.TemporaryDirectory(prefix='renderer-source-order-') as tmp:
             script=Path(tmp)/'order.cmake'
-            script.write_text('set(UI_srcs ordinary.cpp)\n'+body+'\n'
-                'if(NOT UI_srcs STREQUAL "python/pyguibridge.cpp;python/pyeventhooks.cpp;'
+            script.write_text('set(UI_srcs lua/guibridge.cpp managers/copymanager.cpp ordinary.cpp)\n'+body+'\n'
+                'if(NOT UI_srcs STREQUAL "lua/guibridge.cpp;python/pyguibridge.cpp;managers/copymanager.cpp;python/pyeventhooks.cpp;'
                 'python/pypluginloader.cpp;python/pyruntimesmoke.cpp;ordinary.cpp")\n'
                 '  message(FATAL_ERROR "Lost, duplicated or delayed UI sources: ${UI_srcs}")\nendif()\n')
             result=subprocess.run(['cmake','-P',str(script)],capture_output=True,text=True,timeout=30)
