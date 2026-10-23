@@ -167,7 +167,8 @@ class RendererBuildOptionsTests(unittest.TestCase):
             self.assertEqual(0,result.returncode,result.stdout+result.stderr);self.assertFalse(stage.exists())
             result=subprocess.run(['cmake','--install',str(build)],capture_output=True,text=True,timeout=30)
             self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-            self.assertEqual([str(stage/'LICENSE')],(build/'install_manifest.txt').read_text().splitlines())
+            self.assertEqual([(stage/'LICENSE').resolve()],
+                [Path(p).resolve() for p in (build/'install_manifest.txt').read_text().splitlines()])
             self.assertEqual((source/'LICENSE').read_bytes(),(stage/'LICENSE').read_bytes())
 
     def test_msvc_ui_source_parallelism_is_target_local_and_bounded(self):
