@@ -321,7 +321,24 @@ def _mac_waitid(pid):
 def _posix_command(command, directory, timeout, env):
     """Pin the root zombie until its private process group has been signaled."""
     with (directory/'stdout.log').open('wb') as out, (directory/'stderr.log').open('wb') as err:
-        proc = subprocess.Popen(command,env=env,stdin=subprocess.DEVNULL,stdout=out,stderr=err,start_new_session=True)
+        deadline = time.monotonic()+timeout
+        # Even a trivial executable may exit before getpgid/getsid can inspect
+        # it on Darwin. Block in an isolated bootstrap until ownership is
+        # verified, then exec the real command without changing PID/session.
+        bootstrap=('import os,sys,signal\nfd=int(sys.argv[1])\n'
+            'if os.read(fd,1)!=b"1": os._exit(126)\n'
+            'os.close(fd)\n'
+            'for name in ("SIGPIPE","SIGXFZ","SIGXFSZ"):\n'
+            ' if hasattr(signal,name): signal.signal(getattr(signal,name),signal.SIG_DFL)\n'
+            'try: os.execvpe(sys.argv[2],sys.argv[2:],os.environ)\n'
+            'except OSError as error:\n sys.stderr.write(str(error)+"\\n"); os._exit(126)\n')
+        reader,writer=os.pipe()
+        try:
+            proc = subprocess.Popen([sys.executable,'-I','-S','-B','-c',bootstrap,str(reader),*command],
+                env=env,stdin=subprocess.DEVNULL,stdout=out,stderr=err,start_new_session=True,pass_fds=(reader,))
+        except BaseException:
+            os.close(writer);raise
+        finally:os.close(reader)
         timed_out = False
         event=None
         private=False
@@ -329,7 +346,8 @@ def _posix_command(command, directory, timeout, env):
             private=os.getpgid(proc.pid)==proc.pid and os.getsid(proc.pid)==proc.pid
             if not private:
                 raise ValueError('Build command did not create its private group/session')
-            deadline = time.monotonic()+timeout
+            if os.write(writer,b'1')!=1:raise OSError('Command ownership handshake failed')
+            os.close(writer);writer=None
             while True:
                 event=_mac_waitid(proc.pid)
                 if event is not None:break
@@ -337,24 +355,27 @@ def _posix_command(command, directory, timeout, env):
                     timed_out = True; break
                 time.sleep(0.01)
         finally:
-            # No poll()/wait() has reaped the root: its PID/group cannot be
-            # reused while we signal only this command's session/group.
             try:
-                if not private:
-                    proc.terminate() # Only our unreaped root, never an unverified process group.
-                    raise ValueError('Private process-group ownership was not established')
-                members=_mac_group(proc.pid)
-                # Darwin can reject killpg for a group containing only its
-                # exited root. No signal is needed when no descendants remain.
-                if event is None or any(p!=proc.pid for p in members):
-                    for sig in (signal.SIGTERM,signal.SIGKILL):
-                        try: os.killpg(proc.pid,sig)
-                        except ProcessLookupError: pass
-                        except PermissionError:
-                            exited=_mac_waitid(proc.pid)
-                            if exited is not None and set(_mac_group(proc.pid))<={proc.pid}:break
-                            raise
-            finally:proc.wait(timeout=5)
+                if writer is not None:os.close(writer)
+            finally:
+                # No poll()/wait() has reaped the root: its PID/group cannot be
+                # reused while we signal only this command's session/group.
+                try:
+                    if not private:
+                        proc.terminate() # Only our unreaped root, never an unverified process group.
+                        raise ValueError('Private process-group ownership was not established')
+                    members=_mac_group(proc.pid)
+                    # Darwin can reject killpg for a group containing only its
+                    # exited root. No signal is needed when no descendants remain.
+                    if event is None or any(p!=proc.pid for p in members):
+                        for sig in (signal.SIGTERM,signal.SIGKILL):
+                            try: os.killpg(proc.pid,sig)
+                            except ProcessLookupError: pass
+                            except PermissionError:
+                                exited=_mac_waitid(proc.pid)
+                                if exited is not None and set(_mac_group(proc.pid))<={proc.pid}:break
+                                raise
+                finally:proc.wait(timeout=5)
         deadline = time.monotonic()+2
         retired = False
         while time.monotonic() < deadline:

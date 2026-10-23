@@ -457,6 +457,10 @@ def source_worker_argv(argv,args):
     return result+['--app',str(args.app),'--build-dir',str(args.build_dir)]
 
 
+def source_parallelism():
+    return str(max(1,min(4,os.cpu_count() or 1)))
+
+
 def source_targets(build):
     """Read the owned Release File API graph, never infer targets from filenames."""
     reply=build/'.cmake/api/v1/reply';indices=list(reply.glob('index-*.json'))
@@ -736,7 +740,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
         targets+=(['lcviewer_opengl'] if legacy else [])+(['lcrenderer_rhi'] if rhi else [])
         if tests:targets+=['lcunittest','lcviewer_cpu_headercheck']
         for target in targets:
-            step([command[0],'--build',str(build),'--config','Release','--target',target,'--parallel','3'],'compile-'+target)
+            step([command[0],'--build',str(build),'--config','Release','--target',target,'--parallel',source_parallelism()],'compile-'+target)
         if not tests:
             artifacts=library_artifacts(build,targets)
             if library_profile_graph(build,flags)!=observed:raise ValueError('Production build evidence changed')
@@ -994,16 +998,16 @@ def build_host_source(args):
     # and Lua compilation must not exhaust it before either target finishes.
     # All stages still share the original total profile deadline.
     for name in libraries:
-        step([cmake,'--build',str(build),'--config','Release','--target',name,'--parallel','3'],'library-'+name)
+        step([cmake,'--build',str(build),'--config','Release','--target',name,'--parallel',source_parallelism()],'library-'+name)
     for label,names in (('ui-objects',['lcui_objects'] if ui else []),
             ('hosts',host_names),
             ('tests',['lcunittest','lcviewer_cpu_headercheck'] if tests else [])):
-        if names:step([cmake,'--build',str(build),'--config','Release','--target',*names,'--parallel','3'],label)
+        if names:step([cmake,'--build',str(build),'--config','Release','--target',*names,'--parallel',source_parallelism()],label)
     if install:
         # This C archive is installed by TinySpline but is not a CLI link
         # dependency. Build it before freezing binaries/testing; a later ALL
         # build would regenerate kernel build timestamps and relink consumers.
-        step([cmake,'--build',str(build),'--config','Release','--target','tinyspline','--parallel','3'],
+        step([cmake,'--build',str(build),'--config','Release','--target','tinyspline','--parallel',source_parallelism()],
             'install-prerequisites')
     artifacts=library_artifacts(build,libraries+(['lcui_objects'] if ui else [])+host_names+(['lcunittest'] if tests else []),
         types=('STATIC_LIBRARY','SHARED_LIBRARY','OBJECT_LIBRARY','EXECUTABLE'))
@@ -1120,7 +1124,7 @@ def build_rhi_source(args):
     command+=['-DCMAKE_DISABLE_FIND_PACKAGE_'+p+'=ON' for p in ('Qt5','GLEW','glew','glfw3','glm','libdxfrw')]
     step(command,'configure')
     step([str(cmake),'--build',str(build),'--config','Release','--target',
-          'lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest','--parallel','3'],'compile')
+          'lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest','--parallel',source_parallelism()],'compile')
     executable=build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))
     binary=sha256(executable.read_bytes());step([str(executable),'--gtest_list_tests'],'cpu-discovery')
     # Only remove lcunittest's established one-line version banner, not noise

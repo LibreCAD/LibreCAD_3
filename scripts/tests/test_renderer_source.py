@@ -20,6 +20,11 @@ import validate_renderer_inventory as inventory
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_source_compiler_workers_use_available_cores_with_a_four_worker_cap(self):
+        for count,wanted in ((None,'1'),(0,'1'),(1,'1'),(2,'2'),(3,'3'),(4,'4'),(64,'4')):
+            with self.subTest(count=count),patch.object(runner.os,'cpu_count',return_value=count):
+                self.assertEqual(wanted,runner.source_parallelism())
+
     def setUp(self):
         temporary=tempfile.TemporaryDirectory(prefix='rhi-source-fixture-');self.addCleanup(temporary.cleanup)
         self.root=Path(temporary.name)
@@ -412,7 +417,7 @@ class HostSourceTests(unittest.TestCase):
                     self.assertEqual('offscreen',self.commands[-1][1]['QT_QPA_PLATFORM'])
                     libraries=[c for c,e in self.commands if '--target' in c and c[c.index('--target')+1]=='lcluascript']
                     self.assertEqual(1,len(libraries))
-                    self.assertEqual(['lcluascript','--parallel','3'],libraries[0][libraries[0].index('--target')+1:])
+                    self.assertEqual(['lcluascript','--parallel',runner.source_parallelism()],libraries[0][libraries[0].index('--target')+1:])
 
     def test_cli_installs_move_before_loading_and_preserve_owned_artifacts(self):
         self.args.host_kind='cli';self.args.host_no_persistence=True;self.args.host_install=True

@@ -326,11 +326,8 @@ endif()
 # must reach this target, where Python/Qt headers are actually compiled.
 add_library(lcui_objects OBJECT ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 set_target_properties(lcui_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Visual Studio")
-    # MSBuild /m parallelizes projects, not sources within this shared target.
-    # Keep cold UI compilation bounded to three compiler workers as in CI.
-    target_compile_options(lcui_objects PRIVATE /MP3)
-endif()
+target_compile_definitions(lcui_objects PRIVATE LCUI_BUILDING)
+lc_parallel_msvc_compile(lcui_objects)
 target_link_libraries(lcui_objects PRIVATE ${EXTRA_LIBS})
 if(WITH_PYTHONSCRIPT)
     add_dependencies(lcui_objects lcuipy_build_tree)

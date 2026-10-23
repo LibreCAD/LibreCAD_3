@@ -1,5 +1,19 @@
 include_guard(GLOBAL)
 
+# MSBuild's /m schedules projects, not translation units within one target.
+# Apply this only to the large UI/test targets, never as a global compiler flag.
+function(lc_parallel_msvc_compile target)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Visual Studio")
+        cmake_host_system_information(RESULT _jobs QUERY NUMBER_OF_LOGICAL_CORES)
+        if(_jobs GREATER 4)
+            set(_jobs 4)
+        elseif(_jobs LESS 1)
+            set(_jobs 1)
+        endif()
+        target_compile_options(${target} PRIVATE /MP${_jobs})
+    endif()
+endfunction()
+
 # Conan records its dependency selection in the toolchain, including when CMake
 # is invoked directly rather than through a preset. Never accept a cache/CLI
 # override which would use a different dependency graph.

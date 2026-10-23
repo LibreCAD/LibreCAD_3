@@ -290,6 +290,7 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 # Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
 include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
+lc_parallel_msvc_compile(lcunittest)
 # Current GoogleTest releases require C++17. Keep the application and library
 # targets on the project's C++14 baseline; only the test runner needs C++17.
 target_compile_features(lcunittest PRIVATE cxx_std_17)

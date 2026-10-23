@@ -171,10 +171,20 @@ class RendererBuildOptionsTests(unittest.TestCase):
             self.assertEqual((source/'LICENSE').read_bytes(),(stage/'LICENSE').read_bytes())
 
     def test_msvc_ui_source_parallelism_is_target_local_and_bounded(self):
-        source=(ROOT/'lcUI/CMakeLists.txt').read_text()
-        block=source.split('if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Visual Studio")',1)[1].split('endif()',1)[0]
-        self.assertIn('target_compile_options(lcui_objects PRIVATE /MP3)',block)
-        self.assertNotIn('CMAKE_CXX_FLAGS',block)
+        block=OPTIONS.read_text().split('function(lc_parallel_msvc_compile target)',1)[1].split('endfunction()',1)[0]
+        self.assertIn('CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"',block);self.assertIn('^Visual Studio',block)
+        self.assertIn('target_compile_options(${target} PRIVATE /MP${_jobs})',block)
+        self.assertIn('_jobs GREATER 4',block);self.assertIn('_jobs LESS 1',block);self.assertNotIn('CMAKE_CXX_FLAGS',block)
+        self.assertIn('lc_parallel_msvc_compile(lcui_objects)',(ROOT/'lcUI/CMakeLists.txt').read_text())
+        self.assertIn('lc_parallel_msvc_compile(lcunittest)',(ROOT/'unittest/CMakeLists.txt').read_text())
+
+    def test_shared_ui_static_data_has_explicit_export_import_ownership(self):
+        header=(ROOT/'lcUI/lcuiexport.h').read_text()
+        self.assertIn('#ifdef LCUI_BUILDING',header);self.assertIn('Q_DECL_EXPORT',header);self.assertIn('Q_DECL_IMPORT',header)
+        self.assertIn('target_compile_definitions(lcui_objects PRIVATE LCUI_BUILDING)',(ROOT/'lcUI/CMakeLists.txt').read_text())
+        for path,name in [('dialogs/addlayerdialog.h','AddLayerDialog'),('widgets/layermodel.h','LayerModel'),
+                          ('widgets/linepatternpathpart.h','LinePatternPathPart'),('windowmanager.h','WindowManager')]:
+            self.assertIn('class LCUI_API '+name,(ROOT/'lcUI'/path).read_text())
 
     def test_cpu_factory_has_no_opengl_implementation(self):
         cpu = (ROOT / 'lcviewernoqt/painters/createpainter.cpp').read_text()
@@ -293,6 +303,8 @@ class UiObjectBuildTests(unittest.TestCase):
                     'int ui_value() { return UI_DEPENDENCY; }\n')
                 (source / 'CMakeLists.txt').write_text(
                     'cmake_minimum_required(VERSION 3.15)\nproject(UiObjects LANGUAGES CXX)\n'
+                    'function(lc_parallel_msvc_compile target)'+OPTIONS.read_text().split(
+                        'function(lc_parallel_msvc_compile target)',1)[1].split('endfunction()',1)[0]+'endfunction()\n'
                     'set(CMAKE_CXX_STANDARD 14)\nset(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)\n'
                     'set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n'
                     'add_library(ui_dependencies INTERFACE)\n'

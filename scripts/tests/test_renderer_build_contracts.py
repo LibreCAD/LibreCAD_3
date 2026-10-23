@@ -216,13 +216,39 @@ class CommandOwnershipFixtures(unittest.TestCase):
         with patch.object(processes.ctypes,'CDLL',return_value=lib),self.assertRaises(OSError):processes._mac_group(12)
 
     def test_mac_exited_root_only_is_reaped_without_signaling_zombie_group(self):
+        order=[]
         with tempfile.TemporaryDirectory() as tmp,patch.object(processes.subprocess,'Popen') as popen, \
-             patch.object(processes.os,'getpgid',return_value=12,create=True),patch.object(processes.os,'getsid',return_value=12,create=True), \
+             patch.object(processes.os,'pipe',return_value=(101,102)),patch.object(processes.os,'close') as close, \
+             patch.object(processes.os,'write',side_effect=lambda *a:order.append('release') or 1) as release, \
+             patch.object(processes.os,'getpgid',side_effect=lambda p:order.append('group') or 12,create=True), \
+             patch.object(processes.os,'getsid',side_effect=lambda p:order.append('session') or 12,create=True), \
              patch.object(processes,'_mac_waitid',return_value=12), \
              patch.object(processes,'_mac_group',side_effect=[[12],[]]),patch.object(processes.os,'killpg',create=True) as kill:
             popen.return_value.pid=12;popen.return_value.returncode=0
             result=processes._posix_command(['synthetic'],Path(tmp),1,{})
             self.assertTrue(result['process_group_retired']);kill.assert_not_called();popen.return_value.wait.assert_called_once()
+            release.assert_called_once_with(102,b'1');self.assertEqual([((101,),),((102,),)],close.call_args_list)
+            argv=popen.call_args.args[0];self.assertEqual([sys.executable,'-I','-S','-B','-c'],argv[:5])
+            self.assertEqual('101',argv[6]);self.assertEqual('synthetic',argv[7])
+            self.assertEqual((101,),popen.call_args.kwargs['pass_fds'])
+            self.assertEqual(['group','session','release'],order)
+
+    def test_mac_unverified_session_never_releases_or_signals_a_group(self):
+        with tempfile.TemporaryDirectory() as tmp,patch.object(processes.subprocess,'Popen') as popen, \
+             patch.object(processes.os,'pipe',return_value=(101,102)),patch.object(processes.os,'close') as close, \
+             patch.object(processes.os,'write') as release,patch.object(processes.os,'getpgid',return_value=11,create=True), \
+             patch.object(processes.os,'killpg',create=True) as kill:
+            popen.return_value.pid=12
+            with self.assertRaisesRegex(ValueError,'ownership was not established'):
+                processes._posix_command(['synthetic'],Path(tmp),1,{})
+            release.assert_not_called();kill.assert_not_called();popen.return_value.terminate.assert_called_once()
+            popen.return_value.wait.assert_called_once();self.assertEqual([((101,),),((102,),)],close.call_args_list)
+
+    def test_mac_failed_spawn_closes_both_handshake_descriptors(self):
+        with tempfile.TemporaryDirectory() as tmp,patch.object(processes.subprocess,'Popen',side_effect=OSError('spawn failed')), \
+             patch.object(processes.os,'pipe',return_value=(101,102)),patch.object(processes.os,'close') as close:
+            with self.assertRaisesRegex(OSError,'spawn failed'):processes._posix_command(['synthetic'],Path(tmp),1,{})
+            self.assertEqual([((102,),),((101,),)],close.call_args_list)
 
     def test_helper_exception_retains_explicit_unknown_cleanup_not_success(self):
         with tempfile.TemporaryDirectory() as tmp,patch.object(processes.sys,'platform','darwin'), \

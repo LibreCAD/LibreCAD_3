@@ -1,4 +1,5 @@
 #pragma once
+#include "lcuiexport.h"
 #include <cad/storage/document.h>
 
 #include <QDialog>
@@ -23,7 +24,7 @@ namespace dialog {
 /**
  * \brief Create a dialog with all required fields to create a new layer
  */
-class AddLayerDialog : public QDialog {
+class LCUI_API AddLayerDialog : public QDialog {
     Q_OBJECT
 
 public:

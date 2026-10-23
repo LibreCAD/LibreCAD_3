@@ -237,7 +237,7 @@ jobs:
           from pathlib import Path
           result=subprocess.run([sys.executable,'-B','scripts/build_libdxfrw.py',
               '--platform',os.environ['R1_PLATFORM'],'--report-dir',str(Path('build-r1/dxfrw').resolve()),
-              '--timeout','180'],check=True,capture_output=True,text=True)
+              '--timeout','180'],check=True,stdout=subprocess.PIPE,text=True)
           Path('build-r1/libdxfrw-sdk.json').write_text(result.stdout)
       - name: Run selected library or CLI source contracts
         run: |
