@@ -168,16 +168,16 @@ managers/metainfomanager.cpp
 # adding conditionally avoids any pybind11 include-path requirement
 # leaking into the OFF-build).
 if(WITH_PYTHONSCRIPT)
-    list(APPEND UI_srcs python/pyguibridge.cpp)
+    # Start the template-heavy bindings before the many small UI sources so
+    # they do not become a serial tail after the other compiler workers idle.
+    list(PREPEND UI_srcs python/pyguibridge.cpp python/pyeventhooks.cpp
+        python/pypluginloader.cpp python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyguibridge.h)
     # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
-    list(APPEND UI_srcs python/pyeventhooks.cpp)
     list(APPEND UI_hdrs python/pyeventhooks.h)
     # Phase 5 PR-5.5 — Python plugin loader.
-    list(APPEND UI_srcs python/pypluginloader.cpp)
     list(APPEND UI_hdrs python/pypluginloader.h)
     # Actual installed-artifact import/plugin/document smoke used by CI.
-    list(APPEND UI_srcs python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyruntimesmoke.h)
 endif()
 

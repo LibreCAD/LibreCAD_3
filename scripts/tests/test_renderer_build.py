@@ -194,6 +194,18 @@ class RendererBuildOptionsTests(unittest.TestCase):
             self.assertIn('#include <ui_'+form+'.h>',source)
             self.assertNotIn('.cpp>',source)
 
+    def test_heavy_python_bindings_are_scheduled_first_without_duplicate_sources(self):
+        body=(ROOT/'lcUI/CMakeLists.txt').read_text().split('# Phase 3 PR-3.2',1)[1].split(
+            'if(WITH_PYTHONSCRIPT)',1)[1].split('endif()',1)[0]
+        with tempfile.TemporaryDirectory(prefix='renderer-source-order-') as tmp:
+            script=Path(tmp)/'order.cmake'
+            script.write_text('set(UI_srcs ordinary.cpp)\n'+body+'\n'
+                'if(NOT UI_srcs STREQUAL "python/pyguibridge.cpp;python/pyeventhooks.cpp;'
+                'python/pypluginloader.cpp;python/pyruntimesmoke.cpp;ordinary.cpp")\n'
+                '  message(FATAL_ERROR "Lost, duplicated or delayed UI sources: ${UI_srcs}")\nendif()\n')
+            result=subprocess.run(['cmake','-P',str(script)],capture_output=True,text=True,timeout=30)
+            self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+
     def test_cpu_factory_has_no_opengl_implementation(self):
         cpu = (ROOT / 'lcviewernoqt/painters/createpainter.cpp').read_text()
         legacy = (ROOT / 'lcviewernoqt/painters/opengl/createpainter.cpp').read_text()
