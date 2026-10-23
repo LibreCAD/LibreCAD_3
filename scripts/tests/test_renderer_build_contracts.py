@@ -55,6 +55,22 @@ class BuildContractFixtures(unittest.TestCase):
 
     def result(self):return runner.build_contract_results(self.root,self.selection)
 
+    def test_cpu_deadline_rounding_keeps_the_command_cap_and_expiry(self):
+        args=SimpleNamespace(cmake_option=[],case_cmake_option=[],cmake=Path(sys.executable),
+            trace_format='auto',expected_revision=None,report_dir=self.root,timeout=300,generator=None)
+        def command(argv,where,timeout,env,expected_exit=0):
+            self.assertEqual(300,timeout)
+            raise ValueError('bounded command reached')
+        with patch.object(runner,'build_selection',return_value=self.selection), \
+                patch.object(runner.subprocess,'check_output',return_value='cmake version 3.27.0\n'), \
+                patch.object(runner.time,'monotonic',return_value=212.007),patch.object(runner,'run_command',side_effect=command):
+            with self.assertRaisesRegex(ValueError,'bounded command reached'):runner.run_build_contracts(args)
+        with patch.object(runner,'build_selection',return_value=self.selection), \
+                patch.object(runner.subprocess,'check_output',return_value='cmake version 3.27.0\n'), \
+                patch.object(runner.time,'monotonic',side_effect=[212.007,512.008]),patch.object(runner,'run_command') as run:
+            with self.assertRaisesRegex(ValueError,'deadline expired'):runner.run_build_contracts(args)
+            run.assert_not_called()
+
     def test_complete_synthetic_results_keep_exact_existing_ids(self):
         result=self.result()
         self.assertEqual(3,len(result['executed_ids']))

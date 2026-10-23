@@ -194,7 +194,7 @@ protected:
         renderer = lc::rhi::createOffscreenRenderer(nativeApi, limit);
         info = renderer->deviceInfo();
         ASSERT_EQ(nativeApi, info.api);
-        ASSERT_EQ(expectedDevice, info.deviceClass);
+        ASSERT_EQ(expectedDevice, info.deviceClass) << "Metal/Vulkan adapter: " << info.name;
         ASSERT_FALSE(info.name.empty());
         ASSERT_EQ(64u, info.shaderHash.size());
         RecordProperty("rhi_api", apiName); RecordProperty("rhi_device", info.name);

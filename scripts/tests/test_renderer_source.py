@@ -74,6 +74,22 @@ class SourceBuildTests(unittest.TestCase):
         self.assertEqual(5,len(record['cpu_headers']['objects_sha256']))
         self.assertIn('--config',build);self.assertIn('Release',build)
 
+    def test_source_deadline_rounding_is_capped_without_extending_the_profile(self):
+        self.args.timeout=300
+        self.assertGreater((212.007+300)-212.007,300)
+        def command(argv,where,timeout,env):
+            self.assertEqual(300,timeout)
+            return self.command(argv,where,timeout,env)
+        with patch.object(runner.time,'monotonic',return_value=212.007), \
+                patch.object(runner,'rhi_selection',return_value=self.selected), \
+                patch.object(runner,'run_command',side_effect=command):
+            runner.build_rhi_source(self.args)
+        self.args.app=None;self.args.build_dir=None
+        with patch.object(runner.time,'monotonic',side_effect=[212.007,512.008]), \
+                patch.object(runner,'rhi_selection',return_value=self.selected),patch.object(runner,'run_command') as run:
+            with self.assertRaisesRegex(ValueError,'deadline expired'):runner.build_rhi_source(self.args)
+            run.assert_not_called()
+
     def test_source_rejects_reused_builds_or_case_specific_tools(self):
         for key,value in [('app',self.root/'app'),('build_dir',self.root/'build'),('_worker_directory',self.root/'worker'),('case_cmake_option',['ordinary:x=y'])]:
             setattr(self.args,key,value)
@@ -998,6 +1014,14 @@ class CpuHeaderContractTests(unittest.TestCase):
 class SourceWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.text=(inventory.REPO_ROOT/'.github/workflows/renderer-source.yml').read_text()
+
+    def test_intel_metal_diagnostics_do_not_relax_device_classification(self):
+        block=self.text.split('- name: Record native Intel Mac Metal adapter',1)[1].split('\n      - name:',1)[0]
+        self.assertIn("matrix.platform == 'MAC-X64'",block)
+        self.assertIn("matrix.tests == 'ON'",block)
+        self.assertIn('system_profiler -json SPDisplaysDataType > build-r1/metal-adapter.json',block)
+        source=(inventory.REPO_ROOT/'lcrenderer/rhi/tests/buildtest.cpp').read_text()
+        self.assertIn('ASSERT_EQ(expectedDevice, info.deviceClass) << "Metal/Vulkan adapter: " << info.name;',source)
 
     def test_all_five_native_tuples_are_required_without_emulation_or_source_fallback(self):
         self.assertEqual({'LINUX-X64','LINUX-ARM64','MAC-X64','MAC-ARM64','WIN-X64'},set(re.findall(r'platform: ([A-Z0-9-]+)',self.text)))

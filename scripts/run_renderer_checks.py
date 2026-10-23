@@ -401,7 +401,8 @@ def run_build_contracts(args):
         where.mkdir(parents=True,exist_ok=True)
         remaining=deadline-time.monotonic()
         if remaining<=0:raise ValueError('CPU build-contract deadline expired; logs in '+str(directory))
-        record=run_command(command,where,remaining,env,expected_exit=expected)
+        # Equal coarse Windows ticks can round (start + cap) - start above cap.
+        record=run_command(command,where,min(args.timeout,remaining),env,expected_exit=expected)
         commands.append(record);return record
     for row in sorted(selected['requirements'],key=lambda r:r['variant']):
         variant=row['variant'];case=directory/variant;build=case/'build'
@@ -1130,7 +1131,7 @@ def build_rhi_source(args):
         where=directory/name;where.mkdir()
         remaining=deadline-time.monotonic()
         if remaining<=0:raise ValueError('Source build deadline expired; logs in '+str(directory))
-        commands.append(run_command(command,where,remaining,env))
+        commands.append(run_command(command,where,min(args.timeout,remaining),env))
     flags=dict(options,WITH_PERSISTENCE=False,WITH_LIBOPENCAD=False,WITH_DOCUMENTATION=False,
                WITH_COVERAGE=False,TINYSPLINE_BUILD_EXAMPLES=False)
     command=[str(cmake),'-S',str(inventory.REPO_ROOT),'-B',str(build),'-DCMAKE_BUILD_TYPE=Release',

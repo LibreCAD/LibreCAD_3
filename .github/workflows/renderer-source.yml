@@ -116,6 +116,10 @@ jobs:
           if test "$R1_SCOPE" = libraries || test "$R1_SCOPE" = ui || test "$R1_SCOPE" = both || test "$R1_TESTS" = ON; then
             printf 'QT_ROOT_DIR=/usr\nVK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json\n' >> "$GITHUB_ENV"
           fi
+      - name: Record native Intel Mac Metal adapter
+        if: runner.os == 'macOS' && matrix.platform == 'MAC-X64' && matrix.tests == 'ON' && startsWith(matrix.contract_scope, 'libraries-')
+        shell: bash
+        run: system_profiler -json SPDisplaysDataType > build-r1/metal-adapter.json
       - name: Install Mac binary core dependencies without recursive source fallback
         if: runner.os == 'macOS'
         shell: bash
