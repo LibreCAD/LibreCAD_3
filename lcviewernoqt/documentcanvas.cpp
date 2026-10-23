@@ -47,7 +47,8 @@ using namespace lc::viewer;
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
     _document(document),
     _painterPtr(nullptr),
-    _painterBgColor(0.133, 0.545, 0.133, 1.0),
+    // The green the canvas has always cleared to.
+    _backgroundColor(0.133, 0.545, 0.133, 1.0),
     _zoomMin(0.005),
     _zoomMax(200.0),
     _deviceWidth(0),
@@ -117,12 +118,12 @@ void DocumentCanvas::setPainter(LcPainter* painter)
     _painterPtr=painter;
 }
 
-void DocumentCanvas::setPainterBgColor(lc::Color color) {
-    _painterBgColor = color;
+void DocumentCanvas::setBackgroundColor(const lc::Color& color) {
+    _backgroundColor = color;
 }
 
-lc::Color DocumentCanvas::getPainterBgColor() {
-    return _painterBgColor;
+lc::Color DocumentCanvas::backgroundColor() const {
+    return _backgroundColor;
 }
 
 /*
@@ -216,10 +217,10 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
 
     switch(type) {
     case VIEWER_BACKGROUND: {
-        painter.clear(_painterBgColor.red(),
-                      _painterBgColor.green(),
-                      _painterBgColor.blue(),
-                      _painterBgColor.alpha());
+        painter.clear(_backgroundColor.red(),
+                      _backgroundColor.green(),
+                      _backgroundColor.blue(),
+                      _backgroundColor.alpha());
         painter.lineWidthCompensation(0.);
         _background(drawEvent);
         break;
