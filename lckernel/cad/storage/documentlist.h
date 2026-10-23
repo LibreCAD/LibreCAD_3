@@ -12,11 +12,8 @@ class DocumentList {
     friend class Document;
 
 public:
-    static DocumentList& getInstance() {
-        static DocumentList _instance;
-
-        return _instance;
-    }
+    // One instance owned by the kernel DLL, not one per including module.
+    static DocumentList& getInstance();
 
     DocumentList(DocumentList const&) = delete;
 

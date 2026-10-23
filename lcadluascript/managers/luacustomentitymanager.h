@@ -21,11 +21,8 @@ namespace lc {
 namespace lua {
 class LuaCustomEntityManager {
 public:
-    static LuaCustomEntityManager& getInstance() {
-        static LuaCustomEntityManager _instance;
-
-        return _instance;
-    }
+    // Lua, Python and the application must share the library-owned instance.
+    static LuaCustomEntityManager& getInstance();
 
     LuaCustomEntityManager(LuaCustomEntityManager const&) = delete;
 

@@ -170,6 +170,12 @@ class RendererBuildOptionsTests(unittest.TestCase):
             self.assertEqual([str(stage/'LICENSE')],(build/'install_manifest.txt').read_text().splitlines())
             self.assertEqual((source/'LICENSE').read_bytes(),(stage/'LICENSE').read_bytes())
 
+    def test_msvc_ui_source_parallelism_is_target_local_and_bounded(self):
+        source=(ROOT/'lcUI/CMakeLists.txt').read_text()
+        block=source.split('if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Visual Studio")',1)[1].split('endif()',1)[0]
+        self.assertIn('target_compile_options(lcui_objects PRIVATE /MP3)',block)
+        self.assertNotIn('CMAKE_CXX_FLAGS',block)
+
     def test_cpu_factory_has_no_opengl_implementation(self):
         cpu = (ROOT / 'lcviewernoqt/painters/createpainter.cpp').read_text()
         legacy = (ROOT / 'lcviewernoqt/painters/opengl/createpainter.cpp').read_text()

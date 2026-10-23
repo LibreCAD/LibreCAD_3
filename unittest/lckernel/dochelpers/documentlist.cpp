@@ -16,6 +16,7 @@ void onEventReceived(const lc::event::NewWaitingCustomEntityEvent& event) {
 }
 
 TEST(DocumentList, NewWaitingCustomEntity) {
+    eventReceived = false;
     lc::storage::DocumentList::getInstance().newWaitingCustomEntityEvent().connect<onEventReceived>();
 
     auto doc1 = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
@@ -28,8 +29,11 @@ TEST(DocumentList, NewWaitingCustomEntity) {
     builder.setDocument(doc1);
     builder.setLayer(std::make_shared<lc::meta::Layer>());
 
-    std::make_shared<lc::operation::EntityBuilder>(doc1)->appendEntity(builder.build())->execute();
+    auto insert = builder.build();
+    std::make_shared<lc::operation::EntityBuilder>(doc1)->appendEntity(insert)->execute();
 
-    ASSERT_TRUE(eventReceived);
-    ASSERT_EQ(1, lc::storage::DocumentList::getInstance().waitingCustomEntities("plugin").size());
+    EXPECT_TRUE(eventReceived);
+    EXPECT_EQ(1, lc::storage::DocumentList::getInstance().waitingCustomEntities("plugin").size());
+    lc::storage::DocumentList::getInstance().newWaitingCustomEntityEvent().disconnect<onEventReceived>();
+    doc1->removeEntity(insert); // Break Insert's owning document cycle between repeated test runs.
 }

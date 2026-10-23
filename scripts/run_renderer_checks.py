@@ -900,10 +900,13 @@ def installed_cli_files(build,prefix,original_prefix,names,windows=False):
             # the runtime output belongs beside the installed executable.
             suffix='.exe' if name=='luacmdinterface' else '.dll'
             artifacts=[a for a in artifacts if Path(a['path']).suffix.lower()==suffix]
-            cache=(build/'CMakeCache.txt').read_text()
-            bindir=re.findall(r'^CMAKE_INSTALL_BINDIR:[^=\n]+=([^\n]+)$',cache,re.M)
-            if len(bindir)!=1 or bindir[0] not in destinations:raise ValueError('Missing Windows runtime install destination')
-            destinations={bindir[0]}
+            if len(artifacts)!=1:raise ValueError('Missing or ambiguous Windows runtime artifact: '+name)
+            if any(Path(d).is_absolute() or '..' in Path(d).parts for d in destinations):
+                raise ValueError('Non-relative CLI target installation: '+name)
+            # GNUInstallDirs may receive a normal variable from Conan rather
+            # than a cache entry. Bind the actual File API destinations to the
+            # complete manifest, requiring exactly one installed runtime.
+            destinations={d for d in destinations if (Path(d)/Path(artifacts[0]['path']).name).as_posix() in files}
         if len(destinations)!=1 or len(artifacts)!=1:
             raise ValueError('Missing or ambiguous CLI target installation: '+name)
         # File API reports both ARCHIVE and LIBRARY destinations for a shared

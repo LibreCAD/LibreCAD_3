@@ -304,6 +304,13 @@ class InstalledCliTests(unittest.TestCase):
         manifest.write_text(''.join(str(self.old/value)+'\n' for value in files.values())+str(self.old/files['lckernel'])+'\n')
         result=runner.installed_cli_files(self.build,self.prefix,self.old,list(files),windows=True)
         self.assertEqual(files,result['targets'])
+        (self.build/'CMakeCache.txt').unlink() # Conan may set the effective bindir without any cache entry.
+        self.assertEqual(result,runner.installed_cli_files(self.build,self.prefix,self.old,list(files),windows=True))
+        extra=self.prefix/'lib/lckernel.dll';extra.write_bytes(b'ambiguous second runtime')
+        manifest.write_text(manifest.read_text()+str(self.old/'lib/lckernel.dll')+'\n')
+        with self.assertRaisesRegex(ValueError,'ambiguous CLI target'):
+            runner.installed_cli_files(self.build,self.prefix,self.old,list(files),windows=True)
+        extra.unlink();manifest.write_text(''.join(str(self.old/value)+'\n' for value in files.values())+str(self.old/files['lckernel'])+'\n')
         report='\n'.join(str(self.prefix/value) for value in files.values()).encode()
         observed=runner.installed_cli_loads(report,self.prefix,files,False,windows=True)
         self.assertEqual({'lckernel.dll':str(self.prefix/files['lckernel'])},observed['libraries'])
