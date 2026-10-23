@@ -34,8 +34,8 @@ class SourceBuildTests(unittest.TestCase):
         if name=='configure':
             flags={v[2:].split(':BOOL=')[0]:v.endswith('=ON') for v in command if ':BOOL=' in v}
             library_graph(Path(command[command.index('-B')+1]),flags)
-        if name=='compile':
-            build=Path(command[2]);(build/'bin').mkdir(parents=True)
+        if name=='compile' or name.startswith('compile-'):
+            build=Path(command[2]);(build/'bin').mkdir(parents=True,exist_ok=True)
             targets=runner.source_targets(build)
             if 'lcunittest' in targets:
                 (build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))).write_bytes(b'not-an-executable')
@@ -91,6 +91,15 @@ class SourceBuildTests(unittest.TestCase):
         self.args.cmake_option=['WITH_QT_UI=ON']
         with self.assertRaisesRegex(ValueError,'fixture-owned'):self.execute()
         self.assertEqual([],self.commands)
+
+    def test_windows_macro_and_compiler_flags_preserve_the_contract_api(self):
+        source=(inventory.REPO_ROOT/'unittest/rendering/buildcontracts.cpp').read_text()
+        self.assertLess(source.index('#include <windows.h>'),source.index('#undef GetObject'))
+        self.assertLess(source.index('#undef GetObject'),source.index('value.GetObject()'))
+        cmake=(inventory.REPO_ROOT/'CMakeLists.txt').read_text()
+        for name in ('CMAKE_CXX_FLAGS','CMAKE_C_FLAGS'):
+            self.assertIn('string(APPEND '+name+' ',cmake)
+            self.assertNotIn('SET('+name+' ${'+name+'}',cmake)
 
     def test_public_header_input_drift_invalidates_the_whole_source_run(self):
         with patch.object(runner,'cpu_header_inputs',side_effect=[{'fixture':'before'},{'fixture':'changed'}]):
@@ -642,6 +651,8 @@ class LibraryMatrixTests(unittest.TestCase):
             self.assertEqual(2,len(runner.library_artifacts(self.build,['lckernel'])['lckernel']))
             binary.unlink()
             with self.assertRaises(ValueError):runner.library_artifacts(self.build,['lckernel'])
+            data['artifacts']=data['artifacts'][1:];target.write_text(json.dumps(data))
+            with self.assertRaises(ValueError):runner.library_artifacts(self.build,['lckernel'])
 
     def test_missing_target_and_legacy_factory_in_cpu_target_rejected(self):
         reply=self.build/'.cmake/api/v1/reply';model=reply/'model.json';original=model.read_text()
@@ -694,15 +705,28 @@ class LibraryMatrixTests(unittest.TestCase):
         self.args.case_cmake_option=['dual:CMAKE_TOOLCHAIN_FILE=/sdk/dual']
         directory=self.execute();record=json.loads((directory/'source-build.json').read_text())
         self.assertEqual(list(runner.LIBRARY_PROFILES),[r['profile'] for r in record['library_matrix']])
-        self.assertEqual(32,len(self.commands))
+        self.assertEqual(78,len(self.commands))
         for r in record['library_matrix']:
             self.assertEqual(['S.A','S.B'],r['base_cpu_ids']);self.assertIs(r['phase_or_platform_accepted'],False)
             self.assertEqual(2 if r['options']['WITH_PYTHONSCRIPT'] else 0,len(r['python_ids']))
             self.assertIs(r['options']['WITH_RENDERER_TESTS'],False)
+            self.assertEqual(1200,r['profile_budget_seconds']);self.assertEqual(self.args.timeout,r['command_timeout_seconds'])
         configure=[c for c,e in self.commands if '-S' in c]
         self.assertIn('-DCMAKE_TOOLCHAIN_FILE=/sdk/dual',configure[2])
         self.assertNotIn('-DCMAKE_TOOLCHAIN_FILE=/sdk/dual',configure[3])
         for c,e in self.commands:self.assertNotIn('GTEST_FILTER',e)
+
+    def test_library_profile_budget_does_not_expand_command_caps_or_restart_deadline(self):
+        timeouts=[];clock=iter(range(0,100000,35))
+        def command(argv,where,timeout,env):
+            timeouts.append(timeout);return self.command(argv,where,timeout,env)
+        with patch.object(runner.time,'monotonic',side_effect=lambda:next(clock)),patch.object(runner,'run_command',side_effect=command):
+            records=runner.build_library_matrix(self.args,self.selected,{},self.root/'budget')
+        self.assertEqual(len(runner.LIBRARY_PROFILES),len(records))
+        self.assertTrue(all(0<t<=self.args.timeout for t in timeouts))
+        with patch.object(runner.time,'monotonic',side_effect=[0,0,1201]),patch.object(runner,'run_command',side_effect=self.command):
+            with self.assertRaisesRegex(ValueError,'deadline expired'):
+                runner.build_library_matrix(self.args,self.selected,{},self.root/'expired')
 
     def test_profile_subsets_and_rhi_cpu_mismatch_rejected(self):
         self.subset=True
@@ -750,7 +774,7 @@ class ProductionBuildTests(unittest.TestCase):
         result=SourceBuildTests.command(self,command,where,timeout,env)
         if where.name=='configure' and where.parent.name=='dual-python' and getattr(self,'provider_drift',False):
             path=where.parent/'build/python-runtime-inventory.txt';path.write_text(path.read_text().replace('3.12.10','3.12.11'))
-        if where.name=='compile' and where.parent.name=='rhi' and getattr(self,'artifact_drift',False):
+        if where.name.startswith('compile-') and where.parent.name=='rhi' and getattr(self,'artifact_drift',False):
             (where.parent.parent/'cpu/build/lib/lckernel.fixture').write_bytes(b'changed after successful compilation')
         return result
 
@@ -762,7 +786,7 @@ class ProductionBuildTests(unittest.TestCase):
         directory=self.execute();record=json.loads((directory/'production-build.json').read_text())
         self.assertIs(record['phase_or_platform_accepted'],False);self.assertIs(record['runtime_tests_executed'],False)
         self.assertEqual(set(runner.LIBRARY_PROFILES)|{'rhi'},{r['profile'] for r in record['profiles']})
-        self.assertEqual(16,len(self.commands))
+        self.assertEqual(52,len(self.commands))
         for item in record['profiles']:
             self.assertIs(item['options']['WITH_UNITTESTS'],False);self.assertIsNone(item['observed']['cpu_headers'])
             self.assertIs(item['runtime_tests_executed'],False);self.assertNotIn('cpu_ids',item)

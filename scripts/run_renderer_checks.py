@@ -652,12 +652,13 @@ def library_artifacts(build,names,types=('STATIC_LIBRARY','SHARED_LIBRARY')):
         target=targets[name];outputs=target.get('artifacts',[])
         if target.get('type') not in types or not outputs:
             raise ValueError('Missing production library artifacts: '+name)
-        result[name]={}
+        result[name]={};required=False
         for item in outputs:
             path=Path(item['path']);path=(path if path.is_absolute() else build/path).resolve()
             if not path.is_relative_to(build.resolve()) or path in seen:
                 raise ValueError('Foreign/duplicate/uncompiled production library artifact: '+name)
             seen.add(path)
+            required=required or path.suffix.lower()!='.pdb'
             # MSVC advertises a PDB even for Release configurations without
             # debug-information flags. Actual DLL/import/object outputs remain
             # mandatory, and any emitted PDB is fingerprinted too.
@@ -665,7 +666,7 @@ def library_artifacts(build,names,types=('STATIC_LIBRARY','SHARED_LIBRARY')):
             if not path.is_file() or path.stat().st_size==0:
                 raise ValueError('Foreign/duplicate/uncompiled production library artifact: '+name)
             result[name][str(path.relative_to(build.resolve()))]=sha256(path.read_bytes())
-        if not result[name]:raise ValueError('Missing production library artifacts: '+name)
+        if not result[name] or not required:raise ValueError('Missing production library artifacts: '+name)
     return result
 
 
@@ -687,11 +688,11 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
         flags=dict(selected['configuration']['expected_options'],WITH_LEGACY_OPENGL_RENDERER=legacy,WITH_RHI_RENDERER=rhi,WITH_PYTHONSCRIPT=python,
             WITH_UNITTESTS=tests,WITH_RENDERER_TESTS=False,WITH_PERSISTENCE=False,WITH_LIBOPENCAD=False,WITH_DOCUMENTATION=False,
             WITH_COVERAGE=False,TINYSPLINE_BUILD_EXAMPLES=False)
-        deadline=time.monotonic()+args.timeout;commands=[]
+        deadline=time.monotonic()+1200;commands=[]
         def step(command,name):
             where=directory/name;where.mkdir();remaining=deadline-time.monotonic()
             if remaining<=0:raise ValueError('Library build deadline expired; logs in '+str(directory))
-            commands.append(run_command(command,where,remaining,env))
+            commands.append(run_command(command,where,min(args.timeout,remaining),env))
         command=[str(Path(args.cmake or shutil.which('cmake')).resolve(strict=True)),'-S',str(inventory.REPO_ROOT),'-B',str(build),
             '-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CONFIGURATION_TYPES=Release','-DCMAKE_INSTALL_PREFIX='+str(directory/'stage'),
             '--trace-expand','--trace-format=json-v1','--trace-redirect='+str(directory/'trace.jsonl')]
@@ -707,10 +708,11 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
         step(command,'configure');observed=library_profile_graph(build,flags)
         if python and 'Python_EXECUTABLE' in selected_sdk and Path(selected_sdk['Python_EXECUTABLE']).resolve()!=Path(observed['python_provider']['executable']).resolve():
             raise ValueError('Configured Python differs from requested SDK')
-        targets=(['lcunittest','lcluascript','lcviewer_cpu_headercheck'] if tests else
-                 ['lckernel','lcviewernoqt','lcscripting','lcluascript']+(['lcpythonscript'] if python else []))
+        targets=['lckernel','lcviewernoqt','lcscripting','lcluascript']+(['lcpythonscript'] if python else [])
         targets+=(['lcviewer_opengl'] if legacy else [])+(['lcrenderer_rhi'] if rhi else [])
-        step([command[0],'--build',str(build),'--config','Release','--target',*targets,'--parallel','3'],'compile')
+        if tests:targets+=['lcunittest','lcviewer_cpu_headercheck']
+        for target in targets:
+            step([command[0],'--build',str(build),'--config','Release','--target',target,'--parallel','3'],'compile-'+target)
         if not tests:
             artifacts=library_artifacts(build,targets)
             if library_profile_graph(build,flags)!=observed:raise ValueError('Production build evidence changed')
@@ -719,7 +721,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
                 python_provider=observed['python_provider']
             record=dict(schema_version=1,evidence_kind='r1-library-compile-only',phase_or_platform_accepted=False,
                 runtime_tests_executed=False,profile=profile,options=flags,observed=observed,commands=commands,
-                artifacts_sha256=artifacts)
+                artifacts_sha256=artifacts,profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
             (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
             continue
         app=build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''));binary=sha256(app.read_bytes())
@@ -739,7 +741,8 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
         if sha256(app.read_bytes())!=binary or library_profile_graph(build,flags)!=observed:raise ValueError('Library build evidence changed')
         record=dict(schema_version=1,evidence_kind='r1-library-option-build',phase_or_platform_accepted=False,
             profile=profile,options=flags,observed=observed,commands=commands,cpu_ids=found,
-            base_cpu_ids=common_ids[False],python_ids=python_ids,app_sha256=binary,cpu_headers=cpu_header_contract(build,True))
+            base_cpu_ids=common_ids[False],python_ids=python_ids,app_sha256=binary,cpu_headers=cpu_header_contract(build,True),
+            profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
         (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
     return records
 

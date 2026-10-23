@@ -20,6 +20,9 @@
 #include <vector>
 #ifdef _WIN32
 #include <windows.h>
+#ifdef GetObject
+#undef GetObject // Windows GDI macro must not rename RapidJSON's member API.
+#endif
 #else
 #include <sys/utsname.h>
 #endif

@@ -219,8 +219,8 @@ if(MSVC)
     endif()
     add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " /w /wd4710 /wd4711 /wd4668 /wd5045 /wd9002 /wd4365 /wd4242")
-    SET(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} " /w /wd4710 /wd4711")
+    string(APPEND CMAKE_CXX_FLAGS " /w /wd4710 /wd4711 /wd4668 /wd5045 /wd9002 /wd4365 /wd4242")
+    string(APPEND CMAKE_C_FLAGS " /w /wd4710 /wd4711")
 endif()
 
 # Set C++ version

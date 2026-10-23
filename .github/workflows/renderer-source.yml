@@ -8,6 +8,10 @@ name: Renderer R1 source contracts
 permissions:
   contents: read
 
+concurrency:
+  group: renderer-r1-source-${{ github.ref }}
+  cancel-in-progress: true
+
 # R1 native source/host matrix, not UI interaction, packaging or phase acceptance.
 # Only the pinned patched libdxfrw source submodule builds as a dependency.
 jobs:
@@ -52,7 +56,7 @@ jobs:
     defaults:
       run:
         shell: ${{ matrix.python }} -B {0}
-    timeout-minutes: 60 # Library profiles keep 300 s; the separate CLI scope keeps its 1,200 s total cap.
+    timeout-minutes: 60 # Commands keep 300 s; library/host profiles share a 1,200 s total cap.
     env:
       R1_PLATFORM: ${{ matrix.platform }}
       R1_TESTS: ${{ matrix.tests }}
