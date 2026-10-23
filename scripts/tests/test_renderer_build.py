@@ -186,6 +186,14 @@ class RendererBuildOptionsTests(unittest.TestCase):
                           ('widgets/linepatternpathpart.h','LinePatternPathPart'),('windowmanager.h','WindowManager')]:
             self.assertIn('class LCUI_API '+name,(ROOT/'lcUI'/path).read_text())
 
+    def test_ui_test_helpers_link_production_implementations_instead_of_recompiling_them(self):
+        for path,form in [('dialogs/addlayerdialog.h','addlayerdialog'),
+                          ('dialogs/addlinepatterndialog.h','addlinepatterndialog'),('widgets/layers.h','layers')]:
+            source=(ROOT/'unittest/ui'/path).read_text()
+            self.assertIn('#include <lcUI/'+path+'>',source)
+            self.assertIn('#include <ui_'+form+'.h>',source)
+            self.assertNotIn('.cpp>',source)
+
     def test_cpu_factory_has_no_opengl_implementation(self):
         cpu = (ROOT / 'lcviewernoqt/painters/createpainter.cpp').read_text()
         legacy = (ROOT / 'lcviewernoqt/painters/opengl/createpainter.cpp').read_text()

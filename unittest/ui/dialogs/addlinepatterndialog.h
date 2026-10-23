@@ -3,7 +3,10 @@
 #include <QTest>
 #include <QThread>
 
-#include <dialogs/addlinepatterndialog.cpp>
+#include <lcUI/dialogs/addlinepatterndialog.h>
+#include <ui_addlinepatterndialog.h>
+
+using lc::ui::dialog::AddLinePatternDialog;
 
 class AddLinePatternDialogTest : AddLinePatternDialog {
 public:
