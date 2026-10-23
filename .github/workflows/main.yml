@@ -263,6 +263,11 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
+          # Run aqtinstall on the CPython pinned above. The action's own
+          # setup-python asks for ">=3.14.0", which resolves to the newest
+          # release and replaces pythonLocation and PATH after the pin, so the
+          # runtime inventory check compared a 3.14 build with a 3.15 root.
+          setup-python: false
           # Qt 6.8+ publishes Windows desktop binaries against MSVC 2022.
           # QtSvg and QtTools are in essentials and are not aqt add-on modules.
           arch: win64_msvc2022_64
