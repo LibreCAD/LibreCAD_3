@@ -154,6 +154,22 @@ class RendererBuildOptionsTests(unittest.TestCase):
         script = (ROOT / 'scripts/windows-install/buildLibrecadAndCreatePackage.bat').read_text()
         self.assertIn('-DWITH_LUACMDINTERFACE=OFF', script)
 
+    def test_windows_root_license_is_installed_and_manifest_owned(self):
+        root=(ROOT/'CMakeLists.txt').read_text()
+        rule='install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION ".")'
+        self.assertIn(rule,root)
+        self.assertNotIn('file(COPY ${CMAKE_SOURCE_DIR}/LICENSE',root)
+        with tempfile.TemporaryDirectory(prefix='renderer-license-') as tmp:
+            source=Path(tmp)/'source';source.mkdir();build=Path(tmp)/'build';stage=Path(tmp)/'stage'
+            (source/'LICENSE').write_bytes((ROOT/'LICENSE').read_bytes())
+            (source/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.15)\nproject(License NONE)\n'+rule+'\n')
+            result=subprocess.run(['cmake','-S',str(source),'-B',str(build),'-DCMAKE_INSTALL_PREFIX='+str(stage)],capture_output=True,text=True,timeout=30)
+            self.assertEqual(0,result.returncode,result.stdout+result.stderr);self.assertFalse(stage.exists())
+            result=subprocess.run(['cmake','--install',str(build)],capture_output=True,text=True,timeout=30)
+            self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+            self.assertEqual([str(stage/'LICENSE')],(build/'install_manifest.txt').read_text().splitlines())
+            self.assertEqual((source/'LICENSE').read_bytes(),(stage/'LICENSE').read_bytes())
+
     def test_cpu_factory_has_no_opengl_implementation(self):
         cpu = (ROOT / 'lcviewernoqt/painters/createpainter.cpp').read_text()
         legacy = (ROOT / 'lcviewernoqt/painters/opengl/createpainter.cpp').read_text()

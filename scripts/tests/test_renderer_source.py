@@ -632,6 +632,27 @@ class LibraryMatrixTests(unittest.TestCase):
             with self.subTest(data=data),self.assertRaises(ValueError):runner.source_targets(self.build)
         item.write_text(original)
 
+    def test_qt_ninja_autogen_utilities_remain_visible_and_require_an_owner(self):
+        reply=self.build/'.cmake/api/v1/reply';path=reply/'model.json';model=json.loads(path.read_text())
+        for suffix in ('_autogen','_autogen_timestamp_deps'):
+            name='lckernel'+suffix
+            (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',
+                type='UTILITY',isGeneratorProvided=True,sources=[dict(path='generated.rule',isGenerated=True)])))
+            model['configurations'][1]['targets'].append(dict(name=name,id=name+'::fixture',jsonFile=name+'.json'))
+        path.write_text(json.dumps(model))
+        self.assertIn('lckernel_autogen',runner.source_targets(self.build))
+        self.assertIn('lckernel_autogen_timestamp_deps',runner.source_targets(self.build))
+        item=reply/'lckernel_autogen.json';original=item.read_text()
+        for change in (lambda d:d.update(type='OBJECT_LIBRARY'),lambda d:d.update(artifacts=[dict(path='foreign.o')]),
+                       lambda d:d.update(compileGroups=[dict(language='CXX')]),
+                       lambda d:d['sources'][0].update(compileGroupIndex=0)):
+            data=json.loads(original);change(data);item.write_text(json.dumps(data))
+            with self.subTest(data=data),self.assertRaises(ValueError):runner.source_targets(self.build)
+        item.write_text(original)
+        model['configurations'][1]['targets']=[r for r in model['configurations'][1]['targets'] if r['name']!='lckernel']
+        path.write_text(json.dumps(model))
+        with self.assertRaisesRegex(ValueError,'generator-provided'):runner.source_targets(self.build)
+
     def test_effective_normal_options_and_cache_are_both_required(self):
         preflight=self.build/'renderer-preflight.json';original=preflight.read_text()
         for key in ('WITH_CAIRO','WITH_PERSISTENCE','WITH_RHI_RENDERER','WITH_PYTHONSCRIPT'):
@@ -751,6 +772,24 @@ class LibraryMatrixTests(unittest.TestCase):
         for changed in (raw+'executable='+sys.executable+'\n',raw.replace('CPython','PyPy'),raw.replace('target_pointer_bits=64','target_pointer_bits=32')):
             path.write_text(changed)
             with self.assertRaises(ValueError):runner.library_profile_graph(build,flags)
+
+    def test_windows_python_empty_soabi_requires_exact_extension_abi(self):
+        flags=dict(self.flags,WITH_PYTHONSCRIPT=True);build=self.root/'windows-python/build';library_graph(build,flags)
+        path=build/'python-runtime-inventory.txt'
+        raw=path.read_text().replace('provider_soabi=synthetic-only','provider_soabi=')+(
+            'provider_platform=win-amd64\nprovider_extension_suffix=.cp312-win_amd64.pyd\n')
+        path.write_text(raw)
+        with patch.object(sys,'platform','win32'):
+            self.assertEqual('',runner.library_profile_graph(build,flags)['python_provider']['provider_soabi'])
+            for changed in (raw.replace('win-amd64','win32'),raw.replace('.cp312-win_amd64.pyd','.cp313-win_amd64.pyd'),
+                            raw.replace('3.12.10','3.13.1'),raw.replace('provider_soabi=\n',''),
+                            raw.replace('provider_extension_suffix=.cp312-win_amd64.pyd\n','')):
+                path.write_text(changed)
+                with self.subTest(inventory=changed),self.assertRaisesRegex(ValueError,'provider ABI'):
+                    runner.library_profile_graph(build,flags)
+        path.write_text(raw)
+        with patch.object(sys,'platform','linux'),self.assertRaisesRegex(ValueError,'provider ABI'):
+            runner.library_profile_graph(build,flags)
 
     def test_python_cannot_drop_core_tests_or_differ_between_renderers(self):
         for name in ('omit_python','omit_probe','lose_cpu','drift','change_provider'):

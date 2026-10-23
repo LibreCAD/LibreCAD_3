@@ -329,7 +329,8 @@ def build_corruption_probes(directory,selected,app,step):
     else:injection=b'contract-fixture.cmake(1):  find_package(Qt6 QUIET )\n'
     reply=directory/'empty/build/.cmake/api/v1/reply'
     index=read_json(next(reply.glob('index-*.json')))
-    model=read_json(reply/index['reply']['client-renderer-build']['codemodel-v2']['jsonFile'])
+    model_path=reply/index['reply']['client-renderer-build']['codemodel-v2']['jsonFile']
+    model=read_json(model_path)
     target=next(t for c in model['configurations'] if c['name']=='Release' for t in c['targets'] if t['name']=='lckernel')
     graph=reply/target['jsonFile'];changed=read_json(graph)
     changed.setdefault('link',{}).setdefault('commandFragments',[]).append(dict(fragment='-lQt6Gui',role='libraries'))
@@ -340,6 +341,20 @@ def build_corruption_probes(directory,selected,app,step):
         ('fixture-copy','ordinary',directory/'ordinary/build/unittest/renderer-build-contracts.json',
          (directory/'ordinary/build/unittest/renderer-build-contracts.json').read_bytes()+b' ',
          'Fixture differs from the configured copy')]
+    duplicate=read_json(model_path)
+    release=next(c for c in duplicate['configurations'] if c['name']=='Release')
+    release['targets'].append(target)
+    probes.append(('duplicate-target-id','empty',model_path,(json.dumps(duplicate)+'\n').encode(),
+        'Duplicate/misbound File API target'))
+    # VS repeats genuine predefined utilities per subproject. Reject spoofed
+    # compiled utilities while retaining all ordinary target identity checks.
+    for ref in next(c for c in model['configurations'] if c['name']=='Release')['targets']:
+        if ref['name']=='ALL_BUILD':
+            utility=reply/ref['jsonFile'];data=read_json(utility)
+            data['compileGroups']=[dict(language='CXX')]
+            probes.append(('compiled-generator-utility','empty',utility,(json.dumps(data)+'\n').encode(),
+                'Unexpected predefined File API target'))
+            break
     results=[]
     for name,variant,file,mutation,diagnostic in probes:
         raw=file.read_bytes();where=directory/'negative'/name
@@ -464,13 +479,16 @@ def source_targets(build):
                 identifier!=ref.get('id') or identifier in identities):
             raise ValueError('Duplicate/misbound source target')
         identities.add(identifier)
-        # Visual Studio emits a distinct ALL_BUILD utility for each project.
-        # Ignore only identified generator utilities, never application targets.
+        # Visual Studio repeats predefined utilities per project; Ninja's Qt
+        # autogen utilities must remain visible for the host object audit.
         if item.get('isGeneratorProvided'):
-            if (name not in ('ALL_BUILD','ZERO_CHECK','INSTALL','RUN_TESTS','PACKAGE') or
-                    item.get('type')!='UTILITY' or item.get('artifacts') or item.get('compileGroups')):
+            predefined=name in ('ALL_BUILD','ZERO_CHECK','INSTALL','RUN_TESTS','PACKAGE')
+            owner=re.sub(r'_autogen(?:_timestamp_deps)?$','',name)
+            autogen=owner!=name and owner in {r['name'] for r in configs[0]['targets']}
+            if (not (predefined or autogen) or item.get('type')!='UTILITY' or item.get('artifacts') or
+                    item.get('compileGroups') or any('compileGroupIndex' in s for s in item.get('sources',[]))):
                 raise ValueError('Unexpected generator-provided source target')
-            continue
+            if predefined:continue
         if name in targets or name in ('ALL_BUILD','ZERO_CHECK','INSTALL','RUN_TESTS','PACKAGE'):
             raise ValueError('Duplicate/misbound source target')
         targets[name]=item
@@ -612,7 +630,13 @@ def library_profile_graph(build,flags,hosts=False):
             if not separator or key in provider:raise ValueError('Malformed Python provider inventory')
             provider[key]=value
         if provider.get('provider_implementation')!='CPython':raise ValueError('Missing CPython provider identity')
-        if provider.get('target_pointer_bits')!='64' or not provider.get('provider_version') or not provider.get('provider_soabi'):
+        version=re.fullmatch(r'([0-9]+)\.([0-9]+)\.[0-9]+',provider.get('provider_version',''))
+        # Windows CPython 3.12 has no SOABI variable, but EXT_SUFFIX identifies
+        # its exact interpreter/architecture ABI. Preserve the empty SOABI.
+        windows_abi=(sys.platform=='win32' and version and provider.get('provider_soabi')=='' and
+            provider.get('provider_platform')=='win-amd64' and
+            provider.get('provider_extension_suffix')=='.cp'+version[1]+version[2]+'-win_amd64.pyd')
+        if provider.get('target_pointer_bits')!='64' or not provider.get('provider_version') or not (provider.get('provider_soabi') or windows_abi):
             raise ValueError('Missing Python provider ABI')
         for key in ('executable','link_library'):
             selected=Path(provider[key])
@@ -864,7 +888,9 @@ def installed_cli_files(build,prefix,original_prefix,names,windows=False):
             raise ValueError('Missing, duplicate or escaping CLI install file')
         files[relative.as_posix()]=sha256(target.read_bytes())
     actual={p.relative_to(prefix).as_posix() for p in prefix.rglob('*') if p.is_file() or p.is_symlink()}
-    if not files or set(files)!=actual:raise ValueError('CLI install tree differs from its manifest')
+    if not files or set(files)!=actual:
+        raise ValueError('CLI install tree differs from its manifest; missing='+str(sorted(set(files)-actual))+
+            '; extra='+str(sorted(actual-set(files))))
     targets=source_targets(build);installed={}
     for name in names:
         target=targets[name];destinations={d['path'] for d in target.get('install',{}).get('destinations',[])}

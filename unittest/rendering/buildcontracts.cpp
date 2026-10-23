@@ -134,10 +134,15 @@ std::map<std::string, Target> targets(const fs::path& build) {
     }
     check(config, "Missing Release configuration");
     std::map<std::string, Target> result;
+    std::set<std::string> identities;
+    const std::set<std::string> predefined{"ALL_BUILD", "ZERO_CHECK", "INSTALL", "RUN_TESTS", "PACKAGE"};
     for (const auto& ref : array(field(*config, "targets")).GetArray()) {
         auto target = reference(reply, ref); const auto name = text(field(target, "name"));
+        const auto id = text(field(target, "id"));
+        check(name == text(field(ref, "name")) && id == text(field(ref, "id")) &&
+              identities.insert(id).second, "Duplicate/misbound File API target");
         bool graphics = name == "lcviewer_opengl" || name == "lcrenderer_rhi" || name == "lcrenderertest" ||
-            name == "librecad" || name == "lcui" || name == "luacmdinterface";
+            name == "librecad" || name == "lcui" || name == "lcui_objects" || name == "luacmdinterface";
         if (target.HasMember("sources")) for (const auto& source : array(target["sources"]).GetArray()) {
             const auto p = lower(text(field(source, "path")));
             graphics |= p.find("painters/opengl/") != std::string::npos || p.find("lcrenderer/rhi/") != std::string::npos;
@@ -146,7 +151,18 @@ std::map<std::string, Target> targets(const fs::path& build) {
             const auto p = lower(text(field(fragment, "fragment")));
             for (const auto* token : {"qt5", "qt6", "opengl", "glew", "glfw", "vulkan"}) graphics |= p.find(token) != std::string::npos;
         }
-        check(name == text(field(ref, "name")) && result.emplace(name, Target{text(field(target, "type")), graphics}).second,
+        if (predefined.count(name)) {
+            bool compiledSource = false;
+            if (target.HasMember("sources")) for (const auto& source : array(target["sources"]).GetArray())
+                compiledSource |= source.HasMember("compileGroupIndex");
+            check(target.HasMember("isGeneratorProvided") && target["isGeneratorProvided"].IsBool() &&
+                  target["isGeneratorProvided"].GetBool() && text(field(target, "type")) == "UTILITY" && !graphics && !compiledSource &&
+                  (!target.HasMember("artifacts") || array(target["artifacts"]).Empty()) &&
+                  (!target.HasMember("compileGroups") || array(target["compileGroups"]).Empty()),
+                  "Unexpected predefined File API target");
+            continue;
+        }
+        check(result.emplace(name, Target{text(field(target, "type")), graphics}).second,
               "Duplicate/misbound File API target");
     }
     return result;
