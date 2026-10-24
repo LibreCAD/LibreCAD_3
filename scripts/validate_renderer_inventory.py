@@ -405,7 +405,7 @@ def case_configurations(configs):
         modes = _references(config['modes'], {'cpu', 'offscreen', 'widget'}, 'configuration mode')
         profiles = _references(config['profiles'], PROFILE_MODES.keys(), 'configuration profile')
         qpas = _references(config['qpas'], {'none', 'xcb', 'wayland', 'windows', 'cocoa'}, 'configuration QPA')
-        devices = _references(config['devices'], {'none', 'software', 'hardware', 'any'}, 'configuration device')
+        devices = _references(config['devices'], {'none', 'software', 'hardware', 'virtual', 'any'}, 'configuration device')
         backend, artifact = _string(config, 'backend'), _string(config, 'artifact')
         require(artifact in {'source', 'install', *packages}, 'unknown configuration artifact')
         used = {key: set() for key in ('platforms', 'modes', 'qpas', 'devices', 'profiles')}
@@ -424,7 +424,12 @@ def case_configurations(configs):
                 require(backend == 'legacy-opengl' and device == 'any' and qpa in native_qpas and
                         artifact == 'source', 'invalid separate legacy-process configuration')
             else:
-                require(backend == api and qpa in native_qpas and device in native_devices and
+                virtual = device == 'virtual'
+                if virtual:
+                    require((ident, platform, backend, profile, mode, qpa, artifact) ==
+                            ('r1-source-virtual-metal', 'MAC-X64', 'metal', 'rhi-offscreen', 'offscreen', 'cocoa', 'source'),
+                            'virtual Metal is Intel R1 source/offscreen only')
+                require(backend == api and qpa in native_qpas and (device in native_devices or virtual) and
                         options['WITH_RHI_RENDERER'], 'wrong API/QPA/device for required platform')
                 require(not (platform == 'WIN-X64' and options['WITH_LUACMDINTERFACE']),
                         'Windows CLI is not in current scope')
@@ -520,7 +525,11 @@ def validate_case_inputs(path=CASE_PATH, root=REPO_ROOT):
                 'installed/package evidence cannot require a shipped GTest binary')
         _references(case['profiles'], PROFILE_MODES.keys(), 'case profile')
         _references(case['modes'], {'cpu', 'offscreen', 'widget'}, 'case mode')
-        _references(case['devices'], {'none', 'software', 'hardware', 'any'}, 'case device')
+        _references(case['devices'], {'none', 'software', 'hardware', 'virtual', 'any'}, 'case device')
+        if 'virtual' in case['devices'] or 'r1-source-virtual-metal' in groups:
+            require(case['id'] == 'rhi-build-options' and case['stage'] == 'R1' and
+                    case['binding'] == 'proposed-gtest' and case['dataset'] == 'rhi-build-options',
+                    'virtual Metal cannot qualify another stage/case')
         _references(case['decisions'], {'D' + str(i) for i in range(1, 7)}, 'case decision')
         _references(case['requires'], _FEATURE_OPTIONS.keys(), 'case prerequisite', optional=True)
         fixture, dataset = _string(case, 'fixture'), _string(case, 'dataset')
@@ -651,6 +660,9 @@ def _case_coverage(cases, by_case, configs, consumers, methods):
             continue  # Runner smoke, not all source GTests repeated in a package.
         options, mode, backend = config['expected_options'], config['mode'], config['backend']
         matched = [c for c in cases.values() if key in by_case[c['id']]]
+        if config['device'] == 'virtual':
+            require([c['id'] for c in matched] == ['rhi-build-options'], 'virtual Metal requires its R1 cases only')
+            continue # An additive source-CI tuple cannot replace any mandatory hardware coverage.
         ordinary_success = [c for c in matched if any(v['id'] == 'ordinary' and v['expect'] == 'success'
                                                     for v in c['variants'])]
         if backend == 'legacy-opengl':
@@ -687,6 +699,7 @@ def select_case_requirements(inventory, stage, configuration):
     require(isinstance(configuration, str) and configuration in inventory['configurations'], 'unknown configuration')
     config = inventory['configurations'][configuration]
     number = int(stage[1])
+    require(config['device'] != 'virtual' or number == 1, 'virtual Metal source CI is R1 only')
     require(config['mode'] != 'widget' or number >= 3, 'widget requirements start at R3')
     require(config['artifact'] == 'source' or number >= 5, 'installed/package requirements start at R5')
     require(number != 7 or not config['expected_options']['WITH_LEGACY_OPENGL_RENDERER'],

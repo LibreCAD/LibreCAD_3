@@ -42,7 +42,7 @@ class RhiRunnerTests(unittest.TestCase):
         headers={}
         for n in ('qrhi.h','qrhi_platform.h','qshaderdescription.h','qshaderdescription_p.h'):
             p=self.prefix/n;p.write_bytes(b'synthetic-private-header');headers[str(p)]=inventory.sha256(p.read_bytes())
-        paths=['lcrenderer/rhi/renderer.cpp','lcrenderer/rhi/tests/buildtest.cpp',
+        paths=['lcrenderer/rhi/renderer.cpp','lcrenderer/rhi/device_p.h','lcrenderer/rhi/tests/buildtest.cpp',
                'lcrenderer/rhi/tests/provenance.h','lcviewernoqt/painters/renderframe.cpp']
         inputs=''.join(inventory.sha256((inventory.REPO_ROOT/p).read_bytes())+'  '+p+'\n' for p in sorted(paths))
         self.metadata=dict(schema_version=1,evidence_kind='rhi-test-build-inputs',rhi_inputs=inputs,
@@ -85,6 +85,36 @@ class RhiRunnerTests(unittest.TestCase):
         ET.ElementTree(root).write(self.root/'tests.xml',encoding='utf-8')
 
     def result(self): return runner.rhi_results(self.args,self.root,self.selection)
+
+    def virtual_fixture(self):
+        self.selection=inventory.select_case_requirements(self.inventory,'R1',
+            'r1-source-virtual-metal/MAC-X64/rhi-offscreen/offscreen/cocoa/virtual')
+        for props in self.props.values():
+            if 'rhi_case' in props:
+                props.update(rhi_device_class='virtual',rhi_arch='x86_64',rhi_build_arch='x86_64',
+                    rhi_device='Apple Paravirtual device',rhi_qrhi_device_type='0',
+                    rhi_metal_registry_id='4294968054',rhi_metal_registry_class='AppleParavirtAccelerator')
+        self.write_results()
+
+    def test_verified_virtual_metal_requires_selected_native_registry_attestation(self):
+        self.virtual_fixture()
+        self.assertEqual(3,len(self.result()['native_device_attestations']))
+        original=copy.deepcopy(self.props)
+        for field,value in (('rhi_device_class','hardware'),('rhi_arch','arm64'),('rhi_build_arch','arm64'),
+                            ('rhi_qrhi_device_type','1'),('rhi_qrhi_device_type','unknown'),
+                            ('rhi_metal_registry_id',''),('rhi_metal_registry_id','0'),
+                            ('rhi_metal_registry_id','01'),('rhi_metal_registry_id',str(2**64)),
+                            ('rhi_metal_registry_class',''),('rhi_metal_registry_class','AppleParavirtAcceleratorSpoof')):
+            self.props=copy.deepcopy(original)
+            next(v for v in self.props.values() if 'rhi_case' in v)[field]=value
+            self.write_results()
+            with self.subTest(field=field,value=value),self.assertRaises(ValueError):self.result()
+
+    def test_virtual_metal_attestation_must_match_across_cases(self):
+        self.virtual_fixture()
+        next(v for v in self.props.values() if 'rhi_case' in v)['rhi_metal_registry_id']='4294968055'
+        self.write_results()
+        with self.assertRaisesRegex(ValueError,'Inconsistent selected native'):self.result()
 
     def change_xml(self, change):
         path=self.root/'tests.xml'; tree=ET.parse(path); change(tree.getroot()); tree.write(path,encoding='utf-8')

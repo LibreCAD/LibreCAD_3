@@ -324,10 +324,11 @@ jobs:
               os.environ['PATH']=os.environ['R1_VULKAN_ROOT']+os.pathsep+str(qt/'bin')+os.pathsep+os.environ['PATH']
           api='metal' if platform.startswith('MAC-') else 'vulkan'
           device='hardware' if api=='metal' else 'software'
+          if platform=='MAC-X64': device='virtual' # Owner-approved, selected-device IOKit attestation is mandatory.
           host='macos' if api=='metal' else 'windows' if platform=='WIN-X64' else 'linux'
           for qpa in (['xcb','wayland'] if host=='linux' else ['cocoa' if api=='metal' else 'windows']):
               command=base+['--rhi-contracts','--build-source','--configuration',
-                  'gui-less-'+host+'/'+platform+'/rhi-offscreen/offscreen/'+qpa+'/'+device,
+                  ('r1-source-virtual-metal' if device=='virtual' else 'gui-less-'+host)+'/'+platform+'/rhi-offscreen/offscreen/'+qpa+'/'+device,
                   '--provider-prefix',str(qt),'--backend',api,'--device',device,'--mode','offscreen','--expected-qpa',qpa,
                   '--report-dir',str(Path('build-r1/rhi-'+qpa).resolve()),'--timeout','300']
               for option in options:command+=['--cmake-option',option]
@@ -383,7 +384,7 @@ jobs:
             build-r1/**/original.bin
             build-r1/**/mutated.bin
             build-r1/debian-packages.txt
-          if-no-files-found: warn
+          if-no-files-found: error
   r1-source-contracts:
     name: R1 initial source contracts (not phase acceptance)
     if: always()

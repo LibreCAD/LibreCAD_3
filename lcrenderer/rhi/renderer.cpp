@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "shader_p.h"
+#include "device_p.h"
 #include <QCryptographicHash>
 #include <QFile>
 #include <QGuiApplication>
@@ -11,6 +12,11 @@
 #include <cstring>
 #include <stdexcept>
 #include <thread>
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+#include <IOKit/IOKitLib.h>
+#include <objc/message.h>
+#include <objc/runtime.h>
+#endif
 
 // Keep the initializer at global scope (Q_INIT_RESOURCE's namespace contract).
 static void initializeRhiResourceObject() { Q_INIT_RESOURCE(lc_rhi_shaders); }
@@ -24,6 +30,35 @@ using viewer::render::Frame;
 using viewer::render::Vertex;
 using viewer::render::Snapshot;
 static_assert(sizeof(Vertex) == 6 * sizeof(float), "RHI vertex layout must be packed floats");
+detail::MetalIdentity selectedMetalIdentity(QRhi* device) {
+    detail::MetalIdentity result;
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+    if (device->backend() != QRhi::Metal) return result;
+    const auto* handles = static_cast<const QRhiMetalNativeHandles*>(device->nativeHandles());
+    if (!handles || !handles->dev) return result;
+    const id metal = reinterpret_cast<id>(handles->dev);
+    const SEL registry = sel_registerName("registryID");
+    if (!class_respondsToSelector(object_getClass(metal), registry)) return result;
+    // registryID is a scalar uint64_t on both Metal ABIs; never inspect a different GPU.
+    const auto registryId = reinterpret_cast<std::uint64_t (*)(id, SEL)>(objc_msgSend)(metal, registry);
+    if (!registryId) return result;
+    const auto matching = IORegistryEntryIDMatching(registryId);
+    if (!matching) return result;
+    const auto entry = IOServiceGetMatchingService(kIOMainPortDefault, matching); // consumes matching
+    if (!entry) return result;
+    std::uint64_t actualId = 0;
+    io_name_t name = {};
+    if (IORegistryEntryGetRegistryEntryID(entry, &actualId) == KERN_SUCCESS && actualId == registryId &&
+            IOObjectGetClass(entry, name) == KERN_SUCCESS && IOObjectConformsTo(entry, "AppleParavirtAccelerator")) {
+        result.registryId = registryId;
+        result.registryClass = name;
+    }
+    IOObjectRelease(entry);
+#else
+    (void)device;
+#endif
+    return result;
+}
 }
 
 namespace detail {
@@ -231,15 +266,16 @@ struct OffscreenRenderer::Impl {
         require(minimum > 0 && maximum >= minimum, "Unavailable RHI texture capability limits");
         if (policyLimit < minimum) throw std::invalid_argument("Texture policy is below the device minimum");
         const auto native = device->driverInfo();
-        std::string kind = "unknown";
-        switch (native.deviceType) {
-        case QRhiDriverInfo::CpuDevice: kind = "software"; break;
-        case QRhiDriverInfo::IntegratedDevice: case QRhiDriverInfo::DiscreteDevice: case QRhiDriverInfo::ExternalDevice:
-            kind = "hardware"; break;
-        default: break;
-        }
+        const auto identity = selectedMetalIdentity(device.get());
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+        const bool intelMetal = api == Api::Metal;
+#else
+        const bool intelMetal = false;
+#endif
+        const auto kind = detail::deviceClass(native.deviceType, intelMetal, identity);
         info = {api, QString::fromUtf8(native.deviceName).toStdString(), kind, qVersion(),
-                executor.shaderIdentity().toStdString(), minimum, maximum, std::min(policyLimit, maximum)};
+                executor.shaderIdentity().toStdString(), minimum, maximum, std::min(policyLimit, maximum),
+                int(native.deviceType), identity.registryId ? std::to_string(identity.registryId) : "", identity.registryClass};
     }
     void checkOwner() const {
         if (std::this_thread::get_id() != owner) throw std::logic_error("RHI access requires its owner thread");

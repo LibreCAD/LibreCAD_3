@@ -1199,7 +1199,7 @@ class SelectionTests(unittest.TestCase):
                                *map(str, args)], text=True, capture_output=True, timeout=20)
 
     def test_real_inventory_relations_and_not_execution(self):
-        self.assertEqual(189, len(self.real['configurations']))
+        self.assertEqual(190, len(self.real['configurations']))
         self.assertEqual(223, len(self.real['requirements']))
         summary = inventory.case_inventory_summary(self.real)
         self.assertFalse(summary['execution_evidence'])
@@ -1207,6 +1207,33 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(sorted(self.real['configurations']), summary['configurations'])
         self.assertEqual(set(self.real['configurations']),
                          {key for row in self.real['requirements'] for key in row['configurations']})
+
+    def test_virtual_metal_retains_hardware_and_only_selects_r1(self):
+        key = 'r1-source-virtual-metal/MAC-X64/rhi-offscreen/offscreen/cocoa/virtual'
+        virtual = [k for k,c in self.real['configurations'].items() if c['device'] == 'virtual']
+        self.assertEqual([key], virtual)
+        self.assertEqual(3, len(self.select('R1', key)['requirements']))
+        for stage in ('R2','R3','R4','R5','R6','R7'):
+            with self.subTest(stage=stage), self.assertRaisesRegex(ValueError,'R1 only'):
+                self.select(stage, key)
+        for platform in ('MAC-X64','MAC-ARM64'):
+            for group in ('source-macos','gui-less-macos','install-macos','bundles'):
+                self.assertTrue(any(c['platform']==platform and c['config_id']==group and c['device']=='hardware'
+                                    for c in self.real['configurations'].values()))
+
+    def test_virtual_metal_cannot_expand_platform_host_package_or_case_scope(self):
+        original = copy.deepcopy(self.manifest)
+        for field,value in (('platforms',['MAC-ARM64']),('modes',['widget']),('profiles',['rhi-only']),
+                            ('artifact','install'),('backend','vulkan'),('qpas',['xcb']),('id','unapproved-virtual')):
+            self.manifest = copy.deepcopy(original)
+            self.config('r1-source-virtual-metal')[field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                inventory.case_configurations(self.manifest['configurations'])
+        self.manifest = copy.deepcopy(original)
+        case = next(c for c in self.manifest['cases'] if c['id']=='rhi-build-options')
+        case['stage'] = 'R2'
+        with self.assertRaisesRegex(ValueError,'another stage/case'):
+            self.validate()
 
     def test_profiles_explicitly_define_python_widgets_cli_and_test_intent(self):
         for name in ('rhi-only', 'dual', 'rhi-offscreen', 'rhi-cli', 'dual-legacy', 'cpu', 'cairo'):
@@ -1392,6 +1419,9 @@ class SelectionTests(unittest.TestCase):
         for key, config in self.real['configurations'].items():
             if config['artifact'] != 'source' or config['backend'] not in ('vulkan', 'metal'):
                 continue
+            if config['device'] == 'virtual':
+                with self.assertRaisesRegex(ValueError,'R1 only'):self.select('R3', key)
+                continue
             selected = self.select('R3', key)
             platforms.add(config['platform'])
             self.assertTrue(expected <= {row['id'] for row in selected['requirements']}, key)
@@ -1452,7 +1482,8 @@ class SelectionTests(unittest.TestCase):
                 expected = [r for r in self.real['requirements'] if key in r['configurations'] and int(r['stage'][1]) <= number]
                 invalid = (not expected or config['mode'] == 'widget' and number < 3 or
                            config['artifact'] != 'source' and number < 5 or
-                           number == 7 and config['expected_options']['WITH_LEGACY_OPENGL_RENDERER'])
+                           number == 7 and config['expected_options']['WITH_LEGACY_OPENGL_RENDERER'] or
+                           config['device'] == 'virtual' and number != 1)
                 if invalid:
                     with self.subTest(stage=stage, key=key), self.assertRaises(ValueError):
                         self.select(stage, key)

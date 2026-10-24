@@ -1073,6 +1073,10 @@ class SourceWorkflowTests(unittest.TestCase):
                 exec(compile(code,'renderer-source.yml shared native step','exec'),{})
                 commands=[c.args[0] for c in run.call_args_list]
                 self.assertEqual(3 if platform.startswith('LINUX-') else 2,len(commands))
+                rhi=commands[-1]
+                expected='virtual' if platform=='MAC-X64' else 'hardware' if platform=='MAC-ARM64' else 'software'
+                self.assertEqual(expected,rhi[rhi.index('--device')+1])
+                self.assertEqual(platform=='MAC-X64','r1-source-virtual-metal/' in rhi[rhi.index('--configuration')+1])
                 self.assertIn('--build-contracts',commands[0]);self.assertIn('cpu-source/'+platform+'/cpu/cpu/none/none',commands[0])
                 for command in commands[1:]:
                     self.assertIn('--rhi-contracts',command);self.assertIn('--build-source',command);self.assertNotIn('--app',command)

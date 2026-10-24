@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "shader_p.h"
+#include "device_p.h"
 #include <QFile>
 #include <QGuiApplication>
 #include <QCryptographicHash>
@@ -183,9 +184,10 @@ protected:
         const char* expectedApi = std::getenv("LC_RENDERER_EXPECT_API");
         const char* expectedDevice = std::getenv("LC_RENDERER_EXPECT_DEVICE");
         ASSERT_NE(nullptr, expectedApi) << "Explicit qualification API is required";
-        ASSERT_NE(nullptr, expectedDevice) << "Explicit software/hardware classification is required";
+        ASSERT_NE(nullptr, expectedDevice) << "Explicit software/hardware/verified-virtual classification is required";
         ASSERT_STREQ(apiName, expectedApi);
-        ASSERT_TRUE(std::string(expectedDevice) == "software" || std::string(expectedDevice) == "hardware");
+        ASSERT_TRUE(std::string(expectedDevice) == "software" || std::string(expectedDevice) == "hardware" ||
+                    std::string(expectedDevice) == "virtual");
         dataset = contracts(); // Reject missing/changed fixture bytes before native device creation.
         const std::string test = ::testing::UnitTest::GetInstance()->current_test_info()->name();
         const int limit = test == "RhiLimit" || test == "TexturePolicyRecovery"
@@ -199,6 +201,9 @@ protected:
         ASSERT_EQ(64u, info.shaderHash.size());
         RecordProperty("rhi_api", apiName); RecordProperty("rhi_device", info.name);
         RecordProperty("rhi_device_class", info.deviceClass); RecordProperty("rhi_qt", info.qtVersion);
+        RecordProperty("rhi_qrhi_device_type", info.qrhiDeviceType);
+        RecordProperty("rhi_metal_registry_id", info.metalRegistryId);
+        RecordProperty("rhi_metal_registry_class", info.metalRegistryClass);
         RecordProperty("rhi_shader_sha256", info.shaderHash);
         RecordProperty("rhi_fixture_sha256", LC_RENDERER_CONTRACT_SHA256);
         RecordProperty("rhi_texture_limit", info.textureLimit);
@@ -348,6 +353,21 @@ TEST_F(RenderBuildTest, WrongBackendDoesNotFallback) {
     pixel(renderer->render(ordinary()), 10, 10, {{255, 0, 0, 255}});
 }
 TEST(RenderFactoryTest, InvalidPolicyBeforeDeviceCreation) {
+    using D = QRhiDriverInfo;
+    using lc::rhi::detail::deviceClass;
+    const lc::rhi::detail::MetalIdentity verified{1, "AppleParavirtAccelerator"};
+    for (const auto type : {D::UnknownDevice, D::VirtualDevice}) {
+        EXPECT_EQ("virtual", deviceClass(type, true, verified));
+        EXPECT_EQ("unknown", deviceClass(type, false, verified));
+        EXPECT_EQ("unknown", deviceClass(type, true, {}));
+        EXPECT_EQ("unknown", deviceClass(type, true, {0, verified.registryClass}));
+        EXPECT_EQ("unknown", deviceClass(type, true, {1, "Apple Paravirtual device"}));
+        EXPECT_EQ("unknown", deviceClass(type, true, {1, "AppleParavirtAcceleratorSpoof"}));
+    }
+    EXPECT_EQ("hardware", deviceClass(D::IntegratedDevice, true, verified));
+    EXPECT_EQ("hardware", deviceClass(D::DiscreteDevice, true, verified));
+    EXPECT_EQ("hardware", deviceClass(D::ExternalDevice, true, verified));
+    EXPECT_EQ("software", deviceClass(D::CpuDevice, true, verified));
     for (int limit : {-1, 0, lc::viewer::render::MaxFrameDimension + 1})
         EXPECT_THROW(lc::rhi::createOffscreenRenderer(nativeApi, limit), std::invalid_argument);
 }

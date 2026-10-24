@@ -194,7 +194,7 @@ def rhi_selection(args):
             config['platform'] != native_platform() or
             any(config[k] != getattr(args, arg) for k,arg in
                 (('backend','backend'),('device','device'),('qpa','expected_qpa'))) or
-            args.device not in ('software','hardware') or not args.build_dir or not args.provider_prefix or
+            args.device not in ('software','hardware','virtual') or not args.build_dir or not args.provider_prefix or
             args.expect_failure or args.scenario != 'standard' or args.background != 'opaque' or
             args.expected_dpr not in (None, 1)):
         raise ValueError('R1 requires a matching native source/offscreen tuple, build and provider; no spike scenarios')
@@ -1180,7 +1180,7 @@ def rhi_results(args, directory, selection):
     shader_dir = args.build_dir.resolve(strict=True) / 'lcrenderer/rhi/.qsb'
     shader_hash = sha256(b''.join((shader_dir / ('triangles.' + n + '.qsb')).read_bytes() for n in ('vert','frag')))
     corpus = inventory.read_json(inventory.REPO_ROOT / selection['fixtures']['contracts']['path'])['datasets']
-    observations, builds, modules = {}, [], []
+    observations, builds, modules, attestations = {}, [], [], []
     for name, props in tests.items():
         if 'rhi_case' in props and (name not in required or props['rhi_case'] != required[name]['id']):
             raise ValueError('Foreign/misbound RHI case observation')
@@ -1204,7 +1204,7 @@ def rhi_results(args, directory, selection):
         entries = re.findall(r'^([0-9a-f]{64})  ([a-zA-Z0-9_./-]+)\n', inputs, re.M)
         paths = [p for _,p in entries]
         if (''.join(h+'  '+p+'\n' for h,p in entries) != inputs or paths != sorted(set(paths)) or
-                not {'lcrenderer/rhi/renderer.cpp','lcrenderer/rhi/tests/buildtest.cpp',
+                not {'lcrenderer/rhi/renderer.cpp','lcrenderer/rhi/device_p.h','lcrenderer/rhi/tests/buildtest.cpp',
                      'lcrenderer/rhi/tests/provenance.h','lcviewernoqt/painters/renderframe.cpp'} <= set(paths) or
                 sha256(inputs.encode()) != build['rhi_inputs_sha256']):
             raise ValueError('Malformed/incomplete RHI input manifest')
@@ -1239,6 +1239,14 @@ def rhi_results(args, directory, selection):
                     'rhi_arch':expected_arch,'rhi_build_arch':expected_arch,'rhi_case':row['id']}
         if any(props.get(k) != v for k,v in expected.items()) or not props.get('rhi_device','').strip():
             raise ValueError('RHI API/device/QPA/architecture/input identity mismatch')
+        if config['device'] == 'virtual':
+            registry = props.get('rhi_metal_registry_id', '')
+            if (config['platform'] != 'MAC-X64' or config['backend'] != 'metal' or
+                    props.get('rhi_qrhi_device_type') not in ('0','4') or
+                    props.get('rhi_metal_registry_class') != 'AppleParavirtAccelerator' or
+                    not re.fullmatch(r'[1-9][0-9]{0,19}', registry) or int(registry) > 2**64-1):
+                raise ValueError('Missing/mismatched selected native virtual Metal attestation')
+            attestations.append((props['rhi_qrhi_device_type'], registry, props['rhi_metal_registry_class'], props['rhi_device']))
         actual = inventory._json_bytes(props.get('rhi_observations', '').encode())
         assertions = corpus[row['dataset']][row['variant']]['assertions']
         if set(actual) != {a['observed'] for a in assertions}:
@@ -1256,11 +1264,16 @@ def rhi_results(args, directory, selection):
         builds.append(build); modules.append(loaded)
     if any(b != builds[0] for b in builds) or any(m != modules[0] for m in modules):
         raise ValueError('Inconsistent provider/build across required cases')
+    if attestations and any(a != attestations[0] for a in attestations):
+        raise ValueError('Inconsistent selected native virtual Metal device across required cases')
     return dict(configuration_id=selection['configuration_id'], configuration=config,
                 manifest_sha256=selection['manifest_sha256'], required_ids=sorted(observations),
                 discovered_ids=discovered, executed_ids=sorted(tests), observations=observations,
                 build=builds[0], loaded_qt_sha256=modules[0], shader_sha256=shader_hash,
-                observed_devices={row['id']:tests[row['test']]['rhi_device'] for row in selection['requirements']})
+                observed_devices={row['id']:tests[row['test']]['rhi_device'] for row in selection['requirements']},
+                native_device_attestations={row['id']:{key:tests[row['test']].get(key,'') for key in
+                    ('rhi_qrhi_device_type','rhi_metal_registry_id','rhi_metal_registry_class')}
+                    for row in selection['requirements']})
 
 
 def rhi_icds(args):
@@ -1615,7 +1628,7 @@ def main():
     parser.add_argument('--provider-prefix',type=Path,help='Required actual Qt/qsb provider boundary for R1')
     parser.add_argument("--app", type=Path)
     parser.add_argument("--backend", choices=("vulkan", "metal"))
-    parser.add_argument("--device", choices=("software", "hardware", "any"))
+    parser.add_argument("--device", choices=("software", "hardware", "virtual", "any"))
     parser.add_argument("--mode", choices=("offscreen", "widget"))
     parser.add_argument('--cmake',type=Path,help='Build-contract CMake executable; defaults to PATH')
     parser.add_argument('--generator',help='Build-contract CMake generator, including multi-config generators')
@@ -1642,6 +1655,8 @@ def main():
     parser.add_argument('--xvfb-run', type=Path, help='Own an isolated Xvfb process tree; accept results only after reaping every descendant')
     parser.add_argument('--_worker-directory', type=Path, help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.device == 'virtual' and not args.rhi_contracts:
+        parser.error('verified virtual Metal is only authorized for R1 --rhi-contracts')
     if args.build_source and not args.rhi_contracts:parser.error('--build-source requires --rhi-contracts')
     if args.library_matrix and not args.build_source:parser.error('--library-matrix requires --build-source')
     if args.library_group!='all' and not (args.library_matrix or args.production_builds):

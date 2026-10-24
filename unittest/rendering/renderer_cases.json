@@ -316,6 +316,16 @@
       "artifact": "source"
     },
     {
+      "id": "r1-source-virtual-metal",
+      "platforms": ["MAC-X64"],
+      "backend": "metal",
+      "modes": ["offscreen"],
+      "qpas": ["cocoa"],
+      "devices": ["virtual"],
+      "profiles": ["rhi-offscreen"],
+      "artifact": "source"
+    },
+    {
       "id": "install-macos",
       "platforms": ["MAC-ARM64","MAC-X64"],
       "backend": "metal",
@@ -1977,10 +1987,10 @@
         "void clear(double,double,double,double)"
       ],
       "consumers": ["lcviewernoqt-painters-createpainter-cpp"],
-      "configurations": ["source-linux","gui-less-linux","source-windows","gui-less-windows","source-macos","gui-less-macos"],
+      "configurations": ["source-linux","gui-less-linux","source-windows","gui-less-windows","source-macos","gui-less-macos","r1-source-virtual-metal"],
       "profiles": ["rhi-only","dual","scripted","rhi-offscreen","rhi-cli","rhi-cli-python"],
       "modes": ["offscreen"],
-      "devices": ["software","hardware"],
+      "devices": ["software","hardware","virtual"],
       "fixture": "contracts",
       "dataset": "rhi-build-options",
       "assets": [],

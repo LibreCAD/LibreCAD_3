@@ -10,6 +10,8 @@ struct DeviceInfo {
     Api api;
     std::string name, deviceClass, qtVersion, shaderHash;
     int textureSizeMin = 0, textureSizeMax = 0, textureLimit = 0;
+    int qrhiDeviceType = -1;
+    std::string metalRegistryId, metalRegistryClass;
 };
 class TextureSizeLimitError : public std::invalid_argument {
 public:

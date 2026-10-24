@@ -41,6 +41,11 @@ target_compile_features(lcrenderer_rhi PRIVATE cxx_std_17)
 target_include_directories(lcrenderer_rhi PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_SOURCE_DIR}/lcviewernoqt")
 target_link_libraries(lcrenderer_rhi PRIVATE lcviewernoqt Qt6::Gui Qt6::GuiPrivate)
+if(APPLE)
+    find_library(_rhi_iokit IOKit REQUIRED)
+    find_library(_rhi_objc objc REQUIRED)
+    target_link_libraries(lcrenderer_rhi PRIVATE "${_rhi_iokit}" "${_rhi_objc}")
+endif()
 if(NOT APPLE)
     target_include_directories(lcrenderer_rhi PRIVATE "${LC_RHI_VULKAN_INCLUDE_DIR}")
 endif()
@@ -63,7 +68,7 @@ if(WITH_RENDERER_TESTS)
     set(_rhi_inputs CMakeLists.txt lcviewernoqt/CMakeLists.txt
         lcviewernoqt/cmake/RendererOptions.cmake lcviewernoqt/painters/renderframe.cpp
         lcviewernoqt/painters/renderframe.h lcrenderer/rhi/CMakeLists.txt
-        lcrenderer/rhi/renderer.cpp lcrenderer/rhi/renderer.h lcrenderer/rhi/shader_p.h
+        lcrenderer/rhi/renderer.cpp lcrenderer/rhi/renderer.h lcrenderer/rhi/shader_p.h lcrenderer/rhi/device_p.h
         lcrenderer/rhi/shaders/triangles.vert lcrenderer/rhi/shaders/triangles.frag
         lcrenderer/rhi/tests/buildtest.cpp lcrenderer/rhi/tests/headercheck.cpp
         lcrenderer/rhi/tests/provenance.h lcrenderer/rhi/tests/build.json.in
