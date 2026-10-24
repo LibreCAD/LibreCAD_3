@@ -106,6 +106,7 @@ lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lcviewernoqt/testrenderframe.cpp
+lcviewernoqt/testpathrecorder.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp

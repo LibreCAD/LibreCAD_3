@@ -19,7 +19,7 @@ receipt is final. The owner updates requirements, evidence freshness, affected
 gates, and next checks; automated validation reports structure and path
 coverage but never edits content or infers semantic completion.
 
-**Current R1 overlay (2026-10-24):** the preserved writable checkout is
+**Earlier R1 overlay (historical cohort, superseded below):** the preserved writable checkout is
 `fix/msvc-eigen-include` at `132265a0573253980451facf9109678f8bffe743`, not the
 published R1 candidate `d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb` on
 `dxli/LibreCAD_3:codex/r1-platform-ci`. The original index and unrelated files
@@ -38,6 +38,79 @@ widget IDs. All 75 UI units, single generator ownership and unchanged budgets ar
 retained. Source-CI execution/self-review is complete; full Python/widget/package,
 hardware/deployment and independent/phase/platform acceptance remain open.
 
+**R2.1 publication checkpoint:** the human explicitly replied “Allow R2.1 commit,
+push and CI”. Publish the locally validated provisional recorder on the existing
+dxli/LibreCAD_3:codex/r1-platform-ci branch using a separate index and only nine
+intended source/build/test/plan paths; preserve the original branch/HEAD/index,
+staging and unrelated files. Seven source hashes still match the native109-ID /
+17-sanitizer growth-fix proof; the2166/1292/104-file prior packets remain unchanged.
+Publication and the new full five-platform60-source-job cohort are pending, not
+successful evidence. Record the resulting exact SHA and review all60 artifacts
+in build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. Keep tests, assertions,
+source-submodule SDK patches, provider pins and300/1200-second budgets unchanged.
+No merge, release, legacy-default, Python ownership or acceptance-state change;
+R2.2–R7 and all independent/phase/hardware/widget/provider/deployment/package
+prerequisites remain open.
+
+**R2.1 compiler-only portability follow-up:** unchanged recorder and six independent
+CPU headers compile to seven verified Intel Mac x86_64 objects using installed
+Apple Clang21/SDK, with existing CMake flags except architecture. Retain the
+extra-strict nano-signal-slot probe failure; using its already-configured
+compatibility flag changes no repository suppression or dependency. Evidence:
+build/renderer-evidence/r2-1-intel-compile-20261024.VShgni/.
+This is ARM64-host cross-compilation, not native Intel execution, CI, deployment,
+SDK closure or hardware acceptance. No source/helper/default/timeout change or
+toolchain installation occurs; native109/17 ARM64 evidence remains unchanged.
+The subsequent explicit publication approval resolves the earlier unanswered
+request; successful hosted validation is pending and R2.2–R7 retain their prerequisites.
+
+**R2.1 bounded-work follow-up:** exact-size per-line reserve is now removed after
+a deterministic regression reproduces4096 reallocations for4096 open-path appends
+(unchanged bound32). Amortized append and one atomic closed-subpath insertion
+preserve recording semantics and failure recovery. Fresh native Mac/Linux ARM64
+each pass109 CPU IDs and17 recorder ASan/UBSan cases, with Linux leak detection.
+Both providers record13 open/13 closed growths versus prior4096/24 under the same32
+bound. Strict C++14/six headers, source binding, plan/checker42/worktree119 paths
+and16 gates/inventory190/lints/diff checks pass and repeat after the final receipt.
+Evidence is at build/renderer-evidence/r2-1-growth-20261024.WmWNfZ/; earlier108/16/623 results below
+remain bound to the prior source. No default, timeout, Python ownership, later
+subpatch or acceptance-state change is authorized or implied.
+
+**Initial provisional R2.1 implementation (before growth correction):** the human explicitly approved CPU
+path/state recording after the completed R1 cohort. The compact C++14 recorder
+owns paths, implemented style snapshots and double transforms without Qt, GPU or
+Python types. Nine existing native contract IDs consume the shared fixture, with
+additional ownership/append-time/recovery/limit tests in the ordinary CPU suite;
+fresh evidence is at build/renderer-evidence/r2-1-cpu-20261024.lM6CiQ/.
+Native Mac/Linux ARM64 each pass108 CPU IDs (92 preserved, nine fixture cases and
+seven regressions), six standalone C++14 headers and no-Qt/GPU/Python link checks.
+Each host passes16 recorder ASan/UBSan tests; Linux leak detection passes. The
+fixture adapter remains ASan-only because RapidJSON1.1.0 has a retained UBSan
+null-pointer-arithmetic diagnostic; unsupported Mac leak detection is not a pass.
+Mac's three exact groups execute all623 script IDs with11 existing Linux-only
+skips; the exact-code-hash Linux clone passes623/623 in121.333 seconds. Earlier
+300-second broad-invocation timeouts and the malformed AppleDouble archive are
+retained; no test/assertion/cap is changed. Full-plan/checker42/worktree119 paths
+and16 gates/inventory190/lints pass and repeat after this finalized receipt.
+This initial proof predates the growth correction and the subsequently approved
+R2.1 publication; no new all-platform CI success is claimed at this checkpoint.
+The legacy production painter/default and Python ownership are unchanged. R2.2–R7,
+D1–D6 and all independent/phase/hardware/widget/provider/deployment/package gates
+remain open. Old acbab6cd all-platform CI does not validate the new candidate.
+
+**D3 reference follow-up (before authorization):** a bounded native ARM64 Cairo1.18.6 CPU reference supplies path /
+transform/save-restore observations, not new renderer code or D3 acceptance.
+The reference confirms append-time CTM capture, restored Cairo state with path
+edits retained, consumed paths, analytic queries and sticky error contexts2/5.
+The current wrapper's matrix.yy scale expression is not rotation-invariant; do
+not preserve that expression or GL stubs as golden new behavior. Evidence and
+loaded-library/header/source identities are at
+`build/renderer-evidence/r0-cairo-reference-20261024.ICOCI3/`. Both owned30-second
+scopes retire; no source/helper/provider/CI/default or Python ownership changes.
+The source cohort remains completed62/62, not a live process to restart. All
+S/platform, D1–D6, independent/phase/hardware/widget/provider/deployment/package
+gates and the full implementation objective remain open.
+
 **Latest source closeout:** exact pushed
 `acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0` / run40093455633 attempt1 now passes
 all60 source jobs plus protocol/aggregate,62/62; each architecture passes12/12.
@@ -51,13 +124,13 @@ Source proof: `build/renderer-evidence/r1-popup-fix-20261024.fDteaO/hosted/`.
 The renderer's next code boundary is R2.1 CPU path/state recording; its read-only
 nine-ID readiness packet is in
 `build/renderer-evidence/r1-cohort-followup-20261024.wDPfZt/`. Explicit provisional
-scope is requested, not assumed approved. Preserve existing discovery/execution
+scope is now approved. Preserve existing discovery/execution
 and C++14/Qt-free CPU boundaries; no unimplemented later case is dropped. D3
 transform/path/style decisions, all S/platform/independent/phase/hardware/widget/
-provider/deployment/package gates remain open. No R2 implementation or default /
+provider/deployment/package gates remain open. No production painter, default or
 release change occurs in this continuation.
 
-**Current continuation:** exact pushed acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0
+**Historical live snapshot (superseded by the completed cohort above):** exact pushed acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0
 has a live replacement source cohort, run40093455633 attempt1: the retained
 snapshot has45/60 source jobs successful, all45 matching payloads reviewed and
 hosted622/622 protocol regressions without skips; the rest are running/queued.
@@ -1432,6 +1505,11 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Record explicit R2.1 commit/push/full source-CI approval and execute the bounded publication. | Human reply “Allow R2.1 commit, push and CI” resolves the publication blocker for dxli/LibreCAD_3:codex/r1-platform-ci only. Publish exactly nine implementation/build/test/plan paths using a separate index, preserving original branch/HEAD/index/staging and1086 unrelated baseline files. Seven source hashes match unchanged native Mac/Linux ARM64 CPU109/recorder-sanitizer17 proof; Intel seven-object evidence remains compile-only. Preserve all2166/1292/104 prior proof files,50 renderer/364 Python prior receipts and every gate state. Full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks must pass on this finalized receipt before commit. Bind the resulting full SHA and new60-source-job/protocol/aggregate cohort at build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/; execution and all60 payload reviews are pending, not passes. No existing test/assertion/provider pin/source-submodule SDK patch or command/profile/job budget changes. Prior acbab6cd62/62 remains historical; no merge/new PR/release/legacy-default/Python-ownership/phase/platform/hardware/widget/provider/deployment/package/full-objective acceptance or R2.2–R7 authority is implied. Exclusions: .agnes/ unrelated state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
+| 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Record Intel C++14 compile-only portability and the owner continuation boundary. | Unchanged R2.1 recorder/six independent CPU headers compile to seven verified Mach-O x86_64 objects from the ARM64 host using installed Apple Clang21/SDK. Recorder warnings stay strict; headers use existing CMake flags with architecture changed. Retain the extra-strict nano-signal-slot syntax failure; the configured compatibility flag is not a new repository suppression. No source/helper/provider/dependency/default/assertion/timeout change, installation or native Intel/runtime/CI/hardware/deployment-floor acceptance. Evidence: build/renderer-evidence/r2-1-intel-compile-20261024.VShgni/. Native109/17 proofs stay unchanged and earlier623-script evidence stays source-bound. Full-plan/checker42/worktree119 paths and16 gates/inventory190/both lints/diff pass; repeat on this finalized receipt, then verify preservation and retained objects. Preserve49 renderer/363 Python prior rows, prior1292/2166-file proofs, every gate state and original branch/HEAD/index/staging/unrelated files. R2.1 commit/push/Actions answer remains absent through three consecutive goal turns; hosted validation requires it and later subpatches keep their original decisions/prerequisites. Full objective remains incomplete. Exclusions: .agnes/ unrelated state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
+| 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Correct and validate quadratic R2.1 CPU path growth within the authorized provisional scope. | Native regression fails before the fix with4096 open capacity growths for4096 appends versus an unchanged32 bound. Amortized append and atomic close/restart range insertion reduce open/closed growths to13/13 on Mac/Linux ARM64, versus4096/24 before. Fresh native109-ID CPU and17-ID recorder ASan/UBSan suites each pass without skips, preserving all108 prior CPU IDs and nine existing fixture cases; Linux leak detection passes and the known fixture-adapter UBSan limitation is unchanged. Strict C++14/six header consumers, source binding, full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks pass; repeat after this finalized receipt. Evidence: build/renderer-evidence/r2-1-growth-20261024.WmWNfZ/. Preserve48 renderer/362 Python prior rows, the prior2166-file proof, every gate state and original branch/HEAD/index/staging/unrelated files. Earlier108/16/623 proof remains source-bound, not new-code full-platform acceptance. Adds one regression; no helper/provider/dependency/default change, relaxed existing test/assertion/limit or expanded timeout; code stays local/uncommitted pending the separate publication answer. R2.2–R7/D1–D6/independent/phase/hardware/widget/provider/deployment/package/release/full-objective gates remain open. Exclusions: .agnes/ unrelated state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
+| 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Implement and locally validate explicitly authorized provisional R2.1 CPU recording; publication pending. | One compact owned C++14 path/state/transform recorder enters the ordinary CPU suite and shared source/library/host runner; no Python ownership, production painter/default or GPU change. Native Mac/Linux ARM64 each pass108 CPU IDs without skips, preserving92 plus nine existing fixture cases/seven semantic/recovery/resource regressions; six independent headers, strict C++14 and no-Qt/GPU/Python link audits pass. Each host passes16 recorder ASan/UBSan cases; Linux leak detection passes. Retain unsupported Mac leak detection and RapidJSON1.1.0 fixture-adapter UBSan arithmetic; the adapter is ASan-only, not fully UBSan-qualified, and recorder diagnostics are not suppressed. Three changed-fixture negatives reject and the copied fixture is restored. All623 script IDs execute: Mac612 passes/11 existing Linux-only skips in exact253/159/211 groups; exact-code-hash Linux clone623/623 in121.333 seconds. Earlier300-second broad/group timeouts and malformed AppleDouble archive remain retained; corrected archive has exactly nine members. No assertion/test/timeout/provider/dependency/workflow change. Full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff pass; repeat after final receipt. Evidence: build/renderer-evidence/r2-1-cpu-20261024.lM6CiQ/. Preserve47 renderer/361 Python prior rows,1079 unrelated files, original branch/HEAD/index/staging and every gate state. Candidate remains local/uncommitted pending the separate R2.1 commit/push/CI answer; prior acbab6cd62/62 is not new-code platform proof. R2.2–R7 and all S/platform/D1–D6/independent/phase/hardware/widget/provider/deployment/package/release/full-objective acceptance remain open. Exclusions: .agnes/ unrelated state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
+| 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Record bounded D3 Cairo reference evidence without assuming R2.1 approval. | Native ARM64 Cairo1.18.6 CPU image-surface observations independently cover append-time CTM capture, full Cairo style/CTM restoration with path edits retained, consuming stroke/fill, analytic point/distance/inverse queries and expected sticky statuses2/5 in isolated error contexts. Five observation groups pass and both30-second owned groups retire. Rotated scale2 has yy approximately0 and basis norm2; current wrapper-scale expression and GL state/path stubs are not new golden behavior. Bare Cairo proof does not establish wrapper/Python/production/GPU behavior or ratify D3 capture/sign/style/error contracts. Existing library/header/project-source hashes, first/final records and probe source are retained at build/renderer-evidence/r0-cairo-reference-20261024.ICOCI3/. No project source/helper/provider/dependency/timeout/default/CI change. Exact source cohort remains acbab6cd/run40093455633 completed62/62; no live work is restarted. R2.1 authority still needs the requested human answer; do not infer approval from automatic goal continuations. Independent native-report/module/hash/process readback, full-plan, checker42/42, worktree116 paths/16 gates/no stale or unmapped evidence, inventory190, both workflow lints, diff checks,50 local links, prior rows/gate states and1083 unchanged files pass; repeat maintenance checks on this finalized receipt; keep the documentation-only update local. Preserve46 renderer/360 Python prior rows, all S/platform states and original branch/HEAD/index/staging/unrelated files. Full goal and all D1–D6/phase/independent/hardware/widget/provider/deployment/runtime/package/release gates remain incomplete. Exclusions: .agnes/ unrelated agent state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
 | 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Close out the exact-source popup-fix CI cohort; prepare R2.1 readiness without assuming phase authority. | acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0 / run40093455633 attempt1 succeeds62/62, all60 source tuples and12/12 per native architecture; protocol622/622 without skips. All60 artifacts are retained and independently reviewed for source/helpers/options/profiles/executed XML/native devices/graphs/cleanup. Supplementary audit verifies60 source maps/2356 process records/98 ordinary XML/52 controlled-negative XML/13162 hashes/30 exact f7debf4 SDK records, each with three required patches. Intel core/Python library runs each execute22 RHI IDs; native registry IDs4294968044/4294968035 match independent displays, raw Qt0/virtual retained, not hardware. Existing Linux Vulkan60+50 DPR1.25 and Mac Metal24 strict proofs remain independently source/provider-bound. No source/helper, test/assertion/timeout, provider, dependency/default or release change. Read-only R2.1 audit identifies nine required CPU path/state/transform IDs without current direct C++ definitions and records GL/Cairo semantic mismatches; provisional scope is requested, not accepted. Renderer build-option status is corrected without treating proposed runtime flags or later bindings as implemented. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/hosted/ and r1-cohort-followup-20261024.wDPfZt/. Validation passes: full-plan, checker42/42, build-option regressions41/41, complete-worktree116 paths/16 gates/no stale or unmapped evidence, full190-configuration inventory, both workflow lints, diff checks,50 local links, prior receipts/gate states and1083 unchanged files; repeat maintenance checks on this finalized receipt. Preserve45 renderer/359 Python prior rows, all S/platform states and original branch/HEAD/index/staging/unrelated files. Full goal, D1–D6, R0/R1 and independent/native-widget/physical-hardware/full-provider/deployment/Python/runtime/package/release acceptance remain incomplete. Exclusions: .agnes/ unrelated agent state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
 | 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Refresh current-source Mac Metal offscreen proof; reconcile implemented renderer CPU inventory/selection while source CI remains live. | Clean pushed acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0 passes native ARM64 AppleM2Max/macOS27.0.1 Metal/Cocoa hardware-class R0 offscreen: Qt6.8.3 and6.12.0 main/Gui-only builds, per provider12 strict invocations/512 checks; four CTest builds each6 exact IDs, zero failures/skips,38 owned groups retired. Independent payload/module/pixel/hash checks pass;22 pinned reference files and all four copied raw minimum Qt archives revalidate, loaded QtDBus matches the archive. Preserve preflight/one-use readback setup diagnostics; no native failure/test suppression or source/helper/provider/default/timeout change. Evidence: build/renderer-evidence/r0-metal-refresh-20261024.SQfPML/. Renderer plan now reflects implemented M1–M3 CPU metadata/selector/CLI,110 focused tests and unchanged full190 configurations, not unimplemented production feature acceptance. Current source run40093455633 attempt1 is live at the same SHA: retained45/60 successful source artifacts reviewed, protocol622/622 without skips; remaining jobs running/queued, not a new all-platform green claim or a reason to restart. Full-plan, checker42/42, worktree116 paths/16 gates/no stale or unmapped evidence, inventory190, both workflow lints, diff checks,50 local links, prior receipts/gate states and1083 unchanged files pass preservation review; repeat maintenance checks on this finalized receipt; do not push a documentation-only update over live CI. Original checkout/index/staging/unrelated files, all44 renderer/358 Python rows and all S/platform states remain preserved. Physical input/widgets, current full provider/OS/deployment/Python/runtime/packages, D1–D6 and independent/phase/platform acceptance remain open. Exclusions: .agnes/ unrelated agent state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |
 | 2026-10-24 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Fix reproduced Wayland popup serial race; retain final full Vulkan proof and authorize publication. | Codex implementation/self-review: clean965e4465b7a55c85f433499bf3344508fe75357b passes all60 Vulkan tuples, per QPA24 positives/1384 checks plus six controlled failures/18 assertions, zero failed/skipped ordinary checks or core/synchronization errors, complete owned cleanup. Fifty consecutive unretried DPR1.25 Wayland lifecycle cases each pass34 checks; protocol traces retain held press before popup grab, no early release or popup_done. Original exposure/input/pixel/teardown assertions and all native/invocation/block budgets stay unchanged. Six added regressions; final Linux622/622, Mac611 plus11 Linux-only skips pass. Initial absent offline submodule fixtures are restored at exact local pins without dependency builds; preserve that failed run, original reproduced popup race and first/final proof cohorts separately. Readiness artifact is restricted to input sessions; original index/checkout/staging and unrelated files stay preserved. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/. All110 retained reports independently revalidate PNG/RGBA pixels, exact IDs, app/report/helper hashes, validation logs and owned cleanup; all50 native traces verify held press/grab ordering and key release. Full-plan, checker42/42, complete-worktree mapping116 paths/16 gates/no stale or unmapped evidence, 190-configuration inventory, both workflow lints, git diff --check, 50 local links, prior receipts/gate states and1076 unrelated files pass preservation review. Repeat checks on this finalized receipt before documentation-only closeout commit and authorized branch push. New hosted source CI is pending, not inherited from d4e9650e. Preserve all43 renderer/357 Python prior receipts and all S/platform states. No R2/default/release or independent/hardware/production/widget/provider/deployment/package/phase acceptance. Exclusions: .agnes/ unrelated agent state; SMLIB_2D_CAD_IMPLEMENTATION_PLAN.md independent geometry plan; libdxfrw.cpp.o/t.diff scratch artifacts. |

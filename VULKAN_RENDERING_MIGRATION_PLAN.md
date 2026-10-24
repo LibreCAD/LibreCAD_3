@@ -1,7 +1,7 @@
 # Vulkan rendering migration plan
 
 Status: reviewed 2026-10-24; R0 remains active and unaccepted.
-Provisional R1 implementation is authorized; R2–R7 remain proposed.
+Provisional R1 and R2.1 implementation are authorized; R2.2–R7 remain proposed.
 Baseline: LibreCAD 3
 `132265a0573253980451facf9109678f8bffe743`, branch `fix/msvc-eigen-include`.
 All platform acceptance gates below remain open. R0 is implementing standalone
@@ -15,12 +15,142 @@ integration using QRhi, Vulkan on Windows/Linux and Metal on macOS, with legacy
 remaining the default and all native-platform, D1–D6 and release gates open.
 This changes implementation order, not acceptance order or platform scope.
 Earlier requirements to finish R0 before starting R1 now govern R1 acceptance;
-the exception does not authorize R2, cutover, retirement or desktop interaction.
-The subsequent branch/push/Actions authorization is limited to the R1 candidate
-in `dxli/LibreCAD_3:codex/r1-platform-ci`; it does not authorize a merge, new PR,
-release workflow change or acceptance-policy change. Independent review remains pending.
+that R1 exception does not authorize R2, cutover, retirement or desktop interaction.
+Only R2.1 is covered by the later explicit provisional approval recorded below.
+The branch/push/Actions authorization covers R1 and, through the later explicit
+“Allow R2.1 commit, push and CI” reply, the locally validated provisional R2.1
+candidate in `dxli/LibreCAD_3:codex/r1-platform-ci`. It does not authorize a merge,
+new PR, release workflow change or acceptance-policy change. Independent review
+remains pending.
 
 ### Current checkpoint and next decision — 2026-10-24
+
+The human explicitly approved R2.1 commit, push and full five-platform source CI.
+Publish only the nine intended implementation/build/test/plan paths on the
+existing dedicated branch, preserving the original checkout, index and staging.
+The current seven source hashes match the109-ID/17-sanitizer growth-fix proof;
+the three2166/1292/104-file local proof packets remain unchanged. Record the
+resulting commit and exact-SHA CI cohort in
+`build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/`.
+Publication and the new60-source-job cohort are pending execution, not passes.
+Keep all existing IDs, assertions, provider pins, source-submodule SDK patches
+and300/1200-second budgets; review all60 payloads rather than the aggregate alone.
+Legacy defaults, D1–D6, hardware, independent/phase/platform/package acceptance
+and R2.2–R7 prerequisites remain unchanged and open.
+
+Compiler-only R2.1 portability follow-up: the unchanged recorder and six
+independent CPU-facing headers compile to seven verified Mach-O x86_64 objects
+using the installed Apple Clang21/SDK. Recorder compilation retains strict
+C++14 warnings; header compilation uses the existing CMake flags with only
+arm64 changed to x86_64. An earlier extra-strict header probe omitted the existing
+nano-signal-slot compatibility flag and failed; retain it separately. Restoring
+the already-configured flag changes no repository suppression or dependency.
+Evidence: `build/renderer-evidence/r2-1-intel-compile-20261024.VShgni/`.
+
+This is cross-compilation from ARM64, not a native Intel host, runtime test,
+minimum-deployment qualification, full SDK attestation, CI cohort or hardware
+acceptance. The exact unchanged-code109/17 native ARM64 proofs remain valid in
+their original packets; no five-platform R2.1 CI claim follows. Linux x64 and
+Windows cross compilers were not available in the existing local container;
+no toolchain or dependency was installed. R2.1 code is still local/uncommitted
+at this prepublication checkpoint; the new explicit approval resolves the earlier
+publication blocker. R2.2–R7 retain their explicit decision/prerequisite gates
+rather than inheriting R2.1's provisional authority.
+
+R2.1 follow-up: review found exact-size reserve on each line append, making
+open-path recording quadratic despite a bounded element count. A deterministic
+4096-append capacity-growth regression fails against the prior code (4096 growths,
+limit32). Replace exact reserve with amortized vector append and a single atomic
+range insertion for close/restart. The unchanged regression also checks closed
+subpaths, element counts/endpoints and path consumption; no wall-time assertion
+is substituted. Fresh Mac/Linux ARM64 builds each pass109 CPU IDs, preserving all
+108 prior IDs, and17 recorder ASan/UBSan cases (Linux leak detection enabled).
+Open growths fall4096 to13; closed/restarted growths fall24 to13, within the same32
+bound. Strict C++14 and all six independent header consumers pass; source binding,
+full-plan/checker42, worktree119 paths/16 gates, inventory190, workflow lints and
+diff checks pass and repeat after the finalized receipt. Evidence is at
+`build/renderer-evidence/r2-1-growth-20261024.WmWNfZ/`. Keep earlier108-ID/16-sanitizer
+and623-script results bound to their exact sources, not promoted to new-code proof.
+Recorder changes are limited to amortized append and the regression; helpers,
+defaults, limits, assertions and300-second caps remain unchanged. Candidate code
+is still local/uncommitted at this checkpoint; publication is now authorized,
+while successful hosted execution and broader acceptance are not assumed.
+
+#### Authorized provisional R2.1 CPU recording
+
+The human explicitly answered “Authorize provisional R2.1” after the completed
+R1 source cohort. This permits CPU path/state/transform recording using candidate
+contracts, not D3 ratification, later subpatches or a production painter/default
+change. Implementation is in `lcviewernoqt/painters/pathrecorder.{h,cpp}` beside
+the existing prepared-frame boundary. It is Qt/QRhi/OpenGL/Python-free C++14;
+the existing source/library/host runner executes its native tests. Full support
+and phase acceptance remain open. Initial candidate validation is retained under
+`build/renderer-evidence/r2-1-cpu-20261024.lM6CiQ/`.
+
+Candidate semantics are explicit: no implicit Y flip; column-vector affine
+postmultiplication after local-origin subtraction; double coordinates;
+append-time path capture; save/restore of all implemented style fields and CTM,
+but not the path; consuming stroke/fill; rotation-invariant unit-X scale query;
+recoverable invalid input with prior valid state/path/commands retained. Recorded
+snapshots own color, width/compensation, dash/offset/scaled flag, antialias and
+transform. Font/asset/pattern state and curve/stroke/fill preparation remain
+later work, not fake no-op LcPainter methods. Path/command/dash/stack limits are
+bounded, and no GPU is created by these CPU tests. Native Mac ARM64 and Linux
+ARM64 each execute108 CPU IDs without skips, preserving92 prior IDs and adding
+the nine fixture cases plus seven regressions. Six independent C++14 headers,
+strict C++14 compilation and CPU no-Qt/GPU/Python linkage checks pass. Both hosts
+pass16 recorder ASan/UBSan tests; Linux also passes leak detection. The fixture
+adapter is ASan-only because installed RapidJSON1.1.0 reports null-pointer
+arithmetic under UBSan; this limitation and unsupported Mac leak detection remain
+retained, not suppressed in recorder code or counted as passes. Three deliberately
+corrupted fixtures fail as expected, with the copied fixture restored afterward.
+
+All623 scripts pass on Linux in an exact-code-hash local-filesystem clone
+(121.333 seconds, no skips); Mac's disjoint253/159/211-ID groups cover the same
+623 IDs,612 pass and11 existing Linux-only skips. Preserve the earlier300-second
+whole/combined-group timeouts and malformed AppleDouble source-archive failure;
+the corrected archive contains exactly nine files. No command cap, assertion,
+test, source requirement or acceptance gate is relaxed. Full-plan/checker42,
+worktree119 paths/16 mapped gates, inventory190 and both workflow lints pass;
+repeat these checks after the final receipt. This initial proof predates the
+growth correction and the subsequently approved R2.1 publication/source-CI run.
+Old acbab6cd CI does not validate the new candidate on five architectures.
+
+#### Independent D3 Cairo reference (before authorization)
+
+The source-CI cohort below is complete, not a live job to restart. One bounded independent R0
+CPU reference check uses the existing native ARM64 Cairo1.18.6 image-surface API,
+not a new recorder or the project's whole Cairo wrapper. Actual loaded-library,
+header and unchanged project-source identities are retained at
+`build/renderer-evidence/r0-cairo-reference-20261024.ICOCI3/`.
+
+Five observation groups pass, with the two expected error contexts isolated:
+path coordinates capture the current transform when appended; save/restore
+restores the Cairo style/CTM but retains intervening path edits; stroke/fill
+consume paths and repeated empty stroke leaves pixels unchanged; analytic point,
+distance and inverse queries match the candidate matrix; unmatched restore and
+singular scale produce sticky status2/5 errors, not recovery after later valid
+calls. At a 90-degree rotation with uniform scale 2, matrix.yy is approximately 0,
+while the basis norm is 2. The current wrapper returns matrix.yy as scale(); do
+not adopt that expression as the new rotation-invariant query oracle.
+
+These successful-domain observations support D3 discussion, not acceptance of
+all Cairo behavior. The new recorder must still satisfy the plan's recoverable
+invalid-input policy, bounded work and full owned style state. Bare Cairo state
+does not cover wrapper-side fields such as line-width compensation. Coordinate
+sign conventions and capture timing must be decided explicitly, not copied from
+inconsistent legacy implementations. Source defaults/factories and all required
+R2–R7 cases remain untouched. No provider is installed, compiled or modified, no
+desktop or GPU is used, and both owned30-second probe scopes retire.
+
+Independent native-report/library/header/source/process readback, full-plan,
+checker42/42, worktree116 paths/16 gates, inventory190, both workflow lints, diff
+checks,50 local links and prior receipts/gate states/1,083 unchanged files pass.
+Repeat maintenance checks on the finalized receipt before handoff.
+This reference predates the subsequently granted provisional R2.1 authority;
+D1–D6, independent review, missing native/hardware/widget/provider/deployment /
+package and phase acceptance remain open. Do not substitute another reference
+probe for that approval or declare the full migration complete.
 
 #### Latest exact-source CI closeout and next implementation boundary
 
@@ -54,26 +184,23 @@ R2.1 is the next code boundary, not another R1 rerun. A read-only readiness audi
 binds the existing four CPU path/state and five CPU transform case IDs, required
 typed observations and source identities in
 `build/renderer-evidence/r1-cohort-followup-20261024.wDPfZt/r2-1-readiness.json`.
-These nine IDs have no direct current C++ TEST/TEST_F definitions; lexical absence
+The earlier audit found no direct C++ definitions; the authorized candidate now
+implements these nine IDs plus semantic/recovery regressions. Lexical presence
 is not execution proof. Existing GL new-path/subpath stubs, CTM-only save/restore
 and unchecked empty restore must not become golden behavior. Cairo and GL also
 differ in coordinate/transform handling. D3 must clarify transform capture when
 the CTM changes within one path, alongside consumed paths, complete style restore,
 finite/singular rejection and preserved large-origin precision.
 
-Provisional R2.1 scope has been requested explicitly, using candidate contracts
-without accepting D3 or changing defaults/releases. No answer or approval is
-assumed; no R2 code is added in this continuation. Keep all nine case IDs and all
-later requirements. After authorization, extend the existing Qt-free C++14 CPU
-boundary and shared discovery/XML runner, with independent analytic observations;
-do not create a second painter framework or call discovery alone execution.
-Full-plan, checker42/42, build-options41/41, worktree116 paths/16 gates, complete
-inventory190, both workflow lints, diff checks,50 local links, all prior receipts /
-gate states and1,083 unchanged files pass preservation review. Maintenance checks
-repeat on this finalized receipt. Keep the documentation-only closeout local;
-the published/tested code stays acbab6cd, not a newly unrun CI head.
+The explicit R2.1 approval supersedes the historical pending-authority receipts,
+without accepting D3 or changing defaults/releases. Keep all nine case IDs and
+all later requirements. Extend the existing Qt-free C++14 CPU boundary and shared
+discovery/XML runner, with independent analytic observations; do not create a
+second painter framework or call discovery alone execution. The prior full source
+CI remains bound to acbab6cd, not the new candidate. Repeat relevant native and
+maintenance checks; old all-platform green is not proof of this implementation.
 
-#### Current-helper Metal refresh and live source-CI continuation
+#### Historical Metal refresh and then-live source-CI snapshot
 
 Exact pushed source `acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0` now has fresh
 native ARM64 offscreen Metal proof on the existing Apple M2 Max / macOS 27.0.1
@@ -2525,11 +2652,12 @@ case instead of hard-coding today's 223 proposed variants as a permanent total.
 
 ### R2 Drawing commands and portable rendering core
 
-Current entry status: proposed; explicit provisional R2.1 authority has been
-requested after the successful acbab6cd source cohort, not inferred from it.
-The read-only nine-ID readiness packet above changes no algorithm, factory or
-default and does not ratify D3. R2.2–R2.5 and all phase/release acceptance retain
-their original prerequisites.
+Current entry status: provisional R2.1 implementation explicitly authorized by
+the human after the successful acbab6cd source cohort. The CPU recorder uses the
+candidate contracts above, with nine existing native case IDs and additional
+recovery/ownership/resource/append-time tests. It does not ratify D3 or change a
+factory/default. R2.2–R2.5 and all phase/release acceptance retain their original
+prerequisites; no tessellation, GPU execution or cache implementation is implied.
 
 1. Implement path/state/transform contracts and immutable commands; keep legacy
    source compatibility and independently test CPU recording without a GPU.
@@ -3206,6 +3334,11 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-24 | R2.1 publication and full source CI explicitly authorized | Human reply “Allow R2.1 commit, push and CI” permits the locally validated provisional recorder on dxli/LibreCAD_3:codex/r1-platform-ci, not a merge/new PR/release/default change or R2.2–R7. Publish exactly nine source/build/test/plan paths using a separate index; bind the resulting full SHA and all60 source tuples plus protocol/aggregate to build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. Seven source hashes match the unchanged native109-ID/17-sanitizer Mac/Linux ARM64 proof; Intel seven-object evidence remains compile-only. Verify all2166/1292/104 prior proof files and all1086 unrelated baseline files, preserve50 renderer/364 Python prior receipts and original branch/HEAD/index/staging/gate states. Full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks must pass on this finalized receipt before commit. The new exact-SHA hosted cohort is pending, not a pass; prior acbab6cd62/62 is historical. Keep all tests/assertions/provider pins/submodule SDK patches and command/profile/job budgets unchanged; independently read all60 payloads. D1–D6/R0/R1/R2.2–R7/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-objective acceptance remain open. |
+| 2026-10-24 | Intel C++14 cross-compilation verified; owner continuation required | Codex implementation/self-review: unchanged R2.1 recorder and all six independently configured CPU headers produce seven Mach-O x86_64 objects with installed Apple Clang21/SDK. Recorder uses strict C++14 warnings; headers retain exact CMake flags except target architecture. The extra-strict documentcanvas probe fails on nano-signal-slot's existing syntax compatibility; retain it, then use the already-configured flag without changing project suppression, source, helpers, SDK, dependencies, assertions or300-second caps. This is compile-only ARM64-host evidence, not native Intel runtime/CI/hardware/deployment-floor/full-provider acceptance; no Linux/Windows cross compiler was installed. Evidence: build/renderer-evidence/r2-1-intel-compile-20261024.VShgni/. Existing109/17 native ARM64 and older source-bound623-script proofs remain in their original packets. Full-plan/checker42/worktree119 paths and16 gates/inventory190/both lints/diff pass; repeat these checks after the finalized receipt, then verify preservation and the retained objects. Preserve49 renderer/363 Python prior rows, prior1292/2166-file packets, original index/checkout/staging and all gate states. Separate R2.1 publication authority remains unanswered for three consecutive goal turns; further hosted validation requires it, and R2.2–R7 need their original decisions/prerequisites. No phase/platform/release/default or full-goal completion is claimed. |
+| 2026-10-24 | R2.1 bounded-work correction validated locally | Codex implementation/self-review reproduces4096 capacity increases for4096 open-path appends versus an unchanged32 bound; retain the failing native XML. Replace exact-size reserve with amortized append and atomic close/restart range insertion. Fresh Mac/Linux ARM64 each pass109 CPU IDs, preserving all108 prior IDs/nine fixture cases, and17 recorder ASan/UBSan cases with the same scoped fixture-adapter limitation; Linux leak detection passes. Both providers observe13 open/13 closed growths versus prior4096/24, with unchanged element/command/style limits, recovery and consuming semantics. Strict C++14/six independent headers, source binding, full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks pass; repeat after finalized receipt. Evidence: build/renderer-evidence/r2-1-growth-20261024.WmWNfZ/. Preserve all48 renderer/362 Python prior rows, prior2166-file proof, original index/checkout/staging and unrelated files. Earlier108/16/623 evidence stays source-bound, not fresh new-code full-platform CI. Adds one regression; no helper/provider/dependency/default change, dropped or relaxed existing test/assertion, or expanded timeout or broader gate promotion. Candidate remains local/uncommitted pending publication authority; R2.2–R7/D1–D6/independent/phase/hardware/widget/provider/deployment/package/release/full goal remain open. |
+| 2026-10-24 | Provisional R2.1 implemented and locally validated; publication pending | Codex implementation/self-review: explicit human approval permits candidate CPU path/state/transform recording only. One compact C++14 recorder owns paths and all implemented color/width/compensation/dash/antialias/transform state; no LcPainter stub, factory/default or GPU change. Both native ARM64 hosts pass108 CPU IDs, preserving92 and adding nine shared-fixture cases plus seven ownership/append-time/recovery/limit regressions. Six independent C++14 headers, strict compiler and no-Qt/GPU/Python linkage checks pass; both hosts pass16 recorder ASan/UBSan cases and Linux leak detection passes. RapidJSON1.1.0 fixture-adapter UBSan arithmetic and unsupported Mac leak detection remain separately retained, not suppressed in recorder code or counted as successful full-fixture UBSan. Three altered-fixture negatives fail as expected and restore the copied fixture. Mac disjoint253/159/211 groups cover623 script IDs,612 pass plus11 existing Linux-only skips; exact-code-hash Linux clone passes623/623 in121.333 seconds. Retain earlier300-second broad/group timeouts and malformed AppleDouble archive; verified replacement has exactly nine files. No test/assertion/timeout/provider/dependency/workflow change. Full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff pass; repeat after final receipt. Evidence: build/renderer-evidence/r2-1-cpu-20261024.lM6CiQ/. Preserve47 renderer/361 Python prior rows,1079 unrelated files, original index/checkout/staging and all gate states. R2.1 is local/uncommitted; separate commit/push/CI authority awaits an answer. Prior acbab6cd source62/62 remains historical for this candidate. R2.2–R7, D1–D6, R0/R1, independent/physical-hardware/widget/provider/deployment/package/release and full goal remain open. |
+| 2026-10-24 | D3 Cairo reference observations verified; R2.1 authority still pending | Codex implementation/self-review runs a bounded native ARM64 CPU reference against existing Cairo1.18.6, observed loaded binary/header/project-source identities retained at build/renderer-evidence/r0-cairo-reference-20261024.ICOCI3/. Five observation groups pass: path-append CTM capture, restored Cairo style/CTM with path edits retained, consuming stroke/fill and unchanged pixels on repeated empty stroke, independent point/distance/inverse queries, and isolated expected sticky errors2/5 for unmatched restore/singular scale. Rotation90/scale2 yields matrix.yy approximately0 but basis norm2; current wrapper's yy scale expression is not an independent rotation-invariant oracle. This tests bare Cairo, not the whole wrapper, production recorder, Windows/Linux or GPU/hardware behavior. Both30-second owned scopes retire; no dependency installation/build, source/helper/default/timeout/CI change or new stage begins. Keep current62/62 source-CI and separate rendering evidence bound to their original commits; no live jobs remain to restart. R2.1 provisional scope is requested with no answer assumed; D3 must decide capture/sign conventions, full wrapper-owned state and recoverable error behavior, not clone known legacy defects. Independent native-report/module/hash/process readback, full-plan, checker42/42, worktree116 paths/16 mapped gates/no stale or unmapped evidence, inventory190, both workflow lints, diff checks,50 local links, all prior rows/gate states and1083 unchanged files pass; repeat maintenance checks on this finalized receipt and retain the documentation-only update locally. Preserve46 renderer/360 Python prior rows, original index/checkout/staging/unrelated files and every S/platform/D1–D6/phase/hardware/widget/provider/deployment/package/independent gate. Full goal remains incomplete; further implementation requires the requested scope or accepted prerequisites. |
 | 2026-10-24 | Popup-fix source cohort green on all five architectures; R2.1 scope requested | Codex implementation/self-review: acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0 / run40093455633 attempt1 completes62/62 jobs, all60 source tuples and12/12 per architecture. All60 unique artifacts are retained/reviewed; payload audit verifies60 source maps/2356 process records/98 ordinary XML/52 separate controlled negatives/13162 retained hashes/30 exact f7debf4 SDK records and three required patches each. Both Intel library/tests-ON runs execute22 RHI IDs without skips, native AppleParavirtAccelerator IDs4294968044 and4294968035 match independent system_profiler, raw Qt type0 retained. Protocol622/622; all assertions, required tests/tuples, provider pins and300/1200/60-minute caps unchanged. Original popup failures and current Linux Vulkan60 plus50 DPR1.25 and Mac Metal24 strict proofs remain source/provider-bound, not combined into full platform acceptance. Read-only R2.1 audit binds nine existing path/state/transform IDs and baseline semantic differences; no direct implementations are present. Explicit provisional scope is requested, not granted or inferred; D3 includes unresolved path/transform/style decisions. Reconcile implemented build options versus still-proposed runtime flags without source changes. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/hosted/ and r1-cohort-followup-20261024.wDPfZt/. Validation passes: full-plan, checker42/42, build-option regressions41/41, complete-worktree116 paths/16 mapped gates/no stale or unmapped evidence, inventory56 cases/223 variants/60 signatures/75 consumers/190 configurations, both workflow lints, diff checks,50 local links, prior receipts/gate states and1083 unchanged files; repeat maintenance checks on this finalized receipt; preserve all45 renderer/359 Python prior receipts and original index/checkout/staging/unrelated files. R0/R1/D1–D6, missing native R0/widgets/physical hardware/provider/deployment/packages, independent review and R2–R7 acceptance remain open; do not declare the full goal complete or begin unapproved code. |
 | 2026-10-24 | Current-helper Mac Metal refresh complete; replacement source CI live | Codex implementation/self-review: clean acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0 builds main/Gui-only standalone targets for Qt6.8.3 and6.12.0 on native AppleM2Max ARM64/macOS27.0.1, Rosetta false. Per provider12 strict Metal/hardware/Cocoa runs/512 checks pass; each of four builds executes6 exact CTest IDs, zero skips/failures and38 owned groups retire. Independent readback binds pixel/PNG/RGBA, app/report/helper hashes, actual loaded Qt/Cocoa modules,22 pinned SDK references and four raw minimum archives now retained; loaded QtDBus also matches archived bytes. Keep initial one-use plugin-path and CTest/strict-directory collector diagnostics; final fresh namespace has no native test failure or retry. No source/helper/provider/default/assertion/timeout change, desktop interaction or dependency build. Evidence: build/renderer-evidence/r0-metal-refresh-20261024.SQfPML/. Reconcile implemented CPU M1–M3 inventory/selection against110 focused tests and real CLI output, preserving all56 cases/223 variants/60 signatures/75 consumers/190 configurations and required future native bindings. Source run40093455633 attempt1 remains live at the same pushed SHA; retained snapshot45/60 source successes with45 matching reviewed payloads and protocol622/622, no skip. Do not combine with old d4 success, cancel live work or claim a full cohort. Full-plan/checker42/42/worktree116 paths and16 gates/no stale or unmapped evidence/inventory190/both workflow lints/diff checks/50 local links, prior receipts/gate states and1083 unchanged files pass preservation review; repeat maintenance checks on this finalized receipt; no new push while the current cohort is active. Preserve all44 renderer/358 Python prior receipts and original checkout/index/unrelated files. Independent/D1–D6, wider native/widget/physical-hardware/provider/deployment/production/package and R0/R1 acceptance remain open. |
 | 2026-10-24 | Wayland popup race fixed; full Vulkan and repeated native proof pass | Codex implementation/self-review: final clean source965e4465b7a55c85f433499bf3344508fe75357b passes all60 existing Vulkan tuples, per QPA24 positives/1384 checks and six controlled failures/18 assertions. Fifty consecutive unretried Wayland DPR1.25 lifecycle cases each pass34 original checks; traces show held F12 before popup grab, no early release/popup_done. Zero failed/skipped ordinary checks or core/synchronization errors; complete owned cleanup. Readiness plus one native keydown and exposure-only acknowledgment fix the unchanged-source reproduced release-before-grab race. Key release/app reaping cover success, timeout and tool failures; new artifact remains limited to input sessions. Six added regressions; final Linux622/622, Mac611 plus11 Linux-only skips pass. Keep initial missing-offline-fixture regression failure, original popup failure, first-fix and final proofs separate. No provider/case/assertion/deadline relaxation, dependency build, R2/default/release change. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/. All110 retained reports independently revalidate PNG/RGBA pixels, exact IDs, native app/report/helper hashes, core/synchronization logs and owned cleanup; all50 native traces verify press/grab ordering and successful key release. Full-plan, checker42/42, complete-worktree mapping116 paths/16 gates/no stale or unmapped evidence, 190-configuration inventory, both workflow lints, git diff --check, 50 local links, all prior receipts/gate states and1076 unrelated files pass preservation review. Repeat these checks on this finalized receipt before documentation-only closeout commit and authorized push. Preserve prior43 renderer/357 Python receipts, original checkout/index/staging and unrelated files. New hosted cohort is pending, not old d4 success rebased onto new code. Independent/physical-hardware/production/widget/provider/deployment/package and R0/R1/D1–D6 gates stay open. |

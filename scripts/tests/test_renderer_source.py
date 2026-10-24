@@ -20,6 +20,16 @@ import validate_renderer_inventory as inventory
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_r2_1_contract_ids_are_in_the_ordinary_cpu_suite(self):
+        cases=inventory.validate_case_manifest()
+        required={v['test'] for c in cases['manifest']['cases'] if c['id'] in ('cpu-path-state','cpu-transform') for v in c['variants']}
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        implemented={suite+'.'+name for suite,name in re.findall(r'TEST\((\w+),\s*(\w+)\)',source)}
+        self.assertEqual(9,len(required));self.assertTrue(required<=implemented)
+        cmake=(inventory.REPO_ROOT/'unittest/CMakeLists.txt').read_text()
+        self.assertIn('lcviewernoqt/testpathrecorder.cpp',cmake.split('# Issue #412')[0])
+        self.assertIn('build_contract::pinnedFixture',source)
+
     def test_source_compiler_workers_use_available_cores_with_a_four_worker_cap(self):
         for count,wanted in ((None,'1'),(0,'1'),(1,'1'),(2,'2'),(3,'3'),(4,'4'),(64,'4')):
             with self.subTest(count=count),patch.object(runner.os,'cpu_count',return_value=count):
@@ -71,7 +81,7 @@ class SourceBuildTests(unittest.TestCase):
         for flag in ('WITH_QT_UI','WITH_PYTHONSCRIPT','WITH_LEGACY_OPENGL_RENDERER','WITH_PERSISTENCE'):
             self.assertIn('-D'+flag+':BOOL=OFF',configure)
         for target in ('lcunittest','lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck'):self.assertIn(target,build)
-        self.assertEqual(5,len(record['cpu_headers']['objects_sha256']))
+        self.assertEqual(6,len(record['cpu_headers']['objects_sha256']))
         self.assertIn('--config',build);self.assertIn('Release',build)
 
     def test_source_deadline_rounding_is_capped_without_extending_the_profile(self):
@@ -997,10 +1007,10 @@ class CpuHeaderContractTests(unittest.TestCase):
 
     def test_independent_configured_consumers_require_real_nonempty_outputs(self):
         result=runner.cpu_header_contract(self.build)
-        self.assertEqual('14',result['standard']);self.assertEqual(5,len(result['configured_sources_sha256']))
+        self.assertEqual('14',result['standard']);self.assertEqual(6,len(result['configured_sources_sha256']))
         with self.assertRaisesRegex(ValueError,'not compiled'):runner.cpu_header_contract(self.build,True)
         for p in (self.build/'lcviewernoqt/cpu-headers/objects-Release.txt').read_text().splitlines():Path(p).write_bytes(b'synthetic-object')
-        self.assertEqual(5,len(runner.cpu_header_contract(self.build,True)['objects_sha256']))
+        self.assertEqual(6,len(runner.cpu_header_contract(self.build,True)['objects_sha256']))
 
     def test_cpp17_other_languages_and_foreign_or_missing_sources_fail(self):
         path=self.build/'.cmake/api/v1/reply/lcviewer_cpu_headercheck.json';original=json.loads(path.read_text())
