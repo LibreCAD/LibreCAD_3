@@ -75,6 +75,7 @@ lcviewernoqt/fontbooktest.cpp
 lcviewernoqt/mtextdrawtest.cpp
 lcviewernoqt/mtextlayouttest.cpp
 lcviewernoqt/dimordinatedrawtest.cpp
+lcviewernoqt/dimlineardrawtest.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
