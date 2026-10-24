@@ -608,8 +608,11 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
                                data->getText(),
                                coord(data->getDef1Point()),
                                coord(data->getDef2Point()),
-                               data->getAngle(),
-                               data->getOblique(),
+                               // Groups 50 and 52 are in degrees (libdxfrw also
+                               // converts a DWG's radians to them); the kernel's
+                               // angles are radians.
+                               data->getAngle() * M_PI / 180,
+                               data->getOblique() * M_PI / 180,
                                layer,
                                mf,
                                getBlock(*data)
@@ -2455,8 +2458,8 @@ void DXFimpl::writeDimLinear(const lc::entity::DimLinear_CSPtr& d) {
     dim.setDef2Point(DRW_Coord(d->definitionPoint3().x(),
                                d->definitionPoint3().y(),
                                d->definitionPoint3().z()));
-    dim.setAngle(d->angle());
-    dim.setOblique(d->oblique());
+    dim.setAngle(d->angle() * 180 / M_PI);
+    dim.setOblique(d->oblique() * 180 / M_PI);
     dxfW->writeDimension(&dim);
 }
 
