@@ -22,6 +22,104 @@ release workflow change or acceptance-policy change. Independent review remains 
 
 ### Current checkpoint and next decision — 2026-10-24
 
+#### Latest exact-source CI closeout and next implementation boundary
+
+Pushed `acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0` completes
+[run40093455633](https://github.com/dxli/LibreCAD_3/actions/runs/40093455633),
+attempt1, successfully: all60 source jobs plus protocol and aggregate, **62/62**.
+Linux x64/ARM64, Windows x64 and both Mac architectures each pass12/12. All60
+unique artifacts are retained and independently read back against this full SHA,
+attempt, profiles/options, source/helpers, actual XML execution, native devices,
+File API graphs, staged submodule patches and owned process retirement. No test,
+required tuple, assertion, provider pin or command/profile/job cap is relaxed.
+
+Supplementary payload audit verifies60 source maps,2,356 process records,98
+ordinary passing XML reports,52 separate controlled-negative XML reports,13,162
+retained hashes and30 pinned libdxfrw SDK records. The two Intel library/tests-ON
+jobs each execute22 RHI IDs with zero skips; raw Qt type remains0, and selected
+native `AppleParavirtAccelerator` IDs4294968044 and4294968035 independently match
+system_profiler. This is the explicitly authorized source-only virtual route,
+not hardware or widget qualification. Hosted protocols pass622/622 without skips.
+Current source evidence is
+`build/renderer-evidence/r1-popup-fix-20261024.fDteaO/hosted/`.
+
+The full Vulkan60/50-repetition proof and Mac Metal24/1,024-check refresh below
+retain their own exact tested commits/providers. Source-CI technical execution /
+self-review is complete; independent acceptance, external durable retention,
+full providers/deployment/hardware/widgets/packages and R0/R1/D1–D6 gates stay open.
+Do not treat this as completed R2–R7 or as validation of the legacy application's
+not-yet-implemented RHI painter/default.
+
+R2.1 is the next code boundary, not another R1 rerun. A read-only readiness audit
+binds the existing four CPU path/state and five CPU transform case IDs, required
+typed observations and source identities in
+`build/renderer-evidence/r1-cohort-followup-20261024.wDPfZt/r2-1-readiness.json`.
+These nine IDs have no direct current C++ TEST/TEST_F definitions; lexical absence
+is not execution proof. Existing GL new-path/subpath stubs, CTM-only save/restore
+and unchecked empty restore must not become golden behavior. Cairo and GL also
+differ in coordinate/transform handling. D3 must clarify transform capture when
+the CTM changes within one path, alongside consumed paths, complete style restore,
+finite/singular rejection and preserved large-origin precision.
+
+Provisional R2.1 scope has been requested explicitly, using candidate contracts
+without accepting D3 or changing defaults/releases. No answer or approval is
+assumed; no R2 code is added in this continuation. Keep all nine case IDs and all
+later requirements. After authorization, extend the existing Qt-free C++14 CPU
+boundary and shared discovery/XML runner, with independent analytic observations;
+do not create a second painter framework or call discovery alone execution.
+Full-plan, checker42/42, build-options41/41, worktree116 paths/16 gates, complete
+inventory190, both workflow lints, diff checks,50 local links, all prior receipts /
+gate states and1,083 unchanged files pass preservation review. Maintenance checks
+repeat on this finalized receipt. Keep the documentation-only closeout local;
+the published/tested code stays acbab6cd, not a newly unrun CI head.
+
+#### Current-helper Metal refresh and live source-CI continuation
+
+Exact pushed source `acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0` now has fresh
+native ARM64 offscreen Metal proof on the existing Apple M2 Max / macOS 27.0.1
+host, with Rosetta translation observed false. Both Qt/private/qsb 6.8.3 and
+6.12.0 build Widgets-ON and separate Gui-only targets from a clean clone. Each
+provider passes 12 strict hardware/Metal/Cocoa invocations / 512 original checks;
+the four builds also execute their exact six CTest IDs each, without skips.
+All 38 owned command groups retire. This refresh changes no source/helper,
+assertion, provider binary, dependency, timeout or production default.
+
+Independent readback verifies pixels, app/report/helper identities, actual loaded
+Qt libraries and Cocoa plugin (five minimum-provider modules, four current-provider
+modules per run), 22 pinned SDK reference files and all four raw Qt 6.8.3 archives.
+The archives are copied into retained evidence; the loaded minimum QtDBus bytes
+also match the raw archive. The current Homebrew umbrella resolves to its declared
+6.12.0 component modules, not the minimum private SDK. Deployment target 12.0 is
+only a compiler target, not macOS 12 runtime qualification. Evidence:
+`build/renderer-evidence/r0-metal-refresh-20261024.SQfPML/`.
+
+Keep the one-use setup/readback diagnostics: initial current-Qt plugin layout
+assumption, then CTest/strict-directory overlap in the collector. No native test
+failed; the final fresh evidence namespace passes the unchanged complete matrix.
+No desktop interaction, unlocking, widget acceptance, general hardware/performance
+qualification or R0/R1/D1–D6 acceptance is implied.
+
+At this earlier continuation snapshot, hosted
+[source run 40093455633](https://github.com/dxli/LibreCAD_3/actions/runs/40093455633),
+attempt1, was live at the exact same pushed SHA. That retained snapshot had
+45/60 source jobs successful and all 45 matching artifacts independently reviewed;
+the remaining jobs running/queued, not failed or missing. Protocol regressions
+pass 622/622 without skips. Do not restart or cancel this live cohort just because
+the run-level status remains queued. Preserve one coherent cohort and collect the
+remaining payloads before a renewed all-platform claim. The earlier d4e9650e green
+run remains historical; current partial results are not merged with it.
+
+The M1–M3 CPU inventory/selector implementation below is now reconciled with actual
+code and 110 focused regressions, rather than repeatedly treating its old draft
+checklist as unfinished code. M4, missing native/provider/session/hardware proof,
+D3 review, D1–D6 decisions and the remaining production stages stay open. Full-plan,
+checker42/42, worktree116 paths/16 mapped gates/no stale or unmapped evidence,
+inventory190, workflow lint, whitespace, 50 local links, all prior receipts/gate
+states and original checkout/index/staging/1,083 other files pass preservation
+review. That update stayed local rather than cancel the then-live cohort with a
+new push. The latest closeout above supersedes its pending-CI state, not its
+preserved native proof or historical receipt.
+
 #### Wayland popup serial-race correction — full native validation complete
 
 The user authorizes a targeted fix, the full unchanged Vulkan validation, commit
@@ -726,13 +824,15 @@ not a reason to fail startup or change APIs.
 
 ### Backend selection and optional builds
 
-Propose `WITH_RHI_RENDERER`, `WITH_LEGACY_OPENGL_RENDERER` and
-`WITH_RENDERER_TESTS`, initially keeping the old default until R6. Fresh defaults
+R1 implements `WITH_RHI_RENDERER`, `WITH_LEGACY_OPENGL_RENDERER` and
+`WITH_RENDERER_TESTS` in `lcviewernoqt/cmake/RendererOptions.cmake`, keeping the
+old default until R6. Fresh defaults
 are RHI OFF and legacy ON; new renderer tests default ON only with unit tests and
 RHI enabled, and old rendering tests default ON only with unit tests and legacy
 enabled. Conflicting explicit/cached requests are errors, not forced OFF options.
-All new names/options in this plan are future interfaces. Keep old tests separate from new
-renderer tests so the old `WITH_RENDERING_UNITTESTS=OFF` cannot disable the latter.
+These build options and their conflict guards are implemented; the runtime
+selection flags below remain proposed. Separate old/new test switches ensure
+`WITH_RENDERING_UNITTESTS=OFF` cannot disable requested RHI tests.
 Explicitly requested missing dependencies/backends must fail configuration or startup;
 do not silently compile away the renderer or replace a forced Vulkan run with GL.
 
@@ -1285,7 +1385,7 @@ not another platform-state ledger. All final platform gates remain open.
 | Linux x86_64 / Vulkan / XCB and Wayland | R1 source jobs now pass 12/12, including software offscreen under both QPAs; full R0 widget/prototype qualification is still open. | Retain/review full x64 provider and current-helper R0 case matrices; then hardware/desktop/deployment and install/AppImage/Snap proof. |
 | Linux arm64 / Vulkan / XCB and Wayland | Historical d4e9650e source CI passes 12/12. Current 965e4465 clean-source R0 software proof passes all60 XCB/Wayland tuples and 50 unretried DPR1.25 lifecycle runs with active core/synchronization validation. Protocol tracing reproduces and fixes the old release-before-grab race; all assertions/deadlines remain intact. | Independently review the source-bound payloads and refresh source CI after push. Qualify wider desktop/input/DPI reliability, provider/runtime closure, deployment floor, physical hardware, then clean install. Narrow software proof does not accept widgets/platforms. No ARM64 AppImage/Snap is added. |
 | Windows x64 / Vulkan / Windows QPA | R1 source jobs now pass 12/12; selected retained core artifact executes 22 RHI IDs under the software provider. This is not accepted R0/widget/hardware proof. | Complete/review retained matching MSVC/CRT/Qt/private/qsb/ICD inputs and current-helper R0 cases; obtain an authorized desktop, then hardware/deployment and installed NSIS proof. |
-| macOS arm64 / Metal / Cocoa | R1 source CI passes 12/12, including hardware-class Metal offscreen. Earlier minimum/current R0 offscreen results retain older helper bindings; last widget preflight rejected a locked console. | Refresh stable-helper R0 offscreen evidence and obtain an authorized usable console for current-source widget/failure/reparent/input/DPR on both providers; qualify deployment floor and final relocated/signed bundle. Never unlock or bypass the session in a harness. |
+| macOS arm64 / Metal / Cocoa | Historical R1 source CI passes12/12. Current clean acbab6cd R0 minimum/current offscreen proof passes12 strict runs/512 checks per Qt6.8.3 and6.12.0, four CTest builds each6 IDs, exact loaded providers and38 retired command groups. Widgets-ON targets compile; widget execution remains unqualified. | Review retained raw minimum archives and current loader/source/helper proof; obtain an authorized usable console for widget/failure/reparent/input/DPR on both providers, then qualify full providers, deployment floor and final relocated/signed bundle. Never unlock/bypass a session; current-OS execution does not qualify target macOS12. |
 | macOS x86_64 / Metal / Cocoa | R1 source CI passes 12/12 with verified virtual Metal; both library/tests-ON groups execute all 22 RHI IDs, and UI/combined hosts execute 197 non-widget IDs each. R0 runtime/hardware remains unaccepted. | Independently review source evidence, then qualify real supported hardware/current-helper R0 offscreen/widget/failure cases, full providers/deployment floor and final Intel bundle. Rosetta/cross-build/ARM64/virtual-source results are not substitutes. |
 
 For D1–D6 record decision, rationale, affected F-groups/platforms, exact accepted
@@ -1329,33 +1429,36 @@ dispatch trusted CI or accept a platform/policy on a maintainer's behalf.
 | 2 Selection manifest and D3 inputs | Extend the existing `unittest/rendering/renderer_cases.json`, corpus and inventory validator/tests. The canonical register already maps all 60 signatures and 75 consumers to required staged cases with typed fixtures, IDs, thresholds and diagnostic domains. Keep unimplemented production cases required; never substitute spike IDs or create a second harness. | Preserve duplicate/orphan/unknown-tuple/missing-fixture/unit rejection tests and valid repeated references to a signature. Expand actual discovery/execution in its authorized stage, retain unsupported cases as open, and submit fill/stroke/font/alpha decisions with independent analytic oracles for D3 review. |
 | 3 Provider retention and missing-session recipes | Extend existing per-platform provider pins, not a second provider framework. Separate downloaded archive hashes, resolved package inventories, runtime loader/plugin dependencies, notices and minimum-OS claims. Retain the actual tools/SDK/ICD inputs and cache-miss restore recipe. | Verify hashes before executing tools; cold restore/build/run each accessible native tuple. Record inaccessible tuple/session explicitly with its owner/unblock action. Archive current temporary source patch/manifest, binaries, helpers and reports before they disappear. Missing inputs prevent R0 acceptance. |
 
-Batch 1 has current ARM64 controller/source proof; required R0 rendering cases and
-missing native/provider bindings still need refresh and qualification.
-Batch 2's single case manifest remains the next implementation task, with batch 3's
-retention/provider work independent. Split batch 2 into these review-sized patches:
+Batch 1 has current ARM64 controller/source proof and the current Linux Vulkan /
+Mac Metal R0 refreshes above; missing native/provider bindings still need
+qualification. Batch 2's single CPU manifest and selector are implemented; native
+production bindings and D3 ratification remain stage-specific work. Batch 3's
+retention/provider qualification remains independent. The current subpatch status is:
 
 | Subpatch | Files and required acceptance |
 |---|---|
-| M1 Schema and source register | Implemented in the existing validator and focused `scripts/tests/test_renderer_cases.py`, with the same validation called by the draft manifest validator. Covers all 60 signatures, header/default identity from the same complete header bytes and 75 current source roles. All 34 focused tests pass locally; Linux full scripts pass 229/229 without skips and Mac passes 219 with ten native-Linux skips. CI definitions require a nonempty/no-skip M1 module on both Linux architectures and minimum-Qt Windows/Mac jobs; no hosted execution is claimed. Old report CLI behavior is preserved. No manifest/case-execution acceptance is implied. |
-| M2 Inputs and assertions | In progress, not locally accepted. M2.1 writes the single manifest/corpus, pins actual asset/notice bytes and finishes one bounded typed-input path. M2.2 adds real-repository positive tests, malformed-value/hash/license/reference mutations and independent analytic/font/PNG oracle checks. Cover every method/F-group/consumer with meaningful ordinary/empty/limit observations and diagnostic reasons. Preserve M1 and old report behavior. No tuple or rendering acceptance is implied. |
-| M3 Valid selection | M3.1 replaces the incompatible duplicate validator with selection over M2's validated data and explicit valid coverage layers. M3.2 adds the inventory-only CLI below and contract-job wiring. Test all declared stages/configurations, exact bindings, zero/duplicate/unreachable selections, Python-OFF/UI-OFF/Windows-CLI exclusions, Cairo, package runner checks and separate legacy-process proof. Output requirements only; neither arbitrary products nor missing-runner exclusions may rewrite scope. |
-| M4 Stable-helper qualification | Run all old and new helper negatives, plan/path checks and workflow lint; then refresh accessible spike matrices once at final helper bytes. Bind binaries/reports/process records/outputs to those bytes, retain both cohorts and report missing tuples separately. Manifest success does not qualify production GTests, D3 approval or R0 completion. |
+| M1 Schema and source register | Implemented in `validate_source_register()` and the shared `validate_case_inputs()` path. Current inventory binds all60 painter signatures/defaults and75 consumer roles. The focused case module now passes110/110, and the current hosted protocol suite passes622/622 without skips. Old report CLI behavior is preserved. This is CPU/source coverage, not all painter execution or phase acceptance. |
+| M2 Inputs and assertions | CPU implementation exists in the single schema2 manifest/corpus and `validate_case_inputs()`: bounded bytes, pinned asset/notice identities, typed ordinary/empty/limit observations and independent analytic/font/PNG oracles. Current positive/mutation regressions pass; inventory has56 cases/223 variants. D3 review and native production execution remain open; metadata validation is not painter correctness or platform acceptance. |
+| M3 Valid selection | Implemented in `case_configurations()`, `validate_case_manifest()`, `select_case_requirements()` and the inventory-only CLI. Tests cover all declared stage/configuration relations, invalid/unreachable requests, CPU/RHI/legacy/Python/UI/CLI and source/install/package distinctions. Current190 expanded configurations include the bounded Intel source-only virtual tuple. Actual R1 runner bindings discover/execute22 RHI IDs; later producer IDs remain required, not claimed implemented. |
+| M4 Stable-helper qualification | Partially executed, not complete: current final Linux ARM64 full60 Vulkan plus50 DPR1.25 cases, and Mac ARM64 minimum/current offscreen24 strict runs/1024 checks refresh source/helper bindings. Retain their separate provider/command/output identities and failed history. New source CI is still live; missing native R0/widget/providers/hardware/deployment and independent acceptance stay open. Manifest success does not ratify D3 or complete R0. |
 
-M1's CPU component is complete locally; next finish M2's real inputs and then
-M3's valid stage/configuration selection, preserving M1 regressions. M2/M3's CPU
-work can proceed without graphics access; M4 and provider retention
-need their actual execution/storage prerequisites. Before writing code, assign the
-batch owner/reviewer and run section 8 checks. Use the spike README's implemented
-runtime commands for available providers; do not present future section 6 production
-flags as runnable acceptance today. New rendering-test paths affect additional
-Python-plan test gates; derive their mapping rather than copying this review's count.
+M1–M3's CPU implementation is verified within its stated scope; keep their
+regressions and requirements intact while implementing missing native bindings in
+their authorized stages. Next finish M4/provider/session evidence and D3 decision
+review, not another manifest or a second selection validator. Before writing code,
+assign the batch owner/reviewer and run section8 checks. Use the spike README's
+implemented runtime commands; section6's unimplemented production flags remain
+requirements, not commands that can pass today. Derive affected Python-plan gates
+from actual paths rather than copying an earlier batch's count.
 
-#### M2 and M3 correction checklist
+#### M2 and M3 retained regression checklist
 
-Resolve these observed draft inconsistencies before either component is accepted;
-do not add a third validator or leave mutually incompatible schemas behind.
+These earlier draft inconsistencies now have CPU implementations/regressions in
+the shared path. Preserve each invariant during later changes; native rendering,
+D3 and phase acceptance still require their separate proof. Do not add a third
+validator or reintroduce incompatible schemas.
 
-| Draft defect or missing input | Bounded correction and regression |
+| Earlier draft defect / preserved invariant | Required behavior and regression |
 |---|---|
 | No on-disk manifest/corpus or M2-specific positive test | Add the real files and require successful repository-wide `validate_case_inputs()` before mutation tests. Hash and parse each fixture/notice from the same bounded byte snapshot. Check Git visibility and LF/binary attributes on native Windows as well as Unix; preserve existing DXF binary policy. |
 | `validate_case_manifest()` reparses fixtures/oracles and rejects newer `script-source`/workload-variant fields | Consume M2's already validated structures once; mutate each field through that shared path. Fixture scripts are inert input/provenance here, never executed by the metadata validator. |
@@ -1364,7 +1467,7 @@ do not add a third validator or leave mutually incompatible schemas behind.
 | Data types cannot establish semantic or numerical correctness | Independently recompute analytic lengths/areas/transforms/curve bounds, decode the odd-sized image and check actual font metrics. Separate categorical equality, dimensional error and performance ratios/absolute limits; malformed UTF-8, huge integers, NaN, overflow and oracle-unit swaps must fail safely. |
 | No inventory CLI or CI invocation of the real corpus/selector | Add the proposed mode below, preserve old report CLI tests and run every valid stage/tuple in CPU contract CI. Proposed IDs remain requirements until a later native producer discovers and executes them. |
 
-Proposed M3 command contract, **not implemented today**:
+Implemented M3 inventory/selection CLI, **not native execution or acceptance**:
 
 ```sh
 python3 -B scripts/validate_renderer_inventory.py \
@@ -2422,6 +2525,12 @@ case instead of hard-coding today's 223 proposed variants as a permanent total.
 
 ### R2 Drawing commands and portable rendering core
 
+Current entry status: proposed; explicit provisional R2.1 authority has been
+requested after the successful acbab6cd source cohort, not inferred from it.
+The read-only nine-ID readiness packet above changes no algorithm, factory or
+default and does not ratify D3. R2.2–R2.5 and all phase/release acceptance retain
+their original prerequisites.
+
 1. Implement path/state/transform contracts and immutable commands; keep legacy
    source compatibility and independently test CPU recording without a GPU.
 2. Implement triangle strokes/dashes, fills/gradients, adaptive curves and local
@@ -3097,6 +3206,8 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-24 | Popup-fix source cohort green on all five architectures; R2.1 scope requested | Codex implementation/self-review: acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0 / run40093455633 attempt1 completes62/62 jobs, all60 source tuples and12/12 per architecture. All60 unique artifacts are retained/reviewed; payload audit verifies60 source maps/2356 process records/98 ordinary XML/52 separate controlled negatives/13162 retained hashes/30 exact f7debf4 SDK records and three required patches each. Both Intel library/tests-ON runs execute22 RHI IDs without skips, native AppleParavirtAccelerator IDs4294968044 and4294968035 match independent system_profiler, raw Qt type0 retained. Protocol622/622; all assertions, required tests/tuples, provider pins and300/1200/60-minute caps unchanged. Original popup failures and current Linux Vulkan60 plus50 DPR1.25 and Mac Metal24 strict proofs remain source/provider-bound, not combined into full platform acceptance. Read-only R2.1 audit binds nine existing path/state/transform IDs and baseline semantic differences; no direct implementations are present. Explicit provisional scope is requested, not granted or inferred; D3 includes unresolved path/transform/style decisions. Reconcile implemented build options versus still-proposed runtime flags without source changes. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/hosted/ and r1-cohort-followup-20261024.wDPfZt/. Validation passes: full-plan, checker42/42, build-option regressions41/41, complete-worktree116 paths/16 mapped gates/no stale or unmapped evidence, inventory56 cases/223 variants/60 signatures/75 consumers/190 configurations, both workflow lints, diff checks,50 local links, prior receipts/gate states and1083 unchanged files; repeat maintenance checks on this finalized receipt; preserve all45 renderer/359 Python prior receipts and original index/checkout/staging/unrelated files. R0/R1/D1–D6, missing native R0/widgets/physical hardware/provider/deployment/packages, independent review and R2–R7 acceptance remain open; do not declare the full goal complete or begin unapproved code. |
+| 2026-10-24 | Current-helper Mac Metal refresh complete; replacement source CI live | Codex implementation/self-review: clean acbab6cd851a2c1de5d7c5d8ae2ec291cf5a5dc0 builds main/Gui-only standalone targets for Qt6.8.3 and6.12.0 on native AppleM2Max ARM64/macOS27.0.1, Rosetta false. Per provider12 strict Metal/hardware/Cocoa runs/512 checks pass; each of four builds executes6 exact CTest IDs, zero skips/failures and38 owned groups retire. Independent readback binds pixel/PNG/RGBA, app/report/helper hashes, actual loaded Qt/Cocoa modules,22 pinned SDK references and four raw minimum archives now retained; loaded QtDBus also matches archived bytes. Keep initial one-use plugin-path and CTest/strict-directory collector diagnostics; final fresh namespace has no native test failure or retry. No source/helper/provider/default/assertion/timeout change, desktop interaction or dependency build. Evidence: build/renderer-evidence/r0-metal-refresh-20261024.SQfPML/. Reconcile implemented CPU M1–M3 inventory/selection against110 focused tests and real CLI output, preserving all56 cases/223 variants/60 signatures/75 consumers/190 configurations and required future native bindings. Source run40093455633 attempt1 remains live at the same pushed SHA; retained snapshot45/60 source successes with45 matching reviewed payloads and protocol622/622, no skip. Do not combine with old d4 success, cancel live work or claim a full cohort. Full-plan/checker42/42/worktree116 paths and16 gates/no stale or unmapped evidence/inventory190/both workflow lints/diff checks/50 local links, prior receipts/gate states and1083 unchanged files pass preservation review; repeat maintenance checks on this finalized receipt; no new push while the current cohort is active. Preserve all44 renderer/358 Python prior receipts and original checkout/index/unrelated files. Independent/D1–D6, wider native/widget/physical-hardware/provider/deployment/production/package and R0/R1 acceptance remain open. |
 | 2026-10-24 | Wayland popup race fixed; full Vulkan and repeated native proof pass | Codex implementation/self-review: final clean source965e4465b7a55c85f433499bf3344508fe75357b passes all60 existing Vulkan tuples, per QPA24 positives/1384 checks and six controlled failures/18 assertions. Fifty consecutive unretried Wayland DPR1.25 lifecycle cases each pass34 original checks; traces show held F12 before popup grab, no early release/popup_done. Zero failed/skipped ordinary checks or core/synchronization errors; complete owned cleanup. Readiness plus one native keydown and exposure-only acknowledgment fix the unchanged-source reproduced release-before-grab race. Key release/app reaping cover success, timeout and tool failures; new artifact remains limited to input sessions. Six added regressions; final Linux622/622, Mac611 plus11 Linux-only skips pass. Keep initial missing-offline-fixture regression failure, original popup failure, first-fix and final proofs separate. No provider/case/assertion/deadline relaxation, dependency build, R2/default/release change. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/. All110 retained reports independently revalidate PNG/RGBA pixels, exact IDs, native app/report/helper hashes, core/synchronization logs and owned cleanup; all50 native traces verify press/grab ordering and successful key release. Full-plan, checker42/42, complete-worktree mapping116 paths/16 gates/no stale or unmapped evidence, 190-configuration inventory, both workflow lints, git diff --check, 50 local links, all prior receipts/gate states and1076 unrelated files pass preservation review. Repeat these checks on this finalized receipt before documentation-only closeout commit and authorized push. Preserve prior43 renderer/357 Python receipts, original checkout/index/staging and unrelated files. New hosted cohort is pending, not old d4 success rebased onto new code. Independent/physical-hardware/production/widget/provider/deployment/package and R0/R1/D1–D6 gates stay open. |
 | 2026-10-24 | Wayland serial-race fix; fresh validation pending | Codex implementation/self-review reproduces the unchanged DPR1.25 popup failure with protocol tracing: native release precedes the client's popup grab, followed by popup_done before exposure. Add focused-widget readiness, one held native keydown, acknowledgment only after the existing visible/active/exposed predicate, and key release plus app cleanup on all paths. Keep every existing assertion, required tuple, provider pin and deadline. Six new CPU regressions cover readiness/ack separation, delayed acknowledgment, app failure, partial keydown failure, timeout and failed release cleanup. Fresh clean-source full60 Vulkan cohort, repeated fractional-DPR proof, regression/plan/inventory/workflow/preservation validation are pending; no passing claim or publication yet. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/. Preserve old failures and all42/356 prior receipts; source-CI success below remains bound to d4e9650e. Hardware/widget/production/phase/package and independent acceptance stay open. |
 | 2026-10-24 | Committed-source Vulkan proof passes; intermittent Wayland popup remains open | Commit 2b876010ea0e76e02afa566caf0810f900257ec8 records the R1 closeout plans locally on codex/r1-platform-ci without touching the original checkout/index. Its clean native-ISA Linux ARM64 snapshot runs actual Vulkan/Lavapipe with Qt/private/qsb 6.10.2, Widgets-ON and Gui-only builds. Fresh cohort passes all 60 existing XCB/Wayland tuples: per QPA 24 positives / 1,384 checks and six separate controlled failures / 18 assertions, zero skipped/ordinary failed cases or Vulkan core/synchronization errors, complete owned cleanup. This is standalone feasibility rendering, not the application's legacy viewport, hardware/performance or full painter acceptance. Retain the first missing-private-header configure, the first cohort's DPR1.25 Wayland popup-exposure timeout, unchanged passing diagnostic, fresh complete cohort and corrected post-run summary readback separately. No rendering/test/helper/provider pin or budget change; only local Make/private binary paths differ from hosted setup. Evidence: build/renderer-evidence/r1-vulkan-20261024.L6azJJ/. Validation passes: all 60 retained reports independently revalidated, including PNG/RGBA pixels, exact check IDs, committed source/helper/app hashes, validation logs and owned cleanup; full-plan, checker 42/42, complete-worktree mapping (116 paths / 16 mapped gates / four cited exclusion rules / no stale or unmapped evidence), 190-configuration inventory, both workflow lints, git diff --check, 50 local links and prior-receipt/source/index preservation. All checks repeat on this final receipt. Prior 41 renderer/355 Python receipts remain unchanged. Known popup flakiness, independent review/durable retention, full providers/deployment/hardware/widget/package and R0/R1/D1–D6 gates remain open; no automatic R2, source fix, merge, push, release/default change. |
