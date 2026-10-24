@@ -11,15 +11,15 @@ struct MetalIdentity {
 };
 inline std::string deviceClass(QRhiDriverInfo::DeviceType type, bool intelMetal,
                                const MetalIdentity& identity) {
+    if (identity.registryId != 0 && identity.registryClass == "AppleParavirtAccelerator")
+        return intelMetal && (type == QRhiDriverInfo::UnknownDevice || type == QRhiDriverInfo::VirtualDevice)
+            ? "virtual" : "unknown"; // Contradictory native typing cannot qualify hardware/software.
     switch (type) {
     case QRhiDriverInfo::CpuDevice: return "software";
     case QRhiDriverInfo::IntegratedDevice: case QRhiDriverInfo::DiscreteDevice:
     case QRhiDriverInfo::ExternalDevice: return "hardware";
     default: break;
     }
-    if (intelMetal && (type == QRhiDriverInfo::UnknownDevice || type == QRhiDriverInfo::VirtualDevice) &&
-            identity.registryId != 0 && identity.registryClass == "AppleParavirtAccelerator")
-        return "virtual";
     return "unknown";
 }
 }}}

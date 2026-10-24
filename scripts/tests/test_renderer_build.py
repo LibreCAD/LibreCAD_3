@@ -177,7 +177,7 @@ class RendererBuildOptionsTests(unittest.TestCase):
         self.assertIn('target_compile_options(${target} PRIVATE /MP${_jobs})',block)
         self.assertIn('_jobs GREATER 4',block);self.assertIn('_jobs LESS 1',block);self.assertNotIn('CMAKE_CXX_FLAGS',block)
         cmake=(ROOT/'lcUI/CMakeLists.txt').read_text()
-        self.assertIn('foreach(ui_objects lcui_objects lcui_bindings_objects)',cmake)
+        self.assertIn('foreach(ui_objects lcui_objects lcui_bindings_objects lcui_widgets_objects)',cmake)
         self.assertIn('lc_parallel_msvc_compile(${ui_objects})',cmake)
         self.assertIn('lc_parallel_msvc_compile(lcunittest)',(ROOT/'unittest/CMakeLists.txt').read_text())
 
@@ -309,8 +309,8 @@ class UiObjectBuildTests(unittest.TestCase):
 
     def test_ui_objects_are_shared_with_optional_tests_and_python(self):
         declarations = (ROOT / 'lcUI/CMakeLists.txt').read_text()
-        declarations = 'add_library(lcui_objects OBJECT' + declarations.split(
-            'add_library(lcui_objects OBJECT', 1)[1].split(
+        declarations = 'set(UI_WIDGET_srcs ${UI_srcs})' + declarations.split(
+            'set(UI_WIDGET_srcs ${UI_srcs})', 1)[1].split(
             'if(WITH_PYTHONSCRIPT AND WITH_PERSISTENCE)', 1)[0]
         for tests, python in itertools.product((False, True), repeat=2):
             with self.subTest(tests=tests, python=python), tempfile.TemporaryDirectory(
@@ -319,9 +319,11 @@ class UiObjectBuildTests(unittest.TestCase):
                 build = Path(tmp) / 'build'
                 source.mkdir()
                 (source / 'res').mkdir()
+                (source / 'widgets').mkdir()
                 (source / 'res/librecad.rc').write_text('')
                 (source / 'main.cpp').write_text(
-                    'int ui_value(); int binding_value();\nint main() { return ui_value() == 17 && binding_value() == 17 ? 0 : 1; }\n')
+                    'int ui_value(); int binding_value(); int widget_value();\n'
+                    'int main() { return ui_value() == 17 && binding_value() == 17 && widget_value() == 17 ? 0 : 1; }\n')
                 shared_source=(
                     '#include <type_traits>\n'
                     '#ifndef UI_DEPENDENCY\n#error Missing compile usage requirement\n#endif\n'
@@ -331,8 +333,9 @@ class UiObjectBuildTests(unittest.TestCase):
                     '#elif defined(LC_WITH_PYTHONSCRIPT)\n#error Python leaked into OFF\n#endif\n'
                     'static_assert(std::is_same_v<int, int>, "C++17 dependency");\n'
                     'int FUNCTION() { return UI_DEPENDENCY; }\n')
-                for path,function in [('ui.cpp','ui_value'),('binding.cpp','binding_value')]:
-                    (source/path).write_text(shared_source.replace('FUNCTION',function))
+                for path,function in [('ui.cpp','ui_value'),('binding.cpp','binding_value'),('widgets/widget.cpp','widget_value')]:
+                    (source/path).write_text(('#include "widget-ready.h"\n' if function=='widget_value' else '')+
+                        shared_source.replace('FUNCTION',function))
                 (source / 'CMakeLists.txt').write_text(
                     'cmake_minimum_required(VERSION 3.15)\nproject(UiObjects LANGUAGES CXX)\n'
                     'function(lc_parallel_msvc_compile target)'+OPTIONS.read_text().split(
@@ -348,9 +351,12 @@ class UiObjectBuildTests(unittest.TestCase):
                     '  target_compile_definitions(ui_dependencies INTERFACE LC_WITH_PYTHONSCRIPT)\n'
                     '  add_custom_target(lcuipy_build_tree COMMAND "${CMAKE_COMMAND}" -E touch\n'
                     '      "${CMAKE_BINARY_DIR}/python-ready.h")\n'
-                    'endif()\nset(UI_srcs main.cpp ui.cpp)\nset(UI_BINDING_srcs binding.cpp)\n'
+                    'endif()\nset(UI_srcs main.cpp ui.cpp widgets/widget.cpp)\nset(UI_BINDING_srcs binding.cpp)\n'
+                    'add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/widget-ready.h"\n'
+                    ' COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_BINARY_DIR}/widget-ready.h")\n'
+                    'set(UI_HEADERS "${CMAKE_BINARY_DIR}/widget-ready.h")\n'
                     'set(EXTRA_LIBS ui_dependencies)\n' + declarations +
-                    'foreach(consumer lcui librecad lcui_bindings_objects)\n'
+                    'foreach(consumer lcui librecad lcui_bindings_objects lcui_widgets_objects)\n'
                     '  if(TARGET ${consumer})\n'
                     '    foreach(generator AUTOMOC AUTOUIC AUTORCC)\n'
                     '      get_target_property(value ${consumer} ${generator})\n'
@@ -380,6 +386,8 @@ class UiObjectBuildTests(unittest.TestCase):
                            for item in model['configurations'][0]['targets']}
                 self.assertEqual('OBJECT_LIBRARY', targets['lcui_objects']['type'])
                 self.assertEqual('OBJECT_LIBRARY', targets['lcui_bindings_objects']['type'])
+                self.assertEqual('OBJECT_LIBRARY', targets['lcui_widgets_objects']['type'])
+                self.assertIn('lcui_objects', {dep['id'].split('::',1)[0] for dep in targets['lcui_widgets_objects']['dependencies']})
                 self.assertEqual(tests, 'lcui' in targets)
                 for name in ('librecad', 'lcui') if tests else ('librecad',):
                     target = targets[name]
@@ -388,13 +396,16 @@ class UiObjectBuildTests(unittest.TestCase):
                                                 for dep in target['dependencies']})
                     self.assertIn('lcui_bindings_objects', {dep['id'].split('::', 1)[0]
                                                 for dep in target['dependencies']})
-                    self.assertFalse(any(Path(item['path']).name in ('main.cpp', 'ui.cpp','binding.cpp')
+                    self.assertIn('lcui_widgets_objects', {dep['id'].split('::', 1)[0]
+                                                for dep in target['dependencies']})
+                    self.assertFalse(any(Path(item['path']).name in ('main.cpp', 'ui.cpp','binding.cpp','widget.cpp')
                                          for item in target.get('sources', [])))
                 if (build / 'compile_commands.json').exists():
                     commands = json.loads((build / 'compile_commands.json').read_text())
-                    self.assertEqual(3, len(commands))
+                    self.assertEqual(4, len(commands))
                     self.assertEqual(2,sum('lcui_objects.dir' in item['command'] for item in commands))
                     self.assertEqual(1,sum('lcui_bindings_objects.dir' in item['command'] for item in commands))
+                    self.assertEqual(1,sum('lcui_widgets_objects.dir' in item['command'] for item in commands))
                 executable = build / ('librecad.exe' if sys.platform == 'win32' else 'librecad')
                 if not executable.exists():
                     executable = build / 'Debug' / executable.name

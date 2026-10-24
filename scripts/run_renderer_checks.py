@@ -579,7 +579,7 @@ def library_profile_graph(build,flags,hosts=False):
     expected={'lcviewer_opengl':flags['WITH_LEGACY_OPENGL_RENDERER'],'lcrenderer_rhi':flags['WITH_RHI_RENDERER'],
               'lcunittest':flags['WITH_UNITTESTS'],'lcluascript':True,'lcscripting':True,'lcviewernoqt':True,'lckernel':True,
               'lcviewer_cpu_headercheck':flags['WITH_UNITTESTS'],'lcbuildcontracttest':flags['WITH_UNITTESTS'],
-              'librecad':ui,'lcui':ui and flags['WITH_UNITTESTS'],'lcui_objects':ui,'lcui_bindings_objects':ui,
+              'librecad':ui,'lcui':ui and flags['WITH_UNITTESTS'],'lcui_objects':ui,'lcui_bindings_objects':ui,'lcui_widgets_objects':ui,
               'luacmdinterface':cli,'persistence':flags['WITH_PERSISTENCE'],
               'lcpythonscript':flags['WITH_PYTHONSCRIPT'],'lcuipy':False,
               'lcuipy_build_tree':flags['WITH_PYTHONSCRIPT'],
@@ -793,7 +793,7 @@ def production_inputs(hosts=False):
 
 def host_object_graph(build,flags):
     """Audit actual File API objects, independent of Make/Ninja/MSVC syntax."""
-    targets=source_targets(build);object_names=('lcui_bindings_objects','lcui_objects');compiled=[];outputs=[]
+    targets=source_targets(build);object_names=('lcui_bindings_objects','lcui_objects','lcui_widgets_objects');compiled=[];outputs=[]
     if not flags['WITH_QT_UI'] and any(n in targets for n in (*object_names,'lcui','librecad')):
         raise ValueError('CLI-only host graph contains UI targets')
     if flags['WITH_QT_UI']:
@@ -817,6 +817,12 @@ def host_object_graph(build,flags):
                 actual={(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve() for s in units}
                 if actual!={(inventory.REPO_ROOT/p).resolve() for p in expected} or name+'_autogen' in targets:
                     raise ValueError('Binding objects omit, duplicate or generate UI code')
+            if name=='lcui_widgets_objects':
+                widget_root=(inventory.REPO_ROOT/'lcUI/widgets').resolve()
+                actual=[(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve() for s in units]
+                if (not all(p.is_relative_to(widget_root) and p.suffix=='.cpp' for p in actual) or
+                        targets['lcui_objects']['id'] not in {d['id'] for d in objects.get('dependencies',[])} or name+'_autogen' in targets):
+                    raise ValueError('Widget objects have foreign sources, missing UIC ownership dependency or redundant generation')
             compiled+=units;outputs+=artifacts
         names=[Path(s['path']).name for s in compiled]
         inputs=[(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve() for s in compiled]
@@ -1018,6 +1024,7 @@ def build_host_source(args):
         step([cmake,'--build',str(build),'--config','Release','--target',name,'--parallel',source_parallelism()],'library-'+name)
     for label,names in (('ui-bindings',['lcui_bindings_objects'] if ui else []),
             ('ui-objects',['lcui_objects'] if ui else []),
+            ('ui-widgets',['lcui_widgets_objects'] if ui else []),
             ('hosts',host_names),
             ('tests',['lcunittest','lcviewer_cpu_headercheck'] if tests else [])):
         if names:step([cmake,'--build',str(build),'--config','Release','--target',*names,'--parallel',source_parallelism()],label)
@@ -1027,7 +1034,7 @@ def build_host_source(args):
         # build would regenerate kernel build timestamps and relink consumers.
         step([cmake,'--build',str(build),'--config','Release','--target','tinyspline','--parallel',source_parallelism()],
             'install-prerequisites')
-    artifacts=library_artifacts(build,libraries+(['lcui_bindings_objects','lcui_objects'] if ui else [])+host_names+(['lcunittest'] if tests else []),
+    artifacts=library_artifacts(build,libraries+(['lcui_bindings_objects','lcui_objects','lcui_widgets_objects'] if ui else [])+host_names+(['lcunittest'] if tests else []),
         types=('STATIC_LIBRARY','SHARED_LIBRARY','OBJECT_LIBRARY','EXECUTABLE'))
     app=lambda name:build/'bin'/(name+('.exe' if sys.platform=='win32' else ''))
     if cli:

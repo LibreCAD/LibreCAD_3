@@ -364,10 +364,12 @@ TEST(RenderFactoryTest, InvalidPolicyBeforeDeviceCreation) {
         EXPECT_EQ("unknown", deviceClass(type, true, {1, "Apple Paravirtual device"}));
         EXPECT_EQ("unknown", deviceClass(type, true, {1, "AppleParavirtAcceleratorSpoof"}));
     }
-    EXPECT_EQ("hardware", deviceClass(D::IntegratedDevice, true, verified));
-    EXPECT_EQ("hardware", deviceClass(D::DiscreteDevice, true, verified));
-    EXPECT_EQ("hardware", deviceClass(D::ExternalDevice, true, verified));
-    EXPECT_EQ("software", deviceClass(D::CpuDevice, true, verified));
+    for (const auto type : {D::IntegratedDevice, D::DiscreteDevice, D::ExternalDevice}) {
+        EXPECT_EQ("unknown", deviceClass(type, true, verified));
+        EXPECT_EQ("hardware", deviceClass(type, true, {}));
+    }
+    EXPECT_EQ("unknown", deviceClass(D::CpuDevice, true, verified));
+    EXPECT_EQ("software", deviceClass(D::CpuDevice, true, {}));
     for (int limit : {-1, 0, lc::viewer::render::MaxFrameDimension + 1})
         EXPECT_THROW(lc::rhi::createOffscreenRenderer(nativeApi, limit), std::invalid_argument);
 }

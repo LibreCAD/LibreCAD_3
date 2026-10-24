@@ -324,12 +324,18 @@ if (MSVC)
 endif()
 
 # Keep template-heavy bindings/serialization separately schedulable, without
-# recompiling either group for the application and optional test library.
-# Only the ordinary group owns Qt-generated code.
+# recompiling any group for the application and optional test library. Split
+# plain widgets out so each cold build command fits its existing bound. The
+# root group alone owns all Qt-generated code and headers.
+set(UI_WIDGET_srcs ${UI_srcs})
+list(FILTER UI_WIDGET_srcs INCLUDE REGEX "^widgets/.*\\.cpp$")
+list(REMOVE_ITEM UI_srcs ${UI_WIDGET_srcs})
 add_library(lcui_objects OBJECT ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 add_library(lcui_bindings_objects OBJECT ${UI_BINDING_srcs})
-set_target_properties(lcui_bindings_objects PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
-foreach(ui_objects lcui_objects lcui_bindings_objects)
+add_library(lcui_widgets_objects OBJECT ${UI_WIDGET_srcs})
+set_target_properties(lcui_bindings_objects lcui_widgets_objects PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+add_dependencies(lcui_widgets_objects lcui_objects) # UIC headers exist before widget compilation.
+foreach(ui_objects lcui_objects lcui_bindings_objects lcui_widgets_objects)
     set_target_properties(${ui_objects} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     target_compile_definitions(${ui_objects} PRIVATE LCUI_BUILDING)
     lc_parallel_msvc_compile(${ui_objects})
@@ -338,7 +344,7 @@ foreach(ui_objects lcui_objects lcui_bindings_objects)
         add_dependencies(${ui_objects} lcuipy_build_tree)
     endif()
 endforeach()
-set(UI_OBJECTS $<TARGET_OBJECTS:lcui_objects> $<TARGET_OBJECTS:lcui_bindings_objects>)
+set(UI_OBJECTS $<TARGET_OBJECTS:lcui_objects> $<TARGET_OBJECTS:lcui_bindings_objects> $<TARGET_OBJECTS:lcui_widgets_objects>)
 
 # Create library for unit tests without recompiling the application sources.
 if(WITH_UNITTESTS)
