@@ -22,7 +22,7 @@ release workflow change or acceptance-policy change. Independent review remains 
 
 ### Current checkpoint and next decision — 2026-10-24
 
-#### Wayland popup serial-race correction — implementation and validation in progress
+#### Wayland popup serial-race correction — full native validation complete
 
 The user authorizes a targeted fix, the full unchanged Vulkan validation, commit
 and push to `codex/r1-platform-ci`. The original index/checkout remain preserved.
@@ -39,13 +39,43 @@ the key and still reaps the app, including partial input-tool failure. No case,
 assertion, input proof, provider pin or timeout is removed or relaxed. The 20s
 native, 30s invocation and 300s CI-block deadlines remain unchanged.
 
-Evidence and fresh-source validation are being retained separately under
-`build/renderer-evidence/r1-popup-fix-20261024.fDteaO/`. The old failures and
-42 renderer/356 Python receipts remain immutable. Full 60-tuple Vulkan replay,
-focused repeated DPR 1.25 proof, CPU regressions and final maintenance checks
-are required before publication. Earlier all-platform hosted success below
-belongs only to d4e9650e, not this changed helper. Independent review, hardware,
-production viewport, providers/deployment/packages and R0/R1/D1–D6 gates stay open.
+Final clean source `965e4465b7a55c85f433499bf3344508fe75357b` passes the entire
+60-tuple Vulkan replay and **50 consecutive unretried Wayland DPR 1.25 lifecycle
+runs**. Each QPA passes 24 positives / 1,384 checks and six controlled failures /
+18 separate assertions. All 50 repeated runs pass their 34 original checks and
+retain native protocol traces: held F12 precedes popup grab, with no early release
+or `popup_done`. Core/synchronization validation reports zero errors, no ordinary
+checks fail or skip, and all owned descendants retire. Qt/private/qsb 6.10.2,
+Weston 14.0.2 and Lavapipe stay the existing software/VM providers. Make/private
+binary paths are the only replay setup differences; no dependency is built.
+
+The source fix is b0618650; final refinement 965e4465 registers the readiness
+artifact only for input sessions, preserving fail-closed unrelated sessions.
+The first fix's full60 and 50 repetitions pass too, but final proof is separately
+bound to 965e4465. Six added CPU regressions cover readiness/ack ordering and
+failure/cleanup paths. Final Linux scripts pass 622/622 without skips; Mac passes
+611 plus 11 Linux-only skips. The initial offline Linux run lacks four exact
+submodule fixtures (license notices and a linked header); restore their pinned
+local Git objects without downloading/building dependencies, retain that failure
+and pass the complete unchanged suite. This is not a test suppression or retry
+of a failed final rendering case.
+
+Evidence is retained separately under
+`build/renderer-evidence/r1-popup-fix-20261024.fDteaO/`: original failing trace,
+first-fix proof, final native proof/traces, scripts, identities and readback review.
+The old failures and all 43 renderer/357 Python receipts remain immutable.
+All 110 retained reports independently revalidate pixels, check IDs, source/helper/
+app identities, core/synchronization logs, native input ordering and owned cleanup.
+Full-plan, checker42/42, complete-worktree mapping116 paths/16 gates, inventory190,
+both workflow lints, whitespace, 50 local links and preservation of all prior
+receipts/gate states and 1,076 unrelated files pass. Repeat maintenance checks on
+this finalized receipt before the authorized documentation commit and push.
+The published head includes documentation-only descendants of tested 965e4465;
+no compiled/helper/fixture input changes follow native validation. Earlier
+all-platform hosted success below belongs only to d4e9650e, not this changed
+helper; a new push starts a fresh source-CI cohort and is not predeclared green.
+Independent review, hardware, production viewport, wider widget reliability,
+providers/deployment/packages and R0/R1/D1–D6 gates stay open.
 
 Use this checkpoint, the completed **R1 all-platform CI continuation** and the
 local Vulkan follow-up below as the current resume point. The detailed R0/R1
@@ -53,7 +83,7 @@ evidence paragraphs below are chronological snapshots;
 their former missing-host/CI descriptions are not a claim that later execution
 did not occur. Historical results retain their original input identities.
 
-Current published candidate: `d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb`,
+Last completed all-platform source-CI candidate: `d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb`,
 [run 40076688956](https://github.com/dxli/LibreCAD_3/actions/runs/40076688956).
 Attempt 1 completed **success**: all **60/60 source jobs**, the protocol/plan job
 and the source aggregate pass, **62/62 jobs** in one exact-SHA cohort. Source-CI
@@ -1253,7 +1283,7 @@ not another platform-state ledger. All final platform gates remain open.
 | Required tuple | Present R0 evidence | Next prerequisite and required proof |
 |---|---|---|
 | Linux x86_64 / Vulkan / XCB and Wayland | R1 source jobs now pass 12/12, including software offscreen under both QPAs; full R0 widget/prototype qualification is still open. | Retain/review full x64 provider and current-helper R0 case matrices; then hardware/desktop/deployment and install/AppImage/Snap proof. |
-| Linux arm64 / Vulkan / XCB and Wayland | R1 source CI passes 12/12. Fresh committed-source R0 software proof now passes all 60 existing native XCB/Wayland tuples with current helpers and active core/synchronization validation; an earlier 1.25x Wayland popup timeout remains an open intermittent issue. | Diagnose the popup/exposure ordering, independently review full provider/runtime closure and qualify deployment floor, physical hardware and desktop input/DPI, then clean install. A passing retry does not establish reliability. No ARM64 AppImage/Snap is added. |
+| Linux arm64 / Vulkan / XCB and Wayland | Historical d4e9650e source CI passes 12/12. Current 965e4465 clean-source R0 software proof passes all60 XCB/Wayland tuples and 50 unretried DPR1.25 lifecycle runs with active core/synchronization validation. Protocol tracing reproduces and fixes the old release-before-grab race; all assertions/deadlines remain intact. | Independently review the source-bound payloads and refresh source CI after push. Qualify wider desktop/input/DPI reliability, provider/runtime closure, deployment floor, physical hardware, then clean install. Narrow software proof does not accept widgets/platforms. No ARM64 AppImage/Snap is added. |
 | Windows x64 / Vulkan / Windows QPA | R1 source jobs now pass 12/12; selected retained core artifact executes 22 RHI IDs under the software provider. This is not accepted R0/widget/hardware proof. | Complete/review retained matching MSVC/CRT/Qt/private/qsb/ICD inputs and current-helper R0 cases; obtain an authorized desktop, then hardware/deployment and installed NSIS proof. |
 | macOS arm64 / Metal / Cocoa | R1 source CI passes 12/12, including hardware-class Metal offscreen. Earlier minimum/current R0 offscreen results retain older helper bindings; last widget preflight rejected a locked console. | Refresh stable-helper R0 offscreen evidence and obtain an authorized usable console for current-source widget/failure/reparent/input/DPR on both providers; qualify deployment floor and final relocated/signed bundle. Never unlock or bypass the session in a harness. |
 | macOS x86_64 / Metal / Cocoa | R1 source CI passes 12/12 with verified virtual Metal; both library/tests-ON groups execute all 22 RHI IDs, and UI/combined hosts execute 197 non-widget IDs each. R0 runtime/hardware remains unaccepted. | Independently review source evidence, then qualify real supported hardware/current-helper R0 offscreen/widget/failure cases, full providers/deployment floor and final Intel bundle. Rosetta/cross-build/ARM64/virtual-source results are not substitutes. |
@@ -1277,7 +1307,7 @@ decisions, access and runnable acceptance. Apply that distinction to these open 
 | P0 R0 readback retirement | Implemented fixed two-slot CPU-only retention beyond QApplication and direct stale delivery after terminal failure. Linux tests release one completed retained capture per substituted shutdown failure. | Native widget/provider qualification and actual pending-GPU/failing-backend behavior remain open. Do not reinterpret completed synthetic retirement as physically pending destruction. |
 | P0 R0 failure evidence | Implemented additive schema-3 failure kinds, common identity validation, strict exit/artifact/error/ownership checks and helper negatives; each Linux QPA passes six cases / 18 IDs separately. | Execute the same cases on missing native backends/sessions; hosted and production acceptance remain separate. |
 | P0 D2/D4 providers and sessions | The exact-SHA R1 source cohort passes on all five native architectures; verified Intel virtual Metal is approved for this source scope only. Complete R0 cases, desktop/hardware, deployment floors and reviewed full provider closure are still missing. | Independently review the retained per-configuration source/provider/command evidence and obtain missing hardware/session/deployment proof. Do not relabel source build/offscreen proof as R0 widget, physical-input or hardware qualification. |
-| P1 Wayland fractional-DPR popup reliability | A committed-source Vulkan cohort fails once at lifecycle DPR 1.25: input reaches the native F12 handler and Vulkan renders/readbacks succeed, but popup exposure/action proof does not finish. An exact diagnostic rerun and fresh complete 60-case cohort pass; no cause or fix is established. | First log each existing visibility/active-popup/window/exposure predicate and correlate native input/serial and configure events. Reproduce under the same provider/DPR and establish ordering before proposing a compact fix. Keep all pixel/input assertions, deadlines and failed artifacts; no skip or longer timeout. Widget reliability remains unaccepted. |
+| P1 Wayland fractional-DPR popup reliability | Targeted serial race corrected in b0618650/965e4465: an unchanged-source trace reproduces release before popup grab and popup_done before exposure. A readiness/held-key/exposure-ack handshake passes the final exact-source full60 and 50 consecutive unretried DPR1.25 cases, retaining all assertions/deadlines and zero Vulkan errors. | Review retained traces, binaries, pixels and cleanup; run new hosted source CI, then qualify wider providers/physical input/desktop DPI and all remaining widget acceptance. Prior failed artifacts stay retained. This fixes the reproduced harness race, not general hardware or production-viewport acceptance. |
 | P1 D3 geometry and assets | The shared on-disk manifest/corpus and inventory CLI validate 56 cases, 223 proposed variants, 60 signatures and 75 consumers. Initial R1 source/offscreen bindings execute; structural coverage is not full painter, geometry or asset correctness. Choices/oracles are not ratified. | Extend the existing typed inputs, independent oracles and stage-appropriate bindings without dropping required cases. Resolve endcap/path-consumption defects in the authorized stage; retain the D3 decision packet and missing feature/consumer gates. |
 | P1 D5 workloads and D1/D6 approval | Inputs/hardware/thresholds and policy/rollout acceptance remain open. Provisional R1 implementation is separately authorized above. | Measured workload worksheet, accepted numeric limits and D1–D6 decision receipts remain required for R1 acceptance, not its authorized provisional implementation. |
 
@@ -3067,6 +3097,7 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-24 | Wayland popup race fixed; full Vulkan and repeated native proof pass | Codex implementation/self-review: final clean source965e4465b7a55c85f433499bf3344508fe75357b passes all60 existing Vulkan tuples, per QPA24 positives/1384 checks and six controlled failures/18 assertions. Fifty consecutive unretried Wayland DPR1.25 lifecycle cases each pass34 original checks; traces show held F12 before popup grab, no early release/popup_done. Zero failed/skipped ordinary checks or core/synchronization errors; complete owned cleanup. Readiness plus one native keydown and exposure-only acknowledgment fix the unchanged-source reproduced release-before-grab race. Key release/app reaping cover success, timeout and tool failures; new artifact remains limited to input sessions. Six added regressions; final Linux622/622, Mac611 plus11 Linux-only skips pass. Keep initial missing-offline-fixture regression failure, original popup failure, first-fix and final proofs separate. No provider/case/assertion/deadline relaxation, dependency build, R2/default/release change. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/. All110 retained reports independently revalidate PNG/RGBA pixels, exact IDs, native app/report/helper hashes, core/synchronization logs and owned cleanup; all50 native traces verify press/grab ordering and successful key release. Full-plan, checker42/42, complete-worktree mapping116 paths/16 gates/no stale or unmapped evidence, 190-configuration inventory, both workflow lints, git diff --check, 50 local links, all prior receipts/gate states and1076 unrelated files pass preservation review. Repeat these checks on this finalized receipt before documentation-only closeout commit and authorized push. Preserve prior43 renderer/357 Python receipts, original checkout/index/staging and unrelated files. New hosted cohort is pending, not old d4 success rebased onto new code. Independent/physical-hardware/production/widget/provider/deployment/package and R0/R1/D1–D6 gates stay open. |
 | 2026-10-24 | Wayland serial-race fix; fresh validation pending | Codex implementation/self-review reproduces the unchanged DPR1.25 popup failure with protocol tracing: native release precedes the client's popup grab, followed by popup_done before exposure. Add focused-widget readiness, one held native keydown, acknowledgment only after the existing visible/active/exposed predicate, and key release plus app cleanup on all paths. Keep every existing assertion, required tuple, provider pin and deadline. Six new CPU regressions cover readiness/ack separation, delayed acknowledgment, app failure, partial keydown failure, timeout and failed release cleanup. Fresh clean-source full60 Vulkan cohort, repeated fractional-DPR proof, regression/plan/inventory/workflow/preservation validation are pending; no passing claim or publication yet. Evidence: build/renderer-evidence/r1-popup-fix-20261024.fDteaO/. Preserve old failures and all42/356 prior receipts; source-CI success below remains bound to d4e9650e. Hardware/widget/production/phase/package and independent acceptance stay open. |
 | 2026-10-24 | Committed-source Vulkan proof passes; intermittent Wayland popup remains open | Commit 2b876010ea0e76e02afa566caf0810f900257ec8 records the R1 closeout plans locally on codex/r1-platform-ci without touching the original checkout/index. Its clean native-ISA Linux ARM64 snapshot runs actual Vulkan/Lavapipe with Qt/private/qsb 6.10.2, Widgets-ON and Gui-only builds. Fresh cohort passes all 60 existing XCB/Wayland tuples: per QPA 24 positives / 1,384 checks and six separate controlled failures / 18 assertions, zero skipped/ordinary failed cases or Vulkan core/synchronization errors, complete owned cleanup. This is standalone feasibility rendering, not the application's legacy viewport, hardware/performance or full painter acceptance. Retain the first missing-private-header configure, the first cohort's DPR1.25 Wayland popup-exposure timeout, unchanged passing diagnostic, fresh complete cohort and corrected post-run summary readback separately. No rendering/test/helper/provider pin or budget change; only local Make/private binary paths differ from hosted setup. Evidence: build/renderer-evidence/r1-vulkan-20261024.L6azJJ/. Validation passes: all 60 retained reports independently revalidated, including PNG/RGBA pixels, exact check IDs, committed source/helper/app hashes, validation logs and owned cleanup; full-plan, checker 42/42, complete-worktree mapping (116 paths / 16 mapped gates / four cited exclusion rules / no stale or unmapped evidence), 190-configuration inventory, both workflow lints, git diff --check, 50 local links and prior-receipt/source/index preservation. All checks repeat on this final receipt. Prior 41 renderer/355 Python receipts remain unchanged. Known popup flakiness, independent review/durable retention, full providers/deployment/hardware/widget/package and R0/R1/D1–D6 gates remain open; no automatic R2, source fix, merge, push, release/default change. |
 | 2026-10-24 | All-platform R1 source CI green; independent/phase acceptance open | Codex implementation/self-review: d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb / run 40076688956 attempt 1 passes all 60 source tuples plus protocol/aggregate, 62/62 jobs. Every platform passes 12/12; all 60 artifact ZIPs are retained/reviewed with exact source/helper/profile/XML/native-device/graph/cleanup binding. Supplementary readback checks 98 ordinary passing XML reports, 52 separate expected-negative reports and all 30 pinned source-submodule SDK records. Hosted regressions pass 616/616 without skips. Both Intel library suites execute all 22 RHI IDs with independent native/display registry-ID agreement; Intel UI and combined hosts execute 197 non-widget IDs each, retain 97 unexecuted widget IDs and all 75 UI units with one generator owner. Original caps, legacy defaults, submodule pin/patches and all hardware configurations remain unchanged. Historical failures and prior 40 renderer/354 Python receipts remain preserved; the original checkout/index/staging and 1,076 unrelated baseline files remain unchanged. These are local post-dispatch documentation receipts, not new tested code or an external durable backup. Evidence: build/renderer-evidence/r1-ui-partition-20261024.kJGirf/hosted/ and closeout.Y6aatK/. Validation: full-plan, checker 42/42, complete worktree against HEAD (116 included paths, 16 mapped gates, 72 exclusions under the four cited rules, no unmapped paths or stale evidence), inventory (56 cases / 223 variants / 60 signatures / 75 consumers / 190 configurations), both workflow actionlint, git diff --check, 50 local links, whitespace/conflict and receipt/source/index/submodule preservation checks pass. Repeat all checks on this final receipt. Independent review/durable retention, R0/R1/D1–D6, hardware/session/deployment/provider/license/package/signing/release gates remain open. No R2, merge, new PR or release/default change. |
