@@ -3958,3 +3958,57 @@ TEST(DxfRoundTripTest, AnOrdinateDimensionSurvivesARoundTrip) {
 
     boost::filesystem::remove(path);
 }
+
+// A linear dimension's angle is radians in LibreCAD and degrees in DXF group
+// 50. It used to be copied across unconverted, so a vertical dimension from
+// another program (50 = 90) came in as 90 radians, and its geometry block was
+// written back with the dimension line at 116.6 degrees.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ALinearDimensionKeepsItsAngleInDegreesInTheFile) {
+    const std::string saved = uniqueTmpDxf("dimlinear-angle");
+    {
+        auto doc = newDocument();
+        lc::builder::DimLinearBuilder dimension;
+        dimension.setLayer(doc->layerByName("0"));
+        dimension.setDefinitionPoint({60.0, 50.0});
+        dimension.setDefinitionPoint2({0.0, 0.0});
+        dimension.setDefinitionPoint3({100.0, 50.0});
+        dimension.setMiddleOfText({60.0, 25.0});
+        dimension.setAngle(M_PI / 2);
+        ASSERT_NO_THROW(insertThroughBuilder(doc, {dimension.build()}));
+        ASSERT_TRUE(lc::persistence::File::save(
+            doc, saved, lc::persistence::File::Type::LIBDXFRW_DXF_R2000));
+    }
+
+    const auto dimensionGroups = groupsOfRecord(saved, "DIMENSION");
+    ASSERT_EQ(dimensionGroups.count(50), 1u) << "a vertical dimension has to say so in group 50";
+    EXPECT_DOUBLE_EQ(std::stod(dimensionGroups.at(50).front()), 90.0);
+
+    // Its geometry block draws it vertical: the dimension line runs from the
+    // foot of one extension line to the other, 50 long, at x = 60.
+    const auto lineGroups = groupsOfRecord(saved, "LINE");
+    bool verticalDimensionLine = false;
+    for (std::size_t i = 0; i < lineGroups.at(10).size(); i++) {
+        const double x1 = std::stod(lineGroups.at(10)[i]);
+        const double y1 = std::stod(lineGroups.at(20)[i]);
+        const double x2 = std::stod(lineGroups.at(11)[i]);
+        const double y2 = std::stod(lineGroups.at(21)[i]);
+        if (std::abs(x1 - 60.0) < 1e-6 && std::abs(x2 - 60.0) < 1e-6
+            && std::abs(std::abs(y2 - y1) - 50.0) < 1e-6) {
+            verticalDimensionLine = true;
+        }
+    }
+    EXPECT_TRUE(verticalDimensionLine) << "the geometry block does not draw the dimension vertical";
+
+    auto reopened = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(
+        reopened, saved, lc::persistence::File::Library::LIBDXFRW));
+    lc::entity::DimLinear_CSPtr readBack;
+    for (const auto& entity : reopened->entityContainer().asVector()) {
+        if (auto linear = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity)) {
+            readBack = linear;
+        }
+    }
+    ASSERT_NE(readBack, nullptr) << "the dimension did not survive the round trip";
+    EXPECT_NEAR(readBack->angle(), M_PI / 2, 1e-9);
+}
