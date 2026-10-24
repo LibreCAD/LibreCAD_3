@@ -26,15 +26,35 @@ remains pending.
 ### Current checkpoint and next decision — 2026-10-24
 
 The human explicitly approved R2.1 commit, push and full five-platform source CI.
-Publish only the nine intended implementation/build/test/plan paths on the
-existing dedicated branch, preserving the original checkout, index and staging.
+Commit `d28c41d376cb571ae84dfd37a297b1a8800bc1af` is pushed to the existing
+dedicated branch, containing exactly nine intended implementation/build/test/plan
+paths. Original checkout, index, staging and1086 unrelated files are preserved.
 The current seven source hashes match the109-ID/17-sanitizer growth-fix proof;
-the three2166/1292/104-file local proof packets remain unchanged. Record the
-resulting commit and exact-SHA CI cohort in
+the three2166/1292/104-file local proof packets remain unchanged. Publication,
+exact-SHA CI and complete artifact readback are retained in
 `build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/`.
-Publication and the new60-source-job cohort are pending execution, not passes.
-Keep all existing IDs, assertions, provider pins, source-submodule SDK patches
-and300/1200-second budgets; review all60 payloads rather than the aggregate alone.
+The push completes [run40110565811](https://github.com/dxli/LibreCAD_3/actions/runs/40110565811),
+attempt1, successfully: **62/62 jobs**, including all60 source tuples and12/12 on
+each of Linux x64/ARM64, Windows x64 and both Mac architectures. All60 unique
+artifacts pass source/helper/profile/test/header/device and supplemental payload
+readback, not merely the aggregate. The audit verifies60 source maps,2356 process
+records,98 ordinary passing XML reports,52 separate controlled-negative reports,
+13162 retained hashes and30 exact f7debf4 libdxfrw SDKs with all three patches.
+
+Hosted protocols pass623/623 without skips. All109 CPU IDs preserve92 prior IDs
+and add17 recorder cases; all40 library test profiles retain109 CPU or207
+CPU/Python IDs and six independently compiled C++14 headers. CLI hosts execute207
+non-widget IDs; persistence/UI/combined hosts execute214. Each UI/combined host
+still compiles/discovers97 unexecuted widget IDs. All14 RHI runs execute22 IDs;
+Intel's two library lanes use the approved source-only virtual Metal route,
+with selected registry IDs4294968047/4294968071 independently matching system_profiler.
+Growth observations are13/13 on Linux/macOS and21/21 on Windows, within the same32
+bound. No test, assertion, provider pin, SDK patch or300/1200-second/job cap changes.
+
+This documentation-only closeout is retained locally; the remote remains the
+exact green source commit. Source/helpers match the tested candidate, and the
+separate full Vulkan/Metal proofs retain their original commits/providers.
+Repeat maintenance checks on the finalized receipt before its local commit.
 Legacy defaults, D1–D6, hardware, independent/phase/platform/package acceptance
 and R2.2–R7 prerequisites remain unchanged and open.
 
@@ -50,11 +70,13 @@ Evidence: `build/renderer-evidence/r2-1-intel-compile-20261024.VShgni/`.
 This is cross-compilation from ARM64, not a native Intel host, runtime test,
 minimum-deployment qualification, full SDK attestation, CI cohort or hardware
 acceptance. The exact unchanged-code109/17 native ARM64 proofs remain valid in
-their original packets; no five-platform R2.1 CI claim follows. Linux x64 and
+their original packets; that compile-only packet alone supplies no five-platform
+CI claim. The separate native cohort above now supplies source-CI execution.
+Linux x64 and
 Windows cross compilers were not available in the existing local container;
-no toolchain or dependency was installed. R2.1 code is still local/uncommitted
-at this prepublication checkpoint; the new explicit approval resolves the earlier
-publication blocker. R2.2–R7 retain their explicit decision/prerequisite gates
+no toolchain or dependency was installed. This portability proof predates the
+now-published R2.1 candidate; it is not native Intel execution. The new explicit
+approval resolves the earlier publication blocker. R2.2–R7 retain their explicit decision/prerequisite gates
 rather than inheriting R2.1's provisional authority.
 
 R2.1 follow-up: review found exact-size reserve on each line append, making
@@ -73,8 +95,8 @@ diff checks pass and repeat after the finalized receipt. Evidence is at
 and623-script results bound to their exact sources, not promoted to new-code proof.
 Recorder changes are limited to amortized append and the regression; helpers,
 defaults, limits, assertions and300-second caps remain unchanged. Candidate code
-is still local/uncommitted at this checkpoint; publication is now authorized,
-while successful hosted execution and broader acceptance are not assumed.
+is now committed/pushed at d28c41d3 with the successful source cohort above;
+broader phase/platform acceptance is not inferred.
 
 #### Authorized provisional R2.1 CPU recording
 
@@ -3334,6 +3356,8 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-24 | Provisional R2.1 source cohort green on all five architectures; artifacts verified | Implementation/self-review: d28c41d376cb571ae84dfd37a297b1a8800bc1af / run40110565811 attempt1 completes62/62 jobs, all60 source tuples and12/12 per platform. All60 unique artifacts are retained/read back against source/helpers/options, native IDs/XML, six C++14 header consumers, actual graphs, provider patches/devices and process retirement. Supplemental audit verifies60 source maps/2356 process records/98 ordinary XML/52 controlled-negative XML/13162 retained hashes/30 pinned f7debf4 SDKs and three patches each. Protocol623/623 without skips; CPU109 preserves92 and adds17 recorder cases;40 library test profiles execute109 or207 IDs; CLI207 and persistence/UI/combined214 non-widget IDs. UI/combined still compile/discover97 unexecuted widgets each. All14 RHI runs execute22 IDs; Intel virtual Metal source-only IDs4294968047/4294968071 match independent system_profiler. Growth13/13 Linux/macOS and21/21 Windows stays within unchanged32; tests/assertions/provider pins/SDK patches/300-command/1200-profile/60-minute-job caps are not relaxed. Evidence: build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. Preserve52 renderer/366 Python prior rows,2166/1292/104-file prior packets, original branch/HEAD/index/staging,1086 unrelated files and every gate state. Repeat source-binding/full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks on this finalized receipt; verify preservation before retaining a local documentation-only commit, without another push/dispatch or skip directive. Remote remains the exact green source candidate; separate Vulkan/Metal proofs remain source/provider-bound. R2.1 is provisional execution/self-review, not D3 ratification, a production RHI painter/default, R0/R1/R2.2–R7/independent/phase/platform/physical-hardware/widget/provider/deployment/package/release acceptance or full-goal completion. |
+| 2026-10-24 | R2.1 committed/pushed; exact-SHA five-platform source cohort running | d28c41d376cb571ae84dfd37a297b1a8800bc1af, tree9e65591eb7878c3ae5bcc8df5629cb4a550f99c3, updates the approved existing fork branch non-forcibly from acbab6cd. Exactly nine intended paths differ from local parent806f3269; original branch/HEAD/index/staging and1086 unrelated files remain preserved. Prepublication source binding/full-plan/checker42/worktree119 paths and16 gates/inventory190/both lints/diff checks pass; all50/364 prior receipts and2166/1292/104 prior proof files are unchanged. Run40110565811 attempt1 is a push-triggered full60-source-job cohort plus protocol/aggregate, not a duplicate dispatch. New hosted results/payload reviews are pending; do not infer success from prior acbab6cd. Retain publication/source/run identities at build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. This local documentation-only dispatch follow-up preserves51 renderer/365 Python rows and all source/helpers/defaults/assertions/provider/SDK patches/budgets/gate states. Repeat maintenance checks after this finalized receipt, monitor the same exact-SHA cohort, and review all60 artifacts. No merge/new PR/release/R2.2–R7/hardware/widget/phase/platform/full-goal acceptance. |
 | 2026-10-24 | R2.1 publication and full source CI explicitly authorized | Human reply “Allow R2.1 commit, push and CI” permits the locally validated provisional recorder on dxli/LibreCAD_3:codex/r1-platform-ci, not a merge/new PR/release/default change or R2.2–R7. Publish exactly nine source/build/test/plan paths using a separate index; bind the resulting full SHA and all60 source tuples plus protocol/aggregate to build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. Seven source hashes match the unchanged native109-ID/17-sanitizer Mac/Linux ARM64 proof; Intel seven-object evidence remains compile-only. Verify all2166/1292/104 prior proof files and all1086 unrelated baseline files, preserve50 renderer/364 Python prior receipts and original branch/HEAD/index/staging/gate states. Full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks must pass on this finalized receipt before commit. The new exact-SHA hosted cohort is pending, not a pass; prior acbab6cd62/62 is historical. Keep all tests/assertions/provider pins/submodule SDK patches and command/profile/job budgets unchanged; independently read all60 payloads. D1–D6/R0/R1/R2.2–R7/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-objective acceptance remain open. |
 | 2026-10-24 | Intel C++14 cross-compilation verified; owner continuation required | Codex implementation/self-review: unchanged R2.1 recorder and all six independently configured CPU headers produce seven Mach-O x86_64 objects with installed Apple Clang21/SDK. Recorder uses strict C++14 warnings; headers retain exact CMake flags except target architecture. The extra-strict documentcanvas probe fails on nano-signal-slot's existing syntax compatibility; retain it, then use the already-configured flag without changing project suppression, source, helpers, SDK, dependencies, assertions or300-second caps. This is compile-only ARM64-host evidence, not native Intel runtime/CI/hardware/deployment-floor/full-provider acceptance; no Linux/Windows cross compiler was installed. Evidence: build/renderer-evidence/r2-1-intel-compile-20261024.VShgni/. Existing109/17 native ARM64 and older source-bound623-script proofs remain in their original packets. Full-plan/checker42/worktree119 paths and16 gates/inventory190/both lints/diff pass; repeat these checks after the finalized receipt, then verify preservation and the retained objects. Preserve49 renderer/363 Python prior rows, prior1292/2166-file packets, original index/checkout/staging and all gate states. Separate R2.1 publication authority remains unanswered for three consecutive goal turns; further hosted validation requires it, and R2.2–R7 need their original decisions/prerequisites. No phase/platform/release/default or full-goal completion is claimed. |
 | 2026-10-24 | R2.1 bounded-work correction validated locally | Codex implementation/self-review reproduces4096 capacity increases for4096 open-path appends versus an unchanged32 bound; retain the failing native XML. Replace exact-size reserve with amortized append and atomic close/restart range insertion. Fresh Mac/Linux ARM64 each pass109 CPU IDs, preserving all108 prior IDs/nine fixture cases, and17 recorder ASan/UBSan cases with the same scoped fixture-adapter limitation; Linux leak detection passes. Both providers observe13 open/13 closed growths versus prior4096/24, with unchanged element/command/style limits, recovery and consuming semantics. Strict C++14/six independent headers, source binding, full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks pass; repeat after finalized receipt. Evidence: build/renderer-evidence/r2-1-growth-20261024.WmWNfZ/. Preserve all48 renderer/362 Python prior rows, prior2166-file proof, original index/checkout/staging and unrelated files. Earlier108/16/623 evidence stays source-bound, not fresh new-code full-platform CI. Adds one regression; no helper/provider/dependency/default change, dropped or relaxed existing test/assertion, or expanded timeout or broader gate promotion. Candidate remains local/uncommitted pending publication authority; R2.2–R7/D1–D6/independent/phase/hardware/widget/provider/deployment/package/release/full goal remain open. |
