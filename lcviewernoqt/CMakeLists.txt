@@ -235,3 +235,6 @@ install(TARGETS lcviewernoqt
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("lcviewernoqt")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

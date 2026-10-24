@@ -11,6 +11,9 @@ if (MSVC)
 else()
 project(LC)
 endif()
+set(PROJECT_ALIAS "LibreCAD3")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.cmake)
+include(macros)
 
 # Kaguya's default metatable registry keys types by a module-local address.
 # LibreCAD registers Lua-visible types in the kernel/binding libraries and
@@ -33,6 +36,7 @@ option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_CAIRO "Compile with Cairo painter" OFF)
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
+option(WITH_HEADERS "Install with development headers" OFF)
 
 # Python scripting support uses the selected build-time CPython SDK/runtime.
 option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
@@ -288,6 +292,7 @@ message("  - Rendering unit tests: ${WITH_RENDERING_UNITTESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
 message("  - Use Cairo: ${WITH_CAIRO}")
+message("  - Install development headers: ${WITH_HEADERS}")
 
 message("\n")
 
@@ -402,6 +407,7 @@ if(WITH_PERSISTENCE)
         target_compile_options(dxfrw PRIVATE -Wno-error)
     endif()
     add_library(libdxfrw::libdxfrw ALIAS dxfrw)
+    collect_lib("dxfrw")
     add_subdirectory("persistence")
 endif()
 
@@ -660,3 +666,7 @@ if(MSVC AND CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$")
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
     include(CPack)
 endif()
+
+if(WITH_HEADERS)
+    include(pkgconfig)
+endif(WITH_HEADERS)

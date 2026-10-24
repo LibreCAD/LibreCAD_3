@@ -106,14 +106,36 @@ Common CMake options are:
 | `WITH_UNITTESTS` | `ON` | Build `lcunittest`. |
 | `WITH_RENDERING_UNITTESTS` | `ON` | Build rendering tests that require a graphics environment. |
 | `WITH_DOCUMENTATION` | `OFF` | Build documentation. |
+| `WITH_HEADERS` | `OFF` | Install header files and LibreCAD3Config.cmake. |
 
 For example, a headless core build can be configured with:
 
 ```sh
 cmake -S . -B build-core \
   -DWITH_QT_UI=OFF -DWITH_PYTHONSCRIPT=OFF \
-  -DWITH_LUACMDINTERFACE=OFF -DWITH_RENDERING_UNITTESTS=OFF
+  -DWITH_LUACMDINTERFACE=OFF -DWITH_RENDERING_UNITTESTS=OFF \
+  -DWITH_HEADERS=ON
 ```
+
+and consumed with Cmake:
+```cmake
+find_package(LibreCAD3 REQUIRED)
+
+if(${LibreCAD3_FOUND})
+  message(STATUS "Found LibreCAD3")
+  message(STATUS "LibreCAD3_INC_DIR: ${LibreCAD3_INC_DIR}")
+  message(STATUS "LibreCAD3_INC_DIRS: ${LibreCAD3_INC_DIRS}")
+  message(STATUS "LibreCAD3_LIB_DIR: ${LibreCAD3_LIB_DIR}")
+  message(STATUS "LibreCAD3_BIN_DIR: ${LibreCAD3_BIN_DIR}")
+  message(STATUS "LibreCAD3_LIBS: ${LibreCAD3_LIBS}")
+else()
+  message(FATAL_ERROR "Did not find LibreCAD3")
+endif()
+
+target_link_libraries(Your_TARGET PRIVATE LibreCAD3)
+
+```
+Librecad transitives are automatically propagated.
 
 ## Tests
 

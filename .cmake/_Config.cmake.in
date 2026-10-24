@@ -1,0 +1,109 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+set_and_check(@PROJECT_ALIAS@_INC_DIR @PACKAGE_INC_DIR@)
+set_and_check(@PROJECT_ALIAS@_LIB_DIR @PACKAGE_LIB_DIR@)
+# Only Windows installs anything into bin/ (the DLLs), so it is not checked.
+set(@PROJECT_ALIAS@_BIN_DIR @PACKAGE_BIN_DIR@)
+set(@PROJECT_ALIAS@_LIBS)
+# Both include/LibreCAD3 (for <persistence/...>, <lcscripting/...>) and each
+# module's directory under it (for <cad/...>, <documentcanvas.h>), relative to
+# wherever the package is installed.
+set(@PROJECT_ALIAS@_INC_DIRS ${@PROJECT_ALIAS@_INC_DIR})
+foreach(module IN ITEMS @LC_COLLECT_INCDIRS@)
+  list(APPEND @PROJECT_ALIAS@_INC_DIRS ${@PROJECT_ALIAS@_INC_DIR}/${module})
+endforeach()
+set(_NAME_ @PROJECT_ALIAS@)
+
+find_dependency(Eigen3)
+# The kernel's public headers include Boost.Log (cad/logger/logger.h).
+find_dependency(Boost COMPONENTS log)
+list(APPEND @PROJECT_ALIAS@_LIBS Boost::log)
+get_target_property(EIGEN_INC_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND @PROJECT_ALIAS@_INC_DIRS ${EIGEN_INC_DIRS})
+list(APPEND @PROJECT_ALIAS@_LIBS Eigen3::Eigen)
+
+if(NOT TARGET @PROJECT_ALIAS@)
+  set(inc_dirs ${${_NAME_}_INC_DIRS})
+  set(lib_dir ${${_NAME_}_LIB_DIR})
+  set(bin_dir ${${_NAME_}_BIN_DIR})
+  set(lib_names "@LC_COLLECT_LIBS@")
+
+  foreach(lib IN LISTS lib_names)
+    set(target_lib @PROJECT_ALIAS@::${lib})
+
+    if(NOT TARGET ${target_lib})
+      list(APPEND ${_NAME_}_LIBS ${target_lib})
+
+      if(${lib} STREQUAL "dxfrw")
+        add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)
+        set(suffix ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(prefix ${CMAKE_STATIC_LIBRARY_PREFIX})
+        set(libname ${prefix}${lib}${suffix})
+        set(location "${lib_dir}/${libname}")
+
+        set_target_properties(
+          ${target_lib} PROPERTIES IMPORTED_LOCATION "${location}"
+                                   INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+
+      elseif(WIN32)
+        add_library(${target_lib} SHARED IMPORTED GLOBAL)
+        set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(prefix ${CMAKE_SHARED_LIBRARY_PREFIX})
+        set(imp_suffix ${CMAKE_IMPORT_LIBRARY_SUFFIX})
+        set(imp_prefix ${CMAKE_IMPORT_LIBRARY_PREFIX})
+        set(dll_name ${prefix}${lib}${suffix})
+        set(imp_name ${imp_prefix}${lib}${imp_suffix})
+        set(imp_location "${lib_dir}/${imp_name}")
+        set(dll_location "${bin_dir}/${dll_name}")
+
+        set_target_properties(
+          ${target_lib}
+          PROPERTIES IMPORTED_LOCATION "${dll_location}"
+                     IMPORTED_IMPLIB "${imp_location}"
+                     INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+
+      else()
+        add_library(${target_lib} UNKNOWN IMPORTED GLOBAL)
+        set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(prefix ${CMAKE_SHARED_LIBRARY_PREFIX})
+        set(libname ${prefix}${lib}${suffix})
+        set(location "${lib_dir}/${libname}")
+
+        set_target_properties(
+          ${target_lib} PROPERTIES IMPORTED_LOCATION "${location}"
+                                   INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+      endif()
+
+    endif()
+  endforeach()
+
+  add_library(@PROJECT_ALIAS@ INTERFACE IMPORTED GLOBAL)
+  if(WIN32)
+    set(rpath_opt "")
+  else()
+    set(rpath_opt "-Wl,-rpath,${lib_dir}")
+  endif()
+
+  set_target_properties(
+    @PROJECT_ALIAS@
+    PROPERTIES INTERFACE_LINK_LIBRARIES "${${_NAME_}_LIBS}"
+               INTERFACE_LINK_OPTIONS "${rpath_opt}"
+               INTERFACE_INCLUDE_DIRECTORIES "${inc_dirs}")
+
+  unset(target_lib)
+  unset(lib_names)
+  unset(libname)
+  unset(lib_dir)
+  unset(suffix)
+  unset(suffix)
+  unset(imp_prefix)
+  unset(imp_prefix)
+  unset(dll_name)
+  unset(imp_name)
+  unset(imp_location)
+  unset(dll_location)
+  unset(inc_dirs)
+endif()
+
+check_required_components(@PROJECT_ALIAS@)

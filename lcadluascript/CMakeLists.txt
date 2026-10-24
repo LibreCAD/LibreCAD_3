@@ -131,3 +131,7 @@ install(TARGETS lcluascript
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("lcluascript")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")
+

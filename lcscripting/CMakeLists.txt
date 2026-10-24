@@ -72,3 +72,6 @@ install(TARGETS lcscripting
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("lcscripting")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")
