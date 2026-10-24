@@ -27,16 +27,51 @@ point. The detailed R0/R1 evidence paragraphs below are chronological snapshots;
 their former missing-host/CI descriptions are not a claim that later execution
 did not occur. Historical results retain their original input identities.
 
-Current published candidate: `ded3b55ab23a7fb13894eb61a25490b1c812f084`,
-[run 40071386912](https://github.com/dxli/LibreCAD_3/actions/runs/40071386912).
-Both Intel library/tests-ON jobs now pass all 22 RHI IDs with verified virtual
+Current published candidate: `d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb`,
+[run 40076688956](https://github.com/dxli/LibreCAD_3/actions/runs/40076688956).
+Attempt 1 completed **success**: all **60/60 source jobs**, the protocol/plan job
+and the source aggregate pass, **62/62 jobs** in one exact-SHA cohort. Source-CI
+execution and self-review are complete; independent acceptance and R0/R1 phase
+acceptance are not. These closeout receipts are local documentation-only updates
+after dispatch; the tested/published code remains the exact commit above.
+
+| Native source platform | Passed / required jobs | Source-CI scope and remaining acceptance |
+|---|---|---|
+| Linux x86_64, Ubuntu 26.04 | 12/12 | Both library groups, independent hosts and software offscreen XCB/Wayland pass; hardware, presentation and packages stay open. |
+| Linux arm64, Ubuntu 26.04 | 12/12 | Same source coverage on native ISA; VM/software proof is not physical-GPU or installed-package acceptance. |
+| Windows x64, MSVC 2022 | 12/12 | Library/host, exports and relocated CLI checks pass; full Python/NSIS/runtime and hardware acceptance stay open. |
+| macOS arm64, macOS 15 runner | 12/12 | Library/host and hardware-class Metal offscreen source checks pass; widget/session/deployment/bundle/signing acceptance stays open. |
+| macOS x86_64, macOS 15 Intel runner | 12/12 | Verified virtual Metal for source/offscreen only; hardware, widget, performance, deployment and bundle/signing gates stay open. |
+
+All 60 unique source artifacts are locally retained and reviewed against their
+run/attempt/full SHA, effective profiles, helper/source identities, discovery/XML,
+device attestation and graph/cleanup records. The hosted protocol job passes
+616/616 regressions without skips. Current proof:
+`build/renderer-evidence/r1-ui-partition-20261024.kJGirf/hosted/cohort-review.json`,
+with supplementary payload readback in `hosted/payload-audit.json`. Local retention
+is not an external durable backup or full provider/license/deployment closure.
+Required SDK files omitted from uploaded payloads retain hash metadata only.
+
+Both Intel library/tests-ON artifacts execute all 22 original RHI IDs with zero
+failures/skips. Their selected registry IDs, `4294968041` and `4294968042`, match
+independent `system_profiler` entries and exact `AppleParavirtAccelerator` native
+attestation; raw Qt type remains `0`, not hardware. Intel UI and combined-host
+tests-ON each execute 197 non-widget IDs, compile/discover 97 unexecuted widget
+IDs, and retain all 75 UI units: bindings 3, root 28, widgets 44. The File API
+confirms one MOC/resource owner and shared C++17/export usage. Command/profile/job
+caps remain 300 seconds / 1,200 seconds / 60 minutes. No default, R2 or release
+workflow change follows from this green source cohort.
+
+Historical predecessor failures remain retained, not rebased onto this result.
+On predecessor `ded3b55a` / run 40071386912, both Intel library/tests-ON jobs
+pass all 22 RHI IDs with verified virtual
 Metal. The combined Intel host job instead times out in ordinary UI compilation
 at 93/98 edges. A locally verified three-group follow-up preserves the exact 75
 units (bindings 3, root 28, widgets 44), one Qt generator owner and the original
-command/profile/job caps; a fresh replacement cohort is next. The following completed
+command/profile/job caps; that follow-up is now published above. The following completed
 cohort is the historical failure baseline, not this candidate's result.
 
-Last completed cohort, before the approved virtual-tuple change:
+Historical failure baseline, before the approved virtual-tuple change:
 `cb91cf0160ac5e0c4d6e3c16ca98c8a058f79b72`.
 [Run 40021957419](https://github.com/dxli/LibreCAD_3/actions/runs/40021957419)
 completed **failure**: 58/60 source jobs succeed, the protocol/plan job succeeds,
@@ -81,21 +116,23 @@ with R2–R7/widget/package selections rejected and every hardware tuple preserv
 All 22 original GTest IDs remain; the existing factory test gains classifier
 negatives without replacing device-backed tests. Required uploads now fail if
 no evidence is found. Current local proof is at
-`build/renderer-evidence/r1-virtual-metal-20261024.AirkWi/`; hosted Intel device
-verification and the fresh full cohort are still required.
+`build/renderer-evidence/r1-virtual-metal-20261024.AirkWi/`; the successful current
+Intel device verification and full cohort are retained in the UI-partition proof
+above. Every hardware tuple and the full 190-configuration inventory remain intact.
 
-Selected evidence is retained at
+The historical four-payload failure-review packet is retained at
 `build/renderer-evidence/r1-plan-review-20261024.P1Sh1I/index.json`: exact run/job/
 artifact metadata plus four downloaded source artifacts (both Intel failures,
 Windows core/tests-ON and Intel UI/tests-ON), logs and report hashes. The Windows
 artifact executes all 22 RHI IDs without failures/skips; Intel UI executes 197
 non-widget IDs without failures/skips, not its widget cases. The remaining 56
-artifact payloads have inventory metadata only in this review packet. Download,
-verify and durably retain the complete acceptance cohort before source closeout;
-an expiring Actions artifact listing is not complete archived evidence. The
-current 60 artifacts all expire at `2027-01-21T20:47:42Z`; retain and review the
-required payloads before that deadline, without treating a local packet as an
-external durable backup.
+artifact payloads have inventory metadata only in that historical packet. It is
+not the current successful cohort's archive: all 60 current payloads are retained
+and reviewed separately above. Preserve these failed/superseded records and the
+initial local pinned-Qt UI header-conflict attempt. Hosted clean Qt 6.8.3 Intel UI
+now passes; that does not erase the failed local attempt or qualify deployment
+OS floors. An expiring Actions listing or local packet is not external durable
+retention; independent review and durable retention remain open.
 
 No runtime, CI, default, source-submodule pin or release policy is changed by this
 documentation review. R0/R1, D1–D6, the full painter/consumer contract, native
@@ -787,10 +824,10 @@ cannot close, stop at that gate instead of advancing to production integration.
 
 | Work package | Current state | Next unmet acceptance |
 |---|---|---|
-| A Provider/build | Partial: native ARM64 macOS Qt 6.8.3 and 6.12.0, native-ISA Linux ARM64 VM Qt 6.10.2, separate Widgets-OFF builds and pinned minimum-Mac SDK/tool inputs. Minimum Qt Intel targets cross-build on ARM64; native Intel execution is unqualified. Mac widget preflight rejects a locked console. | Hosted/minimum-Qt Windows/Linux and native Mac Intel/runtime UI, provider redistribution, deployment OS/CRT and capability-floor qualification. No cross-build substitutes for native execution. |
+| A Provider/build | Partial: native ARM64 macOS Qt 6.8.3 and 6.12.0, native-ISA Linux ARM64 VM Qt 6.10.2, separate Widgets-OFF builds and pinned minimum-Mac SDK/tool inputs. Native Intel R1 source CI now passes, but native Intel R0 runtime remains unqualified. Mac widget preflight rejects a locked console. | R0 hosted/minimum-Qt Windows/Linux and native Mac Intel/runtime UI, provider redistribution, deployment OS/CRT and capability-floor qualification. Neither source CI nor cross-builds substitute for required R0 execution. |
 | B Functional proof | Partial: fixture v2 has 15 landmarks, opaque/transparent targets and straight-alpha output. The retained supervised cohort records each Metal provider (Qt 6.8.3 and 6.12.0) at 12 offscreen invocations / 512 checks. ARM64 software Vulkan separately records 24 / 1,384 on XCB and 24 / 1,384 on actual Wayland clients, including five reparent cases per QPA. These sample F1/F2/F5/F6/F7/F9/F10/F12, not their complete contracts. | Refresh changed helper bindings after the draft is complete; native Windows/Linux x64/Mac Intel, Linux hardware/desktop, production geometry/fonts, physical DPI, quality/MSAA and production/window loss recovery remain open. |
 | C UI/decisions | Partial: retained XCB/managed-Wayland executions pass input/focus, exposed popup, close delivery, suspension, reparent/survivor and DPR checks. Each QPA records six terminal failures / 18 assertions for persistent failure, blocked success writers/zero-exit override and bounded CPU retirement. Owned-process cleanup has separate execution-time proof. Wayland popup input is virtual keyboard input, not a native pointer-grab test. | Stable-helper refresh, missing native/hosted providers/sessions, physical input/monitor DPI, window-loss recovery, workloads/budgets and D1–D6 remain open. Shutdown substitution after real completion is not pending-GPU destruction proof. |
-| CI | [renderer.yml](.github/workflows/renderer.yml) retains R0 runtime jobs and CPU rejection fixtures, and calls the same-commit [initial R1 source workflow](.github/workflows/renderer-source.yml). The latter declares all five native CPU/GUI-less offscreen tuples and separate Linux/Mac CLI lanes through the shared runner. Dependencies remain binary-only except the user-selected pinned/patch-applied libdxfrw source submodule for persistence CLI lanes; selected evidence is always retained. The R0 **per Linux architecture** XCB/Wayland matrices still require 48 positives / 2,768 IDs and 12 expected failures / 36 IDs. Native process-contract tests must execute without skips. | No hosted execution is claimed. Full R1 option/host/source matrix, provider closure and missing native/hardware/desktop/package/release gates remain open. Initial R1 source wiring is not R0/R1 completion or the final renderer-required gate. |
+| CI | [renderer.yml](.github/workflows/renderer.yml) retains R0 runtime jobs/CPU rejection fixtures and calls the same-commit [R1 source workflow](.github/workflows/renderer-source.yml). R1 now passes all 60 source jobs plus protocol/aggregate on all five native architectures, with all current artifacts retained/reviewed. Only the pinned patched libdxfrw submodule builds as an external dependency; other providers stay binary-only. The R0 **per Linux architecture** XCB/Wayland matrices still require 48 positives / 2,768 IDs and 12 expected failures / 36 IDs. Native process-contract tests must execute without skips. | R1 source execution is green, not R0 hosted runtime or phase acceptance. Full R0/provider/hardware/desktop/deployment/package/release qualification and independent review remain open; this is not the final renderer-required gate. |
 
 The working route remains RHI/Vulkan Windows+Linux and Metal macOS. D1–D6 remain
 open until their full outputs above are accepted. Existing production renderer,
@@ -1151,10 +1188,10 @@ not another platform-state ledger. All final platform gates remain open.
 | Required tuple | Present R0 evidence | Next prerequisite and required proof |
 |---|---|---|
 | Linux x86_64 / Vulkan / XCB and Wayland | R1 source jobs now pass 12/12, including software offscreen under both QPAs; full R0 widget/prototype qualification is still open. | Retain/review full x64 provider and current-helper R0 case matrices; then hardware/desktop/deployment and install/AppImage/Snap proof. |
-| Linux arm64 / Vulkan / XCB and Wayland | Retained native-ISA VM/software and owned-process cleanup above, not Linux GPU hardware or current-helper execution. | Finish the manifest/helper refresh and retain/review full provider closure; qualify deployment floor, actual hardware and desktop input/DPI, then clean install. No ARM64 AppImage/Snap is added. |
+| Linux arm64 / Vulkan / XCB and Wayland | R1 source CI passes 12/12, including software offscreen under both QPAs; retained R0 VM/software and process-cleanup results are separate historical helper-bound proof. | Finish the R0 manifest/helper refresh and full provider review; qualify deployment floor, actual hardware and desktop input/DPI, then clean install. No ARM64 AppImage/Snap is added. |
 | Windows x64 / Vulkan / Windows QPA | R1 source jobs now pass 12/12; selected retained core artifact executes 22 RHI IDs under the software provider. This is not accepted R0/widget/hardware proof. | Complete/review retained matching MSVC/CRT/Qt/private/qsb/ICD inputs and current-helper R0 cases; obtain an authorized desktop, then hardware/deployment and installed NSIS proof. |
-| macOS arm64 / Metal / Cocoa | Minimum/current native hardware **offscreen** results at unchanged compiled inputs but older helper bindings. Last widget preflight rejected a locked console on older inputs. | Refresh stable-helper offscreen evidence and obtain an authorized usable console for current-source widget/failure/reparent/input/DPR on both providers; qualify deployment floor and final relocated/signed bundle. Never unlock or bypass the session in a harness. |
-| macOS x86_64 / Metal / Cocoa | Native Intel R1 source jobs now pass 10/12, including UI/tests-ON; both library/tests-ON groups reject Apple's paravirtualized Metal adapter as unknown, not hardware. R0 runtime remains unaccepted. | Resolve the explicit source-CI device decision, then qualify real supported hardware/current-helper offscreen/widget/failure cases, full providers/deployment floor and final Intel bundle. Rosetta/cross-build/ARM64/virtual-source results are not substitutes. |
+| macOS arm64 / Metal / Cocoa | R1 source CI passes 12/12, including hardware-class Metal offscreen. Earlier minimum/current R0 offscreen results retain older helper bindings; last widget preflight rejected a locked console. | Refresh stable-helper R0 offscreen evidence and obtain an authorized usable console for current-source widget/failure/reparent/input/DPR on both providers; qualify deployment floor and final relocated/signed bundle. Never unlock or bypass the session in a harness. |
+| macOS x86_64 / Metal / Cocoa | R1 source CI passes 12/12 with verified virtual Metal; both library/tests-ON groups execute all 22 RHI IDs, and UI/combined hosts execute 197 non-widget IDs each. R0 runtime/hardware remains unaccepted. | Independently review source evidence, then qualify real supported hardware/current-helper R0 offscreen/widget/failure cases, full providers/deployment floor and final Intel bundle. Rosetta/cross-build/ARM64/virtual-source results are not substitutes. |
 
 For D1–D6 record decision, rationale, affected F-groups/platforms, exact accepted
 provider or contract, evidence, accountable approver and date. Unassigned owners,
@@ -1174,7 +1211,7 @@ decisions, access and runnable acceptance. Apply that distinction to these open 
 | P0 R0 terminal failure | Implemented in shared `support.*` and widget host; six cases **per Linux QPA** test both writers and a controlled zero-exit request after failure. | Rerun on missing native widget providers; preserve existing pixel matrices. Local proof does not establish real device-loss recovery. |
 | P0 R0 readback retirement | Implemented fixed two-slot CPU-only retention beyond QApplication and direct stale delivery after terminal failure. Linux tests release one completed retained capture per substituted shutdown failure. | Native widget/provider qualification and actual pending-GPU/failing-backend behavior remain open. Do not reinterpret completed synthetic retirement as physically pending destruction. |
 | P0 R0 failure evidence | Implemented additive schema-3 failure kinds, common identity validation, strict exit/artifact/error/ownership checks and helper negatives; each Linux QPA passes six cases / 18 IDs separately. | Execute the same cases on missing native backends/sessions; hosted and production acceptance remain separate. |
-| P0 D2/D4 providers and sessions | The latest R1 cohort executes on all five native architectures; only Intel Metal library device checks fail. Complete R0 cases, desktop/hardware, deployment floors and reviewed full provider closure are still missing. | Resolve the source-CI device policy and retain per-configuration commands/access plus binary/tool/ICD manifests. Do not relabel source build/offscreen proof as R0 widget, physical-input or hardware qualification. |
+| P0 D2/D4 providers and sessions | The exact-SHA R1 source cohort passes on all five native architectures; verified Intel virtual Metal is approved for this source scope only. Complete R0 cases, desktop/hardware, deployment floors and reviewed full provider closure are still missing. | Independently review the retained per-configuration source/provider/command evidence and obtain missing hardware/session/deployment proof. Do not relabel source build/offscreen proof as R0 widget, physical-input or hardware qualification. |
 | P1 D3 geometry and assets | The shared on-disk manifest/corpus and inventory CLI validate 56 cases, 223 proposed variants, 60 signatures and 75 consumers. Initial R1 source/offscreen bindings execute; structural coverage is not full painter, geometry or asset correctness. Choices/oracles are not ratified. | Extend the existing typed inputs, independent oracles and stage-appropriate bindings without dropping required cases. Resolve endcap/path-consumption defects in the authorized stage; retain the D3 decision packet and missing feature/consumer gates. |
 | P1 D5 workloads and D1/D6 approval | Inputs/hardware/thresholds and policy/rollout acceptance remain open. Provisional R1 implementation is separately authorized above. | Measured workload worksheet, accepted numeric limits and D1–D6 decision receipts remain required for R1 acceptance, not its authorized provisional implementation. |
 
@@ -2258,27 +2295,28 @@ workflow definitions, local fixtures or a future green source aggregate.
 ##### Ordered source-CI closeout work packages
 
 Owner for implementation/self-review: Codex under the existing R1 scope. A
-maintainer owns the device-policy choice; independent evidence acceptance is
-unassigned and must be named before closeout. Work on read-only evidence review
-can proceed without changing that policy. No package/R2/default work is implied.
+maintainer has approved the bounded source-CI device policy. Technical cohort
+execution and Codex self-review below are complete; independent evidence
+acceptance is unassigned and must be named before phase/release closeout.
+No package/R2/default work is implied.
 
 | Priority / work package | Inputs and bounded implementation | Required validation / stop condition |
 |---|---|---|
 | P0.1 Intel provider decision — approved | Owner explicitly authorizes verified virtual Metal for Intel Mac R1 source CI on 2026-10-24. Existing adapter JSON/XML identify Apple's paravirtualized provider; hardware acceptance remains mandatory separately. | Decision is recorded, not proof of rendered pixels. Execute native selected-device verification and all 22 tests before source-CI closure; unknown/name-only identity still fails. |
-| P0.2A Explicit virtual tuple, approved; local checks pass, hosted proof pending | Extend the existing RHI diagnostic, case/tuple validator, runner, GTest expectation and source workflow together. Prefer QRhi's explicit virtual type; if this provider returns unknown, require a narrowly reviewed native adapter identification rule, not a generic name substring or unknown-to-virtual fallback. Keep raw name/type and observed class distinct from requested class. Add only the source/offscreen tuple and required R1 bindings; do not make every hardware/widget/performance/package case virtual-capable. | Positive real adapter attestation plus negative unknown/spoofed-name, mismatched requested class/API/architecture, lost attestation and unapproved-stage cases. Discovery must still select and execute all 22 RHI IDs, zero skips, with unchanged pixel/lifetime/failure/cleanup assertions. Old hardware reports cannot satisfy the new tuple, nor vice versa. If a reliable classification cannot be established, stop and use route B. |
-| P0.2B Hardware-backed Intel route | Provision an authorized native x86_64 Intel Mac runner with a supported Metal hardware adapter and retained image/OS/Qt/qsb/device/session provenance. Limit runner-label changes to the affected source jobs; keep fork-code isolation and no signing/release credentials. | Prove actual ISA and `hardware` classification, run both failing tests-ON library groups and all 22 IDs without skips. A runner label, Rosetta, or an ARM64 result is not proof. No deployment-floor or widget acceptance follows. |
-| P1.1 Required-cohort evidence check | Reuse existing workflow matrix and runner/report validation, not a new ledger/service. Derive expected tuples from the reviewed workflow, check exact repository/event/workflow/full SHA/run attempt, job conclusions and unique artifact names. Bind archived payload hashes to their job/configuration, source/helper/provider/options and discovered/executed IDs. Preserve expected negative XML separately. | Reject missing/duplicate/cancelled/skipped jobs, absent/empty/wrong-SHA reports, partial groups, stale helpers/providers, foreign binaries and cleanup failure. Make missing required evidence fail rather than rely on the former upload `warn` policy; do not infer validity merely from 60 artifact names. Locally retain all required payloads before hosted retention expires, then obtain reviewed durable retention. |
-| P1.2 Fresh full cohort | After the authorized bounded change and local regressions, publish only the R1 candidate and dispatch/observe one full five-platform cohort. A two-job rerun is diagnostic, not complete closeout if it mixes commit identities or run attempts. Preserve failed/superseded logs; cancel only identified obsolete attempts under the existing authorization. | Require the exact 60 unique tuples + protocol + source aggregate all successful for one final SHA. Inspect effective options, both library-group unions, exact IDs/no skips, XCB/Wayland isolation, actual adapters, binary-only restore and libdxfrw SDK consumption. Keep all caps; a new failure becomes a bounded diagnosis, not a weakened test or longer budget. |
-| P1.3 Review and handoff | Update this checkpoint and the Python plan in the same change; preserve prior receipts, original index/checkout and unrelated paths. Name the independent reviewer and list remaining stage/provider/package gates. | Repeat plan/checker/worktree/inventory/lint checks after the final receipt. Report source CI as complete only after cohort review; R1 acceptance still waits for R0/D1–D6 and independent approval. No automatic R2, merge, release or default change. |
+| P0.2A Explicit virtual tuple — implemented and source-verified | Existing diagnostic/validator/runner/GTest/workflow boundaries now bind the selected native Metal registry ID to the exact paravirtual accelerator. Raw Qt type remains unknown/virtual; name-only, contradictory or lost native identity fails closed. Only the Intel R1 source/offscreen tuple is additive. | Current exact-SHA core and Python Intel jobs each pass all 22 original RHI IDs, no skips, with independent system display-ID matching and negative classifier/scope regressions. Hardware/widget/performance/package configurations are unchanged. Preserve this verification on future changes; use route B if it fails. |
+| P0.2B Hardware-backed Intel fallback | If virtual source verification fails, provision an authorized native x86_64 Intel Mac runner with supported Metal hardware and retained image/OS/Qt/qsb/device/session provenance. Limit runner-label changes to affected source jobs; keep fork-code isolation and no signing/release credentials. Required hardware qualification remains separate even while route A passes. | Prove actual ISA and `hardware` classification, run both tests-ON library groups and all 22 IDs without skips. A runner label, Rosetta, or an ARM64 result is not proof. No deployment-floor or widget acceptance follows. |
+| P1.1 Required-cohort evidence check — self-review complete | Existing matrix/report validation plus one-use read-only retention checks verify all 60 unique tuples/artifacts, exact repository/event/workflow/full SHA/attempt, options/profile unions, source/helper identities, discovered/executed XML IDs, native adapters, File API graphs and process retirement. All payload ZIPs are retained locally with metadata/digests/CRC; expected negative XML is separate. Uploads fail if evidence is missing. | Current cohort passes. Preserve failed history; obtain independent review and durable external retention. Missing uploaded SDK files remain metadata-only, and this packet does not close full provider/license/deployment qualification. No new repository harness or acceptance engine is introduced. |
+| P1.2 Fresh full cohort — execution complete | d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb, run 40076688956 attempt 1: 60 source jobs plus protocol and aggregate all pass. All five architectures pass 12/12; nothing is combined across commits/attempts. Superseded failure logs remain retained and no obsolete run is active. | Reuse this exact cohort only for its source scope. A future source/helper/provider/workflow change requires fresh relevant proof and a complete coherent cohort before a renewed all-platform claim. Keep every test and existing budget; diagnose a new failure without weakening requirements. |
+| P1.3 Review and handoff — documentation closeout | Synchronize this checkpoint and the Python plan; preserve prior receipts, original index/checkout and unrelated paths. Keep source-CI success distinct from independent/phase/platform/package acceptance. | Repeat plan/checker/worktree/inventory/lint checks after the final receipt. Independent reviewer/durable retention and R0/D1–D6/provider/hardware/session/deployment/package gates remain open. No automatic R2, merge, release or default change. |
 
 Compactness constraint: change the existing diagnostic/tuple/runner boundaries;
 do not add a second renderer, provider framework, scene graph, test harness or
 acceptance-state engine. Preserve the three staged UI object groups, single
 MOC/resource owner and audited consumer exports. Retest these invariants when
-touching build orchestration; don't reopen the solved timeout fixes merely
-because the device-policy gate is still red.
+touching build orchestration; historical red receipts do not reopen solved
+timeout/device checks or invalidate their preserved failure history.
 
-If route A is authorized, its touchpoints are `lcrenderer/rhi/renderer.{h,cpp}`,
+Implemented route A's touchpoints are `lcrenderer/rhi/renderer.{h,cpp}` and private `device_p.h`,
 `lcrenderer/rhi/tests/buildtest.cpp`, `unittest/rendering/renderer_cases.json`,
 `scripts/{run_renderer_checks,validate_renderer_inventory}.py`, their existing
 regression modules and `.github/workflows/renderer-source.yml`. Keep native/Qt
@@ -2840,9 +2878,9 @@ when a run finishes; don't keep yesterday's queued state as the current blocker.
 The next read-only resume checks are:
 
 ```sh
-gh run view 40071386912 --repo dxli/LibreCAD_3 --json status,conclusion,headSha,url
-gh api 'repos/dxli/LibreCAD_3/actions/runs/40071386912/jobs?per_page=100'
-gh api 'repos/dxli/LibreCAD_3/actions/runs/40071386912/artifacts?per_page=100'
+gh run view 40076688956 --repo dxli/LibreCAD_3 --json status,conclusion,headSha,url
+gh api 'repos/dxli/LibreCAD_3/actions/runs/40076688956/jobs?per_page=100'
+gh api 'repos/dxli/LibreCAD_3/actions/runs/40076688956/artifacts?per_page=100'
 ```
 
 For this run, require exactly the 60 source tuples listed in R1 plus protocol and
@@ -2963,6 +3001,8 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-24 | All-platform R1 source CI green; independent/phase acceptance open | Codex implementation/self-review: d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb / run 40076688956 attempt 1 passes all 60 source tuples plus protocol/aggregate, 62/62 jobs. Every platform passes 12/12; all 60 artifact ZIPs are retained/reviewed with exact source/helper/profile/XML/native-device/graph/cleanup binding. Supplementary readback checks 98 ordinary passing XML reports, 52 separate expected-negative reports and all 30 pinned source-submodule SDK records. Hosted regressions pass 616/616 without skips. Both Intel library suites execute all 22 RHI IDs with independent native/display registry-ID agreement; Intel UI and combined hosts execute 197 non-widget IDs each, retain 97 unexecuted widget IDs and all 75 UI units with one generator owner. Original caps, legacy defaults, submodule pin/patches and all hardware configurations remain unchanged. Historical failures and prior 40 renderer/354 Python receipts remain preserved; the original checkout/index/staging and 1,076 unrelated baseline files remain unchanged. These are local post-dispatch documentation receipts, not new tested code or an external durable backup. Evidence: build/renderer-evidence/r1-ui-partition-20261024.kJGirf/hosted/ and closeout.Y6aatK/. Validation: full-plan, checker 42/42, complete worktree against HEAD (116 included paths, 16 mapped gates, 72 exclusions under the four cited rules, no unmapped paths or stale evidence), inventory (56 cases / 223 variants / 60 signatures / 75 consumers / 190 configurations), both workflow actionlint, git diff --check, 50 local links, whitespace/conflict and receipt/source/index/submodule preservation checks pass. Repeat all checks on this final receipt. Independent review/durable retention, R0/R1/D1–D6, hardware/session/deployment/provider/license/package/signing/release gates remain open. No R2, merge, new PR or release/default change. |
+| 2026-10-24 | Three-group UI candidate published; full replacement cohort pending | d4e9650e5dd03b8396923e7001dbee1d7c0bd3fb / run 40076688956 contains nine changed paths over ded3b55a, with 116 intended candidate paths and unchanged original checkout/index/staging. Source matrix remains all 60 tuples plus protocol/aggregate; all 22 RHI IDs, 190 configurations and other cases remain intact. Local Linux scripts 616/616, Mac 605 plus 11 Linux-only skips, focused120/120, checker42/42; real matched Qt6.12 Mac host executes197 non-widget IDs and proves the exact75-unit three-group union, while fresh Qt6.8.3 RHI22 and CPU92 plus Intel syntax checks pass. The local pinned UI conflict is retained as a provider limitation, not hidden or claimed qualified. Superseded ded3 run is completed/cancelled with no active jobs; its both-Intel virtual successes and ordinary-command failure remain archived. Evidence at build/renderer-evidence/r1-ui-partition-20261024.kJGirf/index.json. This post-dispatch documentation receipt changes no compiled input; repeat plan/checker/worktree/lint/history validation, then observe and retain the full exact-SHA cohort without weakening budgets/tests or closing hardware/phase/package gates. |
 | 2026-10-24 | Intel virtual Metal verified; bounded UI command follow-up active | On ded3b55a / run 40071386912, both native Intel library/tests-ON jobs pass all 22 RHI IDs with no skips and exact selected-device AppleParavirtAccelerator registry attestation; core registry ID 4294968061 independently matches system_profiler 1000002fd. A separate combined-host/tests-ON job 120805379513 reaches 93/98 ordinary UI edges, then its 300-second command expires with five units left (two dialogs, two managers, resource). No compiler error; owned command group retires correctly. Preserve the failure artifact 12552112799 and successful Metal proof under build/renderer-evidence/r1-virtual-metal-20261024.AirkWi/hosted/. Codex follow-up: partition the existing ordinary sources into root and widget object groups, with one MOC/UIC/resource owner and exact shared consumer union, keeping 300/1200/60-minute limits, all tests, flags and behavior. Also release the native IOKit reference before string allocation and reject contradictory paravirtual/native hardware typing. Validation: Linux scripts 616/616, Mac 605 passed plus 11 Linux-only skips, focused build/source 120/120. Fresh actual Mac ARM64 Qt6.12 combined host builds and executes 197 non-widget IDs, zero skips; 97 widget IDs are compiled/discovered, not executed. File API proves root28/widgets44/bindings3 is exactly the prior 75-unit union, unique per consumer, C++17 and one MOC/resource owner. Tiny real CMake builds cover Python/tests ON/OFF, inherited usage and generated-header dependency. Fresh Qt6.8.3 RHI executes 22/22 plus CPU92/92; updated Intel-only code syntax passes. The initial local Qt6.8.3 UI attempt fails before the new widget stage on conflicting existing Homebrew QtCore headers; it is retained and not minimum-UI qualification. No global SDK is changed; hosted CI keeps the pinned clean provider. Final plan/checker/worktree/inventory/lint/history checks repeat before publication. Evidence: build/renderer-evidence/r1-ui-partition-20261024.kJGirf/. Next publish a fresh complete cohort. Hardware/phase/package gates remain open. |
 | 2026-10-24 | Verified virtual-Metal R1 candidate published; full cohort pending | Published ded3b55ab23a7fb13894eb61a25490b1c812f084 to the authorized dxli/LibreCAD_3:codex/r1-platform-ci branch; run 40071386912 dispatches all 60 source jobs plus protocol/aggregate. Separate-index publication contains 116 intended paths / 14 changed paths; all 22 GTest IDs, 189 pre-existing configurations and unrelated cases are byte/structure-checked unchanged. Source archive/publication/local proof retained at build/renderer-evidence/r1-virtual-metal-20261024.AirkWi/index.json. Local Linux scripts 615/615, Mac 604 plus 11 Linux-only skips, final focus 154/154, checker 42/42, pinned Qt6.8.3 native ARM64 RHI 22/22 + CPU 92/92 and Intel syntax-only check pass; original branch/HEAD/index/staged files and unrelated paths remain untouched. This post-dispatch documentation receipt changes no compiled input. Plan/checker/worktree/lint/history checks repeat before continuation. Next observe both Intel native registry attestations and the entire exact-SHA cohort, retain/review all required payloads; no CI-success or hardware/phase/package acceptance is claimed yet. |
 | 2026-10-24 | Authorized verified Intel virtual-Metal source CI; implementation active | Owner explicitly permits only verified Intel virtual Metal for source CI, keeping hardware acceptance gates open. Codex owns implementation/self-review; independent acceptance remains pending. Implement a native selected-device registry identity check, an R1-only manifest tuple and strict runner/XML attestation, preserving all 22 rendering/shader/factory IDs, unknown/mismatch rejection, unchanged budgets and all existing hardware tuples. Local validation: Linux ARM64 scripts 615/615; Mac ARM64 scripts 604 passed plus 11 explicitly Linux-only skips; focused final runner/case/workflow checks 154/154 (broader first successful focus 260/260). Real pinned Qt 6.8.3 Mac ARM64 executes all 22 RHI IDs and 92 CPU IDs, no skips; Intel-only IOKit/Objective-C scalar-call path cross-compiles with actual pinned-Qt build flags, not native Intel execution. The initial local command compiled 22 passing tests against unintended Homebrew Qt 6.12, and the provider audit correctly rejected that run; the explicit Qt6_DIR/CMAKE_PREFIX_PATH rerun passes. Wrong-scope virtual CLI exits 2. Full-plan, checker/worktree/inventory/actionlint/diff checks are repeated after this receipt. Manifest has 190 configurations (one additive virtual tuple), 56 cases, 223 variants, 60 signatures and 75 consumers; all 189 prior configurations, other cases and 22 original GTest IDs are retained. Evidence: build/renderer-evidence/r1-virtual-metal-20261024.AirkWi/. Prior 36 renderer and 350 Python receipts and original checkout/index/unrelated paths are preserved. Next publish the bounded R1 candidate and require a fresh complete five-platform cohort. No R2/default/release or hardware acceptance is authorized. |
