@@ -67,6 +67,8 @@ class WestonSessionTests(unittest.TestCase):
                 wayland.validate_input_marker(path)
 
     def test_readiness_is_not_a_spontaneous_input_acknowledgment(self):
+        self.assertNotIn("wayland-input-ready.json", wayland.WestonSession.files)
+        self.assertNotIn("wayland-input-ready.json", self.session().files)
         path = self.report / "wayland-input-ready.json"
         marker = {"key": "F12", "qpa": "wayland", "source": "focused-widget-ready", "owner_generation": 1}
         path.write_text(json.dumps(marker))

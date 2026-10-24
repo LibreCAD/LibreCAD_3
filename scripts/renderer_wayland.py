@@ -26,7 +26,7 @@ def validate_input_marker(path, ready=False):
 
 
 class WestonSession:
-    files = {"weston.log", "weston.stdout.log", "weston.stderr.log", "weston.json", "wayland-input-ready.json"}
+    files = {"weston.log", "weston.stdout.log", "weston.stderr.log", "weston.json"}
 
     def __init__(self, directory, executable, prefix=None, backend="headless", input_tool=None):
         if sys.platform != "linux" or backend not in ("headless", "x11"):
@@ -62,9 +62,7 @@ class WestonSession:
         self.input_released = False
         self.files = set(self.files)
         if self.input_tool:
-            self.files.add("wayland-input.json")
-        else:
-            self.files.discard("wayland-input-ready.json")
+            self.files.update(("wayland-input.json", "wayland-input-ready.json"))
 
     @staticmethod
     def require_xvfb(display):

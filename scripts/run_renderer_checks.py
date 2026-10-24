@@ -1479,7 +1479,7 @@ def run_isolated(args, argv):
     if args.weston:
         allowed.update(WestonSession.files)
         for name, digest in evidence['wayland_compositor_artifacts'].items():
-            if name not in WestonSession.files | {'wayland-input.json'} or sha256((directory / name).read_bytes()) != digest:
+            if name not in WestonSession.files | {'wayland-input.json', 'wayland-input-ready.json'} or sha256((directory / name).read_bytes()) != digest:
                 raise ValueError('Compositor artifact changed during supervised cleanup')
             allowed.add(name)
     if any(path.name not in allowed or not path.is_file() for path in directory.iterdir()):
