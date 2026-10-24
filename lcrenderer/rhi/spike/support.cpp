@@ -179,10 +179,11 @@ void spikeFailure(const QString &message) {
 bool spikeHasFailed() { return !failures.isEmpty(); }
 QJsonArray spikeFailures() { return failures; }
 
-void writeSpikeInputMarker(const SpikeOptions &options) {
+void writeSpikeInputMarker(const SpikeOptions &options, bool ready) {
     const QJsonObject marker{{"key", "F12"}, {"qpa", QGuiApplication::platformName()},
-                            {"source", "spontaneous-key-event"}, {"owner_generation", 1}};
-    save(QFileInfo(options.report).dir().filePath("wayland-input.json"), QJsonDocument(marker).toJson());
+                            {"source", ready ? "focused-widget-ready" : "spontaneous-key-event"}, {"owner_generation", 1}};
+    save(QFileInfo(options.report).dir().filePath(ready ? "wayland-input-ready.json" : "wayland-input.json"),
+         QJsonDocument(marker).toJson());
 }
 
 void writeSpikeFailureReport(const SpikeOptions &options, QJsonObject runtime, const QJsonObject &failure) {

@@ -305,10 +305,15 @@ only through Wayland. The lifecycle proof needs a real compositor input serial:
 direct Qt events or XSendEvent are insufficient for a grabbing Wayland popup.
 The qualified input tool focuses only the owned Weston window on a verified local
 Xvfb server and sends mapped F12 input through XTest. After the synthetic mouse/
-Space checks, the widget constructs a keyboard context event inside the spontaneous
-F12 callback while its Wayland input serial is current. It writes an atomic
-`wayland-input.json` acknowledgment so the helper stops seeding keys. The menu must
-be visible, active and actually exposed before its action is triggered. This is
+Space checks, the focused widget writes atomic `wayland-input-ready.json`; only
+then does the helper send one F12 keydown. The widget constructs a keyboard context
+event inside that spontaneous callback. Holding the key keeps the compositor's
+implicit grab valid even if Qt dispatches input after a scheduling delay: a paired
+press/release could otherwise invalidate the serial before `xdg_popup.grab` arrives.
+The menu must be visible, active and actually exposed before its action is
+triggered and `wayland-input.json` acknowledges success. The helper releases F12
+after acknowledgment or on every failure/exit path, without extending any deadline.
+This is
 virtual keyboard-popup evidence, not a physical keyboard/monitor or native mouse-grab test.
 
 `--weston-backend headless` is available for rendering without an input seat;

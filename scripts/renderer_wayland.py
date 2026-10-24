@@ -15,17 +15,18 @@ from pathlib import Path
 from validate_renderer_inventory import read_json, sha256
 
 
-def validate_input_marker(path):
+def validate_input_marker(path, ready=False):
     marker = read_json(path)
     if (not isinstance(marker, dict) or marker.get("key") != "F12" or marker.get("qpa") != "wayland" or
-            marker.get("source") != "spontaneous-key-event" or type(marker.get("owner_generation")) is not int or
+            marker.get("source") != ("focused-widget-ready" if ready else "spontaneous-key-event") or
+            type(marker.get("owner_generation")) is not int or
             marker["owner_generation"] != 1):
         raise ValueError("Invalid native compositor input acknowledgment")
     return marker
 
 
 class WestonSession:
-    files = {"weston.log", "weston.stdout.log", "weston.stderr.log", "weston.json"}
+    files = {"weston.log", "weston.stdout.log", "weston.stderr.log", "weston.json", "wayland-input-ready.json"}
 
     def __init__(self, directory, executable, prefix=None, backend="headless", input_tool=None):
         if sys.platform != "linux" or backend not in ("headless", "x11"):
@@ -58,9 +59,12 @@ class WestonSession:
         self.input_count = 0
         self.input_window = None
         self.input_observed = False
+        self.input_released = False
         self.files = set(self.files)
         if self.input_tool:
             self.files.add("wayland-input.json")
+        else:
+            self.files.discard("wayland-input-ready.json")
 
     @staticmethod
     def require_xvfb(display):
@@ -114,6 +118,7 @@ class WestonSession:
             return subprocess.run(command, env=self.client_env, capture_output=True, timeout=timeout)
         proc = subprocess.Popen(command, env=self.client_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         deadline = time.monotonic() + timeout
+        pressed = False
         try:
             while time.monotonic() < deadline:
                 try:
@@ -124,7 +129,14 @@ class WestonSession:
                     if self.proc.poll() is not None:
                         raise ValueError("Weston stopped while the app was running")
                     if self.observe_input():
+                        if pressed:
+                            self.release_input()
+                            pressed = False
                         continue # Do not send more keys into an opened popup or replacement view.
+                    request = self.directory / "wayland-input-ready.json"
+                    if pressed or not request.exists():
+                        continue
+                    validate_input_marker(request, ready=True)
                     log = (self.directory / "weston.log").read_text(errors="replace")
                     window = re.search(r"x11 output \d+x\d+, window id (\d+)", log)
                     if not window:
@@ -132,18 +144,32 @@ class WestonSession:
                     # Only this compositor's window on a verified Xvfb server.
                     # XSendEvent (--window) is not native seat input. Focus only
                     # our compositor on the verified virtual server, then XTest.
-                    subprocess.run([str(self.input_tool), "windowfocus", "--sync", window[1], "key", "F12"],
-                                   env=self.env, capture_output=True, timeout=2, check=True)
+                    # A press+release can reach Weston before Qt dispatches the
+                    # press and queues xdg_popup.grab, invalidating its serial.
+                    # Send once, only after focus/readback readiness; hold until
+                    # the app acknowledges the existing exposed-popup predicate.
                     self.input_window = window[1]
+                    pressed = True # Also release after a partially failed tool command.
+                    subprocess.run([str(self.input_tool), "windowfocus", "--sync", window[1], "keydown", "F12"],
+                                   env=self.env, capture_output=True, timeout=2, check=True)
                     self.input_count += 1
             raise subprocess.TimeoutExpired(command, timeout)
         finally:
-            if proc.poll() is None:
-                proc.kill()
-                out, err = proc.communicate(timeout=5)
-                # Preserve partial app diagnostics on errors outside communicate().
-                (self.directory / "stdout.log").write_bytes(out)
-                (self.directory / "stderr.log").write_bytes(err)
+            try:
+                if pressed:
+                    self.release_input()
+            finally:
+                if proc.poll() is None:
+                    proc.kill()
+                    out, err = proc.communicate(timeout=5)
+                    # Preserve partial app diagnostics on errors outside communicate().
+                    (self.directory / "stdout.log").write_bytes(out)
+                    (self.directory / "stderr.log").write_bytes(err)
+
+    def release_input(self):
+        subprocess.run([str(self.input_tool), "keyup", "F12"], env=self.env,
+                       capture_output=True, timeout=2, check=True)
+        self.input_released = True
 
     def observe_input(self):
         path = self.directory / "wayland-input.json"
@@ -178,7 +204,7 @@ class WestonSession:
             "targeted_f12_events": self.input_count, "shutdown_returncode": self.proc.returncode}
         self.record.update(input_x11_window=self.input_window,
                            input_method="XTest-F12-on-owned-Xvfb-compositor" if self.input_tool else None,
-                           native_input_acknowledged=self.input_observed)
+                           native_input_acknowledged=self.input_observed, native_key_released=self.input_released)
         (self.directory / "weston.json").write_text(json.dumps(self.record, indent=2) + "\n", encoding="utf-8")
         if kind is None:
             log = (self.directory / "weston.log").read_text(errors="replace")
@@ -188,5 +214,5 @@ class WestonSession:
                 raise ValueError("Weston did not initialize the requested backend/renderer")
             if self.fingerprints() != self.digests:
                 raise ValueError("Compositor/input binary changed during execution")
-            if self.input_tool and (self.input_count < 1 or not self.input_observed):
+            if self.input_tool and (self.input_count != 1 or not self.input_observed or not self.input_released):
                 raise ValueError("Requested compositor input was not executed/acknowledged")

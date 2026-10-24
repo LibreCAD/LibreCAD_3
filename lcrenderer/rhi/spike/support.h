@@ -24,4 +24,4 @@ void spikeFailure(const QString &message);
 bool spikeHasFailed();
 QJsonArray spikeFailures();
 void writeSpikeFailureReport(const SpikeOptions &options, QJsonObject runtime, const QJsonObject &failure);
-void writeSpikeInputMarker(const SpikeOptions &options);
+void writeSpikeInputMarker(const SpikeOptions &options, bool ready = false);

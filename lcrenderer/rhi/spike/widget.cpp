@@ -159,7 +159,10 @@ public:
         return !spikeHasFailed() && active && capture && !capture->invalidated && !image.isNull() && renderTarget() &&
                image.size() == renderTarget()->pixelSize() && submitted > 0 && lastSubmitted >= capture->frame;
     }
-    void requestNativeContextMenu() { nativeMenuPending = true; }
+    void requestNativeContextMenu() {
+        nativeMenuPending = true;
+        writeSpikeInputMarker(options, true);
+    }
     void advanceReadback() { if (!spikeHasFailed() && active && capture && !capture->complete) update(); }
     void recapture() {
         if (spikeHasFailed()) return;
@@ -190,6 +193,9 @@ public:
         if (!menu || !menu->isVisible() || QApplication::activePopupWidget() != menu.get() ||
             !menu->windowHandle() || !menu->windowHandle()->isExposed()) return false;
         popupObserved = true;
+        // Keep the compositor's implicit keyboard grab alive until the popup
+        // is actually exposed, not merely queued by the native key callback.
+        if (nativePopupSeed) writeSpikeInputMarker(options);
         menu->actions().first()->trigger();
         menu->close();
         return true;
@@ -221,8 +227,6 @@ private:
                 const QPoint local(30, 30);
                 QContextMenuEvent menuEvent(QContextMenuEvent::Keyboard, local, mapToGlobal(local));
                 QApplication::sendEvent(this, &menuEvent);
-                try { writeSpikeInputMarker(options); }
-                catch (const std::exception &e) { spikeFailure(QString::fromUtf8(e.what())); }
             }
             event->accept();
         }

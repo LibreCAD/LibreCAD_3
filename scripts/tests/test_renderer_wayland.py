@@ -66,6 +66,116 @@ class WestonSessionTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 wayland.validate_input_marker(path)
 
+    def test_readiness_is_not_a_spontaneous_input_acknowledgment(self):
+        path = self.report / "wayland-input-ready.json"
+        marker = {"key": "F12", "qpa": "wayland", "source": "focused-widget-ready", "owner_generation": 1}
+        path.write_text(json.dumps(marker))
+        self.assertEqual(marker, wayland.validate_input_marker(path, ready=True))
+        with self.assertRaises(ValueError):
+            wayland.validate_input_marker(path)
+        self.assertFalse(self.session().observe_input())
+        for key, value in (("key", "F24"), ("qpa", "xcb"), ("source", "spontaneous-key-event"),
+                           ("owner_generation", True), ("owner_generation", 2)):
+            path.write_text(json.dumps({**marker, key: value}))
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                wayland.validate_input_marker(path, ready=True)
+
+    def input_session(self):
+        session = self.configured()
+        session.input_tool = self.binary
+        (self.report / "weston.log").write_text("x11 output 2048x1536, window id 123\n")
+        return session
+
+    def marker(self, ready=False):
+        path = self.report / ("wayland-input-ready.json" if ready else "wayland-input.json")
+        path.write_text(json.dumps({"key": "F12", "qpa": "wayland", "owner_generation": 1,
+            "source": "focused-widget-ready" if ready else "spontaneous-key-event"}))
+
+    def test_one_keydown_waits_for_readiness_and_holds_until_exposure_ack(self):
+        session = self.input_session()
+        proc = Mock(returncode=0)
+        proc.poll.return_value = 0
+        calls = []
+        def communicate(timeout):
+            calls.append(timeout)
+            if len(calls) == 2:
+                self.marker(ready=True)
+            if len(calls) == 4:
+                self.marker()
+            if len(calls) < 5:
+                raise subprocess.TimeoutExpired(["app"], timeout)
+            return b"ok", b""
+        proc.communicate.side_effect = communicate
+        with patch.object(wayland.subprocess, "Popen", return_value=proc), \
+             patch.object(wayland.subprocess, "run") as send:
+            result = session.execute(["app"], 1)
+        self.assertEqual(0, result.returncode)
+        self.assertEqual([[str(self.binary), "windowfocus", "--sync", "123", "keydown", "F12"],
+                          [str(self.binary), "keyup", "F12"]], [c.args[0] for c in send.call_args_list])
+        self.assertEqual(1, session.input_count)
+        self.assertTrue(session.input_observed)
+        self.assertTrue(session.input_released)
+        proc.kill.assert_not_called()
+
+    def test_key_is_released_on_app_exit_without_acknowledgment(self):
+        session = self.input_session()
+        self.marker(ready=True)
+        proc = Mock(returncode=7)
+        proc.poll.return_value = 7
+        proc.communicate.side_effect = [subprocess.TimeoutExpired(["app"], .1), (b"", b"failed")]
+        with patch.object(wayland.subprocess, "Popen", return_value=proc), \
+             patch.object(wayland.subprocess, "run") as send:
+            result = session.execute(["app"], 1)
+        self.assertEqual(7, result.returncode)
+        self.assertFalse(session.input_observed)
+        self.assertTrue(session.input_released)
+        self.assertEqual(["keyup", "F12"], send.call_args_list[-1].args[0][-2:])
+
+    def test_partial_keydown_failure_still_releases_key_and_reaps_app(self):
+        session = self.input_session()
+        self.marker(ready=True)
+        proc = Mock()
+        proc.poll.return_value = None
+        proc.communicate.side_effect = [subprocess.TimeoutExpired(["app"], .1), (b"partial", b"error")]
+        with patch.object(wayland.subprocess, "Popen", return_value=proc), \
+             patch.object(wayland.subprocess, "run", side_effect=[subprocess.TimeoutExpired(["tool"], 2), Mock()]) as send, \
+             self.assertRaises(subprocess.TimeoutExpired):
+            session.execute(["app"], 1)
+        self.assertEqual(["keyup", "F12"], send.call_args_list[-1].args[0][-2:])
+        self.assertTrue(session.input_released)
+        proc.kill.assert_called_once()
+        self.assertEqual(b"error", (self.report / "stderr.log").read_bytes())
+
+    def test_unacknowledged_popup_keeps_original_timeout_and_releases(self):
+        session = self.input_session()
+        self.marker(ready=True)
+        proc = Mock()
+        proc.poll.return_value = None
+        proc.communicate.side_effect = [subprocess.TimeoutExpired(["app"], .1), (b"", b"timeout")]
+        with patch.object(wayland.subprocess, "Popen", return_value=proc), \
+             patch.object(wayland.subprocess, "run") as send, \
+             patch.object(wayland.time, "monotonic", side_effect=[0, 0, 0, 2]), \
+             self.assertRaises(subprocess.TimeoutExpired) as error:
+            session.execute(["app"], 1)
+        self.assertEqual(1, error.exception.timeout)
+        self.assertFalse(session.input_observed)
+        self.assertEqual(["keyup", "F12"], send.call_args_list[-1].args[0][-2:])
+        proc.kill.assert_called_once()
+
+    def test_release_failure_cannot_prevent_app_cleanup(self):
+        session = self.input_session()
+        self.marker(ready=True)
+        proc = Mock()
+        proc.poll.return_value = None
+        proc.communicate.side_effect = [subprocess.TimeoutExpired(["app"], .1), (b"", b"timeout")]
+        with patch.object(wayland.subprocess, "Popen", return_value=proc), \
+             patch.object(wayland.subprocess, "run", side_effect=[Mock(), subprocess.CalledProcessError(1, ["keyup"])]), \
+             patch.object(wayland.time, "monotonic", side_effect=[0, 0, 0, 2]), \
+             self.assertRaises(subprocess.CalledProcessError):
+            session.execute(["app"], 1)
+        self.assertFalse(session.input_released)
+        proc.kill.assert_called_once()
+
     def test_unqualified_version_does_not_start_a_compositor(self):
         with patch.object(wayland.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, b"weston 99.0.0", b"")), \
              patch.object(wayland.subprocess, "Popen") as create, self.assertRaisesRegex(ValueError, "Unqualified Weston"):
