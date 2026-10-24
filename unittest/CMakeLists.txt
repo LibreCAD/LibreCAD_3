@@ -85,6 +85,7 @@ lckernel/dochelpers/documentlist.cpp
 lckernel/geometry/testgeoellipse.cpp
 lckernel/primitive/testellipse.cpp
 lckernel/primitive/dimordinatetest.cpp
+lckernel/primitive/dimlineartest.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp

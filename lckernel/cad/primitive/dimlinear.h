@@ -81,9 +81,7 @@ public:
                           const geo::Coordinate &scale_factor) const override;
 
     CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                           const geo::Coordinate& axis2) const override {
-        return NULL; /// @todo no return statement, not implemented in dimlinear.cpp
-    }
+                           const geo::Coordinate& axis2) const override;
     /**
      * @brief boundingBox of the entity
      * @return geo::Area area
