@@ -1266,3 +1266,237 @@ TEST(CpuCurvedStrokeTest, ShearedModelDashMetricPreservesPhysicalPhaseAndPositio
         EXPECT_EQ(i%3!=2,covers(mesh,p))<<i;
     }
 }
+
+namespace {
+PathCommand fillPath(const std::vector<std::vector<Point>>& contours,Transform transform={}) {
+    PathRecorder r;r.setTransform(transform);
+    for (const auto& loop:contours) {
+        if (loop.empty()) continue;
+        r.moveTo(loop.front());for (std::size_t i=1;i<loop.size();++i) r.lineTo(loop[i]);
+        // Deliberately leave open: fill must implicitly close every contour.
+    }
+    r.fill();return r.commands().empty()?PathCommand{PaintOperation::Fill,{}, {}}:r.commands()[0];
+}
+PathCommand fillFixture(Contract& c) {
+    std::vector<std::vector<Point>> loops;std::set<unsigned> starts{0};
+    for (const auto& s:c.input("contour-starts").GetArray()) starts.insert(s.GetUint());
+    const auto& vertices=c.input("vertices");
+    for (unsigned i=0;i<vertices.Size();++i) {if (starts.count(i)) loops.emplace_back();loops.back().push_back(point(vertices[i]));}
+    EXPECT_EQ("even-odd",std::string(c.input("fill-rule").GetString()));return fillPath(loops);
+}
+double fillArea(const PreparedFill& fill) {
+    using Exact=boost::multiprecision::cpp_bin_float_100;Exact area=0;
+    for (const auto& t:fill.triangles) {
+        EXPECT_EQ(1,orientation(t[0],t[1],t[2]));
+        area+=((Exact(t[1].x)-t[0].x)*(Exact(t[2].y)-t[0].y)-(Exact(t[1].y)-t[0].y)*(Exact(t[2].x)-t[0].x))/2;
+    }
+    return area.convert_to<double>();
+}
+bool covers(const PreparedFill& fill,Point p) {for (const auto& t:fill.triangles) if (inTriangle(p,t)) return true;return false;}
+std::vector<Point> square(double low,double high) {return {{low,low},{high,low},{high,high},{low,high}};}
+}
+TEST(CpuFillTest, CpuHatchFillOrdinary) {
+    Contract c("hatch-fill","ordinary");const auto command=fillFixture(c);const auto fill=prepareFill(command);
+    c.measure("area",fillArea(fill),1e-9);const auto& expected=c.expected("membership");const auto& samples=c.input("sample-points");
+    ASSERT_EQ(samples.Size(),expected.Size());for (unsigned i=0;i<samples.Size();++i)
+        EXPECT_EQ(expected[i].GetString(),std::string(covers(fill,point(samples[i]))?"inside":"outside"));
+    c.complete();EXPECT_EQ(command.path.size(),8u);
+}
+TEST(CpuFillTest, CpuHatchFillEmpty) {
+    Contract c("hatch-fill","empty");std::vector<Point> points;for (const auto& p:c.input("vertices").GetArray()) points.push_back(point(p));
+    const auto hatch=prepareHatch(fillPath({points}),{HatchFamily{}},c.input("pattern-scale").GetDouble());
+    c.observe("draw-count",hatch.mask.triangles.size()+hatch.segments.size());c.complete();
+}
+TEST(CpuFillTest, CpuHatchFillLimit) {
+    Contract c("hatch-fill","limit");HatchLimits limits;limits.lines=c.input("limit").GetUint();
+    // Width .1 and unit spacing produce exactly the requested five lines0..4.
+    auto command=fillPath({square(0,c.input("requested").GetDouble()-1)});command.state.lineWidth=.1;
+    PreparedHatch output;c.observe("diagnostic",diagnostic([&]{output=prepareHatch(command,{HatchFamily{}},1,FillRule::EvenOdd,limits);}));
+    c.observe("accepted-output-count",output.segments.size());EXPECT_TRUE(output.mask.triangles.empty());c.complete();
+    EXPECT_EQ(5u,prepareHatch(command,{HatchFamily{}}).segments.size());
+}
+TEST(CpuFillTest, CpuHatchFillConcave) {
+    Contract c("hatch-fill","concave");std::vector<Point> loop;for (const auto& p:c.input("vertices").GetArray()) loop.push_back(point(p));
+    EXPECT_EQ("even-odd",std::string(c.input("fill-rule").GetString()));const auto fill=prepareFill(fillPath({loop}));
+    c.measure("area",fillArea(fill),1e-9);c.complete();EXPECT_TRUE(covers(fill,{.5,1.5}));EXPECT_FALSE(covers(fill,{1.5,1.5}));
+}
+TEST(CpuFillTest, CpuHatchFillReversedHole) {
+    Contract c("hatch-fill","reversed-hole");const auto fill=prepareFill(fillFixture(c));c.measure("area",fillArea(fill),1e-9);c.complete();
+    EXPECT_FALSE(covers(fill,{2,2}));
+}
+TEST(CpuFillTest, CpuHatchFillInvalidPattern) {
+    Contract c("hatch-fill","invalid-pattern");PreparedHatch output;
+    c.observe("diagnostic",diagnostic([&]{output=prepareHatch(fillPath({square(0,4)}),{HatchFamily{}},c.input("pattern-scale").GetDouble());}));
+    c.observe("accepted-output-count",output.segments.size());EXPECT_TRUE(output.mask.triangles.empty());c.complete();
+}
+TEST(CpuFillTest, WindingOrientationNestingAndDisconnectedRegions) {
+    auto outer=square(0,8),hole=square(1,7),island=square(2,6),other=square(10,12);
+    for (bool reverse:{false,true}) {
+        if (reverse) std::reverse(hole.begin(),hole.end());
+        const auto command=fillPath({outer,hole,island,other});
+        const auto even=prepareFill(command);EXPECT_NEAR(48,fillArea(even),1e-12);
+        EXPECT_TRUE(covers(even,{.5,.5}));EXPECT_FALSE(covers(even,{1.5,1.5}));EXPECT_TRUE(covers(even,{3,3}));EXPECT_TRUE(covers(even,{11,11}));
+        const auto nonzero=prepareFill(command,FillRule::NonZero);EXPECT_NEAR(reverse?48:68,fillArea(nonzero),1e-12);
+    }
+}
+TEST(CpuFillTest, TopologyCrossingTouchingAndRetracingRejectAtomically) {
+    for (const auto& contours:std::vector<std::vector<std::vector<Point>>>{
+            {{{0,0},{4,4},{0,4},{4,0}}}, // bow tie, not an empty zero signed area
+            {square(0,4),{{4,1},{5,1},{5,2},{4,2}}},
+            {{{0,0},{4,0},{2,0},{4,4},{0,4}}},
+            {square(0,4),square(0,4)}}) {
+        PreparedFill output;EXPECT_EQ("unsupported-fill-topology",diagnostic([&]{output=prepareFill(fillPath(contours));}));
+        EXPECT_TRUE(output.triangles.empty());EXPECT_DOUBLE_EQ(16,fillArea(prepareFill(fillPath({square(0,4)}))));
+    }
+}
+TEST(CpuFillTest, DegenerateBoundsDuplicateVerticesAndThinValidContours) {
+    for (const auto& loop:std::vector<std::vector<Point>>{{},{ {0,1} },{{0,1},{1,1},{2,1}},{{1,0},{1,1},{1,2}}}) {
+        const auto hatch=prepareHatch(fillPath({loop}),{HatchFamily{}});EXPECT_TRUE(hatch.mask.triangles.empty());EXPECT_TRUE(hatch.segments.empty());
+    }
+    const auto fill=prepareFill(fillPath({{{0,0},{4,0},{4,0},{4,.001},{0,.001},{0,0}}}));EXPECT_NEAR(.004,fillArea(fill),1e-12);
+}
+TEST(CpuFillTest, AffineReflectionLargeOriginAndIndependentGridMembership) {
+    const std::vector<std::vector<Point>> loops={square(0,4),square(1,3)};
+    for (double sx:{-2.,2.}) for (double shear:{0.,.5}) {
+        Transform t;t.xx=sx;t.xy=shear;t.yy=3;t.origin={1e12,-1e12};
+        auto shifted=loops;for (auto& loop:shifted) for (auto& p:loop) {p.x+=t.origin.x;p.y+=t.origin.y;}
+        const auto fill=prepareFill(fillPath(shifted,t));EXPECT_NEAR(72,fillArea(fill),1e-10);
+        for (int x=-2;x<19;++x) for (int y=-2;y<19;++y) {
+            const Point p{(x+.37)/4,(y+.61)/4};
+            const bool inside=p.x>0 && p.x<4 && p.y>0 && p.y<4 && !(p.x>1 && p.x<3 && p.y>1 && p.y<3);
+            EXPECT_EQ(inside,covers(fill,t.distance(p)));
+        }
+    }
+}
+TEST(CpuFillTest, CurvedCircleAndPolynomialBoundaryHaveIndependentAreaAndDistance) {
+    PathRecorder r;r.circle({0,0},10);r.fill();const auto circle=prepareFill(r.commands()[0]);
+    EXPECT_LE(circle.positionBound,.125);EXPECT_NEAR(100*3.141592653589793,fillArea(circle),4);
+    for (unsigned i=0;i<128;++i) {
+        const double a=i*2*3.141592653589793/128;
+        EXPECT_TRUE(covers(circle,{9.8*std::cos(a),9.8*std::sin(a)}));EXPECT_FALSE(covers(circle,{10.2*std::cos(a),10.2*std::sin(a)}));
+    }
+    PathRecorder p;p.moveTo({0,0});p.quadraticTo({2,4},{4,0});p.fill();const auto curved=prepareFill(p.commands()[0]);
+    EXPECT_NEAR(16./3,fillArea(curved),.15);EXPECT_TRUE(covers(curved,{2,1}));EXPECT_FALSE(covers(curved,{2,2.2}));
+}
+TEST(CpuFillTest, WorkVertexStateAndBatchCapsPreserveOrderAndPriorOutput) {
+    auto command=fillPath({square(0,4)});command.state.rgba={{1,0,0,.5}};const auto good=prepareFill(command);
+    FillLimits exact;exact.work=good.visited;exact.vertices=6;EXPECT_EQ(good.visited,prepareFill(command,FillRule::EvenOdd,exact).visited);
+    --exact.work;PreparedFill output;EXPECT_EQ("fill-work-limit",diagnostic([&]{output=prepareFill(command,FillRule::EvenOdd,exact);}));EXPECT_TRUE(output.triangles.empty());
+    exact={};exact.vertices=5;EXPECT_EQ("vertex-limit",diagnostic([&]{output=prepareFill(command,FillRule::EvenOdd,exact);}));
+    auto second=command;second.state.rgba={{0,0,1,.25}};auto batch=prepareFills({command,second});ASSERT_EQ(2u,batch.size());
+    EXPECT_DOUBLE_EQ(.5,batch[0].state.rgba[3]);EXPECT_DOUBLE_EQ(.25,batch[1].state.rgba[3]);
+    FillLimits limits;limits.work=2*(good.visited+1)-1;EXPECT_EQ("fill-work-limit",diagnostic([&]{batch=prepareFills({command,second},FillRule::EvenOdd,limits);}));
+    EXPECT_EQ(2u,batch.size());EXPECT_DOUBLE_EQ(16,fillArea(batch[0]));
+    limits={};limits.vertices=11;EXPECT_EQ("vertex-limit",diagnostic([&]{output=prepareFills({command,second},FillRule::EvenOdd,limits)[0];}));
+}
+TEST(CpuFillTest, InvalidInputsAndPrecisionDomainsDoNotPublishPartialGeometry) {
+    const auto good=fillPath({square(0,4)});PreparedFill output;
+    for (auto command:{good,good,good}) {
+        command.path[1].point.x=std::numeric_limits<double>::infinity();EXPECT_THROW(prepareFill(command),std::invalid_argument);
+    }
+    auto bad=good;bad.operation=PaintOperation::Stroke;EXPECT_EQ("invalid-fill",diagnostic([&]{output=prepareFill(bad);}));
+    EXPECT_EQ("invalid-fill-rule",diagnostic([&]{output=prepareFill(good,static_cast<FillRule>(99));}));
+    bad=good;bad.path[1].point.x=1e10;EXPECT_EQ("precision-limit",diagnostic([&]{output=prepareFill(bad);}));
+    bad=good;bad.state.rgba[0]=2;EXPECT_EQ("invalid-color",diagnostic([&]{output=prepareFill(bad);}));
+    EXPECT_TRUE(output.triangles.empty());EXPECT_DOUBLE_EQ(16,fillArea(prepareFill(good)));
+}
+TEST(CpuHatchTest, FiniteWidthCoverageUsesMaskNotCenterlineClipping) {
+    auto command=fillPath({square(0,4),square(1,3)});command.state.lineWidth=1.2;
+    HatchFamily family;family.origin={0,.5};const auto hatch=prepareHatch(command,{family});
+    ASSERT_EQ(6u,hatch.segments.size());EXPECT_NEAR(-.5,hatch.segments.front()[0].y,1e-12); // outside centerline still contributes ink
+    for (const auto& line:hatch.segments) {EXPECT_LT(line[0].x,-.6);EXPECT_GT(line[1].x,4.6);}
+    EXPECT_TRUE(covers(hatch.mask,{.2,.05}));EXPECT_FALSE(covers(hatch.mask,{2,2}));
+    EXPECT_EQ(command.state.rgba,hatch.mask.state.rgba);
+}
+TEST(CpuHatchTest, PatternAffineScaleRotationAndNegativeInputsAreExplicit) {
+    Transform t;t.xx=-2;t.xy=.5;t.yy=3;auto command=fillPath({square(0,4)},t);command.state.lineWidth=.1;
+    HatchFamily f;f.origin={.125,.25};f.angle=.37;f.spacing=.5;
+    const auto hatch=prepareHatch(command,{f},2);EXPECT_FALSE(hatch.segments.empty());
+    const Point origin=t.point({.25,.5}),axis=t.distance({std::cos(.37),std::sin(.37)}),delta=t.distance({-std::sin(.37),std::cos(.37)});
+    for (const auto& line:hatch.segments) {
+        const Point d{line[1].x-line[0].x,line[1].y-line[0].y};EXPECT_NEAR(0,d.x*axis.y-d.y*axis.x,1e-10);
+        const Point p{line[0].x-origin.x,line[0].y-origin.y};const double k=(axis.x*p.y-axis.y*p.x)/(axis.x*delta.y-axis.y*delta.x);
+        EXPECT_NEAR(std::round(k),k,1e-10);
+    }
+    PreparedHatch output;for (double scale:{-1.,0.,std::numeric_limits<double>::infinity()})
+        EXPECT_EQ("invalid-hatch-scale",diagnostic([&]{output=prepareHatch(command,{f},scale);}));
+    f.spacing=0;EXPECT_EQ("invalid-hatch-pattern",diagnostic([&]{output=prepareHatch(command,{f});}));
+    f.spacing=-1;EXPECT_EQ("invalid-hatch-pattern",diagnostic([&]{output=prepareHatch(command,{f});}));
+    EXPECT_TRUE(output.mask.triangles.empty());EXPECT_TRUE(output.segments.empty());
+}
+TEST(CpuHatchTest, AggregateLinesSegmentsVerticesWorkAndUnsupportedDashesFailClosed) {
+    auto c=fillPath({square(0,4)});c.state.lineWidth=.1;const auto good=prepareHatch(c,{HatchFamily{}});
+    HatchLimits limits;limits.lines=9;PreparedHatch out;
+    EXPECT_EQ("hatch-expansion-limit",diagnostic([&]{out=prepareHatch(c,{HatchFamily{},HatchFamily{}},1,FillRule::EvenOdd,limits);}));
+    limits={};limits.segments=4;EXPECT_EQ("hatch-expansion-limit",diagnostic([&]{out=prepareHatch(c,{HatchFamily{}},1,FillRule::EvenOdd,limits);}));
+    limits={};limits.fill.vertices=15;EXPECT_EQ("hatch-expansion-limit",diagnostic([&]{out=prepareHatch(c,{HatchFamily{}},1,FillRule::EvenOdd,limits);}));
+    limits={};limits.fill.work=good.visited;EXPECT_EQ(good.visited,prepareHatch(c,{HatchFamily{}},1,FillRule::EvenOdd,limits).visited);
+    --limits.fill.work;EXPECT_EQ("hatch-expansion-limit",diagnostic([&]{out=prepareHatch(c,{HatchFamily{}},1,FillRule::EvenOdd,limits);}));
+    c.state.dash={1,1};EXPECT_EQ("unsupported-hatch-pattern",diagnostic([&]{out=prepareHatch(c,{HatchFamily{}});}));
+    EXPECT_TRUE(out.mask.triangles.empty());EXPECT_TRUE(out.segments.empty());
+}
+TEST(CpuGradientTest, FixtureLandmarksAreCpuSamplesNotGpuPixels) {
+    Contract c("gradient","ordinary");LinearGradient g;g.start=point(c.input("axis")[0]);g.end=point(c.input("axis")[1]);
+    const auto& colors=c.input("colors");unsigned i=0;
+    for (const auto& offset:c.input("offsets").GetArray()) {
+        GradientStop s;s.offset=offset.GetDouble();for (unsigned j=0;j<4;++j) s.rgba[j]=colors[i++].GetDouble()/255;g.stops.push_back(s);
+    }
+    const auto prepared=prepareLinearGradient(g);const auto& expected=c.expected("landmark-rgba");i=0;
+    for (const auto& p:c.input("sample-points").GetArray()) for (double v:sampleGradient(prepared,point(p))) EXPECT_EQ(expected[i++].GetInt(),std::lround(v*255));
+    EXPECT_EQ(expected.Size(),i);c.complete();
+}
+TEST(CpuGradientTest, InvalidEmptyLimitDegenerateAndStopsUseFixtureDiagnostics) {
+    for (const char* variant:{"empty","limit","degenerate-axis","invalid-stop"}) {
+        Contract c("gradient",variant);LinearGradient g;g.end={4,0};std::size_t limit=1024;const std::string name=variant;
+        if (name=="empty") EXPECT_TRUE(c.input("offsets").Empty());
+        else if (name=="limit") {limit=c.input("limit").GetUint();g.stops.resize(c.input("requested").GetUint());}
+        else if (name=="degenerate-axis") {g.start=point(c.input("axis")[0]);g.end=point(c.input("axis")[1]);g.stops.resize(1);}
+        else for (const auto& offset:c.input("offsets").GetArray()) {GradientStop s;s.offset=offset.GetDouble();g.stops.push_back(s);}
+        LinearGradient out;c.observe("diagnostic",diagnostic([&]{out=prepareLinearGradient(g,limit);}));
+        c.observe("accepted-output-count",out.stops.size());c.complete();
+    }
+}
+TEST(CpuGradientTest, StableDuplicatesStraightAlphaPaddingAndOwnedSnapshot) {
+    LinearGradient g;g.end={4,0};g.stops={{1,{{0,0,1,1}}},{.5,{{1,0,0,.5}}},{0,{{0,0,0,0}}},{.5,{{0,1,0,.25}}}};
+    const auto c=fillPath({square(0,4)});const auto fill=prepareFill(c,FillRule::EvenOdd,{},&g);ASSERT_TRUE(fill.hasGradient);
+    EXPECT_EQ((std::array<double,4>{{0,1,0,.25}}),sampleGradient(fill.gradient,{2,0}));
+    EXPECT_EQ((std::array<double,4>{{.5,0,0,.25}}),sampleGradient(fill.gradient,{1,0}));
+    EXPECT_EQ((std::array<double,4>{{0,0,0,0}}),sampleGradient(fill.gradient,{-1,0}));
+    EXPECT_EQ((std::array<double,4>{{0,0,1,1}}),sampleGradient(fill.gradient,{5,0}));
+    g.stops.clear();EXPECT_EQ(4u,fill.gradient.stops.size());
+    FillLimits limits;limits.work=fill.visited-1;PreparedFill output;
+    EXPECT_EQ("fill-work-limit",diagnostic([&]{output=prepareFill(c,FillRule::EvenOdd,limits,&fill.gradient);}));EXPECT_FALSE(output.hasGradient);
+    auto bad=fill.gradient;bad.stops[0].rgba[3]=std::numeric_limits<double>::quiet_NaN();EXPECT_EQ("invalid-gradient-stop",diagnostic([&]{sampleGradient(bad,{1,0});}));
+}
+TEST(CpuFillTest, ConcaveNestedMeshAgreesWithIndependentWindingAndHasNoInteriorOverlaps) {
+    using Exact=boost::multiprecision::cpp_bin_float_100;
+    std::vector<Point> star;for (unsigned i=0;i<16;++i) {
+        const double a=i*2*3.141592653589793/16,r=i%2?2.5:5;star.push_back({r*std::cos(a),r*std::sin(a)});
+    }
+    for (bool reversed:{false,true}) for (auto rule:{FillRule::EvenOdd,FillRule::NonZero}) {
+        auto hole=square(-1,1);if (reversed) std::reverse(hole.begin(),hole.end());
+        const std::vector<std::vector<Point>> loops={star,hole,square(8,10)};const auto fill=prepareFill(fillPath(loops),rule);
+        Exact area=0;for (unsigned i=0;i<star.size();++i) area+=(Exact(star[i].x)*star[(i+1)%star.size()].y-Exact(star[i].y)*star[(i+1)%star.size()].x)/2;
+        const double expected=area.convert_to<double>()+4-(rule==FillRule::EvenOdd || reversed?4:0);
+        EXPECT_NEAR(expected,fillArea(fill),1e-9);
+        for (int ix=-22;ix<43;++ix) for (int iy=-22;iy<43;++iy) {
+            const Point p{(ix+.371)/4,(iy+.613)/4};int winding=0;
+            for (const auto& loop:loops) for (unsigned i=0;i<loop.size();++i) {
+                const Point a=loop[i],b=loop[(i+1)%loop.size()];
+                const Exact side=(Exact(b.x)-a.x)*(Exact(p.y)-a.y)-(Exact(b.y)-a.y)*(Exact(p.x)-a.x);
+                if (a.y<=p.y && b.y>p.y && side>0) ++winding;
+                if (a.y>p.y && b.y<=p.y && side<0) --winding;
+            }
+            EXPECT_EQ(rule==FillRule::EvenOdd?winding%2!=0:winding!=0,covers(fill,p));
+            unsigned strictHits=0;for (const auto& t:fill.triangles)
+                if (orientation(t[0],t[1],p)>0 && orientation(t[1],t[2],p)>0 && orientation(t[2],t[0],p)>0) ++strictHits;
+            EXPECT_LE(strictHits,1u);
+        }
+    }
+}
+TEST(CpuFillTest, RoundoffCanonicalizationCannotEraseARealThinContourOrTouchingCurves) {
+    PreparedFill out;EXPECT_EQ("precision-limit",diagnostic([&]{out=prepareFill(fillPath({{{0,0},{4,0},{4,1e-15},{0,1e-15}}}));}));
+    PathRecorder r;r.circle({0,0},4);r.circle({8,0},4);r.fill();
+    EXPECT_THROW(out=prepareFill(r.commands()[0]),std::invalid_argument);EXPECT_TRUE(out.triangles.empty());
+    EXPECT_DOUBLE_EQ(16,fillArea(prepareFill(fillPath({square(0,4)}))));
+}

@@ -91,4 +91,59 @@ PreparedStroke prepareStroke(const PathCommand& command, StrokeStyle style = {},
 // still needs its own union-before-OVER pass; this is not a GPU blend operation.
 std::vector<PreparedStroke> prepareStrokes(const std::vector<PathCommand>& commands,
                                          StrokeStyle style = {}, StrokeLimits limits = {});
+
+// Provisional private R2.3 policy, not public painter setters or GPU execution.
+// Implicitly close contours. Simple, mutually non-touching loops may be nested,
+// disconnected or reversed. Crossing/touching/retraced nondegenerate boundaries
+// and uncertifiable numeric/curve clearances fail closed, not silently repaired.
+// Coordinates are finite physical doubles, zero or1e-80..1e9 in magnitude;
+// local-origin recording retains large-world detail. Roundoff-scale Y snapping
+// is charged to positionBound (<=1/8px total here); collapsing real area rejects.
+enum class FillRule { EvenOdd, NonZero };
+struct FillLimits {
+    std::size_t vertices = MaxFrameElements, work = 4*MaxFrameElements;
+};
+struct GradientStop { double offset = 0; std::array<double,4> rgba{{0,0,0,1}}; };
+struct LinearGradient { Point start{},end{}; std::vector<GradientStop> stops; }; // physical axis
+// Candidate SDR straight-channel interpolation, no transfer function. Stable
+// stop ordering, right-continuous duplicate offsets, endpoint padding. Invalid
+// offsets/colors, empty stops and zero axes are diagnostics, never fallback ink.
+LinearGradient prepareLinearGradient(const LinearGradient& gradient, std::size_t stopLimit = 1024);
+std::array<double,4> sampleGradient(const LinearGradient& prepared, Point physicalPoint);
+struct PreparedFill {
+    PaintState state;
+    FillRule rule = FillRule::EvenOdd;
+    // Horizontal-band decomposition, not a fan. Interiors are disjoint; still
+    // resolve shared boundaries/AA as ONE coverage mask before one color OVER.
+    std::vector<std::array<Point,3>> triangles;
+    Point minimum{}, maximum{};
+    double positionBound = 0;
+    std::size_t visited = 0;
+    bool hasGradient = false;
+    LinearGradient gradient; // owned snapshot, not a pointer/legacy long handle
+};
+PreparedFill prepareFill(const PathCommand& command, FillRule rule = FillRule::EvenOdd,
+                         FillLimits limits = {}, const LinearGradient* gradient = nullptr);
+std::vector<PreparedFill> prepareFills(const std::vector<PathCommand>& commands,
+                                     FillRule rule = FillRule::EvenOdd, FillLimits limits = {});
+struct HatchFamily {
+    // Model-space line family. Positive scale multiplies origin/spacing; angle
+    // is radians. The stroke-time affine map transforms the whole pattern.
+    Point origin{};
+    double angle = 0, spacing = 1;
+};
+struct HatchLimits {
+    FillLimits fill;
+    std::size_t lines = 65536, segments = MaxFrameElements;
+};
+struct PreparedHatch {
+    PreparedFill mask;
+    // Physical centerlines extend past the mask by the physical stroke radius:
+    // clip COVERAGE, not just centerlines, against mask BEFORE one OVER. Butt
+    // ends lie outside the mask; no arbitrary CAD-entity/dashed adapter yet.
+    std::vector<std::array<Point,2>> segments;
+    std::size_t visited = 0;
+};
+PreparedHatch prepareHatch(const PathCommand& boundary, const std::vector<HatchFamily>& families,
+                          double scale = 1, FillRule rule = FillRule::EvenOdd, HatchLimits limits = {});
 }}}

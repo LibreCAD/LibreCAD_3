@@ -36,6 +36,7 @@ painters/renderframe.cpp
 painters/pathrecorder.cpp
 painters/pathgeometry.cpp
 painters/pathstroke.cpp
+painters/pathfill.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
         managers/eventmanager.cpp

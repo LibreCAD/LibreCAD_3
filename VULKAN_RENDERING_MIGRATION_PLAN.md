@@ -1,7 +1,7 @@
 # Vulkan rendering migration plan
 
-Status: reviewed 2026-10-24; R0 remains active and unaccepted.
-Provisional R1, R2.1 and R2.2 implementation are authorized; R2.3–R7 remain proposed.
+Status: reviewed 2026-10-25; R0 remains active and unaccepted.
+Provisional R1, R2.1, R2.2 and R2.3 implementation are authorized; R2.4–R7 remain proposed.
 Baseline: LibreCAD 3
 `132265a0573253980451facf9109678f8bffe743`, branch `fix/msvc-eigen-include`.
 All platform acceptance gates below remain open. R0 is implementing standalone
@@ -37,7 +37,43 @@ all60 source tuples (12 per architecture). This is latest-per-tuple proof across
 attempts1/2:59 initial successes plus one unchanged-budget Intel CLI retry, not
 sixty fresh second-attempt executions or pristine first-attempt success.
 
-### Current checkpoint and next decision — 2026-10-24
+### Provisional R2.3 entry — 2026-10-25
+
+The human explicitly authorizes continuing fills/hatches, local validation,
+commit/push and full five-platform source CI on the existing fork branch.
+Legacy remains default; every acceptance gate remains open. Parent is the local
+documentation closeout4e8bb205, whose published source parent17fdc878 and complete
+five-platform evidence remain immutable. R2.3 changes do not inherit those passes.
+Evidence: build/renderer-evidence/r2-3-cpu-20261025.W4jcrE/.
+
+Private provisional policy: implicitly closed simple contours; even-odd by fixture
+default and explicit nonzero winding. Nested/disconnected/reversed loops are
+supported; crossing, touching, retraced nondegenerate or numerically unresolved
+boundaries fail closed under a declared bounded domain. Horizontal-band
+decomposition replaces fixed-step solid-hatch approximation in CPU preparation,
+without modifying legacy drawables. Input, topology comparisons, sorting, band
+work and output are capped atomically. Physical points stay independent of fills.
+Pattern candidate is positive-scale affine line families with physical widths;
+finite-width stroke coverage must be clipped against the owned fill mask before
+one OVER. Arbitrary CAD-entity/dashed pattern adapters and production painter
+integration remain explicit obligations, not silently successful empty output.
+Gradient snapshots use bounded stable insertion sorting, right-continuous duplicate
+offsets, endpoint padding and straight-channel SDR interpolation; empty/invalid
+stops or degenerate axes reject, without transfer functions or GPU alpha claims.
+All six existing CPU fill bindings now execute real geometry. Mac/Linux ARM64
+each pass221 CPU IDs (200 preserved),129 focused sanitizers, seven C++14 headers,
+four strict sources, SDK-free links and separate three-ID/five-negative build
+contracts. Linux leak checks pass; fixture ASan-only RapidJSON and Mac leak
+qualification limits stay explicit. Eleven Intel objects are compile-only.
+Clean exact-source Linux scripts pass631/631. Six copied fixture mutations reject
+and restore; independent multiprecision winding/area/interior-overlap grids,
+curved landmarks, finite-width hatch masks, affine/large-origin/numeric/topology
+and aggregate limits are ordinary tests. Finalized maintenance and hosted CI
+remain required before a new all-five-source claim.
+No D3 ratification, GPU/phase/platform/hardware/widget/package/release/full-goal
+acceptance or R2.4+ authority follows from this provisional implementation.
+
+### Previous R2.2 checkpoint — 2026-10-24
 
 Owner-authorized continuation: implement independent diameter-sized points
 (physical or model units; zero size has no ink), visible inner round joins and
@@ -2959,8 +2995,10 @@ the human after the successful acbab6cd source cohort. The CPU recorder uses the
 candidate contracts above, with nine existing native case IDs and additional
 recovery/ownership/resource/append-time tests. It does not ratify D3 or change a
 factory/default. The later explicit R2.2 exception permits provisional CPU curve
-and stroke preparation, not D3 ratification or GPU execution. R2.3–R2.5 and all
-phase/release acceptance retain their original prerequisites.
+and stroke preparation, not D3 ratification or GPU execution. The human's later
+R2.3 exception permits provisional fills/hatches and local-check-conditioned
+publication/source CI. R2.4–R2.5 and every phase/release acceptance retain their
+original prerequisites.
 
 1. Implement path/state/transform contracts and immutable commands; keep legacy
    source compatibility and independently test CPU recording without a GPU.
@@ -2972,7 +3010,7 @@ phase/release acceptance retain their original prerequisites.
    Add upload/draw/cache metrics and lifecycle/failure tests.
 
 Use these bounded subpatches after D3 selects the algorithms, except the explicitly
-authorized provisional R2.1/R2.2 candidate work; each adds its case
+authorized provisional R2.1/R2.2/R2.3 candidate work; each adds its case
 IDs to the same selection manifest and keeps the preceding offscreen scene working:
 
 | Subpatch | Concrete implementation and independent acceptance |
@@ -2985,10 +3023,10 @@ IDs to the same selection manifest and keeps the preceding offscreen scene worki
 
 #### R2 readiness audit — requirements retain their full scope
 
-The current local200-ID native CPU run adds seven point and three continuity
-regressions, preserving all190 prior IDs. Point adds three CPU bindings without
-replacing GPU requirements:42 geometry IDs plus three separate build-option IDs
-cover45/51 selected CPU R2 IDs; the six fill IDs remain unimplemented R2.3.
+The current local221-ID native CPU run preserves all200 R2.2 IDs and adds21
+fill/hatch/gradient regressions. All48 geometry IDs plus three separate build
+IDs cover51/51 selected CPU R2 IDs on both ARM64 hosts, including all six prior
+fill proposals. This is CPU selection ownership, not complete F4/GPU acceptance.
 Counts from different executables describe disjoint ownership, not a combined run.
 
 | Required boundary | Current evidence/status | Remaining implementation or authoritative gate |
@@ -2998,7 +3036,7 @@ Counts from different executables describe disjoint ownership, not a combined ru
 | Curves, caps/joins/dashes, numeric/resource limits | CPU preparation has analytic/multiprecision/Cairo membership, monotone-domain, aggregate-work/vertex/state and atomic-recovery evidence;108 sanitizer cases per ARM64 host. All original error/time/size limits stay unchanged. | Ambiguous near-stationary reversals, unresolved tangents/widths and sharp endpoint/corner dash uncertainty remain fail-closed, not declared fully qualified domains. |
 | Point and stroke defaults | Owner-selected diameter marks preserve the path, snapshots/order, physical circles or affine model ellipses, zero no-ink, bounded physical major axis and shared resource caps. Three CPU fixture variants retain the GPU case. Candidate default width1/one-pixel hairline still differs from Cairo initial width2/zero-width no ink. | D3 default/hairline review; point authority does not change legacy or ratify stroke defaults. |
 | Inner-join/intra-cusp continuity | Owner-selected inner round fans and internal curve-cusp round continuity preserve explicit outer join/cap decorations. Independent analytic landmarks, six pre-fix regression rejections and corrected sector/Cairo comparisons bind the selected policy. | D3 acceptance and broader qualified numerical domains remain separate. Do not claim unchanged Cairo parity for the three intentional corrected inner-join landmarks. |
-| Fills/hatches/gradients | Six selected CPU fill IDs have no implementation. Their presence in the51-ID selection is proposed metadata; GPU fill/gradient cases remain required too. | R2.3 authority and bounded fill/contour/pattern policy, then real tests; never drop those IDs to obtain a green subset. |
+| Fills/hatches/gradients | Provisional bounded band tessellation implements all six CPU fixtures, both fill rules, concavity/nesting/disconnection/reversal, implicit closure and degenerate no-ink; ambiguous/touching/crossing topology rejects. Owned masked affine solid-line families include physical-radius padding; bounded owned gradients have explicit stop/alpha/axis policy. Native221/129 sanitizer evidence per ARM64 host and independent winding/area/overlap/numeric/resource regressions pass. | D3 domain/fill/color ratification; arbitrary CAD-entity/dashed pattern adapters, broader numerical/topology qualification and actual painter/executor integration remain open. CPU51/51 does not prove GPU fill/gradient pixels, phase or full-plan completion. Refresh all-five source CI after publication. |
 | GPU coverage/ordering and caches | PreparedStroke requires a separate union-before-OVER domain per command. No production painter consumes these meshes; CPU snapshots do not prove alpha pixels or cache invalidation. RHI R2 selects76 IDs. | R2.4 executor/shader/packing/resource proof and R2.5 cache/retirement work under their prerequisites; do not feed overlapping stroke triangles directly to Frame OVER. |
 | Native platform/publication/whole-plan closure | Published17fdc878 has green run40146772555:60 source tuples/five architectures plus protocols/aggregate, latest-per-tuple after one unchanged-budget Intel CLI retry. All artifacts and initial failure retained; native200 IDs per architecture, local108 sanitizers per ARM64 host, Intel virtual Metal source-only. R0/D1–D6 and later gates remain open. | Independent review, broader numerical domains, R2.3–R2.5 and actual application/export/package/default/cutover/retirement work remain required under their own authority; source CI is not platform/hardware/release acceptance. |
 
@@ -3679,6 +3717,9 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-25 | Provisional R2.3 candidate locally validated; source publication next | Mac/Linux ARM64 each pass221 CPU IDs preserving200,129 focused sanitizers, seven independent C++14 headers/four strict sources/SDK-free links and separate three build IDs/five corruption negatives; Linux leaks pass, fixture ASan-only RapidJSON/Mac leak limits stay explicit. All51 CPU R2 IDs bind48 geometry+3 build, including six fill proposals;76 GPU IDs remain separate. Eleven Intel objects are compile-only. Exact-source clean Linux scripts631/631; six copied fixture mutants reject then restore. Independent multiprecision winding/area/overlap grids, analytic curved landmarks, finite-width hatch mask and affine/numeric/topology/resource/gradient ownership tests pass. Retain initial conic failure, exclusion-citation rejection and two source-guard rejections after a comment-only header edit; final frozen-source audited reruns pass. Replace library-dependent gradient sort budget with explicit bounded stable insertion sorting before final reruns. Full-plan/checker42/worktree123 paths/16 gates/inventory190/lints/diff repeat after this receipt. Evidence: build/renderer-evidence/r2-3-cpu-20261025.W4jcrE/. Preserve75 renderer/389 Python prior receipts,1085 other baseline files, original checkout/index/staging and all prior proof/gate states. Publish only intended paths via separate index to authorized fork branch, then full five-platform source CI. No default/assertion/timeout/provider/dependency/Python ownership, merge/release-workflow/R2.4+ or D1–D6/independent/GPU/phase/platform/hardware/widget/package/release/full-goal promotion. |
+| 2026-10-25 | R2.3 local validation active; numeric and coverage boundaries explicit | Independent fixtures and winding/grid/area/overlap, finite-width hatch coverage and owned gradient tests exercise provisional preparation. Initial conic scan-level failure retained; roundoff-scale level canonicalization is charged to the same position budget and cannot erase real area. Exact bounded-double orientation signs replace epsilon winding decisions. Full-plan/checker42 pass; initial worktree exclusion-citation failure is retained and corrected in synchronized newest receipt. Source-bound native/sanitizer/header/link/build/Intel/clean-script/final maintenance checks and full hosted cohort remain pending. Evidence: build/renderer-evidence/r2-3-cpu-20261025.W4jcrE/. Preserve74 renderer/388 Python prior rows and immutable R2.2 proof; legacy stays default and all acceptance gates stay open. No production painter, D3/R2.4+ or GPU/platform/hardware/widget/package/release/full-goal acceptance. |
+| 2026-10-25 | Provisional R2.3 explicitly authorized; implementation active | Human requests fills/hatches, local validation, commit/push and five-platform source CI on the existing fork branch. Preserve legacy default and all acceptance gates. Verify237 hosted/3291 local R2.2 evidence files,1091 baseline files and original checkout/index/staging; parent4e8bb205 remains local until locally validated source publication. Private even-odd/nonzero simple-contour band decomposition and bounded affine solid-line hatch families are candidate policy, not D3 ratification. Crossing/touching/retraced/uncertain domains fail closed; arbitrary CAD/dashed adapters and production executor remain obligations. Six CPU bindings, independent geometry, gradients, native/sanitizer/header/link/Intel/script/maintenance checks and hosted CI pending. Evidence: build/renderer-evidence/r2-3-cpu-20261025.W4jcrE/. Preserve73 renderer/387 Python prior receipts and all gate ledger states; no R2.4–R7, GPU/phase/platform/hardware/widget/package/release/full-goal promotion. |
 | 2026-10-25 | Provisional R2.2 five-platform source CI closed out; acceptance open | Published17fdc87893da5c4f962c0cdadd8b86e933cf8818 has run40146772555 attempt2 green62/62 latest checks:60 source tuples/12 per platform, initial59 successes plus one unchanged-source/budget Intel CLI/OFF retry and dependent aggregate. Preserve all73 indexed first-attempt files including timeout; bind60 carried job aliases to identical original execution timestamps/runner/steps, not new executions. All60 ZIPs/CRCs/digests/source/helper/header/File API/XML/native IDs/process/provider records read back:200 CPU IDs per architecture (190 preserved),40 library test profiles (200/298),20 tests-on hosts (298 CLI/305 others), seven C++14 headers,14 RHI runs/22 IDs, two independently matched virtual Intel Metal source attestations,98 ordinary XML/52 expected negatives/2356 process records/13162 retained hashes/30 f7debf4c source SDKs with unchanged three patches. Widgets97 per UI host remain unexecuted. All-five CPU R2 ownership45/51 retains six R2.3 fill proposals;76 GPU R2 IDs are not proved. Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff repeat after this receipt. Evidence: build/renderer-evidence/r2-2-publication-20261024.gGE6mU/. Preserve72 renderer/386 Python prior rows, immutable3291-file local proof,1089 other publication-baseline files, original checkout/index/staging and all gate states. Keep remote at exact green source17fdc878; commit the documentation-only closeout locally as in R2.1, without duplicate CI/skip directives. No assertions/timeouts/provider/default/source changes, merge/new PR/release-workflow/R2.3–R7/D1–D6/independent/phase/platform/hardware/widget/deployment/package/release/full-goal promotion. Legacy remains default; broader numerical domains and original later-stage prerequisites remain open. |
 | 2026-10-25 | Hosted Intel cold-kernel timeout retained; cohort continues | Attempt1 run40146772555 has one failed cli/MAC-X64/tests-OFF job121029691082: library-lckernel times out at300 seconds after86/91 Ninja steps, no compiler error, before R2.2 viewer compilation. Retain failed job log, artifact12582393078/ZIP digest2428cb1accd2b39a08579edf5b707c770894a10bfd5d6f5d0b16b1e8e2125900 and all successful same-SHA evidence. Exact source remains17fdc878; other jobs continue. GitHub rejects the early job rerun; wait for cohort completion and archive all records before a bounded same-SHA failed-job retry. No time/assertion/provider/default/source changes, cancellation of live jobs or success claim. Evidence: build/renderer-evidence/r2-2-publication-20261024.gGE6mU/failure-attempt1/. Preserve71 renderer/385 Python prior rows, local3291-file proof and all gates; repeat final maintenance after resolved cohort. Legacy remains default; full source and acceptance closure remain pending. |
 | 2026-10-24 | Locally validated R2.2 candidate published; hosted source CI started | Commit17fdc87893da5c4f962c0cdadd8b86e933cf8818 adds13 intended candidate paths via a separate index; original fix/msvc-eigen-include HEAD/index/staging remain intact. Non-force push to dxli/LibreCAD_3:codex/r1-platform-ci triggers run40146772555 once, with60 source tuples across Linux x64/ARM64, Windows x64 and Mac ARM64/Intel plus protocol/aggregate jobs. No duplicate dispatch, merge, new PR or release-workflow change. Local3291-file proof packet remains immutable/source-bound:200 native/108 sanitizer per ARM64 host,630 clean Linux scripts, seven headers/three sources, Intel compile-only, distinct corrected-Cairo geometry and negative checks. Preserve70 renderer/384 Python prior receipts and all gates. Evidence: build/renderer-evidence/r2-2-publication-20261024.gGE6mU/. Hosted completion/artifact audit pending; legacy stays default, Intel verified virtual Metal is source-only, hardware/D1–D6/R2.3–R7/widget/package/release/full-goal gates stay open. Repeat finalized maintenance checks; no hosted success inferred from push. |

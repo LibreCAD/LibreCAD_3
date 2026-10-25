@@ -20,6 +20,27 @@ import validate_renderer_inventory as inventory
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_r2_3_fill_bindings_execute_real_bounded_cpu_geometry(self):
+        root=inventory.REPO_ROOT
+        manifest=inventory.validate_case_manifest()['manifest']
+        case=next(c for c in manifest['cases'] if c['id']=='cpu-hatch-fill')
+        source=(root/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        implemented={suite+'.'+name for suite,name in re.findall(r'TEST\((\w+),\s*(\w+)\)',source)}
+        self.assertEqual(6,len(case['variants']))
+        self.assertTrue({v['test'] for v in case['variants']}<=implemented)
+        self.assertIn('painters/pathfill.cpp',(root/'lcviewernoqt/CMakeLists.txt').read_text())
+        for name in ('WindingOrientationNestingAndDisconnectedRegions','TopologyCrossingTouchingAndRetracingRejectAtomically',
+                     'CurvedCircleAndPolynomialBoundaryHaveIndependentAreaAndDistance',
+                     'WorkVertexStateAndBatchCapsPreserveOrderAndPriorOutput'):
+            self.assertIn('CpuFillTest.'+name,implemented)
+        self.assertIn('CpuHatchTest.FiniteWidthCoverageUsesMaskNotCenterlineClipping',implemented)
+        self.assertIn('CpuGradientTest.StableDuplicatesStraightAlphaPaddingAndOwnedSnapshot',implemented)
+        production=(root/'lcviewernoqt/painters/pathfill.cpp').read_text()
+        for forbidden in ('#include <Q','#include <cairo','multiprecision','long double'):
+            self.assertNotIn(forbidden,production)
+        for api in ('prepareFill','prepareFills','prepareHatch','prepareLinearGradient'):
+            self.assertIn(api,(root/'lcviewernoqt/painters/pathgeometry.h').read_text())
+
     def test_r2_2_owner_selected_points_and_continuity_keep_ordinary_regressions(self):
         source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
         for name in ('PhysicalAndModelDiameterFollowIndependentAffineLandmarks',
