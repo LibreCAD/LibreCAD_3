@@ -90,7 +90,7 @@ struct Builder {
         if (y==e.b.y) return e.b.x;
         return e.a.x+(e.b.x-e.a.x)*((y-e.a.y)/(e.b.y-e.a.y));
     }
-    PreparedFill run(const PathCommand& command,FillRule rule) {
+    PreparedFill run(const PathCommand& command,FillRule rule,double inputPositionBound) {
         check(command.operation==PaintOperation::Fill,"invalid-fill");
         command.state.transform.validate();
         for (double c:command.state.rgba) check(std::isfinite(c) && c>=0 && c<=1,"invalid-color");
@@ -99,7 +99,7 @@ struct Builder {
         result.state=command.state;result.rule=rule;
         CurveLimits curve;curve.vertices=limits.vertices;curve.work=limits.work-result.visited;
         const auto flat=flatten(command,curve);result.visited+=flat.visited;
-        result.positionBound=flat.positionBound;
+        result.positionBound=flat.positionBound+inputPositionBound;
         for (const auto& path:flat.subpaths) for (Point p:path.points) {
             tick();valid(p);round=std::max(round,256*eps*(1+std::max(std::abs(p.x),std::abs(p.y))));
             levels.push_back(p.y);
@@ -144,7 +144,7 @@ struct Builder {
                 check(orient(u,common,v)!=0 || dot(sub(u,common),sub(v,common))<0,"unsupported-fill-topology");
                 continue;
             }
-            const double clearance=2*flat.positionBound+4*round;
+            const double clearance=2*(flat.positionBound+inputPositionBound)+4*round;
             if (!boxesMeet(a,b,clearance)) continue;
             const int x1=orient(a.a,a.b,b.a),x2=orient(a.a,a.b,b.b);
             const int y1=orient(b.a,b.b,a.a),y2=orient(b.a,b.b,a.b);
@@ -206,7 +206,8 @@ std::array<double,4> sampleGradient(const LinearGradient& prepared,Point point) 
     const auto& a=*(right-1);const auto& b=*right;const double f=(t-a.offset)/(b.offset-a.offset);
     std::array<double,4> out;for (unsigned i=0;i<4;++i) out[i]=a.rgba[i]*(1-f)+b.rgba[i]*f;return out;
 }
-PreparedFill prepareFill(const PathCommand& command,FillRule rule,FillLimits limits,const LinearGradient* gradient) {
+PreparedFill prepareFill(const PathCommand& command,FillRule rule,FillLimits limits,const LinearGradient* gradient,double inputPositionBound) {
+    check(std::isfinite(inputPositionBound) && inputPositionBound>=0 && inputPositionBound<=1.0/64,"invalid-boundary-error");
     validate(rule,limits);LinearGradient paint;std::size_t work=0;
     if (gradient) {
         check(gradient->stops.size()<=limits.work,"fill-work-limit");
@@ -217,7 +218,7 @@ PreparedFill prepareFill(const PathCommand& command,FillRule rule,FillLimits lim
         check(work<=limits.work,"fill-work-limit");limits.work-=work;
         paint=prepareLinearGradient(*gradient);
     }
-    auto out=Builder{limits,{}, {}, {},0}.run(command,rule);
+    auto out=Builder{limits,{}, {}, {},0}.run(command,rule,inputPositionBound);
     out.visited+=work;out.hasGradient=gradient!=nullptr;out.gradient=std::move(paint);return out;
 }
 std::vector<PreparedFill> prepareFills(const std::vector<PathCommand>& commands,FillRule rule,FillLimits limits) {

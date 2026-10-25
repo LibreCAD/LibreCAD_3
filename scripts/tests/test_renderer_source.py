@@ -20,6 +20,17 @@ import validate_renderer_inventory as inventory
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_r2_3_actual_regions_share_curve_recording_and_propagate_join_certificates(self):
+        root=inventory.REPO_ROOT
+        source=(root/'unittest/lcviewernoqt/testregionrecorder.cpp').read_text()
+        self.assertEqual(15,len(set(re.findall(r'TEST\(CpuRegionRecorderTest,\s*(\w+)\)',source))))
+        self.assertIn('lcviewernoqt/testregionrecorder.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
+        production=(root/'lcviewernoqt/painters/hatchrecorder.cpp').read_text()
+        for name in ('recordRegion','prepareRegionFill','prepareRegionHatch','ambiguous-region-loop','region-work-limit','input.positionBound'):
+            self.assertIn(name,production)
+        self.assertIn('flat.positionBound+inputPositionBound',(root/'lcviewernoqt/painters/pathfill.cpp').read_text())
+        self.assertIn('nullptr,inputPositionBound',(root/'lcviewernoqt/painters/hatchtiler.cpp').read_text())
+
     def test_r2_3_real_tile_preparation_is_bounded_cpu_geometry_in_the_ordinary_suite(self):
         root=inventory.REPO_ROOT
         self.assertIn('painters/hatchtiler.cpp',(root/'lcviewernoqt/CMakeLists.txt').read_text())

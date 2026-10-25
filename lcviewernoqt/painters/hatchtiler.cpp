@@ -80,7 +80,7 @@ struct Lattice {
 };
 }
 PreparedTiledHatch prepareTiledHatch(const PathCommand& boundary,const HatchTile& tile,double scale,double angle,
-                                   FillRule rule,StrokeStyle style,TiledHatchLimits limits) {
+                                   FillRule rule,StrokeStyle style,TiledHatchLimits limits,double inputPositionBound) {
     check(std::isfinite(scale) && scale>0 && std::isfinite(angle),"invalid-hatch-scale");
     check(limits.cells<=MaxFrameElements && limits.instances<=MaxFrameElements,"invalid-limits");
     check(tile.commands.size()<=MaxFrameElements && tile.state.dash.size()<=1024,"state-limit");
@@ -96,7 +96,7 @@ PreparedTiledHatch prepareTiledHatch(const PathCommand& boundary,const HatchTile
     }
     PreparedTiledHatch out;out.ink.state=tile.state;
     auto tick=[&](std::size_t n) {check(n<=limits.geometry.work-out.visited,"hatch-work-limit");out.visited+=n;};
-    tick(input);tick(tile.commands.size());out.mask=prepareFill(boundary,rule,{limits.geometry.vertices,limits.geometry.work-out.visited});tick(out.mask.visited);
+    tick(input);tick(tile.commands.size());out.mask=prepareFill(boundary,rule,{limits.geometry.vertices,limits.geometry.work-out.visited},nullptr,inputPositionBound);tick(out.mask.visited);
     if (tile.commands.empty()) {out.positionBound=out.mask.positionBound;return out;}
     check(std::isfinite(tile.minimum.x) && std::isfinite(tile.minimum.y) && std::isfinite(tile.maximum.x) && std::isfinite(tile.maximum.y),"invalid-hatch-tile");
     Lattice lattice(tile,scale,angle);

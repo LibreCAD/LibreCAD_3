@@ -109,6 +109,7 @@ lcviewernoqt/testrenderframe.cpp
 lcviewernoqt/testpathrecorder.cpp
 lcviewernoqt/testhatchrecorder.cpp
 lcviewernoqt/testhatchtiler.cpp
+lcviewernoqt/testregionrecorder.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp

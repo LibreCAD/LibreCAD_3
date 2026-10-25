@@ -2,6 +2,7 @@
 #include "pathrecorder.h"
 
 namespace lc { namespace objects { struct Pattern; } }
+namespace lc { namespace geo { class Region; } }
 namespace lc { namespace viewer { namespace render {
 // Coordinates already include zoom and DPR, in physical target pixels. This
 // reserves most of the total 0.25px budget for stroke expansion/float packing.
@@ -124,7 +125,10 @@ struct PreparedFill {
     LinearGradient gradient; // owned snapshot, not a pointer/legacy long handle
 };
 PreparedFill prepareFill(const PathCommand& command, FillRule rule = FillRule::EvenOdd,
-                         FillLimits limits = {}, const LinearGradient* gradient = nullptr);
+                         FillLimits limits = {}, const LinearGradient* gradient = nullptr,
+                         double inputPositionBound = 0);
+// A certified upstream boundary-recording error (0..1/64 physical pixel) is
+// charged to topology clearances AND positionBound, not just a final annotation.
 std::vector<PreparedFill> prepareFills(const std::vector<PathCommand>& commands,
                                      FillRule rule = FillRule::EvenOdd, FillLimits limits = {});
 struct HatchFamily {
@@ -180,6 +184,30 @@ struct PreparedTiledHatch {
 // Large lattice indices use compensated origin rebasing; uncertifiable numeric
 // domains and global input/cell/instance/work/output caps fail atomically.
 PreparedTiledHatch prepareTiledHatch(const PathCommand& boundary, const HatchTile& tile,
+    double scale = 1, double angle = 0, FillRule rule = FillRule::EvenOdd,
+    StrokeStyle style = {}, TiledHatchLimits limits = {}, double inputPositionBound = 0);
+
+struct RegionLimits {
+    RecordingLimits recording;
+    std::size_t work = 4*MaxFrameElements;
+    double joinError = 1.0/64; // cap, NOT a general CAD endpoint snapping tolerance
+};
+struct RecordedRegion {
+    PathCommand boundary; // owned physical coordinates, one implicitly closed contour per CAD Loop
+    double positionBound = 0;
+    std::size_t visited = 0;
+};
+// Reorder/reverse only uniquely connected roundoff-close edges. The first
+// nondegenerate edge fixes each loop's winding; never normalize holes by guess.
+// Preserve curves, reject real gaps/branches/disjoint cycles in one Loop.
+// Region LWPolyline widths describe stroke decoration, NOT boundary offset.
+// The raw boundary MUST travel with its positionBound; wrappers do so and share
+// recording/preparation work caps. No references to mutable CAD entities escape.
+RecordedRegion recordRegion(const lc::geo::Region& region, const PaintState& state = {}, RegionLimits limits = {});
+PreparedFill prepareRegionFill(const lc::geo::Region& region, const PaintState& state = {},
+                               FillRule rule = FillRule::EvenOdd, FillLimits limits = {},
+                               const LinearGradient* gradient = nullptr);
+PreparedTiledHatch prepareRegionHatch(const lc::geo::Region& region, const HatchTile& tile,
     double scale = 1, double angle = 0, FillRule rule = FillRule::EvenOdd,
     StrokeStyle style = {}, TiledHatchLimits limits = {});
 }}}
