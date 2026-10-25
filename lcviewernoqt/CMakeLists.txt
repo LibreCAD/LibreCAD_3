@@ -34,6 +34,8 @@ drawables/lccursor.cpp
 painters/createpainter.cpp
 painters/renderframe.cpp
 painters/pathrecorder.cpp
+painters/pathgeometry.cpp
+painters/pathstroke.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
         managers/eventmanager.cpp
@@ -100,6 +102,7 @@ events/snappointevent.h
 painters/lcpainter.h
 painters/renderframe.h
 painters/pathrecorder.h
+painters/pathgeometry.h
 painters/createpainter.h
 painters/lccairopainter.tcc
 documentcanvas.h
@@ -203,7 +206,7 @@ endif()
 if(WITH_UNITTESTS)
     set(_cpu_header_sources "")
     foreach(LC_CPU_HEADER painters/lcpainter.h painters/createpainter.h
-            painters/renderframe.h painters/pathrecorder.h documentcanvas.h lcdrawoptions.h)
+            painters/renderframe.h painters/pathrecorder.h painters/pathgeometry.h documentcanvas.h lcdrawoptions.h)
         string(MAKE_C_IDENTIFIER "${LC_CPU_HEADER}" _cpu_header_name)
         set(_cpu_header_source "${CMAKE_CURRENT_BINARY_DIR}/cpu-headers/${_cpu_header_name}.cpp")
         configure_file("${CMAKE_SOURCE_DIR}/unittest/lcviewernoqt/cpu_headercheck.cpp.in"

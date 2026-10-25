@@ -20,6 +20,90 @@ import validate_renderer_inventory as inventory
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_r2_2_owner_selected_points_and_continuity_keep_ordinary_regressions(self):
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        for name in ('PhysicalAndModelDiameterFollowIndependentAffineLandmarks',
+                     'MarksOwnStatePreservePathAndBatchOrderWithoutStrokeDecorations',
+                     'AggregateWorkVerticesAndPhysicalMajorAxisLimitsFailClosed',
+                     'CorrectedInnerFanClosesShortCornersWithoutUnboundedMiters',
+                     'InternalCuspContinuityDoesNotDecorateExplicitReversals',
+                     'DashedCuspKeepsContinuityOnlyInsideAnOnRun'):
+            self.assertRegex(source,r'TEST\(\w+,\s*'+name+r'\)')
+
+    def test_r2_2_monotone_certificates_keep_exact_and_ambiguous_domains_separate(self):
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        tests=set(re.findall(r'TEST\(CpuCurvedStrokeTest,\s*(\w+)\)',source))
+        for name in ('MonotoneControlPolygonsDoNotNeedNearCriticalDiscriminantRoots',
+                     'StrictlyMonotoneNearStationaryCubicsUseAnExactSignCertificate',
+                     'FmaResidualOrderingCertifiesAxisAlignedOffsetsWithoutHidingReversals',
+                     'NearCriticalScalarRoundingFailsClosedButExactStationarySpansWork'):
+            self.assertIn(name,tests)
+        production=(inventory.REPO_ROOT/'lcviewernoqt/painters/pathgeometry.cpp').read_text()
+        self.assertNotIn('long double',production.replace('long-double',''))
+        self.assertNotIn('multiprecision',production)
+
+    def test_r2_2_curve_work_caps_cover_nonrecursive_and_mixed_paths(self):
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        tests=set(re.findall(r'TEST\(CpuCurveTest,\s*(\w+)\)',source))
+        for name in ('WorkCapCountsMoveLineCloseAndEmptySubpaths','MixedCurveWorkSharesTheCapAndFailurePreservesPriorOutput'):
+            self.assertIn(name,tests)
+        production=(inventory.REPO_ROOT/'lcviewernoqt/painters/pathgeometry.cpp').read_text()
+        self.assertIn('command.path.size() <= limits.work',production)
+
+    def test_r2_2_shared_geometry_bindings_and_batch_stay_cpu_only(self):
+        cases=inventory.validate_case_manifest()
+        names={'line','arc','circle','ellipse','lwpolyline','stroke','point'}
+        by_id={c['id']:c for c in cases['manifest']['cases']}
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        implemented={suite+'.'+name for suite,name in re.findall(r'TEST\((\w+),\s*(\w+)\)',source)}
+        count=0
+        for name in names:
+            gpu,cpu=by_id[name],by_id['cpu-'+name]
+            for key in ('dataset','fixture','features','methods','consumers','assets','decisions','stage'):
+                self.assertEqual(gpu[key],cpu[key])
+            self.assertEqual(['cpu-source'],cpu['configurations']);self.assertEqual(['cpu'],cpu['profiles'])
+            self.assertEqual(['cpu'],cpu['modes']);self.assertEqual(['none'],cpu['devices']);self.assertEqual([],cpu['requires'])
+            for g,c in zip(gpu['variants'],cpu['variants']):
+                self.assertEqual({k:v for k,v in g.items() if k!='test'},{k:v for k,v in c.items() if k!='test'})
+                self.assertIn(c['test'],implemented);self.assertNotEqual(g['test'],c['test']);count+=1
+        self.assertEqual(26,count)
+        for name in ('BatchOwnsSnapshotsIncludingEmptyCommands','BatchSharesWorkVerticesAndInputStateBudgets',
+                     'BatchLaterInvalidCommandLeavesPriorOutputIntact'):
+            self.assertIn('CpuStrokeTest.'+name,implemented)
+        self.assertIn('prepareStrokes',(inventory.REPO_ROOT/'lcviewernoqt/painters/pathgeometry.h').read_text())
+
+    def test_r2_2_curved_stroke_bounds_and_stationary_cases_use_the_cpu_suite(self):
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        tests=set(re.findall(r'TEST\(CpuCurvedStrokeTest,\s*(\w+)\)',source))
+        self.assertGreaterEqual(len(tests),17)
+        for name in ('PolynomialNormalSweepsUseWidthNotOnlyCenterlineError','ThickClosedCircleKeepsAnnulusAndFoldedInterior',
+                     'PhysicalDashesFollowAnalyticCircularArcLength','StationaryTwoDimensionalCuspUsesOneSidedTangents',
+                     'SharpCurveBoundaryUsesExactTangentsAtTheMiterThreshold'):
+            self.assertIn(name,tests)
+        self.assertIn('CurveMetrics',(inventory.REPO_ROOT/'lcviewernoqt/painters/pathgeometry.h').read_text())
+
+    def test_r2_2_linear_stroke_preparation_stays_in_the_ordinary_cpu_suite(self):
+        root=inventory.REPO_ROOT
+        source=(root/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        tests=set(re.findall(r'TEST\(CpuStrokeTest,\s*(\w+)\)',source))
+        self.assertGreaterEqual(len(tests),18)
+        self.assertIn('RoundJoinDoesNotOverpaintNearbyButtCaps',tests)
+        self.assertIn('RoundCapsDoNotOverpaintNearbyBevelJoins',tests)
+        self.assertIn('ZeroGapRetainsJoinsRatherThanIntermediateCaps',tests)
+        self.assertIn('painters/pathstroke.cpp',(root/'lcviewernoqt/CMakeLists.txt').read_text())
+        self.assertIn('lcviewernoqt/testpathrecorder.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
+        self.assertIn('UnionBeforeOver',(root/'lcviewernoqt/painters/pathgeometry.h').read_text())
+
+    def test_r2_2_cpu_spline_ids_use_the_ordinary_recorder_suite(self):
+        cases=inventory.validate_case_manifest()
+        required={v['test'] for c in cases['manifest']['cases'] if c['id']=='cpu-spline' for v in c['variants']}
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/testpathrecorder.cpp').read_text()
+        implemented={suite+'.'+name for suite,name in re.findall(r'TEST\((\w+),\s*(\w+)\)',source)}
+        self.assertEqual(7,len(required));self.assertTrue(required<=implemented)
+        self.assertIn('build_contract::pinnedFixture',source)
+        self.assertIn('"spline"',source)
+        self.assertIn('painters/pathgeometry.h',runner.CPU_PUBLIC_HEADERS)
+
     def test_r2_1_contract_ids_are_in_the_ordinary_cpu_suite(self):
         cases=inventory.validate_case_manifest()
         required={v['test'] for c in cases['manifest']['cases'] if c['id'] in ('cpu-path-state','cpu-transform') for v in c['variants']}
@@ -81,7 +165,7 @@ class SourceBuildTests(unittest.TestCase):
         for flag in ('WITH_QT_UI','WITH_PYTHONSCRIPT','WITH_LEGACY_OPENGL_RENDERER','WITH_PERSISTENCE'):
             self.assertIn('-D'+flag+':BOOL=OFF',configure)
         for target in ('lcunittest','lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck'):self.assertIn(target,build)
-        self.assertEqual(6,len(record['cpu_headers']['objects_sha256']))
+        self.assertEqual(7,len(record['cpu_headers']['objects_sha256']))
         self.assertIn('--config',build);self.assertIn('Release',build)
 
     def test_source_deadline_rounding_is_capped_without_extending_the_profile(self):
@@ -1007,10 +1091,10 @@ class CpuHeaderContractTests(unittest.TestCase):
 
     def test_independent_configured_consumers_require_real_nonempty_outputs(self):
         result=runner.cpu_header_contract(self.build)
-        self.assertEqual('14',result['standard']);self.assertEqual(6,len(result['configured_sources_sha256']))
+        self.assertEqual('14',result['standard']);self.assertEqual(7,len(result['configured_sources_sha256']))
         with self.assertRaisesRegex(ValueError,'not compiled'):runner.cpu_header_contract(self.build,True)
         for p in (self.build/'lcviewernoqt/cpu-headers/objects-Release.txt').read_text().splitlines():Path(p).write_bytes(b'synthetic-object')
-        self.assertEqual(6,len(runner.cpu_header_contract(self.build,True)['objects_sha256']))
+        self.assertEqual(7,len(runner.cpu_header_contract(self.build,True)['objects_sha256']))
 
     def test_cpp17_other_languages_and_foreign_or_missing_sources_fail(self):
         path=self.build/'.cmake/api/v1/reply/lcviewer_cpu_headercheck.json';original=json.loads(path.read_text())

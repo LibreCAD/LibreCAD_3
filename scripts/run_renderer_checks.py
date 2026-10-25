@@ -500,7 +500,7 @@ def source_targets(build):
     return targets
 
 
-CPU_PUBLIC_HEADERS=('painters/lcpainter.h','painters/createpainter.h','painters/renderframe.h','painters/pathrecorder.h','documentcanvas.h','lcdrawoptions.h')
+CPU_PUBLIC_HEADERS=('painters/lcpainter.h','painters/createpainter.h','painters/renderframe.h','painters/pathrecorder.h','painters/pathgeometry.h','documentcanvas.h','lcdrawoptions.h')
 CPU_HEADER_TEMPLATE='unittest/lcviewernoqt/cpu_headercheck.cpp.in'
 
 

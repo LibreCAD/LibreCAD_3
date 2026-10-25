@@ -578,6 +578,28 @@
       "requires": ["rhi"]
     },
     {
+      "id": "cpu-point",
+      "stage": "R2",
+      "features": ["F1","F2"],
+      "methods": ["void point(double,double,double,bool)"],
+      "consumers": ["lcviewernoqt-drawitems-lcvpoint-cpp","lcviewernoqt-drawitems-lcvpoint-h"],
+      "configurations": ["cpu-source"],
+      "profiles": ["cpu"],
+      "modes": ["cpu"],
+      "devices": ["none"],
+      "fixture": "contracts",
+      "dataset": "point",
+      "assets": [],
+      "decisions": ["D3"],
+      "binding": "proposed-gtest",
+      "variants": [
+        {"id":"ordinary","test":"CpuPointTest.CpuPointOrdinary","expect":"success","oracles":["model-error","curve-error"]},
+        {"id":"empty","test":"CpuPointTest.CpuPointEmpty","expect":"success","oracles":["contracts"]},
+        {"id":"limit","test":"CpuPointTest.CpuPointLimit","expect":"diagnostic","oracles":["contracts"],"reason":"point-size-limit"}
+      ],
+      "requires": []
+    },
+    {
       "id": "point",
       "stage": "R2",
       "features": ["F1","F2"],
@@ -2086,6 +2108,434 @@
         {"id":"limit","test":"CpuTransformTest.CpuTransformLimit","expect":"diagnostic","oracles":["contracts"],"reason":"invalid-transform"},
         {"id":"large-origin","test":"CpuTransformTest.CpuTransformLargeOrigin","expect":"success","oracles":["curve-error"]},
         {"id":"nonfinite","test":"CpuTransformTest.CpuTransformNonfinite","expect":"diagnostic","oracles":["contracts"],"reason":"invalid-transform"}
+      ],
+      "requires": []
+    },
+    {
+      "id": "cpu-line",
+      "stage": "R2",
+      "features": [
+        "F1",
+        "F2"
+      ],
+      "methods": [
+        "void move_to(double,double)",
+        "void line_to(double,double)",
+        "void stroke()"
+      ],
+      "consumers": [
+        "lcviewernoqt-drawitems-lcvline-cpp",
+        "lcviewernoqt-drawitems-lcvline-h"
+      ],
+      "configurations": [
+        "cpu-source"
+      ],
+      "profiles": [
+        "cpu"
+      ],
+      "modes": [
+        "cpu"
+      ],
+      "devices": [
+        "none"
+      ],
+      "fixture": "contracts",
+      "dataset": "line",
+      "assets": [],
+      "decisions": [
+        "D3"
+      ],
+      "binding": "proposed-gtest",
+      "variants": [
+        {
+          "id": "ordinary",
+          "test": "CpuCurveTest.CpuLineOrdinary",
+          "expect": "success",
+          "oracles": [
+            "model-error"
+          ]
+        },
+        {
+          "id": "empty",
+          "test": "CpuCurveTest.CpuLineEmpty",
+          "expect": "success",
+          "oracles": [
+            "contracts"
+          ]
+        },
+        {
+          "id": "limit",
+          "test": "CpuCurveTest.CpuLineLimit",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "vertex-limit"
+        }
+      ],
+      "requires": []
+    },
+    {
+      "id": "cpu-arc",
+      "stage": "R2",
+      "features": [
+        "F3"
+      ],
+      "methods": [
+        "void arc(double,double,double,double,double)",
+        "void arcNegative(double,double,double,double,double)"
+      ],
+      "consumers": [
+        "lcviewernoqt-drawitems-lcvarc-cpp",
+        "lcviewernoqt-drawitems-lcvarc-h"
+      ],
+      "configurations": [
+        "cpu-source"
+      ],
+      "profiles": [
+        "cpu"
+      ],
+      "modes": [
+        "cpu"
+      ],
+      "devices": [
+        "none"
+      ],
+      "fixture": "contracts",
+      "dataset": "arc",
+      "assets": [],
+      "decisions": [
+        "D3"
+      ],
+      "binding": "proposed-gtest",
+      "variants": [
+        {
+          "id": "ordinary",
+          "test": "CpuCurveTest.CpuArcOrdinary",
+          "expect": "success",
+          "oracles": [
+            "model-error"
+          ]
+        },
+        {
+          "id": "empty",
+          "test": "CpuCurveTest.CpuArcEmpty",
+          "expect": "success",
+          "oracles": [
+            "contracts"
+          ]
+        },
+        {
+          "id": "limit",
+          "test": "CpuCurveTest.CpuArcLimit",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "subdivision-limit"
+        },
+        {
+          "id": "clockwise",
+          "test": "CpuCurveTest.CpuArcClockwise",
+          "expect": "success",
+          "oracles": [
+            "model-error",
+            "angle-error"
+          ]
+        }
+      ],
+      "requires": []
+    },
+    {
+      "id": "cpu-circle",
+      "stage": "R2",
+      "features": [
+        "F3"
+      ],
+      "methods": [
+        "void circle(double,double,double)"
+      ],
+      "consumers": [
+        "lcviewernoqt-drawitems-lcvcircle-cpp",
+        "lcviewernoqt-drawitems-lcvcircle-h"
+      ],
+      "configurations": [
+        "cpu-source"
+      ],
+      "profiles": [
+        "cpu"
+      ],
+      "modes": [
+        "cpu"
+      ],
+      "devices": [
+        "none"
+      ],
+      "fixture": "contracts",
+      "dataset": "circle",
+      "assets": [],
+      "decisions": [
+        "D3"
+      ],
+      "binding": "proposed-gtest",
+      "variants": [
+        {
+          "id": "ordinary",
+          "test": "CpuCurveTest.CpuCircleOrdinary",
+          "expect": "success",
+          "oracles": [
+            "model-error",
+            "area-error",
+            "curve-error"
+          ]
+        },
+        {
+          "id": "empty",
+          "test": "CpuCurveTest.CpuCircleEmpty",
+          "expect": "success",
+          "oracles": [
+            "contracts"
+          ]
+        },
+        {
+          "id": "limit",
+          "test": "CpuCurveTest.CpuCircleLimit",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "subdivision-limit"
+        }
+      ],
+      "requires": []
+    },
+    {
+      "id": "cpu-ellipse",
+      "stage": "R2",
+      "features": [
+        "F3"
+      ],
+      "methods": [
+        "void ellipse(double,double,double,double,double,double,double)"
+      ],
+      "consumers": [
+        "lcviewernoqt-drawitems-lcvellipse-cpp",
+        "lcviewernoqt-drawitems-lcvellipse-h"
+      ],
+      "configurations": [
+        "cpu-source"
+      ],
+      "profiles": [
+        "cpu"
+      ],
+      "modes": [
+        "cpu"
+      ],
+      "devices": [
+        "none"
+      ],
+      "fixture": "contracts",
+      "dataset": "ellipse",
+      "assets": [],
+      "decisions": [
+        "D3"
+      ],
+      "binding": "proposed-gtest",
+      "variants": [
+        {
+          "id": "ordinary",
+          "test": "CpuCurveTest.CpuEllipseOrdinary",
+          "expect": "success",
+          "oracles": [
+            "model-error",
+            "curve-error"
+          ]
+        },
+        {
+          "id": "empty",
+          "test": "CpuCurveTest.CpuEllipseEmpty",
+          "expect": "success",
+          "oracles": [
+            "contracts"
+          ]
+        },
+        {
+          "id": "limit",
+          "test": "CpuCurveTest.CpuEllipseLimit",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "subdivision-limit"
+        }
+      ],
+      "requires": []
+    },
+    {
+      "id": "cpu-lwpolyline",
+      "stage": "R2",
+      "features": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "methods": [
+        "void move_to(double,double)",
+        "void line_to(double,double)",
+        "void arc(double,double,double,double,double)",
+        "void arcNegative(double,double,double,double,double)",
+        "void stroke()"
+      ],
+      "consumers": [
+        "lcviewernoqt-drawitems-lclwpolyline-cpp",
+        "lcviewernoqt-drawitems-lclwpolyline-h"
+      ],
+      "configurations": [
+        "cpu-source"
+      ],
+      "profiles": [
+        "cpu"
+      ],
+      "modes": [
+        "cpu"
+      ],
+      "devices": [
+        "none"
+      ],
+      "fixture": "contracts",
+      "dataset": "lwpolyline",
+      "assets": [],
+      "decisions": [
+        "D3"
+      ],
+      "binding": "proposed-gtest",
+      "variants": [
+        {
+          "id": "ordinary",
+          "test": "CpuCurveTest.CpuLwpolylineOrdinary",
+          "expect": "success",
+          "oracles": [
+            "model-error",
+            "angle-error"
+          ]
+        },
+        {
+          "id": "empty",
+          "test": "CpuCurveTest.CpuLwpolylineEmpty",
+          "expect": "success",
+          "oracles": [
+            "contracts"
+          ]
+        },
+        {
+          "id": "limit",
+          "test": "CpuCurveTest.CpuLwpolylineLimit",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "vertex-limit"
+        },
+        {
+          "id": "negative-bulge",
+          "test": "CpuCurveTest.CpuLwpolylineNegativeBulge",
+          "expect": "success",
+          "oracles": [
+            "model-error",
+            "angle-error"
+          ]
+        },
+        {
+          "id": "closed",
+          "test": "CpuCurveTest.CpuLwpolylineClosed",
+          "expect": "success",
+          "oracles": [
+            "model-error",
+            "contracts"
+          ]
+        }
+      ],
+      "requires": []
+    },
+    {
+      "id": "cpu-stroke",
+      "stage": "R2",
+      "features": [
+        "F2"
+      ],
+      "methods": [
+        "void lineWidthCompensation(double)",
+        "void line_width(double)",
+        "void set_dash(const double*,const int,double,bool)",
+        "void dash_destroy()"
+      ],
+      "consumers": [
+        "lcviewernoqt-drawitems-lcvdrawitem-cpp",
+        "lcviewernoqt-drawitems-lcvdrawitem-h"
+      ],
+      "configurations": [
+        "cpu-source"
+      ],
+      "profiles": [
+        "cpu"
+      ],
+      "modes": [
+        "cpu"
+      ],
+      "devices": [
+        "none"
+      ],
+      "fixture": "contracts",
+      "dataset": "stroke",
+      "assets": [],
+      "decisions": [
+        "D3"
+      ],
+      "binding": "proposed-gtest",
+      "variants": [
+        {
+          "id": "ordinary",
+          "test": "CpuStrokeTest.CpuStrokeOrdinary",
+          "expect": "success",
+          "oracles": [
+            "curve-error",
+            "contracts"
+          ]
+        },
+        {
+          "id": "empty",
+          "test": "CpuStrokeTest.CpuStrokeEmpty",
+          "expect": "success",
+          "oracles": [
+            "contracts"
+          ]
+        },
+        {
+          "id": "limit",
+          "test": "CpuStrokeTest.CpuStrokeLimit",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "vertex-limit"
+        },
+        {
+          "id": "invalid-dash",
+          "test": "CpuStrokeTest.CpuStrokeInvalidDash",
+          "expect": "diagnostic",
+          "oracles": [
+            "contracts"
+          ],
+          "reason": "invalid-dash"
+        },
+        {
+          "id": "closed-seam",
+          "test": "CpuStrokeTest.CpuStrokeClosedSeam",
+          "expect": "success",
+          "oracles": [
+            "model-error"
+          ]
+        }
       ],
       "requires": []
     },

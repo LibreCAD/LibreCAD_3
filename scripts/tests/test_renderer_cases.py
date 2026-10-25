@@ -517,8 +517,8 @@ class CaseInputTests(unittest.TestCase):
         self.assertEqual(75, len(self.real['consumers']))
         self.assertEqual({'F' + str(i) for i in range(1, 13)},
                          {f for c in self.base['cases'] for f in c['features']})
-        self.assertEqual(56, len(self.base['cases']))
-        self.assertEqual(223, len(self.real['requirements']))
+        self.assertEqual(63, len(self.base['cases']))
+        self.assertEqual(249, len(self.real['requirements']))
         self.assertEqual(6, len(self.real['fixtures']))
         self.assertNotIn('configurations', self.real)  # M3 is not qualified here.
         for required in self.real['requirements']:
@@ -1200,7 +1200,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_real_inventory_relations_and_not_execution(self):
         self.assertEqual(190, len(self.real['configurations']))
-        self.assertEqual(223, len(self.real['requirements']))
+        self.assertEqual(249, len(self.real['requirements']))
         summary = inventory.case_inventory_summary(self.real)
         self.assertFalse(summary['execution_evidence'])
         self.assertEqual('renderer-case-inventory', summary['evidence_kind'])
@@ -1371,7 +1371,8 @@ class SelectionTests(unittest.TestCase):
     def test_cpu_only_selection_contains_real_recording_requirements(self):
         selection = self.select('R2', 'cpu-source/LINUX-ARM64/cpu/cpu/none/none')
         cases = {r['id'].rsplit('.', 1)[0] for r in selection['requirements']}
-        self.assertEqual({'cpu-build-options', 'cpu-path-state', 'cpu-transform', 'cpu-spline', 'cpu-hatch-fill'}, cases)
+        self.assertEqual({'cpu-build-options', 'cpu-path-state', 'cpu-transform', 'cpu-spline', 'cpu-hatch-fill',
+                          'cpu-line', 'cpu-point', 'cpu-arc', 'cpu-circle', 'cpu-ellipse', 'cpu-lwpolyline', 'cpu-stroke'}, cases)
         self.assertFalse(selection['configuration']['expected_options']['WITH_RHI_RENDERER'])
         self.assertFalse(selection['configuration']['expected_options']['WITH_QT_UI'])
 
@@ -1527,7 +1528,7 @@ class SelectionTests(unittest.TestCase):
         summary = json.loads(result.stdout)
         self.assertEqual('renderer-case-inventory', summary['evidence_kind'])
         self.assertFalse(summary['execution_evidence'])
-        self.assertEqual(223, summary['variants'])
+        self.assertEqual(249, summary['variants'])
         args += ('--stage', 'R2', '--configuration', 'source-linux/LINUX-X64/rhi-only/offscreen/xcb/software')
         result, repeat = self.cli(*args), self.cli(*args)
         self.assertEqual(0, result.returncode, result.stderr)

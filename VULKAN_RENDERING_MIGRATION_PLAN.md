@@ -1,7 +1,7 @@
 # Vulkan rendering migration plan
 
 Status: reviewed 2026-10-24; R0 remains active and unaccepted.
-Provisional R1 and R2.1 implementation are authorized; R2.2–R7 remain proposed.
+Provisional R1, R2.1 and R2.2 implementation are authorized; R2.3–R7 remain proposed.
 Baseline: LibreCAD 3
 `132265a0573253980451facf9109678f8bffe743`, branch `fix/msvc-eigen-include`.
 All platform acceptance gates below remain open. R0 is implementing standalone
@@ -16,20 +16,268 @@ remaining the default and all native-platform, D1–D6 and release gates open.
 This changes implementation order, not acceptance order or platform scope.
 Earlier requirements to finish R0 before starting R1 now govern R1 acceptance;
 that R1 exception does not authorize R2, cutover, retirement or desktop interaction.
-Only R2.1 is covered by the later explicit provisional approval recorded below.
+R2.1 and R2.2 have their own later explicit provisional approvals recorded below;
+neither exception authorizes subsequent stages or acceptance.
 The branch/push/Actions authorization covers R1 and, through the later explicit
 “Allow R2.1 commit, push and CI” reply, the locally validated provisional R2.1
 candidate in `dxli/LibreCAD_3:codex/r1-platform-ci`. It does not authorize a merge,
 new PR, release workflow change or acceptance-policy change. Independent review
 remains pending.
+The later human reply “Allow R2.2 commit, push and CI” also authorizes the
+provisional CPU curve/stroke candidate on that same fork/branch, conditional on
+passing local R2.2 checks and resolving the point-size/continuity choices first.
+Once those conditions are satisfied, commit/push and the complete five-platform
+source cohort may proceed without another publication question. This is not
+permission to merge, change release workflows/defaults or promote acceptance.
+The owner has now selected fixture diameter and corrected continuity, and
+explicitly requested local validation followed by commit, push and five-platform
+source CI. No publication has occurred yet; local verification remains required.
 
 ### Current checkpoint and next decision — 2026-10-24
+
+Owner-authorized continuation: implement independent diameter-sized points
+(physical or model units; zero size has no ink), visible inner round joins and
+round intra-curve cusp continuity. Preserve explicit outer joins/caps, bounded
+atomic ordered preparation, the 0.25-physical-pixel budget and legacy default.
+Fresh local evidence passes: Mac/Linux ARM64 each200 native CPU IDs (all190
+preserved),108 sanitizer cases, seven C++14 headers/three strict sources and
+Qt/GPU/Python/Cairo-free links. Three separate build IDs and five corruption
+negatives pass per host; ten Intel objects are compile-only. Exact-code clean
+Linux scripts pass630/630. Six unchanged corrected-policy regressions fail
+against pre-fix geometry; three copied point-fixture mutations fail and restore.
+Cairo-only linear comparison retains three intended inner-join differences;
+the corrected analytic sector oracle passes648 tuples/693002 stable samples
+(12670 separate at unchanged0.09), explicitly checks those three landmarks, and
+curved comparison passes108/114954 (2658 separate at unchanged0.25).
+CPU membership is not GPU pixels. Fixture ASan-only RapidJSON and Mac leak
+qualification limits remain. Local maintenance checks pass and repeat after the
+receipt below. Commit/push and five-platform source CI are next; no success is
+claimed in advance. D3 default width/hairline and every acceptance gate remain
+open. Evidence: build/renderer-evidence/r2-2-continuity-20261024.fjsO85/.
+
+#### Prior readiness checkpoint (source-bound history)
+
+Readiness audit: CPU R2 selects48 manifest IDs. Exact-source `lcunittest` evidence
+executes39 of those; fresh native `lcbuildcontracttest` execution adds the three
+build-option IDs on each ARM64 host, with all five existing corruption checks.
+The union is42/48, not48/48: six `CpuFillTest.CpuHatchFill*` IDs are unimplemented
+R2.3 proposals. Point has no CPU binding/preparation yet, so42/48 is not complete
+F1, R2.2 or R2 coverage. RHI R2 selects76 IDs; CPU execution is not their proof.
+The detailed readiness matrix in section5 names each owner and next gate.
+No implementation changed in this audit; the190/98/629 and Intel/Cairo results
+below retain their exact-source packet, not newly executed results.
+
+Fresh Cairo1.18.6 library-state/membership observations plus constructor/source
+inspection identify additional D3 default mismatches: candidate initial width1
+versus fresh Cairo width2, and candidate zero-effective-width1-pixel hairline
+versus Cairo no ink. Default butt/miter/limit10 agree. Cairo's point code uses
+size as radius, while the proposed shared fixture uses diameter. These are not
+project-factory or GPU pixel tests and do not silently choose a new policy.
+Keep candidate/legacy behavior unchanged pending point/continuity choices and D3
+review. R2.2 commit/push/five-platform source CI is now conditionally authorized;
+publication waits for passing local checks and the two policy answers. Further fills,
+GPU execution, text/application work, packages, cutover and retirement still need
+their original prerequisites/authority. Evidence:
+build/renderer-evidence/r2-2-readiness-20261024.fxBwcx/.
+Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff checks pass
+and repeat after the finalized receipt. This audit does not convert source-bound
+historical tests into new implementation or platform acceptance.
+
+#### Prior monotone-domain checkpoint (source-bound history)
+
+The current provisional R2.2 kernel accepts provably monotone collinear cubics
+that the broad near-critical root guard previously rejected. Coordinate equality
+certifies axis-aligned lines without demanding exact global-offset subtraction;
+ordered control polygons need no stationary roots. For other exact derivative
+coefficients, strict rounded-product/FMA-residual ordering certifies d0*d2>d1²
+without production multiprecision, a long-double assumption or an epsilon sign.
+Power-of-two normalization must round-trip before that exact-sign route is used.
+Ties and truly ambiguous reversals keep the existing fail-closed path; point,
+inner-join/intra-cusp and dash-boundary policies have not changed.
+The initial three regressions fail before the fix; the final FMA regression adds
+96 axis/sign/scale/product-neighbor tuples with independent multiprecision signs,
+positive coverage and adjacent genuinely reversing-input rejection. Fresh Mac /
+Linux ARM64 each pass190 CPU IDs (187 preserved),98 sanitizer cases, seven C++14
+headers/three strict sources/Qt-GPU-Python-Cairo-free links. Linux leak detection
+passes; fixture ASan-only RapidJSON/Mac leak limits remain. Ten verified Intel
+Mach-O x86_64 objects provide compile-only proof, not native runtime qualification.
+Exact-code clean Linux scripts pass629/629 without skips. Fresh Cairo remains
+648 linear tuples/693005 stable samples (12667 separate at0.09) and108 curved /
+114954 stable samples (2658 separate at0.25), not GPU pixels. Full-plan/checker42 /
+worktree122 paths/16 gates/inventory190/lints/diff checks pass and repeat after
+this finalized receipt. Evidence:
+build/renderer-evidence/r2-2-monotone-20261024.3z7TMb/.
+This expands a proved numerical domain; it does not declare all valid curve
+domains, R2.2, source architectures or any acceptance gate complete. Publication
+and later-stage authority remain separate. R2.2 publication/five-platform source
+CI now has a nonblocking owner authorization question, not assumed permission.
+
+#### Prior work-cap checkpoint (source-bound history)
+
+The R2.2 correctness audit now charges every flattening input element as well as
+subdivision nodes against one work cap. Input size is rejected before scanning
+or allocating subpaths. The unchanged new regression first reproduced a closed
+line succeeding at work2 with visited0; it now fails atomically at2 and passes
+at3 with visited3. Move-only/empty and mixed-curve exact-cap/recovery checks pass.
+Fresh Mac/Linux ARM64 each pass187 CPU IDs (185 preserved),95 sanitizer cases,
+seven C++14 header checks, three strict production sources and SDK-free links.
+Linux leak detection passes; prior RapidJSON fixture/Mac leak limits remain.
+Seven CPU headers and all three production sources additionally compile to ten
+verified Mach-O x86_64 objects using installed Apple Clang/SDK; headers inherit
+the existing configured compatibility flag, production sources remain strict.
+This is compile-only evidence, not Intel native runtime/deployment/hardware CI.
+Fresh exact-code clean Linux scripts pass628/628 without skips. Cairo comparison
+remains648 linear tuples/693005 stable samples (12667 separate at0.09) and108
+curved tuples/114954 stable samples (2658 separate at0.25); CPU membership is not
+GPU pixels. Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff
+checks pass and repeat after this finalized receipt. Evidence:
+build/renderer-evidence/r2-2-workcaps-20261024.xnpj5S/.
+Point size-as-diameter versus legacy radius now has an explicit nonblocking
+owner question alongside continuity policy; neither behavior changes here.
+No R2.2 commit/push/hosted CI or later-stage/acceptance authority is inferred.
+
+#### Prior shared-binding checkpoint (source-bound history)
+
+The current local candidate adds `prepareStrokes`: one owned result per command
+in order, with shared input path/dash storage, work and output-vertex caps and
+atomic failure. Distinct commands retain separate union-before-OVER domains;
+the CPU ordered-alpha binding checks snapshots/order, not pixel blending.
+Six CPU-only cases bind23 existing line/arc/circle/ellipse/polyline/stroke corpus
+variants, preserving all GPU cases and the unchanged corpus/oracle limits.
+Model lengths/areas are measured from owned conics by independent refined
+integration (1e-9); flattened display deviation retains the0.25-pixel oracle.
+Three batch regressions exercise ownership/empty entries, aggregate budgets and
+late invalid-command recovery. Fresh Mac/Linux ARM64 each pass185 native CPU IDs,
+preserving159, and93 recorder/curve/stroke sanitizer cases with the prior scoped
+RapidJSON/Mac leak limitations. Seven strict C++14 headers, three strict sources
+and Qt/GPU/Python/Cairo-free links pass. Six copied-fixture mutations and two
+production mutants (reset budgets/reverse order) fail the unchanged assertions as
+required, then the copied fixture is restored. Exact-code clean Linux scripts
+pass627/627 without skips; inventory validates62 cases/246 proposed variants in
+190 configurations. Fresh Mac Cairo checks retain648 linear tuples/693005
+stable samples (12667 separate at0.09) and108 curved tuples/114954 stable samples
+(2658 separate at0.25), without combining stencils or claiming GPU pixels.
+Full-plan/checker42/worktree122 paths and16 gates/inventory/lints/diff checks
+pass and repeat after this finalized receipt. Evidence:
+build/renderer-evidence/r2-2-bindings-20261024.hay7LM/.
+No R2.2 publication/new hosted CI is authorized. Point semantics, continuity
+policy, broader numerical domains and new-code five-platform proof remain open;
+R2.3 fill cases are still proposed, not implemented or authorized by this work.
+
+#### Prior curved-stroke checkpoint (source-bound history)
+
+Provisional R2.2 now prepares polynomial and positive-conic curved strokes in the
+same CPU kernel/preparer. Stroke-space tangent cones, shared exact endpoint
+tangents and parametric physical/dash-space displacement bounds produce strips /
+caps/joins without treating every sample as a new user join. Dash-length
+uncertainty is bounded in physical or stroke-time user units as selected. Full
+ellipses weld to their owned start; collinear stationary spans use scalar extrema
+with power-of-two scaling/exactness guards rather than unbounded subdivision.
+Keep the single0.25-pixel budget:1/16 center/dash displacement,1/32 normal/cap
+variation,1/32 phase uncertainty and1/16 round geometry; later float packing is
+not implemented and must share the remaining budget.
+
+Fresh Mac/Linux ARM64 each pass159 CPU IDs, preserving142 and adding17 curve
+regressions. Seven independent C++14 headers, strict three-source compilation and
+Qt/GPU/Python/Cairo-free CPU links pass. Both hosts pass67 recorder/curve/stroke
+sanitizer cases; Linux leak detection passes, while the existing fixture-adapter
+ASan-only RapidJSON limitation and unqualified Mac leak detection remain explicit.
+Final exact-code Linux scripts pass626/626 without skips. On Mac, the unchanged
+linear Cairo comparison passes648 tuples/693005 stable samples with12667 boundary
+samples separate at0.09; a separate curved comparison passes108 scoped tuples /
+114954 stable samples with2658 boundary samples separate at the total0.25 budget.
+Do not combine these distinct stencils or call CPU membership rendered pixels.
+Analytic annulus/filled-circle, normal-sweep, ellipse, dash-length, shear, large
+origin/reflection, stationary/cusp and sharp miter-threshold checks supplement
+Cairo. Underflow/near-critical failures are retained before their fixes; winding
+and empty/partial-mesh guards reject uncertifiable geometry atomically.
+
+Near-stationary scalar ambiguity, unresolved tangents/widths, and phase uncertainty
+straddling a sharp corner/end return `precision-limit`, not a partial/fallback
+mesh. These are explicit numerical-domain restrictions, not proof that every
+valid near-cusp/topology case is complete. Visible inner-join and intra-curve cusp
+continuity remain a D3 policy input: the retained short-L and collinear-cusp probes
+show the current candidate and Cairo both omit the selected landmarks. The
+optional corrected-continuity behavior is proposed in
+[Nehab's stroke-to-fill research](https://w3.impa.br/~diego/publications/Neh20.pdf),
+not an accepted project contract. The nonblocking owner choice—correct
+provisionally or preserve Cairo behavior—is pending; no silent semantic change.
+Next finish the selected policy, remaining CPU case/feature bindings and new-code
+source validation on the other three architectures. Publication/CI needs its
+separate authority; D3, GPU union/blend, hardware and all later-stage/acceptance
+gates remain open. This does not redefine complete R2.2 around passing inputs.
+Evidence:
+`build/renderer-evidence/r2-2-curved-stroke-20261024.nYHxD2/`.
+
+Linear-path stroke preparation is implemented provisionally in one additional
+C++14 source: physical/model widths, compensation, candidate hairlines, odd /
+zero dash normalization, signed offsets, subpath phase/closed seams and butt /
+round/square caps plus miter/round/bevel joins. Fresh Mac/Linux ARM64 builds each
+pass142 CPU IDs, preserving121 and adding21 stroke regressions; seven independent
+headers, strict three-source C++14 and Qt/GPU/Python/Cairo-free CPU links pass.
+Each host passes50 recorder/curve/stroke ASan/UBSan cases, Linux leak detection
+enabled; the fixture-adapter ASan-only and Mac leak-detection limitations remain.
+An exact-code clean Linux checkout passes625/625 script tests without skips.
+
+Independent Cairo1.18.6 membership comparison passes648 affine/cap/join/dash/path
+tuples and693005 non-boundary samples;12667 boundary-ambiguous samples are recorded
+separately using the same0.09-pixel stability stencil, not counted as tests passed.
+This is CPU geometry comparison, not rendered-pixel/GPU acceptance. Retain earlier
+failures: full round joins/caps overpaint short neighbors, zero gaps create false
+caps, trigonometric endpoint recomputation cracks shared edges, zero-on square
+dashes are suppressed and internal zero arrays differ from legacy normalization.
+Use exact shared normals, outer sectors/semicaps, continuous zero gaps and legacy
+canonicalization while preserving original state. Harden the independent oracle
+with adaptive multiprecision signs, removing fixed-epsilon thin-triangle false
+positives; the required geometry/error budgets and stability stencil are unchanged.
+
+The new boundary explicitly requires per-command triangle UNION before one OVER;
+it is not a Frame ready for independently blended triangles. That linear snapshot
+did not certify curves; the newer batch above adds bounded curve preparation and
+still fails closed outside its qualified numerical domain. The
+candidate zero-effective-width hairline is one physical pixel, not qualified
+legacy zero-width parity; the Cairo comparison uses nonzero widths. Reserve1/16
+pixel for linear round geometry and1/32 physical pixel phase uncertainty inside
+the single0.25 total budget, alongside the earlier curve reserve. Next integrate
+curve endpoint/tangent/length bounds, remaining feature/case bindings and native
+platform evidence; preserve exact geometry at sharp joins, cusps and wide caps.
+This temporary subpatch does not reduce complete R2.2 or qualify GPU union/blend.
+Evidence: `build/renderer-evidence/r2-2-stroke-20261024.Ir0gEd/`.
+Keep all publication, default, D1–D6 and later-stage/acceptance gates unchanged.
+
+The human explicitly answered “Authorize provisional R2.2”. This permits CPU
+curve flattening/stroke preparation using candidate contracts and a total screen
+error at most0.25 physical pixel, not D3 ratification or later-stage acceptance.
+The first implemented batch owns polynomial spans and exact positive quadratic
+conics for arcs/ellipses and adaptively subdivides them with finite work/depth /
+vertex limits. Reserve1/16 pixel for centerline flattening and1/32 pixel total path
+length uncertainty; stroke expansion and later float packing must fit the
+remaining total budget, not each reuse0.25. Zoom/DPR are included in the recorded
+physical-coordinate transform. Keep prior109 IDs and existing manifest cases;
+add native CPU spline bindings and independent analytic/dense-geometry checks.
+Fresh Mac/Linux ARM64 builds each pass121 CPU IDs, preserving109 and adding all
+seven existing CPU spline cases plus five conic/bulge/transform/recovery checks.
+Both pass strict C++14, seven independent headers, Qt/GPU/Python-free linkage and
+29 recorder/curve ASan/UBSan cases; Linux leak detection passes. The fixture
+adapter retains the earlier RapidJSON1.1.0 UBSan limitation and uses ASan only;
+Mac leak detection is not qualified. A clean exact-code Linux clone passes624/624
+script tests without skips. Retain the tiny-bulge failing regression: endpoint /
+half-angle conics replace angle-plus-tiny-sweep cancellation that dropped paths.
+Initial validation wrappers missed the CMake File API query after tests passed;
+fresh corrected builds provide the final hash-bound header/link/test evidence.
+That source-bound curve-only checkpoint did not implement stroke meshes. The
+linear batch above adds them, but curved strokes/integrated GPU coverage,
+remaining bindings and the other three native platforms remain required.
+Centerline tests alone do not prove wide-stroke offset error.
+Evidence: `build/renderer-evidence/r2-2-cpu-20261024.wU7bFK/`. No source-CI dispatch,
+commit/push, production factory/default, hardware or release change is inferred.
+All D1–D6 and acceptance gates stay open; R2.3–R7 keep their prerequisites.
 
 The human explicitly approved R2.1 commit, push and full five-platform source CI.
 Commit `d28c41d376cb571ae84dfd37a297b1a8800bc1af` is pushed to the existing
 dedicated branch, containing exactly nine intended implementation/build/test/plan
 paths. Original checkout, index, staging and1086 unrelated files are preserved.
-The current seven source hashes match the109-ID/17-sanitizer growth-fix proof;
+That publication's seven source hashes match its109-ID/17-sanitizer growth-fix proof;
 the three2166/1292/104-file local proof packets remain unchanged. Publication,
 exact-SHA CI and complete artifact readback are retained in
 `build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/`.
@@ -51,12 +299,14 @@ with selected registry IDs4294968047/4294968071 independently matching system_pr
 Growth observations are13/13 on Linux/macOS and21/21 on Windows, within the same32
 bound. No test, assertion, provider pin, SDK patch or300/1200-second/job cap changes.
 
-This documentation-only closeout is retained locally; the remote remains the
-exact green source commit. Source/helpers match the tested candidate, and the
-separate full Vulkan/Metal proofs retain their original commits/providers.
+R2.1's documentation-only closeout is retained locally; the remote remains the
+exact green source commit. Its source/helper proof stays bound to that candidate;
+changed R2.2 inputs do not inherit it. Separate full Vulkan/Metal proofs retain
+their original commits/providers.
 Repeat maintenance checks on the finalized receipt before its local commit.
 Legacy defaults, D1–D6, hardware, independent/phase/platform/package acceptance
-and R2.2–R7 prerequisites remain unchanged and open.
+and R2.3–R7 prerequisites remain unchanged and open. R2.2 has only the separate
+provisional implementation exception above, not accepted algorithms or rollout.
 
 Compiler-only R2.1 portability follow-up: the unchanged recorder and six
 independent CPU-facing headers compile to seven verified Mach-O x86_64 objects
@@ -76,8 +326,8 @@ Linux x64 and
 Windows cross compilers were not available in the existing local container;
 no toolchain or dependency was installed. This portability proof predates the
 now-published R2.1 candidate; it is not native Intel execution. The new explicit
-approval resolves the earlier publication blocker. R2.2–R7 retain their explicit decision/prerequisite gates
-rather than inheriting R2.1's provisional authority.
+approval resolves the earlier publication blocker. R2.2 now has its own explicit
+provisional exception; R2.3–R7 do not inherit it.
 
 R2.1 follow-up: review found exact-size reserve on each line append, making
 open-path recording quadratic despite a bounded element count. A deterministic
@@ -481,7 +731,7 @@ documentation review. R0/R1, D1–D6, the full painter/consumer contract, native
 hardware/session/deployment floors and every final package gate remain open.
 
 The current source contains the M1–M3 manifest/corpus and inventory CLI, validating
-56 cases / 223 proposed variants / 60 signatures / 75 consumers. Earlier M2/M3
+62 cases / 246 proposed variants / 60 signatures / 75 consumers. Earlier M2/M3
 draft descriptions below are retained context, not the next implementation task.
 Provisional R1.1 now separates the CPU/Cairo viewer from `lcviewer_opengl`, with
 explicit consumer links, conditional discovery and build-tree generated metadata.
@@ -1031,8 +1281,9 @@ flags from CMake, not just the workflow command line.
 
 ## 5. Implementation stages and exit gates
 
-R0 is **active**; R1 implementation is **provisional**, without acceptance;
-R2–R7 remain **proposed**. Acceptance order is R0 → R1 → R2 → R3/R4 → R5 → R6 →
+R0 is **active**; R1 and the explicitly authorized R2.1/R2.2 implementations are
+**provisional**, without acceptance; remaining R2 work and R3–R7 are **proposed**.
+Acceptance order is R0 → R1 → R2 → R3/R4 → R5 → R6 →
 R7. R0 feasibility scaffolding exists; production build/test CI begins in R1 and
 grows with every stage. R5 is final platform/package qualification, not the first
 time CI runs the renderer.
@@ -1112,11 +1363,12 @@ The existing `LCVSpline` sends two-, three- and four-control-point Bézier spans
 to line/quadratic/cubic painter methods. Test that path now; rational/higher-order
 support requires an actual document sampling provider, not a new Vulkan primitive.
 Keep any future SMLib sampling integration conditional and backend-neutral.
-The existing ABeeZee font is a possible fixture, not yet the pinned production
-oracle: verify the exact binary/version and corresponding redistribution notice
-before reuse, rather than attaching a newer upstream font's metadata to old bytes.
-The new `unittest/rendering/fixtures/ABeeZee-OFL.txt` is a draft notice, not a
-validated fixture binding. Distinguish raw font design-unit advances/bearings from
+The manifest now pins the existing ABeeZee Version1.002 fixture bytes and its
+corresponding redistribution notice; typed fixture validation checks the embedded
+copyright/license, cmap and metrics. This is not a pinned production font/runtime
+qualification or a claim that the bytes equal a newer upstream font.
+`unittest/rendering/fixtures/README.md` records this completed input binding.
+Distinguish raw font design-unit advances/bearings from
 hinted/scaled raster metrics and supported shaping; licensing alone establishes
 none of those rendering behaviors. Independently check the pinned binary's cmap
 and metrics, with explicit replacement-glyph and malformed-UTF-8 expectations.
@@ -1126,8 +1378,8 @@ Audit existing consumer defects before fixing baseline expectations. In
 and `render()` uses `map::at`. Closed caps also call `fill()` followed by `stroke()`
 on the same path. D3 must specify intended tick geometry and filled/outlined caps;
 R2/R3 must test/fix these callers under the accepted path-consumption rule, not
-preserve a throw or a missing outline as golden behavior. No such code fix is
-included in this plan-only review.
+preserve a throw or a missing outline as golden behavior. These production caller
+fixes remain open; the CPU recorder/preparer does not fix the drawables.
 
 The standalone `lcrhispike_offscreen` and `lcrhispike_widget` targets now exist under
 `lcrenderer/rhi/spike/`; see the [spike instructions](lcrenderer/rhi/spike/README.md).
@@ -1557,7 +1809,7 @@ decisions, access and runnable acceptance. Apply that distinction to these open 
 | P0 R0 failure evidence | Implemented additive schema-3 failure kinds, common identity validation, strict exit/artifact/error/ownership checks and helper negatives; each Linux QPA passes six cases / 18 IDs separately. | Execute the same cases on missing native backends/sessions; hosted and production acceptance remain separate. |
 | P0 D2/D4 providers and sessions | The exact-SHA R1 source cohort passes on all five native architectures; verified Intel virtual Metal is approved for this source scope only. Complete R0 cases, desktop/hardware, deployment floors and reviewed full provider closure are still missing. | Independently review the retained per-configuration source/provider/command evidence and obtain missing hardware/session/deployment proof. Do not relabel source build/offscreen proof as R0 widget, physical-input or hardware qualification. |
 | P1 Wayland fractional-DPR popup reliability | Targeted serial race corrected in b0618650/965e4465: an unchanged-source trace reproduces release before popup grab and popup_done before exposure. A readiness/held-key/exposure-ack handshake passes the final exact-source full60 and 50 consecutive unretried DPR1.25 cases, retaining all assertions/deadlines and zero Vulkan errors. | Review retained traces, binaries, pixels and cleanup; run new hosted source CI, then qualify wider providers/physical input/desktop DPI and all remaining widget acceptance. Prior failed artifacts stay retained. This fixes the reproduced harness race, not general hardware or production-viewport acceptance. |
-| P1 D3 geometry and assets | The shared on-disk manifest/corpus and inventory CLI validate 56 cases, 223 proposed variants, 60 signatures and 75 consumers. Initial R1 source/offscreen bindings execute; structural coverage is not full painter, geometry or asset correctness. Choices/oracles are not ratified. | Extend the existing typed inputs, independent oracles and stage-appropriate bindings without dropping required cases. Resolve endcap/path-consumption defects in the authorized stage; retain the D3 decision packet and missing feature/consumer gates. |
+| P1 D3 geometry and assets | The shared on-disk manifest/corpus and inventory CLI validate 62 cases, 246 proposed variants, 60 signatures and 75 consumers. Initial R1 source/offscreen bindings execute; structural coverage is not full painter, geometry or asset correctness. Choices/oracles are not ratified. | Extend the existing typed inputs, independent oracles and stage-appropriate bindings without dropping required cases. Resolve endcap/path-consumption defects in the authorized stage; retain the D3 decision packet and missing feature/consumer gates. |
 | P1 D5 workloads and D1/D6 approval | Inputs/hardware/thresholds and policy/rollout acceptance remain open. Provisional R1 implementation is separately authorized above. | Measured workload worksheet, accepted numeric limits and D1–D6 decision receipts remain required for R1 acceptance, not its authorized provisional implementation. |
 
 The terminal-output/CPU-retirement, managed Wayland presentation and Linux
@@ -1586,10 +1838,10 @@ retention/provider qualification remains independent. The current subpatch statu
 
 | Subpatch | Files and required acceptance |
 |---|---|
-| M1 Schema and source register | Implemented in `validate_source_register()` and the shared `validate_case_inputs()` path. Current inventory binds all60 painter signatures/defaults and75 consumer roles. The focused case module now passes110/110, and the current hosted protocol suite passes622/622 without skips. Old report CLI behavior is preserved. This is CPU/source coverage, not all painter execution or phase acceptance. |
-| M2 Inputs and assertions | CPU implementation exists in the single schema2 manifest/corpus and `validate_case_inputs()`: bounded bytes, pinned asset/notice identities, typed ordinary/empty/limit observations and independent analytic/font/PNG oracles. Current positive/mutation regressions pass; inventory has56 cases/223 variants. D3 review and native production execution remain open; metadata validation is not painter correctness or platform acceptance. |
+| M1 Schema and source register | Implemented in `validate_source_register()` and the shared `validate_case_inputs()` path. Current inventory binds all60 painter signatures/defaults and75 consumer roles. The focused case module passes110/110, and d28c41d3's hosted protocol suite passes623/623 without skips. Keep that proof source-bound as R2.2 code changes. Old report CLI behavior is preserved. This is CPU/source coverage, not all painter execution or phase acceptance. |
+| M2 Inputs and assertions | CPU implementation exists in the single schema2 manifest/corpus and `validate_case_inputs()`: bounded bytes, pinned asset/notice identities, typed ordinary/empty/limit observations and independent analytic/font/PNG oracles. Current positive/mutation regressions pass; inventory has62 cases/246 variants. D3 review and native production execution remain open; metadata validation is not painter correctness or platform acceptance. |
 | M3 Valid selection | Implemented in `case_configurations()`, `validate_case_manifest()`, `select_case_requirements()` and the inventory-only CLI. Tests cover all declared stage/configuration relations, invalid/unreachable requests, CPU/RHI/legacy/Python/UI/CLI and source/install/package distinctions. Current190 expanded configurations include the bounded Intel source-only virtual tuple. Actual R1 runner bindings discover/execute22 RHI IDs; later producer IDs remain required, not claimed implemented. |
-| M4 Stable-helper qualification | Partially executed, not complete: current final Linux ARM64 full60 Vulkan plus50 DPR1.25 cases, and Mac ARM64 minimum/current offscreen24 strict runs/1024 checks refresh source/helper bindings. Retain their separate provider/command/output identities and failed history. New source CI is still live; missing native R0/widget/providers/hardware/deployment and independent acceptance stay open. Manifest success does not ratify D3 or complete R0. |
+| M4 Stable-helper qualification | Partially executed, not complete: current final Linux ARM64 full60 Vulkan plus50 DPR1.25 cases, and Mac ARM64 minimum/current offscreen24 strict runs/1024 checks retain separate source/provider bindings and failed history. The d28c41d3 source cohort is completed62/62, not live; all60 artifacts are reviewed. New R2.2 changes require fresh relevant source proof. Missing native R0/widget/providers/hardware/deployment and independent acceptance stay open. Manifest success does not ratify D3 or complete R0. |
 
 M1–M3's CPU implementation is verified within its stated scope; keep their
 regressions and requirements intact while implementing missing native bindings in
@@ -2670,7 +2922,7 @@ Implemented route A's touchpoints are `lcrenderer/rhi/renderer.{h,cpp}` and priv
 regression modules and `.github/workflows/renderer-source.yml`. Keep native/Qt
 types out of the C++14 public boundary. Recompute inventory/selection counts
 from the actual manifest; preserve every existing required hardware tuple and
-case instead of hard-coding today's 223 proposed variants as a permanent total.
+case instead of hard-coding today's246 proposed variants as a permanent total.
 
 ### R2 Drawing commands and portable rendering core
 
@@ -2678,8 +2930,9 @@ Current entry status: provisional R2.1 implementation explicitly authorized by
 the human after the successful acbab6cd source cohort. The CPU recorder uses the
 candidate contracts above, with nine existing native case IDs and additional
 recovery/ownership/resource/append-time tests. It does not ratify D3 or change a
-factory/default. R2.2–R2.5 and all phase/release acceptance retain their original
-prerequisites; no tessellation, GPU execution or cache implementation is implied.
+factory/default. The later explicit R2.2 exception permits provisional CPU curve
+and stroke preparation, not D3 ratification or GPU execution. R2.3–R2.5 and all
+phase/release acceptance retain their original prerequisites.
 
 1. Implement path/state/transform contracts and immutable commands; keep legacy
    source compatibility and independently test CPU recording without a GPU.
@@ -2690,7 +2943,8 @@ prerequisites; no tessellation, GPU execution or cache implementation is implied
    memory limits. Separate live selection/style from cached geometry where possible.
    Add upload/draw/cache metrics and lifecycle/failure tests.
 
-Use these bounded subpatches after D3 selects the algorithms; each adds its case
+Use these bounded subpatches after D3 selects the algorithms, except the explicitly
+authorized provisional R2.1/R2.2 candidate work; each adds its case
 IDs to the same selection manifest and keeps the preceding offscreen scene working:
 
 | Subpatch | Concrete implementation and independent acceptance |
@@ -2700,6 +2954,47 @@ IDs to the same selection manifest and keeps the preceding offscreen scene worki
 | R2.3 Fills and hatches | Apply the accepted fill rule, contour orientation/hole handling and bounded CPU tessellator. Test concavity, nesting/disconnected loops, touching/self-intersecting contours under the declared domain, degenerate hatch bounds and zero/negative pattern scale. Verify signed area/point membership and interior/background landmarks. Replace legacy approximation where it fails the contract; no triangle-fan or unbounded hatch expansion. |
 | R2.4 Executor and shaders | Consume the same recorded commands on widget/offscreen hosts. Test packing/reflection, distinct aligned per-draw ranges, vertex/index layouts, required SPIR-V/MSL variants and target-compatible pipelines. Check byte-size/index arithmetic before allocation; chunk within device limits without reordering alpha or resetting dash phase. A multi-style same-frame case must catch last-uniform-write corruption. |
 | R2.5 Cache and retirement | Exercise document/entity/style/tolerance/device generations, affected and unaffected inserts/views, selection, undo/reinsert, in-flight deletion and bounded eviction. Compare cached/uncached output and count uploads/allocations. Test two separate QRhi owners with colliding local IDs/generations; no cross-device resource reuse or stale-handle aliasing is allowed. |
+
+#### R2 readiness audit — requirements retain their full scope
+
+The current local200-ID native CPU run adds seven point and three continuity
+regressions, preserving all190 prior IDs. Point adds three CPU bindings without
+replacing GPU requirements:42 geometry IDs plus three separate build-option IDs
+cover45/51 selected CPU R2 IDs; the six fill IDs remain unimplemented R2.3.
+Counts from different executables describe disjoint ownership, not a combined run.
+
+| Required boundary | Current evidence/status | Remaining implementation or authoritative gate |
+|---|---|---|
+| Path/state/transforms and polynomial spans | CPU recorder plus42 selected geometry IDs in the native200-ID suite; supported document `LCVSpline` consumes2/3/4-control polynomial spans. Rational/higher-order document providers are not invented here. | D3 path/default/units ratification; actual drawable/painter integration belongs to later execution/integration stages. |
+| Build-option ownership | Fresh three-ID `lcbuildcontracttest` per Mac/Linux ARM64 host; ordinary/empty/limit, all five corruption negatives, hashes/traces/File API/XML verified. | Other architectures need fresh exact-source CI after authorization; these three are not missing geometry GTests in lcunittest. |
+| Curves, caps/joins/dashes, numeric/resource limits | CPU preparation has analytic/multiprecision/Cairo membership, monotone-domain, aggregate-work/vertex/state and atomic-recovery evidence;108 sanitizer cases per ARM64 host. All original error/time/size limits stay unchanged. | Ambiguous near-stationary reversals, unresolved tangents/widths and sharp endpoint/corner dash uncertainty remain fail-closed, not declared fully qualified domains. |
+| Point and stroke defaults | Owner-selected diameter marks preserve the path, snapshots/order, physical circles or affine model ellipses, zero no-ink, bounded physical major axis and shared resource caps. Three CPU fixture variants retain the GPU case. Candidate default width1/one-pixel hairline still differs from Cairo initial width2/zero-width no ink. | D3 default/hairline review; point authority does not change legacy or ratify stroke defaults. |
+| Inner-join/intra-cusp continuity | Owner-selected inner round fans and internal curve-cusp round continuity preserve explicit outer join/cap decorations. Independent analytic landmarks, six pre-fix regression rejections and corrected sector/Cairo comparisons bind the selected policy. | D3 acceptance and broader qualified numerical domains remain separate. Do not claim unchanged Cairo parity for the three intentional corrected inner-join landmarks. |
+| Fills/hatches/gradients | Six selected CPU fill IDs have no implementation. Their presence in the51-ID selection is proposed metadata; GPU fill/gradient cases remain required too. | R2.3 authority and bounded fill/contour/pattern policy, then real tests; never drop those IDs to obtain a green subset. |
+| GPU coverage/ordering and caches | PreparedStroke requires a separate union-before-OVER domain per command. No production painter consumes these meshes; CPU snapshots do not prove alpha pixels or cache invalidation. RHI R2 selects76 IDs. | R2.4 executor/shader/packing/resource proof and R2.5 cache/retirement work under their prerequisites; do not feed overlapping stroke triangles directly to Frame OVER. |
+| Native platform/publication/whole-plan closure | Current R2.2 native runtime evidence covers Mac/Linux ARM64; Intel adds compile-only proof. Old d28c41d3 five-platform source CI remains historical. Both policy choices and R2.2 publication/full source-CI authority are explicit; fresh cohort pending local closeout. R0/D1–D6 and later gates remain open. | Publish the locally validated candidate on the authorized fork/branch and retain coherent all-five source proof. R3/R4 application/export, R5 packages, R6 defaults and R7 retirement remain mandatory, not replaced by CPU readiness. |
+
+Current provisional R2.2 implements odd/zero dash normalization, signed offsets,
+physical versus stroke-time user-space metrics, affine widths, closed seams and
+bounded curve/stroke preparation. Keep their ordinary suite/manifest regressions
+and aggregate input/state/work/output limits. Owner-selected diameter and
+corrected continuity are now implemented provisionally. Prove remaining numerical
+domains and refresh source checks on every supported architecture using the
+granted publication authority after local checks pass. Rejecting
+unresolved valid cases is not completion.
+Use private preparation policy, not new public LcPainter setters; legacy default
+and fixture overrides, including compensation/hairlines/degenerates/near-180
+joins, remain distinct. Width/tangent/dash/offset and future packing share one
+total0.25-pixel budget, not a fresh budget at every stage.
+
+Keep one ordered stroke command's coverage as a union before its single OVER
+application. Overlapping segment/join triangles must not double-blend translucent
+paint. CPU preparation/oracles must make that obligation explicit; actual GPU
+coverage resolution belongs to R2.4 and is not proven by a CPU mesh or sampling.
+Use analytic dash intervals, cap/join landmarks, independent coverage membership
+and bounded-work negatives in the existing suite/manifest, retaining all prior
+IDs. Finish these obligations before claiming R2.2 complete; publication/new CI
+must satisfy the recorded local-check and point/continuity conditions first.
 
 Set gradient stop ordering, duplicate/out-of-range offsets, interpolation/alpha and
 zero-length-axis behavior in D3; test them in R2.3. Pin the initial SDR contract to
@@ -3356,6 +3651,23 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-24 | Selected diameter/continuity candidate locally validated | Owner-selected independent diameter points preserve current path/state/order, physical/model geometry, zero no-ink and bounded physical major axis. Inner normal fans and internal-cusp continuity preserve explicit outer styles/dash caps. Fresh Mac/Linux ARM64 each pass200 native IDs (190 preserved),108 sanitizers, seven C++14 headers/three strict sources/SDK-free links, separate three build IDs/five corruption negatives; Linux leaks pass, fixture ASan-only RapidJSON/Mac leak limits stay explicit. Ten Intel objects are compile-only. Exact-code clean Linux scripts630/630 without skips. Six corrected regressions reject pre-fix geometry; three point fixture mutations reject then restore. Cairo-only648 comparison retains three intended differences; independent sector-corrected648/693002 stable plus12670 separate at0.09 explicitly checks those three, curved108/114954 plus2658 separate at0.25 unchanged. No GPU pixels. Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff pass and repeat after receipt. Evidence: build/renderer-evidence/r2-2-continuity-20261024.fjsO85/. Preserve69 renderer/383 Python prior rows,1080 other baseline files, original checkout/index/staging and all indexed proof/gate states. Publish using separate index to authorized dxli/LibreCAD_3:codex/r1-platform-ci, then full five-platform source CI; no merge/release-workflow or D1–D6/R2.3–R7/independent/phase/platform/hardware/widget/package/release/full-goal promotion. Legacy stays default. |
+| 2026-10-24 | Owner-selected point/continuity implementation started | Human selects fixture diameter and corrected inner-join/intra-curve-cusp continuity; requests local validation, then commit/push and full five-platform source CI on dxli/LibreCAD_3:codex/r1-platform-ci. Preserve explicit caps/outer joins, aggregate atomic caps, 0.25px budget and legacy default. No merge/release-workflow changes or acceptance promotion. Prior32 publication-authority files verify; snapshot1091 baseline files/11 intended paths,68 renderer/382 Python prior receipts and original checkout/index/staging. Evidence: build/renderer-evidence/r2-2-continuity-20261024.fjsO85/. Fresh independent geometry, native/sanitizer/header/link/Intel/protocol checks and hosted cohort pending. D3 defaults/hairline, D1–D6, R2.3–R7, hardware/widget/package/release/full-goal gates remain open. |
+| 2026-10-24 | Conditional R2.2 publication and full source CI approved | Human reply “Allow R2.2 commit, push and CI (Recommended)” authorizes the provisional CPU curve/stroke candidate in dxli/LibreCAD_3:codex/r1-platform-ci after local R2.2 checks pass and point-size/continuity choices are resolved. Record the approval once; do not ask for publication permission again within that scope. The two policy answers are still absent, so no commit/push/dispatch occurs yet. Legacy stays default, all acceptance gates stay open, and merge/release-workflow changes are not authorized. Only these two plans change; all1731 readiness files/12 source hashes and original branch/HEAD/index/staging are verified. Preserve67 renderer/381 Python rows,1089 other baseline files and all prior proof/gate states. Evidence: build/renderer-evidence/r2-2-publication-approval-20261024.9URggv/. Repeat full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff and history/source-binding checks after this finalized receipt. No fresh source tests or all-five success is claimed;190/98/629/Intel/Cairo/build-contract evidence stays in its source-bound packets. No policy/default/dependency/assertion/timeout/provider/Python ownership/R2.3–R7/D1–D6/independent/phase/platform/hardware/widget/deployment/package/release/full-goal promotion. |
+| 2026-10-24 | Full-scope readiness audit and separate build bindings verified | Codex implementation/self-review: fresh existing three-ID build-contract runner passes per Mac/Linux ARM64 host, including five controlled corruption rejections, source/helper/fixture/trace/File API/native XML/binary/artifact binding. The unchanged native190-ID proof contains39 selected CPU R2 bindings; disjoint fresh build IDs add3, totaling42/48, with six explicit unimplemented R2.3 fill IDs. Point has no CPU preparation/binding; RHI R2 selects76 IDs that CPU proof does not certify. Add a requirement/owner/evidence/next-gate matrix retaining numerical-domain, point/continuity/default/hairline, fill/executor/cache, all-five/platform/package/application/cutover/retirement obligations. Fresh Cairo1.18.6 state/membership plus source inspection confirms candidate initial width1 versus Cairo2 and one-pixel zero-effective-width versus no ink; butt/miter/limit10 agree, radius/diameter differs. Scope is library/source observations, not project-factory or GPU pixels; no behavior changed. Correct stale section5 provisional-stage and pinned-font-input prose without promoting D3/font runtime acceptance. Retain initial sandbox-denied Mac native-ISA guard and probe header-path compile failure; corrected setup reruns preserve the exact guard/assertions/budgets. Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff pass and repeat after finalized receipt. Evidence: build/renderer-evidence/r2-2-readiness-20261024.fxBwcx/. Preserve66 renderer/380 Python prior rows,1089 other baseline files, original branch/HEAD/index/staging and all1607/1583/1601/4521/3021/2677/163/2166/1292/104 prior proof files/gates. Only two plans change;190/98/629/Intel/Cairo source results retain their original packet, not fresh execution. Point/continuity/publication choices are unanswered; further implementation requires those choices and original stage prerequisites. No source/dependency/default/assertion/timeout/provider/Python ownership, commit/push/hosted CI/R2.3–R7/D1–D6/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-goal promotion. |
+| 2026-10-24 | R2.2 completion/readiness audit started | Previous turn is progress; all1607 monotone-packet files and12 current source hashes verify. Derive remaining obligations from the complete plan, not the passing CPU subset. CPU R2 selection requires48 IDs:39 appear in lcunittest, three build-option IDs belong to separate lcbuildcontracttest, and six fill IDs are unimplemented R2.3 proposals. Refresh the existing three-case native build-contract runner on Mac/Linux ARM64 and bind the union without calling a CPU result GPU acceptance. Audit point/continuity/numerical-domain/publication/native-platform and R0–R7 gates explicitly; no authority for unanswered questions is inferred. Preserve65 renderer/379 Python prior rows,1091 baseline files, original checkout/index/staging and all gates. Evidence: build/renderer-evidence/r2-2-readiness-20261024.fxBwcx/. Only the two plans change; current190/98/629/Intel/Cairo proofs remain exact-source history, not new execution. Fresh build-contract and finalized maintenance audits are pending. No implementation/default/dependency/assertion/timeout/provider/publication/hosted-CI/later-stage or acceptance promotion. |
+| 2026-10-24 | Proven monotone R2.2 domain expanded and locally verified | Codex implementation/self-review: exact coordinate equality admits axis-aligned lines without exact global-offset subtraction; ordered control polygons avoid needless roots; exact normalized Bernstein derivative products use strict rounded-product/FMA-residual ordering to prove no reversal. Power-of-two normalization round-trips, ties prove nothing, and ambiguous reversals/phase topology still fail closed. No production multiprecision/long-double assumption/dependency or epsilon sign. Initial three ordinary regressions fail pre-fix; final FMA regression expands to96 axis/sign/scale/neighbor tuples with independent multiprecision positivity, coverage and adjacent true-reversal rejection. Retain initial/expanded fast source identities; only final native/sanitizer/clone hashes certify current code. Fresh Mac/Linux ARM64 each pass190 CPU IDs (187 preserved),98 sanitizer cases, seven C++14 headers/three strict sources/Qt-GPU-Python-Cairo-free links; Linux leaks pass, fixture ASan-only RapidJSON/Mac leak limits remain. Ten verified x86_64 Mach-O objects give Intel compile-only proof, not runtime/deployment/hardware. Exact-code Linux scripts629/629 without skips. Fresh Cairo unchanged linear648/693005 stable plus12667 separate at0.09; curved108/114954 stable plus2658 separate at0.25; CPU membership is not GPU pixels. Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff pass and repeat after finalized receipt. Twelve source hashes bind native/sanitizer/clone/current files. Evidence: build/renderer-evidence/r2-2-monotone-20261024.3z7TMb/. Preserve64 renderer/378 Python prior rows,1086 other baseline files, original index/checkout/staging and all1583/1601/4521/3021/2677/163/2166/1292/104 prior proof files/gates. Point/continuity and now separate publication/source-CI authorization remain pending owner choices. No default/GPU/public painter API/Python ownership, work/vertex/geometry/assertion/timeout/provider, publication/new hosted CI/R2.3–R7/D1–D6/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-goal promotion. Broader valid domains and all-five source proof remain required; this is not narrower R2.2 completion. |
+| 2026-10-24 | R2.2 monotone numerical-domain continuation started | Previous turn is progress; all1583 work-cap packet files verify. Audit identifies valid monotone collinear cubics rejected by the conservative near-critical discriminant guard. Reproduce using ordinary tests and independent multiprecision derivatives, then certify monotone control polygons or exact normalized derivative products via strict rounded-product/FMA-residual ordering, without extended precision/new production dependencies. Axis-aligned collinearity can be proved from coordinates even when an offset subtraction rounds. Keep truly ambiguous reversals/phase topology rejected, same work/vertex/0.25-pixel limits and pending point/continuity choices. Preserve63 renderer/377 Python prior rows,1091 baseline files, original checkout/index/staging and gates. Evidence: build/renderer-evidence/r2-2-monotone-20261024.3z7TMb/. Fresh pre-fix/native/sanitizer/independent-oracle/source/header/link/Intel-compile/script/finalized maintenance proof is pending. No GPU/default/publication/hosted CI/R2.3–R7 or acceptance promotion. |
+| 2026-10-24 | R2.2 work cap corrected and locally verified | Codex implementation/self-review: flatten now preflights input size and charges every move/line/close/curve element plus subdivision nodes against the same existing work cap. Retain unchanged new regression failing pre-fix (closed line accepts work2/visited0); corrected code rejects at2 and passes at3/visited3. Move-only/empty and mixed-curve exact-cap/atomic recovery cases pass. Fresh Mac/Linux ARM64 each pass187 native CPU IDs (185 preserved),95 sanitizer cases, seven C++14 headers/three strict sources/Qt-GPU-Python-Cairo-free links. Linux leaks pass; fixture ASan-only RapidJSON/Mac leak limitations remain. Seven headers/three sources additionally produce ten verified Mach-O x86_64 objects using installed Apple Clang/SDK, inheriting only existing configured header compatibility flags; production remains strict. Compile-only is not Intel native/runtime/deployment/hardware/hosted-CI acceptance. Exact-code clean Linux scripts628/628 without skips. Fresh Cairo retains648/693005 stable linear plus12667 separate at0.09 and108/114954 curved plus2658 separate at0.25; separate stencils/CPU membership are not GPU pixels. Full-plan/checker42/worktree122 paths/16 gates/inventory190/lints/diff checks pass and repeat after finalized receipt. Twelve source hashes bind native/sanitizer/clone/current files. Evidence: build/renderer-evidence/r2-2-workcaps-20261024.xnpj5S/. Preserve62 renderer/376 Python prior rows,1085 other baseline files, original branch/HEAD/index/staging and all1601/4521/3021/2677/163/2166/1292/104 prior proof files/gates. Point diameter/radius and continuity remain explicit pending owner choices, not silent changes. No dependency/framework/public painter API, Python ownership, geometry/assertion/timeout/provider/default, publication/new hosted CI, R2.3–R7/D1–D6/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-goal promotion. Remaining numerical domains and all-five native source validation still need proof and separate publication authority. |
+| 2026-10-24 | R2.2 bounded-work audit continuation started | Previous turn is progress:185 native/93 sanitizer cases per ARM64 host,627 Linux scripts and all1601 indexed binding-packet files verify. Audit finds flatten's recursive counter does not charge move/line/close elements. Add pre-fix regressions, preflight input size against work, and charge each input element plus subdivision nodes, retaining atomic output/recovery and unchanged geometry/0.25-pixel/assertion/timeout limits. Preserve61 renderer/375 Python prior rows,1091 baseline files, original index/checkout/staging and all gates. Evidence: build/renderer-evidence/r2-2-workcaps-20261024.xnpj5S/. Fresh native/header/link/sanitizer/negative/script/finalized maintenance proof is pending. Point diameter policy now has a separate nonblocking owner question; existing point/continuity behavior stays unchanged. No dependency/framework/public painter API, GPU/default, publication/new hosted CI, R2.3–R7 or acceptance promotion. |
+| 2026-10-24 | Ordered aggregate CPU strokes and23 shared bindings locally verified | Codex implementation/self-review: compact prepareStrokes retains command order/owned straight-alpha snapshots/empty entries and per-command union domains, with aggregate path/dash/work/output caps and atomic failure. Six CPU cases bind23 unchanged corpus variants without replacing GPU cases; model/area1e-9 uses independent refined integration of owned conics, display remains0.25 and old assertions stay strict. Fresh Mac/Linux ARM64 each pass185 CPU IDs, preserving159, seven C++14 headers/strict three-source builds/Qt-GPU-Python-Cairo-free links and93 sanitizer cases. Linux leaks pass; existing fixture ASan-only RapidJSON/Mac leak limitations remain. Six copied-fixture negatives and two reset-budget/reverse-order production mutants fail ordinary assertions, then copied bytes restore. Retain initial invalid-bulges adapter and mistaken off-dash sample failures; corrections change only the new tests. Exact-code clean Linux scripts627/627 without skips; inventory62 cases/246 variants/190 configurations. Fresh Cairo linear648 tuples/693005 stable with12667 separate at0.09 and curved108/114954 stable with2658 separate at0.25; CPU membership is not GPU pixels. Pending continuity behavior remains unchanged. Full-plan/checker42/worktree122 paths and16 gates/inventory/lints/diff checks pass and repeat after this finalized receipt. Twelve source hashes bind native/sanitizer/clone/current files. Evidence: build/renderer-evidence/r2-2-bindings-20261024.hay7LM/. Preserve60 renderer/374 Python prior rows,1083 other baseline files, original checkout/index/staging and all4521/3021/2677/163/2166/1292/104 prior proof files/gates. No dependency/framework/public painter API, assertion/timeout/provider/default, Python ownership, publication/source-CI or R2.3–R7/D1–D6/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-goal promotion. Point semantics, continuity choice, broader numerical-domain proof, separate publication authority and all-five new-code source checks remain required. |
+| 2026-10-24 | Authorized R2.2 aggregate stroke and CPU binding continuation started | Prior turn is progress; all4521 curved-checkpoint files revalidate. Add a compact ordered CPU batch with shared input/work/output caps and atomic failure, then bind the existing line/arc/circle/ellipse/polyline/stroke corpus without replacing GPU cases. Independent geometry and fixture-mutation negatives must exercise actual candidate output; CPU order is not GPU alpha blending. Preserve current continuity policy pending the owner's response, single0.25-pixel budget,59 renderer/373 Python receipts,1091 baseline files, original branch/HEAD/index/staging and all gate states. Evidence: build/renderer-evidence/r2-2-bindings-20261024.hay7LM/. Fresh native/header/link/sanitizer/script and finalized maintenance checks are pending. No dependency/framework/public painter API, GPU/default, assertion/timeout, publication/source-CI, R2.3–R7 or acceptance promotion; point/fill/native-platform and broader numerical-domain obligations remain open. |
+| 2026-10-24 | Width-aware curved stroke preparation locally verified; full R2.2 remains open | Codex implementation/self-review: existing CPU kernel/preparer adds parametric physical/dash displacement, stroke-space tangent cones/shared normals, bounded normal-sweep strips and exact sharp-boundary tangents. Scalar stationary spans use guarded extrema; full ellipses weld their endpoints. Fresh Mac/Linux ARM64 each pass159 CPU IDs, preserving142 and adding17, strict three-source C++14/seven headers/Qt-GPU-Python-Cairo-free links and67 recorder/curve/stroke sanitizer cases. Linux leak detection passes; fixture ASan-only RapidJSON and Mac leak limitations stay explicit. Final exact-code Linux scripts626/626 without skips. Mac comparison: unchanged linear648 tuples/693005 stable samples with12667 separate at0.09; separate curved108 scoped tuples/114954 stable samples with2658 separate at0.25. Analytic normal/annulus/folded-circle/ellipse/dash/shear/large-origin/stationary/cusp/miter-threshold and atomic limit tests supplement Cairo, not GPU pixels. Preserve pre-fix underflow/near-critical failures, area-oracle/source-compile failures and earlier154/159 cohorts as exact historical evidence, not final-source passes. Reject uncertain roots/tangents/phase topology and empty or partial unresolved meshes; broader valid numerical domains remain unqualified. Inner-join/intra-cusp continuity is an explicit pending owner choice, not silently changed or accepted. Full-plan/checker42/worktree122 paths and16 gates/inventory190/lints/diff checks pass and repeat after this finalized receipt. Nine source hashes bind final native/sanitizer/clone/current code. Evidence: build/renderer-evidence/r2-2-curved-stroke-20261024.nYHxD2/. Preserve58 renderer/372 Python prior rows,1083 other baseline files, original branch/HEAD/index/staging and all3021/2677/163/2166/1292/104 prior proof files/gate states. No new dependency/framework/public painter setters, assertion/timeout/provider/default, Python ownership, publication/source-CI or D1–D6/later-stage/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-goal promotion. Next finish policy and remaining case/feature bindings, then separately authorize publication and qualify new code on all five source architectures; R2.3–R7 retain their prerequisites. |
+| 2026-10-24 | Authorized R2.2 curved-stroke continuation started | Prior goal turn is progress: bounded linear preparation142/50 per ARM64 host,625 Linux scripts and648 Cairo tuples/693005 stable samples; all3021 proof files revalidate. Begin width-aware curve integration using the existing kernel, explicit tangent/parametric/dash-metric bounds and shared endpoint tangents; keep the single total0.25-pixel budget and finite depth/work/vertices. Independently test polynomial/exact-conic/wide/closed/dashed/affine/stationary cases and failure recovery. Cusp/near-cusp and visible inner-join policy/proof are not replaced by Cairo agreement or simple offset contours. Preserve57 renderer/371 Python prior rows,1091 baseline files, original branch/HEAD/index/staging and all gate states. Evidence: build/renderer-evidence/r2-2-curved-stroke-20261024.nYHxD2/. Fresh native/header/link/sanitizer/oracle/limit/script and finalized maintenance checks are pending for changed code. No new dependency/framework/public painter setters, GPU/factory/default, publication/source-CI, later-stage or acceptance promotion; full R2.2 and R2.3–R7 prerequisites remain intact. |
+| 2026-10-24 | Provisional linear R2.2 stroke batch locally verified; curved strokes remain required | Codex implementation/self-review: one additional C++14 source prepares bounded linear widths/dashes/caps/joins and per-command union-before-OVER meshes, not GPU execution. Fresh Mac/Linux ARM64 each pass142 CPU IDs, preserving121 and adding21; strict three-source C++14/seven headers/Qt-GPU-Python-Cairo-free links and50 recorder/curve/stroke sanitizer cases per host pass, Linux leak detection enabled. Retain fixture ASan-only RapidJSON limitation and unqualified Mac leak detection. Independent Cairo1.18.6 comparison passes648 tuples/693005 stable samples;12667 boundary-ambiguous samples remain separate under unchanged0.09 stencil. Preserve all earlier failing probes, fixed-epsilon/oracle failures and setup-only recipe failure; adaptive multiprecision removes numerical misclassification without relaxing geometry/stencil/budgets. Fix outer join sectors/semicaps, shared endpoint welding, continuous zero gaps, zero-on dots and legacy internal-zero canonicalization; keep original snapshots. Exact-code Linux scripts625/625 without skips. Nine code/build/helper/test hashes bind final native/sanitizer/clone sources; earlier141/49/625 packets remain source-bound history, not final proof. Full-plan/checker42/worktree122 paths and16 gates/inventory190/lints/diff checks pass and repeat after this finalized receipt. Evidence: build/renderer-evidence/r2-2-stroke-20261024.Ir0gEd/. Preserve56 renderer/370 Python prior rows,1084 unrelated baseline files, original checkout/index/staging,2677-file curve proof and all old indexed packets/gate states. Candidate one-pixel hairline is not legacy zero-width qualification. Curved width/tangent/offset/dash preparation, remaining bindings/native platforms and GPU union resolution remain incomplete; next continue the authorized R2.2 curve integration within the total0.25-pixel budget. No new dependency, assertion/timeout/provider/default, Python ownership, commit/push/source-CI, D1–D6/independent/phase/hardware/widget/provider/deployment/package/release/full-goal acceptance change; R2.3–R7 keep their prerequisites. |
+| 2026-10-24 | Authorized R2.2 CPU stroke continuation started | Prior goal turn is progress: first curve batch121 native IDs/29 sanitizer cases per Mac/Linux ARM64,624 Linux scripts and2677 indexed files verify unchanged. Continue existing provisional R2.2 authority with bounded linear stroke/dash/cap/join preparation and explicit per-command union-before-OVER semantics. Independently test physical/model widths, compensation/hairlines, odd arrays/signed offsets/zeros/closed seams, near-180 joins and bounded recovery. Curved stroke preparation remains fail-closed until width/tangent/offset error is bounded; this temporary subpatch does not replace complete R2.2. No public painter setters/new framework, dependency/GPU/factory/default, source-CI/publication or acceptance change. Entry verifies1090-file baseline and original checkout/index/staging; preserve55 renderer/369 Python receipts and all gate states. Evidence: build/renderer-evidence/r2-2-stroke-20261024.Ir0gEd/. Native strict/header/link/geometry/negative/sanitizer checks, scripts and finalized plan/checker/worktree/inventory/lints remain pending for new code. R2.3–R7 and all original acceptance/platform/package obligations stay open. |
+| 2026-10-24 | Provisional R2.2 curve batch locally verified; strokes remain incomplete | Codex implementation/self-review: owned polynomial/exact positive conic recording plus bounded double subdivision; no new dependency, GPU or painter stub. Fresh Mac/Linux ARM64 each pass121 CPU IDs, preserving109 and binding all seven existing CPU spline cases; independent Bernstein/dense-distance/circle/ellipse-integral oracles, cusp/large-origin/limits/recovery tests pass. Seven independent C++14 headers, strict two-source compilation and Qt/GPU/Python-free CPU links pass; both hosts pass29 recorder/curve ASan/UBSan cases, Linux leak detection enabled. Fixture-adapter ASan-only RapidJSON1.1.0 UBSan limitation and unqualified Mac leak detection remain explicit. The unchanged tiny-bulge regression fails against angle-cancellation code, then passes with endpoint/half-angle conics. Retain early120-ID evidence, the failed negative, mistaken focused unittest class selection and post-test missing File API query wrapper failures; fresh corrected121-ID builds are final source-bound proof, not an erased failure. Exact-code clean Linux scripts pass624/624 without skips; all eight code/build/helper/test hashes agree across the native builds, clone and current source. Full-plan/checker42/worktree121 paths and16 gates/inventory190/both lints/diff checks pass and repeat after this finalized receipt. Evidence: build/renderer-evidence/r2-2-cpu-20261024.wU7bFK/. Preserve54 renderer/368 Python prior rows, original branch/HEAD/index/staging,1080 other baseline files and all prior indexed proof/gate states. Reserve1/16 pixel centerline and1/32 pixel length uncertainty inside the single0.25 total budget; wide-stroke offset, dash/cap/join/single-coverage preparation and other native platforms remain mandatory. No assertion/timeout/provider/default, commit/push/source-CI, D1–D6/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-goal promotion. Next implement the remaining authorized CPU stroke batch; R2.3–R7 retain their prerequisites. |
+| 2026-10-24 | Provisional R2.2 explicitly authorized; CPU curve/stroke work started | Human reply “Authorize provisional R2.2” permits candidate CPU curve flattening and stroke preparation, caps/joins/dashes, independent geometry tests and bounded work under the total0.25-physical-pixel budget. Start owned polynomial/exact conic recording and adaptive subdivision, retaining all109 prior native IDs and all existing required cases. Reserve1/16 pixel position and1/32 pixel path-length uncertainty; later stroke/packing must share the remaining budget. No new dependency, GPU/factory/default, source-CI dispatch, commit/push, D1–D6 or phase/hardware/release acceptance is inferred. Stroke/coverage and remaining feature/platform checks remain incomplete, not replaced by curve-only tests. Reconcile stale live-CI/622 text with the completed d28c41d3 cohort, preserving its exact-source62/62/60-artifact proof and163-file packet. Entry guards verify original checkout/index/staging and1088-file baseline. Preserve53 renderer/367 Python prior receipts and all gate states. Evidence: build/renderer-evidence/r2-2-cpu-20261024.wU7bFK/. Run native CPU/header/link/limit/recovery/independent-oracle checks, scripts and finalized plan/checker/worktree/inventory/lints; qualify supported platforms before any new all-platform claim. R2.3–R7 and all acceptance/prerequisite gates remain open. |
 | 2026-10-24 | Provisional R2.1 source cohort green on all five architectures; artifacts verified | Implementation/self-review: d28c41d376cb571ae84dfd37a297b1a8800bc1af / run40110565811 attempt1 completes62/62 jobs, all60 source tuples and12/12 per platform. All60 unique artifacts are retained/read back against source/helpers/options, native IDs/XML, six C++14 header consumers, actual graphs, provider patches/devices and process retirement. Supplemental audit verifies60 source maps/2356 process records/98 ordinary XML/52 controlled-negative XML/13162 retained hashes/30 pinned f7debf4 SDKs and three patches each. Protocol623/623 without skips; CPU109 preserves92 and adds17 recorder cases;40 library test profiles execute109 or207 IDs; CLI207 and persistence/UI/combined214 non-widget IDs. UI/combined still compile/discover97 unexecuted widgets each. All14 RHI runs execute22 IDs; Intel virtual Metal source-only IDs4294968047/4294968071 match independent system_profiler. Growth13/13 Linux/macOS and21/21 Windows stays within unchanged32; tests/assertions/provider pins/SDK patches/300-command/1200-profile/60-minute-job caps are not relaxed. Evidence: build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. Preserve52 renderer/366 Python prior rows,2166/1292/104-file prior packets, original branch/HEAD/index/staging,1086 unrelated files and every gate state. Repeat source-binding/full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks on this finalized receipt; verify preservation before retaining a local documentation-only commit, without another push/dispatch or skip directive. Remote remains the exact green source candidate; separate Vulkan/Metal proofs remain source/provider-bound. R2.1 is provisional execution/self-review, not D3 ratification, a production RHI painter/default, R0/R1/R2.2–R7/independent/phase/platform/physical-hardware/widget/provider/deployment/package/release acceptance or full-goal completion. |
 | 2026-10-24 | R2.1 committed/pushed; exact-SHA five-platform source cohort running | d28c41d376cb571ae84dfd37a297b1a8800bc1af, tree9e65591eb7878c3ae5bcc8df5629cb4a550f99c3, updates the approved existing fork branch non-forcibly from acbab6cd. Exactly nine intended paths differ from local parent806f3269; original branch/HEAD/index/staging and1086 unrelated files remain preserved. Prepublication source binding/full-plan/checker42/worktree119 paths and16 gates/inventory190/both lints/diff checks pass; all50/364 prior receipts and2166/1292/104 prior proof files are unchanged. Run40110565811 attempt1 is a push-triggered full60-source-job cohort plus protocol/aggregate, not a duplicate dispatch. New hosted results/payload reviews are pending; do not infer success from prior acbab6cd. Retain publication/source/run identities at build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. This local documentation-only dispatch follow-up preserves51 renderer/365 Python rows and all source/helpers/defaults/assertions/provider/SDK patches/budgets/gate states. Repeat maintenance checks after this finalized receipt, monitor the same exact-SHA cohort, and review all60 artifacts. No merge/new PR/release/R2.2–R7/hardware/widget/phase/platform/full-goal acceptance. |
 | 2026-10-24 | R2.1 publication and full source CI explicitly authorized | Human reply “Allow R2.1 commit, push and CI” permits the locally validated provisional recorder on dxli/LibreCAD_3:codex/r1-platform-ci, not a merge/new PR/release/default change or R2.2–R7. Publish exactly nine source/build/test/plan paths using a separate index; bind the resulting full SHA and all60 source tuples plus protocol/aggregate to build/renderer-evidence/r2-1-publication-20261024.Nlf2Gb/. Seven source hashes match the unchanged native109-ID/17-sanitizer Mac/Linux ARM64 proof; Intel seven-object evidence remains compile-only. Verify all2166/1292/104 prior proof files and all1086 unrelated baseline files, preserve50 renderer/364 Python prior receipts and original branch/HEAD/index/staging/gate states. Full-plan/checker42/worktree119 paths and16 gates/inventory190/lints/diff checks must pass on this finalized receipt before commit. The new exact-SHA hosted cohort is pending, not a pass; prior acbab6cd62/62 is historical. Keep all tests/assertions/provider pins/submodule SDK patches and command/profile/job budgets unchanged; independently read all60 payloads. D1–D6/R0/R1/R2.2–R7/independent/phase/platform/hardware/widget/provider/deployment/package/release/full-objective acceptance remain open. |
