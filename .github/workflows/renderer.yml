@@ -485,16 +485,7 @@ jobs:
           set -euo pipefail
           provider_root="$(mktemp -d "$RUNNER_TEMP/renderer-qt683.XXXXXX")"
           mkdir "$provider_root/archives"
-          python3 -B - "$provider_root/archives" <<'PY'
-          import json, subprocess, sys
-          from pathlib import Path
-          pin = json.loads(Path('lcrenderer/rhi/providers/qt683-macos.json').read_text())
-          for item in pin['archives']:
-              subprocess.run(['curl', '--fail', '--location', '--proto', '=https', '--proto-redir', '=https',
-                              '--connect-timeout', '30', '--max-time', '180', '--retry', '3', '--output',
-                              str(Path(sys.argv[1]) / (item['module'] + '.7z')), item['url']], check=True)
-          PY
-          python3 -B scripts/restore_renderer_qt683_macos.py \
+          python3 -B scripts/restore_renderer_qt683_macos.py --download \
             --archives "$provider_root/archives" --destination "$provider_root/sdk" > "$provider_root/restore.json"
           # A second real same-version prefix drives the native mixed-provider negatives.
           python3 -B scripts/restore_renderer_qt683_macos.py \

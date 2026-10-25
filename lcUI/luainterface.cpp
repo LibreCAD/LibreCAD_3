@@ -142,6 +142,7 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
         luaPath = luaPackageRoot.toStdString();
         _L["lua_path"] = luaPath;
         _L["plugin_path"] = QDir(luaPackageRoot).filePath("plugins").toStdString();
+        lcLua.addModuleSearchPath(luaPath);
     }
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 

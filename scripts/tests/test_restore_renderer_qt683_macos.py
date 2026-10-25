@@ -33,13 +33,17 @@ class Qt683RestoreTests(unittest.TestCase):
             (self.archives / (item['module'] + '.7z')).write_bytes(data)
             item.update(bytes=len(data), sha256=provider.digest(data))
 
-    def invoke(self, run=None):
+    def invoke(self, run=None, download=False):
         self.pin_path.write_text(json.dumps(self.pin))
         with patch.object(provider.subprocess, 'run', side_effect=run or self.extract) as mock:
-            result = provider.restore(self.archives, self.destination, self.pin_path)
+            result = provider.restore(self.archives, self.destination, self.pin_path, download=download)
         return result, mock
 
     def extract(self, command, **kwargs):
+        if command[0] == 'curl':
+            path = Path(command[command.index('--output') + 1])
+            path.write_bytes(path.stem.encode())
+            return subprocess.CompletedProcess(command, 0)
         if command[0] == '/usr/bin/tar':
             for name, data in self.files.items():
                 path = self.destination / name
@@ -56,6 +60,68 @@ class Qt683RestoreTests(unittest.TestCase):
         self.assertEqual(5, mock.call_count)
         self.assertEqual(provider.digest(self.pin_path.read_bytes()), result['pin_sha256'])
         self.assertTrue(all('--no-same-owner' in cmd for cmd in result['commands']))
+        self.assertNotIn('download_commands', result)
+
+    def test_opt_in_download_uses_pinned_https_inputs_and_existing_limits(self):
+        self.archives = self.root / 'fresh-archives'
+        self.archives.mkdir()
+        result, mock = self.invoke(download=True)
+        self.assertEqual(9, mock.call_count)
+        self.assertEqual(4, len(result['download_commands']))
+        for command, item in zip(result['download_commands'], self.pin['archives']):
+            self.assertEqual(['curl', '--fail', '--location', '--proto', '=https', '--proto-redir', '=https',
+                              '--connect-timeout', '30', '--max-time', '180', '--retry', '3', '--no-clobber',
+                              '--output', str(self.archives / (item['module'] + '.7z')), item['url']], command)
+
+    def test_download_rejects_wrong_pins_before_execution(self):
+        self.archives = self.root / 'fresh-archives'
+        self.archives.mkdir()
+        original = copy.deepcopy(self.pin)
+        for change in ('version', 'module', 'digest', 'size'):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                self.pin = copy.deepcopy(original)
+                if change == 'version': self.pin['qt_version'] = '6.12.0'
+                if change == 'module': self.pin['archives'][-1]['module'] = '../escape'
+                if change == 'digest': self.pin['archives'][-1]['sha256'] = 'bad'
+                if change == 'size': self.pin['archives'][-1]['bytes'] = True
+                self.invoke(lambda *a, **k: self.fail('must not execute'), download=True)
+        self.assertFalse(self.destination.exists())
+        self.assertFalse(list(self.archives.iterdir()))
+
+    def test_download_checks_every_url_before_any_execution(self):
+        self.archives = self.root / 'fresh-archives'
+        self.archives.mkdir()
+        for url in ('http://download.qt.io/archive.7z', 'file:///archive.7z',
+                    'https://download.qt.io@foreign.example/archive.7z',
+                    'https://download.qt.io/archive.7z#fragment', 'https://download.qt.io/\narchive.7z'):
+            with self.subTest(url=url), self.assertRaisesRegex(ValueError, 'Unsafe provider archive URL'):
+                self.pin['archives'][-1]['url'] = url
+                self.invoke(lambda *a, **k: self.fail('must not execute'), download=True)
+        self.assertFalse(self.destination.exists())
+
+    def test_download_never_reuses_existing_archives_or_other_files(self):
+        with self.assertRaises(FileExistsError):
+            self.invoke(lambda *a, **k: self.fail('must not execute'), download=True)
+        self.archives = self.root / 'nonempty-archives'
+        self.archives.mkdir()
+        sentinel = self.archives / 'unrelated'
+        sentinel.write_text('keep')
+        with self.assertRaises(FileExistsError):
+            self.invoke(lambda *a, **k: self.fail('must not execute'), download=True)
+        self.assertEqual('keep', sentinel.read_text())
+        self.assertFalse(self.destination.exists())
+
+    def test_downloaded_payload_is_still_hashed_before_extraction(self):
+        self.archives = self.root / 'fresh-archives'
+        self.archives.mkdir()
+        def run(command, **kwargs):
+            self.assertEqual('curl', command[0])
+            result = self.extract(command, **kwargs)
+            Path(command[command.index('--output') + 1]).write_bytes(b'bad')
+            return result
+        with self.assertRaisesRegex(ValueError, 'archive size/hash'):
+            self.invoke(run, download=True)
+        self.assertFalse(self.destination.exists())
 
     def test_all_archives_checked_before_destination_or_execution(self):
         (self.archives / 'qtshadertools.7z').write_bytes(b'bad')
@@ -255,6 +321,17 @@ class Qt683RestoreTests(unittest.TestCase):
             provider.main()
         self.assertEqual(2, caught.exception.code)
         restore.assert_not_called()
+
+    def test_cli_download_is_opt_in_and_default_remains_offline(self):
+        arguments = ['restore', '--archives', str(self.archives), '--destination', str(self.destination)]
+        for download in (False, True):
+            argv = arguments + (['--download'] if download else [])
+            with self.subTest(download=download), patch.object(provider.sys, 'argv', argv), \
+                    patch.object(provider.sys, 'platform', 'darwin'), \
+                    patch.object(provider, 'restore', return_value={}) as restore, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                provider.main()
+            restore.assert_called_once_with(self.archives, self.destination, download=download)
 
 
 if __name__ == '__main__':

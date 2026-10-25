@@ -19,6 +19,69 @@ import run_renderer_checks as runner
 import validate_renderer_inventory as inventory
 
 
+class KernelObjectTests(unittest.TestCase):
+    def setUp(self):
+        temporary=tempfile.TemporaryDirectory(prefix='renderer-kernel-objects-');self.addCleanup(temporary.cleanup)
+        self.root=Path(temporary.name).resolve();self.build=self.root/'build';self.build.mkdir()
+        self.target=dict(paths=dict(build='lckernel'),compileGroups=[dict(language='CXX')],sources=[])
+        self.entries=[]
+        for index in range(65):
+            source=self.root/('lckernel/source'+str(index)+'.cpp')
+            self.target['sources'].append(dict(path=str(source),compileGroupIndex=0))
+            self.entries.append(dict(directory=str(self.build),file=str(source),
+                output=str(self.build/('lckernel/CMakeFiles/lckernel.dir/source'+str(index)+'.cpp.o'))))
+        self.write()
+        self.root_patch=patch.object(inventory,'REPO_ROOT',self.root);self.root_patch.start();self.addCleanup(self.root_patch.stop)
+        self.graph_patch=patch.object(runner,'source_targets',side_effect=lambda _:dict(lckernel=self.target))
+        self.graph_patch.start();self.addCleanup(self.graph_patch.stop)
+
+    def write(self):
+        (self.build/'compile_commands.json').write_text(json.dumps(self.entries))
+
+    def test_actual_source_inventory_maps_to_unique_owned_objects(self):
+        self.entries.append(dict(directory=str(self.build),file=str(self.root/'other.cpp'),
+            output=str(self.build/'other/CMakeFiles/other.dir/other.cpp.o')));self.write()
+        objects=runner.kernel_object_targets(self.build)
+        self.assertEqual(65,len(objects));self.assertEqual(65,len(set(objects)))
+        self.assertTrue(all(path.startswith('lckernel/CMakeFiles/lckernel.dir/') for path in objects))
+
+    def test_missing_duplicate_foreign_and_escaping_mapping_is_rejected(self):
+        original=copy.deepcopy(self.entries)
+        mutations=[lambda rows:rows.pop(),lambda rows:rows.append(rows[0]),
+            lambda rows:rows[0].update(output='/foreign/kernel.o'),
+            lambda rows:rows[0].update(output=str(self.build/'lckernel/CMakeFiles/lckernel.dir/../escape.o')),
+            lambda rows:rows[0].update(output=rows[1]['output']),
+            lambda rows:rows[0].update(file=str(self.root/'foreign.cpp')),
+            lambda rows:rows[0].update(directory=str(self.root)),
+            lambda rows:rows[0].pop('output')]
+        for mutate in mutations:
+            self.entries=copy.deepcopy(original);mutate(self.entries);self.write()
+            with self.subTest(mutate=mutate),self.assertRaises(ValueError):runner.kernel_object_targets(self.build)
+        self.entries=original;self.write()
+        for change in (lambda: self.target['sources'].append(self.target['sources'][0]),
+                       lambda: self.target['sources'][0].update(compileGroupIndex=1)):
+            before=copy.deepcopy(self.target);change()
+            with self.assertRaises(ValueError):runner.kernel_object_targets(self.build)
+            self.target=before
+
+    def test_intel_ninja_prebuild_has_bounded_chunks_and_other_generators_are_unchanged(self):
+        cache=self.build/'CMakeCache.txt';cache.write_text('CMAKE_GENERATOR:INTERNAL=Ninja\n')
+        calls=[]
+        with patch.object(sys,'platform','darwin'),patch.object(runner.platform,'machine',return_value='x86_64'):
+            runner.prebuild_cold_kernel('/cmake',self.build,lambda command,name:calls.append((command,name)))
+        self.assertEqual(['kernel-part-1','kernel-part-2','kernel-part-3'],[name for _,name in calls])
+        targets=[command[command.index('--target')+1:command.index('--parallel')] for command,_ in calls]
+        self.assertEqual([32,32,1],list(map(len,targets)))
+        self.assertEqual(runner.kernel_object_targets(self.build),[target for chunk in targets for target in chunk])
+        for platform,generator in (('MAC-ARM64','Ninja'),('MAC-X64','Unix Makefiles'),('WIN-X64','Visual Studio 17 2022')):
+            cache.write_text('CMAKE_GENERATOR:INTERNAL='+generator+'\n')
+            with patch.object(sys,'platform','darwin' if platform.startswith('MAC-') else 'win32'), \
+                    patch.object(runner.platform,'machine',return_value='arm64' if platform.endswith('ARM64') else 'x86_64'), \
+                    patch.object(runner,'kernel_object_targets') as read:
+                runner.prebuild_cold_kernel('/cmake',self.build,lambda *_:self.fail('Unexpected prebuild'))
+                read.assert_not_called()
+
+
 class SourceBuildTests(unittest.TestCase):
     def test_r2_3_actual_regions_share_curve_recording_and_propagate_join_certificates(self):
         root=inventory.REPO_ROOT
@@ -51,8 +114,10 @@ class SourceBuildTests(unittest.TestCase):
         root=inventory.REPO_ROOT
         source=(root/'unittest/lcviewernoqt/testhatchrecorder.cpp').read_text()
         names=set(re.findall(r'TEST\(CpuHatchRecorderTest,\s*(\w+)\)',source))
-        self.assertEqual(8,len(names))
+        self.assertEqual(10,len(names))
         for name in ('RealProviderGeometryTypesKeepOrderAndOwnedModelCoordinates',
+                     'ConnectedSplineSpansKeepWholePrimitiveDashPhaseAndOnlyEndpointCaps',
+                     'DisconnectedSplineProviderSpansFailWithoutInventedBridgesOrPartialCommands',
                      'AggregateRecorderCapsFailAtomicallyAndRecover',
                      'InvalidNullUnknownAndNonplanarEntitiesCannotDisappearSilently'):
             self.assertIn(name,names)
@@ -284,6 +349,16 @@ class SourceBuildTests(unittest.TestCase):
 
     def test_public_header_input_drift_invalidates_the_whole_source_run(self):
         with patch.object(runner,'cpu_header_inputs',side_effect=[{'fixture':'before'},{'fixture':'changed'}]):
+            with self.assertRaisesRegex(ValueError,'changed during execution'):self.execute()
+
+    def test_full_cpu_source_map_is_retained_and_source_drift_rejected(self):
+        original={'lcviewernoqt/painters/pathstroke.cpp':'before'}
+        with patch.object(runner,'production_inputs',return_value=original) as inputs:
+            directory=self.execute()
+        self.assertEqual(2,inputs.call_count)
+        self.assertEqual(original,json.loads((directory/'source-build.json').read_text())['source_sha256'])
+        self.args.app=None;self.args.build_dir=None
+        with patch.object(runner,'production_inputs',side_effect=[original,{**original,next(iter(original)):'changed'}]):
             with self.assertRaisesRegex(ValueError,'changed during execution'):self.execute()
 
     def test_linux_worker_removes_only_build_arguments_and_never_rebuilds(self):
@@ -978,6 +1053,25 @@ class LibraryMatrixTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'deadline expired'):
                 runner.build_library_matrix(self.args,self.selected,{},self.root/'expired')
 
+    def test_intel_kernel_chunks_keep_command_caps_total_deadline_and_normal_link(self):
+        self.args.timeout=300;labels=[];timeouts=[]
+        def command(argv,where,timeout,env):
+            labels.append(where.name);timeouts.append(timeout)
+            result=self.command(argv,where,timeout,env)
+            if where.name=='configure':
+                with (where.parent/'build/CMakeCache.txt').open('a') as out:out.write('CMAKE_GENERATOR:INTERNAL=Ninja\n')
+            return result
+        clock=iter([0,0,0,100,450,800,1201])
+        with patch.object(sys,'platform','darwin'),patch.object(runner.platform,'machine',return_value='x86_64'), \
+                patch.object(runner,'kernel_object_targets',return_value=['owned'+str(i)+'.o' for i in range(65)]), \
+                patch.object(runner.time,'monotonic',side_effect=lambda:next(clock)), \
+                patch.object(runner,'run_command',side_effect=command):
+            with self.assertRaisesRegex(ValueError,'Library build deadline expired'):
+                runner.build_library_matrix(self.args,self.selected,{},self.root/'intel-budget')
+        self.assertEqual(['configure','kernel-part-1','kernel-part-2','kernel-part-3','compile-lckernel'],labels)
+        self.assertTrue(all(0<timeout<=300 for timeout in timeouts))
+        self.assertEqual('lckernel',self.commands[-1][0][self.commands[-1][0].index('--target')+1])
+
     def test_profile_subsets_and_rhi_cpu_mismatch_rejected(self):
         self.subset=True
         with self.assertRaises(ValueError):self.execute()
@@ -1002,6 +1096,17 @@ class LibraryMatrixTests(unittest.TestCase):
         self.assertEqual({'cpu'},groups['core']&groups['python'])
         self.args.app=None;self.args.build_dir=None;self.omit_probe=True
         with self.assertRaises(ValueError):self.execute()
+
+    def test_tests_on_matrix_retains_and_closes_the_full_cpu_source_map(self):
+        original={'lcviewernoqt/painters/hatchrecorder.cpp':'before'}
+        with patch.object(runner,'production_inputs',return_value=original),patch.object(runner,'run_command',side_effect=self.command):
+            records=runner.build_library_matrix(self.args,self.selected,{},self.root/'source-map')
+        self.assertTrue(records)
+        self.assertTrue(all(record['source_sha256']==original for record in records))
+        with patch.object(runner,'production_inputs',side_effect=[original,{**original,next(iter(original)):'changed'}]), \
+                patch.object(runner,'run_command',side_effect=self.command):
+            with self.assertRaisesRegex(ValueError,'Library matrix source/helper changed'):
+                runner.build_library_matrix(self.args,self.selected,{},self.root/'source-drift')
 
     def test_profile_sdk_overrides_cannot_change_owned_flags_or_select_subset(self):
         for values in (['rhi:Qt6_DIR=/sdk'],['dual:WITH_UNITTESTS=OFF'],['cpu:Qt6_DIR=/one','cpu:Qt6_DIR=/two']):

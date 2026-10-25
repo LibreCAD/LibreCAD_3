@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
 
 PIN = Path(__file__).resolve().parents[1] / 'lcrenderer/rhi/providers/qt683-macos.json'
 
@@ -35,7 +36,7 @@ def unique_object(pairs):
     return result
 
 
-def restore(archives, destination, pin_path=PIN, tar='/usr/bin/tar'):
+def restore(archives, destination, pin_path=PIN, tar='/usr/bin/tar', download=False):
     helper_sha = digest(Path(__file__).read_bytes())
     pin_bytes = pin_path.read_bytes()
     pin = json.loads(pin_bytes, object_pairs_hook=unique_object)
@@ -51,6 +52,31 @@ def restore(archives, destination, pin_path=PIN, tar='/usr/bin/tar'):
         if (not name or path.is_absolute() or '..' in path.parts or '\\' in name or
                 not re.fullmatch('[0-9a-f]{64}', expected)):
             raise ValueError('Invalid provider reference path/digest')
+    # Validate the complete pin before any optional network operation. Keep
+    # offline restoration as the default and never reuse downloaded archives.
+    for item in pin['archives']:
+        if (type(item['bytes']) is not int or item['bytes'] <= 0 or
+                not re.fullmatch('[0-9a-f]{64}', item['sha256'])):
+            raise ValueError('Invalid provider archive size/hash pin')
+    downloads = []
+    if download:
+        if archives.is_symlink() or not archives.is_dir():
+            raise ValueError('Download archives must be a fresh directory')
+        for item in pin['archives']:
+            url = item['url']
+            parsed = urlsplit(url)
+            if (parsed.scheme != 'https' or parsed.hostname != 'download.qt.io' or
+                    parsed.username or parsed.password or parsed.fragment or
+                    any(ord(character) < 32 for character in url)):
+                raise ValueError('Unsafe provider archive URL')
+        if any(archives.iterdir()):
+            raise FileExistsError('Refusing to reuse a nonempty provider archive directory')
+        for item in pin['archives']:
+            command = ['curl', '--fail', '--location', '--proto', '=https', '--proto-redir', '=https',
+                       '--connect-timeout', '30', '--max-time', '180', '--retry', '3', '--no-clobber',
+                       '--output', str(archives / (item['module'] + '.7z')), item['url']]
+            subprocess.run(command, check=True)
+            downloads.append(command)
     inputs = []
     # Check every archive before creating a destination or invoking extraction/tools.
     for item in pin['archives']:
@@ -89,12 +115,15 @@ def restore(archives, destination, pin_path=PIN, tar='/usr/bin/tar'):
         raise ValueError('Provider archive changed during restoration')
     if pin_path.read_bytes() != pin_bytes or digest(Path(__file__).read_bytes()) != helper_sha:
         raise ValueError('Provider pin/helper changed during restoration')
-    return dict(schema_version=1, evidence_kind='r0-provider-restore',
+    result = dict(schema_version=1, evidence_kind='r0-provider-restore',
                 scope='Mac Qt required-module inputs; not graphics, system/deployment or release acceptance',
                 pin_sha256=digest(pin_bytes), restore_helper_sha256=helper_sha, qt_version=pin['qt_version'],
                 host_architecture=platform.machine(), destination=str(destination),
                 archives={path.name: expected for path, expected in inputs},
                 references=references, commands=commands, qsb_version=version)
+    if download:
+        result['download_commands'] = downloads
+    return result
 
 
 def main():
@@ -102,11 +131,13 @@ def main():
     parser.add_argument('--archives', type=Path, required=True)
     parser.add_argument('--destination', type=Path, required=True,
                         help='new SDK directory; failures preserve it for diagnosis, never reuse it')
+    parser.add_argument('--download', action='store_true',
+                        help='download pinned HTTPS archives into an empty archive directory first')
     args = parser.parse_args()
     if sys.platform != 'darwin':
         parser.error('This pinned provider is for native macOS only')
     try:
-        print(json.dumps(restore(args.archives, args.destination), indent=2, sort_keys=True))
+        print(json.dumps(restore(args.archives, args.destination, download=args.download), indent=2, sort_keys=True))
     except subprocess.CalledProcessError as error:
         detail = error.stderr or ''
         if isinstance(detail, bytes):

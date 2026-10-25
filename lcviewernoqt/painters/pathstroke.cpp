@@ -44,7 +44,7 @@ struct Builder {
     StrokeLimits limits;
     DashPattern dash;
     PreparedStroke result;
-    double radius, stretch, inverseStretch, dashStretch, distanceRound=0;
+    double radius, stretch, inverseStretch, dashStretch, distanceRound=0, joinRound=0;
     bool model;
     Point anchor;
     std::size_t runPoints=0;
@@ -128,7 +128,9 @@ struct Builder {
         }
     }
     void join(Point p,Point u,Point v,bool internal=false) {
-        const double turn=cross(u,v),dot=std::max(-1.,std::min(1.,u.x*v.x+u.y*v.y));
+        const double a0=u.x*v.y,b0=u.y*v.x;
+        const double turn=(a0-b0)+(std::fma(u.x,v.y,-a0)-std::fma(u.y,v.x,-b0));
+        const double dot=std::max(-1.,std::min(1.,u.x*v.x+u.y*v.y));
         if (turn==0 && dot>0) return;
         // The inside normal fan is part of continuity, not a decorative miter.
         // It can be visible when adjacent segments are shorter than the width.
@@ -143,9 +145,21 @@ struct Builder {
         if (turn==0) return; // exact reversal: bevel, not an unbounded miter
         const double side=turn>0?-1.:1.;
         const Point a=mul({-u.y,u.x},side*radius),b=mul({-v.y,v.x},side*radius);
-        const double denominator=1+dot;
-        if (style.join==StrokeJoin::Miter && denominator>0 && std::sqrt(2/denominator)<=style.miterLimit) {
-            const Point m=mul(add(a,b),1/denominator);
+        // Near a reversal, 1+dot can round to zero while the turn is nonzero.
+        // Use the well-conditioned half-angle ratio and offset-ray intersection
+        // instead; charge tangent/normal roundoff amplified by that intersection.
+        const double ratio=dot<0?norm(sub(u,v))/std::abs(turn):std::sqrt(2/(1+dot));
+        if (style.join==StrokeJoin::Miter && ratio<=style.miterLimit) {
+            Point m;double conditioning=1;
+            if (dot<0) {
+                check(std::abs(turn)>256*eps,"precision-limit");
+                const Point offset=sub(b,a);const double x=offset.x*v.y,y=offset.y*v.x;
+                const double numerator=(x-y)+(std::fma(offset.x,v.y,-x)-std::fma(offset.y,v.x,-y));
+                m=add(a,mul(u,numerator/turn));conditioning=1/std::abs(turn);
+            } else m=mul(add(a,b),1/(1+dot)); // stable for nearly straight joins
+            const double error=128*eps*stretch*(radius+norm(m))*conditioning;
+            check(std::isfinite(error) && error<=1.0/32,"precision-limit");
+            joinRound=std::max(joinRound,std::nextafter(error,std::numeric_limits<double>::infinity()));
             triangle(p,add(p,a),add(p,m));triangle(p,add(p,m),add(p,b));
         } else triangle(p,add(p,a),add(p,b));
     }
@@ -350,7 +364,7 @@ PreparedStroke prepareStroke(const PathCommand& command, StrokeStyle style, Stro
     finish();
     }
     if (!b.result.triangles.empty()) {
-        b.result.positionBound=limits.positionError+b.distanceRound+curvePosition+curveNormal;
+        b.result.positionBound=limits.positionError+b.distanceRound+b.joinRound+curvePosition+curveNormal;
         check(b.result.positionBound<=.25,"precision-limit");
         b.result.minimum=sub(b.result.minimum,{b.result.positionBound,b.result.positionBound});
         b.result.maximum=add(b.result.maximum,{b.result.positionBound,b.result.positionBound});

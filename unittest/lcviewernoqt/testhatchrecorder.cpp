@@ -9,6 +9,7 @@
 #include "cad/primitive/spline.h"
 #include "cad/primitive/hatch.h"
 #include "cad/objects/pattern.h"
+#include <cmath>
 #include <limits>
 #include <type_traits>
 
@@ -22,6 +23,20 @@ Entity line(lc::geo::Coordinate a={0,0},lc::geo::Coordinate b={2,1}) {return std
 lc::entity::Spline_CSPtr spline(lc::geo::Spline::splineflag flags=lc::geo::Spline::PLANAR) {
     lc::builder::SplineBuilder b;b.setLayer(std::make_shared<lc::meta::Layer>("pattern"));b.setDegree(3);b.setClosed(false);b.setFlags(flags);
     b.setControlPoints({{0,0},{1,3},{3,3},{4,0}});return b.build();
+}
+lc::entity::Spline_CSPtr straightSpline() {
+    lc::builder::SplineBuilder b;b.setLayer(std::make_shared<lc::meta::Layer>("pattern"));b.setDegree(3);b.setClosed(false);
+    b.setFlags(lc::geo::Spline::PLANAR);b.setControlPoints({{0,0},{1,0},{2,0},{3,0},{4,0},{5,0},{6,0}});return b.build();
+}
+bool covers(const PreparedStroke& mesh,Point p) {
+    for (const auto& t:mesh.triangles) {
+        bool inside=true;
+        for (unsigned i=0;i<3;++i) {
+            const auto a=t[i],b=t[(i+1)%3];inside&=(b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x)>=0;
+        }
+        if (inside) return true;
+    }
+    return false;
 }
 template<class Call> std::string error(Call call) {
     try {call();} catch (const std::invalid_argument& e) {return e.what();}
@@ -81,6 +96,37 @@ TEST(CpuHatchRecorderTest, BothArcDirectionsUseModelOrientationWithoutLegacyYFli
         EXPECT_EQ(ccw?2u:4u,command.path.size());EXPECT_EQ(ccw?1:-1,command.path[1].control1.y>0?1:-1);
         EXPECT_NEAR(0,command.path.back().point.x,1e-12);EXPECT_NEAR(3,command.path.back().point.y,1e-12);
     }
+}
+TEST(CpuHatchRecorderTest, ConnectedSplineSpansKeepWholePrimitiveDashPhaseAndOnlyEndpointCaps) {
+    const auto s=straightSpline();ASSERT_GT(s->bezierCount(),1u);
+    PaintState state;state.lineWidth=.2;state.dash={2,1};state.dashOffset=.25;state.dashScaled=true;
+    const auto command=recordHatchTile(tile({s}),state).commands.at(0);
+    unsigned moves=0;for (const auto& e:command.path) moves+=e.verb==PathVerb::Move;EXPECT_EQ(1u,moves);
+    for (auto cap:{StrokeCap::Butt,StrokeCap::Round,StrokeCap::Square}) {
+        StrokeStyle style;style.cap=cap;const auto actual=prepareStroke(command,style);
+        // Seven collinear controls describe precisely one straight traversal,
+        // independently of the provider's number or lengths of Bezier spans.
+        PathRecorder r;r.lineWidth(.2);r.dash({2,1},.25,true);r.moveTo({0,0});r.lineTo({6,0});r.stroke();
+        const auto expected=prepareStroke(r.commands().at(0),style);
+        for (int i=-1;i<50;++i) for (double y:{-.15,-.075,.075,.15}) {
+            const Point p{i/8.+.03125,y};EXPECT_EQ(covers(expected,p),covers(actual,p))<<i<<","<<y;
+        }
+        EXPECT_FALSE(covers(actual,{2.5,0}));EXPECT_FALSE(covers(actual,{5.5,0}));
+    }
+}
+TEST(CpuHatchRecorderTest, DisconnectedSplineProviderSpansFailWithoutInventedBridgesOrPartialCommands) {
+    auto s=straightSpline();ASSERT_GT(s->bezierCount(),1u);
+    // Corrupt one borrowed provider slot to exercise malformed source data,
+    // including a one-ULP gap: no unaccounted snapping error may escape.
+    const auto original=s->bezierAt(1);const auto controls=original->getCP();
+    ASSERT_EQ(4u,controls.size());
+    auto& slot=const_cast<lc::geo::BB_CSPtr&>(s->bezierAt(1));
+    for (double x:{std::nextafter(controls[0].x(),std::numeric_limits<double>::infinity()),controls[0].x()+1}) {
+        slot=std::make_shared<lc::geo::CubicBezier>(lc::geo::Coordinate{x,controls[0].y()},controls[1],controls[2],controls[3]);
+        HatchTile saved;EXPECT_EQ("disconnected-hatch-spline",error([&]{saved=recordHatchTile(tile({line(),s}));}));
+        EXPECT_TRUE(saved.commands.empty());
+    }
+    slot=original;EXPECT_EQ(2u,recordHatchTile(tile({line(),s})).commands.size());
 }
 TEST(CpuHatchRecorderTest, AggregateRecorderCapsFailAtomicallyAndRecover) {
     const auto p=tile({line(),line()});RecordingLimits limits;limits.elements=3;HatchTile out;

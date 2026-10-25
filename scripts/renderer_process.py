@@ -478,10 +478,11 @@ def run_command(command, directory, timeout, env=None, expected_exit=0):
         # A helper exception is not verified retirement. Retain the failure and
         # raw logs rather than publishing a partial record as successful cleanup.
         record=dict(evidence_kind='renderer-command-incomplete',command=command,executable_sha256=before,
-                    expected_exit_status=expected_exit,cleanup_verified=False,error=type(error).__name__+': '+str(error))
+                    expected_exit_status=expected_exit,timeout_seconds=timeout,
+                    cleanup_verified=False,error=type(error).__name__+': '+str(error))
         (directory/'processes.json').write_text(json.dumps(record,indent=2)+'\n')
         raise
-    record.update(expected_exit_status=expected_exit,command=command,executable_sha256=before)
+    record.update(expected_exit_status=expected_exit,timeout_seconds=timeout,command=command,executable_sha256=before)
     (directory/'processes.json').write_text(json.dumps(record,indent=2)+'\n')
     if sys.platform=='linux':validate_scope(record,display_required=False,expected_exit=expected_exit)
     elif (record['launcher_exit_status']!=expected_exit or record['launcher_timed_out'] is not False or

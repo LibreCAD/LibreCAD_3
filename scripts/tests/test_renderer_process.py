@@ -152,6 +152,35 @@ class RetirementPhaseTests(unittest.TestCase):
         self.assertEqual(5.3,result['cleanup_seconds'])
 
 
+class CommandDeadlineMetadataTests(unittest.TestCase):
+    def test_all_platforms_retain_the_actual_bounded_command_deadline(self):
+        with tempfile.TemporaryDirectory(prefix='renderer-deadline-metadata-') as name:
+            root=Path(name)
+            for platform,helper in (('linux','supervise'),('darwin','_posix_command'),('win32','_windows_command')):
+                for timeout in (1.25,300):
+                    where=root/(platform+str(timeout));where.mkdir()
+                    record=dict(evidence_kind='renderer-posix-command',launcher_exit_status=0,
+                        launcher_timed_out=False,process_group_retired=True,all_children_retired=True)
+                    if platform=='linux':
+                        record=good_scope()
+                        for key in ('runtime_directory_removed','display_files_retired'):record.pop(key)
+                        for file in ('launcher.stdout.log','launcher.stderr.log'):(where/file).write_bytes(b'')
+                    with self.subTest(platform=platform,timeout=timeout),patch.object(processes.sys,'platform',platform), \
+                            patch.object(processes,helper,return_value=record) as execute:
+                        result=processes.run_command([sys.executable],where,timeout)
+                    self.assertEqual(timeout,result['timeout_seconds'])
+                    self.assertEqual(timeout,json.loads((where/'processes.json').read_text())['timeout_seconds'])
+                    self.assertEqual(timeout,execute.call_args.args[2])
+
+    def test_invalid_deadlines_do_not_start_a_command(self):
+        with tempfile.TemporaryDirectory(prefix='renderer-invalid-deadline-') as name, \
+                patch.object(processes,'_posix_command') as execute:
+            for timeout in (0,-1,300.01,float('inf'),float('nan'),True):
+                with self.subTest(timeout=timeout),self.assertRaises(ValueError):
+                    processes.run_command([sys.executable],Path(name),timeout)
+            execute.assert_not_called()
+
+
 class MacWaitidTests(unittest.TestCase):
     def test_python_api_preserves_nonblocking_nonreaping_flags_and_identity(self):
         with patch.object(processes.sys,'platform','darwin'),patch.object(processes.os,'waitid',create=True) as wait:

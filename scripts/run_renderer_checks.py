@@ -462,6 +462,54 @@ def source_parallelism():
     return str(max(1,min(4,os.cpu_count() or 1)))
 
 
+def kernel_object_targets(build):
+    """Bind Ninja's object outputs bijectively to the actual kernel source graph."""
+    build=build.resolve();target=source_targets(build)['lckernel'];groups=target.get('compileGroups',[])
+    sources=set()
+    for item in target.get('sources',[]):
+        if 'compileGroupIndex' not in item:continue
+        index=item['compileGroupIndex'];path=Path(item['path'])
+        path=(path if path.is_absolute() else inventory.REPO_ROOT/path).resolve()
+        if (type(index) is not int or not 0<=index<len(groups) or path in sources or
+                not (path.is_relative_to(inventory.REPO_ROOT) or path.is_relative_to(build))):
+            raise ValueError('Invalid/duplicate compiled kernel source')
+        sources.add(path)
+    directory=Path(target['paths']['build'])
+    if not sources or directory.is_absolute() or '..' in directory.parts:
+        raise ValueError('Missing/foreign kernel source graph')
+    owner=build/directory/'CMakeFiles/lckernel.dir';objects={}
+    entries=read_json(build/'compile_commands.json')
+    if not isinstance(entries,list):raise ValueError('Missing kernel compilation database')
+    for item in entries:
+        if not isinstance(item,dict) or not isinstance(item.get('file'),str):
+            raise ValueError('Malformed kernel compilation database')
+        source=Path(item['file']);source=(source if source.is_absolute() else build/source).resolve()
+        raw=item.get('output','')
+        if not isinstance(raw,str):raise ValueError('Malformed kernel object output')
+        output=Path(raw);output=(output if output.is_absolute() else build/output).resolve()
+        if source not in sources and not output.is_relative_to(owner):continue
+        if (source not in sources or source in objects or Path(item.get('directory','')).resolve()!=build or
+                not output.is_relative_to(owner) or output.suffix!='.o' or output in objects.values() or
+                '..' in Path(item.get('output','')).parts):
+            raise ValueError('Foreign, escaping or duplicate kernel object mapping')
+        objects[source]=output
+    if objects.keys()!=sources:raise ValueError('Incomplete kernel source/object mapping')
+    return sorted(path.relative_to(build).as_posix() for path in objects.values())
+
+
+def prebuild_cold_kernel(cmake,build,step):
+    # Intel hosted Mac cold builds can exceed one command's cap. Keep the
+    # production target/link intact, but precompile bounded graph-owned chunks.
+    # All commands still share the caller's unchanged total profile deadline.
+    # The source/host entry point already rejects translated native tuples.
+    if sys.platform!='darwin' or platform.machine().lower() not in ('x86_64','amd64'):return
+    if not re.search(r'^CMAKE_GENERATOR:INTERNAL=Ninja$',(build/'CMakeCache.txt').read_text(),re.M):return
+    objects=kernel_object_targets(build)
+    for index in range(0,len(objects),32):
+        step([str(cmake),'--build',str(build),'--config','Release','--target',*objects[index:index+32],
+              '--parallel',source_parallelism()],'kernel-part-'+str(index//32+1))
+
+
 def source_targets(build):
     """Read the owned Release File API graph, never infer targets from filenames."""
     reply=build/'.cmake/api/v1/reply';indices=list(reply.glob('index-*.json'))
@@ -699,7 +747,8 @@ def library_artifacts(build,names,types=('STATIC_LIBRARY','SHARED_LIBRARY')):
     return result
 
 
-def build_library_matrix(args,selected,sdk,parent,tests=True):
+def build_library_matrix(args,selected,sdk,parent,tests=True,inputs=None):
+    inputs=production_inputs() if inputs is None else inputs
     profiles=dict(LIBRARY_PROFILES)
     if not tests:profiles['rhi']=(False,True,False)
     group=getattr(args,'library_group','all')
@@ -743,6 +792,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
         step(command,'configure');observed=library_profile_graph(build,flags)
         if python and 'Python_EXECUTABLE' in selected_sdk and Path(selected_sdk['Python_EXECUTABLE']).resolve()!=Path(observed['python_provider']['executable']).resolve():
             raise ValueError('Configured Python differs from requested SDK')
+        prebuild_cold_kernel(command[0],build,step)
         targets=['lckernel','lcviewernoqt','lcscripting','lcluascript']+(['lcpythonscript'] if python else [])
         targets+=(['lcviewer_opengl'] if legacy else [])+(['lcrenderer_rhi'] if rhi else [])
         if tests:targets+=['lcunittest','lcviewer_cpu_headercheck']
@@ -756,7 +806,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
                 python_provider=observed['python_provider']
             record=dict(schema_version=1,evidence_kind='r1-library-compile-only',phase_or_platform_accepted=False,
                 runtime_tests_executed=False,profile=profile,library_group=group,options=flags,observed=observed,commands=commands,
-                artifacts_sha256=artifacts,profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
+                artifacts_sha256=artifacts,source_sha256=inputs,profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
             (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
             continue
         app=build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''));binary=sha256(app.read_bytes())
@@ -777,8 +827,9 @@ def build_library_matrix(args,selected,sdk,parent,tests=True):
         record=dict(schema_version=1,evidence_kind='r1-library-option-build',phase_or_platform_accepted=False,
             profile=profile,library_group=group,options=flags,observed=observed,commands=commands,cpu_ids=found,
             base_cpu_ids=common_ids[False],python_ids=python_ids,app_sha256=binary,cpu_headers=cpu_header_contract(build,True),
-            profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
+            source_sha256=inputs,profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
         (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
+    if inputs!=production_inputs():raise ValueError('Library matrix source/helper changed during execution')
     return records
 
 
@@ -1010,6 +1061,7 @@ def build_host_source(args):
     step(command,'configure');observed=library_profile_graph(build,flags,hosts=True);objects=host_object_graph(build,flags)
     if python and 'Python_EXECUTABLE' in sdk and Path(sdk['Python_EXECUTABLE']).resolve()!=Path(observed['python_provider']['executable']).resolve():
         raise ValueError('Host selected a different Python SDK')
+    prebuild_cold_kernel(cmake,build,step)
     libraries=['lckernel','lcviewernoqt','lcviewer_opengl','lcscripting','lcluascript']
     if flags['WITH_PERSISTENCE']:libraries+=['persistence']
     if python:libraries+=['lcpythonscript']
@@ -1100,7 +1152,7 @@ def build_production_libraries(args):
     directory=Path(tempfile.mkdtemp(prefix='production-',dir=args.report_dir)).resolve()
     flags={k:False for k in ('WITH_QT_UI','WITH_LUACMDINTERFACE','WITH_PYTHONSCRIPT','WITH_CAIRO',
         'WITH_RHI_RENDERER','WITH_LEGACY_OPENGL_RENDERER','WITH_UNITTESTS','WITH_RENDERER_TESTS','WITH_RENDERING_UNITTESTS')}
-    records=build_library_matrix(args,dict(configuration=dict(expected_options=flags)),sdk,directory,tests=False)
+    records=build_library_matrix(args,dict(configuration=dict(expected_options=flags)),sdk,directory,tests=False,inputs=inputs)
     for record in records:
         build=directory/'library-matrix'/record['profile']/'build'
         if (library_profile_graph(build,record['options'])!=record['observed'] or
@@ -1125,11 +1177,11 @@ def build_rhi_source(args):
     if any(options[k] for k in ('WITH_QT_UI','WITH_LUACMDINTERFACE','WITH_PYTHONSCRIPT',
                                 'WITH_LEGACY_OPENGL_RENDERER','WITH_CAIRO')):
         raise ValueError('Initial source build implements the GUI-less rhi-offscreen profile; host/dual/scripted gates remain required')
-    sdk=build_sdk_options(args.cmake_option);helpers=helper_digests();header_inputs=cpu_header_inputs()
+    sdk=build_sdk_options(args.cmake_option);helpers=helper_digests();header_inputs=cpu_header_inputs();inputs=production_inputs()
     cmake=Path(args.cmake or shutil.which('cmake') or '').resolve(strict=True)
     args.report_dir.mkdir(parents=True,exist_ok=True)
     directory=Path(tempfile.mkdtemp(prefix='source-',dir=args.report_dir)).resolve();build=directory/'build'
-    libraries=build_library_matrix(args,selected,sdk,directory) if matrix else []
+    libraries=build_library_matrix(args,selected,sdk,directory,inputs=inputs) if matrix else []
     query=build/'.cmake/api/v1/query/client-renderer-source';query.mkdir(parents=True);(query/'codemodel-v2').touch()
     env={k:v for k,v in os.environ.items() if not k.startswith('GTEST_') and k not in
          ('DISPLAY','XAUTHORITY','WAYLAND_DISPLAY','WAYLAND_SOCKET')}
@@ -1148,6 +1200,7 @@ def build_rhi_source(args):
     command+=['-D'+k+':BOOL='+('ON' if v else 'OFF') for k,v in flags.items()]
     command+=['-DCMAKE_DISABLE_FIND_PACKAGE_'+p+'=ON' for p in ('Qt5','GLEW','glew','glfw3','glm','libdxfrw')]
     step(command,'configure')
+    prebuild_cold_kernel(cmake,build,step)
     step([str(cmake),'--build',str(build),'--config','Release','--target',
           'lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest','--parallel',source_parallelism()],'compile')
     executable=build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))
@@ -1161,7 +1214,8 @@ def build_rhi_source(args):
     tests=gtest_results(xml.read_bytes(),discovered)
     if libraries and discovered!=libraries[0]['cpu_ids']:
         raise ValueError('RHI and library profiles compiled out different CPU IDs')
-    if sha256(executable.read_bytes())!=binary or helper_digests()!=helpers or cpu_header_inputs()!=header_inputs:
+    if (sha256(executable.read_bytes())!=binary or helper_digests()!=helpers or cpu_header_inputs()!=header_inputs or
+            production_inputs()!=inputs):
         raise ValueError('Source CPU executable/helper changed during execution')
     artifacts={str(p.relative_to(directory)):sha256(p.read_bytes()) for p in directory.rglob('*')
         if p.is_file() and not p.is_symlink() and (p.suffix in ('.log','.json','.xml','.jsonl') or p.name=='CMakeCache.txt')}
@@ -1169,7 +1223,7 @@ def build_rhi_source(args):
         configuration=selected['configuration_id'],**helpers,commands=commands,options=flags,
         cpu_discovered_ids=discovered,cpu_executed_ids=sorted(tests),cpu_binary_sha256=binary,
         cmake=str(cmake),cmake_sha256=sha256(cmake.read_bytes()),artifacts_sha256=artifacts,library_matrix=libraries,
-        library_group=getattr(args,'library_group','all'),
+        library_group=getattr(args,'library_group','all'),source_sha256=inputs,
         cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs)
     (directory/'source-build.json').write_text(json.dumps(record,indent=2)+'\n')
     args.build_dir=build;args.app=build/'bin'/('lcrenderertest'+('.exe' if sys.platform=='win32' else ''))

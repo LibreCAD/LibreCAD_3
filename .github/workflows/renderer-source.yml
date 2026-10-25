@@ -148,16 +148,7 @@ jobs:
           set -euo pipefail
           provider_root="$(mktemp -d "$RUNNER_TEMP/renderer-r1-qt683.XXXXXX")"
           mkdir "$provider_root/archives"
-          python -B - "$provider_root/archives" <<'PY'
-          import json, subprocess, sys
-          from pathlib import Path
-          pin = json.loads(Path('lcrenderer/rhi/providers/qt683-macos.json').read_text())
-          for item in pin['archives']:
-              subprocess.run(['curl', '--fail', '--location', '--proto', '=https', '--proto-redir', '=https',
-                              '--connect-timeout', '30', '--max-time', '180', '--retry', '3', '--output',
-                              str(Path(sys.argv[1]) / (item['module'] + '.7z')), item['url']], check=True)
-          PY
-          python -B scripts/restore_renderer_qt683_macos.py --archives "$provider_root/archives" \
+          python -B scripts/restore_renderer_qt683_macos.py --download --archives "$provider_root/archives" \
             --destination "$provider_root/sdk" > build-r1/qt-restore.json
           cp lcrenderer/rhi/providers/qt683-macos.json build-r1/qt-pin.json
           printf 'QT_ROOT_DIR=%s\n' "$provider_root/sdk" >> "$GITHUB_ENV"

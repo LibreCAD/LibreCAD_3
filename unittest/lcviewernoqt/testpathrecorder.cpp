@@ -1248,6 +1248,31 @@ TEST(CpuCurvedStrokeTest, SharpCurveBoundaryUsesExactTangentsAtTheMiterThreshold
     StrokeStyle style;style.miterLimit=std::sqrt(2.)*(1-1e-10);EXPECT_FALSE(covers(prepareStroke(c,style),{0,-1.3}));
     style.miterLimit=std::sqrt(2.)*(1+1e-10);EXPECT_TRUE(covers(prepareStroke(c,style),{0,-1.3}));
 }
+TEST(CpuStrokeTest, NearReversalMitersUseStableIntersectionsAndCertifiedNumericBounds) {
+    for (double slope:{1e-3,1e-4,1e-5,1e-6}) for (double sign:{-1.,1.}) for (double angle:{0.,.37}) {
+        PathRecorder r;r.lineWidth(1);r.rotate(angle);r.moveTo({-1,0});r.lineTo({0,0});r.lineTo({-1,sign*slope});
+        StrokeStyle style;style.miterLimit=1e9;const auto mesh=prepareStroke(recorded(r),style);
+        // Independent intersection of the radius-.5 offset rays. This stable
+        // formula uses the input slope, not the implementation's rounded dot.
+        const Point tip{(std::hypot(1.,slope)+1)/(2*slope),-sign*.5};
+        const auto expected=r.state().transform.distance(tip);
+        EXPECT_LE(meshDistance(mesh,expected),mesh.positionBound)<<slope<<","<<sign<<","<<angle;
+        EXPECT_TRUE(covers(mesh,r.state().transform.distance({tip.x/4,-sign*.1})));
+        EXPECT_LE(mesh.positionBound,.25);
+    }
+}
+TEST(CpuStrokeTest, UncertifiableNearReversalMitersFailRatherThanSilentlyBecomingBevels) {
+    auto saved=prepareStroke(strokeLine());const auto count=saved.triangles.size();
+    for (double slope:{1e-7,1e-8,1e-12}) {
+        PathRecorder r;r.lineWidth(1);r.moveTo({-1,0});r.lineTo({0,0});r.lineTo({-1,slope});const auto command=recorded(r);
+        StrokeStyle style;style.miterLimit=1e15;
+        EXPECT_EQ("precision-limit",diagnostic([&]{saved=prepareStroke(command,style);}));
+        EXPECT_EQ(count,saved.triangles.size());
+        // A genuinely clipped miter still has a well-conditioned bevel; do not
+        // reject it merely because an unused infinite intersection is distant.
+        EXPECT_FALSE(prepareStroke(command).triangles.empty());
+    }
+}
 TEST(CpuCurvedStrokeTest, DashPhaseUncertaintyCannotChangeSharpCornerOrEndpointTopology) {
     constexpr double pi=3.14159265358979323846;
     PathRecorder corner;corner.lineWidth(2);corner.arc({0,0},1,0,pi/2);corner.lineTo({0,2});corner.dash({pi/2,1},0,true);
@@ -1467,6 +1492,25 @@ TEST(CpuGradientTest, StableDuplicatesStraightAlphaPaddingAndOwnedSnapshot) {
     FillLimits limits;limits.work=fill.visited-1;PreparedFill output;
     EXPECT_EQ("fill-work-limit",diagnostic([&]{output=prepareFill(c,FillRule::EvenOdd,limits,&fill.gradient);}));EXPECT_FALSE(output.hasGradient);
     auto bad=fill.gradient;bad.stops[0].rgba[3]=std::numeric_limits<double>::quiet_NaN();EXPECT_EQ("invalid-gradient-stop",diagnostic([&]{sampleGradient(bad,{1,0});}));
+}
+TEST(CpuGradientTest, SamplingMutableUnsortedValuesKeepsStableDuplicatesAndValidatesEveryCall) {
+    LinearGradient g;g.end={4,0};g.stops={{1,{{0,0,1,1}}},{.5,{{1,0,0,.5}}},{0,{{0,0,0,0}}},{.5,{{0,1,0,.25}}}};
+    EXPECT_EQ((std::array<double,4>{{0,1,0,.25}}),sampleGradient(g,{2,0}));
+    EXPECT_EQ((std::array<double,4>{{.5,0,0,.25}}),sampleGradient(g,{1,0}));
+    EXPECT_DOUBLE_EQ(1,g.stops.front().offset); // unsorted fallback never changes caller storage
+    auto prepared=prepareLinearGradient(g);
+    EXPECT_EQ((std::array<double,4>{{0,1,0,.25}}),sampleGradient(prepared,{2,0}));
+    // Even previously prepared data can be reordered or mutated by its owner.
+    std::swap(prepared.stops[1],prepared.stops[2]);
+    EXPECT_EQ((std::array<double,4>{{1,0,0,.5}}),sampleGradient(prepared,{2,0}));
+    prepared.stops[0].offset=.75;
+    EXPECT_EQ((std::array<double,4>{{1,0,0,.5}}),sampleGradient(prepared,{2,0}));
+    prepared.stops[0].rgba[3]=2;EXPECT_EQ("invalid-gradient-stop",diagnostic([&]{sampleGradient(prepared,{});}));
+    prepared=prepareLinearGradient(g);prepared.end=prepared.start;
+    EXPECT_EQ("degenerate-gradient",diagnostic([&]{sampleGradient(prepared,{});}));
+    prepared=prepareLinearGradient(g);prepared.stops.clear();
+    EXPECT_EQ("empty-gradient",diagnostic([&]{sampleGradient(prepared,{});}));
+    EXPECT_EQ("precision-limit",diagnostic([&]{sampleGradient(g,{NAN,0});}));
 }
 TEST(CpuFillTest, ConcaveNestedMeshAgreesWithIndependentWindingAndHasNoInteriorOverlaps) {
     using Exact=boost::multiprecision::cpp_bin_float_100;

@@ -121,6 +121,7 @@ lckernel/primitive/testellipse.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
+scripting/luapackagepath_test.cpp
 )
 
 # Issue #412 phase 0 — verify the DXF exporter actually writes what the
@@ -299,4 +300,5 @@ lc_parallel_msvc_compile(lcunittest)
 # targets on the project's C++14 baseline; only the test runner needs C++17.
 target_compile_features(lcunittest PRIVATE cxx_std_17)
 target_compile_definitions(lcunittest PRIVATE LC_USE_PERSISTENCE=${LC_USE_PERSISTENCE})
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})
+target_include_directories(lcunittest PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(lcunittest lckernel lcviewernoqt lcluascript gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})

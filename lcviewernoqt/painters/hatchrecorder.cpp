@@ -55,6 +55,7 @@ void record(PathRecorder& r,const lc::entity::CADEntity_CSPtr& entity,RecordingL
         check(p->bezierCount()>0,"unsupported-hatch-spline");
         check((unsigned(p->flags())&unsigned(lc::geo::Spline::RATIONAL))==0,"unsupported-rational-provider");
         check(!p->closed() && (unsigned(p->flags())&unsigned(lc::geo::Spline::PERIODIC))==0,"unsupported-hatch-spline");
+        Point previous{};
         for (std::size_t i=0;i<p->bezierCount();++i) {
             const auto& span=p->bezierAt(i);check(bool(span),"invalid-hatch-entity");
             // The current provider creates only polynomial quadratic/cubic
@@ -63,7 +64,14 @@ void record(PathRecorder& r,const lc::entity::CADEntity_CSPtr& entity,RecordingL
                   bool(std::dynamic_pointer_cast<const lc::geo::CubicBezier>(span)),"unsupported-hatch-spline");
             const auto controls=span->getCP();check(controls.size()==3 || controls.size()==4,"unsupported-hatch-spline");
             std::vector<Point> points;for (const auto& c:controls) points.push_back(point(c));
-            r.bezierSpan(points);
+            // One CAD spline is one traversal: keep dash phase and endpoint
+            // caps across its provider spans. No snapping error is certified by
+            // HatchTile, so a nonidentical provider seam must fail, not bridge.
+            if (!i) r.moveTo(points.front());
+            else check(previous.x==points.front().x && previous.y==points.front().y,"disconnected-hatch-spline");
+            if (points.size()==3) r.quadraticTo(points[1],points[2]);
+            else r.cubicTo(points[1],points[2],points[3]);
+            previous=points.back();
         }
     } else throw std::invalid_argument("unsupported-hatch-entity");
     r.stroke();

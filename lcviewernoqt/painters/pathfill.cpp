@@ -177,27 +177,27 @@ struct Builder {
         return std::move(result);
     }
 };
-}
-LinearGradient prepareLinearGradient(const LinearGradient& gradient,std::size_t stopLimit) {
+bool validateGradient(const LinearGradient& gradient,std::size_t stopLimit) {
     check(stopLimit<=1024,"invalid-limits");
     check(gradient.stops.size()<=stopLimit,"gradient-stop-limit");
     check(!gradient.stops.empty(),"empty-gradient");valid(gradient.start);valid(gradient.end);
     check(!same(gradient.start,gradient.end),"degenerate-gradient");
+    bool ordered=true;double previous=0;
     for (const auto& s:gradient.stops) {
         check(std::isfinite(s.offset) && s.offset>=0 && s.offset<=1,"invalid-gradient-stop");
         for (double c:s.rgba) check(std::isfinite(c) && c>=0 && c<=1,"invalid-gradient-stop");
+        ordered&=previous<=s.offset;previous=s.offset;
     }
-    auto out=gradient;
+    return ordered;
+}
+void sortStops(LinearGradient& gradient) {
     // At most1024 stops: insertion sort is compact, stable, allocation-free
     // after the owned copy, and has an explicit cross-library quadratic bound.
-    for (std::size_t i=1;i<out.stops.size();++i)
-        for (std::size_t j=i;j>0 && out.stops[j].offset<out.stops[j-1].offset;--j)
-            std::swap(out.stops[j],out.stops[j-1]);
-    return out;
+    for (std::size_t i=1;i<gradient.stops.size();++i)
+        for (std::size_t j=i;j>0 && gradient.stops[j].offset<gradient.stops[j-1].offset;--j)
+            std::swap(gradient.stops[j],gradient.stops[j-1]);
 }
-std::array<double,4> sampleGradient(const LinearGradient& prepared,Point point) {
-    // Revalidate public value input; never assume mutable caller data is prepared.
-    const auto g=prepareLinearGradient(prepared);valid(point);
+std::array<double,4> sampleStops(const LinearGradient& g,Point point) {
     const auto axis=sub(g.end,g.start),p=sub(point,g.start);
     const double t=dot(p,axis)/dot(axis,axis);check(std::isfinite(t),"precision-limit");
     const auto right=std::upper_bound(g.stops.begin(),g.stops.end(),t,[](double x,const GradientStop& s){return x<s.offset;});
@@ -205,6 +205,19 @@ std::array<double,4> sampleGradient(const LinearGradient& prepared,Point point) 
     if (right==g.stops.end()) return g.stops.back().rgba;
     const auto& a=*(right-1);const auto& b=*right;const double f=(t-a.offset)/(b.offset-a.offset);
     std::array<double,4> out;for (unsigned i=0;i<4;++i) out[i]=a.rgba[i]*(1-f)+b.rgba[i]*f;return out;
+}
+}
+LinearGradient prepareLinearGradient(const LinearGradient& gradient,std::size_t stopLimit) {
+    const bool ordered=validateGradient(gradient,stopLimit);auto out=gradient;
+    if (!ordered) sortStops(out);
+    return out;
+}
+std::array<double,4> sampleGradient(const LinearGradient& prepared,Point point) {
+    // Public values remain mutable: validate every call, but sorted prepared
+    // input needs no allocation/copy/sort. Unsorted input gets ONE owned fallback.
+    const bool ordered=validateGradient(prepared,1024);valid(point);
+    if (ordered) return sampleStops(prepared,point);
+    auto sorted=prepared;sortStops(sorted);return sampleStops(sorted,point);
 }
 PreparedFill prepareFill(const PathCommand& command,FillRule rule,FillLimits limits,const LinearGradient* gradient,double inputPositionBound) {
     check(std::isfinite(inputPositionBound) && inputPositionBound>=0 && inputPositionBound<=1.0/64,"invalid-boundary-error");
