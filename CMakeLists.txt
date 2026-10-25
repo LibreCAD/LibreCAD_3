@@ -411,6 +411,13 @@ if(WITH_UNITTESTS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
+if(WITH_RENDERER_TESTS)
+    # One graph avoids repeated MSBuild invocations/relinks for shared targets.
+    # This is opt-in, not an additional default or installed target.
+    add_custom_target(lcrenderer_source_checks DEPENDS
+        lcrenderertest lcrenderer_headercheck lcviewer_cpu_headercheck lcunittest)
+endif()
+
 if(MSVC)
     set(_lc_runtime_dependency_directories)
     if(WITH_PYTHONSCRIPT)

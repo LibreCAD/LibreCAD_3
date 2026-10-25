@@ -295,9 +295,63 @@ class SourceBuildTests(unittest.TestCase):
         configure=self.commands[0][0];build=self.commands[1][0]
         for flag in ('WITH_QT_UI','WITH_PYTHONSCRIPT','WITH_LEGACY_OPENGL_RENDERER','WITH_PERSISTENCE'):
             self.assertIn('-D'+flag+':BOOL=OFF',configure)
-        for target in ('lcunittest','lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck'):self.assertIn(target,build)
+        self.assertEqual(['lcrenderer_source_checks'],build[build.index('--target')+1:build.index('--parallel')])
         self.assertEqual(7,len(record['cpu_headers']['objects_sha256']))
         self.assertIn('--config',build);self.assertIn('Release',build)
+
+    def test_aggregate_source_build_keeps_one_shared_300_second_deadline(self):
+        self.args.timeout=300;observed=[]
+        def command(argv,where,timeout,env):
+            observed.append((where.name,timeout))
+            return self.command(argv,where,timeout,env)
+        with patch.object(runner.time,'monotonic',side_effect=[0,0,8.938,250,299.99]), \
+                patch.object(runner,'rhi_selection',return_value=self.selected), \
+                patch.object(runner,'run_command',side_effect=command):
+            directory=runner.build_rhi_source(self.args)
+        self.assertEqual(['configure','compile','cpu-discovery','cpu-tests'],[name for name,_ in observed])
+        for (_,actual),expected in zip(observed,(300,291.062,50,.01)):
+            self.assertAlmostEqual(expected,actual)
+            self.assertTrue(0<actual<=300)
+        record=json.loads((directory/'source-build.json').read_text())
+        self.assertEqual(['S.A','S.B'],record['cpu_discovered_ids'])
+        self.assertEqual(record['cpu_discovered_ids'],record['cpu_executed_ids'])
+        self.assertEqual(7,len(record['cpu_headers']['objects_sha256']))
+
+    def test_aggregate_compilation_cannot_restart_the_total_source_deadline(self):
+        self.args.timeout=300;observed=[]
+        def command(argv,where,timeout,env):
+            observed.append((where.name,timeout))
+            return self.command(argv,where,timeout,env)
+        with patch.object(runner.time,'monotonic',side_effect=[0,0,8.938,300.001]), \
+                patch.object(runner,'rhi_selection',return_value=self.selected), \
+                patch.object(runner,'run_command',side_effect=command):
+            with self.assertRaisesRegex(ValueError,'Source build deadline expired'):
+                runner.build_rhi_source(self.args)
+        self.assertEqual(['configure','compile'],[name for name,_ in observed])
+        self.assertAlmostEqual(291.062,observed[-1][1])
+
+    def test_source_rejects_missing_aggregate_dependency_before_compilation(self):
+        def command(argv,where,timeout,env):
+            result=self.command(argv,where,timeout,env)
+            if where.name=='configure':
+                path=where.parent/'build/.cmake/api/v1/reply/lcrenderer_source_checks.json'
+                graph=json.loads(path.read_text());graph['dependencies'].pop();path.write_text(json.dumps(graph))
+            return result
+        with patch.object(runner,'rhi_selection',return_value=self.selected), \
+                patch.object(runner,'run_command',side_effect=command):
+            with self.assertRaises(ValueError):runner.build_rhi_source(self.args)
+        self.assertEqual(1,len(self.commands))
+
+    def test_source_rechecks_aggregate_dependencies_before_publishing_success(self):
+        def command(argv,where,timeout,env):
+            result=self.command(argv,where,timeout,env)
+            if where.name=='cpu-tests':
+                path=where.parent/'build/.cmake/api/v1/reply/lcrenderer_source_checks.json'
+                graph=json.loads(path.read_text());graph['dependencies'].pop();path.write_text(json.dumps(graph))
+            return result
+        with patch.object(runner,'rhi_selection',return_value=self.selected), \
+                patch.object(runner,'run_command',side_effect=command):
+            with self.assertRaises(ValueError):runner.build_rhi_source(self.args)
 
     def test_source_deadline_rounding_is_capped_without_extending_the_profile(self):
         self.args.timeout=300
@@ -387,6 +441,7 @@ def library_graph(build,flags):
     if flags['WITH_UNITTESTS']:names+=['lcunittest','lcbuildcontracttest','lcviewer_cpu_headercheck']
     if flags['WITH_LEGACY_OPENGL_RENDERER']:names+=['lcviewer_opengl']
     if flags['WITH_RHI_RENDERER']:names+=['lcrenderer_rhi']
+    if flags.get('WITH_RENDERER_TESTS'):names+=['lcrenderertest','lcrenderer_headercheck','lcrenderer_source_checks']
     if flags['WITH_PYTHONSCRIPT']:names+=['lcpythonscript','lcuipy_build_tree']
     for name in names:
         sources=[dict(path='lcviewernoqt/painters/opengl/createpainter.cpp' if name=='lcviewer_opengl' else name+'/fixture.cpp')]
@@ -394,6 +449,15 @@ def library_graph(build,flags):
         (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
         if name=='lcuipy_build_tree':
             (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=[],type='UTILITY')))
+        if flags.get('WITH_RENDERER_TESTS') and name in ('lcunittest','lcrenderertest','lcrenderer_headercheck'):
+            path=reply/(name+'.json');data=json.loads(path.read_text())
+            data['type']='OBJECT_LIBRARY' if name=='lcrenderer_headercheck' else 'EXECUTABLE'
+            path.write_text(json.dumps(data))
+        if name=='lcrenderer_source_checks':
+            (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',type='UTILITY',
+                dependencies=[dict(id=n+'::fixture') for n in (
+                    'lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest')]))
+            )
     directory=build/'lcviewernoqt/cpu-headers';directory.mkdir(parents=True)
     template=(inventory.REPO_ROOT/runner.CPU_HEADER_TEMPLATE).read_text();sources=[];objects=[]
     for header in runner.CPU_PUBLIC_HEADERS:
@@ -1255,6 +1319,55 @@ class ProductionBuildTests(unittest.TestCase):
             result=subprocess.run([sys.executable,'-B',runner.__file__,'--production-builds',*flags,
                 '--report-dir',str(self.root)],capture_output=True,timeout=10)
             self.assertEqual(2,result.returncode)
+
+
+class SourceCheckGraphTests(unittest.TestCase):
+    required=('lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest')
+
+    def setUp(self):
+        temporary=tempfile.TemporaryDirectory(prefix='renderer-source-check-graph-');self.addCleanup(temporary.cleanup)
+        self.build=Path(temporary.name)/'build'
+        library_graph(self.build,dict(WITH_UNITTESTS=True,WITH_RENDERER_TESTS=True,WITH_RHI_RENDERER=True,
+            WITH_LEGACY_OPENGL_RENDERER=False,WITH_PYTHONSCRIPT=False))
+        self.reply=self.build/'.cmake/api/v1/reply'
+        self.path=self.reply/'lcrenderer_source_checks.json';self.original=json.loads(self.path.read_text())
+
+    def check(self):return runner.source_check_graph(self.build)
+
+    def write(self,value):self.path.write_text(json.dumps(value))
+
+    def test_owned_aggregate_keeps_all_four_exact_direct_targets(self):
+        graph=self.check()
+        expected={name:name+'::fixture' for name in self.required}
+        self.assertEqual('lcrenderer_source_checks::fixture',graph['target'])
+        self.assertEqual(expected,graph['required_targets'])
+
+    def test_omitting_any_required_direct_target_is_rejected_even_if_reachable(self):
+        for name in self.required:
+            graph=copy.deepcopy(self.original)
+            graph['dependencies']=[edge for edge in graph['dependencies'] if edge['id']!=name+'::fixture']
+            self.write(graph)
+            via=next(n for n in self.required if n!=name);path=self.reply/(via+'.json');original=path.read_bytes()
+            child=json.loads(original);child['dependencies']=[dict(id=name+'::fixture')];path.write_text(json.dumps(child))
+            with self.subTest(target=name),self.assertRaises(ValueError):self.check()
+            path.write_bytes(original)
+
+    def test_forged_required_ids_malformed_and_duplicate_dependency_edges_are_rejected(self):
+        mutations=[lambda g:g['dependencies'][0].update(id='lcrenderertest::forged'),
+            lambda g:g['dependencies'].append(copy.deepcopy(g['dependencies'][0])),
+            lambda g:g['dependencies'].append(dict(missing='id'))]
+        for mutate in mutations:
+            graph=copy.deepcopy(self.original);mutate(graph);self.write(graph)
+            with self.subTest(mutate=mutate),self.assertRaises(ValueError):self.check()
+
+    def test_aggregate_cannot_be_generated_compiled_or_publish_an_artifact(self):
+        mutations=[lambda g:g.update(type='SHARED_LIBRARY'),lambda g:g.update(isGeneratorProvided=True),
+            lambda g:g.update(artifacts=[dict(path='lib/pretend.a')]),
+            lambda g:g.update(compileGroups=[dict(language='CXX')]),
+            lambda g:g.update(sources=[dict(path='pretend.cpp',compileGroupIndex=0)])]
+        for mutate in mutations:
+            graph=copy.deepcopy(self.original);mutate(graph);self.write(graph)
+            with self.subTest(mutate=mutate),self.assertRaises(ValueError):self.check()
 
 
 class CpuHeaderContractTests(unittest.TestCase):

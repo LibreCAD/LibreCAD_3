@@ -548,6 +548,22 @@ def source_targets(build):
     return targets
 
 
+def source_check_graph(build):
+    """Bind the one source-check build to its four explicit graph dependencies."""
+    targets=source_targets(build);target=targets.get('lcrenderer_source_checks',{})
+    required={name:targets.get(name,{}).get('id') for name in
+        ('lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest')}
+    edges=target.get('dependencies',[]);ids=[edge.get('id') for edge in edges if isinstance(edge,dict)]
+    if (target.get('type')!='UTILITY' or target.get('isGeneratorProvided',False) is not False or
+            target.get('artifacts') or target.get('compileGroups') or
+            any(not isinstance(s,dict) or 'compileGroupIndex' in s for s in target.get('sources',[])) or
+            any(not isinstance(value,str) or not value for value in required.values()) or
+            len(ids)!=len(edges) or any(not isinstance(value,str) or not value for value in ids) or
+            len(ids)!=len(set(ids)) or not set(required.values())<=set(ids)):
+        raise ValueError('Missing/changed source checks aggregate or required dependencies')
+    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids))
+
+
 CPU_PUBLIC_HEADERS=('painters/lcpainter.h','painters/createpainter.h','painters/renderframe.h','painters/pathrecorder.h','painters/pathgeometry.h','documentcanvas.h','lcdrawoptions.h')
 CPU_HEADER_TEMPLATE='unittest/lcviewernoqt/cpu_headercheck.cpp.in'
 
@@ -1200,9 +1216,10 @@ def build_rhi_source(args):
     command+=['-D'+k+':BOOL='+('ON' if v else 'OFF') for k,v in flags.items()]
     command+=['-DCMAKE_DISABLE_FIND_PACKAGE_'+p+'=ON' for p in ('Qt5','GLEW','glew','glfw3','glm','libdxfrw')]
     step(command,'configure')
+    checks=source_check_graph(build)
     prebuild_cold_kernel(cmake,build,step)
     step([str(cmake),'--build',str(build),'--config','Release','--target',
-          'lcrenderertest','lcrenderer_headercheck','lcviewer_cpu_headercheck','lcunittest','--parallel',source_parallelism()],'compile')
+          'lcrenderer_source_checks','--parallel',source_parallelism()],'compile')
     executable=build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))
     binary=sha256(executable.read_bytes());step([str(executable),'--gtest_list_tests'],'cpu-discovery')
     # Only remove lcunittest's established one-line version banner, not noise
@@ -1215,7 +1232,7 @@ def build_rhi_source(args):
     if libraries and discovered!=libraries[0]['cpu_ids']:
         raise ValueError('RHI and library profiles compiled out different CPU IDs')
     if (sha256(executable.read_bytes())!=binary or helper_digests()!=helpers or cpu_header_inputs()!=header_inputs or
-            production_inputs()!=inputs):
+            production_inputs()!=inputs or source_check_graph(build)!=checks):
         raise ValueError('Source CPU executable/helper changed during execution')
     artifacts={str(p.relative_to(directory)):sha256(p.read_bytes()) for p in directory.rglob('*')
         if p.is_file() and not p.is_symlink() and (p.suffix in ('.log','.json','.xml','.jsonl') or p.name=='CMakeCache.txt')}
@@ -1224,7 +1241,7 @@ def build_rhi_source(args):
         cpu_discovered_ids=discovered,cpu_executed_ids=sorted(tests),cpu_binary_sha256=binary,
         cmake=str(cmake),cmake_sha256=sha256(cmake.read_bytes()),artifacts_sha256=artifacts,library_matrix=libraries,
         library_group=getattr(args,'library_group','all'),source_sha256=inputs,
-        cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs)
+        cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs,source_checks=checks)
     (directory/'source-build.json').write_text(json.dumps(record,indent=2)+'\n')
     args.build_dir=build;args.app=build/'bin'/('lcrenderertest'+('.exe' if sys.platform=='win32' else ''))
     return directory
