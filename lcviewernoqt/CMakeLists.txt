@@ -37,6 +37,8 @@ painters/pathrecorder.cpp
 painters/pathgeometry.cpp
 painters/pathstroke.cpp
 painters/pathfill.cpp
+painters/hatchrecorder.cpp
+painters/hatchtiler.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
         managers/eventmanager.cpp

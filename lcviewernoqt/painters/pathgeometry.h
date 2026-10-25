@@ -1,6 +1,7 @@
 #pragma once
 #include "pathrecorder.h"
 
+namespace lc { namespace objects { struct Pattern; } }
 namespace lc { namespace viewer { namespace render {
 // Coordinates already include zoom and DPR, in physical target pixels. This
 // reserves most of the total 0.25px budget for stroke expansion/float packing.
@@ -146,4 +147,39 @@ struct PreparedHatch {
 };
 PreparedHatch prepareHatch(const PathCommand& boundary, const std::vector<HatchFamily>& families,
                           double scale = 1, FillRule rule = FillRule::EvenOdd, HatchLimits limits = {});
+
+// Real DXF provider input, not an infinite-line approximation. Geometry is an
+// owned pattern-local snapshot with identity command transforms; state retains
+// the caller's outer transform for later scale/rotation/lattice preparation.
+// As in the current hatch drawable, all entities inherit the hatch paint style.
+// Point size follows the selected diameter contract (3 physical pixels).
+// This records geometry only: it does not repeat, clip, execute or cache tiles.
+struct HatchTile {
+    Point minimum{},maximum{};
+    PaintState state;
+    std::vector<PathCommand> commands;
+};
+HatchTile recordHatchTile(const lc::objects::Pattern& pattern, const PaintState& state = {},
+                         RecordingLimits limits = {});
+struct TiledHatchLimits {
+    StrokeLimits geometry; // global mask+ink vertices and work, not per tile
+    std::size_t cells = 65536, instances = MaxFrameElements;
+};
+struct PreparedTiledHatch {
+    PreparedFill mask;
+    PreparedStroke ink;
+    // Union ALL ink triangles, intersect that coverage with mask, then apply
+    // inherited color ONCE. Neither mesh is a directly blendable Frame batch.
+    // This is CPU preparation only, not GPU masking or a persistent tile cache.
+    std::size_t cells = 0, instances = 0, visited = 0;
+    double positionBound = 0;
+};
+// Repeat the actual finite commands at periods maximum-minimum, rotating and
+// scaling the model pattern BEFORE the outer camera transform. Dash phase is
+// anchored to each whole primitive, never restarted at the mask/cull boundary.
+// Large lattice indices use compensated origin rebasing; uncertifiable numeric
+// domains and global input/cell/instance/work/output caps fail atomically.
+PreparedTiledHatch prepareTiledHatch(const PathCommand& boundary, const HatchTile& tile,
+    double scale = 1, double angle = 0, FillRule rule = FillRule::EvenOdd,
+    StrokeStyle style = {}, TiledHatchLimits limits = {});
 }}}

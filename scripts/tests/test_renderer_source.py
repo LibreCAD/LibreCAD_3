@@ -20,6 +20,40 @@ import validate_renderer_inventory as inventory
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_r2_3_real_tile_preparation_is_bounded_cpu_geometry_in_the_ordinary_suite(self):
+        root=inventory.REPO_ROOT
+        self.assertIn('painters/hatchtiler.cpp',(root/'lcviewernoqt/CMakeLists.txt').read_text())
+        self.assertIn('lcviewernoqt/testhatchtiler.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
+        source=(root/'unittest/lcviewernoqt/testhatchtiler.cpp').read_text()
+        self.assertEqual(13,len(set(re.findall(r'TEST\(CpuHatchTilerTest,\s*(\w+)\)',source))))
+        for name in ('LargeWorldFractionalPeriodPhaseMatchesIndependentBinaryMultiprecision',
+                     'DashPhaseStaysOnWholeFinitePrimitivesAcrossMaskAndTileBoundaries',
+                     'GlobalCellsInstancesVerticesAndWorkCapsFailAtomicallyAndRecover'):
+            self.assertIn(name,source)
+        production=(root/'lcviewernoqt/painters/hatchtiler.cpp').read_text()
+        for api in ('prepareFill','prepareStroke','hatch-cell-limit','hatch-instance-limit','hatch-work-limit','std::fma'):
+            self.assertIn(api,production)
+        for forbidden in ('#include <Q','#include <cairo','QRhi','glDraw','multiprecision','long double'):
+            self.assertNotIn(forbidden,production)
+
+    def test_r2_3_real_cad_tile_recording_stays_owned_bounded_and_in_the_ordinary_suite(self):
+        root=inventory.REPO_ROOT
+        source=(root/'unittest/lcviewernoqt/testhatchrecorder.cpp').read_text()
+        names=set(re.findall(r'TEST\(CpuHatchRecorderTest,\s*(\w+)\)',source))
+        self.assertEqual(8,len(names))
+        for name in ('RealProviderGeometryTypesKeepOrderAndOwnedModelCoordinates',
+                     'AggregateRecorderCapsFailAtomicallyAndRecover',
+                     'InvalidNullUnknownAndNonplanarEntitiesCannotDisappearSilently'):
+            self.assertIn(name,names)
+        self.assertIn('lcviewernoqt/testhatchrecorder.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
+        self.assertIn('painters/hatchrecorder.cpp',(root/'lcviewernoqt/CMakeLists.txt').read_text())
+        production=(root/'lcviewernoqt/painters/hatchrecorder.cpp').read_text()
+        self.assertIn('bezierCount()',production);self.assertIn('bezierAt(i)',production)
+        self.assertNotIn('->beziers()',production)
+        self.assertIn('recorder.commands()',production)
+        for forbidden in ('#include <Q','#include <cairo','glDraw','QRhi'):
+            self.assertNotIn(forbidden,production)
+
     def test_r2_3_fill_bindings_execute_real_bounded_cpu_geometry(self):
         root=inventory.REPO_ROOT
         manifest=inventory.validate_case_manifest()['manifest']

@@ -107,6 +107,8 @@ lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lcviewernoqt/testrenderframe.cpp
 lcviewernoqt/testpathrecorder.cpp
+lcviewernoqt/testhatchrecorder.cpp
+lcviewernoqt/testhatchtiler.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
@@ -129,7 +131,7 @@ if(WITH_CAIRO)
 endif()
 
 if(WITH_PERSISTENCE)
-    list(APPEND src persistence/dxfexporttest.cpp)
+    list(APPEND src persistence/dxfexporttest.cpp persistence/hatchcatalogtest.cpp)
     set(EXTRA_LIBS ${EXTRA_LIBS} persistence)
 endif()
 

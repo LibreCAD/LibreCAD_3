@@ -96,6 +96,10 @@ public:
      */
     bool closed() const;
     const std::vector<BB_CSPtr> beziers() const;
+    // Bounded consumers can preflight and inspect spans without first copying
+    // the entire provider vector. Existing by-value API stays source compatible.
+    std::size_t bezierCount() const { return _beziers.size(); }
+    const BB_CSPtr& bezierAt(std::size_t index) const { return _beziers.at(index); }
     void trimAtPoint(const geo::Coordinate& c);
 
     /**
