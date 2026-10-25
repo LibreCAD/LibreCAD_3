@@ -353,6 +353,8 @@ jobs:
             build-r1/**/*.jsonl
             build-r1/**/*.log
             build-r1/**/*.xml
+            build-r1/**/discovery.txt
+            build-r1/**/vk_layer_settings.txt
             build-r1/**/modules.txt
             build-r1/**/bin/librecad*
             build-r1/**/*.lock

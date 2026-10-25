@@ -1296,6 +1296,50 @@ class SourceWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.text=(inventory.REPO_ROOT/'.github/workflows/renderer-source.yml').read_text()
 
+    def retained_files(self,text,step,root):
+        block=text.split('- name: '+step,1)[1].split('\n      - ',1)[0]
+        self.assertIn('uses: actions/upload-artifact@',block)
+        patterns=textwrap.dedent(block.split('          path: |\n',1)[1].split('\n          if-no-files-found:',1)[0]).splitlines()
+        # Exercise the actual positive file/directory globs with real files,
+        # rather than accepting a token elsewhere in a workflow or comment.
+        selected=set()
+        for pattern in patterns:
+            self.assertTrue(pattern and not pattern.startswith('!'),'retention model needs exclusion support')
+            for path in root.glob(pattern):
+                files=path.rglob('*') if path.is_dir() else [path]
+                selected.update(p.relative_to(root).as_posix() for p in files if p.is_file())
+        return selected
+
+    def test_source_uploader_retains_rhi_text_bytes_and_old_filter_drops_them(self):
+        with tempfile.TemporaryDirectory(prefix='renderer-source-retention-') as directory:
+            root=Path(directory);required=set();reports=set()
+            for qpa in ('xcb','wayland','cocoa','windows'):
+                base='build-r1/rhi-'+qpa+'/run-owned/'
+                required.add(base+'discovery.txt');reports.add(base+'checks.json')
+                if qpa in ('xcb','wayland'):required.add(base+'vk_layer_settings.txt')
+            unrelated={'build-r1/rhi-xcb/run-owned/unreported.txt','outside/discovery.txt','outside/vk_layer_settings.txt'}
+            for name in required|reports|unrelated:
+                path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(name)
+            step='Retain selected source/provider/build/test/process evidence on failure too'
+            selected=self.retained_files(self.text,step,root)
+            self.assertTrue(required|reports<=selected);self.assertFalse(unrelated&selected)
+            old=self.text.replace('            build-r1/**/discovery.txt\n','').replace('            build-r1/**/vk_layer_settings.txt\n','')
+            previous=self.retained_files(old,step,root)
+            self.assertTrue(reports<=previous);self.assertFalse(required&previous)
+
+    def test_spike_uploader_directory_globs_already_keep_validation_text_bytes(self):
+        text=(inventory.REPO_ROOT/'.github/workflows/renderer.yml').read_text()
+        with tempfile.TemporaryDirectory(prefix='renderer-spike-retention-') as directory:
+            root=Path(directory);required=set()
+            for build in ('build-rhi','build-rhi-noui'):
+                for qpa in ('xcb','wayland'):
+                    for name in ('checks.json','vk_layer_settings.txt'):
+                        required.add(build+'/evidence-'+qpa+'/run-owned/'+name)
+            for name in required|{'outside/vk_layer_settings.txt'}:
+                path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(name)
+            selected=self.retained_files(text,'Retain R0 evidence, including failures',root)
+            self.assertTrue(required<=selected);self.assertNotIn('outside/vk_layer_settings.txt',selected)
+
     def test_intel_metal_diagnostics_do_not_relax_device_classification(self):
         block=self.text.split('- name: Record native Intel Mac Metal adapter',1)[1].split('\n      - name:',1)[0]
         self.assertIn("matrix.platform == 'MAC-X64'",block)
