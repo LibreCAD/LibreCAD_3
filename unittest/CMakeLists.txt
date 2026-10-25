@@ -75,6 +75,7 @@ lcviewernoqt/fontbooktest.cpp
 lcviewernoqt/mtextdrawtest.cpp
 lcviewernoqt/mtextlayouttest.cpp
 lcviewernoqt/dimordinatedrawtest.cpp
+lcviewernoqt/dimlineardrawtest.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
@@ -84,6 +85,7 @@ lckernel/dochelpers/documentlist.cpp
 lckernel/geometry/testgeoellipse.cpp
 lckernel/primitive/testellipse.cpp
 lckernel/primitive/dimordinatetest.cpp
+lckernel/primitive/dimlineartest.cpp
 lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp

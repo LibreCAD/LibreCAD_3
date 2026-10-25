@@ -1,6 +1,8 @@
 #include "cad/primitive/dimlinear.h"
 #include "dimlinear.h"
 
+#include <cmath>
+
 
 using namespace lc;
 using namespace entity;
@@ -97,7 +99,7 @@ CADEntity_CSPtr DimLinear::rotate(const geo::Coordinate& rotation_center, double
                         this->explicitValue(),
                         this->_definitionPoint2.rotate(rotation_center, rotation_angle),
                         this->_definitionPoint3.rotate(rotation_center, rotation_angle),
-                        this->_angle,
+                        this->_angle + rotation_angle,
                         this->_oblique,
                         this->layer(), metaInfo(), block()
                                                    );
@@ -115,7 +117,32 @@ CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo:
                         this->explicitValue(),
                         this->_definitionPoint2.scale(scale_center, scale_factor),
                         this->_definitionPoint3.scale(scale_center, scale_factor),
-                        this->_angle,
+                        // A non-uniform scale turns the dimension line too.
+                        std::atan2(scale_factor.y() * std::sin(this->_angle),
+                                   scale_factor.x() * std::cos(this->_angle)),
+                        this->_oblique,
+                        this->layer(), metaInfo(), block()
+                                                   );
+    newDimLinear->setID(this->id());
+    return newDimLinear;
+}
+
+CADEntity_CSPtr DimLinear::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    // The dimension line's direction mirrors as the points do: take it from
+    // a point on the axis, which the mirror leaves where it is.
+    const geo::Coordinate direction =
+        (axis1 + geo::Coordinate(std::cos(this->_angle), std::sin(this->_angle))).mirror(axis1, axis2) - axis1;
+
+    auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint().mirror(axis1, axis2),
+                        this->middleOfText().mirror(axis1, axis2),
+                        this->attachmentPoint(),
+                        this->textAngle(),
+                        this->lineSpacingFactor(),
+                        this->lineSpacingStyle(),
+                        this->explicitValue(),
+                        this->_definitionPoint2.mirror(axis1, axis2),
+                        this->_definitionPoint3.mirror(axis1, axis2),
+                        direction.angle(),
                         this->_oblique,
                         this->layer(), metaInfo(), block()
                                                    );

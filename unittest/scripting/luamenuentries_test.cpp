@@ -1,9 +1,11 @@
-// The geometry behind menu entries that used to be connected to nothing.
+// The geometry behind menu entries that used to be connected to nothing, and
+// behind Dimension > Linear's choice of a horizontal or vertical dimension.
 //
 // Each operation keeps the arithmetic that turns what the user clicked into
 // an entity in a plain function on its class, so it can be checked here in a
 // bare Lua state without the application those operations otherwise need.
 
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -16,6 +18,7 @@
 
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/dimlinear.h>
 #include <cad/primitive/dimordinate.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
@@ -239,4 +242,105 @@ assert(shown == nil, 'the preview was left behind')
     EXPECT_DOUBLE_EQ(ordinate->middleOfText().y(), 50.0);
     ASSERT_NE(ordinate->layer(), nullptr);
     EXPECT_EQ(ordinate->layer()->name(), "0");
+}
+
+// Dimension > Linear (issue #377): which way a dimension measures. Off the box
+// the two points span, the side the line is on decides; between the points,
+// the way the cursor moves decides, so either orientation can be had there.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, ALinearDimensionMeasuresTheWayTheCursorChooses) {
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/dimlinearoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local orientation = DimLinearOperations.orientation
+local H, V = DimLinearOperations.HORIZONTAL, DimLinearOperations.VERTICAL
+local a, b = {0, 0}, {100, 50}
+
+assert(orientation(a, b, {50, 80}, {0, 0}, V) == H, 'above the points it measures across')
+assert(orientation(a, b, {50, -30}, {0, 0}, V) == H, 'below them too')
+assert(orientation(a, b, {130, 25}, {0, 0}, H) == V, 'to the right it measures up')
+assert(orientation(a, b, {-20, 25}, {0, 0}, H) == V, 'to the left too')
+assert(orientation(a, b, {110, 90}, {0, 0}, V) == H, 'off a corner, the side it is further past')
+assert(orientation(a, b, {140, 60}, {0, 0}, H) == V, 'off a corner, the other way')
+
+assert(orientation(a, b, {50, 25}, {1, 5}, V) == H, 'between them, moving up drags a horizontal line')
+assert(orientation(a, b, {50, 25}, {5, 1}, H) == V, 'between them, moving sideways drags a vertical one')
+assert(orientation(a, b, {50, 25}, {3, 4}, V) == V, 'a diagonal move keeps the orientation')
+assert(orientation(a, b, {50, 25}, {0, 0}, H) == H, 'so does standing still')
+
+assert(orientation({-100, -50}, {0, 0}, {-50, 20}, {0, 0}, V) == H, 'where the points are does not matter')
+)LUA"), "");
+}
+
+// And the operation, driven the way the canvas drives it, with only the
+// application stubbed.
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST_F(LuaMenuEntriesFixture, ALinearDimensionKeepsTheOrientationItWasPlacedWith) {
+    auto document = withDocument(*lcLua);
+    ASSERT_NO_FATAL_FAILURE(loadOperation("actions/operations.lua"));
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/createOperations.lua"));
+    ASSERT_NO_FATAL_FAILURE(loadOperation("createActions/dimlinearoperations.lua"));
+
+    EXPECT_EQ(lcLua->runString(R"LUA(
+function message() end
+local function nothing() end
+luaInterface = {registerEvent = nothing, deleteEvent = nothing, triggerEvent = nothing}
+
+local shown = nil
+local temporary = {
+    addEntity = function(_, entity) shown = entity end,
+    removeEntity = function() shown = nil end,
+}
+local child = {
+    document = function() return document end,
+    activeLayer = function() return document:layerByName('0') end,
+    metaInfoManager = function() return {metaInfo = nothing} end,
+    activeViewport = nothing,
+    tempEntities = function() return temporary end,
+}
+local cli = {returnText = nothing, commandActive = nothing}
+mainWindow = {cadMdiChild = function() return child end, cliCommand = function() return cli end}
+
+local H, V = DimLinearOperations.HORIZONTAL, DimLinearOperations.VERTICAL
+local function at(x, y) return {position = lc.geo.Coordinate(x, y)} end
+
+-- Between the points, moving up: horizontal; then sideways: vertical.
+local op = DimLinearOperations()
+op:onEvent('point', at(0, 0))
+op:onEvent('point', at(100, 50))
+op:onEvent('mouseMove', at(50, 20))
+op:onEvent('mouseMove', at(51, 30))
+assert(shown ~= nil and shown:angle() == H, 'moving up between the points previews a horizontal dimension')
+op:onEvent('mouseMove', at(61, 31))
+assert(shown:angle() == V, 'moving sideways previews a vertical one')
+op:onEvent('point', at(61, 31))
+assert(op.finished, 'the operation is still running')
+
+-- Locked with V, even above the points.
+op = DimLinearOperations()
+op:onEvent('point', at(0, 0))
+op:onEvent('point', at(100, 50))
+op:onEvent('mouseMove', at(50, 80))
+assert(shown:angle() == H, 'above the points previews a horizontal dimension')
+op:onEvent('text', {text = 'v'})
+assert(shown:angle() == V, 'V turns the preview vertical at once')
+op:onEvent('point', at(50, 80))
+)LUA"), "");
+
+    std::vector<lc::entity::DimLinear_CSPtr> dimensions;
+    for (const auto& entity : document->entityContainer().asVector()) {
+        if (auto dimension = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity)) {
+            dimensions.push_back(dimension);
+        }
+    }
+    ASSERT_EQ(dimensions.size(), 2u) << "the operations did not add two linear dimensions";
+
+    for (const auto& dimension : dimensions) {
+        EXPECT_DOUBLE_EQ(dimension->angle(), M_PI / 2) << "both were placed vertical";
+        // The definition point is where the dimension line meets the second
+        // extension line, as DXF has it; the text is where the user clicked.
+        EXPECT_DOUBLE_EQ(dimension->definitionPoint().x(), dimension->middleOfText().x());
+        EXPECT_DOUBLE_EQ(dimension->definitionPoint().y(), 50.0);
+        EXPECT_DOUBLE_EQ(dimension->definitionPoint3().x(), 100.0);
+    }
 }
