@@ -268,6 +268,8 @@ class SourceBuildTests(unittest.TestCase):
         if name=='compile' or name.startswith('compile-'):
             build=Path(command[2]);(build/'bin').mkdir(parents=True,exist_ok=True)
             targets=runner.source_targets(build)
+            pch=build/'lckernel/CMakeFiles/lckernel.dir'
+            if (pch/'cmake_pch.hxx').is_file():(pch/'cmake_pch.hxx.pch').write_bytes(b'synthetic-private-pch-not-native')
             if 'lcunittest' in targets:
                 (build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))).write_bytes(b'not-an-executable')
                 for object_name in (build/'lcviewernoqt/cpu-headers/objects-Release.txt').read_text().splitlines():Path(object_name).write_bytes(b'synthetic-object-not-native')
@@ -330,6 +332,14 @@ class SourceBuildTests(unittest.TestCase):
                 runner.build_rhi_source(self.args)
         self.assertEqual(['configure','compile'],[name for name,_ in observed])
         self.assertAlmostEqual(291.062,observed[-1][1])
+
+    def test_final_source_aggregate_never_prebuilds_kernel_even_on_intel_ninja(self):
+        with patch.object(sys,'platform','darwin'),patch.object(runner.platform,'machine',return_value='x86_64'), \
+                patch.object(runner,'prebuild_cold_kernel') as prebuild:
+            directory=self.execute()
+        prebuild.assert_not_called()
+        commands=json.loads((directory/'source-build.json').read_text())['commands']
+        self.assertEqual(4,len(commands))
 
     def test_source_rejects_missing_aggregate_dependency_before_compilation(self):
         def command(argv,where,timeout,env):
@@ -448,6 +458,16 @@ def library_graph(build,flags):
         sources=[dict(path='lcviewernoqt/painters/opengl/createpainter.cpp' if name=='lcviewer_opengl' else name+'/fixture.cpp')]
         if name=='lcunittest' and flags['WITH_PYTHONSCRIPT']:sources+=[dict(path=p) for p in runner.PYTHON_TEST_SOURCES]
         (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
+        if flags.get('WITH_RENDERER_TESTS') and name=='lckernel':
+            path=reply/(name+'.json');data=json.loads(path.read_text())
+            owner=build/'lckernel/CMakeFiles/lckernel.dir';owner.mkdir(parents=True)
+            header=owner/'cmake_pch.hxx';source=owner/'cmake_pch.hxx.cxx'
+            header.write_text('#include <Eigen/Dense>\n');source.write_text('/* synthetic generated PCH source */\n')
+            data['paths']=dict(build='lckernel')
+            data['sources'] += [dict(path=str(source),compileGroupIndex=0),dict(path=str(header))]
+            data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard='14'),
+                precompileHeaders=[dict(header='<Eigen/Dense>')]) for _ in range(2)]
+            path.write_text(json.dumps(data))
         if name=='lcuipy_build_tree':
             (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=[],type='UTILITY')))
         if flags.get('WITH_RENDERER_TESTS') and name in ('lcunittest','lcrenderertest','lcrenderer_headercheck'):
@@ -1377,6 +1397,76 @@ class SourceCheckGraphTests(unittest.TestCase):
         expected={name:name+'::fixture' for name in self.required}
         self.assertEqual('lcrenderer_source_checks::fixture',graph['target'])
         self.assertEqual(expected,graph['required_targets'])
+        self.assertEqual(dict(target='lckernel::fixture',standard='14',headers=['<Eigen/Dense>'],private=True),graph['kernel_pch'])
+
+    def test_kernel_pch_requires_only_eigen_dense_in_every_cxx14_group(self):
+        path=self.reply/'lckernel.json';original=json.loads(path.read_text())
+        mutations=(lambda d:d.update(type='OBJECT_LIBRARY'),lambda d:d.update(compileGroups=[]),
+            lambda d:d['compileGroups'][0].update(language='C'),
+            lambda d:d['compileGroups'][0]['languageStandard'].update(standard='17'),
+            lambda d:d['compileGroups'][0].pop('precompileHeaders'),
+            lambda d:d['compileGroups'][0].update(precompileHeaders=None),
+            lambda d:d['compileGroups'][0].update(precompileHeaders=['<Eigen/Dense>']),
+            lambda d:d['compileGroups'][0].update(precompileHeaders=[]),
+            lambda d:d['compileGroups'][0].update(precompileHeaders=[dict(header='<Eigen/Core>')]),
+            lambda d:d['compileGroups'][0]['precompileHeaders'].append(dict(header='cad/logger/logger.h')))
+        for mutate in mutations:
+            value=copy.deepcopy(original);mutate(value);path.write_text(json.dumps(value))
+            with self.subTest(mutate=mutate),self.assertRaisesRegex(ValueError,'kernel Eigen PCH'):self.check()
+
+    def test_private_kernel_pch_cannot_leak_to_any_other_compiled_target(self):
+        for name in ('lcviewer_cpu_headercheck','lcrenderer_headercheck','lcunittest','lcrenderertest',
+                'lcviewernoqt','lcluascript','lcscripting','lcrenderer_rhi'):
+            path=self.reply/(name+'.json');original=path.read_bytes();value=json.loads(original)
+            value.setdefault('compileGroups',[dict(language='CXX')])[0]['precompileHeaders']=[dict(header='<Eigen/Dense>')]
+            path.write_text(json.dumps(value))
+            with self.subTest(target=name),self.assertRaisesRegex(ValueError,'leaked consumer PCH'):self.check()
+            path.write_bytes(original)
+
+    def test_kernel_cmake_pch_is_private_and_renderer_test_only(self):
+        source=(inventory.REPO_ROOT/'lckernel/CMakeLists.txt').read_text()
+        block=re.search(r'if\(WITH_RENDERER_TESTS\)\s+target_precompile_headers\(lckernel PRIVATE <Eigen/Dense>\)\s+endif\(\)',
+            re.sub(r'(?m)^\s*#[^\n]*\n','',source))
+        self.assertIsNotNone(block)
+        self.assertEqual(1,source.count('target_precompile_headers('))
+        directory=self.build.parent/'scope';directory.mkdir();(directory/'dummy.cpp').write_text('int fixture() { return 0; }\n')
+        (directory/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.21)\nproject(PchScope LANGUAGES CXX)\n'
+            'include("'+str(inventory.REPO_ROOT/'lcviewernoqt/cmake/RendererOptions.cmake')+'")\n'
+            'add_library(lckernel STATIC dummy.cpp)\n'+block[0]+'\n'
+            'get_target_property(own lckernel PRECOMPILE_HEADERS)\n'
+            'get_target_property(exported lckernel INTERFACE_PRECOMPILE_HEADERS)\n'
+            'file(WRITE "${CMAKE_BINARY_DIR}/scope.txt" "${WITH_RENDERER_TESTS}\\n${own}\\n${exported}\\n")\n')
+        for enabled in (False,True):
+            build=directory/('on' if enabled else 'off')
+            options=['-DWITH_RENDERER_TESTS=ON','-DWITH_RHI_RENDERER=ON'] if enabled else []
+            result=subprocess.run(['cmake','-S',str(directory),'-B',str(build),*options],capture_output=True,text=True,timeout=30)
+            self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+            self.assertEqual(['ON' if enabled else 'OFF','<Eigen/Dense>' if enabled else 'own-NOTFOUND','exported-NOTFOUND'],
+                (build/'scope.txt').read_text().splitlines())
+
+    def test_compiled_kernel_pch_requires_exact_owned_declared_generated_inputs(self):
+        owner=self.build/'lckernel/CMakeFiles/lckernel.dir';header=owner/'cmake_pch.hxx';source=owner/'cmake_pch.hxx.cxx'
+        binary=owner/'cmake_pch.hxx.pch';binary.write_bytes(b'synthetic-pch-not-native')
+        files={p:p.read_bytes() for p in (header,source,binary)}
+        target=self.reply/'lckernel.json';original=target.read_bytes();extra=owner/'cmake_pch.pch'
+        expected=dict(generated_sha256={str(p.relative_to(self.build)):runner.sha256(files[p]) for p in (header,source)},
+            compiled_sha256={str(binary.relative_to(self.build)):runner.sha256(files[binary])})
+        self.assertEqual(expected,runner.kernel_pch_contract(self.build))
+        def graph(change):
+            data=json.loads(original);change(data);target.write_text(json.dumps(data))
+        cases=(lambda:header.unlink(),lambda:source.unlink(),lambda:binary.unlink(),lambda:header.write_bytes(b''),
+            lambda:binary.write_bytes(b''),lambda:extra.write_bytes(b'duplicate'),
+            lambda:graph(lambda d:d.update(sources=[s for s in d['sources'] if s['path']!=str(header)])),
+            lambda:graph(lambda d:d['paths'].update(build='../foreign')),
+            lambda:header.write_text('#include <Eigen/Core>\n'),
+            lambda:header.write_text('// #include <Eigen/Dense>\n/*\n#include <Eigen/Dense>\n*/\n'),
+            lambda:header.write_text('#include <Eigen/Dense>\n#include <vector>\n'))
+        for change in cases:
+            change()
+            with self.subTest(change=change),self.assertRaises(ValueError):runner.kernel_pch_contract(self.build)
+            target.write_bytes(original)
+            for path,raw in files.items():path.write_bytes(raw)
+            if extra.exists():extra.unlink()
 
     def test_omitting_any_required_direct_target_is_rejected_even_if_reachable(self):
         for name in self.required:
@@ -1475,6 +1565,20 @@ class SourceWorkflowTests(unittest.TestCase):
             old=self.text.replace('            build-r1/**/discovery.txt\n','').replace('            build-r1/**/vk_layer_settings.txt\n','')
             previous=self.retained_files(old,step,root)
             self.assertTrue(reports<=previous);self.assertFalse(required&previous)
+
+    def test_source_uploader_retains_only_small_generated_pch_inputs_not_cache(self):
+        with tempfile.TemporaryDirectory(prefix='renderer-pch-retention-') as directory:
+            root=Path(directory);owner='build-r1/rhi-owned/source/build/lckernel/CMakeFiles/lckernel.dir/'
+            required={owner+'cmake_pch.hxx',owner+'cmake_pch.hxx.cxx',owner+'cmake_pch.cxx',owner+'Release/cmake_pch.hxx'}
+            excluded={owner+'cmake_pch.pch',owner+'cmake_pch.hxx.pch',owner+'cmake_pch.hxx.gch',
+                owner+'first.cpp.o','outside/cmake_pch.hxx','outside/cmake_pch.hxx.cxx'}
+            for name in required|excluded:
+                path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(name)
+            step='Retain selected source/provider/build/test/process evidence on failure too'
+            selected=self.retained_files(self.text,step,root)
+            self.assertTrue(required<=selected);self.assertFalse(excluded&selected)
+            previous=re.sub(r'(?m)^            build-r1/\*\*/cmake_pch[^\n]*\n','',self.text)
+            self.assertFalse(required&self.retained_files(previous,step,root))
 
     def test_spike_uploader_directory_globs_already_keep_validation_text_bytes(self):
         text=(inventory.REPO_ROOT/'.github/workflows/renderer.yml').read_text()

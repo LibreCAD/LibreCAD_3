@@ -561,7 +561,16 @@ def source_check_graph(build):
             len(ids)!=len(edges) or any(not isinstance(value,str) or not value for value in ids) or
             len(ids)!=len(set(ids)) or not set(required.values())<=set(ids)):
         raise ValueError('Missing/changed source checks aggregate or required dependencies')
-    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids))
+    kernel=targets.get('lckernel',{});groups=kernel.get('compileGroups',[])
+    if (kernel.get('type')!='SHARED_LIBRARY' or not groups or any(
+            g.get('language')!='CXX' or g.get('languageStandard',{}).get('standard')!='14' or
+            not isinstance(g.get('precompileHeaders'),list) or len(g['precompileHeaders'])!=1 or
+            not isinstance(g['precompileHeaders'][0],dict) or g['precompileHeaders'][0].get('header')!='<Eigen/Dense>'
+            for g in groups) or any(g.get('precompileHeaders') for name,item in targets.items() if name!='lckernel'
+                for g in item.get('compileGroups',[]))):
+        raise ValueError('Missing/changed private C++14 kernel Eigen PCH or leaked consumer PCH')
+    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids),
+        kernel_pch=dict(target=kernel['id'],standard='14',headers=['<Eigen/Dense>'],private=True))
 
 
 CPU_PUBLIC_HEADERS=('painters/lcpainter.h','painters/createpainter.h','painters/renderframe.h','painters/pathrecorder.h','painters/pathgeometry.h','documentcanvas.h','lcdrawoptions.h')
@@ -1187,6 +1196,26 @@ def build_production_libraries(args):
     return directory
 
 
+def kernel_pch_contract(build):
+    """Bind the private kernel cache to its generated inputs and compiled output."""
+    target=source_targets(build)['lckernel']
+    owner=(build/target['paths']['build']/'CMakeFiles/lckernel.dir').resolve()
+    sources={(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve()
+        for s in target.get('sources',[])}
+    raw=sorted(p for p in owner.rglob('cmake_pch*') if p.suffix in ('.hxx','.cxx'))
+    compiled=sorted(p for p in owner.rglob('cmake_pch*') if p.suffix in ('.pch','.gch'))
+    header=next((p.read_bytes() for p in raw if p.name=='cmake_pch.hxx' and p.is_file()),b'')
+    includes=re.findall(rb'^\s*#\s*include\s+([^\r\n]+)',re.sub(rb'/\*.*?\*/|//[^\r\n]*',b'',header,flags=re.S),re.M)
+    if (len(raw)!=2 or {p.name for p in raw} not in
+            ({'cmake_pch.hxx','cmake_pch.cxx'},{'cmake_pch.hxx','cmake_pch.hxx.cxx'}) or
+            len(compiled)!=1 or compiled[0].name not in ('cmake_pch.pch','cmake_pch.hxx.pch','cmake_pch.hxx.gch') or
+            any(p.is_symlink() or not p.resolve().is_relative_to(owner) or not p.is_file() or not p.stat().st_size
+                for p in raw+compiled) or any(p.resolve() not in sources for p in raw) or includes!=[b'<Eigen/Dense>']):
+        raise ValueError('Missing/foreign private kernel PCH inputs or compiled output')
+    return {name:{p.relative_to(build.resolve()).as_posix():sha256(p.read_bytes()) for p in paths}
+        for name,paths in (('generated_sha256',raw),('compiled_sha256',compiled))}
+
+
 def build_rhi_source(args):
     """Build the current GUI-less tuple using installed providers, never dependencies."""
     matrix=getattr(args,'library_matrix',False)
@@ -1221,7 +1250,6 @@ def build_rhi_source(args):
     command+=['-DCMAKE_DISABLE_FIND_PACKAGE_'+p+'=ON' for p in ('Qt5','GLEW','glew','glfw3','glm','libdxfrw')]
     step(command,'configure')
     checks=source_check_graph(build)
-    prebuild_cold_kernel(cmake,build,step)
     step([str(cmake),'--build',str(build),'--config','Release','--target',
           'lcrenderer_source_checks','--parallel',source_parallelism()],'compile')
     executable=build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))
@@ -1245,7 +1273,8 @@ def build_rhi_source(args):
         cpu_discovered_ids=discovered,cpu_executed_ids=sorted(tests),cpu_binary_sha256=binary,
         cmake=str(cmake),cmake_sha256=sha256(cmake.read_bytes()),artifacts_sha256=artifacts,library_matrix=libraries,
         library_group=getattr(args,'library_group','all'),source_sha256=inputs,
-        cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs,source_checks=checks)
+        cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs,source_checks=checks,
+        kernel_pch=kernel_pch_contract(build))
     (directory/'source-build.json').write_text(json.dumps(record,indent=2)+'\n')
     args.build_dir=build;args.app=build/'bin'/('lcrenderertest'+('.exe' if sys.platform=='win32' else ''))
     return directory

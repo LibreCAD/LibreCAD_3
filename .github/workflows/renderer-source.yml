@@ -362,6 +362,9 @@ jobs:
             build-r1/**/flags.make
             build-r1/**/link.txt
             build-r1/**/cpu-headers/**
+            build-r1/**/cmake_pch.hxx
+            build-r1/**/cmake_pch.cxx
+            build-r1/**/cmake_pch.hxx.cxx
             build-r1/**/lcviewer_cpu_headercheck.dir/**
             build-r1/**/lib*.so*
             build-r1/**/lib*.dylib

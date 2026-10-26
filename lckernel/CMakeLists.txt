@@ -289,6 +289,10 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
+if(WITH_RENDERER_TESTS)
+    # Cache repeated Eigen parsing in opt-in source checks, never consumers.
+    target_precompile_headers(lckernel PRIVATE <Eigen/Dense>)
+endif()
 if (MSVC)
     set_target_properties(lckernel PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
