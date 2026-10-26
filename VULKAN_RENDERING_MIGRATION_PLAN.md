@@ -165,6 +165,29 @@ Keep original proof and configure-only multi-config fixture; require actual
 Windows retained cache flags/bytes and the fresh all60 hosted cohort.
 Legacy defaults, upstream deferral and all acceptance gates stay unchanged.
 
+Kernel-only caching is insufficient on b4dd957/run40259321120: the Windows core
+final fresh compile exhausts300 TOTAL with no compiler error and verified
+cleanup. Actual VS cache layout/flags are correct; the remaining viewer/Lua/unit
+dependency chain starts tests late. Extend only opt-in WITH_RENDERER_TESTS
+PRIVATE caches to those targets, each owning its cache and existing standard
+(three C++14 libraries, C++17 tests), never REUSE_FROM across DLL definitions.
+Eigen remains common; Lua also caches Kaguya, tests also cache GTest. Defaults,
+ordinary host/library builds and seven CPU/one RHI independent C++14 headers
+stay PCH-free. Static444-input macro/include-order review is clean. Fresh Mac
+264/Metal22 and Linux264/Vulkan22 pass55.404s/115.467s, observations not a
+controlled speedup claim. Full666 scripts,45 reader models/native readback,
+maintenance and a new complete all60 exact-SHA source cohort remain required.
+Full666 local scripts now pass (Mac11 expected Linux skips/Linux0);45 reader
+models and both fresh strict native readbacks pass, binding eight generated
+inputs/four cache hashes/167 ordinary+four creation units and seven raw headers.
+Both audit entrypoints bind exactly666; retain the prior parser-only negative
+control and original models. Linux exports645 compact files with eight tiny
+raw header objects, not large caches. Final maintenance/six-path publication
+and fresh complete all60 exact-SHA hosted validation remain mandatory.
+Evidence: build/renderer-evidence/pr453-pch-chain-20261025.wlqdWF/.
+Retain the failed cohort, all five seals and original checkout/index/staging;
+legacy default,300/1200 budgets,0.25px bound, upstream deferral and all gates stay.
+
 ### Provisional R2.3 entry — 2026-10-25
 
 The actual CAD Region adapter now records owned physical boundaries using the
@@ -3927,6 +3950,7 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-25 | Cache the remaining cold source-check dependency chain privately | Candidateb4dd957/run40259321120 still exhausts300 TOTAL in Windows core final compilation; actual VS layout is correct, one kernel/viewer/Lua link each, no compiler error, children retired. Preserve failure/partial passes unqualified. Extend only WITH_RENDERER_TESTS PRIVATE caches to four targets with own C++14/14/14/17/export definitions; defaults/host/library PCH-OFF and eight independent C++14 headers stay. Static444-input review is clean. Fresh Mac264/Metal22 and Linux264/Vulkan22 pass55.404s/115.467s; full666 scripts pass (Mac11 expected Linux skips/Linux0),45 reader models and two fresh strict four-cache readbacks pass. Eight generated inputs/four hash-only cache outputs/167+4 units bind;645 compact Linux files include eight tiny raw objects, no large caches. Both audit entrypoints require666 and retain the old parser-only negative control. Final plan/checker42/worktree/inventory190/lints/diff precede six-path publication and mandatory fresh all60 exact-SHA source/artifact validation. Evidence: build/renderer-evidence/pr453-pch-chain-20261025.wlqdWF/. Preserve five seals, failed/superseded proof, original checkout/index/staging,300/1200 budgets,0.25px bound, legacy default and all gates. Upstream reconciliation stays separate; no new sanitizer, merge or phase/platform/GPU/hardware/widget/package/release/full-goal acceptance. |
 | 2026-10-25 | Correct Visual Studio private-cache ownership and exact Release inputs | Official CMake3.31.6 source and real configure-only multi-config fixture confirm distinct MSVC roots/other-config headers. One new regression covers exact VS layout and duplicate/foreign rejection. Fresh Mac/Linux ARM64 each264CPU/22RHI pass; source+CPU64.556s/source+CPU+Vulkan122.763s,14instances/devices0core-syncerrors. Full666 scripts pass (Mac11 expected Linux skips/Linux0);40 strict reader models/fresh native readbacks and final maintenance precede four-path publication and mandatory all60 exact-SHA source/artifact validation. Retain superseded ed7ca043/run40258405546 and all prior proof/seals; original checkout/index/staging stays untouched. Evidence: build/renderer-evidence/pr453-pch-20261025.imFiPD/vs-followup/. Eigen compile inputs/uploader/aggregate/C++ implementation,300/1200 budgets,0.25px bound, legacy default and all acceptance gates stay unchanged. Upstream reconciliation remains separate; no new sanitizer, merge or phase/platform/GPU/hardware/widget/package/release/full-goal acceptance. |
 | 2026-10-25 | Private-cache candidate locally validated; six-path publication next | Fresh Mac/Linux ARM64 each264CPU/22RHI pass, preserving all IDs;84 ordinary kernel units+one cache creation and8independent PCH-free C++14 headers verify. Mac source+CPU56.187s; Linux source+CPU+Vulkan106.867s/core-sync14instances14devices0errors, not a controlled speedup claim. Full665 scripts pass (Mac11 expected Linux skips/Linux0);40 reader models and actual Clang/GNU readbacks pass. Preserve632original Linux files plus8tiny objects/8112bytes and separate failed-preflight/metadata-reader provenance; no large cache binary export. Evidence: build/renderer-evidence/pr453-pch-20261025.imFiPD/. Repeat plan/checker42/worktree/inventory190/lints/diff after receipt, commit/push only six intended paths, and require fresh all60 exact-SHA source/artifact validation. Windows cache schema/timing remains pending native proof. Preserve all prior seals/receipts, original checkout/index/staging,300/1200 budgets,0.25px bound, legacy default, upstream deferral and every gate. No new sanitizer, merge or D1–D6/R2.4+/independent/GPU/painter/phase/platform/hardware/widget/package/release/full-goal acceptance. |
 | 2026-10-25 | Private Eigen cache cold-build correction active | Candidate644afb32/run40252124285 passes Intel host-state checks but Windows core/Python and Intel core final RHI compilation exhaust300 TOTAL; preceding matrix profiles pass. Actual graphs retain one aggregate and no duplicate TUs; kernel throughput varies substantially. Cache only Eigen/Dense privately on the opt-in RHI-test kernel and remove only final-source prefix draining; defaults/library/host profiles stay PCH-free and retain old prefixes. Bind C++14/private metadata, generated inputs and one compiled cache hash, reject malformed/leaked caches, and retain three narrow text-glob variants. Fresh Mac264/Metal22 and Linux264/Vulkan22/core-sync0errors pass; full665 scripts,40 reader models, maintenance and fresh all60 exact-SHA source/artifact validation remain required. Evidence: build/renderer-evidence/pr453-pch-20261025.imFiPD/. Preserve1553+112+1209+146 sealed files, all prior receipts, original checkout/index/staging,300/1200 budgets,0.25px bound and every gate. No new sanitizer, merge, D1–D6/R2.4+/independent/GPU/painter/phase/platform/hardware/widget/package/release/full-goal acceptance. Legacy default and upstream deferral remain. |

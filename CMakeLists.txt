@@ -414,6 +414,11 @@ endif()
 if(WITH_RENDERER_TESTS)
     # One graph avoids repeated MSBuild invocations/relinks for shared targets.
     # This is opt-in, not an additional default or installed target.
+    foreach(_target IN ITEMS lckernel lcviewernoqt lcluascript lcunittest)
+        target_precompile_headers(${_target} PRIVATE <Eigen/Dense>)
+    endforeach()
+    target_precompile_headers(lcluascript PRIVATE <kaguya/kaguya.hpp>)
+    target_precompile_headers(lcunittest PRIVATE <gtest/gtest.h>)
     add_custom_target(lcrenderer_source_checks DEPENDS
         lcrenderertest lcrenderer_headercheck lcviewer_cpu_headercheck lcunittest)
 endif()

@@ -548,6 +548,13 @@ def source_targets(build):
     return targets
 
 
+SOURCE_PRIVATE_PCH={
+    'lckernel':('14',('<Eigen/Dense>',)),
+    'lcviewernoqt':('14',('<Eigen/Dense>',)),
+    'lcluascript':('14',('<Eigen/Dense>','<kaguya/kaguya.hpp>')),
+    'lcunittest':('17',('<Eigen/Dense>','<gtest/gtest.h>'))}
+
+
 def source_check_graph(build):
     """Bind the one source-check build to its four explicit graph dependencies."""
     targets=source_targets(build);target=targets.get('lcrenderer_source_checks',{})
@@ -561,16 +568,22 @@ def source_check_graph(build):
             len(ids)!=len(edges) or any(not isinstance(value,str) or not value for value in ids) or
             len(ids)!=len(set(ids)) or not set(required.values())<=set(ids)):
         raise ValueError('Missing/changed source checks aggregate or required dependencies')
-    kernel=targets.get('lckernel',{});groups=kernel.get('compileGroups',[])
-    if (kernel.get('type')!='SHARED_LIBRARY' or not groups or any(
-            g.get('language')!='CXX' or g.get('languageStandard',{}).get('standard')!='14' or
-            not isinstance(g.get('precompileHeaders'),list) or len(g['precompileHeaders'])!=1 or
-            not isinstance(g['precompileHeaders'][0],dict) or g['precompileHeaders'][0].get('header')!='<Eigen/Dense>'
-            for g in groups) or any(g.get('precompileHeaders') for name,item in targets.items() if name!='lckernel'
-                for g in item.get('compileGroups',[]))):
-        raise ValueError('Missing/changed private C++14 kernel Eigen PCH or leaked consumer PCH')
-    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids),
-        kernel_pch=dict(target=kernel['id'],standard='14',headers=['<Eigen/Dense>'],private=True))
+    private={}
+    for name,(standard,headers) in SOURCE_PRIVATE_PCH.items():
+        item=targets.get(name,{});groups=item.get('compileGroups',[])
+        if (item.get('type')!=('EXECUTABLE' if name=='lcunittest' else 'SHARED_LIBRARY') or not groups or any(
+                g.get('language')!='CXX' or g.get('languageStandard',{}).get('standard')!=standard or
+                not isinstance(g.get('precompileHeaders'),list) or len(g['precompileHeaders'])!=len(headers) or
+                any(not isinstance(h,dict) for h in g['precompileHeaders']) or
+                [h.get('header') for h in g['precompileHeaders']]!=list(headers) for g in groups)):
+            raise ValueError('Missing/changed private source PCH: '+name)
+        private[name]=dict(target=item['id'],standard=standard,headers=list(headers),private=True)
+    if any(any(g.get('precompileHeaders') or any('cmake_pch' in f.get('fragment','')
+            for f in g.get('compileCommandFragments',[])) for g in item.get('compileGroups',[])) or
+            any(Path(s.get('path','')).name.startswith('cmake_pch') for s in item.get('sources',[]))
+            for name,item in targets.items() if name not in SOURCE_PRIVATE_PCH):
+        raise ValueError('Private source PCH leaked into another target')
+    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids),private_pch=private)
 
 
 CPU_PUBLIC_HEADERS=('painters/lcpainter.h','painters/createpainter.h','painters/renderframe.h','painters/pathrecorder.h','painters/pathgeometry.h','documentcanvas.h','lcdrawoptions.h')
@@ -1196,30 +1209,31 @@ def build_production_libraries(args):
     return directory
 
 
-def kernel_pch_contract(build):
-    """Bind the private kernel cache to its generated inputs and compiled output."""
-    target=source_targets(build)['lckernel']
-    directory=(build/target['paths']['build']).resolve()
-    if not directory.is_relative_to(build.resolve()):
-        raise ValueError('Foreign private kernel PCH target directory')
-    owner=directory/'CMakeFiles/lckernel.dir'
-    owners=(owner,directory/'lckernel.dir')
-    sources={(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve()
-        for s in target.get('sources',[])}
-    raw=sorted(sources.intersection(owner/name for name in
-        ('cmake_pch.hxx','Release/cmake_pch.hxx','cmake_pch.cxx','cmake_pch.hxx.cxx')))
-    compiled=sorted(p for root in owners for p in root.rglob('cmake_pch*') if p.suffix in ('.pch','.gch'))
-    header=next((p.read_bytes() for p in raw if p.name=='cmake_pch.hxx' and p.is_file()),b'')
-    includes=re.findall(rb'^\s*#\s*include\s+([^\r\n]+)',re.sub(rb'/\*.*?\*/|//[^\r\n]*',b'',header,flags=re.S),re.M)
-    if (len(raw)!=2 or {p.name for p in raw} not in
-            ({'cmake_pch.hxx','cmake_pch.cxx'},{'cmake_pch.hxx','cmake_pch.hxx.cxx'}) or
-            len(compiled)!=1 or compiled[0].name not in ('cmake_pch.pch','cmake_pch.hxx.pch','cmake_pch.hxx.gch') or
-            any(p.is_symlink() or not p.is_file() or not p.stat().st_size for p in raw+compiled) or
-            any(not p.resolve().is_relative_to(owner) for p in raw) or
-            any(not any(p.resolve().is_relative_to(root) for root in owners) for p in compiled) or includes!=[b'<Eigen/Dense>']):
-        raise ValueError('Missing/foreign private kernel PCH inputs or compiled output')
-    return {name:{p.relative_to(build.resolve()).as_posix():sha256(p.read_bytes()) for p in paths}
-        for name,paths in (('generated_sha256',raw),('compiled_sha256',compiled))}
+def private_pch_contract(build):
+    """Bind each opt-in target's own generated inputs and compiled cache."""
+    targets=source_targets(build);result={}
+    for name,(_,headers) in SOURCE_PRIVATE_PCH.items():
+        target=targets[name];directory=(build/target['paths']['build']).resolve()
+        if not directory.is_relative_to(build.resolve()):raise ValueError('Foreign private PCH target directory: '+name)
+        owner=directory/'CMakeFiles'/(name+'.dir');owners=(owner,directory/(name+'.dir'))
+        sources={(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve()
+            for s in target.get('sources',[])}
+        raw=sorted(sources.intersection(owner/file for file in
+            ('cmake_pch.hxx','Release/cmake_pch.hxx','cmake_pch.cxx','cmake_pch.hxx.cxx')))
+        compiled=sorted(p for root in owners for p in root.rglob('cmake_pch*') if p.suffix in ('.pch','.gch'))
+        header=next((p.read_bytes() for p in raw if p.name=='cmake_pch.hxx' and p.is_file()),b'')
+        includes=re.findall(rb'^\s*#\s*include\s+([^\r\n]+)',re.sub(rb'/\*.*?\*/|//[^\r\n]*',b'',header,flags=re.S),re.M)
+        if (len(raw)!=2 or {p.name for p in raw} not in
+                ({'cmake_pch.hxx','cmake_pch.cxx'},{'cmake_pch.hxx','cmake_pch.hxx.cxx'}) or
+                len(compiled)!=1 or compiled[0].name not in ('cmake_pch.pch','cmake_pch.hxx.pch','cmake_pch.hxx.gch') or
+                any(p.is_symlink() or not p.is_file() or not p.stat().st_size for p in raw+compiled) or
+                any(not p.resolve().is_relative_to(owner) for p in raw) or
+                any(not any(p.resolve().is_relative_to(root) for root in owners) for p in compiled) or
+                includes!=[header.encode() for header in headers]):
+            raise ValueError('Missing/foreign private PCH inputs or compiled output: '+name)
+        result[name]={kind:{p.relative_to(build.resolve()).as_posix():sha256(p.read_bytes()) for p in paths}
+            for kind,paths in (('generated_sha256',raw),('compiled_sha256',compiled))}
+    return result
 
 
 def build_rhi_source(args):
@@ -1280,7 +1294,7 @@ def build_rhi_source(args):
         cmake=str(cmake),cmake_sha256=sha256(cmake.read_bytes()),artifacts_sha256=artifacts,library_matrix=libraries,
         library_group=getattr(args,'library_group','all'),source_sha256=inputs,
         cpu_headers=cpu_header_contract(build,True),cpu_header_sources_sha256=header_inputs,source_checks=checks,
-        kernel_pch=kernel_pch_contract(build))
+        private_pch=private_pch_contract(build))
     (directory/'source-build.json').write_text(json.dumps(record,indent=2)+'\n')
     args.build_dir=build;args.app=build/'bin'/('lcrenderertest'+('.exe' if sys.platform=='win32' else ''))
     return directory

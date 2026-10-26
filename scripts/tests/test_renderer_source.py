@@ -268,8 +268,10 @@ class SourceBuildTests(unittest.TestCase):
         if name=='compile' or name.startswith('compile-'):
             build=Path(command[2]);(build/'bin').mkdir(parents=True,exist_ok=True)
             targets=runner.source_targets(build)
-            pch=build/'lckernel/CMakeFiles/lckernel.dir'
-            if (pch/'cmake_pch.hxx').is_file():(pch/'cmake_pch.hxx.pch').write_bytes(b'synthetic-private-pch-not-native')
+            for target_name,target in targets.items():
+                if 'paths' not in target:continue
+                pch=build/target['paths']['build']/'CMakeFiles'/(target_name+'.dir')
+                if (pch/'cmake_pch.hxx').is_file():(pch/'cmake_pch.hxx.pch').write_bytes(b'synthetic-private-pch-not-native')
             if 'lcunittest' in targets:
                 (build/'bin'/('lcunittest'+('.exe' if sys.platform=='win32' else ''))).write_bytes(b'not-an-executable')
                 for object_name in (build/'lcviewernoqt/cpu-headers/objects-Release.txt').read_text().splitlines():Path(object_name).write_bytes(b'synthetic-object-not-native')
@@ -300,6 +302,9 @@ class SourceBuildTests(unittest.TestCase):
             self.assertIn('-D'+flag+':BOOL=OFF',configure)
         self.assertEqual(['lcrenderer_source_checks'],build[build.index('--target')+1:build.index('--parallel')])
         self.assertEqual(7,len(record['cpu_headers']['objects_sha256']))
+        self.assertEqual(set(runner.SOURCE_PRIVATE_PCH),set(record['source_checks']['private_pch']))
+        self.assertEqual(set(runner.SOURCE_PRIVATE_PCH),set(record['private_pch']))
+        self.assertNotIn('kernel_pch',record);self.assertNotIn('kernel_pch',record['source_checks'])
         self.assertIn('--config',build);self.assertIn('Release',build)
 
     def test_aggregate_source_build_keeps_one_shared_300_second_deadline(self):
@@ -458,15 +463,17 @@ def library_graph(build,flags):
         sources=[dict(path='lcviewernoqt/painters/opengl/createpainter.cpp' if name=='lcviewer_opengl' else name+'/fixture.cpp')]
         if name=='lcunittest' and flags['WITH_PYTHONSCRIPT']:sources+=[dict(path=p) for p in runner.PYTHON_TEST_SOURCES]
         (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
-        if flags.get('WITH_RENDERER_TESTS') and name=='lckernel':
+        if flags.get('WITH_RENDERER_TESTS') and name in runner.SOURCE_PRIVATE_PCH:
             path=reply/(name+'.json');data=json.loads(path.read_text())
-            owner=build/'lckernel/CMakeFiles/lckernel.dir';owner.mkdir(parents=True)
+            directory={'lcluascript':'lcadluascript','lcunittest':'unittest'}.get(name,name)
+            standard,headers=runner.SOURCE_PRIVATE_PCH[name]
+            owner=build/directory/'CMakeFiles'/(name+'.dir');owner.mkdir(parents=True)
             header=owner/'cmake_pch.hxx';source=owner/'cmake_pch.hxx.cxx'
-            header.write_text('#include <Eigen/Dense>\n');source.write_text('/* synthetic generated PCH source */\n')
-            data['paths']=dict(build='lckernel')
+            header.write_text(''.join('#include '+h+'\n' for h in headers));source.write_text('/* synthetic generated PCH source */\n')
+            data['paths']=dict(build=directory)
             data['sources'] += [dict(path=str(source),compileGroupIndex=0),dict(path=str(header))]
-            data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard='14'),
-                precompileHeaders=[dict(header='<Eigen/Dense>')]) for _ in range(2)]
+            data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard=standard),
+                precompileHeaders=[dict(header=h) for h in headers]) for _ in range(2)]
             path.write_text(json.dumps(data))
         if name=='lcuipy_build_tree':
             (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=[],type='UTILITY')))
@@ -1397,102 +1404,133 @@ class SourceCheckGraphTests(unittest.TestCase):
         expected={name:name+'::fixture' for name in self.required}
         self.assertEqual('lcrenderer_source_checks::fixture',graph['target'])
         self.assertEqual(expected,graph['required_targets'])
-        self.assertEqual(dict(target='lckernel::fixture',standard='14',headers=['<Eigen/Dense>'],private=True),graph['kernel_pch'])
+        expected={'lckernel':('14',['<Eigen/Dense>']),'lcviewernoqt':('14',['<Eigen/Dense>']),
+            'lcluascript':('14',['<Eigen/Dense>','<kaguya/kaguya.hpp>']),
+            'lcunittest':('17',['<Eigen/Dense>','<gtest/gtest.h>'])}
+        self.assertEqual({name:dict(target=name+'::fixture',standard=standard,headers=headers,private=True)
+            for name,(standard,headers) in expected.items()},graph['private_pch'])
 
-    def test_kernel_pch_requires_only_eigen_dense_in_every_cxx14_group(self):
-        path=self.reply/'lckernel.json';original=json.loads(path.read_text())
+    def test_private_pch_requires_exact_ordered_headers_in_every_target_group(self):
         mutations=(lambda d:d.update(type='OBJECT_LIBRARY'),lambda d:d.update(compileGroups=[]),
             lambda d:d['compileGroups'][0].update(language='C'),
-            lambda d:d['compileGroups'][0]['languageStandard'].update(standard='17'),
+            lambda d:d['compileGroups'][0]['languageStandard'].update(standard='20'),
             lambda d:d['compileGroups'][0].pop('precompileHeaders'),
             lambda d:d['compileGroups'][0].update(precompileHeaders=None),
             lambda d:d['compileGroups'][0].update(precompileHeaders=['<Eigen/Dense>']),
             lambda d:d['compileGroups'][0].update(precompileHeaders=[]),
             lambda d:d['compileGroups'][0].update(precompileHeaders=[dict(header='<Eigen/Core>')]),
-            lambda d:d['compileGroups'][0]['precompileHeaders'].append(dict(header='cad/logger/logger.h')))
-        for mutate in mutations:
-            value=copy.deepcopy(original);mutate(value);path.write_text(json.dumps(value))
-            with self.subTest(mutate=mutate),self.assertRaisesRegex(ValueError,'kernel Eigen PCH'):self.check()
+            lambda d:d['compileGroups'][0]['precompileHeaders'].append(dict(header='cad/logger/logger.h')),
+            lambda d:d['compileGroups'][0]['precompileHeaders'].reverse())
+        for name in runner.SOURCE_PRIVATE_PCH:
+            path=self.reply/(name+'.json');original=json.loads(path.read_text())
+            for mutate in mutations:
+                value=copy.deepcopy(original);mutate(value)
+                if value==original:continue
+                path.write_text(json.dumps(value))
+                with self.subTest(target=name,mutate=mutate),self.assertRaisesRegex(ValueError,'private source PCH'):self.check()
+            path.write_text(json.dumps(original));path.unlink()
+            with self.subTest(missing=name),self.assertRaises((ValueError,FileNotFoundError)):self.check()
+            path.write_text(json.dumps(original))
 
-    def test_private_kernel_pch_cannot_leak_to_any_other_compiled_target(self):
-        for name in ('lcviewer_cpu_headercheck','lcrenderer_headercheck','lcunittest','lcrenderertest',
-                'lcviewernoqt','lcluascript','lcscripting','lcrenderer_rhi'):
-            path=self.reply/(name+'.json');original=path.read_bytes();value=json.loads(original)
-            value.setdefault('compileGroups',[dict(language='CXX')])[0]['precompileHeaders']=[dict(header='<Eigen/Dense>')]
-            path.write_text(json.dumps(value))
-            with self.subTest(target=name),self.assertRaisesRegex(ValueError,'leaked consumer PCH'):self.check()
+    def test_private_pch_cannot_leak_to_headers_or_other_consumers(self):
+        for name in ('lcviewer_cpu_headercheck','lcrenderer_headercheck','lcrenderertest','lcscripting','lcrenderer_rhi'):
+            path=self.reply/(name+'.json');original=path.read_bytes()
+            for mutation in ('metadata','flags','source'):
+                value=json.loads(original)
+                group=value.setdefault('compileGroups',[dict(language='CXX')])[0]
+                if mutation=='metadata':group['precompileHeaders']=[dict(header='<Eigen/Dense>')]
+                if mutation=='flags':group['compileCommandFragments']=[dict(fragment='-include /foreign/cmake_pch.hxx')]
+                if mutation=='source':value['sources']=[dict(path='/foreign/cmake_pch.hxx')]
+                path.write_text(json.dumps(value))
+                with self.subTest(target=name,mutation=mutation),self.assertRaisesRegex(ValueError,'leaked'):self.check()
             path.write_bytes(original)
 
-    def test_kernel_cmake_pch_is_private_and_renderer_test_only(self):
-        source=(inventory.REPO_ROOT/'lckernel/CMakeLists.txt').read_text()
-        block=re.search(r'if\(WITH_RENDERER_TESTS\)\s+target_precompile_headers\(lckernel PRIVATE <Eigen/Dense>\)\s+endif\(\)',
-            re.sub(r'(?m)^\s*#[^\n]*\n','',source))
-        self.assertIsNotNone(block)
-        self.assertEqual(1,source.count('target_precompile_headers('))
+    def test_cmake_pch_is_private_owned_and_renderer_test_only(self):
+        source=(inventory.REPO_ROOT/'CMakeLists.txt').read_text()
+        block=re.search(r'if\(WITH_RENDERER_TESTS\)\s+foreach\(_target IN ITEMS lckernel lcviewernoqt lcluascript lcunittest\).*?endif\(\)',
+            re.sub(r'(?m)^\s*#[^\n]*\n','',source),re.S)
+        self.assertIsNotNone(block);self.assertNotIn('REUSE_FROM',block[0])
+        self.assertEqual(3,source.count('target_precompile_headers('))
+        self.assertNotIn('target_precompile_headers(', (inventory.REPO_ROOT/'lckernel/CMakeLists.txt').read_text())
         directory=self.build.parent/'scope';directory.mkdir();(directory/'dummy.cpp').write_text('int fixture() { return 0; }\n')
         (directory/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.21)\nproject(PchScope LANGUAGES CXX)\n'
             'include("'+str(inventory.REPO_ROOT/'lcviewernoqt/cmake/RendererOptions.cmake')+'")\n'
-            'add_library(lckernel STATIC dummy.cpp)\n'+block[0]+'\n'
-            'get_target_property(own lckernel PRECOMPILE_HEADERS)\n'
-            'get_target_property(exported lckernel INTERFACE_PRECOMPILE_HEADERS)\n'
-            'file(WRITE "${CMAKE_BINARY_DIR}/scope.txt" "${WITH_RENDERER_TESTS}\\n${own}\\n${exported}\\n")\n')
+            +''.join('add_library('+name+' STATIC dummy.cpp)\n' for name in runner.SOURCE_PRIVATE_PCH)+block[0]+'\n'
+            'foreach(name IN ITEMS lckernel lcviewernoqt lcluascript lcunittest)\n'
+            'get_target_property(own ${name} PRECOMPILE_HEADERS)\n'
+            'get_target_property(exported ${name} INTERFACE_PRECOMPILE_HEADERS)\n'
+            'get_target_property(reused ${name} PRECOMPILE_HEADERS_REUSE_FROM)\n'
+            'file(APPEND "${CMAKE_BINARY_DIR}/scope.txt" "${name}\\n${own}\\n${exported}\\n${reused}\\n")\nendforeach()\n')
         for enabled in (False,True):
             build=directory/('on' if enabled else 'off')
             options=['-DWITH_RENDERER_TESTS=ON','-DWITH_RHI_RENDERER=ON'] if enabled else []
             result=subprocess.run(['cmake','-S',str(directory),'-B',str(build),*options],capture_output=True,text=True,timeout=30)
             self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-            self.assertEqual(['ON' if enabled else 'OFF','<Eigen/Dense>' if enabled else 'own-NOTFOUND','exported-NOTFOUND'],
+            self.assertEqual([value for name,(_,headers) in runner.SOURCE_PRIVATE_PCH.items() for value in
+                (name,';'.join(headers) if enabled else 'own-NOTFOUND','exported-NOTFOUND','reused-NOTFOUND')],
                 (build/'scope.txt').read_text().splitlines())
 
-    def test_compiled_kernel_pch_requires_exact_owned_declared_generated_inputs(self):
-        owner=self.build/'lckernel/CMakeFiles/lckernel.dir';header=owner/'cmake_pch.hxx';source=owner/'cmake_pch.hxx.cxx'
-        binary=owner/'cmake_pch.hxx.pch';binary.write_bytes(b'synthetic-pch-not-native')
-        files={p:p.read_bytes() for p in (header,source,binary)}
-        target=self.reply/'lckernel.json';original=target.read_bytes();extra=owner/'cmake_pch.pch'
-        expected=dict(generated_sha256={str(p.relative_to(self.build)):runner.sha256(files[p]) for p in (header,source)},
-            compiled_sha256={str(binary.relative_to(self.build)):runner.sha256(files[binary])})
-        self.assertEqual(expected,runner.kernel_pch_contract(self.build))
-        def graph(change):
-            data=json.loads(original);change(data);target.write_text(json.dumps(data))
-        cases=(lambda:header.unlink(),lambda:source.unlink(),lambda:binary.unlink(),lambda:header.write_bytes(b''),
-            lambda:binary.write_bytes(b''),lambda:extra.write_bytes(b'duplicate'),
-            lambda:graph(lambda d:d.update(sources=[s for s in d['sources'] if s['path']!=str(header)])),
-            lambda:graph(lambda d:d['paths'].update(build='../foreign')),
-            lambda:header.write_text('#include <Eigen/Core>\n'),
-            lambda:header.write_text('// #include <Eigen/Dense>\n/*\n#include <Eigen/Dense>\n*/\n'),
-            lambda:header.write_text('#include <Eigen/Dense>\n#include <vector>\n'))
-        for change in cases:
-            change()
-            with self.subTest(change=change),self.assertRaises(ValueError):runner.kernel_pch_contract(self.build)
-            target.write_bytes(original)
-            for path,raw in files.items():path.write_bytes(raw)
-            if extra.exists():extra.unlink()
+    def pch_files(self):
+        result={}
+        for name in runner.SOURCE_PRIVATE_PCH:
+            data=json.loads((self.reply/(name+'.json')).read_text())
+            owner=self.build/data['paths']['build']/'CMakeFiles'/(name+'.dir')
+            binary=owner/'cmake_pch.hxx.pch';binary.write_bytes(b'synthetic-pch-not-native')
+            result[name]=(owner/'cmake_pch.hxx',owner/'cmake_pch.hxx.cxx',binary)
+        return result
+
+    def test_compiled_private_pch_requires_each_owned_declared_input_and_cache(self):
+        files=self.pch_files()
+        expected={name:dict(generated_sha256={str(p.relative_to(self.build)):runner.sha256(p.read_bytes()) for p in paths[:2]},
+            compiled_sha256={str(paths[2].relative_to(self.build)):runner.sha256(paths[2].read_bytes())}) for name,paths in files.items()}
+        self.assertEqual(expected,runner.private_pch_contract(self.build))
+        for name,(header,source,binary) in files.items():
+            saved={p:p.read_bytes() for p in (header,source,binary)}
+            target=self.reply/(name+'.json');original=target.read_bytes();extra=header.parent/'cmake_pch.pch'
+            def graph(change):
+                data=json.loads(original);change(data);target.write_text(json.dumps(data))
+            cases=(lambda:header.unlink(),lambda:source.unlink(),lambda:binary.unlink(),lambda:header.write_bytes(b''),
+                lambda:binary.write_bytes(b''),lambda:extra.write_bytes(b'duplicate'),
+                lambda:graph(lambda d:d.update(sources=[s for s in d['sources'] if s['path']!=str(header)])),
+                lambda:graph(lambda d:d['paths'].update(build='../foreign')),
+                lambda:header.write_text('#include <Eigen/Core>\n'),
+                lambda:header.write_text('// #include <Eigen/Dense>\n/*\n#include <Eigen/Dense>\n*/\n'),
+                lambda:header.write_bytes(saved[header]+b'#include <vector>\n'))
+            for change in cases:
+                change()
+                with self.subTest(target=name,change=change),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
+                target.write_bytes(original)
+                for path,raw in saved.items():path.write_bytes(raw)
+                if extra.exists():extra.unlink()
 
     def test_visual_studio_pch_uses_release_inputs_and_separate_object_directory(self):
-        owner=self.build/'lckernel/CMakeFiles/lckernel.dir'
-        header=owner/'Release/cmake_pch.hxx';header.parent.mkdir()
-        (owner/'cmake_pch.hxx').rename(header)
-        source=owner/'cmake_pch.cxx';(owner/'cmake_pch.hxx.cxx').rename(source)
-        for configuration in ('Debug','MinSizeRel','RelWithDebInfo'):
-            other=owner/configuration/'cmake_pch.hxx';other.parent.mkdir()
-            other.write_bytes(header.read_bytes())
-        target=self.reply/'lckernel.json';data=json.loads(target.read_text())
-        data['sources']=[s for s in data['sources'] if not Path(s['path']).name.startswith('cmake_pch')]
-        data['sources'] += [dict(path=str(header)),dict(path=str(source),compileGroupIndex=0)]
-        data['sources'] += [dict(path=str(owner/configuration/'cmake_pch.hxx'))
-            for configuration in ('Debug','MinSizeRel','RelWithDebInfo')]
-        target.write_text(json.dumps(data))
-        binary=self.build/'lckernel/lckernel.dir/Release/cmake_pch.pch';binary.parent.mkdir(parents=True)
-        binary.write_bytes(b'synthetic-visual-studio-pch')
-        expected=dict(generated_sha256={str(p.relative_to(self.build)):runner.sha256(p.read_bytes()) for p in (header,source)},
-            compiled_sha256={str(binary.relative_to(self.build)):runner.sha256(binary.read_bytes())})
-        self.assertEqual(expected,runner.kernel_pch_contract(self.build))
-        duplicate=owner/'Release/cmake_pch.pch';duplicate.write_bytes(b'duplicate')
-        with self.assertRaises(ValueError):runner.kernel_pch_contract(self.build)
-        duplicate.unlink();binary.unlink()
-        foreign=self.build/'lckernel/foreign.dir/Release/cmake_pch.pch';foreign.parent.mkdir(parents=True)
-        foreign.write_bytes(b'foreign-target-pch')
-        with self.assertRaises(ValueError):runner.kernel_pch_contract(self.build)
+        files=self.pch_files();expected={}
+        for name,(old_header,old_source,old_binary) in files.items():
+            owner=old_header.parent;header=owner/'Release/cmake_pch.hxx';header.parent.mkdir();old_header.rename(header)
+            source=owner/'cmake_pch.cxx';old_source.rename(source);old_binary.unlink()
+            for configuration in ('Debug','MinSizeRel','RelWithDebInfo'):
+                other=owner/configuration/'cmake_pch.hxx';other.parent.mkdir();other.write_bytes(header.read_bytes())
+            target=self.reply/(name+'.json');data=json.loads(target.read_text())
+            data['sources']=[s for s in data['sources'] if not Path(s['path']).name.startswith('cmake_pch')]
+            data['sources'] += [dict(path=str(header)),dict(path=str(source),compileGroupIndex=0)]
+            data['sources'] += [dict(path=str(owner/configuration/'cmake_pch.hxx'))
+                for configuration in ('Debug','MinSizeRel','RelWithDebInfo')]
+            target.write_text(json.dumps(data))
+            binary=self.build/data['paths']['build']/(name+'.dir')/'Release/cmake_pch.pch';binary.parent.mkdir(parents=True)
+            binary.write_bytes(b'synthetic-visual-studio-pch')
+            expected[name]=dict(generated_sha256={str(p.relative_to(self.build)):runner.sha256(p.read_bytes()) for p in (header,source)},
+                compiled_sha256={str(binary.relative_to(self.build)):runner.sha256(binary.read_bytes())})
+        self.assertEqual(expected,runner.private_pch_contract(self.build))
+        for name,receipt in expected.items():
+            binary=self.build/next(iter(receipt['compiled_sha256']))
+            owner=self.build/json.loads((self.reply/(name+'.json')).read_text())['paths']['build']
+            duplicate=owner/'CMakeFiles'/(name+'.dir')/'Release/cmake_pch.pch';duplicate.write_bytes(b'duplicate')
+            with self.subTest(target=name),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
+            duplicate.unlink();binary.unlink()
+            foreign=owner/'foreign.dir/Release/cmake_pch.pch';foreign.parent.mkdir(parents=True)
+            foreign.write_bytes(b'foreign-target-pch')
+            with self.subTest(foreign=name),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
+            foreign.unlink();binary.write_bytes(b'synthetic-visual-studio-pch')
 
     def test_omitting_any_required_direct_target_is_rejected_even_if_reachable(self):
         for name in self.required:
