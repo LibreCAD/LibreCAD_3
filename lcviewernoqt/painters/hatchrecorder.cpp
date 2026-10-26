@@ -29,6 +29,8 @@ void record(PathRecorder& r,const lc::entity::CADEntity_CSPtr& entity,RecordingL
     } else if (auto p=std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
         r.circle(point(p->center()),p->radius());
     } else if (auto p=std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
+        // Its 3D length and XY angle must not silently project a nonplanar axis.
+        point(p->majorP());
         const bool closed=!p->isArc();
         // Honor the CAD model's full-ellipse classification and tolerance.
         // Capture the periodic seam explicitly for dashes/joins.

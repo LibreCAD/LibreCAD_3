@@ -87,7 +87,9 @@ class SourceBuildTests(unittest.TestCase):
     def test_r2_3_actual_regions_share_curve_recording_and_propagate_join_certificates(self):
         root=inventory.REPO_ROOT
         source=(root/'unittest/lcviewernoqt/testregionrecorder.cpp').read_text()
-        self.assertEqual(15,len(set(re.findall(r'TEST\(CpuRegionRecorderTest,\s*(\w+)\)',source))))
+        names=set(re.findall(r'TEST\(CpuRegionRecorderTest,\s*(\w+)\)',source))
+        self.assertEqual(16,len(names))
+        self.assertIn('EllipseAxesValidateBeforeAnyRegionBoundaryOrPreparedInkEscapes',names)
         self.assertIn('lcviewernoqt/testregionrecorder.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
         production=(root/'lcviewernoqt/painters/hatchrecorder.cpp').read_text()
         for name in ('recordRegion','prepareRegionFill','prepareRegionHatch','ambiguous-region-loop','region-work-limit','input.positionBound'):
@@ -115,8 +117,9 @@ class SourceBuildTests(unittest.TestCase):
         root=inventory.REPO_ROOT
         source=(root/'unittest/lcviewernoqt/testhatchrecorder.cpp').read_text()
         names=set(re.findall(r'TEST\(CpuHatchRecorderTest,\s*(\w+)\)',source))
-        self.assertEqual(10,len(names))
+        self.assertEqual(11,len(names))
         for name in ('RealProviderGeometryTypesKeepOrderAndOwnedModelCoordinates',
+                     'EllipseAxesArePlanarFiniteAndFailAtomicallyBeforeProjection',
                      'ConnectedSplineSpansKeepWholePrimitiveDashPhaseAndOnlyEndpointCaps',
                      'DisconnectedSplineProviderSpansFailWithoutInventedBridgesOrPartialCommands',
                      'AggregateRecorderCapsFailAtomicallyAndRecover',

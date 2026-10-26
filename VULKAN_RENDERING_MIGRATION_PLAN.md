@@ -1,6 +1,6 @@
 # Vulkan rendering migration plan
 
-Status: reviewed 2026-10-25; R0 remains active and unaccepted.
+Status: reviewed 2026-10-26; R0 remains active and unaccepted.
 Provisional R1, R2.1, R2.2 and R2.3 implementation are authorized; R2.4–R7 remain proposed.
 Baseline: LibreCAD 3
 `132265a0573253980451facf9109678f8bffe743`, branch `fix/msvc-eigen-include`.
@@ -36,6 +36,46 @@ authorized branch. Exact-SHA run40146772555 is green:62/62 latest checks, with
 all60 source tuples (12 per architecture). This is latest-per-tuple proof across
 attempts1/2:59 initial successes plus one unchanged-budget Intel CLI retry, not
 sixty fresh second-attempt executions or pristine first-attempt success.
+
+### Latest exact-source closeout and next implementation boundary — 2026-10-26
+
+Candidate `7720f239a675f5f1136404e3e4af2ca39f1ff633` has completed
+run40264405249 attempt1:62/62 source checks, all60 profiles/12 per platform.
+The full strict archive audit passes, including all seven new regression IDs;
+all40 host artifacts/20 CLI installs pass independent retained-byte/loader
+readback. Final closeout binds six immutable seals, the original checkout/index/
+staging and all metadata. Retain its initial self-comparison plan-check failure
+and corrected actual-parent six-path validation, not a waived assertion.
+Evidence: `build/renderer-evidence/pr453-pch-chain-20261025.wlqdWF/hosted/final-closeout-v2.json`.
+This is source proof only; verified virtual Intel Metal is not hardware acceptance.
+
+The full migration remains incomplete. Continue existing provisional R2.3 by
+validating an ellipse's major axis as well as its center: a nonzero/nonfinite Z
+must not become planar ink through radius/angle projection. Preserve planar
+ellipse geometry, both directions/seams, atomic failure and recovery. Fresh Mac
+checks pass266 CPU IDs preserving264 and22 Metal IDs; both new regressions
+fail against preserved pre-fix libraries. Focused Mac ASan/UBSan passes all27
+recorder IDs with adapter/tests instrumented, other dependencies and leak
+acceptance unqualified. Linux fresh266 CPU/22 Vulkan checks and retained-object
+readback pass, including four own caches/167 ordinary units/eight raw C++14
+headers and14 validation instances/devices with zero core/synchronization errors.
+Full666 scripts pass on both hosts (Mac11 expected Linux skips/Linux0). Initial
+ownership-count failures (Region15 vs16/hatch10 vs11) are retained; updated
+guards require the two exact new IDs as well as the counts. Linux binds a
+single test-guard-only native/protocol transition, with separate complete
+freezes and no compiled-input/helper/provider drift. Preserve all local
+preflight/evidence-harness false starts, including the Mac receipt-format retry.
+All45 unchanged reader models, additional exact-inventory rejection probes and
+both fresh native readbacks pass. Final plan validation, six-path publication
+and a fresh all60 exact-SHA source cohort are next; old source CI is not proof
+for this new correction. Evidence remains in `build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/`.
+The R2.4 readiness audit identifies ordered coverage-domain ranges, owned paint,
+bounded double-to-float packing and unique aligned per-draw uniforms as the next
+executor boundary; reuse the existing Frame/Executor, never feed overlapping
+stroke triangles directly to OVER or apply the camera/DPR twice. Provisional
+R2.4 implementation/publication was requested, not approved; later-stage gates
+and all D1–D6, default/cutover/hardware/package/release prerequisites remain open.
+Legacy stays default and upstream reconciliation remains separate.
 
 ### PR #453 review corrections — 2026-10-25
 
@@ -3950,6 +3990,9 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-26 | Provisional R2.3 ellipse-plane correction locally validated; source publication next | Frozen six-path correction adds one existing coordinate validation, two native regression IDs and exact ownership guards; no new provider/plane policy. Fresh Mac/Linux ARM64 each266 CPU preserves264 and22 Metal/Vulkan passes; Linux core/sync14instances14devices0errors. Both new IDs fail against preserved pre-fix libraries; focused Mac ASan/UBSan passes all27 recorder IDs, with other dependencies/Mac leaks unqualified. Full666 scripts pass (Mac11 expected Linux skips/Linux0); exact one-file test-guard transition preserves separate Linux native/protocol freezes and unchanged compiled inputs/helpers/providers. Four own caches/167 ordinary units/eight raw C++14 headers pass. All45 unchanged reader models,12 inventory rejection probes and both fresh native readbacks pass;672 compact Linux files retain no large executables/caches. Preserve all initial source-count, preflight and evidence-harness failures, six prior seals and original checkout/index/staging. Pre-final full-plan/checker42/worktree6paths16mapped gates/inventory190/lints/diff PASS; repeat after this final receipt, then publish six paths to the existing authorized fork branch and require fresh exact-SHA all60 source jobs/artifact audits. Evidence: build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. Legacy default,0.25px/300/1200 bounds, upstream deferral and all acceptance gates stay; full goal and R2.4 authority remain open. |
+| 2026-10-26 | R2.3 plane-validation correction implemented; protocol ownership update pending | Reuse point(majorP) before radius/angle derivation; no planar projection or new provider policy. Two new actual native IDs cover11 invalid axes/full or partial/both directions, atomicity/recovery and signed-zero rotated planar controls. Mac fresh266 CPU+22 Metal pass; immutable pre-fix libraries fail both new IDs. Focused Mac ASan/UBSan passes all27 recorder IDs without skips, instrumenting adapter/tests only; other dependencies/Mac leaks stay unqualified. Linux native CPU/Vulkan execution passes with additional byte/object readback still pending. Full Mac666 initially fails the two obsolete source-count guards (Region15 vs16/hatch10 vs11), not native tests; preserve that failure, bind the new IDs/counts and rerun complete protocols/maintenance before source publication/full five-platform CI. Initial preflight/helper failures remain retained in build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. All prior264 IDs, source bounds/assertions/defaults, upstream deferral and acceptance gates remain. R2.4 is requested, not approved; this is not full R2.3/full-goal completion. |
+| 2026-10-26 | Exact PR453 source cohort closed; remaining R2.3 implementation active | Candidate7720f239/run40264405249 attempt1 passes62/62 checks/all60 tuples (12 per platform); full archive readback verifies1753 process scopes and seven new regressions. Complete40-host/20-CLI audit verifies19984 files/120 project-library loads; final-closeout-v2 binds six seals and preserved original checkout/index/staging. Preserve the initial plan self-comparison failure and the corrected actual-parent six-path proof. Evidence: build/renderer-evidence/pr453-pch-chain-20261025.wlqdWF/hosted/final-closeout-v2.json. Existing local666 scripts/264CPU/22RHI source proof stays exact-source, not acceptance. Next enforce the declared planar-provider boundary for ellipse major axes, with pre-fix negative controls, full/partial/both-direction/atomic/recovery regressions and fresh native validation in build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. R2.4 executor readiness is audited, but its authorization remains pending. Prose-only sync does not stale product evidence; full plan/checker/worktree/inventory/lints/diff repeat. No default, upstream reconciliation,0.25px/time-limit or acceptance changes; full goal remains incomplete. |
 | 2026-10-25 | Cache the remaining cold source-check dependency chain privately | Candidateb4dd957/run40259321120 still exhausts300 TOTAL in Windows core final compilation; actual VS layout is correct, one kernel/viewer/Lua link each, no compiler error, children retired. Preserve failure/partial passes unqualified. Extend only WITH_RENDERER_TESTS PRIVATE caches to four targets with own C++14/14/14/17/export definitions; defaults/host/library PCH-OFF and eight independent C++14 headers stay. Static444-input review is clean. Fresh Mac264/Metal22 and Linux264/Vulkan22 pass55.404s/115.467s; full666 scripts pass (Mac11 expected Linux skips/Linux0),45 reader models and two fresh strict four-cache readbacks pass. Eight generated inputs/four hash-only cache outputs/167+4 units bind;645 compact Linux files include eight tiny raw objects, no large caches. Both audit entrypoints require666 and retain the old parser-only negative control. Final plan/checker42/worktree/inventory190/lints/diff precede six-path publication and mandatory fresh all60 exact-SHA source/artifact validation. Evidence: build/renderer-evidence/pr453-pch-chain-20261025.wlqdWF/. Preserve five seals, failed/superseded proof, original checkout/index/staging,300/1200 budgets,0.25px bound, legacy default and all gates. Upstream reconciliation stays separate; no new sanitizer, merge or phase/platform/GPU/hardware/widget/package/release/full-goal acceptance. |
 | 2026-10-25 | Correct Visual Studio private-cache ownership and exact Release inputs | Official CMake3.31.6 source and real configure-only multi-config fixture confirm distinct MSVC roots/other-config headers. One new regression covers exact VS layout and duplicate/foreign rejection. Fresh Mac/Linux ARM64 each264CPU/22RHI pass; source+CPU64.556s/source+CPU+Vulkan122.763s,14instances/devices0core-syncerrors. Full666 scripts pass (Mac11 expected Linux skips/Linux0);40 strict reader models/fresh native readbacks and final maintenance precede four-path publication and mandatory all60 exact-SHA source/artifact validation. Retain superseded ed7ca043/run40258405546 and all prior proof/seals; original checkout/index/staging stays untouched. Evidence: build/renderer-evidence/pr453-pch-20261025.imFiPD/vs-followup/. Eigen compile inputs/uploader/aggregate/C++ implementation,300/1200 budgets,0.25px bound, legacy default and all acceptance gates stay unchanged. Upstream reconciliation remains separate; no new sanitizer, merge or phase/platform/GPU/hardware/widget/package/release/full-goal acceptance. |
 | 2026-10-25 | Private-cache candidate locally validated; six-path publication next | Fresh Mac/Linux ARM64 each264CPU/22RHI pass, preserving all IDs;84 ordinary kernel units+one cache creation and8independent PCH-free C++14 headers verify. Mac source+CPU56.187s; Linux source+CPU+Vulkan106.867s/core-sync14instances14devices0errors, not a controlled speedup claim. Full665 scripts pass (Mac11 expected Linux skips/Linux0);40 reader models and actual Clang/GNU readbacks pass. Preserve632original Linux files plus8tiny objects/8112bytes and separate failed-preflight/metadata-reader provenance; no large cache binary export. Evidence: build/renderer-evidence/pr453-pch-20261025.imFiPD/. Repeat plan/checker42/worktree/inventory190/lints/diff after receipt, commit/push only six intended paths, and require fresh all60 exact-SHA source/artifact validation. Windows cache schema/timing remains pending native proof. Preserve all prior seals/receipts, original checkout/index/staging,300/1200 budgets,0.25px bound, legacy default, upstream deferral and every gate. No new sanitizer, merge or D1–D6/R2.4+/independent/GPU/painter/phase/platform/hardware/widget/package/release/full-goal acceptance. |

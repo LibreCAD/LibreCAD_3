@@ -97,6 +97,33 @@ TEST(CpuHatchRecorderTest, BothArcDirectionsUseModelOrientationWithoutLegacyYFli
         EXPECT_NEAR(0,command.path.back().point.x,1e-12);EXPECT_NEAR(3,command.path.back().point.y,1e-12);
     }
 }
+TEST(CpuHatchRecorderTest, EllipseAxesArePlanarFiniteAndFailAtomicallyBeforeProjection) {
+    const double nan=std::numeric_limits<double>::quiet_NaN(),inf=std::numeric_limits<double>::infinity();
+    const double tiny=std::numeric_limits<double>::denorm_min();
+    auto ellipse=[](lc::geo::Coordinate axis,bool partial,bool reverse) {
+        return std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate{},axis,2,0,partial?1.5707963267948966:0,reverse,nullptr);
+    };
+    const auto good=recordHatchTile(tile({line()}));
+    for (auto axis:std::vector<lc::geo::Coordinate>{{3,0,4},{3,0,-4},{3,0,tiny},{3,0,-tiny},
+             {nan,0,0},{3,nan,0},{3,0,nan},{inf,0,0},{3,-inf,0},{3,0,inf},{3,0,-inf}}) {
+        for (bool partial:{false,true}) for (bool reverse:{false,true}) {
+            SCOPED_TRACE(::testing::Message()<<axis.x()<<","<<axis.y()<<","<<axis.z()<<" "<<partial<<" "<<reverse);
+            auto saved=good;
+            EXPECT_EQ("invalid-hatch-coordinate",error([&]{saved=recordHatchTile(tile({line(),ellipse(axis,partial,reverse)}));}));
+            ASSERT_EQ(good.commands.size(),saved.commands.size());
+            EXPECT_DOUBLE_EQ(good.commands[0].path.back().point.x,saved.commands[0].path.back().point.x);
+        }
+    }
+    // Signed zero remains planar; a rotated 3-4-5 axis keeps analytic endpoints.
+    for (double z:{0.,-0.}) for (bool partial:{false,true}) for (bool reverse:{false,true}) {
+        const auto out=recordHatchTile(tile({ellipse({3,4,z},partial,reverse)}));ASSERT_EQ(1u,out.commands.size());
+        const auto& path=out.commands[0].path;ASSERT_FALSE(path.empty());
+        EXPECT_NEAR(3,path.front().point.x,1e-12);EXPECT_NEAR(4,path.front().point.y,1e-12);
+        EXPECT_NEAR(partial?-1.6:3,path.back().point.x,1e-12);EXPECT_NEAR(partial?1.2:4,path.back().point.y,1e-12);
+        EXPECT_EQ(partial?PathVerb::Conic:PathVerb::Close,path.back().verb);
+    }
+    EXPECT_EQ(1u,recordHatchTile(tile({line()})).commands.size());
+}
 TEST(CpuHatchRecorderTest, ConnectedSplineSpansKeepWholePrimitiveDashPhaseAndOnlyEndpointCaps) {
     const auto s=straightSpline();ASSERT_GT(s->bezierCount(),1u);
     PaintState state;state.lineWidth=.2;state.dash={2,1};state.dashOffset=.25;state.dashScaled=true;

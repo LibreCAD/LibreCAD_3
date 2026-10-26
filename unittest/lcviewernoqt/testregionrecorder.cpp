@@ -73,6 +73,42 @@ TEST(CpuRegionRecorderTest, BoundaryBulgesIgnoreStrokeDecorationWithoutEnablingP
     lc::objects::Pattern tile;tile.boundingBox=lc::geo::Area({-2,-2},{2,3});tile.entities={p};
     EXPECT_EQ("unsupported-hatch-width",error([&]{recordHatchTile(tile);}));
 }
+TEST(CpuRegionRecorderTest, EllipseAxesValidateBeforeAnyRegionBoundaryOrPreparedInkEscapes) {
+    const double nan=std::numeric_limits<double>::quiet_NaN(),inf=std::numeric_limits<double>::infinity();
+    const double tiny=std::numeric_limits<double>::denorm_min();
+    auto ellipse=[](Coordinate axis,bool partial,bool reverse) {
+        return std::make_shared<lc::entity::Ellipse>(Coordinate{},axis,2,0,partial?1.5707963267948966:0,reverse,nullptr);
+    };
+    const auto good=recordRegion(region());const auto ink=pattern();
+    for (auto axis:std::vector<Coordinate>{{3,0,4},{3,0,-4},{3,0,tiny},{3,0,-tiny},
+             {nan,0,0},{3,nan,0},{3,0,nan},{inf,0,0},{3,-inf,0},{3,0,inf},{3,0,-inf}}) {
+        for (bool partial:{false,true}) for (bool reverse:{false,true}) {
+            SCOPED_TRACE(::testing::Message()<<axis.x()<<","<<axis.y()<<","<<axis.z()<<" "<<partial<<" "<<reverse);
+            auto malformed=region();malformed.addLoop(lc::geo::Loop({ellipse({3,4},false,false)}));
+            // Inject malformed provider data without making the CAD bounding-box
+            // constructor responsible for validating it before the adapter runs.
+            auto& entities=const_cast<std::vector<Entity>&>(malformed.loopList()[1].entities());
+            entities[0]=ellipse(axis,partial,reverse);auto saved=good;
+            EXPECT_EQ("invalid-hatch-coordinate",error([&]{saved=recordRegion(malformed);}));
+            EXPECT_EQ(good.boundary.path.size(),saved.boundary.path.size());
+            EXPECT_EQ("invalid-hatch-coordinate",error([&]{prepareRegionFill(malformed);}));
+            EXPECT_EQ("invalid-hatch-coordinate",error([&]{prepareRegionHatch(malformed,ink);}));
+        }
+    }
+    PaintState state;state.transform={-1,.25,0,2,7,11,{}};
+    for (double z:{0.,-0.}) for (bool partial:{false,true}) for (bool reverse:{false,true}) {
+        std::vector<Entity> edges{ellipse({3,4,z},partial,reverse)};
+        if (partial) edges.push_back(line({-1.6,1.2},{3,4}));
+        const auto out=recordRegion(region(edges),state);ASSERT_FALSE(out.boundary.path.empty());
+        EXPECT_NEAR(5,out.boundary.path.front().point.x,1e-12);EXPECT_NEAR(19,out.boundary.path.front().point.y,1e-12);
+        EXPECT_EQ(PathVerb::Close,out.boundary.path.back().verb);
+        if (!partial) {
+            const auto fill=prepareRegionFill(region(edges),state);EXPECT_NEAR(20*3.14159265358979323846,area(fill),2);
+            EXPECT_TRUE(covers(fill,{7,11}));EXPECT_FALSE(covers(fill,{50,50}));
+        }
+    }
+    EXPECT_DOUBLE_EQ(100,area(prepareRegionFill(region())));
+}
 TEST(CpuRegionRecorderTest, ReversedQuadraticAndCubicSplineEdgesSwapControlsNotTheirShapes) {
     for (unsigned degree:{2u,3u}) {
         auto s=degree==2?spline(2,{{0,0},{3,4},{6,0}}):spline(3,{{0,0},{2,3},{4,3},{6,0}});
