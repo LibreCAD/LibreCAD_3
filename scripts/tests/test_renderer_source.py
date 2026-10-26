@@ -1,6 +1,7 @@
 """Synthetic source orchestration/workflow checks, never native build/GPU proof."""
 import argparse
 import copy
+from contextlib import ExitStack
 import json
 import os
 from pathlib import Path
@@ -934,7 +935,42 @@ class HostSourceTests(unittest.TestCase):
 
     def test_changed_provider_bytes_invalidate_the_host_result(self):
         self.change_sdk=True
-        with self.assertRaisesRegex(ValueError,'changed during execution'):self.execute()
+        with self.assertRaisesRegex(ValueError,'changed during execution: graph'):self.execute()
+        directory=next(self.root.glob('host-*'));sdk=(directory/'synthetic-host-sdk/dxfrw.fixture').resolve()
+        changes=json.loads((directory/'host-state-changes.json').read_text())
+        self.assertEqual({'graph'},set(changes));self.assertFalse((directory/'host-build.json').exists())
+        before=changes['graph']['before'];after=changes['graph']['after']
+        self.assertEqual(runner.sha256(b'synthetic binary, not a library'),before['host_sdk_files_sha256'][str(sdk)])
+        expected=copy.deepcopy(before);expected['host_sdk_files_sha256'][str(sdk)]=runner.sha256(b'changed synthetic SDK')
+        self.assertEqual(expected,after)
+
+    def test_host_end_state_reports_every_changed_component_without_success_receipt(self):
+        readers=dict(helpers='helper_digests',inputs='production_inputs',graph='library_profile_graph',
+            objects='host_object_graph',artifacts='library_artifacts')
+        for changed in ((),*((name,) for name in readers),tuple(readers)):
+            with self.subTest(changed=changed):
+                reads={name:[] for name in readers};previous=set(self.root.glob('host-*'));self.commands=[]
+                def readback(name,reader):
+                    def read(*args,**kwargs):
+                        value=copy.deepcopy(reader(*args,**kwargs))
+                        if reads[name] and name in changed:value['synthetic_changed_end_readback']=True
+                        reads[name].append(copy.deepcopy(value));return value
+                    return read
+                with ExitStack() as stack:
+                    for name,attribute in readers.items():
+                        stack.enter_context(patch.object(runner,attribute,side_effect=readback(name,getattr(runner,attribute))))
+                    if changed:
+                        with self.assertRaises(ValueError) as error:self.execute()
+                        self.assertEqual('Host inputs, graph or compiled artifacts changed during execution: '+', '.join(changed),
+                            str(error.exception))
+                    else:self.execute()
+                directory,=set(self.root.glob('host-*'))-previous
+                self.assertTrue(all(len(values)==2 for values in reads.values()))
+                self.assertEqual(not changed,(directory/'host-build.json').exists())
+                self.assertEqual(bool(changed),(directory/'host-state-changes.json').exists())
+                if changed:
+                    self.assertEqual({name:dict(before=reads[name][0],after=reads[name][1]) for name in changed},
+                        json.loads((directory/'host-state-changes.json').read_text()))
 
     def test_cli_host_scope_cannot_alias_graphics_or_silently_disable_a_host(self):
         for options in (['--host-builds'],['--host-profile','legacy','--production-builds','--platform',self.args.platform],

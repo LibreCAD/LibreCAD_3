@@ -1140,10 +1140,14 @@ def build_host_source(args):
         installation['loads']=installed_cli_loads(raw,relocated,installation['targets'],sys.platform=='darwin',windows)
         if installed_cli_files(build,relocated,stage,names,windows)!={k:v for k,v in installation.items() if k!='loads'}:
             raise ValueError('CLI install changed during execution')
-    if (helpers!=helper_digests() or inputs!=production_inputs(hosts=True) or
-            library_profile_graph(build,flags,hosts=True)!=observed or host_object_graph(build,flags)!=objects or
-            library_artifacts(build,artifacts,types=('STATIC_LIBRARY','SHARED_LIBRARY','OBJECT_LIBRARY','EXECUTABLE'))!=artifacts):
-        raise ValueError('Host inputs, graph or compiled artifacts changed during execution')
+    before=dict(helpers=helpers,inputs=inputs,graph=observed,objects=objects,artifacts=artifacts)
+    after=dict(helpers=helper_digests(),inputs=production_inputs(hosts=True),
+        graph=library_profile_graph(build,flags,hosts=True),objects=host_object_graph(build,flags),
+        artifacts=library_artifacts(build,artifacts,types=('STATIC_LIBRARY','SHARED_LIBRARY','OBJECT_LIBRARY','EXECUTABLE')))
+    changed={name:dict(before=before[name],after=value) for name,value in after.items() if value!=before[name]}
+    if changed:
+        (directory/'host-state-changes.json').write_text(json.dumps(changed,indent=2)+'\n')
+        raise ValueError('Host inputs, graph or compiled artifacts changed during execution: '+', '.join(changed))
     record=dict(schema_version=1,evidence_kind='r1-host-source-build',phase_or_platform_accepted=False,
         platform=args.platform,profile=args.host_profile,host_kind=args.host_kind,options=flags,source_sha256=inputs,**helpers,
         source_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=inventory.REPO_ROOT,text=True).strip(),
