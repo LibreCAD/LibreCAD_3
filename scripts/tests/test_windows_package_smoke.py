@@ -353,19 +353,29 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
 
     def test_linux_inventory_is_verified_before_required_artifact_upload(self):
         workflow = self.workflow.lower()
-        linux_job_start = workflow.index("\n  linux:")
-        linux_job_end = workflow.index("\n  linux-arm64:", linux_job_start)
-        linux_job = workflow[linux_job_start:linux_job_end]
-        verify_step_start = linux_job.index(
-            "- name: verify selected linux python runtime inventory"
-        )
-        upload_step_start = linux_job.index("- name: uploading appimage")
-        verify_step = linux_job[verify_step_start:upload_step_start]
 
-        self.assertLess(verify_step_start, upload_step_start)
-        self.assertIn("test -s build/python-runtime-inventory.txt", verify_step)
-        self.assertIn("cat build/python-runtime-inventory.txt", verify_step)
-        self.assertIn("if-no-files-found: error", linux_job[upload_step_start:])
+        def job(name, following):
+            start = workflow.index("\n  {}:".format(name))
+            return workflow[start:workflow.index("\n  {}:".format(following), start)]
+
+        # Each x86_64 build verifies its own inventory before uploading it:
+        # the appimage job with the AppImage, the linux job on its own.
+        for name, following, upload in (
+                ("appimage", "linux-arm64", "- name: uploading appimage"),
+                ("linux", "appimage", "- name: upload x86_64 python runtime inventory")):
+            with self.subTest(job=name):
+                linux_job = job(name, following)
+                verify_step_start = linux_job.index(
+                    "- name: verify selected linux python runtime inventory"
+                )
+                upload_step_start = linux_job.index(upload)
+                verify_step = linux_job[verify_step_start:upload_step_start]
+
+                self.assertLess(verify_step_start, upload_step_start)
+                self.assertIn("test -s build/python-runtime-inventory.txt", verify_step)
+                self.assertIn("cat build/python-runtime-inventory.txt", verify_step)
+        appimage = job("appimage", "linux-arm64")
+        self.assertIn("if-no-files-found: error", appimage[appimage.index("- name: uploading appimage"):])
 
     def test_windows_jobs_use_prebuilt_msvc_2022_dependencies_only(self):
         workflow = self.workflow.lower()

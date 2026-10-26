@@ -26,6 +26,15 @@ cp -v ../desktop/librecad.desktop AppDir/
 
 #sudo cp ../AppImage/librecad.* AppDir/
 
+# Dependencies of the staged Python extension modules that only some Ubuntu
+# releases have.  Ubuntu 24.04's _tkinter also links BLT (tk8.6-blt2.5); the
+# 26.04 build's did not.  Without it the clean-runtime ELF closure audit fails
+# on _tkinter, and linuxdeploy refuses a --library that does not exist.
+release_libraries=()
+if [[ -e /usr/lib/libBLT.2.5.so.8.6 ]]; then
+    release_libraries+=(--library=/usr/lib/libBLT.2.5.so.8.6)
+fi
+
 sudo \
 LD_LIBRARY_PATH="AppDir/usr/lib/x86_64-linux-gnu/:AppDir/usr/lib64:AppDir/usr/lib" \
 VERSION="$(git describe)" \
@@ -43,6 +52,7 @@ VERSION="$(git describe)" \
 --library=/usr/lib/x86_64-linux-gnu/libtk8.6.so \
 --library=/usr/lib/x86_64-linux-gnu/libXft.so.2 \
 --library=/usr/lib/x86_64-linux-gnu/libXss.so.1 \
+"${release_libraries[@]}" \
 --output appimage \
 --executable AppDir/usr/bin/librecad \
 --desktop-file AppDir/librecad.desktop \
