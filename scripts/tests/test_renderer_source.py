@@ -1468,6 +1468,32 @@ class SourceCheckGraphTests(unittest.TestCase):
             for path,raw in files.items():path.write_bytes(raw)
             if extra.exists():extra.unlink()
 
+    def test_visual_studio_pch_uses_release_inputs_and_separate_object_directory(self):
+        owner=self.build/'lckernel/CMakeFiles/lckernel.dir'
+        header=owner/'Release/cmake_pch.hxx';header.parent.mkdir()
+        (owner/'cmake_pch.hxx').rename(header)
+        source=owner/'cmake_pch.cxx';(owner/'cmake_pch.hxx.cxx').rename(source)
+        for configuration in ('Debug','MinSizeRel','RelWithDebInfo'):
+            other=owner/configuration/'cmake_pch.hxx';other.parent.mkdir()
+            other.write_bytes(header.read_bytes())
+        target=self.reply/'lckernel.json';data=json.loads(target.read_text())
+        data['sources']=[s for s in data['sources'] if not Path(s['path']).name.startswith('cmake_pch')]
+        data['sources'] += [dict(path=str(header)),dict(path=str(source),compileGroupIndex=0)]
+        data['sources'] += [dict(path=str(owner/configuration/'cmake_pch.hxx'))
+            for configuration in ('Debug','MinSizeRel','RelWithDebInfo')]
+        target.write_text(json.dumps(data))
+        binary=self.build/'lckernel/lckernel.dir/Release/cmake_pch.pch';binary.parent.mkdir(parents=True)
+        binary.write_bytes(b'synthetic-visual-studio-pch')
+        expected=dict(generated_sha256={str(p.relative_to(self.build)):runner.sha256(p.read_bytes()) for p in (header,source)},
+            compiled_sha256={str(binary.relative_to(self.build)):runner.sha256(binary.read_bytes())})
+        self.assertEqual(expected,runner.kernel_pch_contract(self.build))
+        duplicate=owner/'Release/cmake_pch.pch';duplicate.write_bytes(b'duplicate')
+        with self.assertRaises(ValueError):runner.kernel_pch_contract(self.build)
+        duplicate.unlink();binary.unlink()
+        foreign=self.build/'lckernel/foreign.dir/Release/cmake_pch.pch';foreign.parent.mkdir(parents=True)
+        foreign.write_bytes(b'foreign-target-pch')
+        with self.assertRaises(ValueError):runner.kernel_pch_contract(self.build)
+
     def test_omitting_any_required_direct_target_is_rejected_even_if_reachable(self):
         for name in self.required:
             graph=copy.deepcopy(self.original)

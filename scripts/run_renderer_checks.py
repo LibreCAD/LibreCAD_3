@@ -1199,18 +1199,24 @@ def build_production_libraries(args):
 def kernel_pch_contract(build):
     """Bind the private kernel cache to its generated inputs and compiled output."""
     target=source_targets(build)['lckernel']
-    owner=(build/target['paths']['build']/'CMakeFiles/lckernel.dir').resolve()
+    directory=(build/target['paths']['build']).resolve()
+    if not directory.is_relative_to(build.resolve()):
+        raise ValueError('Foreign private kernel PCH target directory')
+    owner=directory/'CMakeFiles/lckernel.dir'
+    owners=(owner,directory/'lckernel.dir')
     sources={(Path(s['path']) if Path(s['path']).is_absolute() else inventory.REPO_ROOT/s['path']).resolve()
         for s in target.get('sources',[])}
-    raw=sorted(p for p in owner.rglob('cmake_pch*') if p.suffix in ('.hxx','.cxx'))
-    compiled=sorted(p for p in owner.rglob('cmake_pch*') if p.suffix in ('.pch','.gch'))
+    raw=sorted(sources.intersection(owner/name for name in
+        ('cmake_pch.hxx','Release/cmake_pch.hxx','cmake_pch.cxx','cmake_pch.hxx.cxx')))
+    compiled=sorted(p for root in owners for p in root.rglob('cmake_pch*') if p.suffix in ('.pch','.gch'))
     header=next((p.read_bytes() for p in raw if p.name=='cmake_pch.hxx' and p.is_file()),b'')
     includes=re.findall(rb'^\s*#\s*include\s+([^\r\n]+)',re.sub(rb'/\*.*?\*/|//[^\r\n]*',b'',header,flags=re.S),re.M)
     if (len(raw)!=2 or {p.name for p in raw} not in
             ({'cmake_pch.hxx','cmake_pch.cxx'},{'cmake_pch.hxx','cmake_pch.hxx.cxx'}) or
             len(compiled)!=1 or compiled[0].name not in ('cmake_pch.pch','cmake_pch.hxx.pch','cmake_pch.hxx.gch') or
-            any(p.is_symlink() or not p.resolve().is_relative_to(owner) or not p.is_file() or not p.stat().st_size
-                for p in raw+compiled) or any(p.resolve() not in sources for p in raw) or includes!=[b'<Eigen/Dense>']):
+            any(p.is_symlink() or not p.is_file() or not p.stat().st_size for p in raw+compiled) or
+            any(not p.resolve().is_relative_to(owner) for p in raw) or
+            any(not any(p.resolve().is_relative_to(root) for root in owners) for p in compiled) or includes!=[b'<Eigen/Dense>']):
         raise ValueError('Missing/foreign private kernel PCH inputs or compiled output')
     return {name:{p.relative_to(build.resolve()).as_posix():sha256(p.read_bytes()) for p in paths}
         for name,paths in (('generated_sha256',raw),('compiled_sha256',compiled))}
