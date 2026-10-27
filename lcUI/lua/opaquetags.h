@@ -8,7 +8,7 @@
 // Add new tags here as more UI types get exposed to script callbacks.
 //
 // Deliberately `constexpr` without `inline`: `inline` variables need C++17
-// (MSVC rejects them outright under this project's C++14 -- error C7525 --
+// (MSVC rejected them outright under the C++14 this project used to use
 // where GCC/Clang had been silently accepting them as an extension). Plain
 // `constexpr` at namespace scope has internal linkage, so each TU gets its
 // own copy -- exactly what the strcmp-based comparison above is already

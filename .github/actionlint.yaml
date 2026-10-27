@@ -1,4 +1,4 @@
-# These GitHub-hosted labels are verified in the runner reference. The
+# These are GitHub-hosted labels verified in GitHub's runner reference. The
 # locally installed actionlint runner catalog has not caught up yet.
 self-hosted-runner:
   labels:

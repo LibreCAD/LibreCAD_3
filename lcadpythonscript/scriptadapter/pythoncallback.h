@@ -56,13 +56,18 @@ using PythonOpaqueMaterializer = std::function<pybind11::object(
 LC_PYTHON_API void setPythonOpaqueMaterializer(
     PythonOpaqueMaterializer materializer);
 
-/// Convert a ScriptValue to a py::object (returns py::none() for Nil).
-/// Must be called with the GIL held.
+/// Convert a ScriptValue to a Python object (`Nil` becomes `None`). The
+/// wrapper acquires the GIL before touching Python objects. Materializing an
+/// opaque UI value requires the UI-installed materializer and may throw when
+/// that materializer is unavailable.
 pybind11::object toPy(const lc::scripting::ScriptValue& v);
 
-/// Convert a py::object to a ScriptValue.  Best-effort — falls back to
-/// Nil for shapes we can't map (adapters may extend for their own types).
-/// Must be called with the GIL held.
+/// Convert a Python object to a ScriptValue. `None` becomes `Nil`; supported
+/// scalar, map, coordinate, entity, and homogeneous coordinate/entity sequence
+/// values are converted losslessly. Unsupported values, ambiguous empty
+/// sequences, invalid map keys, and integers outside ScriptValue's range
+/// raise Python conversion exceptions instead of silently becoming `Nil`.
+/// The wrapper acquires the GIL before touching Python objects.
 lc::scripting::ScriptValue fromPy(pybind11::handle o);
 
 } // namespace python

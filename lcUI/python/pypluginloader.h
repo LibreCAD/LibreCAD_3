@@ -35,14 +35,19 @@ struct PythonPluginLoadReport {
 /// Returns an empty string when none of those supported layouts contains it.
 QString resolvePythonPackageRoot();
 
+/// Initialize process hooks and the bounded operation/plugin definitions once,
+/// on the Qt application thread without an active window. Return the original
+/// plain load report on subsequent calls; UI wiring remains per-window.
+const PythonPluginLoadReport& bootstrapPythonPlugins();
+
 /// Load `plugin.py` from every immediate subdirectory of the given
 /// path.  `interfaceName` (e.g. "gui" or "cli") is set as
-/// `LC_interface` in the exec namespace before a plugin's first run, so
-/// plugin authors can dispatch on the runtime host. Each resolved plugin file
-/// is attempted at most once per process; later windows receive the cached
-/// result without repeating process-global registrations. Per-plugin errors
-/// remain non-fatal for normal startup and are included in the returned report
-/// so smoke/tests can require successful discovery and loading.
+/// `LC_interface` in the exec namespace before each plugin runs, so
+/// plugin authors can dispatch on the runtime host. Per-plugin errors remain
+/// non-fatal for normal startup but are included in the returned report so
+/// smoke/tests can require successful discovery and loading. This explicit
+/// loader clears/restores the window scope; normal startup uses the cached
+/// bootstrap above rather than re-evaluating definitions for each window.
 PythonPluginLoadReport loadPythonPlugins(const std::string& pluginDir,
                                         const char* interfaceName);
 

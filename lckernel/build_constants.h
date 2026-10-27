@@ -14,3 +14,7 @@ extern IMPORT_API const char* BUILD_INFO;
 extern IMPORT_API const char* CMAKE_VERSION;
 extern IMPORT_API const char* SETTINGS_PATH;
 extern IMPORT_API const char* PATTERN_RESOURCE_PATH;
+// libdxfrw package version + submodule revision. DRW_VERSION is a coarse
+// banner -- it moved from "0.6.3" to "2.0.0" in one upstream commit -- and
+// does not identify the revision that is actually linked.
+extern IMPORT_API const char* LIBDXFRW_BUILD_VERSION;

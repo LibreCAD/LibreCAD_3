@@ -32,7 +32,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
 
     QSurfaceFormat format;
     format.setMajorVersion(3);
-    format.setMinorVersion(0);
+    format.setMinorVersion(2);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
@@ -115,7 +115,8 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 LCADViewer::~LCADViewer()
 {
     deletePainters();
-    _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    if (_document)
+        _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
 void LCADViewer::initializeGL()
@@ -157,6 +158,10 @@ void LCADViewer::initializeGL()
 
 void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport)
 {
+    if (_document)
+        _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    if (_docCanvas)
+        _docCanvas->selectionChanged().disconnect<LCADViewer, &LCADViewer::_selectionChanged>(this);
     QOpenGLContext* widgetContext = context();
     const bool hasValidContext = widgetContext != nullptr && widgetContext->isValid();
     if (hasValidContext) {
@@ -164,9 +169,8 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
     }
     deletePainters();
 
-    _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, [this](double* x, double* y) {
-        _documentPainter->device_to_user(x, y);
-    }, viewport);
+    // Use this canvas's painter, not a closure borrowing a future/dead viewer.
+    _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, nullptr, viewport);
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
@@ -455,6 +459,7 @@ void LCADViewer::createPainters(unsigned int width, unsigned int height) {
 
 void LCADViewer::deletePainters()
 {
+    if (_docCanvas) _docCanvas->setPainter(nullptr);
     for(auto pair : imagemaps) {
         delete pair.first;
         delete pair.second;

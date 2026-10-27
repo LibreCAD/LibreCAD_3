@@ -12,7 +12,7 @@ class DocumentList {
     friend class Document;
 
 public:
-    // One instance owned by the kernel DLL, not one per including module.
+    // One registry owned by lckernel, not a header-local copy in each DLL.
     static DocumentList& getInstance();
 
     DocumentList(DocumentList const&) = delete;

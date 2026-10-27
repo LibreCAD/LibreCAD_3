@@ -294,7 +294,11 @@ void addLCBindings(lua_State *L) {
                                        .addFunction("runLastOperation", &lc::ui::MainWindow::runLastOperation)
                                        .addFunction("currentOperation", &lc::ui::MainWindow::currentOperation)
                                        .addFunction("copySelectedEntities", &lc::ui::MainWindow::copySelectedEntities)
+                                       .addFunction("cutSelectedEntities", &lc::ui::MainWindow::cutSelectedEntities)
                                        .addFunction("pasteEvent", &lc::ui::MainWindow::pasteEvent)
+                                       .addFunction("clipboardEntities", &lc::ui::MainWindow::clipboardEntities)
+                                       .addFunction("clipboardBasePoint", &lc::ui::MainWindow::clipboardBasePoint)
+                                       .addFunction("pasteClipboard", &lc::ui::MainWindow::pasteClipboard)
                                        .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
                                        .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
     // Phase 4 PR-7 — runOperation now takes lc::scripting::ScriptObject.
@@ -359,8 +363,12 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     // Phase 4 PR-4 — MenuItem's callback-taking constructor is exposed
     // as a static factory `gui.MenuItem.new(label, cb)`, same idiom as
-    // ToolbarButton in PR-3.  Non-callback constructor stays direct.
-    // addCallback + addCheckedCallback take ScriptCallback; wrap LuaRef.
+    // ToolbarButton in PR-3.  addCallback + addCheckedCallback take
+    // ScriptCallback; wrap LuaRef.
+    //
+    // Both shapes are one overloaded `new`: setConstructors registers
+    // `new` too, and kaguya throws on a second registration of a name,
+    // which made every MainWindow constructor throw.
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
     .addOverloadedFunctions("new",
         [](const char* label) {
@@ -429,6 +437,9 @@ void addLuaGUIAPIBindings(lua_State* L) {
     // Phase 4 PR-3 — ToolbarButton's constructors and callback-taking
     // factory share one `new` overload set; Kaguya rejects registering
     // constructors and a static factory under the same name separately.
+    // Callback arguments are converted to ScriptCallback before forwarding;
+    // the tooltip overload precedes callback overloads because both can take
+    // a string in the third position.
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
     .addOverloadedFunctions("new",
         [](const char* label, const char* icon) {

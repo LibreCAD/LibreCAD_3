@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(LCPYTHONSCRIPT)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -49,6 +49,28 @@ file(RELATIVE_PATH LC_PYTHON_STAGED_STDARCH_REL
     "${LC_PYTHON_RUNTIME_HOME}" "${Python_STDARCH}")
 file(RELATIVE_PATH LC_PYTHON_STAGED_DYNLIBS_REL
     "${LC_PYTHON_RUNTIME_HOME}" "${LC_PYTHON_RUNTIME_DYNLIBS}")
+# BEGIN Python staged layout validation
+# Virtual environments can report a base interpreter's stdlib outside their
+# sys.prefix. Never use such relative paths as install destinations or runtime
+# search paths: they would escape the package (and possibly the install prefix).
+foreach(_lc_staged_path LC_PYTHON_STAGED_STDLIB_REL LC_PYTHON_STAGED_STDARCH_REL
+        LC_PYTHON_STAGED_DYNLIBS_REL)
+    if(IS_ABSOLUTE "${${_lc_staged_path}}" OR
+       "${${_lc_staged_path}}" MATCHES "^\\.\\.(/|$)")
+        message(FATAL_ERROR
+            "Selected Python runtime layout escapes its staging directory: "
+            "${_lc_staged_path}=${${_lc_staged_path}} is outside "
+            "${LC_PYTHON_RUNTIME_HOME}. Select the base CPython interpreter "
+            "with -DPython_EXECUTABLE=<base interpreter>, not a virtual environment.")
+    endif()
+endforeach()
+# END Python staged layout validation
+# Root install-time origin capture consumes this exact selected layout too;
+# do not introduce a second Python/sysconfig path resolver in packaging.
+foreach(_lc_runtime_layout LC_PYTHON_STAGED_STDLIB_REL LC_PYTHON_STAGED_STDARCH_REL
+        LC_PYTHON_STAGED_DYNLIBS_REL LC_PYTHON_RUNTIME_DYNLIBS)
+    set(${_lc_runtime_layout} "${${_lc_runtime_layout}}" PARENT_SCOPE)
+endforeach()
 set(LC_PYTHON_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY "${LC_PYTHON_GENERATED_DIR}")
 configure_file(
@@ -61,7 +83,7 @@ configure_file(
 # host paths into install rules or the shipped application.
 execute_process(
     COMMAND "${Python_EXECUTABLE}" -c
-            "import platform,sys,sysconfig; print('provider_implementation=' + platform.python_implementation()); print('provider_version=' + sys.version.split()[0]); print('provider_platform=' + sysconfig.get_platform()); print('provider_soabi=' + str(sysconfig.get_config_var('SOABI') or '')); print('provider_extension_suffix=' + str(sysconfig.get_config_var('EXT_SUFFIX') or '')); print('provider_library=' + str(sysconfig.get_config_var('LDLIBRARY') or sysconfig.get_config_var('LIBRARY') or '')); print('provider_libdir=' + str(sysconfig.get_config_var('LIBDIR') or '')); print('provider_dynamic_modules=' + str(sysconfig.get_config_var('DESTSHARED') or ''))"
+            "import platform,struct,sys,sysconfig; print('provider_implementation=' + platform.python_implementation()); print('provider_version=' + sys.version.split()[0]); print('provider_platform=' + sysconfig.get_platform()); print('provider_architecture=' + platform.machine()); print('provider_pointer_bits=' + str(struct.calcsize('P') * 8)); print('provider_debug=' + str(bool(sysconfig.get_config_var('Py_DEBUG'))).lower()); print('provider_gil_disabled=' + str(bool(sysconfig.get_config_var('Py_GIL_DISABLED'))).lower()); print('provider_soabi=' + str(sysconfig.get_config_var('SOABI') or '')); print('provider_extension_suffix=' + str(sysconfig.get_config_var('EXT_SUFFIX') or '')); print('provider_library=' + str(sysconfig.get_config_var('LDLIBRARY') or sysconfig.get_config_var('LIBRARY') or '')); print('provider_libdir=' + str(sysconfig.get_config_var('LIBDIR') or '')); print('provider_dynamic_modules=' + str(sysconfig.get_config_var('DESTSHARED') or ''))"
     OUTPUT_VARIABLE LC_PYTHON_PROVIDER_INVENTORY
     OUTPUT_STRIP_TRAILING_WHITESPACE
     RESULT_VARIABLE LC_PYTHON_PROVIDER_INVENTORY_RESULT)
@@ -86,42 +108,55 @@ if(TARGET Python::Python)
     endif()
 endif()
 
-# Linux relocatable packages must carry the exact shared embed runtime chosen
-# by FindPython. The normal developer/system install intentionally leaves this
-# option off and uses its declared system Python dependency instead.
-set(LC_PYTHON_STAGED_RUNTIME_LIBRARY "")
-set(LC_PYTHON_STAGED_RUNTIME_LIBRARY_NAME "")
-set(LC_PYTHON_STAGED_RUNTIME_REL "")
-if(WITH_BUNDLED_PYTHON_RUNTIME)
-    if(NOT LC_PYTHON_RUNTIME_LIBRARY OR
-       NOT EXISTS "${LC_PYTHON_RUNTIME_LIBRARY}")
+# Fail during configure rather than later compilation/runtime if the selected
+# interpreter, headers, import library, or target architecture come from
+# incompatible providers. The project uses the GIL API and supports the
+# regular release CPython ABI only; free-threaded and debug interpreters remain
+# unsupported until their ABI/lifecycle behavior is separately validated.
+if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+    list(LENGTH CMAKE_OSX_ARCHITECTURES _LC_PYTHON_TARGET_ARCH_COUNT)
+    if(NOT _LC_PYTHON_TARGET_ARCH_COUNT EQUAL 1)
         message(FATAL_ERROR
-            "Could not locate the selected Python embed runtime to stage")
+            "Embedded Python requires a single target architecture; "
+            "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
     endif()
-    get_filename_component(LC_PYTHON_STAGED_RUNTIME_LIBRARY
-        "${LC_PYTHON_RUNTIME_LIBRARY}" REALPATH)
-    get_filename_component(LC_PYTHON_STAGED_RUNTIME_LIBRARY_NAME
-        "${LC_PYTHON_STAGED_RUNTIME_LIBRARY}" NAME)
-    if(NOT LC_PYTHON_STAGED_RUNTIME_LIBRARY_NAME MATCHES
-       "^libpython[0-9.]+\\.so(\\.[0-9]+)*$")
-        message(FATAL_ERROR
-            "Bundled Linux Python runtime must be a versioned shared library: ${LC_PYTHON_STAGED_RUNTIME_LIBRARY}")
-    endif()
-    set(LC_PYTHON_STAGED_RUNTIME_REL
-        "${CMAKE_INSTALL_LIBDIR}/${LC_PYTHON_STAGED_RUNTIME_LIBRARY_NAME}")
+    list(GET CMAKE_OSX_ARCHITECTURES 0 _LC_PYTHON_TARGET_ARCH)
+else()
+    set(_LC_PYTHON_TARGET_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
 endif()
+if(NOT _LC_PYTHON_TARGET_ARCH)
+    message(FATAL_ERROR "Could not determine the target architecture for embedded Python")
+endif()
+math(EXPR _LC_PYTHON_TARGET_POINTER_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
+set(_LC_PYTHON_PROVIDER_INCLUDE_ARGS)
+foreach(_lc_python_include_dir IN LISTS Python_INCLUDE_DIRS)
+    list(APPEND _LC_PYTHON_PROVIDER_INCLUDE_ARGS
+        --include-dir "${_lc_python_include_dir}")
+endforeach()
+execute_process(
+    COMMAND "${Python_EXECUTABLE}"
+            "${CMAKE_SOURCE_DIR}/scripts/validate_python_provider.py"
+            --expected-version "${Python_VERSION}"
+            --expected-pointer-bits "${_LC_PYTHON_TARGET_POINTER_BITS}"
+            --expected-architecture "${_LC_PYTHON_TARGET_ARCH}"
+            ${_LC_PYTHON_PROVIDER_INCLUDE_ARGS}
+            --library "${LC_PYTHON_RUNTIME_LIBRARY}"
+    RESULT_VARIABLE LC_PYTHON_PROVIDER_VALIDATION_RESULT
+    OUTPUT_VARIABLE LC_PYTHON_PROVIDER_VALIDATION_OUTPUT
+    ERROR_VARIABLE LC_PYTHON_PROVIDER_VALIDATION_ERROR
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT LC_PYTHON_PROVIDER_VALIDATION_RESULT EQUAL 0)
+    message(FATAL_ERROR
+        "Selected embedded Python provider is unsupported or inconsistent:\n"
+        "${LC_PYTHON_PROVIDER_VALIDATION_ERROR}"
+        "${LC_PYTHON_PROVIDER_VALIDATION_OUTPUT}")
+endif()
+message(STATUS "${LC_PYTHON_PROVIDER_VALIDATION_OUTPUT}")
 
 set(LC_PYTHON_RUNTIME_INVENTORY "${CMAKE_BINARY_DIR}/python-runtime-inventory.txt")
-math(EXPR LC_PYTHON_TARGET_POINTER_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
-set(LC_PYTHON_TARGET_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
-if(NOT LC_PYTHON_TARGET_ARCHITECTURE)
-    set(LC_PYTHON_TARGET_ARCHITECTURE "${CMAKE_HOST_SYSTEM_PROCESSOR}")
-endif()
 file(WRITE "${LC_PYTHON_RUNTIME_INVENTORY}"
     "provider=CMake FindPython / Python::Python\n"
     "version=${Python_VERSION}\n"
-    "target_pointer_bits=${LC_PYTHON_TARGET_POINTER_BITS}\n"
-    "target_architecture=${LC_PYTHON_TARGET_ARCHITECTURE}\n"
     "executable=${LC_PYTHON_RUNTIME_EXECUTABLE}\n"
     "include_dirs=${Python_INCLUDE_DIRS}\n"
     "link_library=${LC_PYTHON_RUNTIME_LIBRARY}\n"
@@ -132,8 +167,6 @@ file(WRITE "${LC_PYTHON_RUNTIME_INVENTORY}"
     "staged_stdlib_rel=${LC_PYTHON_STAGED_STDLIB_REL}\n"
     "staged_stdarch_rel=${LC_PYTHON_STAGED_STDARCH_REL}\n"
     "staged_dynamic_modules_rel=${LC_PYTHON_STAGED_DYNLIBS_REL}\n"
-    "staged_shared_runtime=${LC_PYTHON_STAGED_RUNTIME_LIBRARY}\n"
-    "staged_shared_runtime_rel=${LC_PYTHON_STAGED_RUNTIME_REL}\n"
     "${LC_PYTHON_PROVIDER_INVENTORY}\n")
 message(STATUS "Selected Python runtime inventory: ${LC_PYTHON_RUNTIME_INVENTORY}")
 
@@ -277,10 +310,43 @@ endif()
 if(NOT CMAKE_INSTALL_DATADIR)
     set(CMAKE_INSTALL_DATADIR "share")
 endif()
+
+# Carry the selected provider's primary CPython license with every installed
+# runtime. The Windows Python installer keeps it beside python.exe, while
+# Unix distributions also place it in the stdlib; never search PATH for a
+# different interpreter's notice.
+get_filename_component(_LC_PYTHON_EXECUTABLE_DIR "${Python_EXECUTABLE}" DIRECTORY)
+set(_LC_PYTHON_LICENSE_CANDIDATES
+    "${Python_STDLIB}/LICENSE.txt"
+    "${Python_STDLIB}/LICENSE"
+    "${_LC_PYTHON_EXECUTABLE_DIR}/LICENSE.txt"
+    "${_LC_PYTHON_EXECUTABLE_DIR}/LICENSE"
+    "${Python_ROOT_DIR}/LICENSE.txt"
+    "${Python_ROOT_DIR}/LICENSE")
+set(LC_PYTHON_LICENSE_FILE "")
+foreach(_lc_python_license_candidate IN LISTS _LC_PYTHON_LICENSE_CANDIDATES)
+    if(EXISTS "${_lc_python_license_candidate}" AND
+       NOT IS_DIRECTORY "${_lc_python_license_candidate}")
+        set(LC_PYTHON_LICENSE_FILE "${_lc_python_license_candidate}")
+        break()
+    endif()
+endforeach()
+if(NOT LC_PYTHON_LICENSE_FILE)
+    message(FATAL_ERROR
+        "Could not find the selected CPython provider's LICENSE.txt or LICENSE; "
+        "checked its stdlib, executable directory, and Python_ROOT_DIR")
+endif()
+install(FILES "${LC_PYTHON_LICENSE_FILE}"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/python"
+    RENAME "LICENSE.txt")
+
 set(LC_PYTHON_STAGED_RUNTIME_DIR "${CMAKE_INSTALL_DATADIR}/librecad/python")
-if(WITH_BUNDLED_PYTHON_RUNTIME)
-    install(FILES "${LC_PYTHON_STAGED_RUNTIME_LIBRARY}"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+set(_LC_PYTHON_DEVELOPMENT_LINK_EXCLUDES)
+if(APPLE)
+    # These optional config-directory links point outside the selected stdlib
+    # and are not runtime payloads. The real embed dylib is installed separately.
+    list(APPEND _LC_PYTHON_DEVELOPMENT_LINK_EXCLUDES
+        PATTERN "libpython*.a" EXCLUDE PATTERN "libpython*.dylib" EXCLUDE)
 endif()
 # Development trees contain provider-relative libpython links that become
 # dangling after a prefix move. Host site/user customization is not runtime
@@ -291,7 +357,8 @@ set(_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES
     PATTERN "dist-packages" EXCLUDE
     PATTERN "config-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}*" EXCLUDE
     PATTERN "sitecustomize.py" EXCLUDE
-    PATTERN "usercustomize.py" EXCLUDE)
+    PATTERN "usercustomize.py" EXCLUDE
+    ${_LC_PYTHON_DEVELOPMENT_LINK_EXCLUDES})
 install(DIRECTORY "${Python_STDLIB}/"
     DESTINATION "${LC_PYTHON_STAGED_RUNTIME_DIR}/${LC_PYTHON_STAGED_STDLIB_REL}"
     ${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES})
@@ -316,3 +383,6 @@ if(EXISTS "${LC_PYTHON_RUNTIME_DYNLIBS}")
             ${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES})
     endif()
 endif()
+
+collect_lib("lcpythonscript")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

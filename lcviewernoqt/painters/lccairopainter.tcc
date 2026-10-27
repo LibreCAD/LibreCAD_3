@@ -632,6 +632,18 @@ public:
         }
     }
 
+    /**
+     * @brief The Cairo surface this painter draws on
+     *
+     * Owned by the painter and destroyed with it, including a surface handed
+     * to the (surface, cr) constructor, so it is only valid while the painter
+     * lives. Take a reference with cairo_surface_reference() to keep it longer.
+     * Call cairo_surface_flush() before reading its pixels directly.
+     */
+    cairo_surface_t *getCairoSurface() const {
+        return _surface;
+    }
+
     // TODO: move this somewhere more universal but without lib dependencies
     static std::string tolower(std::string data) {
         std::transform(data.begin(), data.end(), data.begin(), ::tolower);

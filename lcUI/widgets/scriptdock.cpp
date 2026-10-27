@@ -30,10 +30,9 @@ namespace {
 
 #ifdef LC_WITH_PYTHONSCRIPT
 
-// pybind11 types carry hidden visibility; keep this translation-unit-only
-// implementation hidden too, so the owning Qt class does not expose a
-// differently-visibility-qualified member type in shared-library builds.
 struct LC_PYTHON_LOCAL ScriptDock::PyNamespace {
+    // The owning py::dict is created and destroyed explicitly while holding
+    // the GIL; a default py::dict would allocate before the constructor body.
     std::unique_ptr<py::dict> ns;
     PyNamespace();
     ~PyNamespace();
@@ -69,6 +68,7 @@ ScriptDock::PyNamespace::PyNamespace() {
 ScriptDock::PyNamespace::~PyNamespace() {
     // GIL-holding destruction: the main thread's Qt event loop runs
     // GIL-free between Python calls, so ~py::dict must reacquire.
+    // Leave `ns` empty, so its own destructor has nothing to release.
     py::gil_scoped_acquire gil;
     ns.reset();
 }
@@ -190,7 +190,9 @@ void ScriptDock::on_open_clicked() {
         QFile file(fileName);
 
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
-            QMessageBox::warning(this, tr("Unable to open script"), file.errorString());
+            QMessageBox::warning(this, tr("Open File"),
+                                 tr("Could not open '%1': %2")
+                                     .arg(fileName, file.errorString()));
             return;
         }
         QTextStream stream(&file);
@@ -226,7 +228,9 @@ void ScriptDock::on_save_clicked() {
         QFile file(fileName);
 
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
-            QMessageBox::warning(this, tr("Unable to save script"), file.errorString());
+            QMessageBox::warning(this, tr("Save File"),
+                                 tr("Could not write '%1': %2")
+                                     .arg(fileName, file.errorString()));
             return;
         }
         QTextStream stream(&file);

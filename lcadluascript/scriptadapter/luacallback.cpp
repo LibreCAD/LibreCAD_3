@@ -551,6 +551,7 @@ private:
         if (callable.isNilref()) return kaguya::LuaRef{};
         lua_args = std::move(implicitArgs);
         for (const auto& a : args) lua_args.push_back(toLuaLocked(state, a));
+
         try {
             switch (lua_args.size()) {
             case 0: return callable();

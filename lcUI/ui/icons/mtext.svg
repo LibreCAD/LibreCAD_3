@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Multiline text: an "A" beside the ruled lines of a paragraph.  Shares
+     text.svg's 256px canvas, 72.248892-unit viewBox and glyph band so the two
+     sit at the same optical size next to each other in the toolbar. -->
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   width="256"
+   height="256"
+   viewBox="0 0 72.248892 72.248892"
+   version="1.1"
+   id="svg-mtext">
+  <g id="g-mtext">
+    <path
+       id="mtext-a"
+       d="M 3.0,57.0 20.55,13.5 H 27.05 L 44.6,57.0 H 38.0 L 23.8,20.5 9.6,57.0 Z"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none" />
+    <path
+       id="mtext-a-bar"
+       d="M 10.0,43.0 H 37.6"
+       style="fill:none;stroke:#000000;stroke-width:4.2;stroke-linecap:butt" />
+    <path
+       id="mtext-line-1"
+       d="M 48.5,17.5 H 69.0"
+       style="fill:none;stroke:#000000;stroke-width:3.4;stroke-linecap:butt" />
+    <path
+       id="mtext-line-2"
+       d="M 48.5,30.5 H 69.0"
+       style="fill:none;stroke:#000000;stroke-width:3.4;stroke-linecap:butt" />
+    <path
+       id="mtext-line-3"
+       d="M 48.5,43.5 H 69.0"
+       style="fill:none;stroke:#000000;stroke-width:3.4;stroke-linecap:butt" />
+    <path
+       id="mtext-line-4"
+       d="M 48.5,56.5 H 62.0"
+       style="fill:none;stroke:#000000;stroke-width:3.4;stroke-linecap:butt" />
+  </g>
+</svg>

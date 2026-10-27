@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT(persistence)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -8,22 +8,27 @@ message("***** LibreCAD persistence *****")
 # HEADER FILES
 set(persistence_srcs
         file.cpp
+        format.cpp
+        documentsource.cpp
 	patternLoader/patternProvider.cpp
         libdxfrw/dxfimpl.cpp
-        libopencad_interface/libopencad.cpp
+        libdxfrw/apipins.cpp
+        libdxfrw/mtextcodec.cpp
+        libdxfrw/preservedrecords.cpp
         generic/helpers.cpp
 )
 
 set(persistence_hdrs
         file.h
+        format.h
+        readguard.h
+        documentsource.h
 	patternLoader/patternProvider.h
         libdxfrw/dxfimpl.h
-        libopencad_interface/libopencad.h
+        libdxfrw/preservedrecords.h
+        libdxfrw/mtextcodec.h
         generic/helpers.h
 )
-
-# LibbDXFRW
-find_package(libdxfrw REQUIRED)
 
 # Boost logging
 find_package(Boost REQUIRED COMPONENTS log)
@@ -54,33 +59,28 @@ else ()
     include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
 endif ()
 
-if(WITH_LIBOPENCAD)
-    set(BUILD_SHARED_LIBS ON)
-    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libopencad/lib")
-    link_directories("${CMAKE_CURRENT_BINARY_DIR}/libopencad/lib")
-
-    set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
-    add_subdirectory("libopencad")
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-    set(OPENCAD_LIB opencad)
-
-	add_definitions(-DLIBOPENCAD_ENABLED)
-endif()
-
-if (MSVC AND libdxfrw_INCLUDE_DIR)
-    include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
-endif()
 # DEBUGGING PATHS
 
 add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
 
-target_link_libraries(persistence lckernel ${Boost_LIBRARIES} libdxfrw::libdxfrw ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
+# PRIVATE: encapsulation, not standards. The whole tree is C++17 now, so
+# libdxfrw's exported cxx_std_17 no longer forces anything on anyone -- but a
+# consumer of persistence still has no business finding DRW_ types on its
+# include path. scripts/ci/check-persistence-headers.sh enforces the other half.
+target_link_libraries(persistence
+    PUBLIC lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES}
+    PRIVATE libdxfrw::libdxfrw)
 
 # INSTALLATION
+# RUNTIME: on Windows a SHARED library's .dll is a RUNTIME artifact, so
+# without this the DLL is never installed and the installed application cannot
+# start. It belongs beside the executable.
 install(TARGETS persistence
         ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("persistence")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

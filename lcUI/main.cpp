@@ -13,6 +13,7 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <lcpython.h>
 #include "python/pyruntimesmoke.h"
+#include "python/pypluginloader.h"
 #endif
 
 #ifndef debug
@@ -65,9 +66,10 @@ void configureMacOSAppBundleResources() {
 } // namespace
 
 int main2(int argc, char* argv[]) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+    // The guard this used to carry asked for Qt 5.4 or newer. lcUI requires
+    // Qt6, so it was always taken -- and the last place in the tree that still
+    // spoke of Qt5.
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-#endif
 
     QApplication a(argc, argv);
     configureMacOSAppBundleResources();
@@ -91,6 +93,9 @@ int main2(int argc, char* argv[]) {
     LOGGER;//Init logger
     lc::persistence::PatternProvider::Instance();//Init pattern loader
 
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::bootstrapPythonPlugins();
+#endif
     lc::ui::WindowManager::init();
 
     return QApplication::exec();

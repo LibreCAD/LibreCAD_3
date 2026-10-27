@@ -12,16 +12,23 @@ from scripts.run_required_gtests import run_required_filter
 
 class RunRequiredGoogleTests(unittest.TestCase):
     def _run(
-        self, results, test_filter="Sample.*", command_prefix=(), timeout_seconds=1800
+        self,
+        results,
+        test_filter="Sample.*",
+        command_prefix=(),
+        timeout_seconds=1800,
+        required_suites=(),
     ):
         output = io.StringIO()
         errors = io.StringIO()
-        with patch(
-            "scripts.run_required_gtests._invoke", side_effect=results
-        ) as invoke:
+        with patch("scripts.run_required_gtests._invoke", side_effect=results) as invoke:
             with redirect_stdout(output), redirect_stderr(errors):
                 status = run_required_filter(
-                    "lcunittest", test_filter, command_prefix, timeout_seconds
+                    "lcunittest",
+                    test_filter,
+                    command_prefix,
+                    timeout_seconds,
+                    required_suites,
                 )
         return status, output.getvalue(), errors.getvalue(), invoke
 
@@ -38,6 +45,7 @@ class RunRequiredGoogleTests(unittest.TestCase):
                 ),
             ],
             command_prefix=("xvfb-run", "-a"),
+            required_suites=("Sample.",),
         )
 
         self.assertEqual(0, status)
@@ -63,7 +71,6 @@ class RunRequiredGoogleTests(unittest.TestCase):
                     "-a",
                     "lcunittest",
                     "--gtest_filter=Sample.*",
-                    "--gtest_brief=1",
                 ],
                 1800,
             ),
@@ -77,6 +84,26 @@ class RunRequiredGoogleTests(unittest.TestCase):
 
         self.assertEqual(1, status)
         self.assertIn("discovered zero tests", errors)
+        self.assertEqual(1, invoke.call_count)
+
+    def test_missing_required_suite_fails_from_bounded_discovery(self):
+        status, output, errors, invoke = self._run(
+            [SimpleNamespace(returncode=0, stdout="Sample.\n  First\n")],
+            required_suites=("Sample.", "RequiredSuite."),
+        )
+
+        self.assertEqual(1, status)
+        self.assertIn("RequiredSuite.", errors)
+        self.assertEqual(1, invoke.call_count)
+
+    def test_filter_suite_that_matches_zero_tests_fails_closed(self):
+        status, output, errors, invoke = self._run(
+            [SimpleNamespace(returncode=0, stdout="Sample.\n  First\n")],
+            test_filter="Sample.*:MissingSuite.*",
+        )
+
+        self.assertEqual(1, status)
+        self.assertIn("MissingSuite.", errors)
         self.assertEqual(1, invoke.call_count)
 
     def test_nonzero_test_process_fails(self):
@@ -137,12 +164,56 @@ class RunRequiredGoogleTests(unittest.TestCase):
         status, output, errors, invoke = self._run(
             [
                 SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
-                SimpleNamespace(returncode=0, stdout="test process produced no summary\n"),
+                SimpleNamespace(
+                    returncode=0, stdout="test process produced no summary\n"
+                ),
             ]
         )
 
         self.assertEqual(1, status)
         self.assertIn("summary was missing", errors)
+
+    def test_disabled_test_cannot_silently_reduce_required_execution(self):
+        status, output, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n  DISABLED_Second\n"),
+            SimpleNamespace(returncode=0, stdout=(
+                "[ DISABLED ] Sample.DISABLED_Second\n"
+                "[==========] 1 test from 1 test suite ran.\n"
+                "[  PASSED  ] 1 test.\n\n  YOU HAVE 1 DISABLED TEST\n")),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("discovered 2, executed 1", errors)
+        self.assertNotIn("filter passed", output)
+
+    def test_sharding_cannot_silently_reduce_required_execution(self):
+        status, output, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n  Second\n"),
+            SimpleNamespace(returncode=0, stdout=(
+                "Note: This is test shard 1 of 2.\n"
+                "[==========] 1 test from 1 test suite ran.\n"
+                "[  PASSED  ] 1 test.\n")),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("discovered 2, executed 1", errors)
+        self.assertNotIn("filter passed", output)
+
+    def test_executing_more_than_discovered_tests_fails_closed(self):
+        status, _, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
+            SimpleNamespace(returncode=0,
+                            stdout="[==========] 2 tests from 1 test suite ran.\n"),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("discovered 1, executed 2", errors)
+
+    def test_multiple_summaries_fail_closed(self):
+        status, _, errors, _ = self._run([
+            SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
+            SimpleNamespace(returncode=0, stdout=(
+                "[==========] 1 test from 1 test suite ran.\n" * 2)),
+        ])
+        self.assertEqual(1, status)
+        self.assertIn("summary was ambiguous", errors)
 
     def test_listing_timeout_fails_with_partial_output(self):
         status, output, errors, invoke = self._run(
@@ -164,14 +235,14 @@ class RunRequiredGoogleTests(unittest.TestCase):
             [
                 SimpleNamespace(returncode=0, stdout="Sample.\n  First\n"),
                 subprocess.TimeoutExpired(
-                    ["lcunittest"], timeout=4, output="test stalled\n"
+                    ["lcunittest"], timeout=4, output="[ RUN      ] Sample.First\n"
                 ),
             ],
             timeout_seconds=4,
         )
 
         self.assertEqual(1, status)
-        self.assertIn("test stalled", output)
+        self.assertIn("[ RUN      ] Sample.First", output)
         self.assertIn("filter timed out after 4 seconds", errors)
 
 

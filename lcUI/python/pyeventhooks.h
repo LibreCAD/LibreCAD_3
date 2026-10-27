@@ -12,6 +12,7 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 
 #include <QPointer>
+#include <lcscripting/scriptcallback.h>
 
 namespace lc {
 namespace ui {
@@ -35,12 +36,8 @@ private:
 };
 
 /// Install the process hook functions. Idempotent; safe to call at startup.
-/// Phase 5 PR-5.1 fixup: MUST be called unconditionally at MainWindow
-/// startup — the ScriptDock-only install site was broken because
-/// Python operations registering via `lc.event.register` at startup
-/// arrived BEFORE the ScriptDock had ever been opened, so the hook
-/// slots were still default-constructed (falsy) and every registration
-/// silently no-op'd.
+/// Bootstrap installs these before process-global plugin definitions and
+/// per-window operation init; installing only when ScriptDock opens is too late.
 void installEventHooks();
 
 /// Return the MainWindow bound to the current execution scope, or nullptr
@@ -48,6 +45,14 @@ void installEventHooks();
 /// owner from vector insertion order: a window runs Python during its
 /// constructor, before it can be inserted into WindowManager.
 lc::ui::MainWindow* currentMainWindow();
+
+/// Bind a GUI callback to its weak Qt receiver/window, restoring outer scopes.
+/// An initially owner-free receiver can bind once after late Qt adoption;
+/// dead bound owners/unbound receivers are inert. Bound toolbar clones retain
+/// the registering window even if the original button dies. Global entity
+/// callbacks do not use it.
+lc::scripting::ScriptCallback scopedUiCallback(
+    lc::scripting::ScriptCallback callback, QObject* receiver);
 
 } // namespace python
 } // namespace ui

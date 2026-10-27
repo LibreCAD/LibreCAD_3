@@ -121,14 +121,29 @@ public:
     }
 
     void setAttr(const std::string& name, const lcs::ScriptValue& value) override {
+        std::string error;
+        if (!setAttrChecked(name, value, error)) {
+            lcs::reportScriptDiagnostic(
+                {}, "Python attribute '" + name + "' could not be set:\n" + error);
+        }
+    }
+
+    bool setAttrChecked(const std::string& name,
+                        const lcs::ScriptValue& value,
+                        std::string& error) override {
         py::gil_scoped_acquire gil;
+        error.clear();
         try {
             _obj.attr(name.c_str()) = lc::python::toPy(value);
-        } catch (py::error_already_set& /*e*/) {
-            // Some Python objects are frozen (dataclass frozen=True,
-            // namedtuple, ...).  Silently swallow so the caller's
-            // setAttr doesn't propagate a Python exception through Qt.
+            return true;
+        } catch (py::error_already_set& exception) {
+            error = exception.what();
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "Python attribute assignment failed with an unknown exception";
         }
+        return false;
     }
 
     bool hasAttr(const std::string& name) override {

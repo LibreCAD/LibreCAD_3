@@ -1,4 +1,4 @@
-#Write compilation info to version.cpp file
+# Write build metadata to the generated source selected by the caller.
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M:%S")
 
 get_filename_component(LIBRECAD_SOURCE_ROOT "${DIR}/.." ABSOLUTE)
@@ -18,6 +18,23 @@ if(EXISTS "${LIBRECAD_SOURCE_ROOT}/.git")
     set(BUILD_INFO "branch ${BUILD_GIT_BRANCH} - commit ${BUILD_GIT_COMMIT}")
 else()
     set(BUILD_INFO "Release")
+endif()
+
+# DRW_VERSION is a coarse upstream banner and changes only at release
+# boundaries, so report what is actually built instead: the package version
+# plus the pinned submodule revision.
+if(NOT DEFINED LIBDXFRW_BUILD_VERSION OR LIBDXFRW_BUILD_VERSION STREQUAL "")
+    set(LIBDXFRW_BUILD_VERSION "unknown")
+endif()
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        OUTPUT_VARIABLE LIBDXFRW_GIT_COMMIT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        WORKING_DIRECTORY ${DIR}/../third_party/libdxfrw
+)
+if(LIBDXFRW_GIT_COMMIT)
+    set(LIBDXFRW_BUILD_VERSION "${LIBDXFRW_BUILD_VERSION} (${LIBDXFRW_GIT_COMMIT})")
 endif()
 
 if(NOT DEFINED OUTPUT_FILE OR NOT IS_ABSOLUTE "${OUTPUT_FILE}")

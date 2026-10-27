@@ -3,6 +3,11 @@
 #include "cadmdichild.h"
 
 #include "cad/storage/documentimpl.h"
+#include "cad/storage/storagemanagerimpl.h"
+#ifdef LC_WITH_PYTHONSCRIPT
+#include "mainwindow.h"
+#include "python/pyeventhooks.h"
+#endif
 
 #include <QMenu>
 #include <cad/operations/layerops.h>
@@ -51,17 +56,29 @@ CadMdiChild::~CadMdiChild() {
 
 
 void CadMdiChild::newDocument() {
-    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
-    _document = std::make_shared<lc::storage::DocumentImpl>(storageManager());
+    auto storage = std::make_shared<lc::storage::StorageManagerImpl>();
+    replaceDocument(std::make_shared<lc::storage::DocumentImpl>(storage), storage);
+}
 
-    // Add the document to a LibreCAD Viewer system so we can visualize the document
+void CadMdiChild::replaceDocument(std::shared_ptr<lc::storage::Document> document,
+                                 storage::StorageManager_SPtr storage,
+                                 lc::persistence::DocumentSource source) {
+    // Owners finish tools and detach observers while the old drawing is valid.
+    emit documentAboutToChange();
+    _document = std::move(document);
+    _storageManager = std::move(storage);
     _viewerProxy->setDocument(_document);
-
     _activeLayer = _document->layerByName("0");
+    _source = std::move(source);
+    _filename = _source.path;
+    emit documentChanged();
 }
 
 
 bool CadMdiChild::openFile() {
+#ifdef LC_WITH_PYTHONSCRIPT
+    lc::ui::python::MainWindowExecutionScope ownerScope(qobject_cast<MainWindow*>(window()));
+#endif
     auto availableTypes = lc::persistence::File::getSupportedFileExtensions();
 
     if(availableTypes.empty()) {
@@ -102,9 +119,53 @@ bool CadMdiChild::openFile() {
 
     if(!availableLibraries.empty()) {
         //TODO: if more than once, ask which one to choose
-        newDocument();
-        _filename = file.toStdString();
-        _fileType = lc::persistence::File::open(_document, _filename, availableLibraries.begin()->first);
+        // Import transactionally: cancellation/failure must not replace a live
+        // drawing, its tool, source path or undo history with an empty one.
+        auto storage = std::make_shared<lc::storage::StorageManagerImpl>();
+        auto document = std::make_shared<lc::storage::DocumentImpl>(storage);
+        const auto result = lc::persistence::File::importFile(
+            document, file.toStdString(), availableLibraries.begin()->first);
+
+        if (!result.ok && result.entitiesDelivered == 0) {
+            // Nothing arrived. Keep the existing drawing and its source rather
+            // than presenting an empty candidate as a successfully opened file.
+            QString detail = tr("%1 could not be read.")
+                             .arg(file);
+            if (!result.diagnostics.empty()) {
+                detail += " (" + QString::fromStdString(result.diagnostics.front().code) + ": "
+                          + QString::fromStdString(result.diagnostics.front().message) + ")";
+            }
+
+            QMessageBox::critical(nullptr, tr("Open error"), detail);
+            return false;
+        }
+
+        replaceDocument(document, storage,
+                        lc::persistence::sourceFromImport(file.toStdString(), result));
+
+        if (!result.ok) {
+            // The document holds whatever arrived before the failure, which is
+            // worth showing -- but the user has to know it is not the drawing.
+            QMessageBox::warning(nullptr, tr("Open"),
+                                 tr("%1 could not be read completely; %2 entities were "
+                                    "recovered. Saving will ask for a new file so the "
+                                    "original is not replaced by the part that was readable.")
+                                 .arg(QString::fromStdString(_filename))
+                                 .arg(static_cast<qulonglong>(result.entitiesDelivered)));
+        } else if (!result.loss.empty()) {
+            QString dropped;
+            for (const auto& kind : result.loss.droppedByType) {
+                if (!dropped.isEmpty()) {
+                    dropped += ", ";
+                }
+                dropped += QString::number(static_cast<qulonglong>(kind.second)) + " "
+                           + QString::fromStdString(kind.first);
+            }
+            QMessageBox::information(nullptr, tr("Open"),
+                                     tr("%1 contains records LibreCAD has no equivalent for, "
+                                        "which were not imported: %2.")
+                                     .arg(QString::fromStdString(_filename)).arg(dropped));
+        }
     }
     else {
         QMessageBox::critical(nullptr, "Open error", "Unknown file extension ." + fileInfo.suffix());
@@ -115,14 +176,76 @@ bool CadMdiChild::openFile() {
 }
 
 void CadMdiChild::saveFile() {
-    if (_filename == "")saveAsFile();
-    else lc::persistence::File::save(_document, _filename, _fileType);// @TODO Needs to fix it later
+    // Whether Save may overwrite the file this document came from is decided
+    // outside this class, where it can be tested without a window: see
+    // persistence/documentsource.cpp.
+    const auto decision = lc::persistence::decideSave(_source);
+
+    if (decision.action != lc::persistence::SaveAction::WriteToPath) {
+        if (!decision.reason.empty() && _source.hasPath) {
+            QMessageBox::information(nullptr, tr("Save"),
+                                     tr("%1 Choose where to save it.")
+                                     .arg(QString::fromStdString(decision.reason)));
+        }
+        saveAsFile();
+        return;
+    }
+
+    lc::persistence::File::Type type = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
+    if (!lc::persistence::File::typeForVariantId(decision.variantId, type)) {
+        saveAsFile();
+        return;
+    }
+
+    reportSaveResult(lc::persistence::File::exportFile(_document, decision.path, type),
+                     decision.path);
+}
+
+// A refused write leaves the target untouched, so the user must be told: the
+// document is still unsaved. A write that succeeded without records the chosen
+// revision cannot carry is a different message -- the file is there, and is not
+// the whole drawing.
+void CadMdiChild::reportSaveResult(const lc::persistence::ExportResult& result,
+                                   const std::string& path) {
+    if (!result.ok) {
+        reportSaveFailure(false, path);
+        return;
+    }
+
+    if (result.loss.empty()) {
+        return;
+    }
+
+    QString kinds;
+    for (const auto& dropped : result.loss.droppedByType) {
+        if (!kinds.isEmpty()) {
+            kinds += ", ";
+        }
+        kinds += QString::number(static_cast<qulonglong>(dropped.second)) + " "
+                 + QString::fromStdString(dropped.first);
+    }
+
+    QMessageBox::warning(nullptr, tr("Save"),
+                         tr("%1 was written without %2: the chosen DXF revision cannot "
+                            "carry them. Save as DXF 2000 or newer to keep them.")
+                         .arg(QString::fromStdString(path)).arg(kinds));
+}
+
+void CadMdiChild::reportSaveFailure(bool saved, const std::string& path) {
+    if (saved) {
+        return;
+    }
+
+    QMessageBox::critical(nullptr, tr("Save error"),
+                          tr("%1 could not be written in the selected format. "
+                             "The file was not changed. See the log for details.")
+                          .arg(QString::fromStdString(path)));
 }
 
 void CadMdiChild::saveAsFile() {
     QString filterList;
     QString selectedFilter;
-    lc::persistence::File::Type type;
+    lc::persistence::File::Type type = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
     auto availableTypes = lc::persistence::File::getAvailableFileTypes();
 
     if(availableTypes.empty()) {
@@ -151,21 +274,43 @@ void CadMdiChild::saveAsFile() {
 
     selectedType = selectedType.substr(0,fpos);
 
+    bool chosen = false;
     for(auto availableType : availableTypes) {
         if(selectedType == availableType.second) {
             type = availableType.first;
+            chosen = true;
             break;
         }
     }
 
-    _fileType = type;
+    // `type` was read uninitialised when no filter matched -- the format the
+    // document was then saved in, and remembered as, was whatever happened to
+    // be on the stack.
+    if (!chosen) {
+        QMessageBox::critical(nullptr, tr("Save error"),
+                              tr("%1 is not a format LibreCAD can write.")
+                              .arg(QString::fromStdString(selectedType)));
+        return;
+    }
 
     //Add extension if not present
     auto fileInfo = QFileInfo(file);
     auto ext = fileInfo.suffix().toStdString();
     if(ext=="")file+=("."+lc::persistence::File::getExtensionForFileType(type)).c_str();
     _filename = file.toStdString();
-    lc::persistence::File::save(_document, _filename, type);
+
+    const auto result = lc::persistence::File::exportFile(_document, _filename, type);
+    reportSaveResult(result, _filename);
+
+    if (result.ok) {
+        // The document now *is* this file, completely: a later Save writes
+        // straight back here, whatever it was opened from.
+        _source.hasPath = true;
+        _source.path = _filename;
+        _source.variantId = result.variantId;
+        _source.partial = false;
+        _source.writable = true;
+    }
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {
@@ -183,7 +328,7 @@ std::shared_ptr<lc::storage::Document> CadMdiChild::document() const {
 }
 
 lc::storage::StorageManager_SPtr CadMdiChild::storageManager() const {
-    return _viewerProxy->storageManager();
+    return _storageManager;
 }
 
 lc::storage::UndoManager_SPtr CadMdiChild::undoManager() const {

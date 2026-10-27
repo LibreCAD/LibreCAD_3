@@ -58,6 +58,9 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
 }
 
 PropertyEditor::~PropertyEditor() {
+    // The editor is a child of its MainWindow and is deleted with it.  A
+    // later MainWindow can be allocated at the same address, and must not
+    // be handed this editor back.
     instances.erase(mainWindow);
 }
 

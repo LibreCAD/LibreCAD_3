@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT (LC)
 
 message("***** LibreCAD Qt user interface *****")
@@ -14,6 +14,10 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
+# OpenGLWidgets is asked for explicitly: Qt6 split QOpenGLWidget out of
+# QtWidgets into its own module, and lcadviewer.h derives from it. It has been
+# resolving through another component's transitive link, which is luck rather
+# than a dependency.
 find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Svg UiTools Widgets)
 find_package(OpenGL REQUIRED)
 
@@ -337,7 +341,13 @@ set_target_properties(lcui_bindings_objects lcui_widgets_objects PROPERTIES AUTO
 add_dependencies(lcui_widgets_objects lcui_objects) # UIC headers exist before widget compilation.
 foreach(ui_objects lcui_objects lcui_bindings_objects lcui_widgets_objects)
     set_target_properties(${ui_objects} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    target_compile_definitions(${ui_objects} PRIVATE LCUI_BUILDING)
+    # These objects are lcui's own (and librecad's), so they compile as the
+    # exporting side of lcui_api.h; lcui's consumers see only LC_UI_SHARED.
+    target_compile_definitions(${ui_objects} PRIVATE LC_UI_SHARED lcui_EXPORTS)
+    # kaguya's headers use uint8_t without including <cstdint>; see the top-level
+    # CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+    # compilation, where forcing a C++ header is a hard error.
+    target_compile_options(${ui_objects} PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
     lc_parallel_msvc_compile(${ui_objects})
     target_link_libraries(${ui_objects} PRIVATE ${EXTRA_LIBS})
     if(WITH_PYTHONSCRIPT)
@@ -350,6 +360,7 @@ set(UI_OBJECTS $<TARGET_OBJECTS:lcui_objects> $<TARGET_OBJECTS:lcui_bindings_obj
 if(WITH_UNITTESTS)
     add_library(lcui SHARED ${UI_OBJECTS})
     set_target_properties(lcui PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+    target_compile_definitions(lcui PUBLIC LC_UI_SHARED)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
@@ -363,17 +374,27 @@ endif()
 set_target_properties(librecad PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})
+
 if(WITH_PYTHONSCRIPT AND WITH_PERSISTENCE)
     set_source_files_properties(python/pyruntimesmoke.cpp PROPERTIES
         COMPILE_DEFINITIONS LC_PYTHON_SMOKE_WITH_PERSISTENCE)
 endif()
 
-if (MSVC)
-    target_link_libraries(librecad Boost::log GLEW::GLEW)
+# Boost.System has been header-only since Boost 1.69, and 1.92 ships no
+# libboost_system at all -- a literal -lboost_system here failed the final link
+# with "library 'boost_system' not found".  Link the imported target when Boost
+# defines one, which covers both the old real library and the modern stub, and
+# nothing otherwise.
+if(TARGET Boost::system)
+    target_link_libraries(librecad Boost::system)
 endif()
 
 if (MSVC)
-    target_link_libraries(librecad Boost::log GLEW::GLEW)
+    target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
+endif()
+
+if (MSVC)
+    target_link_libraries(librecad Boost::log Boost::system GLEW::GLEW)
     message(CMAKE_INSTALL_BINDIR="${CMAKE_INSTALL_BINDIR}")
 endif()
 
@@ -400,11 +421,13 @@ file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/settings_schema.json" DESTINATION "${CMAK
 
 # WinDeployQt runs after the build and before CPack. Include its Qt DLL/plugin
 # tree in the normal install so the NSIS package is self-contained; target DLLs
-# installed above may be copied again with identical contents.
+# installed above may be copied again with identical contents. CPack stages
+# beneath this same bin directory: never traverse its current or stale payload.
 if(MSVC)
     install(DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        FILES_MATCHING PATTERN "*.dll")
+        FILES_MATCHING PATTERN "*.dll"
+        PATTERN "_CPack_Packages" EXCLUDE)
     install(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
         DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL)
 endif()

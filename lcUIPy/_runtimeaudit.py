@@ -1,0 +1,312 @@
+"""Internal, SDK-free dependency checks for installed native artifacts."""
+
+from pathlib import Path
+import ctypes
+import hashlib
+import json
+import os
+import subprocess
+import time
+
+
+def audit_macos_runtime(runtime_directory):
+    """Find the Mach-O image actually providing this interpreter's C API."""
+    import sys
+    if sys.platform != "darwin":
+        raise RuntimeError("Mach-O Python origin audit requires macOS")
+    if Path(runtime_directory).is_symlink():
+        raise RuntimeError("packaged Mach-O runtime directory is linked")
+    root = Path(runtime_directory).resolve(strict=True)
+    if not root.is_dir():
+        raise RuntimeError("packaged Mach-O runtime directory is missing")
+
+    class DlInfo(ctypes.Structure):
+        _fields_ = [("dli_fname", ctypes.c_char_p), ("dli_fbase", ctypes.c_void_p),
+                    ("dli_sname", ctypes.c_char_p), ("dli_saddr", ctypes.c_void_p)]
+
+    dladdr = ctypes.CDLL(None).dladdr
+    dladdr.argtypes = (ctypes.c_void_p, ctypes.POINTER(DlInfo))
+    dladdr.restype = ctypes.c_int
+    info = DlInfo()
+    if not dladdr(ctypes.cast(ctypes.pythonapi.Py_GetVersion, ctypes.c_void_p), ctypes.byref(info)) or \
+            not info.dli_fname:
+        raise RuntimeError("could not resolve the loaded CPython Mach-O image")
+    loaded = Path(os.fsdecode(info.dli_fname)).resolve(strict=True)
+    if not loaded.is_file() or not loaded.is_relative_to(root):
+        raise RuntimeError("CPython loaded outside the packaged Mach-O runtime directory: " + str(loaded))
+    return loaded
+
+
+def audit_python_extensions(python_root, timeout_seconds=60):
+    """Initialize every staged extension, verifying its configured import origin.
+
+    This checks PyInit as well as ordinary loader closure, not every native
+    function or arbitrary delay-load path. An outer process timeout is still
+    required for native calls that never return.
+    """
+    import importlib
+    import importlib.machinery
+    import sys
+
+    if timeout_seconds <= 0:
+        raise ValueError("Python extension audit timeout must be positive")
+    root = Path(python_root).resolve(strict=True)
+    deadline = time.monotonic() + timeout_seconds
+    paths = sorted({Path(path).resolve() for path in sys.path if path and
+                    Path(path).is_dir() and Path(path).resolve().is_relative_to(root)},
+                   key=lambda path: len(path.parts), reverse=True)
+    suffixes = sorted(importlib.machinery.EXTENSION_SUFFIXES, key=len, reverse=True)
+    modules, identities, checked = {}, {}, set()
+
+    def fail(error):
+        raise error
+
+    for directory, directories, filenames in os.walk(root, onerror=fail):
+        if any((Path(directory) / name).is_symlink() for name in directories):
+            raise RuntimeError("Python extension catalog contains a symlinked directory")
+        for filename in sorted(filenames):
+            candidate = Path(directory) / filename
+            suffix = next((suffix for suffix in suffixes if filename.endswith(suffix)), None)
+            if not suffix:
+                continue
+            # CPython's Unix build-config link is an interpreter library, not
+            # an importable extension; it can be dangling after relocation.
+            if Path(directory).name.startswith("config-") and \
+                    filename == "libpython{}.{}.so".format(*sys.version_info[:2]):
+                continue
+            binary = candidate.resolve(strict=True)
+            if not binary.is_file() or not binary.is_relative_to(root):
+                raise RuntimeError("Python extension escapes runtime: {}".format(candidate))
+            if binary in checked:
+                continue
+            base = next((path for path in paths if candidate.is_relative_to(path)), None)
+            if base is None:
+                raise RuntimeError("Python extension has no configured import path: {}".format(candidate))
+            parts = (*candidate.relative_to(base).parts[:-1], filename[:-len(suffix)])
+            if not all(part.isidentifier() for part in parts):
+                raise RuntimeError("Python extension has an invalid module name: {}".format(candidate))
+            name = ".".join(parts)
+            if name.casefold() in identities:
+                raise RuntimeError("ambiguous Python extension module: {}".format(name))
+            modules[name], identities[name.casefold()] = binary, binary
+            checked.add(binary)
+    if not modules:
+        raise RuntimeError("Python extension catalog is empty")
+    for name, binary in sorted(modules.items()):
+        if time.monotonic() >= deadline:
+            raise RuntimeError("Python extension initialization exceeded its total time limit")
+        try:
+            module = importlib.import_module(name)
+            origin = getattr(module, "__file__", None)
+            if not origin or Path(origin).resolve() != binary:
+                raise RuntimeError("module origin is not the selected file: {}".format(origin))
+        except Exception as error:
+            raise RuntimeError("Python extension initialization failed for {}: {}".format(name, error)) from error
+        if time.monotonic() >= deadline:
+            raise RuntimeError("Python extension initialization exceeded its total time limit")
+    return tuple(sorted(modules))
+
+
+def audit_native_stdlib():
+    """Small offline behavior probes, separate from full extension initialization."""
+    import gzip
+    import sqlite3
+    import ssl
+    import zlib
+
+    payload = "LibreCAD Ω\0".encode("utf-8") * 32
+    if gzip.decompress(gzip.compress(payload, mtime=0)) != payload or \
+            zlib.decompress(zlib.compress(payload)) != payload:
+        raise RuntimeError("native gzip/zlib round-trip failed")
+    if hashlib.sha256(b"abc").hexdigest() != \
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad":
+        raise RuntimeError("native SHA-256 known-answer check failed")
+    connection = sqlite3.connect(":memory:")
+    try:
+        connection.execute("CREATE TABLE smoke (name TEXT, payload BLOB)")
+        connection.execute("INSERT INTO smoke VALUES (?, ?)", ("LibreCAD Ω", payload))
+        connection.commit()
+        if connection.execute("SELECT name, payload FROM smoke").fetchone() != ("LibreCAD Ω", payload):
+            raise RuntimeError("native SQLite Unicode/BLOB round-trip failed")
+    finally:
+        connection.close()
+    incoming, outgoing = ssl.MemoryBIO(), ssl.MemoryBIO()
+    client = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT).wrap_bio(
+        incoming, outgoing, server_hostname="librecad.invalid")
+    try:
+        client.do_handshake()
+    except ssl.SSLWantReadError:
+        if not outgoing.read():
+            raise RuntimeError("native TLS produced no client hello")
+    else:
+        raise RuntimeError("native TLS handshake completed without server input")
+    callback = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_int)(lambda value: value + 1)
+    if callback(41) != 42:
+        raise RuntimeError("native ffi callback failed")
+    return "gzip/zlib, SHA-256, SQLite Unicode/BLOB, TLS client hello, ffi callback"
+
+
+def audit_conan_notices(directory):
+    """Verify selected Conan notice inventory/bytes, not legal compliance."""
+    if Path(directory).is_symlink():
+        raise RuntimeError("Conan notice inventory root is a symlink")
+    root = Path(directory).resolve(strict=True)
+    manifest_file = root / "manifest.json"
+    if manifest_file.is_symlink():
+        raise RuntimeError("Conan notice manifest is a symlink")
+    manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or manifest.get("format") != 1 or \
+            not isinstance(manifest.get("providers"), list) or not manifest["providers"]:
+        raise RuntimeError("Conan provider notice manifest is empty or unsupported")
+    expected = {"manifest.json"}
+    for provider in manifest["providers"]:
+        if not isinstance(provider, dict) or not all(
+                   isinstance(provider.get(key), str) and provider[key] and provider[key] != "None"
+                   for key in ("reference", "recipe_revision", "package_id", "package_revision")):
+            raise RuntimeError("Conan notice provider identity is incomplete")
+        if "system_os" in provider or "system_libraries" in provider:
+            system_libs = {"opengl/system": ["opengl32"], "glu/system": ["glu32"]}.get(provider["reference"])
+            if not system_libs or provider.get("system_os") != "Windows" or \
+                    provider.get("system_libraries") != system_libs or provider.get("files") != []:
+                raise RuntimeError("Conan system dependency exemption is unsupported")
+            continue
+        if not isinstance(provider.get("files"), list) or not provider["files"]:
+            raise RuntimeError("Conan provider has zero notice files")
+        for entry in provider["files"]:
+            if not isinstance(entry, dict) or "sha256" not in entry:
+                raise RuntimeError("Conan notice file entry is incomplete")
+            relative = entry.get("path")
+            if not isinstance(relative, str) or not relative or "\\" in relative or ":" in relative or \
+                    Path(relative).is_absolute() or ".." in Path(relative).parts or \
+                    relative.casefold() in {path.casefold() for path in expected}:
+                raise RuntimeError("Conan notice path is unsafe or duplicated: {}".format(relative))
+            file = root / relative
+            if file.is_symlink() or not file.resolve(strict=True).is_relative_to(root) or not file.is_file():
+                raise RuntimeError("Conan notice file escapes its inventory: {}".format(relative))
+            data = file.read_bytes()
+            if not data.strip() or hashlib.sha256(data).hexdigest() != entry["sha256"]:
+                raise RuntimeError("Conan notice content hash differs: {}".format(relative))
+            expected.add(relative)
+    actual = set()
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise RuntimeError("Conan notice inventory contains a symlink: {}".format(path))
+        if path.is_file():
+            actual.add(path.relative_to(root).as_posix())
+    if actual != expected or len(expected) == 1:
+        raise RuntimeError("Conan notice inventory differs from installed files")
+    return len(manifest["providers"]), len(expected) - 1
+
+
+def audit_windows_extensions(python_root):
+    """Load each staged .pyd's normal imports, not PyInit or delay-load paths.
+
+    Search only the extension's directory, the application directory and
+    System32; neither PATH, CWD nor user-added SDK directories may rescue it.
+    The installed CI smoke has an outer timeout for native loader calls.
+    """
+    root = Path(python_root).resolve(strict=True)
+    checked = set()
+    for candidate in sorted(root.rglob("*")):
+        if candidate.suffix.lower() != ".pyd":
+            continue
+        binary = candidate.resolve(strict=True)
+        if not binary.is_file() or not binary.is_relative_to(root):
+            raise RuntimeError("Python extension symlink escapes runtime or is not a file: {}".format(candidate))
+        if binary in checked:
+            continue
+        try:
+            # LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | APPLICATION_DIR | SYSTEM32.
+            ctypes.WinDLL(str(binary), winmode=0x100 | 0x200 | 0x800)
+        except (OSError, AttributeError) as error:
+            raise RuntimeError("unresolved Windows extension {}: {}".format(
+                binary.relative_to(root), error)) from error
+        checked.add(binary)
+    if not checked:
+        raise RuntimeError("Windows closure audit found zero Python extension files")
+    return len(checked)
+
+
+def _glibc_loader():
+    loaders = set()
+    for line in Path("/proc/self/maps").read_text().splitlines():
+        fields = line.split(maxsplit=5)
+        if len(fields) == 6 and fields[5].startswith("/"):
+            path = Path(fields[5])
+            if path.name.startswith("ld-linux-"):
+                loaders.add(path.resolve())
+    if len(loaders) != 1:
+        raise RuntimeError("expected exactly one mapped glibc loader, found {}".format(loaders))
+    return loaders.pop()
+
+
+def _payload_files(root):
+    device = root.stat().st_dev
+
+    def fail(error):
+        raise error
+
+    for directory, directories, filenames in os.walk(root, onerror=fail):
+        directory = Path(directory)
+        # Snap content mounts supply dependencies, not files shipped by us.
+        # lstat preserves symlinks for the later escape/deduplication checks.
+        directories[:] = sorted(name for name in directories
+                                if (directory / name).lstat().st_dev == device)
+        for name in sorted(filenames):
+            candidate = directory / name
+            if candidate.lstat().st_dev == device:
+                yield candidate
+
+
+def audit_elf_closure(prefix, timeout_seconds=120):
+    """Inspect every distinct loadable ELF with the running provider's loader.
+
+    Inherit the real launcher's search paths and namespace (Snap includes its
+    base/content providers); inspect the artifact's own filesystem, not
+    external content mounts. This checks DT_NEEDED closure, not arbitrary
+    dlopen names, module functionality, licenses or older-system compatibility.
+    """
+    if timeout_seconds <= 0:
+        raise ValueError("ELF audit timeout must be positive")
+    root = Path(prefix).resolve(strict=True)
+    loader = _glibc_loader()
+    deadline = time.monotonic() + timeout_seconds
+    checked = set()
+    for candidate in _payload_files(root):
+        if not candidate.is_file():
+            continue
+        with candidate.open("rb") as stream:
+            header = stream.read(20)
+        if header[:4] != b"\x7fELF":
+            continue
+        if len(header) < 20 or header[4] not in (1, 2) or header[5] not in (1, 2):
+            raise RuntimeError("invalid ELF header: {}".format(candidate))
+        kind = int.from_bytes(header[16:18], "little" if header[5] == 1 else "big")
+        if kind == 1:  # ET_REL (e.g. CPython config/python.o) is not loadable.
+            continue
+        if kind not in (2, 3):  # ET_EXEC / ET_DYN
+            raise RuntimeError("unexpected payload ELF type {}: {}".format(kind, candidate))
+        binary = candidate.resolve()
+        if not binary.is_relative_to(root):
+            raise RuntimeError("payload ELF symlink escapes prefix: {}".format(candidate))
+        if binary in checked:
+            continue
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError("ELF closure audit exceeded its total time limit")
+        try:
+            result = subprocess.run(
+                [str(loader), "--list", str(binary)],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, errors="replace", check=False,
+                timeout=min(15, remaining),
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise RuntimeError("ELF closure inspection failed for {}: {}".format(binary, error)) from error
+        if result.returncode or "=> not found" in result.stdout:
+            raise RuntimeError("unresolved ELF closure for {} (exit {}):\n{}".format(
+                binary.relative_to(root), result.returncode, result.stdout))
+        checked.add(binary)
+    if not checked:
+        raise RuntimeError("ELF closure audit found zero payload ELF files")
+    return len(checked)

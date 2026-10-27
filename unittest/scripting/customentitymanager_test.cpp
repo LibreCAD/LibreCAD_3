@@ -35,7 +35,6 @@
 #include <cad/events/newwaitingcustomentityevent.h>
 #include <cad/meta/customentitystorage.h>
 #include <cad/meta/layer.h>
-#include <cad/operations/builder.h>
 #include <cad/operations/blockops.h>
 #include <cad/primitive/insert.h>
 #include <cad/storage/documentimpl.h>
@@ -50,6 +49,7 @@
 // guard live in lcadluascript/scriptadapter/customentitydispatch_lua.h.
 #include <lcscripting/builders/customentity.h>
 #include <lcscripting/primitive/customentity.h>
+#include <lclua.h>
 
 #include <managers/luacustomentitymanager.h>
 #include <scriptadapter/luacallback.h>
@@ -77,12 +77,14 @@
 #include <cad/operations/entitybuilder.h>
 
 #include <kaguya/kaguya.hpp>
+#include <lua.hpp>
 
 #include <cstdio>
 #include <cstdlib>
 #include <boost/filesystem.hpp>
 #include <memory>
 #include <string>
+#include <tuple>
 
 namespace {
 
@@ -904,7 +906,8 @@ TEST(ScriptCustomEntity, LuaCustomEntityTypedefStillWorks) {
 //     entity name, custom params (width/height) round-trip through DXF
 //     app-data.
 //
-// Runs against the pinned, patched libdxfrw dependency on local and CI builds.
+// Runs against the same pinned third_party/libdxfrw submodule used by all
+// platform builds.
 // -----------------------------------------------------------------------------
 
 #if LC_USE_PERSISTENCE
@@ -912,7 +915,54 @@ namespace {
 
 std::string uniqueTmpDxf(const std::string& prefix) {
     return (boost::filesystem::temp_directory_path()
-            / boost::filesystem::unique_path("librecad-" + prefix + "-%%%%%%%%.dxf")).string();
+            / boost::filesystem::unique_path(
+                "librecad-" + prefix + "-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
+}
+
+std::string writeLuaCustomEntityDxf(const std::string& dxfPath) {
+    struct LuaStateCloser {
+        void operator()(lua_State* state) const {
+            if (state != nullptr) lua_close(state);
+        }
+    };
+    auto luaState = std::unique_ptr<lua_State, LuaStateCloser>(luaL_newstate());
+    if (!luaState) return "could not create Lua state";
+
+    lc::lua::LCLua lua(luaState.get());
+    lua.addLuaLibs();
+    lua.importLCKernel();
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    lua.setDocument(document);
+    kaguya::State state(luaState.get());
+    state["dxf_path"] = dxfPath;
+
+    return lua.runString(R"lua(
+local storage = lc.meta.CustomEntityStorage.create(
+    'LuaWriterDxfPlugin', 'LuaBox', lc.geo.Coordinate(5, 10, 0),
+    {width = '41.5', height = '52.25'})
+lc.operation.AddBlock.new(document, storage):execute()
+
+local layer = document:layerByName('0')
+local ceb = lc.builder.CustomEntityBuilder()
+ceb:setDisplayBlock(storage)
+ceb:setDocument(document)
+ceb:setCoordinate(lc.geo.Coordinate(5, 10, 0))
+ceb:setLayer(layer)
+ceb:setSnapFunction(function(...) return {} end)
+ceb:setNearestPointFunction(function(...) return lc.geo.Coordinate(0, 0, 0) end)
+ceb:setDragPointsFunction(function(...) return {} end)
+ceb:setNewDragPointFunction(function(...) end)
+ceb:setDragPointsClickedFunction(function(...) end)
+ceb:setDragPointsReleasedFunction(function(...) end)
+
+local eb = lc.operation.EntityBuilder.new(document)
+eb:appendEntity(ceb:build())
+eb:execute()
+lc.persistence.File.save(document, dxf_path,
+                         lc.persistence.File.LIBDXFRW_DXF_R2000)
+)lua");
 }
 
 }  // namespace
@@ -1031,12 +1081,6 @@ lc.persistence.File.save(document, dxf_path,
 import builtins
 builtins._dxf_roundtrip_state = {
     'fired_count': 0,
-    'snap_count': 0,
-    'nearest_count': 0,
-    'drag_count': 0,
-    'set_drag_count': 0,
-    'click_count': 0,
-    'release_count': 0,
     'received_pluginName': None,
     'received_entityName': None,
     'received_width':      None,
@@ -1048,33 +1092,7 @@ builtins._dxf_roundtrip_state = {
     # (base-typed Block_CSPtr → CustomEntityStorage via classh RTTI).
     'displayblock_is_ces': None,
     'insert_is_insert':    None,
-    'placeholder_id': None,
-    'rebuilt_id': None,
 }
-
-def _snap_points(insert, coord, constrain, min_distance, max_points):
-    state = builtins._dxf_roundtrip_state
-    state['snap_count'] += 1
-    return [lc.EntityCoordinate(lc.geo.Coordinate(5.0, 10.0, 0.0), 0)]
-
-def _nearest_point(insert, coord):
-    builtins._dxf_roundtrip_state['nearest_count'] += 1
-    return lc.geo.Coordinate(31.0, 32.0, 33.0)
-
-def _drag_points(insert):
-    builtins._dxf_roundtrip_state['drag_count'] += 1
-    return {4: lc.geo.Coordinate(40.0, 41.0, 42.0)}
-
-def _set_drag_point(insert, position):
-    builtins._dxf_roundtrip_state['set_drag_count'] += 1
-
-def _on_drag_point_click(insert, builder, point):
-    state = builtins._dxf_roundtrip_state
-    state['click_count'] += 1
-    state['click_point'] = point
-
-def _on_drag_point_release(insert, builder):
-    builtins._dxf_roundtrip_state['release_count'] += 1
 
 def _reconstruct(insert):
     # Prove pybind11's polymorphic downcast on the received arg:
@@ -1084,7 +1102,6 @@ def _reconstruct(insert):
     # that only exists when the plugin BUILDS one via
     # CustomEntityBuilder).  Verify via isinstance.
     builtins._dxf_roundtrip_state['fired_count'] += 1
-    builtins._dxf_roundtrip_state['placeholder_id'] = insert.id()
     builtins._dxf_roundtrip_state['insert_is_insert'] = \
         isinstance(insert, lc.entity.Insert)
 
@@ -1110,26 +1127,6 @@ def _reconstruct(insert):
     builtins._dxf_roundtrip_state['received_position_x'] = pos.x()
     builtins._dxf_roundtrip_state['received_position_y'] = pos.y()
     builtins._dxf_roundtrip_state['received_position_z'] = pos.z()
-
-    # Rebuild live Python behavior from the DXF-backed storage metadata.
-    # Callbacks are plugin code and are intentionally not serialized.
-    ceb = lc.builder.CustomEntityBuilder()
-    ceb.setLayer(insert.layer())
-    ceb.setCoordinate(insert.position())
-    ceb.setDocument(insert.document())
-    ceb.setDisplayBlock(block)
-    ceb.setID(insert.id())
-    ceb.setSnapFunction(_snap_points)
-    ceb.setNearestPointFunction(_nearest_point)
-    ceb.setDragPointsFunction(_drag_points)
-    ceb.setNewDragPointFunction(_set_drag_point)
-    ceb.setDragPointsClickedFunction(_on_drag_point_click)
-    ceb.setDragPointsReleasedFunction(_on_drag_point_release)
-    rebuilt = ceb.build()
-    builtins._dxf_roundtrip_state['rebuilt_id'] = rebuilt.id()
-    eb = lc.operation.EntityBuilder.new(insert.document())
-    eb.appendEntity(rebuilt)
-    eb.execute()
 
 lc.register_plugin('DxfRoundTripPlugin', _reconstruct)
 )py";
@@ -1167,12 +1164,7 @@ assert opened_type is not None, "libdxfrw open must return a file-type enum"
         loadedInsert->displayBlock());
     ASSERT_TRUE(loadedStorage);
     EXPECT_EQ(loadedStorage->pluginName(), "DxfRoundTripPlugin");
-    ns2.set("loaded_entity_id", loadedInsert->id());
-    EXPECT_EQ(doc2->waitingCustomEntities("DxfRoundTripPlugin").size(), 0u);
-    auto loadedCustomEntity = std::dynamic_pointer_cast<const lc::entity::ScriptCustomEntity>(
-        loadedEntities.front());
-    ASSERT_TRUE(loadedCustomEntity)
-        << "the plugin must replace the raw DXF placeholder with a live entity";
+    EXPECT_EQ(doc2->waitingCustomEntities("DxfRoundTripPlugin").size(), 1u);
 
     // -------------------------------------------------------------------------
     // Step 3 — Assertions on the reconstructed state.
@@ -1224,55 +1216,179 @@ assert abs(s['received_position_x'] -  5.0) < 1e-6, \
     f"position.x mismatch: {s['received_position_x']}"
 assert abs(s['received_position_y'] - 10.0) < 1e-6
 assert abs(s['received_position_z'] -  0.0) < 1e-6
-assert s['rebuilt_id'] is not None, "the plugin must build a live entity"
-assert s['rebuilt_id'] == s['placeholder_id'], \
-    "the reconstructed entity must preserve the current DXF placeholder ID"
-assert s['rebuilt_id'] == loaded_entity_id, \
-    "the rebuilt entity must replace the placeholder in the document"
 )py";
     ASSERT_EQ(lcpy.runString(assertScript.c_str(), ns2), "");
 
-    lc::SimpleSnapConstrain snapConstrain;
-    const auto snapPoints = loadedCustomEntity->snapPoints(
-        lc::geo::Coordinate(5.0, 10.0, 0.0), snapConstrain, 1000.0, 16);
-    ASSERT_EQ(snapPoints.size(), 1u);
-    EXPECT_DOUBLE_EQ(snapPoints.front().coordinate().x(), 5.0);
-    const auto nearest = loadedCustomEntity->nearestPointOnPath(
-        lc::geo::Coordinate(0.0, 0.0, 0.0));
-    EXPECT_DOUBLE_EQ(nearest.x(), 31.0);
-    EXPECT_DOUBLE_EQ(nearest.y(), 32.0);
-    EXPECT_DOUBLE_EQ(nearest.z(), 33.0);
-    const auto dragPoints = loadedCustomEntity->dragPoints();
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(CustomEntityDxfRoundTrip, LuaWriterPythonPluginReconstructsEntity) {
+    namespace py = pybind11;
+    const std::string pluginName = "LuaWriterDxfPlugin";
+    const std::string dxfPath = uniqueTmpDxf("lua-python-customentity-roundtrip");
+    boost::filesystem::remove(dxfPath);
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+
+    struct Cleanup {
+        std::string path;
+        ~Cleanup() {
+            boost::filesystem::remove(path);
+            lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
+            lc::python::setRegisterPluginHook(lc::python::RegisterPluginHook{});
+            py::gil_scoped_acquire gil;
+            py::exec("import builtins; builtins._lua_python_dxf_state = None");
+        }
+    } cleanup{dxfPath};
+
+    const std::string luaError = writeLuaCustomEntityDxf(dxfPath);
+    ASSERT_EQ(luaError, "") << luaError;
+    ASSERT_TRUE(boost::filesystem::exists(dxfPath));
+    ASSERT_GT(boost::filesystem::file_size(dxfPath), 0u);
+    EXPECT_FALSE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin(pluginName))
+        << "the Lua writer state must not register or retain a reconstruction plugin";
+
+    // Register a Python-only reconstruction callback after the Lua state has
+    // been destroyed. It checks the common DXF data, then replaces the
+    // placeholder with a live ScriptCustomEntity carrying the same ID.
+    lc::python::setRegisterPluginHook(
+        [](const std::string& name, py::object callback) {
+            lc::lua::LuaCustomEntityManager::getInstance().registerPlugin(
+                name, lc::python::makePythonCallback(std::move(callback)));
+        });
+    lc::python::LCPython lcpy;
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    auto ns = lcpy.makeNamespace();
+    lcpy.setDocument(ns, document);
+    ns.set("dxf_path", dxfPath);
+
+    const std::string registerPlugin = R"py(
+import builtins
+builtins._lua_python_dxf_state = {
+    'calls': 0, 'insert_type': False, 'storage_type': False,
+    'plugin': None, 'entity': None, 'width': None, 'height': None,
+    'x': None, 'y': None, 'z': None, 'input_id': None,
+    'snap_calls': 0, 'snap_id': None,
+    'drag_calls': 0, 'drag_id': None,
+    'set_drag_calls': 0, 'set_drag_id': None, 'set_drag_position': None,
+}
+def _reconstruct_from_lua(insert):
+    state = builtins._lua_python_dxf_state
+    state['calls'] += 1
+    state['input_id'] = insert.id()
+    state['insert_type'] = isinstance(insert, lc.entity.Insert)
+    storage = insert.displayBlock()
+    state['storage_type'] = isinstance(storage, lc.meta.CustomEntityStorage)
+    state['plugin'] = storage.pluginName()
+    state['entity'] = storage.entityName()
+    state['width'] = storage.param('width')
+    state['height'] = storage.param('height')
+    pos = insert.position()
+    state['x'], state['y'], state['z'] = pos.x(), pos.y(), pos.z()
+
+    def _snap(reloaded_insert, coord, constrain, min_distance, max_count):
+        state['snap_calls'] += 1
+        state['snap_id'] = reloaded_insert.id()
+        return [lc.EntityCoordinate(lc.geo.Coordinate(15.0, 20.0, 0.0), 13)]
+
+    def _drag(reloaded_insert):
+        state['drag_calls'] += 1
+        state['drag_id'] = reloaded_insert.id()
+        return {13: lc.geo.Coordinate(8.0, 9.0, 0.0)}
+
+    def _set_drag(reloaded_insert, position):
+        state['set_drag_calls'] += 1
+        state['set_drag_id'] = reloaded_insert.id()
+        state['set_drag_position'] = (position.x(), position.y(), position.z())
+
+    ceb = lc.builder.CustomEntityBuilder()
+    ceb.setDisplayBlock(storage)
+    ceb.setDocument(insert.document())
+    ceb.setCoordinate(insert.position())
+    ceb.setLayer(insert.layer())
+    ceb.setID(insert.id())
+    ceb.setSnapFunction(_snap)
+    ceb.setNearestPointFunction(lambda *args: lc.geo.Coordinate(0, 0, 0))
+    ceb.setDragPointsFunction(_drag)
+    ceb.setNewDragPointFunction(_set_drag)
+    ceb.setDragPointsClickedFunction(lambda *args: None)
+    ceb.setDragPointsReleasedFunction(lambda *args: None)
+    eb = lc.operation.EntityBuilder.new(insert.document())
+    eb.appendEntity(ceb.build())
+    eb.execute()
+
+lc.register_plugin('LuaWriterDxfPlugin', _reconstruct_from_lua)
+)py";
+    ASSERT_EQ(lcpy.runString(registerPlugin.c_str(), ns), "");
+    ASSERT_TRUE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin(pluginName));
+
+    const std::string openScript = R"py(
+opened_type = lc.persistence.File.open(
+    document, dxf_path, lc.persistence.File.LIBDXFRW)
+assert opened_type is not None
+import builtins
+state = builtins._lua_python_dxf_state
+assert state['calls'] == 1, f"expected one Python reconstruction, got {state['calls']}"
+assert state['insert_type'] and state['storage_type']
+assert state['plugin'] == 'LuaWriterDxfPlugin'
+assert state['entity'] == 'LuaBox'
+assert state['width'] == '41.5' and state['height'] == '52.25'
+assert abs(state['x'] - 5.0) < 1e-6
+assert abs(state['y'] - 10.0) < 1e-6
+assert abs(state['z']) < 1e-6
+)py";
+    ASSERT_EQ(lcpy.runString(openScript.c_str(), ns), "");
+
+    const auto entities = document->entityContainer().asVector();
+    ASSERT_EQ(entities.size(), 1u)
+        << "Python reconstruction must replace, not duplicate, the Lua-authored placeholder";
+    const auto restored =
+        std::dynamic_pointer_cast<const lc::entity::ScriptCustomEntity>(entities.front());
+    ASSERT_TRUE(restored);
+    const auto restoredStorage =
+        std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(restored->displayBlock());
+    ASSERT_TRUE(restoredStorage);
+    EXPECT_EQ(restoredStorage->pluginName(), pluginName);
+    EXPECT_EQ(restoredStorage->entityName(), "LuaBox");
+    EXPECT_EQ(restoredStorage->param("width"), "41.5");
+    EXPECT_EQ(restoredStorage->param("height"), "52.25");
+
+    // The callback must transfer the placeholder's document-local ID to the
+    // live script entity, and the reloaded Python functions must remain
+    // callable through the typed snap/drag dispatch after File.open returns.
+    lc::SimpleSnapConstrain constrain;
+    const auto snaps = restored->snapPoints(
+        lc::geo::Coordinate(5.0, 10.0, 0.0), constrain, 1e6, 8);
+    ASSERT_EQ(snaps.size(), 1u);
+    EXPECT_EQ(snaps.front().pointId(), 13);
+    EXPECT_DOUBLE_EQ(snaps.front().coordinate().x(), 15.0);
+
+    const auto dragPoints = restored->dragPoints();
     ASSERT_EQ(dragPoints.size(), 1u);
-    ASSERT_NE(dragPoints.find(4u), dragPoints.end());
-    EXPECT_DOUBLE_EQ(dragPoints.at(4u).x(), 40.0);
-    loadedCustomEntity->setDragPoint(lc::geo::Coordinate(50.0, 51.0, 52.0));
-    auto dragBuilder = std::make_shared<lc::operation::Builder>(doc2, "DXF custom entity drag");
-    loadedCustomEntity->onDragPointClick(dragBuilder, 4u);
-    loadedCustomEntity->onDragPointRelease(dragBuilder);
+    ASSERT_TRUE(dragPoints.count(13));
+    EXPECT_DOUBLE_EQ(dragPoints.at(13).x(), 8.0);
+    EXPECT_DOUBLE_EQ(dragPoints.at(13).y(), 9.0);
 
-    const std::string assertCallbacks = R"py(
-import builtins
-s = builtins._dxf_roundtrip_state
-assert (s['snap_count'], s['nearest_count'], s['drag_count'],
-        s['set_drag_count'], s['click_count'], s['release_count']) == (1, 1, 1, 1, 1, 1)
-assert s['click_point'] == 4
-)py";
-    ASSERT_EQ(lcpy.runString(assertCallbacks.c_str(), ns2), "");
+    restored->setDragPoint(lc::geo::Coordinate(11.0, 12.0, 13.0));
 
-    // Re-registering an already-loaded plugin must not replay the stale
-    // placeholder: the replacement preserves its ID and leaves no waiting
-    // entry behind.
-    ASSERT_EQ(lcpy.runString(
-        "lc.register_plugin('DxfRoundTripPlugin', _reconstruct)", ns2), "");
-    EXPECT_EQ(doc2->entityContainer().asVector().size(), 1u);
-    EXPECT_EQ(doc2->waitingCustomEntities("DxfRoundTripPlugin").size(), 0u);
-    const std::string assertSingleReconstruction = R"py(
-import builtins
-assert builtins._dxf_roundtrip_state['fired_count'] == 1
-)py";
-    EXPECT_EQ(lcpy.runString(assertSingleReconstruction.c_str(), ns2), "");
-
+    py::gil_scoped_acquire gil;
+    const auto callbackState = py::module_::import("builtins")
+        .attr("_lua_python_dxf_state").cast<py::dict>();
+    const auto inputId = callbackState["input_id"].cast<ID_DATATYPE>();
+    EXPECT_EQ(restored->id(), inputId);
+    EXPECT_EQ(callbackState["snap_calls"].cast<int>(), 1);
+    EXPECT_EQ(callbackState["drag_calls"].cast<int>(), 1);
+    EXPECT_EQ(callbackState["set_drag_calls"].cast<int>(), 1);
+    EXPECT_EQ(callbackState["snap_id"].cast<ID_DATATYPE>(), inputId);
+    EXPECT_EQ(callbackState["drag_id"].cast<ID_DATATYPE>(), inputId);
+    EXPECT_EQ(callbackState["set_drag_id"].cast<ID_DATATYPE>(), inputId);
+    const auto dragPosition = callbackState["set_drag_position"]
+        .cast<std::tuple<double, double, double>>();
+    EXPECT_DOUBLE_EQ(std::get<0>(dragPosition), 11.0);
+    EXPECT_DOUBLE_EQ(std::get<1>(dragPosition), 12.0);
+    EXPECT_DOUBLE_EQ(std::get<2>(dragPosition), 13.0);
+    EXPECT_EQ(document->entityContainer().asVector().size(), 1u)
+        << "snap/drag callback dispatch must not duplicate the reconstructed entity";
 }
 
 // -----------------------------------------------------------------------------

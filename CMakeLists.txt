@@ -1,10 +1,19 @@
-# Bumped from 3.8 to 3.15 for pybind11 v3.x's CMake floor (phase 1 slice 1.2).
-cmake_minimum_required(VERSION 3.15...3.27)
+# 3.28 is the floor of the vendored libdxfrw, which this project adds with
+# add_subdirectory below; anything less fails there rather than here, naming a
+# third_party path instead of this line.  (Previously 3.15, for pybind11 v3.x's
+# CMake floor -- phase 1 slice 1.2 -- which this supersedes.)
+#
+# The upper bound stays at the floor deliberately.  Raising it to 3.30+ would
+# set CMP0167 NEW and remove the FindBoost module this project still relies on.
+cmake_minimum_required(VERSION 3.28)
 if (MSVC)
     project(LibreCAD3)
 else()
 project(LC)
 endif()
+set(PROJECT_ALIAS "LibreCAD3")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.cmake)
+include(macros)
 
 # Kaguya's default metatable registry keys types by a module-local address.
 # LibreCAD registers Lua-visible types in the kernel/binding libraries and
@@ -23,30 +32,101 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 include("${CMAKE_CURRENT_SOURCE_DIR}/lcviewernoqt/cmake/RendererOptions.cmake")
-option(WITH_LIBOPENCAD "Use libopencad" OFF)
 option(WITH_CAIRO "Compile with Cairo painter" OFF)
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
+option(WITH_HEADERS "Install with development headers" OFF)
 
 # Python scripting support uses the selected build-time CPython SDK/runtime.
 lc_renderer_option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
-option(WITH_BUNDLED_PYTHON_RUNTIME
-    "Stage the selected CPython shared library for Linux relocatable packages" OFF)
-if(WITH_BUNDLED_PYTHON_RUNTIME)
-    if(NOT WITH_PYTHONSCRIPT)
-        message(FATAL_ERROR
-            "WITH_BUNDLED_PYTHON_RUNTIME requires WITH_PYTHONSCRIPT=ON")
-    endif()
-    if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        message(FATAL_ERROR
-            "WITH_BUNDLED_PYTHON_RUNTIME is currently supported only on Linux")
-    endif()
-endif()
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
 
+# DWG import through libdxfrw's own dwgRW, off by default.
+#
+# The reader works -- all eight of libdxfrw's DWG fixtures read cleanly into a
+# document -- but DWG is a format LibreCAD can read and cannot write, and the
+# consequences of offering it (a drawing that cannot be saved back where it came
+# from) deserve a release's worth of deliberate exposure before it is on for
+# everyone. Off means .dwg is not offered at all; the format table, the file
+# dialog and the sniffer all follow this one switch.
+option(WITH_DWG_IMPORT "Read DWG files through libdxfrw (experimental)" OFF)
+
+if(WITH_DWG_IMPORT)
+    add_definitions(-DUSE_DWG_IMPORT=1)
+else()
+    add_definitions(-DUSE_DWG_IMPORT=0)
+endif()
+
+# USE_PERSISTENCE has to be defined here, before any add_subdirectory().
+#
+# The Lua and Python bridges register lc.persistence behind `#if
+# USE_PERSISTENCE`, and both are configured (lines ~279 and ~283) long before
+# the persistence subdirectory is. Defining it down there meant the bridges
+# compiled with it undefined, `#if USE_PERSISTENCE` was 0, and neither language
+# ever had lc.persistence -- while still compiling the bridge and linking the
+# library, so nothing looked wrong.
+if(WITH_PERSISTENCE)
+    add_definitions(-DUSE_PERSISTENCE=1)
+    set(LC_USE_PERSISTENCE 1)
+else()
+    add_definitions(-DUSE_PERSISTENCE=0)
+    set(LC_USE_PERSISTENCE 0)
+endif()
+
 # Define compiler warnings and standard install directories.
 include(GNUInstallDirs)
+if(NOT CMAKE_INSTALL_DATADIR)
+    # Conan can leave its resdirs override empty. All platforms need the same
+    # prefix-relative data root, including notices installed before subdirs.
+    set(CMAKE_INSTALL_DATADIR "share")
+endif()
+
+# BEGIN source license installation
+# Preserve upstream text and source-relative paths in every artifact. Binary
+# provider notices (Qt, Lua, CPython extension libraries, etc.) are separate.
+set(_lc_source_license_files
+    LICENSE lckernel/LICENSE lcadluascript/LICENSE lcviewernoqt/LICENSE
+    third_party/kaguya/LICENSE_1_0.txt
+    lckernel/nano-signal-slot/LICENSE lckernel/tinyspline/LICENSE)
+if(WITH_PERSISTENCE)
+    list(APPEND _lc_source_license_files persistence/LICENSE third_party/libdxfrw/COPYING)
+endif()
+if(WITH_LUACMDINTERFACE)
+    list(APPEND _lc_source_license_files luacmdinterface/LICENSE)
+endif()
+if(WITH_PYTHONSCRIPT)
+    list(APPEND _lc_source_license_files third_party/pybind11/LICENSE)
+endif()
+foreach(_lc_source_license IN LISTS _lc_source_license_files)
+    get_filename_component(_lc_license_directory "${_lc_source_license}" DIRECTORY)
+    install(FILES "${CMAKE_SOURCE_DIR}/${_lc_source_license}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/source/${_lc_license_directory}")
+endforeach()
+# END source license installation
+
+# BEGIN Conan provider notices
+if(DEFINED LIBRECAD_DEPENDENCY_LICENSE_DIR)
+    if(NOT EXISTS "${LIBRECAD_DEPENDENCY_LICENSE_DIR}/manifest.json")
+        message(FATAL_ERROR "Selected Conan provider notice manifest is missing")
+    endif()
+    install(DIRECTORY "${LIBRECAD_DEPENDENCY_LICENSE_DIR}/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/conan")
+endif()
+# END Conan provider notices
+# BEGIN source provider notices
+# Optional until each platform supplies complete native origin/coverage records.
+# Collections must retain their content-addressed basename for the runtime audit.
+set(LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS "" CACHE STRING
+    "Verified original source-provider notice collections selected by packaging")
+foreach(_lc_provider_notices IN LISTS LIBRECAD_EXTERNAL_PROVIDER_LICENSE_DIRS)
+    if(NOT EXISTS "${_lc_provider_notices}/manifest.json")
+        message(FATAL_ERROR "Selected source-provider notice manifest is missing")
+    endif()
+    install(DIRECTORY "${_lc_provider_notices}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad/licenses/providers/external")
+endforeach()
+# END source provider notices
 if(MSVC)
     # CMake's runtime dependency set is used by the Windows install/NSIS path
     # to collect Conan, Qt, and CPython DLL dependencies recursively.
@@ -58,11 +138,6 @@ if(MSVC)
 endif()
 if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
-     # A user/toolchain may leave the GNU data-dir override empty. Keep runtime
-     # assets under the conventional prefix-relative share directory.
-     if (NOT CMAKE_INSTALL_DATADIR)
-         set(CMAKE_INSTALL_DATADIR "share")
-     endif()
 endif()
 
 set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
@@ -73,27 +148,6 @@ if(MSVC AND CMAKE_TOOLCHAIN_FILE AND
     set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
     set(CMAKE_INSTALL_BINDIR "bin")
     
-    #SET(CPACK_GENERATOR "ZIP;TGZ")
-    SET(CPACK_BINARY_NSIS True)
-    SET(CPACK_NSIS_DISPLAY_NAME "LibreCAD3")
-    set(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_PACKAGE_VENDOR "librecad.org")
-    set(CPACK_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_SOURCE_DIR}/build/bin;.")
-    set(CPACK_BUILD_SOURCE_DIRS "${CMAKE_SOURCE_DIR}/build/bin")
-    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-
-    SET(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_SOURCE_DIR}/res/librecad.ico")
-    SET(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_CREATE_DESKTOP_LINKS "LibreCAD3")
-    set(CPACK_PACKAGE_EXECUTABLES "librecad;LibreCAD3")
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "LibreCAD3")
-    set(CPACK_PACKAGE_NAME "LibreCAD3")
-    set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${PROJECT_NAME};ALL;/")
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-    install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION ".")
-    include(CPack)
-
     #include(${CMAKE_SOURCE_DIR}/conan_toolchain.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
     
@@ -135,18 +189,17 @@ if(MSVC AND CMAKE_TOOLCHAIN_FILE AND
         message("${GLEW_INCLUDE_DIR}")
         set(ENV{GLEW_ROOT} "${CONAN_GLEW_ROOT}")
         add_definitions("${CONAN_DEFINES_GLEW}")
-    
+
         set(ENV{FREETYPE_DIR} "${CONAN_FREETYPE_ROOT}")
-    
+
         set(PNG_PNG_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_LIBPNG}")
         set(PNG_LIBRARY "${CONAN_LIB_DIRS_LIBPNG}/libpng16.lib")
-    
+
         set(ZLIB_ROOT "${CONAN_ZLIB_ROOT}")
-    
+
         set(BZIP2_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_BZIP2}")
         set(BZIP2_LIBRARIES "${CONAN_LIB_DIRS_BZIP2}/bz2.lib")
-    
- 
+
         set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
     endif()
 
@@ -155,62 +208,9 @@ else()
     add_definitions(-DBOOST_ALL_DYN_LINK)
 endif()
 
-# Keep the primary and vendored license texts in the install tree so Linux
-# packages, Windows CPack/NSIS, and macOS bundles all carry the notices for
-# the code distributed in those artifacts.
-set(LC_LICENSE_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/librecad/licenses")
-install(FILES "${CMAKE_SOURCE_DIR}/LICENSE"
-    DESTINATION "${LC_LICENSE_INSTALL_DIR}")
-
-function(lc_install_third_party_license_notice source_relative installed_name)
-    set(source_file "${CMAKE_SOURCE_DIR}/${source_relative}")
-    if(NOT EXISTS "${source_file}")
-        message(FATAL_ERROR
-            "Required vendored license notice is missing: ${source_relative}")
-    endif()
-    install(FILES "${source_file}"
-        DESTINATION "${LC_LICENSE_INSTALL_DIR}/third-party"
-        RENAME "${installed_name}")
-endfunction()
-
-lc_install_third_party_license_notice(
-    "lckernel/nano-signal-slot/LICENSE" "nano-signal-slot-LICENSE")
-lc_install_third_party_license_notice(
-    "lckernel/tinyspline/LICENSE" "tinyspline-LICENSE")
-lc_install_third_party_license_notice(
-    "third_party/kaguya/LICENSE_1_0.txt" "kaguya-LICENSE_1_0.txt")
-if(WITH_PYTHONSCRIPT)
-    lc_install_third_party_license_notice(
-        "third_party/pybind11/LICENSE" "pybind11-LICENSE")
-endif()
-if(WITH_LIBOPENCAD)
-    lc_install_third_party_license_notice(
-        "persistence/libopencad/LICENSE" "libopencad-LICENSE")
-endif()
-if(WITH_PERSISTENCE)
-    lc_install_third_party_license_notice(
-        "third_party/libdxfrw/COPYING" "libdxfrw-COPYING")
-endif()
-
 if(MSVC)
     find_package(Eigen3 REQUIRED)
     include_directories(${EIGEN3_INCLUDE_DIR})
-    if(WITH_PERSISTENCE)
-        find_package(libdxfrw REQUIRED)
-        if(libdxfrw_INCLUDE_DIR)
-            include_directories("${libdxfrw_INCLUDE_DIR}/libdxfrw")
-        elseif(TARGET libdxfrw::libdxfrw)
-            get_target_property(LIBDXFRW_TARGET_INCLUDE_DIRS
-                    libdxfrw::libdxfrw INTERFACE_INCLUDE_DIRECTORIES)
-            if(LIBDXFRW_TARGET_INCLUDE_DIRS)
-                include_directories(${LIBDXFRW_TARGET_INCLUDE_DIRS})
-            else()
-                message(FATAL_ERROR "libdxfrw was found without an include directory")
-            endif()
-        else()
-            message(FATAL_ERROR "libdxfrw was found without an include directory or imported target")
-        endif()
-    endif()
     if(WITH_LEGACY_OPENGL_RENDERER)
         find_package(freetype REQUIRED)
         include_directories(${freetype_INCLUDE_DIR})
@@ -219,13 +219,17 @@ if(MSVC)
     endif()
     add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    string(APPEND CMAKE_CXX_FLAGS " /w /wd4710 /wd4711 /wd4668 /wd5045 /wd9002 /wd4365 /wd4242")
-    string(APPEND CMAKE_C_FLAGS " /w /wd4710 /wd4711")
+    # Keep inherited toolchain flags as one string.  set(VAR ${VAR} "...")
+    # creates a CMake list and inserts a semicolon into options such as /EHsc,
+    # which MSVC then rejects as /EH;.  Do not use /w here: it conflicts with
+    # the toolchain's /W1, and warning C9002 cannot be disabled with /wd.
+    string(APPEND CMAKE_CXX_FLAGS " /wd4710 /wd4711 /wd4668 /wd5045 /wd4365 /wd4242")
+    string(APPEND CMAKE_C_FLAGS " /wd4710 /wd4711")
 endif()
 
 # Set C++ version
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if (NOT MSVC)
     set(Boost_USE_MULTITHREADED ON)
@@ -273,6 +277,7 @@ message("***** LibreCAD *****")
 message("Version: ${VERSION_MAJOR}.${VERSION_MINOR}\n")
 message("Options:")
 message("  - Qt user interface: ${WITH_QT_UI}")
+message("  - Read DWG (experimental): ${WITH_DWG_IMPORT}")
 message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
 message("  - Python scripting support: ${WITH_PYTHONSCRIPT}")
 message("  - Unit tests: ${WITH_UNITTESTS}")
@@ -282,8 +287,8 @@ message("  - Experimental RHI renderer: ${WITH_RHI_RENDERER}")
 message("  - Experimental renderer tests: ${WITH_RENDERER_TESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
-message("  - Use libopencad: ${WITH_LIBOPENCAD}")
 message("  - Use Cairo: ${WITH_CAIRO}")
+message("  - Install development headers: ${WITH_HEADERS}")
 
 message("\n")
 
@@ -312,6 +317,29 @@ include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-Wmissing-template-arg-list-after-template-kw" HAS_MISSING_TEMPLATE_ARG_LIST_WARNING)
 if(HAS_MISSING_TEMPLATE_ARG_LIST_WARNING)
     add_definitions("-Wno-missing-template-arg-list-after-template-kw")
+endif()
+
+# kaguya's native_function.hpp uses uint8_t without including <cstdint>. It
+# compiled while libstdc++ and libc++ still pulled that header in transitively;
+# GCC 13 and newer do not, so the build fails with "'uint8_t' does not name a
+# type" and a cascade of template-body errors behind it.
+#
+# Force-included rather than patched, because kaguya is a submodule pinned at
+# an upstream revision. Applied before any add_subdirectory(), for the same
+# reason as the GC-constant mapping below: every target that compiles a kaguya
+# header has to see it. Drop this once kaguya includes <cstdint> upstream.
+# Applied per target, by the targets that actually compile kaguya headers --
+# see LIBDXFRW_KAGUYA_CSTDINT below. Every project-wide form was tried first
+# and each reached a C compilation, which fails outright: the tree builds C as
+# well (tinyspline at -std=c89), giving "'cstdint' file not found" on GCC and
+# Clang, and STL1003 "Unexpected compiler, expected C++ compiler" on MSVC.
+# Neither add_compile_options($<COMPILE_LANGUAGE:CXX>:...) nor CMAKE_CXX_FLAGS
+# scopes to C++ under the Visual Studio generators, which put both at project
+# level in a .vcxproj that mixes .c and .cpp.
+if(MSVC)
+    set(LIBDXFRW_KAGUYA_CSTDINT /FIcstdint)
+else()
+    set(LIBDXFRW_KAGUYA_CSTDINT -include cstdint)
 endif()
 
 # Lua 5.5 removed LUA_GCSETPAUSE and LUA_GCSETSTEPMUL in favour of the
@@ -357,18 +385,26 @@ add_subdirectory("lckernel")
 # and Python both link it).
 add_subdirectory("lcscripting")
 
-# Persistence is a dependency of both language bindings. Create the target
-# and establish its feature value before configuring either binding
-# subdirectory; directory-level add_definitions() below does not flow back
-# into already configured child directories.
+# Persistence is a dependency of both language bindings. Build its pinned
+# provider and create the target before configuring either language bridge.
 if(WITH_PERSISTENCE)
+    set(LIBDXFRW_BUILD_DOC OFF CACHE BOOL "Build libdxfrw documentation")
+    set(LIBDXFRW_BUILD_DWG2DXF OFF CACHE BOOL "Build libdxfrw's dwg2dxf tool")
+    set(LIBDXFRW_INSTALL_DEV OFF CACHE BOOL "Install libdxfrw's development files")
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/libdxfrw/CMakeLists.txt")
+        message(FATAL_ERROR
+            "third_party/libdxfrw is empty. This is a git submodule; run\n"
+            "  git submodule update --init --recursive\n"
+            "or configure with -DWITH_PERSISTENCE=OFF to build without DXF support.")
+    endif()
+    add_subdirectory("third_party/libdxfrw")
+    set_target_properties(dxfrw PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if(NOT MSVC)
+        target_compile_options(dxfrw PRIVATE -Wno-error)
+    endif()
+    add_library(libdxfrw::libdxfrw ALIAS dxfrw)
+    collect_lib("dxfrw")
     add_subdirectory("persistence")
-endif()
-
-if(WITH_PERSISTENCE)
-    set(LC_USE_PERSISTENCE 1)
-else()
-    set(LC_USE_PERSISTENCE 0)
 endif()
 
 # Resolve Python in the root directory so the imported embed target is visible
@@ -424,7 +460,9 @@ if(WITH_RENDERER_TESTS)
 endif()
 
 if(MSVC)
-    set(_lc_runtime_dependency_directories)
+    # VirtualRunEnv makes Conan DLLs available to tests via PATH, but CMake's
+    # install-time dependency scanner needs their selected directories.
+    set(_lc_runtime_dependency_directories ${CONAN_RUNTIME_LIB_DIRS})
     if(WITH_PYTHONSCRIPT)
         get_filename_component(_lc_python_runtime_bin "${Python_EXECUTABLE}" DIRECTORY)
         list(APPEND _lc_runtime_dependency_directories "${_lc_python_runtime_bin}")
@@ -488,6 +526,41 @@ endif()
 # Library-only development installs retain the selected external Python SDK.
 # App-runtime relocation requires an actual installed application target.
 if(APPLE AND WITH_PYTHONSCRIPT AND TARGET librecad AND TARGET Python::Python)
+    option(LIBRECAD_RECORD_NATIVE_ORIGINS
+        "Record selected original/final native bytes in a fresh macOS install (not notice qualification)" OFF)
+    set(LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION "" CACHE STRING
+        "Exact clean revision or frozen parent+diff context for the original project binaries")
+    if(LIBRECAD_RECORD_NATIVE_ORIGINS)
+        if(NOT LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION)
+            message(FATAL_ERROR "Native origin capture requires an explicit project revision/source context")
+        endif()
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
+            set(LC_NATIVE_ORIGIN_PLATFORM "macos-arm64")
+        elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$")
+            set(LC_NATIVE_ORIGIN_PLATFORM "macos-x86_64")
+        else()
+            message(FATAL_ERROR "Native origin capture requires a supported native macOS architecture")
+        endif()
+        set(_lc_native_project_args "")
+        foreach(_lc_origin_target librecad lckernel lcscripting persistence
+                lcluascript lcpythonscript lcviewernoqt dxfrw)
+            if(NOT TARGET ${_lc_origin_target})
+                continue()
+            endif()
+            get_target_property(_lc_origin_type ${_lc_origin_target} TYPE)
+            if(NOT _lc_origin_type MATCHES "^(SHARED_LIBRARY|EXECUTABLE)$")
+                continue()
+            endif()
+            set(_lc_origin_destination "${CMAKE_INSTALL_LIBDIR}")
+            if(_lc_origin_type STREQUAL "EXECUTABLE")
+                set(_lc_origin_destination "${CMAKE_INSTALL_BINDIR}")
+            endif()
+            string(APPEND _lc_native_project_args
+                "\n --project-file \"\${_install_prefix}/${_lc_origin_destination}/$<TARGET_FILE_NAME:${_lc_origin_target}>\" \"$<TARGET_FILE:${_lc_origin_target}>\"")
+        endforeach()
+        file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/native-origin-project-files-$<CONFIG>.cmake"
+            CONTENT "set(_python_origin_project_args${_lc_native_project_args}\n)\n")
+    endif()
     get_target_property(_lc_python_configs Python::Python IMPORTED_CONFIGURATIONS)
     set(_lc_python_library "")
     foreach(_lc_python_config IN LISTS _lc_python_configs)
@@ -548,6 +621,7 @@ if(APPLE AND WITH_PYTHONSCRIPT AND TARGET librecad AND TARGET Python::Python)
         RENAME "${_lc_python_library_name}")
 
     set(LC_PYTHON_RUNTIME_LIBRARY_NAME "${_lc_python_library_name}")
+    set(LC_PYTHON_RUNTIME_ORIGINAL_LIBRARY "${_lc_python_library_real}")
     set(LC_PYTHON_RUNTIME_OLD_INSTALL_ID "${_lc_python_original_install_id}")
     set(LC_PYTHON_RUNTIME_NEW_INSTALL_ID "${_lc_python_relocated_install_id}")
     set(LC_PYTHON_RUNTIME_CODESIGN_TOOL "${_lc_codesign_executable}")
@@ -557,10 +631,20 @@ if(APPLE AND WITH_PYTHONSCRIPT AND TARGET librecad AND TARGET Python::Python)
     set(LC_PYTHON_RUNTIME_STAGED_ROOT
         "${CMAKE_INSTALL_DATADIR}/librecad/python")
     # The app's installed @rpath entries no longer include the build-time
-    # dependency prefixes. Give the runtime relocator the exact configured
-    # libdxfrw provider directory so it can stage that dylib and its closure.
+    # dependency prefixes. When libdxfrw is shared, give the runtime relocator
+    # its in-tree build directory so it can stage that dylib and its closure.
     set(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY "")
-    if(DEFINED LIBDXFRW_LIBRARY AND EXISTS "${LIBDXFRW_LIBRARY}")
+    if(TARGET dxfrw)
+        get_target_property(_lc_dxfrw_type dxfrw TYPE)
+        if(_lc_dxfrw_type STREQUAL "SHARED_LIBRARY")
+            get_target_property(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY
+                dxfrw LIBRARY_OUTPUT_DIRECTORY)
+            if(NOT LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY)
+                set(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY
+                    "${CMAKE_BINARY_DIR}/third_party/libdxfrw")
+            endif()
+        endif()
+    elseif(DEFINED LIBDXFRW_LIBRARY AND EXISTS "${LIBDXFRW_LIBRARY}")
         get_filename_component(LC_PYTHON_DEPENDENCY_SEARCH_DIRECTORY
             "${LIBDXFRW_LIBRARY}" DIRECTORY)
     endif()
@@ -583,3 +667,26 @@ find_file(
         /usr/bin
         DOC "Path to clang-tidy executable"
 )
+
+# Configure the binary installer after vendor subdirectories. CPack mutates its
+# variables for source packaging; an inherited second include (tinyspline) can
+# otherwise overwrite our binary config with a build-output directory copy.
+if(MSVC AND CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$")
+    set(CPACK_BINARY_NSIS TRUE)
+    set(CPACK_NSIS_DISPLAY_NAME "LibreCAD3")
+    set(CPACK_NSIS_PACKAGE_NAME "LibreCAD3")
+    set(CPACK_PACKAGE_VENDOR "librecad.org")
+    set(CPACK_PACKAGE_NAME "LibreCAD3")
+    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_SOURCE_DIR}/res/librecad.ico")
+    set(CPACK_CREATE_DESKTOP_LINKS "LibreCAD3")
+    set(CPACK_PACKAGE_EXECUTABLES "librecad;LibreCAD3")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "LibreCAD3")
+    set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${PROJECT_NAME};ALL;/")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+    include(CPack)
+endif()
+
+if(WITH_HEADERS)
+    include(pkgconfig)
+endif(WITH_HEADERS)

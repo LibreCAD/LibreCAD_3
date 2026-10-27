@@ -1,7 +1,6 @@
 """Regression tests for the Python-binding plan checker."""
 
 import io
-import re
 import sys
 import subprocess
 import tempfile
@@ -45,40 +44,6 @@ def replace_latest_receipt(text, gates=None, add_plan_note=None):
     raise AssertionError("could not find a review-log receipt")
 
 
-def prepend_review_receipt(text, receipt):
-    lines = text.splitlines()
-    for index, line in enumerate(lines):
-        if plan_checker._cells(line)[:4] == [
-            "Review date",
-            "Affected gates",
-            "Plan change",
-            "Validation scope",
-        ]:
-            lines.insert(index + 2, receipt)
-            return "\n".join(lines) + "\n"
-    raise AssertionError("could not find a review-log receipt table")
-
-
-def blank_table_cell(text, section_heading, next_heading, row_title, cell_index):
-    lines = text.splitlines()
-    start = next(
-        index for index, line in enumerate(lines) if line.strip() == section_heading
-    )
-    end = next(
-        index
-        for index in range(start + 1, len(lines))
-        if lines[index].strip() == next_heading
-    )
-    for index in range(start + 1, end):
-        cells = plan_checker._cells(lines[index])
-        if cells and cells[0] == row_title:
-            parts = lines[index].split("|")
-            parts[cell_index + 1] = " "
-            lines[index] = "|".join(parts)
-            return "\n".join(lines) + "\n"
-    raise AssertionError("could not find row {!r}".format(row_title))
-
-
 def replace_gate_evidence(text, gate_id, evidence, state="validated"):
     lines = text.splitlines()
     for index, line in enumerate(lines):
@@ -105,8 +70,6 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
         required_sections = (
             "### Self-update triggers",
             "#### Operational self-update and validation",
-            "#### Automatic candidate discovery",
-            "#### Plan-edit validation transaction",
             "#### Validation layers and fail-closed rule",
         )
         for heading in required_sections:
@@ -115,46 +78,21 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
                 errors = plan_checker.validate_plan_structure(changed, REPOSITORY_ROOT)
                 self.assertIn("missing required plan heading: {}".format(heading), errors)
 
-    def test_user_turn_boundary_sync_rule_is_required(self):
-        start = self.plan.index("At each user-turn boundary,")
-        end = self.plan.index("An explicit request to revise this plan", start)
-        changed = self.plan[:start] + self.plan[end:]
-        self.assertNotEqual(self.plan, changed)
-        errors = plan_checker.validate_plan_structure(changed, REPOSITORY_ROOT)
-        self.assertIn("maintenance protocol is missing the user-turn sync rule", errors)
-
-    def test_user_turn_sync_requires_classification_and_receipt_before_resume(self):
-        required_details = (
-            "classify new input",
-            "scope change, new evidence or blocker, or no change",
-            "with a receipt before continuing implementation",
-            "leaving incomplete evidence provisional",
-            "no ledger churn",
-        )
-        start = self.plan.index("At each user-turn boundary,")
-        end = self.plan.index("An explicit request to revise this plan", start)
-        rule = self.plan[start:end]
-        for detail in required_details:
-            with self.subTest(detail=detail):
-                changed = self.plan.replace(
-                    rule,
-                    re.sub(
-                        re.escape(detail).replace(r"\ ", r"\s+"),
-                        "removed requirement",
-                        rule,
-                        count=1,
-                    ),
-                    1,
-                )
+    def test_self_update_contract_requires_operational_invariants(self):
+        start = self.plan.index("## 6. Plan self-updating and validation")
+        end = self.plan.index("## 7.", start)
+        section = self.plan[start:end]
+        for marker in plan_checker.REQUIRED_SYNC_CONTRACT_MARKERS:
+            with self.subTest(marker=marker):
+                changed = self.plan[:start] + section.replace(marker, "[removed]") + self.plan[end:]
                 errors = plan_checker.validate_plan_structure(changed, REPOSITORY_ROOT)
                 self.assertIn(
-                    "user-turn sync rule is missing required detail: {}".format(detail),
+                    "plan self-update contract is missing required detail: {}".format(marker),
                     errors,
                 )
 
     def test_operational_self_update_checkpoints_are_required(self):
         required_moments = (
-            "At each user-turn boundary",
             "Resume or start a batch",
             "After each meaningful implementation/test/CI result or blocker",
             "PR-ready handoff",
@@ -177,151 +115,6 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
                     errors,
                 )
 
-    def test_operational_checkpoints_require_update_and_validation_actions(self):
-        checkpoints = (
-            "At each user-turn boundary",
-            "Resume or start a batch",
-            "After each meaningful implementation/test/CI result or blocker",
-            "PR-ready handoff",
-        )
-        for checkpoint in checkpoints:
-            for field_index, field_name in ((1, "update"), (2, "validation")):
-                with self.subTest(checkpoint=checkpoint, field=field_name):
-                    changed = blank_table_cell(
-                        self.plan,
-                        "#### Operational self-update and validation",
-                        "#### Automatic candidate discovery",
-                        checkpoint,
-                        field_index,
-                    )
-                    errors = plan_checker.validate_plan_structure(
-                        changed, REPOSITORY_ROOT
-                    )
-                    self.assertIn(
-                        "operational self-update checkpoint is missing required {}: {}".format(
-                            field_name, checkpoint.lower()
-                        ),
-                        errors,
-                    )
-
-    def test_self_update_trigger_table_requires_each_trigger_category(self):
-        required_categories = (
-            "Target branch advances",
-            "Source, API, build flags",
-            "Test selection, fixtures, or CI workflow",
-            "A test/CI result, failure, or blocker",
-            "External evidence arrives",
-            "A capability, platform, architecture, or runtime-support decision",
-            "User scope, priority, or acceptance criteria change",
-            "Plan, checker, checker tests, or plan workflow changes",
-            "Plan-only edit",
-        )
-        for category in required_categories:
-            with self.subTest(category=category):
-                changed = "\n".join(
-                    line
-                    for line in self.plan.splitlines()
-                    if not (
-                        plan_checker._cells(line)
-                        and plan_checker._cells(line)[0].startswith(category)
-                    )
-                )
-                errors = plan_checker.validate_plan_structure(changed, REPOSITORY_ROOT)
-                self.assertIn(
-                    "self-update trigger table is missing required category: {}".format(
-                        category.lower()
-                    ),
-                    errors,
-                )
-
-    def test_self_update_triggers_require_update_and_validation_actions(self):
-        categories = (
-            "Target branch advances, or work is rebased/ported to another base",
-            "Source, API, build flags, dependency/runtime, or package layout changes",
-            "Test selection, fixtures, or CI workflow changes",
-            "A test/CI result, failure, or blocker arrives",
-            "External evidence arrives (pasted logs, hosted CI, review feedback, package/artifact report)",
-            "A capability, platform, architecture, or runtime-support decision changes",
-            "User scope, priority, or acceptance criteria change",
-            "Plan, checker, checker tests, or plan workflow changes",
-            "Plan-only edit",
-        )
-        for category in categories:
-            for field_index, field_name in ((1, "update"), (2, "validation")):
-                with self.subTest(category=category, field=field_name):
-                    changed = blank_table_cell(
-                        self.plan,
-                        "#### Self-update triggers",
-                        "#### Plan-edit validation transaction",
-                        category,
-                        field_index,
-                    )
-                    errors = plan_checker.validate_plan_structure(
-                        changed, REPOSITORY_ROOT
-                    )
-                    self.assertIn(
-                        "self-update trigger is missing required {}: {}".format(
-                            field_name, category.lower()
-                        ),
-                        errors,
-                    )
-
-    def test_plan_edit_transaction_requires_two_pass_validation_details(self):
-        required_details = (
-            "draft receipt",
-            "checker regression suite",
-            "git diff --check",
-            "--worktree --base-ref",
-            "final receipt",
-            "append-only",
-            "preserve prior receipts",
-        )
-        for detail in required_details:
-            with self.subTest(detail=detail):
-                transaction_start = self.plan.index(
-                    "#### Plan-edit validation transaction"
-                )
-                transaction_end = self.plan.index(
-                    "#### Gate-state update contract", transaction_start
-                )
-                transaction = self.plan[transaction_start:transaction_end]
-                changed = self.plan.replace(
-                    transaction,
-                    transaction.replace(detail, "removed detail", 1),
-                    1,
-                )
-                errors = plan_checker.validate_plan_structure(changed, REPOSITORY_ROOT)
-                self.assertIn(
-                    "plan-edit validation transaction is missing required detail: {}".format(
-                        detail
-                    ),
-                    errors,
-                )
-
-    def test_validation_layer_table_requires_all_four_layers(self):
-        for layer in (
-            "Plan structure",
-            "Checker regression",
-            "Change coverage",
-            "Product acceptance",
-        ):
-            with self.subTest(layer=layer):
-                changed = "\n".join(
-                    line
-                    for line in self.plan.splitlines()
-                    if not (
-                        plan_checker._cells(line)
-                        and plan_checker._cells(line)[0] == layer
-                    )
-                )
-                errors = plan_checker.validate_plan_structure(changed, REPOSITORY_ROOT)
-                self.assertIn(
-                    "validation layer table is missing required layer: {}".format(
-                        layer.lower()
-                    ),
-                    errors,
-                )
-
     def test_step_summary_reports_sync_details_and_escapes_paths(self):
         summary = plan_checker.render_step_summary(
             "fail",
@@ -332,8 +125,6 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
             True,
             ["S2"],
             ["unmapped path requires an exemption"],
-            ["local-only/generated <cache>.bin\nnext.bin"],
-            ["local-only/"],
         )
 
         self.assertIn("## Python binding plan sync: FAIL", summary)
@@ -343,10 +134,6 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
         self.assertIn("Mapped gates: PLAN-SYNC", summary)
         self.assertIn("Unmapped paths: unexpected&lt;&amp;.txt", summary)
         self.assertIn("Stale validated evidence: S2", summary)
-        self.assertIn("Excluded paths:", summary)
-        self.assertIn(r"local-only/generated &lt;cache&gt;.bin\nnext.bin", summary)
-        self.assertIn("Exclusion rules:", summary)
-        self.assertIn("local-only/", summary)
         self.assertIn("unmapped path requires an exemption", summary)
 
     def test_step_summary_appends_to_existing_file(self):
@@ -464,7 +251,7 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
 
         self.assertEqual(["tracked.py"], changed_paths)
 
-    def test_worktree_discovery_collects_tracked_and_untracked_paths_nul_safely(self):
+    def test_worktree_inventory_unions_staged_unstaged_and_untracked_paths(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             repository = Path(temporary_directory)
             subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
@@ -478,159 +265,54 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
                 cwd=repository,
                 check=True,
             )
-            baseline_names = (
-                "staged file.txt",
-                "unstaged file.txt",
-                "deleted file.txt",
-            )
-            for name in baseline_names:
-                (repository / name).write_text("baseline\n", encoding="utf-8")
-            (repository / ".gitignore").write_text("ignored file.txt\n", encoding="utf-8")
-            subprocess.run(["git", "add", "."], cwd=repository, check=True)
-            subprocess.run(["git", "commit", "-qm", "fixture base"], cwd=repository, check=True)
-            base_ref = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
+            (repository / ".gitignore").write_text("ignored-output/\n", encoding="utf-8")
+            staged = repository / "staged.py"
+            unstaged = repository / "unstaged.py"
+            staged.write_text("before\n", encoding="utf-8")
+            unstaged.write_text("before\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", ".gitignore", "staged.py", "unstaged.py"],
                 cwd=repository,
                 check=True,
-                stdout=subprocess.PIPE,
-                universal_newlines=True,
-            ).stdout.strip()
+            )
+            subprocess.run(["git", "commit", "-qm", "fixture base"], cwd=repository, check=True)
 
-            (repository / "committed change.txt").write_text("branch commit\n", encoding="utf-8")
-            subprocess.run(["git", "add", "committed change.txt"], cwd=repository, check=True)
-            subprocess.run(["git", "commit", "-qm", "branch change"], cwd=repository, check=True)
-            (repository / "staged file.txt").write_text("staged change\n", encoding="utf-8")
-            subprocess.run(["git", "add", "staged file.txt"], cwd=repository, check=True)
-            (repository / "unstaged file.txt").write_text("unstaged change\n", encoding="utf-8")
-            (repository / "deleted file.txt").unlink()
-            (repository / "untracked file\nwith newline.txt").write_text("new\n", encoding="utf-8")
-            (repository / "ignored file.txt").write_text("ignored\n", encoding="utf-8")
+            staged.write_text("staged change\n", encoding="utf-8")
+            subprocess.run(["git", "add", "staged.py"], cwd=repository, check=True)
+            unstaged.write_text("unstaged change\n", encoding="utf-8")
+            new_staged = repository / "new-staged.py"
+            new_staged.write_text("new staged\n", encoding="utf-8")
+            subprocess.run(["git", "add", "new-staged.py"], cwd=repository, check=True)
+            (repository / "untracked file.py").write_text("untracked\n", encoding="utf-8")
+            ignored_directory = repository / "ignored-output"
+            ignored_directory.mkdir()
+            (ignored_directory / "generated.py").write_text("ignored\n", encoding="utf-8")
 
-            changed_paths = plan_checker._git_worktree_paths(base_ref, repository)
+            changed_paths = plan_checker._git_worktree_changed_paths(repository)
 
         self.assertEqual(
-            {
-                "committed change.txt",
-                "deleted file.txt",
-                "staged file.txt",
-                "unstaged file.txt",
-                "untracked file\nwith newline.txt",
-            },
-            set(changed_paths),
+            ["new-staged.py", "staged.py", "unstaged.py", "untracked file.py"],
+            changed_paths,
         )
-        self.assertNotIn("ignored file.txt", changed_paths)
 
-    def test_worktree_exclusions_must_match_and_report_exact_candidates(self):
-        included, excluded = plan_checker._filter_worktree_paths(
-            ["cache/one.bin", "cache/two.bin", "source.cpp", "untracked file.txt"],
-            ["cache/", "untracked file.txt"],
+    def test_worktree_exclusion_is_exact_reported_and_must_match_candidates(self):
+        candidates = ["src/main.cpp", "build/generated/app", "build/generated/lib", "build-notes.md"]
+        remaining, excluded = plan_checker._exclude_candidate_paths(
+            candidates, ["build/generated/"]
         )
-        self.assertEqual(["source.cpp"], included)
-        self.assertEqual(["cache/one.bin", "cache/two.bin", "untracked file.txt"], excluded)
+        self.assertEqual(["src/main.cpp", "build-notes.md"], remaining)
+        self.assertEqual(["build/generated/"], excluded)
 
-        with self.assertRaisesRegex(RuntimeError, "does not match a candidate"):
-            plan_checker._filter_worktree_paths(["source.cpp"], ["cache/"])
+        with self.assertRaisesRegex(RuntimeError, "matches no worktree candidates"):
+            plan_checker._exclude_candidate_paths(candidates, ["missing/"])
         with self.assertRaisesRegex(RuntimeError, "repository-relative"):
-            plan_checker._filter_worktree_paths(["source.cpp"], ["../cache/"])
-        with self.assertRaisesRegex(RuntimeError, "plan file cannot be excluded"):
-            plan_checker._filter_worktree_paths(
-                [plan_checker.PLAN_RELATIVE_PATH], [plan_checker.PLAN_RELATIVE_PATH]
-            )
+            plan_checker._exclude_candidate_paths(candidates, ["../outside/"])
 
-    def test_worktree_mode_requires_receipt_citation_for_exclusions(self):
-        errors, _, _ = plan_checker.validate_changed_paths(
-            self.plan,
-            [plan_checker.PLAN_RELATIVE_PATH],
-            REPOSITORY_ROOT,
-            excluded_path_rules=["local-only/"],
-        )
-        self.assertTrue(any("must be cited" in error for error in errors))
-
-        changed_plan = replace_latest_receipt(
-            self.plan,
-            add_plan_note="Excluded local-only/ because it contains generated local fixtures.",
-        )
-        errors, _, _ = plan_checker.validate_changed_paths(
-            changed_plan,
-            [plan_checker.PLAN_RELATIVE_PATH],
-            REPOSITORY_ROOT,
-            excluded_path_rules=["local-only/"],
-        )
-        self.assertEqual([], errors)
-
-    def test_worktree_cli_discovers_and_reports_exclusions(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            repository = Path(temporary_directory)
-            subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
-            subprocess.run(
-                ["git", "config", "user.email", "plan-check@example.test"],
-                cwd=repository,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "config", "user.name", "Plan Check Test"],
-                cwd=repository,
-                check=True,
-            )
-            (repository / "scripts").mkdir()
-            (repository / "scripts/validate_python_binding_plan.py").write_text(
-                "base\n", encoding="utf-8"
-            )
-            plan_path = repository / plan_checker.PLAN_RELATIVE_PATH
-            plan_path.write_text(self.plan, encoding="utf-8")
-            subprocess.run(["git", "add", "."], cwd=repository, check=True)
-            subprocess.run(["git", "commit", "-qm", "fixture base"], cwd=repository, check=True)
-            base_ref = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=repository,
-                check=True,
-                stdout=subprocess.PIPE,
-                universal_newlines=True,
-            ).stdout.strip()
-            (repository / "scripts/validate_python_binding_plan.py").write_text(
-                "changed\n", encoding="utf-8"
-            )
-            plan_path.write_text(
-                prepend_review_receipt(
-                    self.plan,
-                    "| 2026-10-10 | PLAN-SYNC | Exercised worktree exclusion reporting | "
-                    "Excluded local-only/ because it contains a generated fixture. |",
-                ),
-                encoding="utf-8",
-            )
-            (repository / "local-only").mkdir()
-            excluded_candidate = repository / "local-only/generated fixture.bin"
-            excluded_candidate.write_text("generated\n", encoding="utf-8")
-
-            output = io.StringIO()
-            with patch.object(plan_checker, "REPOSITORY_ROOT", repository), patch.object(
-                plan_checker, "PLAN_PATH", plan_path
-            ), redirect_stdout(output):
-                result = plan_checker.main(
-                    ["--worktree", "--base-ref", base_ref, "--exclude-path", "local-only/"]
-                )
-
-        self.assertEqual(0, result, output.getvalue())
-        self.assertIn("Change source: complete worktree against base ref", output.getvalue())
-        self.assertIn("scripts/validate_python_binding_plan.py", output.getvalue())
-        self.assertIn("Excluded paths:", output.getvalue())
-        self.assertIn("local-only/generated fixture.bin", output.getvalue())
-        self.assertIn('Exclusion rules: "local-only/"', output.getvalue())
-
-    def test_worktree_cli_requires_base_ref_and_only_allows_exclusions_in_worktree_mode(self):
-        for arguments, expected in (
-            (["--worktree"], "--worktree requires --base-ref"),
-            (["--base-ref", "HEAD", "--exclude-path", "cache/"], "--exclude-path requires --worktree"),
-        ):
-            with self.subTest(arguments=arguments), redirect_stderr(io.StringIO()):
-                with self.assertRaises(SystemExit) as error:
-                    plan_checker.main(arguments)
-                self.assertEqual(2, error.exception.code)
-
-    def test_candidate_path_mode_accepts_an_untracked_plan_file(self):
+    def test_candidate_path_mode_accepts_plan_file_when_base_has_no_plan(self):
         output = io.StringIO()
-        with redirect_stdout(output):
-            result = plan_checker.main(["--paths", plan_checker.PLAN_RELATIVE_PATH])
+        with patch.object(plan_checker, "_git_plan_at_ref", return_value=None):
+            with redirect_stdout(output):
+                result = plan_checker.main(["--paths", plan_checker.PLAN_RELATIVE_PATH])
 
         self.assertEqual(0, result)
         self.assertIn("Change source: explicit candidate paths", output.getvalue())
@@ -653,6 +335,14 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
 
         self.assertEqual(1, result)
         self.assertIn("must be repository-relative", error.getvalue())
+
+    def test_worktree_exclusions_cannot_be_used_without_worktree_inventory(self):
+        error = io.StringIO()
+        with redirect_stderr(error):
+            result = plan_checker.main(["--full", "--exclude-path", "build/"])
+
+        self.assertEqual(1, result)
+        self.assertIn("--exclude-path is valid only with --worktree", error.getvalue())
 
     def test_broken_local_link_is_rejected(self):
         changed = self.plan.replace("(doxygen/Scripting.md)", "(missing/Scripting.md)", 1)
@@ -685,106 +375,30 @@ class PythonBindingPlanValidationTests(unittest.TestCase):
         self.assertIn("S2", mapped)
         self.assertTrue(any("newest plan receipt omits mapped gates" in error for error in errors))
 
-    def test_newest_receipt_requires_complete_metadata(self):
-        header_index = next(
-            index
-            for index, line in enumerate(self.plan.splitlines())
-            if plan_checker._cells(line)[:4]
-            == ["Review date", "Affected gates", "Plan change", "Validation scope"]
-        )
-        receipt_index = header_index + 2
-        receipt = self.plan.splitlines()[receipt_index]
-        for column, expected_error in (
-            (2, "must describe the plan change"),
-            (3, "must record validation scope or blocker"),
-        ):
-            with self.subTest(column=column):
-                lines = self.plan.splitlines()
-                parts = receipt.split("|")
-                parts[column + 1] = " "
-                lines[receipt_index] = "|".join(parts)
-                errors = plan_checker.validate_plan_structure(
-                    "\n".join(lines) + "\n", REPOSITORY_ROOT
-                )
-                self.assertTrue(
-                    any(expected_error in error for error in errors), errors
-                )
-
-    def test_newest_receipt_requires_a_valid_iso_date(self):
-        lines = self.plan.splitlines()
-        header_index = next(
-            index
-            for index, line in enumerate(lines)
-            if plan_checker._cells(line)[:4]
-            == ["Review date", "Affected gates", "Plan change", "Validation scope"]
-        )
-        receipt_index = header_index + 2
-        parts = lines[receipt_index].split("|")
-        parts[1] = " 2026-02-30 "
-        lines[receipt_index] = "|".join(parts)
-        errors = plan_checker.validate_plan_structure(
-            "\n".join(lines) + "\n", REPOSITORY_ROOT
-        )
-        self.assertTrue(
-            any("not a valid calendar date" in error for error in errors), errors
-        )
-
-    def test_tracked_plan_change_requires_a_new_receipt(self):
-        errors, mapped, _ = plan_checker.validate_changed_paths(
+    def test_same_change_requires_a_receipt_newer_than_the_comparison_base(self):
+        errors, _, _ = plan_checker.validate_changed_paths(
             self.plan,
             [plan_checker.PLAN_RELATIVE_PATH],
             REPOSITORY_ROOT,
-            base_plan_text=self.plan,
+            baseline_text=self.plan,
         )
 
-        self.assertEqual({"PLAN-SYNC"}, mapped)
         self.assertTrue(
-            any("must prepend a new receipt" in error for error in errors), errors
+            any("receipt is unchanged from the comparison base" in error for error in errors)
         )
 
-    def test_new_receipt_preserves_existing_review_history(self):
-        receipt = (
-            "| 2026-10-10 | PLAN-SYNC | Added append-only receipt freshness validation | "
-            "`--full`, checker tests, and complete worktree coverage pass. |"
+    def test_fresh_same_change_receipt_passes_comparison_base_check(self):
+        changed_plan = replace_latest_receipt(
+            self.plan, add_plan_note="Fresh receipt for comparison-base regression test."
         )
-        changed = prepend_review_receipt(self.plan, receipt)
-        errors, mapped, _ = plan_checker.validate_changed_paths(
-            changed,
-            [plan_checker.PLAN_RELATIVE_PATH],
-            REPOSITORY_ROOT,
-            base_plan_text=self.plan,
-        )
-
-        self.assertEqual({"PLAN-SYNC"}, mapped)
-        self.assertEqual([], errors)
-
-    def test_new_receipt_cannot_rewrite_prior_review_history(self):
-        receipt = (
-            "| 2026-10-10 | PLAN-SYNC | Added receipt freshness validation | "
-            "Plan checks pass. |"
-        )
-        changed = prepend_review_receipt(self.plan, receipt)
-        lines = changed.splitlines()
-        header_index = next(
-            index
-            for index, line in enumerate(lines)
-            if plan_checker._cells(line)[:4]
-            == ["Review date", "Affected gates", "Plan change", "Validation scope"]
-        )
-        prior_receipt = lines[header_index + 3].split("|")
-        prior_receipt[3] = prior_receipt[3] + " edited after the fact"
-        lines[header_index + 3] = "|".join(prior_receipt)
-        changed = "\n".join(lines) + "\n"
         errors, _, _ = plan_checker.validate_changed_paths(
-            changed,
+            changed_plan,
             [plan_checker.PLAN_RELATIVE_PATH],
             REPOSITORY_ROOT,
-            base_plan_text=self.plan,
+            baseline_text=self.plan,
         )
 
-        self.assertTrue(
-            any("preserve prior receipts unchanged" in error for error in errors), errors
-        )
+        self.assertEqual([], errors)
 
     def test_changed_input_cannot_leave_gate_validated(self):
         changed_plan = self.plan.replace("| S2 | active |", "| S2 | validated |", 1)

@@ -469,7 +469,7 @@ def library_graph(build,flags):
         if flags.get('WITH_RENDERER_TESTS') and name in runner.SOURCE_PRIVATE_PCH:
             path=reply/(name+'.json');data=json.loads(path.read_text())
             directory={'lcluascript':'lcadluascript','lcunittest':'unittest'}.get(name,name)
-            standard,headers=runner.SOURCE_PRIVATE_PCH[name]
+            standard,headers=runner.SOURCE_PRIVATE_PCH[name];standard=standard or runner.project_cxx_standard()
             owner=build/directory/'CMakeFiles'/(name+'.dir');owner.mkdir(parents=True)
             header=owner/'cmake_pch.hxx';source=owner/'cmake_pch.hxx.cxx'
             header.write_text(''.join('#include '+h+'\n' for h in headers));source.write_text('/* synthetic generated PCH source */\n')
@@ -521,7 +521,7 @@ def host_graph(build,flags):
     reply=build/'.cmake/api/v1/reply'
     model=json.loads((reply/'model.json').read_text())
     names={r['name'] for r in model['configurations'][1]['targets']}
-    if flags['WITH_PERSISTENCE']:names.add('persistence')
+    if flags['WITH_PERSISTENCE']:names.update(('persistence','dxfrw'))
     if flags['WITH_LUACMDINTERFACE']:names.add('luacmdinterface')
     if flags['WITH_QT_UI']:
         names.update(('librecad','lcui_objects','lcui_bindings_objects','lcui_widgets_objects'))
@@ -540,7 +540,7 @@ def host_graph(build,flags):
         data=json.loads(path.read_text()) if path.exists() else dict(name=name,sources=[],artifacts=[dict(path='lib/'+name+'.fixture')])
         data.update(id=name+'::fixture',type='SHARED_LIBRARY',dependencies=[])
         if name=='lcviewer_cpu_headercheck':data['type']='OBJECT_LIBRARY'
-        if name in ('lckernel','lcviewernoqt'):data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard='14'))]
+        if name in ('lckernel','lcviewernoqt'):data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard=runner.project_cxx_standard()))]
         if name in ('lcui_objects','lcui_bindings_objects','lcui_widgets_objects'):
             sources=([str(build/'lcUI'/n) for n in ('main.cpp','mocs_compilation.cpp','qrc_resource.cpp')]
                 if name=='lcui_objects' else widgets if name=='lcui_widgets_objects' else bindings)
@@ -565,10 +565,7 @@ def host_graph(build,flags):
         if name=='lcuipy_build_tree':data.update(type='UTILITY',artifacts=[])
         path.write_text(json.dumps(data))
     sdk=build.parent/'synthetic-host-sdk';sdk.mkdir()
-    include=sdk/'include';include.mkdir();(include/'libdxfrw.h').write_text('synthetic header, not an SDK')
-    (sdk/'dxfrw.fixture').write_bytes(b'synthetic binary, not a library')
     with (build/'CMakeCache.txt').open('a') as stream:
-        stream.write('LIBDXFRW_INCLUDE_DIR:PATH='+str(include)+'\nLIBDXFRW_LIBRARY:FILEPATH='+str(sdk/'dxfrw.fixture')+'\n')
         for name in (('Qt6Core','Qt6Gui') if flags['WITH_QT_UI'] or flags['WITH_RHI_RENDERER'] else ())+(
                 ('Qt6Widgets','Qt6UiTools','Qt6OpenGL','Qt6OpenGLWidgets','Qt6Svg') if flags['WITH_QT_UI'] else ())+(
                 ('Qt6ShaderTools',) if flags['WITH_RHI_RENDERER'] else ()):
@@ -576,7 +573,6 @@ def host_graph(build,flags):
             stream.write(name+'_DIR:PATH='+str(prefix)+'\n')
     with (build.parent/'trace.jsonl').open('a') as stream:
         for name in (('Qt6',) if flags['WITH_QT_UI'] or flags['WITH_RHI_RENDERER'] else ())+(
-                ('libdxfrw',) if flags['WITH_PERSISTENCE'] else ())+(
                 ('glfw3','CURL') if flags['WITH_LUACMDINTERFACE'] else ()):
             stream.write(json.dumps(dict(cmd='find_package',args=[name]))+'\n')
         if flags['WITH_CAIRO']:stream.write(json.dumps(dict(cmd='pkg_check_modules',args=['CAIRO','REQUIRED','cairo>=1.13']))+'\n')
@@ -714,7 +710,7 @@ class HostSourceTests(unittest.TestCase):
                     path=build/a['path'];path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'synthetic-only')
             for name in (build/'lcviewernoqt/cpu-headers/objects-Release.txt').read_text().splitlines():Path(name).write_bytes(b'synthetic-only')
             if where.name=='hosts' and getattr(self,'change_sdk',False):
-                (build.parent/'synthetic-host-sdk/dxfrw.fixture').write_bytes(b'changed synthetic SDK')
+                (build.parent/'synthetic-host-sdk/Qt6Core/Qt6CoreConfig.cmake').write_bytes(b'changed synthetic SDK')
         if where.name=='cli-help':
             self.assertEqual(1,expected_exit);(where/'stdout.log').write_bytes(b'Allowed options\n')
         if where.name=='discovery':
@@ -824,7 +820,7 @@ class HostSourceTests(unittest.TestCase):
                 (objects,lambda d:d['compileGroups'][0]['defines'].append(dict(define='LC_WITH_PYTHONSCRIPT'))),
                 (consumer,lambda d:d['sources'].pop()),
                 (consumer,lambda d:d['sources'].append(dict(path='lcUI/main.cpp',compileGroupIndex=0))),
-                (cpu,lambda d:d['compileGroups'][0]['languageStandard'].update(standard='17'))):
+                (cpu,lambda d:d['compileGroups'][0]['languageStandard'].update(standard='14'))):
             original=path.read_text();data=json.loads(original);change(data);path.write_text(json.dumps(data))
             with self.subTest(path=path),self.assertRaises(ValueError):runner.host_object_graph(build,flags)
             path.write_text(original)
@@ -960,17 +956,25 @@ class HostSourceTests(unittest.TestCase):
         target.write_text(json.dumps(data))
         with self.assertRaisesRegex(ValueError,'test-source membership'):runner.library_profile_graph(build,flags,hosts=True)
         target.write_text(original)
-        (build.parent/'synthetic-host-sdk/include/libdxfrw.h').unlink()
-        with self.assertRaisesRegex(ValueError,'libdxfrw SDK'):runner.library_profile_graph(build,flags,hosts=True)
+        # libdxfrw must be the vendored in-tree target, never an external SDK.
+        cache=(build/'CMakeCache.txt').read_text()
+        (build/'CMakeCache.txt').write_text(cache+'LIBDXFRW_LIBRARY:FILEPATH=/external/libdxfrw.so\n')
+        with self.assertRaisesRegex(ValueError,'External libdxfrw SDK'):runner.library_profile_graph(build,flags,hosts=True)
+        (build/'CMakeCache.txt').write_text(cache)
+        model=reply/'model.json';original=model.read_text();data=json.loads(original)
+        data['configurations'][1]['targets']=[t for t in data['configurations'][1]['targets'] if t['name']!='dxfrw']
+        model.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError,'target mismatch: dxfrw'):runner.library_profile_graph(build,flags,hosts=True)
+        model.write_text(original)
 
     def test_changed_provider_bytes_invalidate_the_host_result(self):
         self.change_sdk=True
         with self.assertRaisesRegex(ValueError,'changed during execution: graph'):self.execute()
-        directory=next(self.root.glob('host-*'));sdk=(directory/'synthetic-host-sdk/dxfrw.fixture').resolve()
+        directory=next(self.root.glob('host-*'));sdk=(directory/'synthetic-host-sdk/Qt6Core/Qt6CoreConfig.cmake').resolve()
         changes=json.loads((directory/'host-state-changes.json').read_text())
         self.assertEqual({'graph'},set(changes));self.assertFalse((directory/'host-build.json').exists())
         before=changes['graph']['before'];after=changes['graph']['after']
-        self.assertEqual(runner.sha256(b'synthetic binary, not a library'),before['host_sdk_files_sha256'][str(sdk)])
+        self.assertEqual(runner.sha256(b'# Synthetic Qt metadata'),before['host_sdk_files_sha256'][str(sdk)])
         expected=copy.deepcopy(before);expected['host_sdk_files_sha256'][str(sdk)]=runner.sha256(b'changed synthetic SDK')
         self.assertEqual(expected,after)
 
@@ -1407,8 +1411,10 @@ class SourceCheckGraphTests(unittest.TestCase):
         expected={name:name+'::fixture' for name in self.required}
         self.assertEqual('lcrenderer_source_checks::fixture',graph['target'])
         self.assertEqual(expected,graph['required_targets'])
-        expected={'lckernel':('14',['<Eigen/Dense>']),'lcviewernoqt':('14',['<Eigen/Dense>']),
-            'lcluascript':('14',['<Eigen/Dense>','<kaguya/kaguya.hpp>']),
+        # The libraries build at the project's standard; only the test runner pins its own.
+        project=runner.project_cxx_standard()
+        expected={'lckernel':(project,['<Eigen/Dense>']),'lcviewernoqt':(project,['<Eigen/Dense>']),
+            'lcluascript':(project,['<Eigen/Dense>','<kaguya/kaguya.hpp>']),
             'lcunittest':('17',['<Eigen/Dense>','<gtest/gtest.h>'])}
         self.assertEqual({name:dict(target=name+'::fixture',standard=standard,headers=headers,private=True)
             for name,(standard,headers) in expected.items()},graph['private_pch'])
@@ -1834,31 +1840,27 @@ class SourceWorkflowTests(unittest.TestCase):
         self.assertEqual(source.replace('http://azure.archive.ubuntu.com/ubuntu','https://archive.ubuntu.com/ubuntu'),result.stdout)
         self.assertNotRegex(block,r'(?i)allow-unauthenticated|trusted=yes|check-valid-until')
 
-    def test_persistence_cli_uses_the_source_submodule_sdk_without_binary_or_off_path_fallback(self):
+    def test_persistence_hosts_build_the_vendored_libdxfrw_without_an_sdk_step(self):
+        # Persistence hosts compile third_party/libdxfrw in-tree: no SDK is built,
+        # passed, or found, on any platform or persistence scope.
         code=self.text.split('- name: Run selected library or CLI source contracts',1)[1]
         code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n        env:',1)[0])
-        sdk=dict(LIBDXFRW_INCLUDE_DIR='/dxfrw/include/libdxfrw',LIBDXFRW_LIBRARY='/dxfrw/lib/libdxfrw.so',libdxfrw_DIR='/dxfrw/lib/cmake/libdxfrw')
         for platform in inventory.CASE_PLATFORMS:
           for scope in ('cli-persistence','ui','both'):
             for tests in ('ON','OFF'):
                 env=dict(R1_SCOPE=scope,R1_PLATFORM=platform,R1_TESTS=tests,
                     R1_HOST_PROFILE='dual-python' if tests=='ON' else 'legacy',QT_ROOT_DIR='/qt',
                     R1_BREW_PREFIX='/brew',R1_LUA_INCLUDE='/lua/include',R1_LUA_LIBRARY='/lua/lib')
-                with self.subTest(platform=platform,tests=tests),patch.dict(os.environ,env), \
-                        patch.object(Path,'read_text',return_value=json.dumps(dict(cmake_options=sdk))),patch.object(subprocess,'run') as run:
+                with self.subTest(platform=platform,scope=scope,tests=tests),patch.dict(os.environ,env), \
+                        patch.object(subprocess,'run') as run:
                     with self.assertRaises(SystemExit) as stopped:exec(compile(code,'source persistence CLI step','exec'),{})
                     self.assertEqual(0,stopped.exception.code);self.assertEqual(1,run.call_count)
                     command=run.call_args.args[0]
                     self.assertNotIn('--host-no-persistence',command);self.assertEqual(scope=='cli-persistence','--host-install' in command)
                     self.assertEqual('cli' if scope=='cli-persistence' else scope,command[command.index('--host-kind')+1])
-                    for name,value in sdk.items():self.assertIn(name+'='+value,command)
-        source=self.text.split('- name: Build pinned source-submodule persistence SDK',1)[1]
-        source=textwrap.dedent(source.split('run: |\n',1)[1].split('\n      - name:',1)[0])
-        with patch.dict(os.environ,R1_PLATFORM='MAC-ARM64'),patch.object(subprocess,'run') as run,patch.object(Path,'write_text') as write:
-            run.return_value.stdout='synthetic SDK route, not native evidence'
-            exec(compile(source,'source submodule CI provider step','exec'),{})
-            self.assertIn('scripts/build_libdxfrw.py',run.call_args.args[0]);self.assertTrue(run.call_args.kwargs['check'])
-            write.assert_called_once_with(run.return_value.stdout)
+                    self.assertFalse([a for a in command if re.match(r'(?:LIBDXFRW_|libdxfrw_DIR)',a)])
+        self.assertNotIn('- name: Build pinned source-submodule persistence SDK',self.text)
+        self.assertNotIn('build_libdxfrw.py',self.text)
 
     def test_windows_setup_validates_metadata_before_install_and_locks_the_same_route(self):
         code=self.text.split('- name: Restore Windows core binaries and exact per-case toolchains',1)[1]

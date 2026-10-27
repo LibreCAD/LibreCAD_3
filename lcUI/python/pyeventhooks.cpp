@@ -4,6 +4,7 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 
 #include "pyeventhooks.h"
+#include "qtpythonlifetime.h"
 
 #include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
@@ -25,12 +26,15 @@
 #include "lua/opaquetags.h"
 
 #include <QCoreApplication>
+#include <QAction>
+#include <QMenu>
 #include <QPointer>
 #include <QThread>
 
 #include <cstring>
 #include <stdexcept>
 #include <string>
+#include <set>
 
 namespace py = pybind11;
 
@@ -44,6 +48,88 @@ QPointer<lc::ui::MainWindow>& scopedMainWindow() {
     static thread_local QPointer<lc::ui::MainWindow> window;
     return window;
 }
+
+MainWindow* receiverWindow(QObject* receiver) {
+    const auto parentWindow = [](QObject* object) -> MainWindow* {
+        for (; object; object = object->parent())
+            if (auto* window = qobject_cast<MainWindow*>(object)) return window;
+        return nullptr;
+    };
+    if (auto* window = parentWindow(receiver)) return window;
+    MainWindow* result = nullptr;
+    // addAction/addMenu need not transfer parenting. Follow their graph without
+    // cycling through QMenu/menuAction or choosing an arbitrary shared window.
+    std::vector<QObject*> pending{receiver};
+    std::set<QObject*> visited;
+    for (std::size_t i = 0; i < pending.size(); ++i) {
+        auto* object = pending[i];
+        if (!object || !visited.insert(object).second) continue;
+        if (auto* window = parentWindow(object)) {
+            if (result && result != window)
+                throw std::runtime_error("Python GUI callback has ambiguous associated windows");
+            result = window;
+            continue;
+        }
+        pending.push_back(object->parent());
+        if (auto* menu = qobject_cast<QMenu*>(object)) pending.push_back(menu->menuAction());
+        if (auto* action = qobject_cast<QAction*>(object))
+            for (auto* associated : action->associatedObjects()) pending.push_back(associated);
+    }
+    return result;
+}
+
+class WindowScopedCallback final : public lc::scripting::ScriptCallbackImpl {
+public:
+    WindowScopedCallback(lc::scripting::ScriptCallback callback, QObject* receiver)
+        : _callback(std::move(callback)), _receiver(receiver),
+          _owner(receiverWindow(receiver)) {
+        if (!_owner) _owner = currentMainWindow();
+        _bound = !_owner.isNull();
+    }
+
+    const char* runtime() const override { return _callback.runtime(); }
+    bool equals(const lc::scripting::ScriptCallbackImpl& other) const override {
+        const auto* scoped = dynamic_cast<const WindowScopedCallback*>(&other);
+        return scoped && _receiver == scoped->_receiver && _owner == scoped->_owner &&
+            _bound == scoped->_bound && _callback == scoped->_callback;
+    }
+    lc::scripting::ScriptValue invoke(
+        const std::vector<lc::scripting::ScriptValue>& args) override {
+        return inScope([&] { return _callback.invoke(args); });
+    }
+    lc::scripting::ScriptValue invokeEvent(const std::string& event,
+        const lc::scripting::ScriptValue& args,
+        const lc::scripting::ScriptDiagnosticSink& diagnostics) override {
+        return inScope([&] { return _callback.invokeEvent(event, args, diagnostics); }, diagnostics);
+    }
+    void bindReceiverWindow(QObject* receiver) {
+        if (_bound) return;
+        _owner = receiverWindow(receiver);
+        _bound = !_owner.isNull();
+    }
+
+private:
+    template<class Call> lc::scripting::ScriptValue inScope(Call call,
+        const lc::scripting::ScriptDiagnosticSink& diagnostics = {}) {
+        try {
+            QtUiThreadCallGuard thread;
+            if (_bound && !_owner) return {};
+            if (!_bound) {
+                if (!_receiver) return {};
+                bindReceiverWindow(_receiver);
+            }
+            MainWindowExecutionScope scope(_owner.data());
+            return call();
+        } catch (const std::exception& error) {
+            lc::scripting::reportScriptDiagnostic(diagnostics, error.what());
+            return {};
+        }
+    }
+    lc::scripting::ScriptCallback _callback;
+    QPointer<QObject> _receiver;
+    QPointer<MainWindow> _owner;
+    bool _bound;
+};
 
 py::object materializeUiOpaque(const lc::scripting::OpaquePtr& opaque) {
     if (opaque.ptr == nullptr) {
@@ -90,6 +176,25 @@ MainWindowExecutionScope::~MainWindowExecutionScope() {
 
 lc::ui::MainWindow* currentMainWindow() {
     return scopedMainWindow().data();
+}
+
+lc::scripting::ScriptCallback scopedUiCallback(
+    lc::scripting::ScriptCallback callback, QObject* receiver) {
+    QtUiThreadCallGuard thread;
+    if (!receiver) throw std::runtime_error("Python GUI callback requires a Qt receiver");
+    auto scoped = std::make_shared<WindowScopedCallback>(std::move(callback), receiver);
+    // Clones share the proxy. Bind a late-adopted original's parent before it
+    // disappears, even if no callback has run yet; never retain the receiver.
+    QObject::connect(receiver, &QObject::destroyed,
+        [weak = std::weak_ptr<WindowScopedCallback>(scoped)](QObject* dying) {
+            try {
+                QtUiThreadCallGuard thread;
+                if (auto callback = weak.lock()) callback->bindReceiverWindow(dying);
+            } catch (const std::exception& error) {
+                lc::scripting::reportScriptDiagnostic({}, error.what());
+            }
+        });
+    return lc::scripting::ScriptCallback(std::move(scoped));
 }
 
 void installEventHooks() {

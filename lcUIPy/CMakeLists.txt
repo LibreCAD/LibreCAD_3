@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.27)
+cmake_minimum_required(VERSION 3.28)
 
 message("***** LibreCAD Python scripts *****")
 
@@ -13,17 +13,11 @@ if(WITH_PYTHONSCRIPT)
         COMMENT "Copying lcUIPy into the build runtime directory"
         VERBATIM)
 
-    # Resolve this package at runtime from the executable/bundle. Unix
-    # installs place it under share/librecad; Windows installs beside prefix.
-    if(MSVC)
-        install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUIPy"
-                DESTINATION "."
-                PATTERN "CMakeLists.txt" EXCLUDE
-                PATTERN "__pycache__" EXCLUDE)
-    else()
-        install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUIPy"
-                DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad"
-                PATTERN "CMakeLists.txt" EXCLUDE
-                PATTERN "__pycache__" EXCLUDE)
-    endif()
+    # Keep the package beside staged Python and its license on every platform.
+    # Both runtime locators resolve this prefix-relative share/librecad layout;
+    # a Windows-only prefix/lcUIPy split breaks the installed smoke's contract.
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUIPy"
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/librecad"
+            PATTERN "CMakeLists.txt" EXCLUDE
+            PATTERN "__pycache__" EXCLUDE)
 endif()

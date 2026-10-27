@@ -87,7 +87,10 @@ def validate(graph,lock,case):
         allowed_legacy=({p.split('/')[0] for p in LEGACY_DIRECT}|{'opengl','glu'} if legacy else set())|(
             {p.split('/')[0] for p in CLI_DIRECT} if cli else set())
         require(ref.split('/')[0] not in LEGACY-allowed_legacy,'Unexpected graphics/host dependency: '+ref)
-        require(isinstance(node.get('options'),dict) and node['options'].get('shared','False')=='False','R1 core binaries must be static')
+        # Static, except the one Lua core that every DLL must share on Windows.
+        shared='True' if ref.split('/')[0]=='lua' else 'False'
+        require(isinstance(node.get('options'),dict) and node['options'].get('shared','False')==shared,
+                'R1 core binaries must be static, except the shared Lua core')
         if ref.split('/')[0]=='gtest':
             require(tests,'Tests-OFF route unexpectedly includes GTest')
             require(node['options'].get('build_gmock')=='True' and node['options'].get('no_main')=='False',

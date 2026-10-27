@@ -64,9 +64,12 @@ TEST(CpuHatchCatalogTest, RawDxfHatchImportsRealRegionLoopsAndPreparesItsHoleWit
     const auto path=(fs::temp_directory_path()/fs::unique_path("lc3-region-%%%%%%%%.dxf")).string();
     struct Cleanup {std::string path;~Cleanup(){boost::system::error_code ec;fs::remove(path,ec);}} cleanup{path};
     // Independently authored raw group-code pairs: NOT a DXFimpl writer/reader
-    // round trip that could conceal a symmetric boundary-import defect.
+    // round trip that could conceal a symmetric boundary-import defect. R2000
+    // table records carry their handle and subclass markers; libdxfrw rejects
+    // the whole file without them.
     const char* dxf="0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
-        "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n1\n0\nLAYER\n2\n0\n70\n0\n62\n7\n6\nCONTINUOUS\n0\nENDTAB\n0\nENDSEC\n"
+        "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n5\n2\n100\nAcDbSymbolTable\n70\n1\n"
+        "0\nLAYER\n5\n10\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\n0\n70\n0\n62\n7\n6\nCONTINUOUS\n0\nENDTAB\n0\nENDSEC\n"
         "0\nSECTION\n2\nENTITIES\n0\nHATCH\n100\nAcDbEntity\n8\n0\n100\nAcDbHatch\n"
         "10\n0\n20\n0\n30\n0\n210\n0\n220\n0\n230\n1\n2\nSOLID\n70\n1\n71\n0\n91\n2\n"
         "92\n2\n72\n0\n73\n1\n93\n4\n10\n0\n20\n0\n10\n20\n20\n0\n10\n20\n20\n20\n10\n0\n20\n20\n97\n0\n"

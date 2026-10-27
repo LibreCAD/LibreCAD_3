@@ -13,20 +13,31 @@ Required libraries
 6) Eigen 3
 7) Lua == 5.3 (see `find_package(Lua 5.3 EXACT REQUIRED)` in the root CMakeLists — the "5.2" wording in this doc is historical and superseded)
 8) Python 3.9+ development headers (`python3-dev` on Debian/Ubuntu, `python3-devel` on Fedora/RHEL) — added for phase-5 Python scripting (`WITH_PYTHONSCRIPT=ON` by default, can be OFF for a Lua-only build).  pybind11 comes from the vendored submodule at `third_party/pybind11`; you do NOT need pybind11 installed system-wide.
+
+For embedded Python, select the base CPython SDK with
+`-DPython_EXECUTABLE=/path/to/base/python`, not a virtual environment. The
+interpreter, headers, library, standard library and dynamic modules must belong
+to a matching provider. Configuration rejects runtime trees outside that
+provider's home so installation cannot escape the package staging directory.
 9) Curl
 10) Boost
-11) LibDxfRW (building instructions follow)
+11) LibDxfRW -- vendored as a submodule at `third_party/libdxfrw`; nothing to install
 
 LibDxfRW
 --------
+
+Nothing to do. libdxfrw is a submodule at `third_party/libdxfrw`, pinned to a
+known-good revision and built as part of the tree, so a recursive clone (or
+`git submodule update --init --recursive`) is all it needs.
+
+This used to say to clone it, build it standalone and `sudo make install` it.
+Following that today gets you a second, unpinned copy that the build does not
+use -- and, if the clone predates its CMake floor being raised, it fails
+outright on modern CMake:
+
 ```
-git clone https://github.com/LibreCAD/libdxfrw
-cd libdxfrw
-mkdir release
-cd release
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
-make
-sudo make install
+CMake Error at CMakeLists.txt:1 (CMAKE_MINIMUM_REQUIRED):
+  Compatibility with CMake < 3.5 has been removed from CMake.
 ```
 
 LibreCAD
@@ -73,7 +84,7 @@ cd build
 cmake -G Xcode ..
 
 Then open the project in x-code and build.
-Under some conditions you might want to set a additional search path if libraries are not found, for example if you compile **libdxfrw** yourself.
+Under some conditions you might want to set an additional search path if libraries are not found.
 
 ![X-Code add headers](http://skitch.rvantwisk.nl/~rvt/blog/LC.xcodeproj-20150115-143036.jpg)
 
@@ -92,41 +103,47 @@ Ubuntu/Mint
 ===========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.3-dev python3-dev git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
+apt-get install cmake qt6-base-dev qt6-tools-dev qt6-tools-dev-tools libqt6opengl6-dev qt6-svg-dev \
+  liblua5.3-dev python3-dev python3 git g++ libcairo2-dev libpango-1.0-0 libpango1.0-dev \
+  libboost-all-dev libboost-program-options-dev libgtest-dev libeigen3-dev libcurl4-gnutls-dev \
+  libgtk-3-dev libglew-dev rapidjson-dev libbz2-dev libglfw3-dev libglm-dev
 ```
+
+This is the same set `scripts/ubuntu-install/installDependenciesAndBuildRepo.sh`
+installs, which is what CI uses; if the two drift apart, that script is the one
+that is tested.
 
 You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
 
-### Ubuntu 14.xx
-GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
-http://askubuntu.com/a/456849
+Toolchain
+=========
+
+The project builds as **C++17** (`CMAKE_CXX_STANDARD 17`) against **Qt6**. In
+practice that means GCC 8 or newer, Clang 7 or newer, or MSVC 2019 16.8 or
+newer -- and a Qt6 that provides Core, Gui, OpenGL, OpenGLWidgets, Svg,
+UiTools, Widgets and Test.
 
 ### AppImage packaging
 
-The Ubuntu package build enables Python scripting and
-`WITH_BUNDLED_PYTHON_RUNTIME=ON`. CMake stages the selected provider's standard
-library, dynamic modules, and exact shared `libpython` under the `AppDir`
-prefix; the Python binding library uses `$ORIGIN` to find that runtime beside
-itself. `scripts/ubuntu-install/createAppImage.sh` then uses `linuxdeploy` and
-its Qt plugin to package the staged tree. Ordinary developer/system installs
-leave `WITH_BUNDLED_PYTHON_RUNTIME` off and use their declared system Python
-dependency; Python scripting can be disabled with `-DWITH_PYTHONSCRIPT=OFF`.
-The core26 Snap recipe enables the same package-only runtime option.
+The Ubuntu build enables Python scripting by default. CMake's selected-provider
+install rules stage the matching CPython standard library and dynamic modules
+under the `AppDir` prefix; `scripts/ubuntu-install/createAppImage.sh` then uses
+`linuxdeploy` and its Qt plugin to package that staged tree. A source build can
+still opt out with `-DWITH_PYTHONSCRIPT=OFF`.
 
-The Ubuntu workflow smokes both the installed `AppDir` and final AppImage with
-`PYTHONHOME` and `PYTHONPATH` poisoned and requires every loaded `libpython`
-mapping to resolve inside the package's `usr` tree. Local Ubuntu 26.04 x86_64
-emulation passes the strict installed-AppDir smoke; native/hosted x86_64 and
-the final AppImage/Snap runtime closures remain open. The smoke does not by
-itself prove independence from every host library: extension-module dependency
-closure and hosted artifact results are still required. Consult the Python
-scripting support table for current evidence rather than assuming that a
-successful local packaging command establishes release-ready closure.
+The Ubuntu workflow is configured to smoke both the installed `AppDir` and the
+final AppImage with `PYTHONHOME` and `PYTHONPATH` poisoned. This checks that
+startup uses the staged provider instead of ambient Python paths. It does not
+by itself prove the artifact is independent of every host library: Python
+extension-module dependencies and final hosted artifact results remain part of
+the open AppImage validation gate. Consult the Python scripting support table
+for the current tested platform status rather than assuming that a successful
+local packaging command establishes release-ready closure.
 
 Windows
 =======
 
-**Note:** This process will install Visual Studio then use the folders generated to install Conan and the dependencies requiring manual installation (libdxfrw and Qt - see https://github.com/conan-io/wishlist/issues/124). Change `C:\Source\Repos` as required.
+**Note:** This process will install Visual Studio then use the folders generated to install Conan and the dependencies requiring manual installation (Qt - see https://github.com/conan-io/wishlist/issues/124). libdxfrw is not among them: it is a submodule and builds with the tree. Change `C:\Source\Repos` as required.
 
 All command lines are run in a terminal. Navigate to the folder in Explorer, on the address bar enter `cmd`, run command(s) then close the terminal by entering `exit`.
 
@@ -136,18 +153,10 @@ Install [Visual Studio](https://visualstudio.microsoft.com/downloads/) Community
 - CMake for Windows
 - Windows SDK
 
-## libdxfrw
-Start Visual Studio, Clone or checkout code, Repository: https://github.com/LibreCAD/libdxfrw, Local path: `C:\Source\Repos`, Clone
-
-- Build > Build all
-- Build > Install DXFRW
-
-Note the folder where it was installed (eg: `C:\Source\Repos\libdxfrw\out\install\x64-Debug`)
-
 ## Clone Librecad_3 repository
 **Note: Librecad_3 MUST be cloned recursively to pick up linked repositories.**
 
-Navigate to the Repos folder as used for libdxfrw [Fairly sure git is installed with Visual Studio].: 
+Navigate to your Repos folder [Fairly sure git is installed with Visual Studio].: 
 ```
 git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
 ```
@@ -178,14 +187,13 @@ Advanced > Environment Variables
 
 Set QT Environment
 ```
-set QTDIR=C:\Qt\5.14.1\msvc2017_64
+set QTDIR=C:\Qt\6.8.0\msvc2022_64
 set QT_QPA_PLATFORM_PLUGIN_PATH=%QTDIR%\plugins\platforms\
 ```
 
-Add to the PATH environment variable folders for Qt bin, libdxfrw and LibreCAD_3 lib:
+Add to the PATH environment variable folders for Qt bin and LibreCAD_3 lib:
 ```
-C:\Qt\5.14.1\msvc2017_64\bin
-C:\source\repos\libdxfrw\out\build\x64-Debug
+C:\Qt\6.8.0\msvc2022_64\bin
 C:\source\repos\LibreCAD_3\out\build\x64-Debug\lib
 ```
 
@@ -199,8 +207,7 @@ Configuration type: ```RelWithDebInfo``` (Debug won't work as Conan libraries ar
 
 CMake command arguments, adapting to your configuration:
 ```
--DLIBDXFRW_PATH=C:\Source\Repos\libdxfrw\out\install\x64-Debug 
--DCMAKE_PREFIX_PATH=C:\Qt\5.14.1\msvc2017_64\lib\cmake
+-DCMAKE_PREFIX_PATH=C:\Qt\6.8.0\msvc2022_64\lib\cmake
 ```
 
 When CMake detects Conan it should set GLEW_ROOT.  
@@ -217,7 +224,6 @@ set QT_OPENGL=desktop
 ### Uninstall
 The following is required but be careful not to remove if required for other software on your computer:
 1. Librecad_3 repository (`C:\source\repos\LibreCAD_3`)
-1. libdxfrw repository and install (`C:\source\repos\libdxfrw`)
 1. conan (`C:\Users\User\.conan`)
 1. python may have been installed to install conan
 1. qt
@@ -238,7 +244,7 @@ Unzip it on your disk (`C:\local\eigen-3.3.7`)
 Download and install Qt (open source version) from https://www.qt.io/download
 You must select at least one version of Qt for the MSVC compiler and the correct architecture.
 
-Add to the PATH environment variable the Qt `bin` folder (`C:\Qt\5.14.1\msvc2017_64\bin`).
+Add to the PATH environment variable the Qt `bin` folder (`C:\Qt\6.8.0\msvc2022_64\bin`).
 
 ### Lua
 Download Windows binaries (dll15) here: https://sourceforge.net/projects/luabinaries/files/5.3.5/Windows%20Libraries/Dynamic/
@@ -250,17 +256,6 @@ Unzip this archive on your disk (`C:\local\glew-2.1.0`)
 
 The `GLEW_ROOT` environment variable (in Windows) should be set to where the archive was extracted, in this case `C:\local\glew-2.1.0`
 
-## Libdxfrw
-Clone libdxfrw repository:
-```
-git clone https://github.com/LibreCAD/libdxfrw
-```
-Open it as a folder in Visual Studio:
-- Build all
-- Install DXFRW
-
-Note the folder where it was installed (ex: `C:\Users\...\libdxfrw\out\install\x64-Debug`)
-
 ## LibreCAD
 Open project as folder in Visual Studio
 
@@ -271,12 +266,11 @@ In `Project > CMake Settings`, set the following CMake options, after adapting t
 -DBoost_COMPILER=-vc142 
 -DBOOST_LIBRARYDIR=C:\local\boost_1_71_0\lib64-msvc-14.2 
 -DEIGEN3_ROOT=C:\local\eigen-3.3.7 
--DLIBDXFRW_PATH=C:\Users\ferag\Workspace\libdxfrw\out\install\x64-Debug 
 -DWITH_LIBOPENCAD=OFF
 -DGLEW_INCLUDE_DIR=C:\local\glew-2.1.0\include 
 -DFREETYPE_LIBRARY=C:\local\freetype-2.10.1\win64\freetype.lib 
--DCMAKE_PREFIX_PATH=C:\Qt\5.13.1\msvc2017_64\lib\cmake 
--DCMAKE_LIBRARY_PATH=C:\Qt\5.13.1\msvc2017_64\lib 
+-DCMAKE_PREFIX_PATH=C:\Qt\6.8.0\msvc2022_64\lib\cmake 
+-DCMAKE_LIBRARY_PATH=C:\Qt\6.8.0\msvc2022_64\lib 
 -DWITH_LUACMDINTERFACE=FALSE 
 -DWITH_RENDERING_UNITTESTS=OFF 
 -DWITH_CAIRO=OFF 

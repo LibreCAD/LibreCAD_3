@@ -6,8 +6,18 @@
 #include "propertyeditor.h"
 #include "managers/contextmenumanager.h"
 
+#include <QKeySequence>
 #include <QStandardPaths>
 #include <exception>
+#include <cmath>
+#include <random>
+
+#include <cad/base/metainfo.h>
+#include <cad/meta/metacolor.h>
+#include <cad/operations/entitybuilder.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/circle.h>
+#include <cad/primitive/line.h>
 
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/entitygui.h"
@@ -24,10 +34,9 @@
 // wraps kaguya::LuaRef via makeLuaObject.
 #include <scriptadapter/luacallback.h>
 
-// Phase 5 PR-5.1 fixup — installEventHooks() called unconditionally
-// at MainWindow ctor.
 #ifdef LC_WITH_PYTHONSCRIPT
 #include "python/pyeventhooks.h"
+#include "python/pypluginloader.h"
 #endif
 
 // Phase 4 PR-9b — trigger* slots build ScriptValue::Map payloads
@@ -49,6 +58,9 @@ MainWindow::MainWindow()
     _copyManager(&_cadMdiChild)
 {
 #ifdef LC_WITH_PYTHONSCRIPT
+    // Also support direct construction by embedders/tests, before entering
+    // this window's scope. Normal app startup has already bootstrapped.
+    lc::ui::python::bootstrapPythonPlugins();
     lc::ui::python::MainWindowExecutionScope ownerScope(this);
 #endif
     ContextMenuManager::GetContextMenuManager(this);
@@ -100,20 +112,6 @@ MainWindow::MainWindow()
         return lc::lua::makeLuaObject(std::move(ref));
     });
 
-    // Phase 5 PR-5.1 fixup — install the lc.event.register /
-    // lc.event.deregister hooks HERE, not lazily from ScriptDock's
-    // ctor.  Python operations registered via lc.event.register at
-    // startup (PR-5.2's OperationLoader second source calls a
-    // Python operation's `__init__` which registers listeners) fire
-    // BEFORE the ScriptDock has ever been opened, so the hook slots
-    // were previously still default-constructed (falsy) and every
-    // early registration silently no-op'd.  MUST be installed BEFORE
-    // initLua so Python ops that register listeners at load time see
-    // live hook slots.
-#ifdef LC_WITH_PYTHONSCRIPT
-    lc::ui::python::installEventHooks();
-#endif
-
     // open qt bridge and run lua scripts — this triggers OperationLoader
     // which pushes the Python-registry resolver ONTO the resolver list
     // AFTER the Lua-globals resolver above, so the reverse-walking
@@ -132,13 +130,6 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
-
-    /* Shortcuts */
-    copyShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C), this);
-    pasteShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_V), this);
-
-    connect(copyShortcut, &QShortcut::activated, [this]() { this->copySelectedEntities(this->cadMdiChild()->selection()); });
-    connect(pasteShortcut, &QShortcut::activated, this, &MainWindow::pasteEvent);
 
     this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
 }
@@ -370,6 +361,17 @@ int MainWindow::contextMenuManagerId() {
 
 void MainWindow::ConnectInputEvents()
 {
+    QObject::connect(&_cadMdiChild, &CadMdiChild::documentAboutToChange, this, [this] {
+        _luaInterface.finishOperation();
+        _luaInterface.setOperation(lc::scripting::ScriptObject{});
+        _cliCommand.returnText(false);
+        _cliCommand.commandActive(false);
+        operationFinished();
+        _layers.setMdiChild(nullptr);
+    });
+    QObject::connect(&_cadMdiChild, &CadMdiChild::documentChanged, this, [this] {
+        _layers.setMdiChild(&_cadMdiChild);
+    });
     // CadMdiChild connections, main window should not know about proxy
     QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
@@ -410,6 +412,20 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
     QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
     QObject::connect(findMenuItemByObjectName("actionAuto_Scale"), &QAction::triggered, this, &MainWindow::autoScale);
+    QObject::connect(findMenuItemByObjectName("actionCut"), &QAction::triggered, this, [this]() { cutSelectedEntities(_cadMdiChild.selection()); });
+    QObject::connect(findMenuItemByObjectName("actionCopy"), &QAction::triggered, this, [this]() { copySelectedEntities(_cadMdiChild.selection()); });
+    QObject::connect(findMenuItemByObjectName("actionPaste"), &QAction::triggered, this, &MainWindow::pasteEvent);
+
+    // Create connections
+    QObject::connect(findMenuItemByObjectName("actionAdd_Random_Lines"), &QAction::triggered, this, &MainWindow::addRandomLines);
+    QObject::connect(findMenuItemByObjectName("actionAdd_Random_Circles"), &QAction::triggered, this, &MainWindow::addRandomCircles);
+    QObject::connect(findMenuItemByObjectName("actionAdd_Random_Arc"), &QAction::triggered, this, &MainWindow::addRandomArcs);
+
+    // initMenuAPI rebuilds every menu entry from its text and object name
+    // only, so a shortcut has to be given to the rebuilt entry.
+    findMenuItemByObjectName("actionCut")->setShortcut(QKeySequence::Cut);
+    findMenuItemByObjectName("actionCopy")->setShortcut(QKeySequence::Copy);
+    findMenuItemByObjectName("actionPaste")->setShortcut(QKeySequence::Paste);
 }
 
 void MainWindow::runLastOperation() {
@@ -588,7 +604,9 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
         return nullptr;
     }
 
-    api::Menu* newMenu = new api::Menu(menuName.c_str());
+    // QMenuBar::addMenu(QMenu*) does not take ownership. Parent menus we
+    // create here so window teardown also destroys their script callbacks.
+    api::Menu* newMenu = new api::Menu(menuName.c_str(), menuBar());
     addMenu(newMenu);
 
     return newMenu;
@@ -872,6 +890,72 @@ void MainWindow::autoScale() {
     _cadMdiChild.viewer()->update();
 };
 
+namespace {
+/// Seeded once per process, so each click adds a different drawing.
+std::mt19937& randomEngine() {
+    static std::mt19937 engine{std::random_device{}()};
+    return engine;
+}
+
+double randomBetween(double low, double high) {
+    return std::uniform_real_distribution<double>(low, high)(randomEngine());
+}
+
+/// Half the extent the Add Random entries spread their entities over.
+const double randomExtent = 4000.;
+}
+
+void MainWindow::addRandomEntities(int count,
+                                   const std::function<lc::entity::CADEntity_CSPtr(const lc::meta::Layer_CSPtr&,
+                                                                                    const lc::meta::MetaInfo_CSPtr&,
+                                                                                    const lc::meta::Block_CSPtr&)>& make) {
+    auto builder = std::make_shared<lc::operation::EntityBuilder>(_cadMdiChild.document());
+    const auto layer = _cadMdiChild.activeLayer();
+    const auto viewport = _cadMdiChild.activeViewport();
+
+    for (int i = 0; i < count; i++) {
+        lc::meta::MetaInfo_CSPtr metaInfo;
+        if (randomBetween(0., 3.) < 1.) {
+            metaInfo = lc::meta::MetaInfo::create()->add(std::make_shared<const lc::meta::MetaColorByValue>(
+                randomBetween(0., 1.), randomBetween(0., 1.), randomBetween(0., 1.)));
+        }
+        builder->appendEntity(make(layer, metaInfo, viewport));
+    }
+
+    builder->execute();
+    _cadMdiChild.viewer()->update();
+}
+
+void MainWindow::addRandomLines() {
+    addRandomEntities(1000, [](const lc::meta::Layer_CSPtr& layer, const lc::meta::MetaInfo_CSPtr& metaInfo,
+                               const lc::meta::Block_CSPtr& viewport) {
+        const lc::geo::Coordinate start(randomBetween(-randomExtent, randomExtent),
+                                        randomBetween(-randomExtent, randomExtent));
+        const lc::geo::Coordinate end = start + lc::geo::Coordinate(randomBetween(-50., 50.), randomBetween(-50., 50.));
+        return std::make_shared<const lc::entity::Line>(start, end, layer, metaInfo, viewport);
+    });
+}
+
+void MainWindow::addRandomCircles() {
+    addRandomEntities(1000, [](const lc::meta::Layer_CSPtr& layer, const lc::meta::MetaInfo_CSPtr& metaInfo,
+                               const lc::meta::Block_CSPtr& viewport) {
+        const lc::geo::Coordinate center(randomBetween(-randomExtent, randomExtent),
+                                         randomBetween(-randomExtent, randomExtent));
+        return std::make_shared<const lc::entity::Circle>(center, randomBetween(1., 150.), layer, metaInfo, viewport);
+    });
+}
+
+void MainWindow::addRandomArcs() {
+    addRandomEntities(1000, [](const lc::meta::Layer_CSPtr& layer, const lc::meta::MetaInfo_CSPtr& metaInfo,
+                               const lc::meta::Block_CSPtr& viewport) {
+        const lc::geo::Coordinate center(randomBetween(-randomExtent, randomExtent),
+                                         randomBetween(-randomExtent, randomExtent));
+        return std::make_shared<const lc::entity::Arc>(center, randomBetween(1., 150.),
+                                                       randomBetween(0., 2. * M_PI), randomBetween(0., 2. * M_PI),
+                                                       randomBetween(0., 1.) < .5, layer, metaInfo, viewport);
+    });
+}
+
 void MainWindow::runCustomizeToolbar() {
     _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
     connect(_customizeToolbar, &widgets::CustomizeToolbar::customizeWidgetClosed, this, &MainWindow::writeSettings);
@@ -953,8 +1037,31 @@ void MainWindow::copySelectedEntities(const std::vector<lc::entity::CADEntity_CS
     _copyManager.copyEntitiesToClipboard(cadEntities);
 }
 
+void MainWindow::cutSelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities) {
+    _copyManager.cutEntitiesToClipboard(cadEntities);
+    _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    _cadMdiChild.viewer()->update();
+}
+
 void MainWindow::pasteEvent() {
-    _copyManager.pasteEvent();
+    if (_copyManager.pasteableEntities().empty()) {
+        _cliCommand.write("Nothing to paste");
+        return;
+    }
+    runOperationByName("PasteOperation");
+}
+
+std::vector<lc::entity::CADEntity_CSPtr> MainWindow::clipboardEntities() const {
+    return _copyManager.pasteableEntities();
+}
+
+lc::geo::Coordinate MainWindow::clipboardBasePoint() const {
+    return _copyManager.basePoint();
+}
+
+void MainWindow::pasteClipboard(const lc::geo::Coordinate& offset) {
+    _copyManager.paste(offset);
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::saveDockLayout() {

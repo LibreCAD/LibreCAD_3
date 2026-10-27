@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 project(LCKERNEL)
 
 #TODO: Fix this
@@ -12,13 +12,13 @@ endif()
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 add_definitions("-DBOOST_ALL_NO_LIB")
+# Keep TinySpline's install layout aligned with LibreCAD. Its upstream default
+# is `lib64` on 64-bit targets, while LibreCAD's executable RPATH and package
+# staging use GNUInstallDirs (for example, `lib/x86_64-linux-gnu` on Ubuntu).
+set(TINYSPLINE_INSTALL_LIBRARY_DIR "${CMAKE_INSTALL_LIBDIR}"
+    CACHE STRING "TinySpline library install directory" FORCE)
 remove_definitions("-Wall")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
-# TinySpline otherwise hard-codes `lib64` for every 64-bit target. Keep its
-# shared library beside LibreCAD's libraries so the install RPATH and AppDir
-# layout agree on Debian-style multiarch paths, macOS, and other prefixes.
-set(TINYSPLINE_INSTALL_LIBRARY_DIR "${CMAKE_INSTALL_LIBDIR}" CACHE STRING
-    "TinySpline library install directory, aligned with LibreCAD" FORCE)
 add_subdirectory("tinyspline")
 include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -29,8 +29,9 @@ message("***** LibreCAD kernel *****")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # SOURCE FILES
+set(BUILD_CONSTANTS_CPP "${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp")
 set(lckernel_srcs
-"${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp"
+${BUILD_CONSTANTS_CPP}
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -73,6 +74,7 @@ cad/primitive/line.cpp
 cad/primitive/spline.cpp
 cad/primitive/text.cpp
 cad/primitive/mtext.cpp
+cad/primitive/textblockbox.cpp
 cad/primitive/textbase.cpp
 cad/primitive/dimension.cpp
 cad/primitive/dimradial.cpp
@@ -80,6 +82,7 @@ cad/primitive/dimdiametric.cpp
 cad/primitive/dimlinear.cpp
 cad/primitive/dimaligned.cpp
 cad/primitive/dimangular.cpp
+cad/primitive/dimordinate.cpp
 cad/primitive/lwpolyline.cpp
 cad/primitive/image.cpp
 cad/primitive/insert.cpp
@@ -93,6 +96,7 @@ cad/builders/dimangular.cpp
 cad/builders/dimension.cpp
 cad/builders/dimdiametric.cpp
 cad/builders/dimlinear.cpp
+cad/builders/dimordinate.cpp
 cad/builders/dimradial.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
@@ -199,6 +203,7 @@ cad/primitive/dimdiametric.h
 cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
+cad/primitive/dimordinate.h
 cad/primitive/textconst.h
 cad/tools/string_helper.h
 cad/primitive/image.h
@@ -213,6 +218,7 @@ cad/builders/dimangular.h
 cad/builders/dimension.h
 cad/builders/dimdiametric.h
 cad/builders/dimlinear.h
+cad/builders/dimordinate.h
 cad/builders/dimradial.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
@@ -273,13 +279,18 @@ endif()
 
 #Create version.cpp
 add_custom_command(
-        PRE_BUILD
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp"
-        COMMAND "${CMAKE_COMMAND}" "-DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH}"
-            "-DDIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DSETTINGS_PATH=${SETTINGS_PATH}"
-            "-DOUTPUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/build_constants.cpp"
-            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        OUTPUT "${BUILD_CONSTANTS_CPP}"
+        COMMAND ${CMAKE_COMMAND}
+                "-DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH}"
+                "-DDIR=${CMAKE_CURRENT_SOURCE_DIR}"
+                "-DOUTPUT_FILE=${BUILD_CONSTANTS_CPP}"
+                "-DSETTINGS_PATH=${SETTINGS_PATH}"
+                "-DLIBDXFRW_BUILD_VERSION=$<IF:$<TARGET_EXISTS:dxfrw>,$<TARGET_PROPERTY:dxfrw,VERSION>,>"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
         DEPENDS always_rebuild
+                "${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp.in"
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        VERBATIM
 )
 
 # Anything that depends on this will always be rebuilt.
@@ -308,3 +319,6 @@ install(TARGETS lckernel
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+collect_lib("lckernel")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

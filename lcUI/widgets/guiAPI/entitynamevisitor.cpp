@@ -50,6 +50,10 @@ void EntityNameVisitor::visit(entity::DimLinear_CSPtr){
     entityInfo = "DimLinear";
 }
 
+void EntityNameVisitor::visit(entity::DimOrdinate_CSPtr){
+    entityInfo = "DimOrdinate";
+}
+
 void EntityNameVisitor::visit(entity::DimRadial_CSPtr){
     entityInfo = "DimRadial";
 }

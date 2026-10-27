@@ -548,10 +548,20 @@ def source_targets(build):
     return targets
 
 
+def project_cxx_standard():
+    """The one C++ standard the top-level CMakeLists.txt builds the libraries at."""
+    # This checkout's root, not inventory.REPO_ROOT, which fixtures may redirect.
+    values=re.findall(r'^set\(CMAKE_CXX_STANDARD (\d+)\)$',(Path(__file__).resolve().parents[1]/'CMakeLists.txt').read_text(),re.M)
+    if len(values)!=1:raise ValueError('Missing/ambiguous project C++ standard')
+    return values[0]
+
+
+# None: the project standard. Only the dedicated header-check consumers are
+# held to C++14 (cpu_header_contract); the libraries build at the project's.
 SOURCE_PRIVATE_PCH={
-    'lckernel':('14',('<Eigen/Dense>',)),
-    'lcviewernoqt':('14',('<Eigen/Dense>',)),
-    'lcluascript':('14',('<Eigen/Dense>','<kaguya/kaguya.hpp>')),
+    'lckernel':(None,('<Eigen/Dense>',)),
+    'lcviewernoqt':(None,('<Eigen/Dense>',)),
+    'lcluascript':(None,('<Eigen/Dense>','<kaguya/kaguya.hpp>')),
     'lcunittest':('17',('<Eigen/Dense>','<gtest/gtest.h>'))}
 
 
@@ -570,6 +580,7 @@ def source_check_graph(build):
         raise ValueError('Missing/changed source checks aggregate or required dependencies')
     private={}
     for name,(standard,headers) in SOURCE_PRIVATE_PCH.items():
+        standard=standard or project_cxx_standard()
         item=targets.get(name,{});groups=item.get('compileGroups',[])
         if (item.get('type')!=('EXECUTABLE' if name=='lcunittest' else 'SHARED_LIBRARY') or not groups or any(
                 g.get('language')!='CXX' or g.get('languageStandard',{}).get('standard')!=standard or
@@ -666,7 +677,7 @@ def library_profile_graph(build,flags,hosts=False):
               'lcunittest':flags['WITH_UNITTESTS'],'lcluascript':True,'lcscripting':True,'lcviewernoqt':True,'lckernel':True,
               'lcviewer_cpu_headercheck':flags['WITH_UNITTESTS'],'lcbuildcontracttest':flags['WITH_UNITTESTS'],
               'librecad':ui,'lcui':ui and flags['WITH_UNITTESTS'],'lcui_objects':ui,'lcui_bindings_objects':ui,'lcui_widgets_objects':ui,
-              'luacmdinterface':cli,'persistence':flags['WITH_PERSISTENCE'],
+              'luacmdinterface':cli,'persistence':flags['WITH_PERSISTENCE'],'dxfrw':flags['WITH_PERSISTENCE'],
               'lcpythonscript':flags['WITH_PYTHONSCRIPT'],'lcuipy':False,
               'lcuipy_build_tree':flags['WITH_PYTHONSCRIPT'],
               'lcrenderertest':False,'lcrenderer_headercheck':False}
@@ -698,7 +709,7 @@ def library_profile_graph(build,flags,hosts=False):
             cairo=any(a.startswith('cairo') for a in record['args'][2:])
     if not packages:raise ValueError('Empty library package-discovery trace')
     forbidden=set()
-    if not flags['WITH_PERSISTENCE']:forbidden.add('libdxfrw')
+    forbidden.add('libdxfrw') # Persistence builds the vendored submodule in-tree; nothing is found.
     if not cli:forbidden.update(('glfw','glfw3','curl'))
     forbidden.update(p for p in packages if p.startswith('qt5'))
     if not flags['WITH_UNITTESTS']:forbidden.update(('gtest','gmock','googletest'))
@@ -709,8 +720,7 @@ def library_profile_graph(build,flags,hosts=False):
     if not flags['WITH_RHI_RENDERER'] and not flags['WITH_LEGACY_OPENGL_RENDERER']:forbidden.add('opengl')
     if set(packages)&forbidden:raise ValueError('Forbidden library discovery: '+str(sorted(set(packages)&forbidden)))
     if hosts:
-        required=({'qt6'} if ui or flags['WITH_RHI_RENDERER'] else set())|(
-            {'libdxfrw'} if flags['WITH_PERSISTENCE'] else set())|({'glfw3','curl'} if cli else set())
+        required=({'qt6'} if ui or flags['WITH_RHI_RENDERER'] else set())|({'glfw3','curl'} if cli else set())
         if not required<=set(packages) or cairo!=flags['WITH_CAIRO']:
             raise ValueError('Missing actual host dependency discovery')
     provider=None;path=build/'python-runtime-inventory.txt'
@@ -742,12 +752,10 @@ def library_profile_graph(build,flags,hosts=False):
             values=re.findall(r'^'+name+r':[^=\n]+=([^\n]+)$',cache,re.M)
             if len(values)!=1 or not Path(values[0]).is_absolute():raise ValueError('Missing host SDK cache identity: '+name)
             return Path(values[0]).resolve(strict=True)
-        if flags['WITH_PERSISTENCE']:
-            include=entry('LIBDXFRW_INCLUDE_DIR');library=entry('LIBDXFRW_LIBRARY')
-            headers=sorted(include.rglob('*.h'))
-            if not (include/'libdxfrw.h').is_file() or not headers or not library.is_file() or not library.stat().st_size:
-                raise ValueError('Missing selected libdxfrw SDK files')
-            for selected in [library,*headers]:host_sdk[str(selected)]=sha256(selected.read_bytes())
+        # libdxfrw is the vendored third_party submodule (the dxfrw target above);
+        # an external SDK in the cache would be ignored, so it is refused.
+        if re.search(r'^(?:LIBDXFRW_INCLUDE_DIR|LIBDXFRW_LIBRARY|libdxfrw_DIR):',cache,re.M):
+            raise ValueError('External libdxfrw SDK in a vendored-libdxfrw build')
         modules=(['Qt6Core','Qt6Gui'] if ui or flags['WITH_RHI_RENDERER'] else [])+(
             ['Qt6Widgets','Qt6UiTools','Qt6OpenGL','Qt6OpenGLWidgets','Qt6Svg'] if ui else [])+(
             ['Qt6ShaderTools'] if flags['WITH_RHI_RENDERER'] else [])
@@ -937,10 +945,11 @@ def host_object_graph(build,flags):
         if (not {targets[n]['id'] for n in object_names}<=deps or len(actual)!=len(outputs) or set(actual)!=set(outputs) or
                 any('compileGroupIndex' in s for s in target.get('sources',[])) or name+'_autogen' in targets):
             raise ValueError('Host recompiles or omits shared UI objects: '+name)
+    standard=project_cxx_standard()
     for name in ('lckernel','lcviewernoqt'):
         groups=[g for g in targets[name].get('compileGroups',[]) if g['language']=='CXX']
-        if not groups or any(g.get('languageStandard',{}).get('standard')!='14' for g in groups):
-            raise ValueError('UI requirements leaked into CPU C++14 targets')
+        if not groups or any(g.get('languageStandard',{}).get('standard')!=standard for g in groups):
+            raise ValueError('UI requirements changed the CPU targets\' C++ standard')
     return dict(ui_compilations=len(compiled),shared_object_paths=sorted(str(p.relative_to(build.resolve())) for p in outputs))
 
 
@@ -1092,7 +1101,7 @@ def build_host_source(args):
     forbidden=['Qt5','Qt5Core','Qt5Gui','Qt5Widgets']
     if not (ui or flags['WITH_RHI_RENDERER']):forbidden+=['Qt6']
     if not cli:forbidden+=['glfw','glfw3','CURL']
-    if not flags['WITH_PERSISTENCE']:forbidden+=['libdxfrw']
+    forbidden+=['libdxfrw'] # Vendored in-tree for persistence builds, never discovered.
     if not tests:forbidden+=['GTest','GMock','googletest']
     if not python:forbidden+=['Python','Python3','PythonInterp','PythonLibs']
     command+=['-DCMAKE_DISABLE_FIND_PACKAGE_'+p+'=ON' for p in forbidden]

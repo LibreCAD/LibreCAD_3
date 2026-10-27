@@ -1,9 +1,6 @@
 [submodule "lckernel/nano-signal-slot"]
 	path = lckernel/nano-signal-slot
 	url = https://github.com/feragon/nano-signal-slot
-[submodule "persistence/libopencad"]
-	path = persistence/libopencad
-	url = https://github.com/sandyre/libopencad.git
 [submodule "third_party/kaguya"]
 	path = third_party/kaguya
 	url = https://github.com/satoren/kaguya.git
@@ -20,3 +17,4 @@
 [submodule "third_party/libdxfrw"]
 	path = third_party/libdxfrw
 	url = https://github.com/LibreCAD/libdxfrw.git
+	branch = master

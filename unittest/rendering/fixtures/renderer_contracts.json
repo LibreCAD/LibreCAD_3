@@ -948,6 +948,31 @@
         ]
       }
     },
+    "dimension-ordinate": {
+      "ordinary": {
+        "inputs": {
+          "points": {"type":"points2","unit":"model","value":[[0,0],[4,3]]},
+          "measurement-axis": {"type":"vec2","unit":"model","value":[1,0]},
+          "font-asset": {"type":"asset","unit":"none","value":"abeezee"},
+          "font-size": {"type":"number","unit":"model","value":10}
+        },
+        "assertions": [
+          {"observed":"measurement","expected":{"type":"number","unit":"model","value":4},"oracle":"model-error"},
+          {"observed":"label-visible","expected":{"type":"boolean","unit":"none","value":true},"oracle":"contracts"}
+        ]
+      },
+      "empty": {
+        "inputs": {"points":{"type":"points2","unit":"model","value":[]}},
+        "assertions": [{"observed":"draw-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}]
+      },
+      "limit": {
+        "inputs": {"limit":{"type":"integer","unit":"count","value":4},"requested":{"type":"integer","unit":"count","value":5}},
+        "assertions": [
+          {"observed":"diagnostic","expected":{"type":"text","unit":"none","value":"dimension-layout-limit"},"oracle":"contracts"},
+          {"observed":"accepted-output-count","expected":{"type":"integer","unit":"count","value":0},"oracle":"contracts"}
+        ]
+      }
+    },
     "dimension-angular": {
       "ordinary": {
         "inputs": {

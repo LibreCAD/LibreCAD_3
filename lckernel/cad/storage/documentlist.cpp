@@ -4,8 +4,8 @@ using namespace lc;
 using namespace lc::storage;
 
 DocumentList& DocumentList::getInstance() {
-    static DocumentList instance;
-    return instance;
+    static DocumentList _instance;
+    return _instance;
 }
 
 void DocumentList::addDocument(Document* document) {

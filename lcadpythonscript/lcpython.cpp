@@ -143,7 +143,6 @@ bool g_initialization_started = false;
 struct IsolatedRuntimeConfig {
     std::string home;
     std::vector<std::string> moduleSearchPaths;
-    bool staged = false;
 };
 
 bool g_has_isolated_runtime_config = false;
@@ -205,7 +204,6 @@ bool selectStagedRuntime(const std::string& applicationDirectory,
         if (!isFile(joinPath(stdlib, "os.py"))) continue;
 
         runtime.home = root;
-        runtime.staged = true;
         runtime.moduleSearchPaths.clear();
         const std::vector<std::string> relativePaths = {
             LC_PYTHON_STAGED_STDLIB_REL,
@@ -335,14 +333,6 @@ void PythonInit::configureForApplication(
     }
     g_isolated_runtime_config = std::move(config);
     g_has_isolated_runtime_config = true;
-}
-
-std::string PythonInit::configuredStagedRuntimeHome() {
-    std::lock_guard<std::mutex> lock(g_runtime_mutex);
-    if (!g_has_isolated_runtime_config || !g_isolated_runtime_config.staged) {
-        return {};
-    }
-    return g_isolated_runtime_config.home;
 }
 
 void PythonInit::initialize() {

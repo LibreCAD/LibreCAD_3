@@ -26,6 +26,28 @@ def _discovered_count(output: str) -> int:
     )
 
 
+def _discovered_suites(output: str) -> set[str]:
+    return {
+        line.strip()
+        for line in output.splitlines()
+        if line and not line[0].isspace() and line.strip().endswith(".")
+    }
+
+
+def _suite_names_from_filter(test_filter: str) -> set[str]:
+    positive_filter = test_filter.partition("-")[0]
+    suites = set()
+    for pattern in positive_filter.split(":"):
+        suite_pattern, separator, _test_pattern = pattern.partition(".")
+        if (
+            separator
+            and suite_pattern
+            and not any(wildcard in suite_pattern for wildcard in "*?")
+        ):
+            suites.add(suite_pattern + ".")
+    return suites
+
+
 def _invoke(
     command: Sequence[str], timeout_seconds: int
 ) -> subprocess.CompletedProcess:
@@ -53,6 +75,7 @@ def run_required_filter(
     test_filter: str,
     command_prefix: Iterable[str] = (),
     timeout_seconds: int = 1800,
+    required_suites: Iterable[str] = (),
 ) -> int:
     if not test_filter:
         print("ERROR: required GoogleTest filter is empty", file=sys.stderr)
@@ -99,6 +122,16 @@ def run_required_filter(
             file=sys.stderr,
         )
         return 1
+    expected_suites = set(required_suites) | _suite_names_from_filter(test_filter)
+    missing_suites = sorted(expected_suites - _discovered_suites(listing.stdout))
+    if missing_suites:
+        print(
+            "ERROR: required GoogleTest suites were not discovered: {}".format(
+                ", ".join(missing_suites)
+            ),
+            file=sys.stderr,
+        )
+        return 1
 
     print(
         "Required GoogleTest filter discovered {} tests: {}".format(
@@ -108,7 +141,6 @@ def run_required_filter(
     run_command = prefix + [
         binary,
         "--gtest_filter=" + test_filter,
-        "--gtest_brief=1",
     ]
     try:
         result = _invoke(run_command, timeout_seconds)
@@ -135,8 +167,8 @@ def run_required_filter(
         )
         return result.returncode if result.returncode > 0 else 1
 
-    summary = _RUN_SUMMARY.search(result.stdout)
-    if summary is None:
+    summaries = _RUN_SUMMARY.findall(result.stdout)
+    if not summaries:
         print(
             "ERROR: GoogleTest run summary was missing for filter: {}".format(
                 test_filter
@@ -144,7 +176,10 @@ def run_required_filter(
             file=sys.stderr,
         )
         return 1
-    executed = int(summary.group(1))
+    if len(summaries) != 1:
+        print("ERROR: GoogleTest run summary was ambiguous", file=sys.stderr)
+        return 1
+    executed = int(summaries[0])
     if executed == 0:
         print(
             "ERROR: required GoogleTest filter executed zero tests: {}".format(
@@ -157,6 +192,15 @@ def run_required_filter(
         print(
             "ERROR: required GoogleTest filter skipped one or more tests: {}".format(
                 test_filter
+            ),
+            file=sys.stderr,
+        )
+        return 1
+    if executed != discovered:
+        print(
+            "ERROR: required GoogleTest filter execution was incomplete: "
+            "discovered {}, executed {} (disabled tests or sharding may omit tests): {}".format(
+                discovered, executed, test_filter
             ),
             file=sys.stderr,
         )
@@ -175,6 +219,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--binary", required=True, help="GoogleTest executable")
     parser.add_argument("--filter", required=True, help="GoogleTest filter expression")
     parser.add_argument(
+        "--require-suite",
+        action="append",
+        default=[],
+        help="suite name (including trailing dot) that must appear in discovery; repeat as needed",
+    )
+    parser.add_argument(
         "--command-prefix",
         action="append",
         default=[],
@@ -192,6 +242,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.filter,
         args.command_prefix,
         args.timeout_seconds,
+        args.require_suite,
     )
 
 

@@ -113,10 +113,12 @@ def _nearest_point(insert, coord):
     best_dist = None
     for e in entities:
         # `e` is a base CADEntity; `nearestPointOnPath` is bound on
-        # Snapable (a base interface) — every Line inherits it.
+        # Snapable (a base interface). Skip block contents that do not
+        # implement that optional interface, but surface failures from an
+        # implementation that is present.
         try:
             candidate = e.nearestPointOnPath(coord)
-        except Exception:
+        except AttributeError:
             continue
         d = coord.distanceTo(candidate)
         if best_dist is None or d < best_dist:
@@ -310,12 +312,9 @@ def _create_rectangle_entity(position, layer, document, storage,
     ceb.setDragPointsClickedFunction(_drag_point_click)
     ceb.setDragPointsReleasedFunction(_drag_point_release)
     if meta_info is not None:
-        # CustomEntityBuilder inherits setMetaInfo from CADEntityBuilder;
-        # this method is bound but may be None at bind time — guarded.
-        try:
-            ceb.setMetaInfo(meta_info)
-        except Exception:
-            pass
+        # This is a supported inherited builder method; report bad metadata
+        # rather than silently creating an entity without it.
+        ceb.setMetaInfo(meta_info)
     return ceb.build()
 
 
@@ -340,10 +339,7 @@ def _generate_lines(p1, p2, layer, block=None, meta_info=None):
         if block is not None:
             lb.setBlock(block)
         if meta_info is not None:
-            try:
-                lb.setMetaInfo(meta_info)
-            except Exception:
-                pass
+            lb.setMetaInfo(meta_info)
         lines.append(lb.build())
     return lines
 
@@ -377,10 +373,7 @@ def _preview_add(doc, entities):
         return
     temp = mw.cadMdiChild().tempEntities()
     for e in entities:
-        try:
-            temp.addEntity(e)
-        except Exception:
-            pass  # entity may not be a temp-eligible type; skip.
+        temp.addEntity(e)
 
 
 def _preview_remove(doc, entities):
@@ -392,10 +385,7 @@ def _preview_remove(doc, entities):
         return
     temp = mw.cadMdiChild().tempEntities()
     for e in entities:
-        try:
-            temp.removeEntity(e)
-        except Exception:
-            pass
+        temp.removeEntity(e)
 
 
 # =============================================================================
@@ -464,6 +454,14 @@ class PyRectangleOp(CreateOperations):
         for e in self.entities:
             temp.addEntity(e)
 
+    def cleanUp(self):
+        mw = self._get_main_window()
+        if mw is not None:
+            temp = mw.cadMdiChild().tempEntities()
+            for entity in self.entities:
+                temp.removeEntity(entity)
+        self.entities.clear()
+
     def _store_rectangle(self):
         """Commit the rectangle to the document."""
         mw = self._get_main_window()
@@ -474,23 +472,24 @@ class PyRectangleOp(CreateOperations):
         layer = mdi.activeLayer()
 
         # Clear preview.
-        temp = mdi.tempEntities()
-        for e in self.entities:
-            temp.removeEntity(e)
-        self.entities = []
+        self.cleanUp()
 
-        # Storage block.
+        # Storage block and its geometry form one user-visible creation
+        # transaction. Executing AddBlock and EntityBuilder separately would
+        # leave the block behind after a single undo.
         w = self.p2.x() - self.p1.x()
         h = self.p2.y() - self.p1.y()
         block = _create_storage(self.p1, w, h)
-        lc.operation.AddBlock.new(doc, block).execute()
+        transaction = lc.operation.Builder(doc, "Create Python rectangle")
+        transaction.append(lc.operation.AddBlock.new(doc, block))
 
         # Add the 4 lines + the CustomEntity Insert.
         eb = lc.operation.EntityBuilder.new(doc)
         for line in _generate_lines(self.p1, self.p2, layer, block):
             eb.appendEntity(line)
         eb.appendEntity(_create_rectangle_entity(self.p1, layer, doc, block))
-        eb.execute()
+        transaction.append(eb)
+        transaction.execute()
 
         self.close()
 
@@ -558,7 +557,7 @@ def _on_new_waiting_custom_entity(insert):
 
 
 # Register the plugin at module import time.  The plugin registration
-# hook (installed by lcUI's installEventHooks at MainWindow construction)
+# hook (installed before definition loading by lcUI's process bootstrap)
 # routes this into the process-global LuaCustomEntityManager.  In
 # headless CLI mode with no hook installed, this call is a silent
 # no-op (matches the sub-piece 1 rationale for the hook slot).

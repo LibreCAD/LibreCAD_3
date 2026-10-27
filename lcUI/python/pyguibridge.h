@@ -6,12 +6,17 @@
 // lcpythonscript's PYBIND11_EMBEDDED_MODULE).  The `lcgui` module holds
 // bindings for QWidget-owned classes that scripts running inside
 // ScriptDock need to reach: MainWindow, CadMdiChild.  Everything is
-// bound HOLDER-LESS (raw pointer / `return_value_policy::reference`)
-// because Qt owns these widgets — Python must NOT try to delete them.
-// This matches Lua's raw-pointer exposure of the same classes; a
-// dangling Python reference after window close is the deliberate parity
-// (same failure mode as Lua on the same close).  Do not "fix" with a
-// holder.
+// returned by reference because Qt owns them. QtClass installs a QPointer
+// lifetime guard on every wrapper; the shared call-boundary policy rejects
+// destroyed receivers and arguments. Python-created widgets retain their
+// default holder until a bound call gives them a Qt parent; the holder is
+// then released before Qt teardown can release callback-held wrappers.
+// Qt destruction invalidates retained handles and removes dead addresses
+// from pybind11's wrapper cache. DialogWidget is
+// parented to its supplied MainWindow. Shared kernel/viewer objects keep
+// their normal shared_ptr ownership and are not Qt lifetime wrappers.
+// GUI callback adapters share a weak window-scope proxy in pyeventhooks;
+// nested dispatch restores its caller and dead bound windows are inert.
 //
 // The module body's FIRST statement is `py::module_::import("lc")` so
 // lc's kernel bindings are registered before lcgui's signatures need

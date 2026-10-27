@@ -24,19 +24,24 @@ jobs:
           submodules: 'recursive'
 
       - name: Test embedded Python provider guard
-        run: python3 -m unittest scripts.tests.test_validate_python_provider scripts.tests.test_runtime_smoke_contract -v
+        run: python3 -m unittest scripts.tests.test_validate_python_provider -v
+
+      # Cheap and first: a libdxfrw type in a public persistence header forces
+      # every consumer of persistence to find libdxfrw's include path, and the
+      # error message points nowhere near the edit.
+      - run: ${{ github.workspace }}/scripts/ci/check-persistence-headers.sh
+
+      # And that no read callback can take the process down with it.
+      - run: ${{ github.workspace }}/scripts/ci/check-read-callbacks.sh
 
       - run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
 
-      - name: Validate selected Linux Python provider
+      - name: Verify selected Linux Python runtime inventory
         shell: bash
         run: |
           set -euo pipefail
-          inventory=build/python-runtime-inventory.txt
-          test -s "$inventory"
-          python_executable="$(sed -n 's/^executable=//p' "$inventory")"
-          test -x "$python_executable"
-          "$python_executable" scripts/validate_python_provider.py --inventory "$inventory"
+          test -s build/python-runtime-inventory.txt
+          cat build/python-runtime-inventory.txt
 
       - run: cd ${{ github.workspace }}
 
@@ -50,14 +55,63 @@ jobs:
           test -n "$appimage"
           appimage="$(realpath "$appimage")"
           cd /tmp
+          # The AppImage ships the xcb platform plugin; exercise it under a
+          # virtual X server rather than requesting an unbundled offscreen plugin.
           xvfb-run -a env QT_QPA_PLATFORM=xcb \
             PYTHONHOME=/__librecad_python_poison__ \
             PYTHONPATH=/__librecad_python_poison__ \
             LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
-            "$appimage" --python-smoke
+            LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE=1 \
+            "$appimage" --python-smoke 2>&1 | tee "$GITHUB_WORKSPACE/build/appimage-native-runtime.log"
 
-      - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v2
+      - name: Smoke AppImage without host Python
+        shell: bash
+        run: |
+          set -euo pipefail
+          appimage="$(find build -maxdepth 1 -type f -name 'LibreCAD*.AppImage' -print -quit)"
+          test -n "$appimage"
+          appimage="$(realpath "$appimage")"
+          docker pull --platform linux/amd64 ubuntu:26.04
+          runtime_base=$(docker image inspect --format '{{index .RepoDigests 0}}' ubuntu:26.04)
+          docker build --platform linux/amd64 --build-arg "RUNTIME_BASE=$runtime_base" \
+            -f scripts/ubuntu-install/appimage-runtime.Dockerfile \
+            -t librecad-appimage-runtime scripts/ubuntu-install
+          {
+            docker image inspect --format '{{.Id}} {{.Architecture}}' librecad-appimage-runtime
+            echo "base=$runtime_base"
+          } | tee build/appimage-runtime-container.txt
+          docker run --rm --platform linux/amd64 --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,exec,nosuid,size=1g \
+            -v "$appimage:/artifact/LibreCAD.AppImage:ro" \
+            librecad-appimage-runtime /artifact/LibreCAD.AppImage \
+            2>&1 | tee build/appimage-clean-runtime.log
+
+      - name: Record AppImage artifact identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          artifacts=(build/LibreCAD*.AppImage)
+          test "${#artifacts[@]}" -eq 1
+          python3 -B scripts/record_python_artifact.py \
+            --artifact "${artifacts[0]}" --inventory build/python-runtime-inventory.txt \
+            --platform appimage-x86_64 --revision "$(git rev-parse HEAD)" \
+            --evidence build/appimage-native-runtime.log \
+            --evidence build/appimage-clean-runtime.log \
+            --evidence build/appimage-runtime-container.txt \
+            --output build/appimage-artifact-identity.json
+
+      - name: Install or refresh Snapcraft (latest/stable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if sudo snap list snapcraft >/dev/null 2>&1; then
+            sudo snap refresh snapcraft --channel=latest/stable
+          else
+            sudo snap install snapcraft --classic --channel=latest/stable
+          fi
+          snapcraft --version
 
       - run: cd ${{ github.workspace }}
 
@@ -68,11 +122,23 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp
-          env QT_QPA_PLATFORM=offscreen \
+          timeout --kill-after=10s 180s xvfb-run -a env QT_QPA_PLATFORM=xcb \
             PYTHONHOME=/__librecad_python_poison__ \
             PYTHONPATH=/__librecad_python_poison__ \
             LIBRECAD_REQUIRE_BUNDLED_PYTHON=1 \
-            snap run librecad --python-smoke
+            LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1 \
+            snap run librecad --python-smoke 2>&1 | tee "$GITHUB_WORKSPACE/build/snap-elf-runtime-smoke.log"
+
+      - name: Record snap artifact identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B scripts/record_python_artifact.py \
+            --artifact librecad.snap --inventory build/snap-python-runtime-inventory.txt \
+            --platform snap-amd64 --revision "$(git rev-parse HEAD)" \
+            --evidence build/snap-runtime-identity.txt \
+            --evidence build/snap-elf-runtime-smoke.log \
+            --output build/snap-artifact-identity.json
 
       # if: always(): a later, unrelated createSnap.sh failure was otherwise
       # skipping this upload of an AppImage that had already built fine.
@@ -80,22 +146,33 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: assets
+          name: assets-linux-x86_64
           path: |
             ${{ github.workspace }}/build/LibreCAD**AppImage
             ${{ github.workspace }}/build/python-runtime-inventory.txt
+            ${{ github.workspace }}/build/appimage-runtime-container.txt
+            ${{ github.workspace }}/build/appimage-clean-runtime.log
+            ${{ github.workspace }}/build/appimage-native-runtime.log
+            ${{ github.workspace }}/build/appimage-artifact-identity.json
+          if-no-files-found: error
           retention-days: 2
 
       - name: Uploading snap
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          path: ${{ github.workspace }}/librecad**snap
+          path: |
+            ${{ github.workspace }}/librecad**snap
+            ${{ github.workspace }}/build/snap-python-runtime-inventory.txt
+            ${{ github.workspace }}/build/snap-runtime-identity.txt
+            ${{ github.workspace }}/build/snap-elf-runtime-smoke.log
+            ${{ github.workspace }}/build/snap-artifact-identity.json
           name: LibreCAD3.snap
           retention-days: 2
 
-  # Validate the installed system-Python path on native ARM64. AppImage and
-  # Snap packaging remain in the amd64 job above.
+  # Exercise the system install and the same blocking Python/UI/DXF/Lua tests
+  # on a native ARM64 GitHub-hosted runner. AppImage and Snap packaging stay in
+  # the x64 job because the current deploy tools and snap target are x86_64/amd64.
   linux-arm64:
     name: BuildLinuxArm64
     runs-on: ubuntu-26.04-arm
@@ -111,22 +188,24 @@ jobs:
           test "$(dpkg --print-architecture)" = arm64
 
       - name: Test embedded Python provider guard
-        run: python3 -m unittest scripts.tests.test_validate_python_provider scripts.tests.test_runtime_smoke_contract -v
+        run: python3 -m unittest scripts.tests.test_validate_python_provider -v
+
+      - name: Check persistence public headers
+        run: ${{ github.workspace }}/scripts/ci/check-persistence-headers.sh
+
+      - name: Check persistence read callbacks
+        run: ${{ github.workspace }}/scripts/ci/check-read-callbacks.sh
 
       - name: Build, test, install, and smoke Linux ARM64
         env:
+          # Keep native ARM64 objects separate from the x86_64 Linux job's
+          # default build/ directory when both build trees are reused locally.
           LIBRECAD_BUILD_DIR: build-linux-arm64
         run: ${{ github.workspace }}/scripts/ubuntu-install/installDependenciesAndBuildRepo.sh
 
-      - name: Validate selected ARM64 Python provider
-        shell: bash
-        run: |
-          set -euo pipefail
-          inventory=build-linux-arm64/python-runtime-inventory.txt
-          test -s "$inventory"
-          python_executable="$(sed -n 's/^executable=//p' "$inventory")"
-          test -x "$python_executable"
-          "$python_executable" scripts/validate_python_provider.py --inventory "$inventory"
+      - name: Verify ARM64 Python runtime inventory
+        if: success()
+        run: test -s build-linux-arm64/python-runtime-inventory.txt
 
       - name: Upload ARM64 Python runtime inventory
         uses: actions/upload-artifact@v4
@@ -138,7 +217,8 @@ jobs:
 
   windows:
     name: BuildWindows
-    # Keep the hosted compiler aligned with Qt 6.8.3 and Conan's MSVC 2022 ABI.
+    # Keep the Conan ABI aligned with its prebuilt MSVC 2022 packages and the
+    # Qt 6.8.3 win64_msvc2022_64 binaries installed below.
     runs-on: windows-2022
     steps:
 
@@ -169,10 +249,7 @@ jobs:
 
       - name: Test embedded Python provider guard
         shell: pwsh
-        run: '& $env:Python_EXECUTABLE -m unittest scripts.tests.test_validate_python_provider scripts.tests.test_runtime_smoke_contract -v'
-
-      - name: Install Visual Studio 2022 with tools
-        run: ${{ github.workspace }}/scripts/windows-install/installVisualStudio.bat
+        run: '& $env:Python_EXECUTABLE -m unittest scripts.tests.test_validate_python_provider -v'
 
       - run: cd ${{ github.workspace }}
 
@@ -186,9 +263,13 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
+          # Run aqtinstall on the CPython pinned above. The action's own
+          # setup-python asks for ">=3.14.0", which resolves to the newest
+          # release and replaces pythonLocation and PATH after the pin, so the
+          # runtime inventory check compared a 3.14 build with a 3.15 root.
+          setup-python: false
           # Qt 6.8+ publishes Windows desktop binaries against MSVC 2022.
-          # QtSvg and QtTools are part of the Qt 6 essentials package; they
-          # are not separately installable aqt modules.
+          # QtSvg and QtTools are in essentials and are not aqt add-on modules.
           arch: win64_msvc2022_64
 
       - name: Configure Qt 6
@@ -211,19 +292,44 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
 
-      - run: ${{ github.workspace }}/scripts/windows-install/buildLibrecadAndCreatePackage.bat
+      - name: Build and package LibreCAD on Windows
+        shell: cmd
+        run: call "${{ github.workspace }}\scripts\windows-install\buildLibrecadAndCreatePackage.bat"
 
-      - name: Validate selected Windows Python provider
+      - name: Verify Windows Python feature configurations
+        shell: cmd
+        run: |
+          call "${{ github.workspace }}\conan\conanrun.bat"
+          if errorlevel 1 exit /b 1
+          cmake -S "${{ github.workspace }}" -B "${{ github.workspace }}\build-python-off" ^
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\conan\conan_toolchain.cmake" ^
+            -DWITH_PYTHONSCRIPT=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Python=TRUE ^
+            -DWITH_UNITTESTS=ON -DWITH_RENDERING_UNITTESTS=OFF
+          if errorlevel 1 exit /b 1
+          cmake --build "${{ github.workspace }}\build-python-off" --config Release --target librecad lcunittest --parallel 3
+          if errorlevel 1 exit /b 1
+          set "QT_QPA_PLATFORM=offscreen"
+          "%Python_EXECUTABLE%" scripts\run_required_gtests.py --binary "${{ github.workspace }}\build-python-off\bin\lcunittest.exe" --filter="LuaRuntimeTest.*" --require-suite "LuaRuntimeTest."
+          if errorlevel 1 exit /b 1
+          REM Binding-only: persistence-OFF is not a supported GUI configuration.
+          cmake -S "${{ github.workspace }}" -B "${{ github.workspace }}\build-python-no-persistence" ^
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\conan\conan_toolchain.cmake" ^
+            -DPython_ROOT_DIR="%Python_ROOT_DIR%" -DPython_EXECUTABLE="%Python_EXECUTABLE%" ^
+            -DWITH_PYTHONSCRIPT=ON -DWITH_PERSISTENCE=OFF -DWITH_QT_UI=OFF ^
+            -DWITH_LUACMDINTERFACE=OFF -DWITH_UNITTESTS=OFF
+          if errorlevel 1 exit /b 1
+          cmake --build "${{ github.workspace }}\build-python-no-persistence" --config Release --target lcpythonscript --parallel 3
+          if errorlevel 1 exit /b 1
+
+      - name: Verify selected Python runtime inventory
         shell: pwsh
-        run: '& $env:Python_EXECUTABLE scripts/validate_python_provider.py --inventory build/python-runtime-inventory.txt'
-
-      - name: Upload Windows Python runtime inventory
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: python-runtime-inventory-windows
-          path: build/python-runtime-inventory.txt
-          if-no-files-found: ignore
+        run: |
+          & $env:Python_EXECUTABLE scripts/validate_python_inventory.py `
+            --inventory build/python-runtime-inventory.txt `
+            --expected-root "$env:pythonLocation"
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Selected CPython runtime inventory validation failed'
+          }
 
       - run: cd ${{ github.workspace }}
 
@@ -237,6 +343,7 @@ jobs:
         shell: bash
 
       - name: Install and smoke the isolated Python runtime
+        timeout-minutes: 5
         shell: pwsh
         run: |
           $installer = Get-ChildItem 'build/bin/LibreCAD3-*.exe' | Select-Object -First 1
@@ -254,15 +361,37 @@ jobs:
           $env:PYTHONHOME = Join-Path $env:RUNNER_TEMP 'poison-python-home'
           $env:PYTHONPATH = Join-Path $env:RUNNER_TEMP 'poison-python-path'
           $env:LIBRECAD_REQUIRE_BUNDLED_PYTHON = '1'
+          $env:LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE = '1'
+          $env:LIBRECAD_REQUIRE_CONAN_NOTICES = '1'
           Remove-Item Env:QT_PLUGIN_PATH -ErrorAction SilentlyContinue
           Remove-Item Env:QT_QPA_PLATFORM_PLUGIN_PATH -ErrorAction SilentlyContinue
           Remove-Item Env:QTDIR -ErrorAction SilentlyContinue
+          # This is a fresh hosted step, so the offscreen selection from the
+          # build-tree batch file does not carry over. The package stages this
+          # plugin explicitly; select it for a display-independent install smoke.
+          $env:QT_QPA_PLATFORM = 'offscreen'
           $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
           Push-Location (Split-Path $app)
-          & $app --python-smoke
+          & $app --python-smoke 2>&1 | Tee-Object -FilePath (Join-Path $env:GITHUB_WORKSPACE 'build/windows-installed-smoke.log')
           $smokeExitCode = $LASTEXITCODE
           Pop-Location
           if ($smokeExitCode -ne 0) { throw "Installed Python smoke exited with $smokeExitCode" }
+          Copy-Item (Join-Path $installRoot 'share/librecad/licenses/providers/conan/manifest.json') `
+            'build/windows-conan-provider-manifest.json'
+
+      - name: Record Windows artifact identity
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem 'build/bin/LibreCAD3-*.exe')
+          if ($installers.Count -ne 1) { throw 'Expected exactly one tested NSIS installer' }
+          $revision = git rev-parse HEAD
+          & $env:Python_EXECUTABLE -B scripts/record_python_artifact.py `
+            --artifact $installers[0].FullName --inventory build/python-runtime-inventory.txt `
+            --platform windows-x64 --revision $revision `
+            --evidence build/windows-installed-smoke.log `
+            --evidence build/windows-conan-provider-manifest.json `
+            --output build/windows-artifact-identity.json
+          if ($LASTEXITCODE -ne 0) { throw 'Windows artifact identity recording failed' }
 
       - name: Uploading exe
         uses: actions/upload-artifact@v4
@@ -270,12 +399,130 @@ jobs:
           path: |
             ${{ github.workspace }}/build/bin/LibreCAD3**.exe
             ${{ github.workspace }}/build/python-runtime-inventory.txt
-          name: assets
+            ${{ github.workspace }}/build/windows-artifact-identity.json
+            ${{ github.workspace }}/build/windows-installed-smoke.log
+            ${{ github.workspace }}/build/windows-conan-provider-manifest.json
+          name: assets-windows-x64
+          if-no-files-found: error
+
+  # DWG reading is off by default, so nothing else in CI exercises it. This job
+  # turns it on and reads libdxfrw's own DWG fixtures under AddressSanitizer and
+  # UndefinedBehaviorSanitizer.
+  #
+  # A DWG is a container of self-describing offsets and lengths, and the reader
+  # walks them; the failure mode of a corrupt one is a bad read, not a wrong
+  # number, which is exactly what a sanitizer sees and a test does not. Locally
+  # the same sweep over the eight fixtures plus a 48-file mutation corpus
+  # (bit flips and truncations of a libdxfrw-written base) reports zero
+  # findings and zero abnormal exits; the mutants are not committed here --
+  # they belong upstream, with the reader.
+  dwg-sanitizers:
+    name: ReadDwgUnderSanitizers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          # Modelled on the CodeQL job's list, which is known to configure and
+          # build this tree. lcviewernoqt is added unconditionally, so its
+          # dependencies are required even with the UI, Lua and Python off.
+          sudo apt-get install -y cmake ninja-build libboost-all-dev libeigen3-dev \
+            rapidjson-dev libgtest-dev libglew-dev libglfw3-dev liblua5.4-dev \
+            libfreetype-dev libpng-dev libbz2-dev libglm-dev \
+            libcurl4-gnutls-dev libgtk-3-dev freeglut3-dev
+
+      # -Wno-error because the third-party submodules are built with -Werror and
+      # warn under the sanitizers' instrumentation; their warnings are not what
+      # this job is looking for.
+      - name: Configure with DWG import and the sanitizers
+        run: |
+          cmake -S . -B build-asan -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DWITH_DWG_IMPORT=ON -DWITH_QT_UI=OFF -DWITH_PYTHONSCRIPT=OFF \
+            -DWITH_LUACMDINTERFACE=OFF -DWITH_RENDERING_UNITTESTS=OFF \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -Wno-error" \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -Wno-error" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build the tests
+        run: cmake --build build-asan --target lcunittest
+
+      # halt_on_error: a sanitizer finding must fail the job, not be logged and
+      # walked past.
+      - name: Read the DWG fixtures
+        env:
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ./build-asan/bin/lcunittest --gtest_filter='DwgImportTest.*'
+
+  # BuildWindows has to install Qt, build every target and package an
+  # installer before it tells us anything, and it has not reached a build in a
+  # long time. This job answers the one question that gates the libdxfrw
+  # submodule on Windows -- does MSVC compile the library and the persistence
+  # layer that consumes it -- in a couple of minutes, without Qt, and fails the
+  # PR on its own if it cannot.
+  windows-persistence:
+    name: BuildWindowsPersistence
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - run: ${{ github.workspace }}/scripts/windows-install/installConan.bat
+
+      - run: ${{ github.workspace }}/scripts/windows-install/createConanDirAndInstallDependencies.bat
+
+      # No -G: the batch files deliberately let CMake pick the newest Visual
+      # Studio on the runner, and this job must exercise the same generator,
+      # because Release there enables whole-program optimisation -- which is
+      # what libdxfrw's /GL- and /Zc:inline- exist to counteract.
+      - name: Configure without the Qt UI
+        shell: cmd
+        run: |
+          cmake -S %CD% -B %CD%\build-persistence ^
+            -DCMAKE_TOOLCHAIN_FILE="%CD%\conan\conan_toolchain.cmake" ^
+            -DWITH_QT_UI=OFF -DWITH_UNITTESTS=OFF -DWITH_LUACMDINTERFACE=OFF ^
+            -DWITH_PYTHONSCRIPT=OFF -DWITH_RENDERING_UNITTESTS=OFF
+          if errorlevel 1 exit /b 1
+
+      - name: Build libdxfrw and persistence
+        shell: cmd
+        run: |
+          cmake --build %CD%\build-persistence --config Release --target dxfrw persistence
+          if errorlevel 1 exit /b 1
 
   UpdateAssets:
-    if: github.repository_owner == 'LibreCAD'
+    # Publishing the "Continuous Build" release belongs to pushes on the
+    # default branch, not to pull-request validation. A pull_request run gets a
+    # read-only GITHUB_TOKEN, so moving the `latest` tag fails:
+    #
+    #   Could not create new tag "refs/tags/latest"
+    #   (Resource not accessible by integration)
+    #   ##[error]Resource not accessible by integration
+    #
+    # Nobody saw this because the job `needs: [linux, windows]` and the linux
+    # job had been failing at createSnap.sh, so it was skipped on every run.
+    # With that fixed it runs on every PR and fails for a reason that has
+    # nothing to do with the PR -- turning an otherwise green branch red.
+    #
+    # workflow_dispatch is kept: it is maintainer-initiated and its token can
+    # write, so a manual refresh of the continuous build still works.
+    if: >-
+      github.repository_owner == 'LibreCAD'
+      && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: [linux, windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -284,6 +531,9 @@ jobs:
 
       - name: Fetch artifacts
         uses: actions/download-artifact@v4
+        with:
+          pattern: assets-*
+          path: release-artifacts
 
       - name: Upload latest pre-release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -292,5 +542,6 @@ jobs:
           automatic_release_tag: "latest"
           title: "Continuous Build"
           files: |
-            assets/LibreCAD*.*
+            release-artifacts/assets-linux-x86_64/LibreCAD*.AppImage
+            release-artifacts/assets-windows-x64/bin/LibreCAD3*.exe
             LICENSE

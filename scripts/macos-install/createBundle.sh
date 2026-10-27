@@ -41,30 +41,66 @@ for tool in macdeployqt_bin qtpaths_bin otool_bin install_name_tool_bin codesign
     fi
 done
 
+install_origins="$prefix/share/librecad/licenses/providers/native-origins.json"
+if [[ -e "$install_origins" || -L "$install_origins" ]]; then
+    # Validate this stage before copying it. Its prefix-relative paths/final
+    # hashes cannot describe the later Qt-deployed and re-signed .app.
+    "$python_bin" -B -c '
+import sys
+from pathlib import Path
+root = Path(sys.argv[1])
+sys.path.insert(0, str(root / "share/librecad/lcUIPy"))
+from _nativeorigins import audit_native_origins
+print("Verified install-stage native origins:", audit_native_origins(root, sys.argv[2]))
+' "$prefix" "$install_origins"
+fi
+
 contents="$bundle/Contents"
 macos="$contents/MacOS"
 frameworks="$contents/Frameworks"
 resources="$contents/Resources"
 mkdir -p "$macos" "$frameworks" "$resources"
+origin_stage_args=()
+final_origins="$bundle.native-origins.json"
+if [[ -e "$install_origins" ]]; then
+    origin_capture="$bundle.origin-capture.json"
+    origin_staged="$bundle.origin-staged.json"
+    for output in "$origin_capture" "$origin_staged" "$final_origins"; do
+        if [[ -e "$output" || -L "$output" ]]; then
+            echo "Refusing to replace existing native-origin evidence: $output" >&2
+            exit 1
+        fi
+    done
+    qt_libraries=$($qtpaths_bin --query QT_INSTALL_LIBS)
+    qt_plugins=$($qtpaths_bin --query QT_INSTALL_PLUGINS)
+    "$python_bin" -B "$script_dir/bundleNativeOrigins.py" prepare \
+        "$prefix" "$contents" "$qt_libraries" "$qt_plugins" "$origin_capture" --otool "$otool_bin"
+    origin_stage_args=(--origin-capture "$origin_capture" "$origin_staged")
+fi
 ditto "$script_dir/Info.plist" "$contents/Info.plist"
 ditto "$prefix/bin/librecad" "$macos/librecad"
-
-# An install prefix also contains development-only files (static archives and
-# CMake package metadata). Copy only loadable runtime libraries into the app;
-# sealing arbitrary package files under Contents/Frameworks can make codesign
-# reject the bundle as malformed nested code.
-shopt -s nullglob
-runtime_libraries=("$prefix"/lib/*.dylib "$prefix"/lib/*.framework)
-shopt -u nullglob
-if ((${#runtime_libraries[@]} == 0)); then
-    echo "No runtime dylibs or frameworks found under $prefix/lib" >&2
-    exit 1
-fi
-for runtime_library in "${runtime_libraries[@]}"; do
-    ditto "$runtime_library" "$frameworks/"
+# Stage runtime objects only. Static archives are link-time inputs and cannot
+# be loaded or deep-signed as app-bundle components.
+for runtime_library in "$prefix"/lib/*.dylib "$prefix"/lib/*.so; do
+    if [[ -e "$runtime_library" || -L "$runtime_library" ]]; then
+        ditto "$runtime_library" "$frameworks/$(basename "$runtime_library")"
+    fi
 done
-echo "Staged ${#runtime_libraries[@]} runtime library entry(s) into app Frameworks"
+for runtime_bundle in "$prefix"/lib/*.framework "$prefix"/lib/*.bundle; do
+    if [[ -d "$runtime_bundle" ]]; then
+        ditto "$runtime_bundle" "$frameworks/$(basename "$runtime_bundle")"
+    fi
+done
 ditto "$prefix/share/librecad" "$resources/librecad"
+if [[ -e "$install_origins" ]]; then
+    retained_origins="$resources/librecad/licenses/providers/native-origins-install-prefix.json"
+    if [[ -e "$retained_origins" || -L "$retained_origins" ]]; then
+        echo "Refusing to replace retained install-stage native origins: $retained_origins" >&2
+        exit 1
+    fi
+    mv "$resources/librecad/licenses/providers/native-origins.json" "$retained_origins"
+    echo "Retained install-prefix origins; final app native-origin qualification remains separate"
+fi
 
 # Python installs can include optional development-library links in their
 # sysconfig directory even when those libraries are not installed. Omit only
@@ -139,6 +175,8 @@ done
     "$install_name_tool_bin" \
     "$codesign_bin" \
     --application-binary "$macos/librecad" \
+    "${origin_stage_args[@]}" \
+    --bundle-info-plist "$contents/Info.plist" \
     --scan-frameworks \
     --scan-directory "$contents/PlugIns"
 
@@ -146,4 +184,10 @@ done
 # and dependency staging have completed.
 "$codesign_bin" --force --deep --sign - "$bundle"
 "$codesign_bin" --verify --deep --strict "$bundle"
+if [[ -e "$install_origins" ]]; then
+    # Never embed hashes of the signed executable in its own signed resources:
+    # changing that resource would change the executable signature/hash again.
+    "$python_bin" -B "$script_dir/bundleNativeOrigins.py" finalize \
+        "$contents" "$origin_staged" "$final_origins"
+fi
 echo "Created and verified macOS app bundle: $bundle"

@@ -48,11 +48,11 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent) {
 }
 
 void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document) {
+    // Leave an active paper view before deleting the old drawing's views.
+    setActive(_modelViewerImpl->viewer(), true);
+    while (_tabWidget->count() > 1) _tabWidget->removeTab(1);
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
-
-    _tabWidget->removeTab(1);
-    _tabWidget->removeTab(1);
 
     //For each block create viewport
     auto view = document->blockByName("*Paper_Space");

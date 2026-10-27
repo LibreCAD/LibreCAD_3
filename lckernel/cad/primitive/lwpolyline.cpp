@@ -1,5 +1,6 @@
 #include <memory>
 #include <cmath>
+#include <cad/logger/logger.h>
 #include "cad/primitive/lwpolyline.h"
 #include "cad/geometry/geoarc.h"
 #include <cad/vo/entitycoordinate.h>
@@ -179,38 +180,50 @@ CADEntity_CSPtr LWPolyline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr
 }
 
 void LWPolyline::generateEntities() {
+    // A DXF LWPOLYLINE may declare zero vertices (90=0), and so may a hatch
+    // boundary polyline.  begin() is then end(), and the increment below walked
+    // off the vector: lastPoint->bulge() read past the end of the allocation.
+    if (_vertex.empty()) {
+        return;
+    }
+
+    // geo::Arc rejects a radius <= 0, which is exactly what createArcBulge
+    // computes for a bulge between coincident points.  A file may hold such a
+    // segment, so degrade to the chord instead of letting the throw escape
+    // File::open, where nothing catches it.
+    const auto appendSegment = [this](const LWVertex2D& from, const geo::Coordinate& to) {
+        if (from.bulge() != 0.) {
+            try {
+                _entities.push_back(std::make_shared<const Arc>(
+                                        geo::Arc::createArcBulge(from.location(), to, from.bulge()),
+                                        layer(),
+                                        metaInfo(),
+                                        block()
+                                    ));
+                return;
+            }
+            catch (const std::exception& e) {
+                LOG_WARNING << "LWPolyline bulge segment is not an arc (" << e.what()
+                            << "); using the chord instead";
+            }
+        }
+
+        _entities.push_back(std::make_shared<const Line>(from.location(), to, layer(), metaInfo(), block()));
+    };
+
     auto itr = _vertex.begin();
     auto lastPoint = itr;
     itr++;
     while (itr != vertex().end()) {
-        if (lastPoint->bulge() != 0.) {
-            _entities.push_back(std::make_shared<const Arc>(
-                                    geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge()),
-                                    layer(),
-                                    metaInfo(),
-                                    block()
-                                ));
-        }
-        else {
-            _entities.push_back(std::make_shared<const Line>(lastPoint->location(), itr->location(), layer(), metaInfo(), block()));
-        }
+        appendSegment(*lastPoint, itr->location());
         lastPoint = itr;
         itr++;
     }
 
-    if (_closed) {
-        auto firstP = _vertex.begin();
-        if (lastPoint->bulge() != 0.) {
-            _entities.push_back(std::make_shared<const Arc>(
-                                    geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge()),
-                                    layer(),
-                                    metaInfo(),
-                                    block()
-                                ));
-        }
-        else {
-            _entities.push_back(std::make_shared<const Line>(lastPoint->location(), firstP->location(), layer(), metaInfo(), block()));
-        }
+    // A single vertex has no closing segment: the chord is zero length and the
+    // arc through it is degenerate.
+    if (_closed && _vertex.size() > 1) {
+        appendSegment(*lastPoint, _vertex.begin()->location());
     }
 }
 

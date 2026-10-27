@@ -16,7 +16,6 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QStringList>
 
 #ifdef LC_PYTHON_SMOKE_WITH_PERSISTENCE
 #include <QTemporaryDir>
@@ -40,29 +39,17 @@ int runPythonRuntimeSmoke() {
                      "in its install prefix, or in its app bundle\n";
         return 1;
     }
-    const std::string stagedPythonRoot =
-        lc::python::PythonInit::configuredStagedRuntimeHome();
-    const bool stagedPythonExpected = !stagedPythonRoot.empty();
-
-    if (stagedPythonExpected) {
-        const QString licenseDirectory = QDir(QString::fromStdString(stagedPythonRoot))
-            .filePath("../licenses/third-party");
-        const QStringList requiredNotices = {
-            QStringLiteral("nano-signal-slot-LICENSE"),
-            QStringLiteral("tinyspline-LICENSE"),
-            QStringLiteral("kaguya-LICENSE_1_0.txt"),
-            QStringLiteral("pybind11-LICENSE"),
-        };
-        for (const QString& notice : requiredNotices) {
-            const QFileInfo noticeFile(QDir(licenseDirectory).filePath(notice));
-            if (!noticeFile.isFile() || noticeFile.size() == 0) {
-                std::cerr << "Python smoke failed: required vendored license notice is "
-                          << "missing or empty: " << noticeFile.absoluteFilePath().toStdString()
-                          << '\n';
-                return 1;
-            }
-        }
-    }
+    const QDir packageDirectory = QFileInfo(packageRoot).dir();
+    const QString stagedPythonRoot = packageDirectory.filePath("python");
+    const QString stagedPythonLicense = packageDirectory.filePath(
+        "licenses/python/LICENSE.txt");
+    const QString packageParentDirectoryName =
+        QFileInfo(packageDirectory.absolutePath()).dir().dirName();
+    const bool installedShareLayout = packageDirectory.dirName() == "librecad" &&
+        packageParentDirectoryName == "share";
+    const bool appBundleResourcesLayout = packageDirectory.dirName() == "Resources";
+    const bool stagedPythonExpected = installedShareLayout ||
+        appBundleResourcesLayout || QDir(stagedPythonRoot).exists();
 
     try {
         lc::python::PythonInit::initialize();
@@ -70,7 +57,9 @@ int runPythonRuntimeSmoke() {
         auto ns = python.makeNamespace();
         ns.set("python_package_root", packageRoot.toStdString());
         ns.set("expected_staged_python_root",
-               stagedPythonRoot);
+               stagedPythonExpected ? stagedPythonRoot.toStdString() : std::string());
+        ns.set("expected_staged_python_license",
+               stagedPythonExpected ? stagedPythonLicense.toStdString() : std::string());
 
         auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
         auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
@@ -125,20 +114,27 @@ if expected_staged_python_root:
         f"expected staged Python runtime is missing: {_expected_prefix}"
     assert _actual_prefix == _expected_prefix, \
         f"Python selected {_actual_prefix}, expected staged runtime {_expected_prefix}"
-for _module in (json, pathlib, sqlite3, ssl, math, zlib, _ctypes, _sqlite3, _ssl):
-    _module_file = getattr(_module, "__file__", None)
+    _expected_license = pathlib.Path(expected_staged_python_license).resolve()
+    assert _expected_license.is_file() and _expected_license.stat().st_size > 0, \
+        f"selected CPython license is missing from the staged package: {_expected_license}"
+for _module in (
+    ctypes, encodings, gzip, hashlib, json, math, os, pathlib, sqlite3, ssl,
+    sys, zlib, _ctypes, _sqlite3, _ssl,
+):
+    _module_file = getattr(_module, '__file__', None)
     if _module_file is None:
-        _spec = getattr(_module, "__spec__", None)
-        _origin = getattr(_spec, "origin", None)
-        assert _origin in ("built-in", "frozen"), \
-            f"{_module.__name__} has no file and unexpected origin {_origin!r}"
-        assert _module.__name__ in sys.builtin_module_names or _origin == "frozen", \
-            f"{_module.__name__} is not a recognized built-in/frozen module"
+        _module_spec = getattr(_module, '__spec__', None)
+        _origin = getattr(_module_spec, 'origin', None)
+        assert _module.__name__ in sys.builtin_module_names or \
+            _origin in ('built-in', 'frozen'), \
+            f"{_module.__name__} has no file, built-in, or frozen origin"
         continue
     _origin = pathlib.Path(_module_file).resolve()
     _prefix = pathlib.Path(sys.prefix).resolve()
     assert _origin.is_relative_to(_prefix), \
         f"{_module.__name__} loaded from {_origin}, outside Python prefix {_prefix}"
+_windows_diagnostics = ""
+_macos_diagnostics = ""
 if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
     assert expected_staged_python_root, \
         "cannot verify packaged libpython without an expected staged Python runtime"
@@ -147,13 +143,18 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
         assert _maps_path.is_file(), \
             f"cannot inspect loaded libraries because {_maps_path} is unavailable"
         _libpython_paths = set()
+        _mapped_library_paths = set()
         for _mapping in _maps_path.read_text().splitlines():
             _mapping_fields = _mapping.split(maxsplit=5)
-            if len(_mapping_fields) != 6 or "libpython" not in _mapping_fields[5]:
+            if len(_mapping_fields) != 6:
                 continue
             _mapped_path = _mapping_fields[5].removesuffix(" (deleted)")
-            if _mapped_path.startswith("/"):
-                _libpython_paths.add(pathlib.Path(_mapped_path).resolve())
+            if not _mapped_path.startswith("/"):
+                continue
+            _resolved_path = pathlib.Path(_mapped_path).resolve()
+            _mapped_library_paths.add(_resolved_path)
+            if "libpython" in _mapped_path:
+                _libpython_paths.add(_resolved_path)
         assert _libpython_paths, "no dynamically loaded libpython was found in /proc/self/maps"
         _package_usr = pathlib.Path(expected_staged_python_root).resolve().parents[2]
         _external_libpython = [
@@ -161,6 +162,28 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
         ]
         assert not _external_libpython, \
             f"libpython loaded outside the packaged usr tree {_package_usr}: {_external_libpython}"
+        if os.environ.get("LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE") == "1":
+            for _dependency_name in (
+                "libssl.so", "libcrypto.so", "libsqlite3.so", "libffi.so", "libz.so"):
+                _dependency_paths = {
+                    _path for _path in _mapped_library_paths
+                    if _path.name.startswith(_dependency_name)
+                }
+                assert _dependency_paths, \
+                    f"Python extension dependency {_dependency_name} was not loaded"
+                _external_dependency_paths = [
+                    _path for _path in _dependency_paths
+                    if not _path.is_relative_to(_package_usr)
+                ]
+                assert not _external_dependency_paths, \
+                    f"Python extension dependency {_dependency_name} loaded outside the packaged usr tree " \
+                    f"{_package_usr}: {_external_dependency_paths}"
+    elif sys.platform == "darwin":
+        from lcUIPy._runtimeaudit import audit_macos_runtime
+        _macos_package_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
+        _macos_runtime_dir = _macos_package_root / (
+            "Frameworks" if _macos_package_root.name == "Contents" else "lib")
+        _macos_diagnostics = f"; Mach-O CPython origin: {audit_macos_runtime(_macos_runtime_dir)}"
     elif sys.platform == "win32":
         _kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
         _get_module_handle = _kernel32.GetModuleHandleW
@@ -181,18 +204,70 @@ if os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1":
         assert 0 < _python_dll_length < len(_python_dll_buffer), \
             f"could not resolve the loaded CPython DLL path (Win32 error {ctypes.get_last_error()})"
         _python_dll_path = pathlib.Path(_python_dll_buffer.value).resolve()
-        _package_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
-        _expected_runtime_dir = (_package_root / "bin").resolve()
+        _windows_package_root = pathlib.Path(expected_staged_python_root).resolve().parents[2]
+        _expected_runtime_dir = (_windows_package_root / "bin").resolve()
         assert _python_dll_path.is_relative_to(_expected_runtime_dir), \
             f"CPython loaded from {_python_dll_path}, expected under {_expected_runtime_dir}"
+        if os.environ.get("LIBRECAD_REQUIRE_PYTHON_EXTENSION_CLOSURE") == "1":
+            from lcUIPy._runtimeaudit import audit_windows_extensions
+            _windows_extension_count = audit_windows_extensions(
+                pathlib.Path(expected_staged_python_root).resolve())
+            _windows_diagnostics = \
+                f"; Windows extension closure: {_windows_extension_count} distinct files"
     else:
         raise AssertionError(
             f"bundled-libpython verification is unsupported on {sys.platform}")
+# BEGIN required Conan notices
+_notice_diagnostics = ""
+if os.environ.get("LIBRECAD_REQUIRE_CONAN_NOTICES") == "1":
+    from lcUIPy._runtimeaudit import audit_conan_notices
+    _notice_root = _package_root.parent / "licenses/providers/conan"
+    assert _notice_root.resolve().is_relative_to(_package_root.parent), \
+        "Conan notices escape the installed data directory"
+    _provider_count, _notice_count = audit_conan_notices(_notice_root)
+    _notice_diagnostics = f"; Conan provider notices: {_provider_count} providers, {_notice_count} files"
+# END required Conan notices
+# BEGIN original source-provider notices
+_source_notice_diagnostics = ""
+_source_notice_root = _package_root.parent / "licenses/providers/external"
+if _source_notice_root.exists() or _source_notice_root.is_symlink() or \
+        os.environ.get("LIBRECAD_REQUIRE_PROVIDER_NOTICES") == "1":
+    from lcUIPy._providernotices import audit_source_provider_tree
+    assert _source_notice_root.resolve().is_relative_to(_package_root.parent), \
+        "Source-provider notices escape the installed data directory"
+    _source_providers, _source_files = audit_source_provider_tree(_source_notice_root)
+    _source_notice_diagnostics = \
+        f"; collected source-provider notices: {_source_providers} providers, {_source_files} files"
+# END original source-provider notices
+_elf_diagnostics = ""
+if os.environ.get("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE") == "1":
+    assert sys.platform.startswith("linux") and expected_staged_python_root and \
+        os.environ.get("LIBRECAD_REQUIRE_BUNDLED_PYTHON") == "1", \
+        "full ELF closure requires an installed glibc/Linux package"
+    from lcUIPy._runtimeaudit import audit_elf_closure
+    _elf_root = pathlib.Path(expected_staged_python_root).resolve().parents[3]
+    assert _elf_root != pathlib.Path(_elf_root.anchor) and \
+        (_elf_root / "usr/share/librecad/python").resolve() == \
+        pathlib.Path(expected_staged_python_root).resolve() and \
+        ((_elf_root / "AppRun").is_file() or (_elf_root / "meta/snap.yaml").is_file()), \
+        "full ELF closure requires a recognized AppImage or Snap root"
+    _elf_count = audit_elf_closure(_elf_root)
+    _elf_diagnostics = f"; full payload ELF closure: {_elf_count} distinct files"
+# BEGIN native Python modules
+from lcUIPy._runtimeaudit import audit_native_stdlib, audit_python_extensions
+_native_diagnostics = f"; native stdlib behavior: {audit_native_stdlib()}"
+if expected_staged_python_root:
+    _initialized_extensions = audit_python_extensions(
+        pathlib.Path(expected_staged_python_root).resolve())
+    _native_diagnostics += (
+        f"; Python extension initialization: {len(_initialized_extensions)} distinct files "
+        f"[{', '.join(_initialized_extensions)}]")
+# END native Python modules
 import lcgui
 assert hasattr(lcgui, 'MainWindow'), "embedded lcgui module lacks MainWindow"
 runtime_diagnostics = (
     f"Python runtime: version={sys.version.split()[0]}, prefix={sys.prefix}; "
-    f"lcUIPy={_package_file}; module search paths={sys.path}"
+    f"lcUIPy={_package_file}; module search paths={sys.path}{_elf_diagnostics}{_windows_diagnostics}{_macos_diagnostics}{_notice_diagnostics}{_source_notice_diagnostics}{_native_diagnostics}"
 )
 )py";
         const std::string importError = python.runString(importsAndProviderCheck.c_str(), ns);
@@ -207,10 +282,9 @@ runtime_diagnostics = (
                       << std::endl;
         }
 
-        installEventHooks();
         const QString pluginDirectory = QDir(packageRoot).filePath("plugins");
         const PythonPluginLoadReport pluginReport =
-            loadPythonPlugins(pluginDirectory.toStdString(), "gui");
+            bootstrapPythonPlugins();
         if (!pluginReport.directoryFound || !pluginReport.failures.empty()) {
             std::cerr << "Python smoke failed loading plugins from "
                       << pluginDirectory.toStdString() << '\n';

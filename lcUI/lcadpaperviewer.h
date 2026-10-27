@@ -1,4 +1,5 @@
 #pragma once
+#include "lcui_api.h"
 #include "lcadviewer.h"
 
 #include "cad/storage/storagemanagerimpl.h"
@@ -12,7 +13,7 @@
 
 namespace lc {
 namespace ui {
-class LCADPaperViewer : public LCADViewer {
+class LC_UI_API LCADPaperViewer : public LCADViewer {
     Q_OBJECT
 public:
     LCADPaperViewer(QWidget* parent,int id);

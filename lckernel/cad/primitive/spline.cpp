@@ -266,9 +266,18 @@ CADEntity_CSPtr Spline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr met
 
 void Spline::calculateBoundingBox() {
     /// @todo better bounding box generation
-    _boundingBox = geo::Area(this->controlPoints()[0], this->controlPoints()[0]);
+    // A DXF SPLINE may carry fit points and no control points (72=0 73=0 74=n),
+    // so neither list is guaranteed to be populated.
+    const auto& points = this->controlPoints().empty() ? this->fitPoints() : this->controlPoints();
 
-    for(const auto& cp : this->controlPoints()) {
+    if (points.empty()) {
+        _boundingBox = geo::Area();
+        return;
+    }
+
+    _boundingBox = geo::Area(points[0], points[0]);
+
+    for(const auto& cp : points) {
         _boundingBox = _boundingBox.merge(cp);
     }
 }

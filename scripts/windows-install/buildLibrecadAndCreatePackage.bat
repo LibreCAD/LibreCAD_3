@@ -1,7 +1,7 @@
 echo on
-cd ${{ github.workspace }} 
-
-pwd
+for %%i in ("%~dp0..\..") do set "LIBRECAD_ROOT=%%~fi"
+cd /d "%LIBRECAD_ROOT%"
+if errorlevel 1 exit /b 1
 
 if not defined Python_ROOT_DIR (
     echo Python_ROOT_DIR was not set by the Windows CI SDK setup
@@ -11,15 +11,15 @@ if not defined Python_EXECUTABLE (
     echo Python_EXECUTABLE was not set by the Windows CI SDK setup
     exit /b 1
 )
+"%Python_EXECUTABLE%" -m unittest scripts.tests.test_validate_python_provider -v
+if errorlevel 1 exit /b 1
+"%Python_EXECUTABLE%" -m unittest scripts.tests.test_windows_package_smoke -v
+if errorlevel 1 exit /b 1
 
-REM No -G here on purpose.  This used to pin "Visual Studio 17 2022", which the
-REM runner image no longer ships: conan detects msvc 18 (compiler.version=195,
-REM toolset v145), so cmake failed with
-REM
-REM   Generator "Visual Studio 17 2022" could not find any instance of Visual Studio.
-REM
-REM Letting cmake pick the newest installed Visual Studio keeps working when the
-REM image moves again, and the conan toolchain already pins the toolset.
+REM No -G here on purpose. Both Windows jobs pin windows-2022, whose installed
+REM Visual Studio 2022 matches Qt's win64_msvc2022_64 package and Conan's
+REM prebuilt MSVC ABI. Keep CMake's default generator consistent with the
+REM persistence-only job so both exercise the same compiler/toolset.
 cmake -S %cd% ^
 -B %cd%\build ^
 -DCMAKE_TOOLCHAIN_FILE="%cd%\conan\conan_toolchain.cmake" ^
@@ -27,10 +27,9 @@ cmake -S %cd% ^
 -DPython_EXECUTABLE="%Python_EXECUTABLE%" ^
 -DWITH_PYTHONSCRIPT=ON ^
 -DWITH_UNITTESTS=ON ^
--DWITH_LUACMDINTERFACE=OFF ^
--Dlibdxfrw_DIR="%cd%\build\dependencies\libdxfrw\lib\cmake\libdxfrw" ^
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ^
 -DWITH_RENDERING_UNITTESTS=OFF ^
+-DWITH_LUACMDINTERFACE=OFF ^
 --install-prefix %cd%\installprefix
 
 REM Fail here rather than letting a broken configure surface much later as a
@@ -61,78 +60,72 @@ if not exist lcunittest.exe (
     exit /b 1
 )
 set QT_QPA_PLATFORM=offscreen
-lcunittest.exe --gtest_list_tests > ..\python-tests.txt
-if errorlevel 1 exit /b 1
-findstr /C:"PythonRuntime." ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Python runtime tests were not discovered
-    exit /b 1
-)
-findstr /C:"PythonFixture." ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Python binding fixture tests were not discovered
-    exit /b 1
-)
-"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="PythonRuntime.*:PythonFixture.*"
-if errorlevel 1 exit /b 1
-
-REM Keep Python DXF/DXB serialization compatibility blocking on Windows. The
-REM matrix exercises all advertised versions and the pinned libdxfrw binary
-REM writer patch used by this package.
-findstr /C:"PersistenceTest." ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Python persistence tests were not discovered
-    exit /b 1
-)
-"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="PersistenceTest.*"
+"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="PythonRuntime.*:PythonFixture.*" --require-suite "PythonRuntime." --require-suite "PythonFixture."
 if errorlevel 1 exit /b 1
 
 REM Keep the equivalent Lua/Python geometry and undo/redo comparison blocking
 REM on Windows. It runs separately so its interpreter instances do not share
 REM lifecycle state with the runtime/binding fixture process.
-findstr /C:"LuaRuntimeTest." ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Lua runtime regression tests were not discovered
-    exit /b 1
-)
-findstr /C:"ParityTest." ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Lua/Python parity tests were not discovered
-    exit /b 1
-)
-"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="LuaRuntimeTest.*:ParityTest.*"
+"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="LuaRuntimeTest.*:ParityTest.*" --require-suite "LuaRuntimeTest." --require-suite "ParityTest."
 if errorlevel 1 exit /b 1
 
-REM Keep scripting lifecycle, conversion, custom-entity, GUI bridge, and
-REM ScriptDock coverage blocking on Windows. Guard each suite so another
-REM matching suite cannot hide a missing compiled test target.
-for %%S in (EventBus. ScriptValueRoundTrip. ScriptCallbackInvoke. ScriptCallbackEquality. ScriptCallbackLifecycle. CustomEntityDxfRoundTrip. ScriptCustomEntity. ScriptCustomEntityBuilder. ScriptCustomEntityLuaRegistration. MWindowTest. PyGuiBridgeTest. ScriptDockTest.) do (
-    findstr /C:"%%S" ..\python-tests.txt > nul
-    if errorlevel 1 (
-        echo Required scripting/UI test suite was not discovered: %%S
-        exit /b 1
-    )
-)
-findstr /C:"PythonCreatesLine" ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Python ScriptDock creation test was not discovered
-    exit /b 1
-)
-findstr /C:"PythonEventDrivenOnEventReachesMainWindow" ..\python-tests.txt > nul
-if errorlevel 1 (
-    echo Python ScriptDock event test was not discovered
-    exit /b 1
-)
-"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="EventBus.*:ScriptValueRoundTrip.*:ScriptCallbackInvoke.*:ScriptCallbackEquality.*:ScriptCallbackLifecycle.*:CustomEntityDxfRoundTrip.*:ScriptCustomEntity.*:ScriptCustomEntityBuilder.*:ScriptCustomEntityLuaRegistration.*:MWindowTest.*:PyGuiBridgeTest.*:ScriptDockTest.Python*"
+REM Keep the Qt thread-affinity regression blocking on Windows too. Run it in
+REM its own process so QApplication/Python lifecycle state cannot leak from the
+REM core Python fixture process above.
+"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="MWindowTest.PyGuiBridgeRejectsWorkerThreadAccess" --require-suite "MWindowTest."
 if errorlevel 1 exit /b 1
 
-WinDeployQt librecad.exe
+REM Run the cross-cutting Python/runtime/UI/DXF/Lua regression set together as
+REM well. The macOS arm64 reference run passes this exact 21-suite filter;
+REM keeping it in the Windows package lane makes API and lifecycle regressions
+REM blocking before WinDeployQt and NSIS packaging.
+"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="PythonFixture.*:PythonRuntime.*:ParityTest.*:ScriptValueRoundTrip.*:ScriptCallbackInvoke.*:ScriptCallbackEquality.*:ScriptCallbackLifecycle.*:ScriptObject.*:EventBus.*:LuaCustomEntityManager.*:ScriptCustomEntity.*:ScriptCustomEntityBuilder.*:CustomEntityDxfRoundTrip.*:ScriptCustomEntityLuaRegistration.*:DwgImportTest.*:PersistenceTest.*:ScriptDockTest.*:MWindowTest.*:ToolbarButtonTest.*:PyGuiBridgeTest.*:MenuEntriesTest.*" --require-suite "PythonFixture." --require-suite "PythonRuntime." --require-suite "ParityTest." --require-suite "ScriptValueRoundTrip." --require-suite "ScriptCallbackInvoke." --require-suite "ScriptCallbackEquality." --require-suite "ScriptCallbackLifecycle." --require-suite "ScriptObject." --require-suite "EventBus." --require-suite "LuaCustomEntityManager." --require-suite "ScriptCustomEntity." --require-suite "ScriptCustomEntityBuilder." --require-suite "CustomEntityDxfRoundTrip." --require-suite "ScriptCustomEntityLuaRegistration." --require-suite "DwgImportTest." --require-suite "PersistenceTest." --require-suite "ScriptDockTest." --require-suite "MWindowTest." --require-suite "ToolbarButtonTest." --require-suite "PyGuiBridgeTest." --require-suite "MenuEntriesTest."
 if errorlevel 1 exit /b 1
+
+REM Keep the full persistence contract and Lua parity/settings tests required,
+REM not only the scripting smoke subset. The runner rejects absent suites.
+"%Python_EXECUTABLE%" ..\..\scripts\run_required_gtests.py --binary lcunittest.exe --filter="LuaFixture.*:UiSettingsTest.*:DxfRoundTripTest.*:DxfExportTest.*:FormatTest.*:DocumentSourceTest.*:MTextCodecTest.*"
+if errorlevel 1 exit /b 1
+
+WinDeployQt --include-plugins qoffscreen librecad.exe
+if errorlevel 1 exit /b 1
+
+REM Validate the install tree separately from the build tree before creating
+REM the NSIS package. Poison Python settings, run outside the checkout, and
+REM restrict PATH to the staged app plus Windows system directories so an
+REM unrelated Python/Conan/Qt installation cannot rescue a broken runtime.
+cd /d ..
+if errorlevel 1 exit /b 1
+set "LC_PYTHON_SMOKE_PREFIX=%TEMP%\LibreCAD Python smoke %RANDOM%-%RANDOM%"
+if exist "%LC_PYTHON_SMOKE_PREFIX%" (
+    echo Temporary Python smoke prefix already exists: %LC_PYTHON_SMOKE_PREFIX%
+    exit /b 1
+)
+cmake --install . --config Release --prefix "%LC_PYTHON_SMOKE_PREFIX%"
+if errorlevel 1 exit /b 1
+set "LC_PYTHON_BUILD_PATH=%PATH%"
+pushd "%TEMP%"
+if errorlevel 1 exit /b 1
+set "PYTHONHOME=%TEMP%\librecad-poison-python-home"
+set "PYTHONPATH=%TEMP%\librecad-poison-python-path"
+set "LIBRECAD_REQUIRE_CONAN_NOTICES=1"
+set "QT_QPA_PLATFORM=offscreen"
+set "QT_PLUGIN_PATH="
+set "QT_QPA_PLATFORM_PLUGIN_PATH="
+set "PATH=%LC_PYTHON_SMOKE_PREFIX%\bin;%SystemRoot%\System32;%SystemRoot%"
+"%LC_PYTHON_SMOKE_PREFIX%\bin\librecad.exe" --python-smoke
+set "LC_PYTHON_SMOKE_EXIT=%ERRORLEVEL%"
+popd
+set "PATH=%LC_PYTHON_BUILD_PATH%"
+set "LC_PYTHON_BUILD_PATH="
+if not "%LC_PYTHON_SMOKE_EXIT%"=="0" exit /b 1
+cd /d bin
+if errorlevel 1 exit /b 1
+
 dir ..
 where makensis.exe
 dir ..\CPack*.cmake
 
 cd ..
-cpack --verbose -G NSIS --config CPackConfig.cmake
+cpack --verbose -G NSIS --config CPackConfig.cmake -C Release
 if errorlevel 1 exit /b 1
-exit /b 0

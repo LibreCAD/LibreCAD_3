@@ -46,6 +46,7 @@
 #include <cad/primitive/dimangular.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimordinate.h>
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/hatch.h>
@@ -132,7 +133,9 @@ private:
 
 std::string uniqueTmpDxf(const char* tag) {
     return (boost::filesystem::temp_directory_path()
-            / boost::filesystem::unique_path(std::string("lc3-issue412-") + tag + "-%%%%%%%%.dxf")).string();
+            / boost::filesystem::unique_path(
+                std::string("lc3-issue412-") + tag + "-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
 }
 
 // Populate a document with one entity of every reader-producible kind.
@@ -175,7 +178,10 @@ void populateOneOfEach(const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
         lc::TextConst::HAlign::HALeft,
         lc::TextConst::VAlign::VABaseline,
         /*bold=*/false, /*italic=*/false,
-        /*underline=*/false, /*strikethrough=*/false, layer));
+        /*underline=*/false, /*strikethrough=*/false,
+        /*width=*/0.0, lc::TextConst::MTextDrawingDirection::ByStyle,
+        /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+        layer));
 
     // Entities the writer currently drops.
     eb->appendEntity(std::make_shared<lc::entity::Point>(
@@ -270,6 +276,14 @@ void populateOneOfEach(const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
         lc::TextConst::LineSpacingStyle::Exact, "",
         lc::geo::Coordinate(60, 70), lc::geo::Coordinate(70, 70),
         lc::geo::Coordinate(60, 70), lc::geo::Coordinate(60, 80), layer));
+
+    eb->appendEntity(std::make_shared<lc::entity::DimOrdinate>(
+        lc::geo::Coordinate(0, 0), lc::geo::Coordinate(80, 80),
+        lc::TextConst::AttachmentPoint::Bottom_center,
+        /*textAngle=*/0.0, /*lsf=*/1.0,
+        lc::TextConst::LineSpacingStyle::Exact, "",
+        lc::geo::Coordinate(80, 70), lc::geo::Coordinate(80, 80),
+        /*xType=*/true, layer));
 
     // Insert requires a block; add an empty one.  Its presence in the
     // ENTITIES section verifies writeEntity() dispatches Insert correctly.
@@ -386,7 +400,7 @@ TEST(DxfExportTest, EveryReaderProducibleKindReachesTheFile) {
     EXPECT_GE(counted.count("LWPOLYLINE"),1) << "LWPOLYLINE dropped. " << dbg;
     EXPECT_GE(counted.count("HATCH"),     1) << "HATCH dropped. " << dbg;
     EXPECT_GE(counted.count("IMAGE"),     1) << "IMAGE dropped. " << dbg;
-    EXPECT_GE(counted.count("DIMENSION"), 5) << "DIMENSION dropped. " << dbg;
+    EXPECT_GE(counted.count("DIMENSION"), 6) << "DIMENSION dropped. " << dbg;
 
     boost::filesystem::remove(dxfPath);
 }
@@ -437,7 +451,7 @@ TEST(DxfExportTest, Phase3TablesAndHeaderFidelity) {
     std::ifstream in(dxfPath);
     std::string blob((std::istreambuf_iterator<char>(in)),
                      std::istreambuf_iterator<char>());
-    in.close(); // Windows cannot remove a file while this reader still owns its handle.
+    in.close(); // Windows cannot remove a file while this reader owns its handle.
 
     EXPECT_NE(blob.find("MYCUSTOMPATTERN"), std::string::npos)
         << "User-defined line pattern was not emitted in the LTYPE table.";
@@ -495,13 +509,18 @@ TEST(DxfExportTest, Phase2PreservesZAndTextAttributes) {
         lc::TextConst::VAlign::VABaseline, layer));
 
     // MText at Z=15, HAlign=Center + VAlign=Middle => attachment 5 (Middle
-    // center).  Textgen=Backward => drawing direction 1.
+    // center).  Drawing direction TopToBottom => code 72 = 3.  The
+    // textgeneration argument is Backward and must NOT reach code 72: it is
+    // TEXT's group-71 mirroring flag, which MTEXT does not have.
     eb->appendEntity(std::make_shared<lc::entity::MText>(
         lc::geo::Coordinate(0, 15, 15), "hi", 2.5, 0.0, "STANDARD",
         lc::TextConst::DrawingDirection::Backward,
         lc::TextConst::HAlign::HACenter,
         lc::TextConst::VAlign::VAMiddle,
-        false, false, false, false, layer));
+        false, false, false, false,
+        /*width=*/0.0, lc::TextConst::MTextDrawingDirection::TopToBottom,
+        /*lineSpacingFactor=*/1.0, lc::TextConst::LineSpacingStyle::AtLeast,
+        layer));
 
     eb->execute();
 
@@ -545,7 +564,7 @@ TEST(DxfExportTest, Phase2PreservesZAndTextAttributes) {
             << "Text style was dropped before phase 2.";
     }
     // MText — code 30 is basePoint.z, code 71 is attachment point (5 for
-    // middle-center), code 72 is drawing direction (1 for backward).
+    // middle-center), code 72 is drawing direction (3 for top-to-bottom).
     {
         auto z = parsed.valuesFor("MTEXT", "30");
         ASSERT_FALSE(z.empty());
@@ -559,9 +578,11 @@ TEST(DxfExportTest, Phase2PreservesZAndTextAttributes) {
 
         auto dir = parsed.valuesFor("MTEXT", "72");
         ASSERT_FALSE(dir.empty());
-        EXPECT_EQ(std::stoi(dir.front()), 1)
-            << "MTEXT drawing direction (Backward) should be 1, was "
-            << dir.front();
+        EXPECT_EQ(std::stoi(dir.front()), 3)
+            << "MTEXT drawing direction (TopToBottom) should be 3, was "
+            << dir.front()
+            << " -- 1 means the Backward textgeneration flag leaked into "
+               "code 72 again";
     }
 
     boost::filesystem::remove(dxfPath);

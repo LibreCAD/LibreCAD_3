@@ -17,7 +17,14 @@ contact:
   - https://forum.librecad.org/
 issues: https://github.com/LibreCAD/LibreCAD_3/issues
 environment:
-  LD_LIBRARY_PATH: $SNAP/usr/local/lib:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$SNAP/usr/lib64:$SNAP/usr/lib:$LD_LIBRARY_PATH
+  # libproxy's private backend has an absolute distro RUNPATH; relocate that
+  # search too, otherwise Qt Network cannot load it in the Snap namespace.
+  LD_LIBRARY_PATH: $SNAP/usr/local/lib/:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib/x86_64-linux-gnu/libproxy/:$SNAP/usr/lib64/:$LD_LIBRARY_PATH
+  # Qt's compiled-in plugin directory points at the host's /usr, outside the
+  # snap mount namespace. Resolve both generic/image plugins and the QPA
+  # platform plugin from the staged Qt package tree instead.
+  QT_PLUGIN_PATH: $SNAP/usr/lib/x86_64-linux-gnu/qt6/plugins
+  QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/x86_64-linux-gnu/qt6/plugins/platforms
 
 apps:
   librecad:
@@ -35,7 +42,6 @@ parts:
   librecad:
     plugin: cmake
     source: .
-    after: [libdxfrw]
     build-packages:
       # Use the distribution's Qt 6 packages.  This keeps the build
       # self-contained and avoids the retired Qt5/KDE content snaps.
@@ -43,7 +49,6 @@ parts:
       - qt6-tools-dev
       - qt6-tools-dev-tools
       - qt6-svg-dev
-      - libqt6opengl6-dev
       # Phase 6 PR-6.4 — the stale liblua5.2-dev pin here has been out
       # of sync with the root CMakeLists' `find_package(Lua 5.3 EXACT
       # REQUIRED)` for years.  Fixed to 5.3.  Also added python3-dev
@@ -58,7 +63,6 @@ parts:
       - libboost-dev
       - libboost-log-dev
       - libboost-program-options-dev
-      - libqt5svg5-dev
       - libgtest-dev
       - libeigen3-dev
       - libcurl4-gnutls-dev
@@ -70,51 +74,71 @@ parts:
       - libglm-dev
       - cmake
     stage-packages:
-      # Bundle the Qt 6 runtime from the base archive rather than relying on
-      # the KDE Neon content snap, which does not support core26.
-      - qt6-base-dev
-      - qt6-svg-dev
+      # Runtime packages, not -dev SDKs. Closure must be checked independently
+      # of AppImage:
+      # startup smoke does not load every copied Python or Qt extension.
+      #
+      # Under devmode the process still runs in the snap's own mount namespace,
+      # so a library named here and nowhere else is simply absent: the snap
+      # installs and then will not start, and no build step catches it.
+      #
+      # The versioned names track core26's contents. They are fixed for the
+      # life of the base; a base bump has to revisit them.
+      - libqt6core6t64
+      - libqt6gui6
+      - libqt6widgets6
+      - libqt6opengl6
+      - libqt6openglwidgets6
+      - libqt6svg6
+      - libqt6uitools6
+      - libqt6dbus6
       - qt6-qpa-plugins
+      - qt6-svg-plugins
       - qt6-gtk-platformtheme
-      - libboost-dev
-      - libboost-log-dev
-      - libboost-program-options-dev
+      # The app plugs wayland; without this only the xcb platform plugin is
+      # deployed, so a Wayland session falls back to XWayland silently.
+      - qt6-wayland
+      - liblua5.3-0
       - libglew2.2
-      # Phase 6 PR-6.4 — stage python3 so the packaged snap has a
-      # runtime interpreter that lcadpythonscript's embedded pybind11
-      # can link against.  Without this, the snap builds cleanly (the
-      # build-packages libpython dev headers satisfy the build) but
-      # the installed snap fails at runtime with "cannot find
-      # libpython3.X.so".
+      - libboost-log1.90.0
+      - libboost-filesystem1.90.0
+      - libboost-thread1.90.0
+      - libboost-program-options1.90.0
+      # lcadpythonscript's embedded interpreter links libpython and needs a
+      # standard library to start at all.
       - python3
+      - libpython3.14
+      # Stage these explicitly: the full ELF linter catches _gdbm and the
+      # staged SVG loader even when app smoke does not load them.
+      - libgdbm6t64
+      - libxml2-16
+      # Keep copied stdlib ELF files resolvable even for unsupported Tk/IDLE;
+      # staging dependencies does not promote those interfaces to supported.
+      - libreadline8t64
+      - libtcl8.6
+      - libtk8.6
+      - libxft2
+      - libxss1
     cmake-parameters:
       - "-DCMAKE_INSTALL_PREFIX=/usr"
       - "-DBUILD_SHARED_LIBS=ON"
-      - "-DWITH_BUNDLED_PYTHON_RUNTIME=ON"
+      # Point the Python lookup at the host, where python3-dev put the
+      # headers. Without this the build fails at
+      #
+      #   CMake Error: Could NOT find Python
+      #     (missing: Python_INCLUDE_DIRS Development.Embed)
+      #     (found suitable version "3.14.4", minimum required is "3.9")
+      #
+      # which reads as "no Python" and is the opposite: there are two. The
+      # staged python3 lands in the part's install prefix, which is on
+      # CMAKE_PREFIX_PATH, so FindPython finds that interpreter first and then
+      # looks for Python.h beside it -- and stage-packages are a runtime set,
+      # so there are no headers there. python3-dev is a build-package and sits
+      # in /usr. Naming the interpreter anchors the whole search on the prefix
+      # that has both halves.
+      - "-DPython_EXECUTABLE=/usr/bin/python3"
+      - "-DPython_FIND_STRATEGY=LOCATION"
     #For 18.04
     #configflags:
     #  - "-DCMAKE_INSTALL_PREFIX=/usr"
-    #  - "-DBUILD_SHARED_LIBS=On"
-  libdxfrw:
-    plugin: cmake
-    source: https://github.com/LibreCAD/libdxfrw.git
-    source-type: git
-    source-commit: f7debf4c5f30734a70c5e828cf05247aabc2d04b
-    build-packages:
-      - cmake
-      - g++
-      - git
-      - libboost-dev
-      - libbz2-dev
-    override-build: |
-      bash "$CRAFT_PROJECT_DIR/scripts/patch-libdxfrw.sh" "$CRAFT_PART_SRC"
-      craftctl default
-    cmake-parameters:
-      - "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-      - "-DCMAKE_INSTALL_PREFIX=/usr"
-      - "-DBUILD_SHARED_LIBS=ON"
-
-
-    #For 18.04
-    #configflags:
     #  - "-DBUILD_SHARED_LIBS=On"

@@ -127,7 +127,14 @@ class RendererBuildOptionsTests(unittest.TestCase):
         for name, value in defaults.items():
             with self.subTest(option=name):
                 changed = dict(flags, **{name: 'OFF' if value == 'ON' else 'ON'})
-                self.rejects("conflicts with Conan's dependency graph", **changed)
+                if value == 'OFF':
+                    # Turned ON without Conan's dependencies: refused.
+                    self.rejects("conflicts with Conan's dependency graph", **changed)
+                else:
+                    # Turned OFF: a subset of the resolved graph. Other option rules
+                    # may still apply, but the Conan guard does not.
+                    self.assertNotIn("conflicts with Conan's dependency graph",
+                                     self.configure_options(**changed).stdout)
 
     def test_cached_conan_mismatch_requires_regeneration(self):
         with tempfile.TemporaryDirectory(prefix='renderer-cache-') as tmp:
@@ -138,11 +145,12 @@ class RendererBuildOptionsTests(unittest.TestCase):
                 'include("' + OPTIONS.as_posix() + '")\n')
             command = ['cmake', '-S', str(source), '-B', str(Path(tmp) / 'build'),
                 '-DWITH_QT_UI=OFF', '-DWITH_LUACMDINTERFACE=OFF', '-DWITH_UNITTESTS=OFF',
-                '-DLC_CONAN_WITH_RHI_RENDERER=OFF']
+                '-DLC_CONAN_WITH_RHI_RENDERER=ON']
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True, check=False, timeout=30)
             self.assertEqual(0, result.returncode, result.stdout)
-            result = subprocess.run([*command, '-DLC_CONAN_WITH_RHI_RENDERER=ON'],
+            # The cache now holds WITH_RHI_RENDERER=ON; Conan no longer resolves it.
+            result = subprocess.run([*command, '-DLC_CONAN_WITH_RHI_RENDERER=OFF'],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False, timeout=30)
             self.assertNotEqual(0, result.returncode)
             self.assertIn("conflicts with Conan's dependency graph", result.stdout)
@@ -155,21 +163,12 @@ class RendererBuildOptionsTests(unittest.TestCase):
         self.assertIn('-DWITH_LUACMDINTERFACE=OFF', script)
 
     def test_windows_root_license_is_installed_and_manifest_owned(self):
+        # Master installs LICENSE with the other notices and NSIS shows it through
+        # CPACK_RESOURCE_FILE_LICENSE; nothing copies it at configure time.
         root=(ROOT/'CMakeLists.txt').read_text()
-        rule='install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION ".")'
-        self.assertIn(rule,root)
-        self.assertNotIn('file(COPY ${CMAKE_SOURCE_DIR}/LICENSE',root)
-        with tempfile.TemporaryDirectory(prefix='renderer-license-') as tmp:
-            source=Path(tmp)/'source';source.mkdir();build=Path(tmp)/'build';stage=Path(tmp)/'stage'
-            (source/'LICENSE').write_bytes((ROOT/'LICENSE').read_bytes())
-            (source/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.15)\nproject(License NONE)\n'+rule+'\n')
-            result=subprocess.run(['cmake','-S',str(source),'-B',str(build),'-DCMAKE_INSTALL_PREFIX='+str(stage)],capture_output=True,text=True,timeout=30)
-            self.assertEqual(0,result.returncode,result.stdout+result.stderr);self.assertFalse(stage.exists())
-            result=subprocess.run(['cmake','--install',str(build)],capture_output=True,text=True,timeout=30)
-            self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-            self.assertEqual([(stage/'LICENSE').resolve()],
-                [Path(p).resolve() for p in (build/'install_manifest.txt').read_text().splitlines()])
-            self.assertEqual((source/'LICENSE').read_bytes(),(stage/'LICENSE').read_bytes())
+        self.assertNotIn('file(COPY "${CMAKE_SOURCE_DIR}/LICENSE"',root)
+        self.assertRegex(root,r'set\(_lc_source_license_files\s+LICENSE ')
+        self.assertIn('set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")',root)
 
     def test_msvc_ui_source_parallelism_is_target_local_and_bounded(self):
         block=OPTIONS.read_text().split('function(lc_parallel_msvc_compile target)',1)[1].split('endfunction()',1)[0]
@@ -182,12 +181,16 @@ class RendererBuildOptionsTests(unittest.TestCase):
         self.assertIn('lc_parallel_msvc_compile(lcunittest)',(ROOT/'unittest/CMakeLists.txt').read_text())
 
     def test_shared_ui_static_data_has_explicit_export_import_ownership(self):
-        header=(ROOT/'lcUI/lcuiexport.h').read_text()
-        self.assertIn('#ifdef LCUI_BUILDING',header);self.assertIn('Q_DECL_EXPORT',header);self.assertIn('Q_DECL_IMPORT',header)
-        self.assertIn('target_compile_definitions(${ui_objects} PRIVATE LCUI_BUILDING)',(ROOT/'lcUI/CMakeLists.txt').read_text())
+        # The shared objects compile as lcui's own (exporting) side of lcui_api.h;
+        # lcui's consumers see only its PUBLIC LC_UI_SHARED and import.
+        header=(ROOT/'lcUI/lcui_api.h').read_text()
+        self.assertIn('defined(lcui_EXPORTS)',header);self.assertIn('__declspec(dllexport)',header);self.assertIn('__declspec(dllimport)',header)
+        cmake=(ROOT/'lcUI/CMakeLists.txt').read_text()
+        self.assertIn('target_compile_definitions(${ui_objects} PRIVATE LC_UI_SHARED lcui_EXPORTS)',cmake)
+        self.assertIn('target_compile_definitions(lcui PUBLIC LC_UI_SHARED)',cmake)
         for path,name in [('dialogs/addlayerdialog.h','AddLayerDialog'),('widgets/layermodel.h','LayerModel'),
                           ('widgets/linepatternpathpart.h','LinePatternPathPart'),('windowmanager.h','WindowManager')]:
-            self.assertIn('class LCUI_API '+name,(ROOT/'lcUI'/path).read_text())
+            self.assertIn('class LC_UI_API '+name,(ROOT/'lcUI'/path).read_text())
 
     def test_ui_test_helpers_link_production_implementations_instead_of_recompiling_them(self):
         for path,form in [('dialogs/addlayerdialog.h','addlayerdialog'),
@@ -255,10 +258,13 @@ class RendererBuildOptionsTests(unittest.TestCase):
         self.assertIn('if(APPLE AND WITH_PYTHONSCRIPT AND TARGET librecad AND TARGET Python::Python)', text)
 
     def test_disabled_persistence_does_not_require_the_dxf_sdk(self):
+        # libdxfrw is the vendored submodule, added only for persistence builds.
+        root = (ROOT / 'CMakeLists.txt').read_text()
+        block = root.split('if(WITH_PERSISTENCE)\n    set(LIBDXFRW_BUILD_DOC', 1)[1].split('\nendif()', 1)[0]
+        self.assertIn('add_subdirectory("third_party/libdxfrw")', block)
         for name in ('CMakeLists.txt', 'unittest/CMakeLists.txt'):
             with self.subTest(source=name):
-                self.assertRegex((ROOT / name).read_text(),
-                    r'if\(WITH_PERSISTENCE\)\s+find_package\(libdxfrw REQUIRED\)')
+                self.assertNotIn('find_package(libdxfrw', (ROOT / name).read_text())
 
     def test_current_ui_requires_persistence_without_forcing_it_on(self):
         self.rejects('current Qt UI requires WITH_PERSISTENCE',
@@ -472,10 +478,11 @@ class ConanRendererRecipeTests(unittest.TestCase):
         self.assertNotIn('gtest', self.requirements(with_unittests=False))
 
     def test_test_dependency_is_pinned_without_raising_application_cppstd(self):
+        # Master's Windows lane takes prebuilt C++14 binaries; GoogleTest 1.14 is one.
         recipe=self.recipe();recipe.requirements()
-        self.assertIn('gtest/1.18.0',recipe.dependencies_requested)
+        self.assertIn('gtest/1.14.0',recipe.dependencies_requested)
         command=(ROOT/'scripts/windows-install/createConanDirAndInstallDependencies.bat').read_text()
-        self.assertIn('-s "gtest/*:compiler.cppstd=17"',command)
+        self.assertIn('-s compiler.cppstd=14',command)
         self.assertNotIn('-s compiler.cppstd=17',command)
 
     def test_all_option_combinations_fail_closed(self):
@@ -497,11 +504,23 @@ class ConanRendererRecipeTests(unittest.TestCase):
         options = dict(self.recipe_class.default_options, with_qt_ui=False,
             with_pythonscript=False, with_rhi_renderer=True, with_renderer_tests=True)
         recipe = self.recipe(**options)
-        recipe.generate()
+        with tempfile.TemporaryDirectory(prefix='renderer-conan-') as tmp:
+            package = Path(tmp) / 'package'
+            (package / 'licenses').mkdir(parents=True)
+            (package / 'licenses' / 'LICENSE').write_text('package license\n')
+            recipe.generators_folder = str(Path(tmp) / 'generators')
+            recipe.dependencies = types.SimpleNamespace(host={'zlib': types.SimpleNamespace(
+                package_folder=str(package),
+                ref=types.SimpleNamespace(name='zlib', version='1.3.1', revision='recipe-revision'),
+                pref=types.SimpleNamespace(package_id='binary-id', revision='package-revision'))})
+            recipe.generate()
         tc = self.toolchain.instances[-1]
         self.assertTrue(tc.generated)
-        self.assertEqual({'LC_CONAN_' + key.upper(): value for key, value in options.items()}, tc.variables)
-        self.assertTrue(all(type(value) is bool for value in tc.variables.values()))
+        renderer = {key: value for key, value in tc.variables.items() if key.startswith('LC_CONAN_')}
+        self.assertEqual({'LC_CONAN_' + key.upper(): value for key, value in options.items()}, renderer)
+        self.assertTrue(all(type(value) is bool for value in renderer.values()))
+        # The only other variable is the notice directory the same generate() stages.
+        self.assertEqual({'LIBRECAD_DEPENDENCY_LICENSE_DIR'}, set(tc.variables) - set(renderer))
         self.assertNotIn('CMakeToolchain', recipe.generators)
 
 

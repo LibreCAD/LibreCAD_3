@@ -48,8 +48,9 @@ LineWidthSelect::LineWidthSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, Q
 
     setMetaInfoManager(std::move(metaInfoManager));
 
-    connect(this, &QComboBox::textActivated,
-            this, &LineWidthSelect::onActivated);
+    // See ColorSelect: Qt6 renamed this signal to textActivated, and the
+    // string-based connect failed silently at run time.
+    connect(this, &QComboBox::textActivated, this, &LineWidthSelect::onActivated);
 }
 
 void LineWidthSelect::createEntries() {

@@ -18,14 +18,18 @@ class PropertyEditor : public QDockWidget, public api::InputGUIContainer
     Q_OBJECT
 
 public:
-    ~PropertyEditor() override;
-
     /**
     * \brief Return the property editor instance (create if does not exist)
     * \param pointer to MainWindow
     * \return pointer to PropertyEditor
     */
     static PropertyEditor* GetPropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
+
+    /**
+    * \brief Forget this instance, so its MainWindow's address is not
+    * mapped to a deleted editor
+    */
+    ~PropertyEditor() override;
 
     /**
     * \brief Clear widgets and groups that were present before but not in the passed in new selected entities

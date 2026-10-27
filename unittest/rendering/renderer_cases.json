@@ -105,6 +105,8 @@
     {"id":"lcviewernoqt-drawitems-lcdimension-h","source":"lcviewernoqt/drawitems/lcdimension.h","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcdimlinear-cpp","source":"lcviewernoqt/drawitems/lcdimlinear.cpp","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcdimlinear-h","source":"lcviewernoqt/drawitems/lcdimlinear.h","kind":"drawable"},
+    {"id":"lcviewernoqt-drawitems-lcdimordinate-cpp","source":"lcviewernoqt/drawitems/lcdimordinate.cpp","kind":"drawable"},
+    {"id":"lcviewernoqt-drawitems-lcdimordinate-h","source":"lcviewernoqt/drawitems/lcdimordinate.h","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcdimradial-cpp","source":"lcviewernoqt/drawitems/lcdimradial.cpp","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcdimradial-h","source":"lcviewernoqt/drawitems/lcdimradial.h","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcimage-cpp","source":"lcviewernoqt/drawitems/lcimage.cpp","kind":"drawable"},
@@ -133,6 +135,8 @@
     {"id":"lcviewernoqt-drawitems-lcvspline-h","source":"lcviewernoqt/drawitems/lcvspline.h","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcvtext-cpp","source":"lcviewernoqt/drawitems/lcvtext.cpp","kind":"drawable"},
     {"id":"lcviewernoqt-drawitems-lcvtext-h","source":"lcviewernoqt/drawitems/lcvtext.h","kind":"drawable"},
+    {"id":"lcviewernoqt-drawitems-mtextlayout-cpp","source":"lcviewernoqt/drawitems/mtextlayout.cpp","kind":"drawable"},
+    {"id":"lcviewernoqt-drawitems-mtextlayout-h","source":"lcviewernoqt/drawitems/mtextlayout.h","kind":"drawable"},
     {"id":"lcviewernoqt-events-drawevent-h","source":"lcviewernoqt/events/drawevent.h","kind":"canvas"},
     {"id":"lcviewernoqt-events-mousemoveevent-h","source":"lcviewernoqt/events/mousemoveevent.h","kind":"canvas"},
     {"id":"lcviewernoqt-events-mousereleaseevent-h","source":"lcviewernoqt/events/mousereleaseevent.h","kind":"canvas"},
@@ -146,7 +150,7 @@
     {
       "id": "contracts",
       "path": "unittest/rendering/fixtures/renderer_contracts.json",
-      "sha256": "13522cc3c27f6434e6fd7a7cc7e53b4d17df4af6da93f651e85ec87c54d31fa2",
+      "sha256": "794aa4c6f7210e946968b06687f2750084b15e5db7687241d53997cfa721566f",
       "kind": "contracts",
       "license": "GPL-3.0-or-later",
       "notice": "LICENSE",
@@ -186,7 +190,7 @@
     {
       "id": "python-rectangle",
       "path": "lcUIPy/plugins/rectangle/plugin.py",
-      "sha256": "6db3d609f77771959315a6a5683022ce75e01c5d406fcfd4929d9763e3041e61",
+      "sha256": "a6dfcbf1e3db8e84fcd77bf6b68c132f9fb0d640f776dd5c66c3ec1d88f719b6",
       "kind": "script-source",
       "license": "GPL-3.0-or-later",
       "notice": "LICENSE",
@@ -196,7 +200,7 @@
     {
       "id": "lua-rectangle",
       "path": "lcUILua/plugins_disabled/rectangle/plugin.lua",
-      "sha256": "a002837638704a9dc4ea9372ab2ae6b4026b7a088d98eff99acce4f064f4aca1",
+      "sha256": "994cfc89eb2b66840bd5e20f8c66db2b89e7563312ee18ed9b964c95055d0053",
       "kind": "script-source",
       "license": "GPL-3.0-or-later",
       "notice": "LICENSE",
@@ -923,7 +927,7 @@
       "stage": "R3",
       "features": ["F5"],
       "methods": ["void font_size(double,bool)","void select_font_face(const char*,const char*)","TextExtends text_extends(const char*)","void text(const char*)"],
-      "consumers": ["lcviewernoqt-drawitems-lcvmtext-cpp","lcviewernoqt-drawitems-lcvmtext-h"],
+      "consumers": ["lcviewernoqt-drawitems-lcvmtext-cpp","lcviewernoqt-drawitems-lcvmtext-h","lcviewernoqt-drawitems-mtextlayout-cpp","lcviewernoqt-drawitems-mtextlayout-h"],
       "configurations": ["source-linux","gui-less-linux","source-windows","gui-less-windows","source-macos","gui-less-macos"],
       "profiles": ["rhi-only","dual","scripted","rhi-offscreen","rhi-cli","rhi-cli-python"],
       "modes": ["offscreen","widget"],
@@ -1049,6 +1053,33 @@
         {"id":"ordinary","test":"RenderGeometryTest.DimensionLinearOrdinary","expect":"success","oracles":["model-error","contracts"]},
         {"id":"empty","test":"RenderGeometryTest.DimensionLinearEmpty","expect":"success","oracles":["contracts"]},
         {"id":"limit","test":"RenderGeometryTest.DimensionLinearLimit","expect":"diagnostic","oracles":["contracts"],"reason":"dimension-layout-limit"}
+      ],
+      "requires": ["rhi"]
+    },
+    {
+      "id": "dimension-ordinate",
+      "stage": "R3",
+      "features": ["F5","F7"],
+      "methods": ["TextExtends text_extends(const char*)","void move_to(double,double)","void line_to(double,double)","void stroke()"],
+      "consumers": [
+        "lcviewernoqt-drawitems-lcdimordinate-cpp",
+        "lcviewernoqt-drawitems-lcdimordinate-h",
+        "lcviewernoqt-drawitems-lcdimension-cpp",
+        "lcviewernoqt-drawitems-lcdimension-h"
+      ],
+      "configurations": ["source-linux","gui-less-linux","source-windows","gui-less-windows","source-macos","gui-less-macos"],
+      "profiles": ["rhi-only","dual","scripted","rhi-offscreen","rhi-cli","rhi-cli-python"],
+      "modes": ["offscreen","widget"],
+      "devices": ["software","hardware"],
+      "fixture": "contracts",
+      "dataset": "dimension-ordinate",
+      "assets": ["abeezee"],
+      "decisions": ["D3"],
+      "binding": "proposed-gtest",
+      "variants": [
+        {"id":"ordinary","test":"RenderGeometryTest.DimensionOrdinateOrdinary","expect":"success","oracles":["model-error","contracts"]},
+        {"id":"empty","test":"RenderGeometryTest.DimensionOrdinateEmpty","expect":"success","oracles":["contracts"]},
+        {"id":"limit","test":"RenderGeometryTest.DimensionOrdinateLimit","expect":"diagnostic","oracles":["contracts"],"reason":"dimension-layout-limit"}
       ],
       "requires": ["rhi"]
     },

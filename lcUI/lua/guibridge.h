@@ -6,7 +6,6 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <cstdint>
 #include <kaguya/kaguya.hpp>
 
 

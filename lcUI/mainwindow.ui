@@ -145,6 +145,7 @@
       <string>Text</string>
      </property>
      <addaction name="actionText_Operation"/>
+     <addaction name="actionMText_Operation"/>
     </widget>
     <widget class="lc::ui::api::Menu" name="menuDimension">
      <property name="title">
@@ -300,6 +301,11 @@
     <action name="actionText_Operation">
         <property name="text">
             <string>&amp;Text</string>
+        </property>
+    </action>
+    <action name="actionMText_Operation">
+        <property name="text">
+            <string>&amp;MText</string>
         </property>
     </action>
   <action name="actionPolyline">

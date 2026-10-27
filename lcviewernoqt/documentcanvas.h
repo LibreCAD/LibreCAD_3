@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <stdexcept>
 #include <utility>
 
 #include "painters/lcpainter.h"
@@ -34,6 +35,8 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
 public:
     DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document,
     std::function<void(double*, double*)> deviceToUser = [](double* x,double* y) {},meta::Block_CSPtr viewport=nullptr);
+    // An empty deviceToUser uses the current painter. Its owner must clear
+    // setPainter(nullptr) before deleting it; detached point selection fails.
 
     virtual ~DocumentCanvas();
 
@@ -226,6 +229,24 @@ public:
 
     void setPainter(LcPainter* painter);
 
+    /**
+     * @brief setBackgroundColor
+     * The colour the canvas is cleared to when rendering VIEWER_BACKGROUND,
+     * before the background() handlers draw. It only shows where no background
+     * drawable covers the view; LibreCAD's own model and paper viewers paint a
+     * full-view background over it. Takes effect on the next render.
+     * @param color Channels are 0..1 (note lc::Color(int, int, int) reads
+     * 0..255). Alpha is passed to the painter, so a cairo image painter keeps a
+     * translucent result.
+     */
+    void setBackgroundColor(const lc::Color& color);
+
+    /**
+     * @brief backgroundColor
+     * @return the colour the canvas is cleared to, see setBackgroundColor
+     */
+    lc::Color backgroundColor() const;
+
     lc::viewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
     meta::Block_CSPtr viewport() {
@@ -268,6 +289,7 @@ private:
 
     // Painter
     lc::viewer::LcPainter* _painterPtr;
+    lc::Color _backgroundColor;
 
     //Signals
     Nano::Signal<void(event::DrawEvent const& event)> _background;
@@ -302,7 +324,12 @@ private:
 };
 
 void DocumentCanvas::device_to_user(double* x, double* y) const {
-    _deviceToUser(x, y);
+    if (_deviceToUser) {
+        _deviceToUser(x, y);
+    } else {
+        if (!_painterPtr) throw std::runtime_error("DocumentCanvas has no active painter");
+        _painterPtr->device_to_user(x, y);
+    }
 }
 
 DECLARE_SHORT_SHARED_PTR(DocumentCanvas)

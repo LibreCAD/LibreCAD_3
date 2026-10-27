@@ -19,7 +19,8 @@ def fixture(case='ordinary'):
     for i,name in enumerate(sorted(validator.DIRECT|({validator.GTEST} if tests else set())|(validator.LEGACY_DIRECT if legacy else set())|(validator.CLI_DIRECT if cli else set())),1):
         ref=name+'#'+format(i,'032x');refs.append(ref+'%1.0')
         nodes[str(i)]=dict(ref=ref,name=name.split('/')[0],rrev=ref.split('#')[1],recipe='Cache',binary='Download',context='host',
-            package_id=format(i,'040x'),prev=format(i+100,'032x'),binary_remote='conancenter',options={'shared':'False'},
+            package_id=format(i,'040x'),prev=format(i+100,'032x'),binary_remote='conancenter',
+            options={'shared':'True' if name.startswith('lua/') else 'False'},
             settings=dict(validator.SETTINGS),dependencies={})
         if name==validator.GTEST:nodes[str(i)]['options'].update(build_gmock='True',no_main='False')
         root['dependencies'][str(i)]={'ref':name,'direct':True}
@@ -119,6 +120,10 @@ class ConanGraphTests(unittest.TestCase):
         for key,value in [('rrev','0'*32),('package_id','bad'),('prev',None),('binary_remote','other'),('options',{'shared':'True'})]:
             graph=copy.deepcopy(self.graph);graph['graph']['nodes']['1'][key]=value
             with self.subTest(key=key),self.assertRaises(ValueError):validator.validate(graph,self.lock,'ordinary')
+        # The Lua core alone is shared: a static one is refused like a shared other.
+        graph=copy.deepcopy(self.graph);node=next(n for n in graph['graph']['nodes'].values() if n.get('name')=='lua')
+        node['options']['shared']='False'
+        with self.assertRaisesRegex(ValueError,'shared Lua core'):validator.validate(graph,self.lock,'ordinary')
         for key,value in [('build_gmock','False'),('no_main','True')]:
             graph=copy.deepcopy(self.graph);node=next(n for n in graph['graph']['nodes'].values() if n.get('name')=='gtest')
             node['options'][key]=value

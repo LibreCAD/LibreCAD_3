@@ -4,43 +4,35 @@
 
 set(_install_prefix "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}")
 set(_python_runtime "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@/@LC_PYTHON_RUNTIME_LIBRARY_NAME@")
+set(_python_origin_args)
+if("@LIBRECAD_RECORD_NATIVE_ORIGINS@" STREQUAL "ON")
+    set(_origin_manifest "${_install_prefix}/@CMAKE_INSTALL_DATADIR@/librecad/licenses/providers/native-origins.json")
+    if(EXISTS "${_origin_manifest}" OR IS_SYMLINK "${_origin_manifest}")
+        message(FATAL_ERROR "Native origin capture requires a fresh install prefix, not a previous manifest")
+    endif()
+    include("@CMAKE_BINARY_DIR@/native-origin-project-files-${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+    list(APPEND _python_origin_args
+        --origin-manifest "${_origin_manifest}"
+        --origin-platform "@LC_NATIVE_ORIGIN_PLATFORM@"
+        --project-root "@CMAKE_BINARY_DIR@"
+        --project-version "@VERSION_MAJOR@.@VERSION_MINOR@"
+        --project-revision "@LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION@"
+        --source-file "${_python_runtime}" "@LC_PYTHON_RUNTIME_ORIGINAL_LIBRARY@"
+        --source-tree
+        "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@/@LC_PYTHON_STAGED_STDLIB_REL@" "@Python_STDLIB@"
+        --source-tree
+        "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@/@LC_PYTHON_STAGED_STDARCH_REL@" "@Python_STDARCH@"
+        --source-tree
+        "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@/@LC_PYTHON_STAGED_DYNLIBS_REL@" "@LC_PYTHON_RUNTIME_DYNLIBS@"
+        ${_python_origin_project_args})
+endif()
 if(NOT EXISTS "${_python_runtime}")
     message(FATAL_ERROR "Staged CPython runtime is missing: ${_python_runtime}")
 endif()
 
-execute_process(
-    COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -id "@LC_PYTHON_RUNTIME_NEW_INSTALL_ID@"
-            "${_python_runtime}"
-    RESULT_VARIABLE _id_result
-    ERROR_VARIABLE _id_error)
-if(NOT _id_result EQUAL 0)
-    message(FATAL_ERROR "Could not set staged CPython install ID: ${_id_error}")
-endif()
-
-set(_python_consumers
-    "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@/liblcpythonscript.dylib"
-    "${_install_prefix}/@CMAKE_INSTALL_BINDIR@/librecad")
-foreach(_consumer IN LISTS _python_consumers)
-    if(NOT EXISTS "${_consumer}")
-        continue()
-    endif()
-    execute_process(
-        COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -change
-                "@LC_PYTHON_RUNTIME_OLD_INSTALL_ID@"
-                "@LC_PYTHON_RUNTIME_NEW_INSTALL_ID@"
-                "${_consumer}"
-        RESULT_VARIABLE _change_result
-        ERROR_VARIABLE _change_error)
-    if(NOT _change_result EQUAL 0)
-        message(FATAL_ERROR
-            "Could not relocate CPython dependency in ${_consumer}: ${_change_error}")
-    endif()
-endforeach()
-
 # Stage non-system dylibs needed by the copied stdlib extensions and libpython.
-# Keep this after install_name_tool has relocated libpython itself, and before
-# signing consumers: the helper may rewrite IDs, loads, and RPATHs in any of
-# these Mach-O files.
+# The existing walker now also relocates libpython and its consumers, AFTER
+# capturing selected originals and BEFORE signing/sealing final byte hashes.
 set(_python_stage_root
     "${_install_prefix}/@LC_PYTHON_RUNTIME_STAGED_ROOT@")
 set(_python_library_dir "${_install_prefix}/@CMAKE_INSTALL_LIBDIR@")
@@ -59,6 +51,8 @@ execute_process(
             "@LC_PYTHON_RUNTIME_INSTALL_NAME_TOOL@"
             "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@"
             ${_python_stage_search_args}
+            ${_python_origin_args}
+            --relocate-python-runtime "${_python_runtime}" "@LC_PYTHON_RUNTIME_OLD_INSTALL_ID@"
             --application-binary
             "${_install_prefix}/@CMAKE_INSTALL_BINDIR@/librecad"
             --defer-frameworks
@@ -71,28 +65,8 @@ if(NOT _stage_result EQUAL 0)
 endif()
 message(STATUS "${_stage_output}")
 
-# install_name_tool invalidates the selected Python dylib's embedded
-# signature. Ad-hoc sign the rewritten Mach-O files for local installs and PR
-# smoke; protected release packaging will replace these with its release seal.
-set(_python_macho_files "${_python_runtime}" ${_python_consumers})
-foreach(_macho IN LISTS _python_macho_files)
-    if(NOT EXISTS "${_macho}")
-        continue()
-    endif()
-    execute_process(
-        COMMAND "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@" --force --sign - "${_macho}"
-        RESULT_VARIABLE _sign_result
-        ERROR_VARIABLE _sign_error)
-    if(NOT _sign_result EQUAL 0)
-        message(FATAL_ERROR "Could not ad-hoc sign ${_macho}: ${_sign_error}")
-    endif()
-    execute_process(
-        COMMAND "@LC_PYTHON_RUNTIME_CODESIGN_TOOL@" --verify --strict "${_macho}"
-        RESULT_VARIABLE _verify_result
-        ERROR_VARIABLE _verify_error)
-    if(NOT _verify_result EQUAL 0)
-        message(FATAL_ERROR "Ad-hoc signature is invalid for ${_macho}: ${_verify_error}")
-    endif()
-endforeach()
+# The stager signs/verifies EVERY processed Mach-O after its last rewrite,
+# before sealing final byte hashes. Do not sign these a second time afterwards:
+# signing again would invalidate the just-recorded final-byte identity.
 
 message(STATUS "Staged CPython runtime at ${_python_runtime}")

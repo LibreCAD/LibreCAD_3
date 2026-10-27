@@ -47,13 +47,8 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
-    const auto existingEntity = _storageManager->entityByID(cadEntity->id());
-    if (existingEntity != nullptr) {
-        // Remove the stored entity, not the incoming replacement.  Besides
-        // removing the old storage entry, removeEntity() also clears
-        // placeholder bookkeeping for waiting custom entities based on the
-        // concrete type of the entity it receives.
-        removeEntity(existingEntity);
+    if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
+        removeEntity(cadEntity);
     }
 
     _storageManager->insertEntity(cadEntity);

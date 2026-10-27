@@ -87,6 +87,25 @@ public:
     /// Write a named attribute.
     virtual void setAttr(const std::string& name, const ScriptValue& value) = 0;
 
+    /// Checked attribute write. Runtime adapters may override this to report
+    /// language exceptions and conversion failures without throwing through
+    /// a Qt callback. The default preserves existing adapters and converts
+    /// C++ exceptions into an error string.
+    virtual bool setAttrChecked(const std::string& name,
+                                const ScriptValue& value,
+                                std::string& error) {
+        error.clear();
+        try {
+            setAttr(name, value);
+            return true;
+        } catch (const std::exception& exception) {
+            error = exception.what();
+        } catch (...) {
+            error = "script attribute assignment failed with an unknown exception";
+        }
+        return false;
+    }
+
     /// True iff the attribute exists.  For Lua: `type(t[k]) ~= 'nil'`.
     /// For Python: `hasattr(obj, name)`.
     virtual bool hasAttr(const std::string& name) = 0;
@@ -180,6 +199,17 @@ public:
 
     void setAttr(const std::string& name, const ScriptValue& value) const {
         if (_impl) _impl->setAttr(name, value);
+    }
+
+    bool setAttrChecked(const std::string& name,
+                        const ScriptValue& value,
+                        std::string& error) const {
+        error.clear();
+        if (!_impl) {
+            error = "cannot set an attribute on a nil script object";
+            return false;
+        }
+        return _impl->setAttrChecked(name, value, error);
     }
 
     bool hasAttr(const std::string& name) const {

@@ -16,8 +16,9 @@ LinePatternSelect::LinePatternSelect(lc::storage::Document_SPtr document, QWidge
 
     setDocument(std::move(document));
 
-    connect(this, &QComboBox::textActivated,
-            this, &LinePatternSelect::onActivated);
+    // See ColorSelect: Qt6 renamed this signal to textActivated, and the
+    // string-based connect failed silently at run time.
+    connect(this, &QComboBox::textActivated, this, &LinePatternSelect::onActivated);
 }
 
 LinePatternSelect::LinePatternSelect(CadMdiChild* mdiChild, QWidget* parent, bool showByLayer, bool showByBlock) :

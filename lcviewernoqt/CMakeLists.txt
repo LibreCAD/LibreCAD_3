@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6...3.27)
+cmake_minimum_required(VERSION 3.28)
 PROJECT (LCVIEWERNOQT)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -9,6 +9,7 @@ message("***** LibreCAD lcviewernoqt *****")
 set(viewer_srcs
 lcdrawoptions.cpp
 drawitems/lcvdrawitem.cpp
+drawitems/mtextlayout.cpp
 drawitems/lcvarc.cpp
 drawitems/lcvcircle.cpp
 drawitems/lcvhatch.cpp
@@ -29,6 +30,7 @@ drawitems/lcdimdiametric.cpp
 drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
+drawitems/lcdimordinate.cpp
 drawitems/lclwpolyline.cpp
 drawables/lccursor.cpp
 painters/createpainter.cpp
@@ -95,6 +97,7 @@ drawitems/lcdimdiametric.h
 drawitems/lcdimlinear.h
 drawitems/lcdimaligned.h
 drawitems/lcdimangular.h
+drawitems/lcdimordinate.h
 drawitems/lclwpolyline.h
 drawables/lccursor.h
 events/drawevent.h
@@ -253,6 +256,7 @@ if(WITH_LEGACY_OPENGL_RENDERER)
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    collect_lib("lcviewer_opengl")
 endif()
 
 # INSTALLATION
@@ -262,3 +266,6 @@ install(TARGETS lcviewernoqt
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("lcviewernoqt")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

@@ -11,7 +11,6 @@ using namespace lc::ui::dialog;
 
 #include <boost/version.hpp>
 
-#include <drw_base.h>
 extern "C"
 {
 #include "lua.h"
@@ -114,19 +113,17 @@ QString getOsName(outputConfig& oc)
 #endif
 
 QString getAdditionalOSInfo(outputConfig& oc) { //From Qt
+    // The QSysInfo calls below were guarded on Qt 5.4 or newer, which lcUI
+    // has long since left behind -- the else branch returned an empty string
+    // and could not be reached.
     return
-#if QT_VERSION >= 0x050400
         oc.lineFormat.arg("System").arg(QSysInfo::prettyProductName()) +
         oc.lineFormat.arg("Build Architecture").arg(QSysInfo::buildCpuArchitecture()) +
         oc.lineFormat.arg("Current Architecture").arg(QSysInfo::currentCpuArchitecture()) +
         oc.lineFormat.arg("Kernel Type").arg(QSysInfo::kernelType()) +
         oc.lineFormat.arg("Kernel Version").arg(QSysInfo::kernelVersion()) +
         oc.lineFormat.arg("Product Type").arg(QSysInfo::productType()) +
-        oc.lineFormat.arg("Product Version").arg(QSysInfo::productVersion())
-#else
-        QString()
-#endif
-        ;
+        oc.lineFormat.arg("Product Version").arg(QSysInfo::productVersion());
 }
 
 // LCAD info
@@ -205,7 +202,7 @@ QString getExtInfo(outputConfig& oc) {
         oc.lineFormat.arg("Lua Version").arg(getLuaVersion()) +
         // Phase 6 PR-6.2 — new Python row.
         oc.lineFormat.arg("Python Version").arg(getPythonVersion()) +
-        oc.lineFormat.arg("libdxfrw Version").arg(DRW_VERSION) +
+        oc.lineFormat.arg("libdxfrw Version").arg(LIBDXFRW_BUILD_VERSION) +
         oc.lineFormat.arg("OpenGL Version").arg(getGLVersion()) +
         oc.lineFormat.arg("CMake Version").arg(CMAKE_VERSION)
         ;

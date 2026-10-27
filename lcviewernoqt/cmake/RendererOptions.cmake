@@ -16,15 +16,16 @@ endfunction()
 
 # Conan records its dependency selection in the toolchain, including when CMake
 # is invoked directly rather than through a preset. Never accept a cache/CLI
-# override which would use a different dependency graph.
+# override that needs dependencies the Conan graph does not have.
 function(lc_renderer_option name description default)
     if(DEFINED LC_CONAN_${name})
         set(default ${LC_CONAN_${name}})
     endif()
     option(${name} "${description}" ${default})
-    if(DEFINED LC_CONAN_${name} AND
-       ((LC_CONAN_${name} AND NOT ${name}) OR
-        (NOT LC_CONAN_${name} AND ${name})))
+    # Only an option Conan did not resolve dependencies for is refused. Turning
+    # one OFF builds a subset of the same graph, which master's Windows jobs do
+    # with the default Conan install.
+    if(DEFINED LC_CONAN_${name} AND NOT LC_CONAN_${name} AND ${name})
         message(FATAL_ERROR "${name} conflicts with Conan's dependency graph; rerun conan install with matching options in a fresh build directory")
     endif()
 endfunction()

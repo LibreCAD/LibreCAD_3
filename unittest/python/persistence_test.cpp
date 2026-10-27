@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 
 #include <lcpython.h>
+#include <persistence/file.h>
 
 #include <cad/base/cadentity.h>
 #include <cad/primitive/arc.h>
@@ -21,20 +22,20 @@
 #include <cad/storage/entitycontainer.h>
 #include <cad/storage/storagemanagerimpl.h>
 
-#include <cstdio>
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
-#include <persistence/libdxfrw/dxfimpl.h>
 
 namespace {
 
 std::string uniqueTmpDxf() {
     return (boost::filesystem::temp_directory_path()
-            / boost::filesystem::unique_path("librecad-persistence-%%%%%%%%.dxf")).string();
+            / boost::filesystem::unique_path("librecad-persistence-%%%%%%%%-%%%%%%%%.dxf"))
+        .string();
 }
 
 } // namespace
@@ -88,8 +89,8 @@ eb.appendEntity(ab.build())
 eb.execute()
 
 # Save it out — DXF R2000 via libdxfrw.
-assert lc.persistence.File.save(document, dxf_path,
-                                lc.persistence.File.Type.LIBDXFRW_DXF_R2000)
+lc.persistence.File.save(document, dxf_path,
+                         lc.persistence.File.Type.LIBDXFRW_DXF_R2000)
 )PY";
 
     ASSERT_EQ(lcpy.runString(script.c_str(), ns), "");
@@ -150,52 +151,199 @@ TEST(PersistenceTest, EnumsAndHelpersRegistered) {
         ns), "");
 }
 
-TEST(PersistenceTest, SaveFormatMatrixRoundTrip) {
+// The result types, from Python.
+//
+// `lc.persistence.File.open` answers a read with a revision and nothing else,
+// which is enough for a script that only wants to load one known-good file and
+// no use at all to one walking a directory: it cannot tell a complete drawing
+// from the readable half of a broken one. importFile gives it the same facts
+// LibreCAD itself now acts on.
+TEST(PersistenceTest, ImportResultFromPython) {
+    const std::string dxfPath = uniqueTmpDxf();
+    boost::filesystem::remove(dxfPath);
+
+    auto sm  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(sm);
+
+    lc::python::LCPython lcpy;
+    auto ns = lcpy.makeNamespace();
+    lcpy.setDocument(ns, doc);
+    ns.set("dxf_path", dxfPath);
+
+    const std::string build = R"PY(
+layer = lc.meta.Layer('rw', lc.meta.MetaLineWidthByValue(1.0),
+                      lc.Color(255, 255, 255, 255), None, False)
+lc.operation.AddLayer.new(document, layer).execute()
+
+eb = lc.operation.EntityBuilder.new(document)
+lb = lc.builder.LineBuilder()
+lb.setLayer(layer)
+lb.setStartPoint(lc.geo.Coordinate(0.0, 0.0))
+lb.setEndPoint(lc.geo.Coordinate(4.0, 3.0))
+eb.appendEntity(lb.build())
+eb.execute()
+
+export = lc.persistence.File.exportFile(document, dxf_path,
+                                        lc.persistence.File.Type.LIBDXFRW_DXF_R2000)
+assert export.ok is True, 'export should have succeeded'
+assert export.variantId == 'dxf.ac1015.ascii', export.variantId
+assert list(export.diagnostics) == []
+)PY";
+    ASSERT_EQ(lcpy.runString(build.c_str(), ns), "") << "building and exporting failed";
+
+    auto sm2  = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto doc2 = std::make_shared<lc::storage::DocumentImpl>(sm2);
+    auto ns2 = lcpy.makeNamespace();
+    lcpy.setDocument(ns2, doc2);
+    ns2.set("dxf_path", dxfPath);
+    ns2.set("missing_path", dxfPath + ".missing");
+
+    const std::string read = R"PY(
+result = lc.persistence.File.importFile(document, dxf_path,
+                                        lc.persistence.File.Library.LIBDXFRW)
+
+assert result.ok is True, 'a file we just wrote must read back'
+assert result.partial is False
+assert result.variantId == 'dxf.ac1015.ascii', result.variantId
+assert result.sourceVersionTag == 'AC1015', result.sourceVersionTag
+assert result.entitiesDelivered >= 1, result.entitiesDelivered
+assert list(result.diagnostics) == []
+assert result.loss.empty() is True
+assert result.loss.total() == 0
+
+# The variant table is readable too, so a script can offer the same choices
+# the Save dialog does without hard-coding them.
+variants = lc.persistence.formatVariants()
+assert len(variants) >= 14
+ascii_2000 = lc.persistence.formatVariantById('dxf.ac1015.ascii')
+assert ascii_2000 is not None
+assert ascii_2000.writable is True
+assert ascii_2000.binary is False
+assert ascii_2000.versionTag == 'AC1015'
+assert lc.persistence.formatVariantById('dxf.nope') is None
+
+assert lc.persistence.File.variantIdForType(
+    lc.persistence.File.Type.LIBDXFRW_DXF_R2000) == 'dxf.ac1015.ascii'
+assert lc.persistence.File.typeForVariantId('dxf.ac1015.ascii') == \
+    lc.persistence.File.Type.LIBDXFRW_DXF_R2000
+assert lc.persistence.File.typeForVariantId('dxf.nope') is None
+
+# A file that is not there is reported, not raised, and not confused with an
+# empty drawing.
+missing = lc.persistence.File.importFile(document, missing_path,
+                                         lc.persistence.File.Library.LIBDXFRW)
+assert missing.ok is False
+assert missing.partial is False
+assert missing.entitiesDelivered == 0
+assert len(missing.diagnostics) >= 1
+assert missing.diagnostics[0].severity == lc.persistence.Severity.Error
+assert missing.diagnostics[0].code != ''
+)PY";
+    ASSERT_EQ(lcpy.runString(read.c_str(), ns2), "") << "reading back failed";
+
+    boost::filesystem::remove(dxfPath);
+}
+
+TEST(PersistenceTest, ImportFailuresAreTypedReadonlyAndRetainTheirLifetime) {
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    lc::persistence::ImportResult result;
+    result.failures.push_back({"HATCH", 0xffffffffUL, "Layer", "Block", "Invalid geometry"});
+    ns.set("result", std::move(result));
+    ASSERT_EQ(python.runString(R"PY(
+failure = result.failures[0]
+assert isinstance(failure, lc.persistence.ImportFailure)
+assert (failure.recordKind, failure.handle, failure.layer, failure.block, failure.reason) == \
+       ('HATCH', 4294967295, 'Layer', 'Block', 'Invalid geometry')
+for obj, attr, value in [(failure, 'recordKind', 'LINE'), (failure, 'handle', 0),
+                         (failure, 'layer', ''), (failure, 'block', ''),
+                         (failure, 'reason', ''), (result, 'failures', [])]:
+    try:
+        setattr(obj, attr, value)
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('writable result field: ' + attr)
+del obj, result
+import gc
+gc.collect()
+assert failure.reason == 'Invalid geometry'
+)PY", ns), "");
+}
+
+TEST(PersistenceTest, DwgImportIdentityMatchesEnabledAndDisabledBuilds) {
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    python.setDocument(ns, std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>()));
+    lc::storage::Document_SPtr legacy = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    ns.set("legacy_document", legacy);
+    ns.set("dwg_path", std::string(DWG_FIXTURES_DIR) + "/ordinary_enc_AC1015.dwg");
+    ns.set("enabled", USE_DWG_IMPORT != 0);
+    ASSERT_EQ(python.runString(R"PY(
+F = lc.persistence.File
+assert int(F.Type.LIBDXFRW_DWG_IMPORT) == 15
+assert F.LIBDXFRW_DWG_IMPORT == F.Type.LIBDXFRW_DWG_IMPORT
+assert F.variantIdForType(F.Type.LIBDXFRW_DWG_IMPORT) == 'dwg.libdxfrw'
+assert F.typeForVariantId('dwg.libdxfrw') == F.Type.LIBDXFRW_DWG_IMPORT
+result = F.importFile(document, dwg_path, F.Library.LIBDXFRW)
+assert result.ok == enabled
+assert result.variantId == 'dwg.libdxfrw'
+assert result.failures == []
+assert result.entitiesDelivered > 0 if enabled else len(result.diagnostics) > 0
+assert F.open(legacy_document, dwg_path, F.Library.LIBDXFRW) == F.Type.LIBDXFRW_DWG_IMPORT
+)PY", ns), "");
+}
+
+TEST(PersistenceTest, AllWritableDxfVariantsRoundTripThroughPython) {
     struct FormatCase {
-        const char* name;
-        const char* acadVersion;
+        const char* id;
+        const char* versionTag;
         bool binary;
     };
     const std::vector<FormatCase> formats = {
-        {"LIBDXFRW_DXF_R12",   "AC1009", false},
-        {"LIBDXFRW_DXF_R14",   "AC1014", false},
-        {"LIBDXFRW_DXF_R2000", "AC1015", false},
-        {"LIBDXFRW_DXF_R2004", "AC1018", false},
-        {"LIBDXFRW_DXF_R2007", "AC1021", false},
-        {"LIBDXFRW_DXF_R2010", "AC1024", false},
-        {"LIBDXFRW_DXF_R2013", "AC1027", false},
-        {"LIBDXFRW_DXB_R12",   "AC1009", true},
-        {"LIBDXFRW_DXB_R14",   "AC1014", true},
-        {"LIBDXFRW_DXB_R2000", "AC1015", true},
-        {"LIBDXFRW_DXB_R2004", "AC1018", true},
-        {"LIBDXFRW_DXB_R2007", "AC1021", true},
-        {"LIBDXFRW_DXB_R2010", "AC1024", true},
-        {"LIBDXFRW_DXB_R2013", "AC1027", true},
+        {"dxf.ac1009.ascii",  "AC1009", false},
+        {"dxf.ac1014.ascii",  "AC1014", false},
+        {"dxf.ac1015.ascii",  "AC1015", false},
+        {"dxf.ac1018.ascii",  "AC1018", false},
+        {"dxf.ac1021.ascii",  "AC1021", false},
+        {"dxf.ac1024.ascii",  "AC1024", false},
+        {"dxf.ac1027.ascii",  "AC1027", false},
+        {"dxf.ac1009.binary", "AC1009", true},
+        {"dxf.ac1014.binary", "AC1014", true},
+        {"dxf.ac1015.binary", "AC1015", true},
+        {"dxf.ac1018.binary", "AC1018", true},
+        {"dxf.ac1021.binary", "AC1021", true},
+        {"dxf.ac1024.binary", "AC1024", true},
+        {"dxf.ac1027.binary", "AC1027", true},
     };
 
-    const std::string pathBase = uniqueTmpDxf() + ".matrix";
+    const std::string pathBase = uniqueTmpDxf() + ".variants";
     auto sourceStorage = std::make_shared<lc::storage::StorageManagerImpl>();
     auto sourceDocument = std::make_shared<lc::storage::DocumentImpl>(sourceStorage);
     lc::python::LCPython lcpy;
     auto sourceNamespace = lcpy.makeNamespace();
     lcpy.setDocument(sourceNamespace, sourceDocument);
-    sourceNamespace.set("path_base", pathBase);
 
     const std::string createFixture = R"PY(
-layer = lc.meta.Layer('matrix', lc.meta.MetaLineWidthByValue(1.0),
+layer = lc.meta.Layer('variants', lc.meta.MetaLineWidthByValue(1.0),
                       lc.Color(255, 255, 255, 255), None, False)
 lc.operation.AddLayer.new(document, layer).execute()
 eb = lc.operation.EntityBuilder.new(document)
+
 lb = lc.builder.LineBuilder()
 lb.setLayer(layer)
 lb.setStartPoint(lc.geo.Coordinate(0.0, 0.0))
 lb.setEndPoint(lc.geo.Coordinate(10.0, 20.0))
 eb.appendEntity(lb.build())
+
 cb = lc.builder.CircleBuilder()
 cb.setLayer(layer)
 cb.setCenter(lc.geo.Coordinate(50.0, 50.0))
 cb.setRadius(5.0)
 eb.appendEntity(cb.build())
+
 import math
 ab = lc.builder.ArcBuilder()
 ab.setLayer(layer)
@@ -207,8 +355,9 @@ ab.setIsCCW(True)
 eb.appendEntity(ab.build())
 eb.execute()
 
-available_types = lc.persistence.File.getAvailableFileTypes()
-assert len(available_types) == 14, available_types
+writable_dxf = [v for v in lc.persistence.formatVariants()
+                if v.formatId == 'dxf' and v.writable]
+assert len(writable_dxf) == 14, [v.id for v in writable_dxf]
 )PY";
     ASSERT_EQ(lcpy.runString(createFixture.c_str(), sourceNamespace), "");
 
@@ -218,83 +367,107 @@ assert len(available_types) == 14, available_types
     paths.reserve(formats.size());
 
     for (const auto& format : formats) {
-        const std::string path = pathBase + "." + format.name + ".dxf";
+        const std::string path = pathBase + "." + format.id + ".dxf";
         paths.push_back(path);
         boost::filesystem::remove(path);
 
-        auto saveNamespace = lcpy.makeNamespace();
-        lcpy.setDocument(saveNamespace, sourceDocument);
-        saveNamespace.set("dxf_path", path);
-        saveNamespace.set("format_name", std::string(format.name));
-        const std::string saveScript =
-            "file_type = getattr(lc.persistence.File.Type, format_name)\n"
-            "assert file_type in lc.persistence.File.getAvailableFileTypes()\n"
-            "assert lc.persistence.File.save(document, dxf_path, file_type)\n";
-        ASSERT_EQ(lcpy.runString(saveScript.c_str(), saveNamespace), "")
-            << "save failed for " << format.name;
+        auto exportNamespace = lcpy.makeNamespace();
+        lcpy.setDocument(exportNamespace, sourceDocument);
+        exportNamespace.set("dxf_path", path);
+        exportNamespace.set("format_id", std::string(format.id));
+        exportNamespace.set("version_tag", std::string(format.versionTag));
+        exportNamespace.set("is_binary", format.binary);
+        const std::string exportScript = R"PY(
+variant = lc.persistence.formatVariantById(format_id)
+assert variant is not None, format_id
+assert variant.writable is True, format_id
+assert variant.readable is True, format_id
+assert variant.versionTag == version_tag, (format_id, variant.versionTag)
+assert variant.binary is is_binary, (format_id, variant.binary)
+file_type = lc.persistence.File.typeForVariantId(format_id)
+assert file_type is not None, format_id
+assert file_type in lc.persistence.File.getAvailableFileTypes(), format_id
+export_result = lc.persistence.File.exportFile(document, dxf_path, file_type)
+assert export_result.ok is True, list(export_result.diagnostics)
+assert export_result.variantId == format_id, export_result.variantId
+assert export_result.loss.total() == 0, export_result.loss.droppedByType
+assert list(export_result.diagnostics) == [], list(export_result.diagnostics)
+)PY";
+        ASSERT_EQ(lcpy.runString(exportScript.c_str(), exportNamespace), "")
+            << "Python export failed for " << format.id;
 
-        ASSERT_TRUE(boost::filesystem::exists(path)) << format.name;
-        ASSERT_GT(boost::filesystem::file_size(path), 0u) << format.name;
+        ASSERT_TRUE(boost::filesystem::exists(path)) << format.id;
+        ASSERT_GT(boost::filesystem::file_size(path), 0u) << format.id;
         std::ifstream input(path, std::ios::binary);
         ASSERT_TRUE(input.good()) << path;
         const std::string bytes((std::istreambuf_iterator<char>(input)),
                                 std::istreambuf_iterator<char>());
-        ASSERT_FALSE(bytes.empty()) << format.name;
-
+        ASSERT_FALSE(bytes.empty()) << format.id;
         if (format.binary) {
             EXPECT_EQ(bytes.compare(0, binarySignature.size(), binarySignature), 0)
-                << format.name << " should have the binary DXF signature";
+                << format.id << " should have the binary DXF signature";
         } else {
             EXPECT_NE(bytes.compare(0, binarySignature.size(), binarySignature), 0)
-                << format.name << " should be text DXF";
-            EXPECT_NE(bytes.find("$ACADVER"), std::string::npos) << format.name;
+                << format.id << " should be ASCII DXF";
+            EXPECT_NE(bytes.find("$ACADVER"), std::string::npos) << format.id;
+            EXPECT_NE(bytes.find(format.versionTag), std::string::npos) << format.id;
         }
-        EXPECT_NE(bytes.find(format.acadVersion), std::string::npos)
-            << format.name << " should write $ACADVER=" << format.acadVersion;
 
-        auto reopenedStorage = std::make_shared<lc::storage::StorageManagerImpl>();
-        auto reopenedDocument = std::make_shared<lc::storage::DocumentImpl>(reopenedStorage);
+        auto importedStorage = std::make_shared<lc::storage::StorageManagerImpl>();
+        auto importedDocument = std::make_shared<lc::storage::DocumentImpl>(importedStorage);
+        auto importNamespace = lcpy.makeNamespace();
+        lcpy.setDocument(importNamespace, importedDocument);
+        importNamespace.set("dxf_path", path);
+        importNamespace.set("format_id", std::string(format.id));
+        importNamespace.set("version_tag", std::string(format.versionTag));
+        const std::string importScript = R"PY(
+result = lc.persistence.File.importFile(
+    document, dxf_path, lc.persistence.File.Library.LIBDXFRW)
+assert result.ok is True, list(result.diagnostics)
+assert result.partial is False
+assert result.variantId == format_id, result.variantId
+assert result.sourceVersionTag == version_tag, result.sourceVersionTag
+assert result.entitiesDelivered == 3, result.entitiesDelivered
+assert list(result.diagnostics) == [], list(result.diagnostics)
+assert result.loss.total() == 0, result.loss.droppedByType
+)PY";
+        ASSERT_EQ(lcpy.runString(importScript.c_str(), importNamespace), "")
+            << "Python import failed for " << format.id;
 
-        // File::open currently exposes the libdxfrw return value only as a
-        // File::Type. Probe the parser's bool/error channel here as well so a
-        // silent read failure cannot masquerade as a successful empty import.
-        auto probeDocument = std::make_shared<lc::storage::DocumentImpl>(
-            std::make_shared<lc::storage::StorageManagerImpl>());
-        auto probeBuilder = std::make_shared<lc::operation::Builder>(
-            probeDocument, "DXF serialization matrix parser probe");
-        lc::persistence::DXFimpl probeInterface(probeDocument, probeBuilder);
-        dxfRW probeReader(path.c_str());
-        const bool readSucceeded = probeReader.read(&probeInterface, true);
-        ASSERT_TRUE(readSucceeded)
-            << format.name << " libdxfrw read failed with error "
-            << static_cast<int>(probeReader.getError());
-
-        auto openNamespace = lcpy.makeNamespace();
-        lcpy.setDocument(openNamespace, reopenedDocument);
-        openNamespace.set("dxf_path", path);
-        openNamespace.set("format_name", std::string(format.name));
-        ASSERT_EQ(lcpy.runString(
-            "opened_type = lc.persistence.File.open(document, dxf_path,\n"
-            "    lc.persistence.File.Library.LIBDXFRW)\n"
-            "expected_type = getattr(lc.persistence.File.Type, format_name)\n"
-            "assert opened_type == expected_type, (opened_type, expected_type)\n",
-            openNamespace), "") << "open failed for " << format.name;
-
-        int lineCount = 0;
-        int circleCount = 0;
-        int arcCount = 0;
-        for (const auto& entity : reopenedStorage->entityContainer().asVector()) {
+        int lines = 0;
+        int circles = 0;
+        int arcs = 0;
+        for (const auto& entity : importedStorage->entityContainer().asVector()) {
             if (std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
-                ++lineCount;
+                ++lines;
             } else if (std::dynamic_pointer_cast<const lc::entity::Circle>(entity)) {
-                ++circleCount;
+                ++circles;
             } else if (std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
-                ++arcCount;
+                ++arcs;
             }
         }
-        EXPECT_EQ(lineCount, 1) << format.name;
-        EXPECT_EQ(circleCount, 1) << format.name;
-        EXPECT_EQ(arcCount, 1) << format.name;
+        EXPECT_EQ(lines, 1) << format.id;
+        EXPECT_EQ(circles, 1) << format.id;
+        EXPECT_EQ(arcs, 1) << format.id;
+
+        // Keep the legacy File.open API's enum result in sync with the richer
+        // stable variant ID, especially for binary files that share a DXF
+        // revision with their ASCII counterpart.
+        auto openedStorage = std::make_shared<lc::storage::StorageManagerImpl>();
+        auto openedDocument = std::make_shared<lc::storage::DocumentImpl>(openedStorage);
+        auto openNamespace = lcpy.makeNamespace();
+        lcpy.setDocument(openNamespace, openedDocument);
+        openNamespace.set("dxf_path", path);
+        openNamespace.set("format_id", std::string(format.id));
+        const std::string openScript = R"PY(
+opened_type = lc.persistence.File.open(
+    document, dxf_path, lc.persistence.File.Library.LIBDXFRW)
+expected_type = lc.persistence.File.typeForVariantId(format_id)
+assert opened_type == expected_type, (opened_type, expected_type)
+)PY";
+        ASSERT_EQ(lcpy.runString(openScript.c_str(), openNamespace), "")
+            << "legacy Python File.open returned the wrong type for " << format.id;
+        EXPECT_EQ(openedStorage->entityContainer().asVector().size(), 3u) << format.id;
     }
 
     for (const auto& path : paths) {

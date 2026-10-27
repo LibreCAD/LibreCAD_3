@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(LCSCRIPTING)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -72,3 +72,6 @@ install(TARGETS lcscripting
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
+
+collect_lib("lcscripting")
+install_headers("${CMAKE_CURRENT_LIST_DIR}")

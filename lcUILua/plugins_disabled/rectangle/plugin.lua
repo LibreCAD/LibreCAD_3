@@ -233,7 +233,7 @@ end
 -- =============================================================================
 
 createStorage = function(pos, width, height)
-    return lc.meta.CustomEntityStorage("LC Plugin", "Rectangle", pos, {
+    return lc.meta.CustomEntityStorage.create("LC Plugin", "Rectangle", pos, {
         width  = tostring(width),
         height = tostring(height),
     })

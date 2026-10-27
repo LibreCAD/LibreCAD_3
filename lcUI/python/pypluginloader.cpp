@@ -3,21 +3,23 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 
 #include "pypluginloader.h"
+#include "pyeventhooks.h"
 
 #include <qt_keywords_push.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #include <qt_keywords_pop.h>
+#include <lcpython.h>
 
 #include <iostream>
-#include <map>
-#include <mutex>
+#include <stdexcept>
 
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QStringList>
+#include <QThread>
 
 namespace py = pybind11;
 
@@ -53,28 +55,57 @@ bool hasPluginPy(const QString& dir) {
     return QFileInfo(QDir(dir).filePath("plugin.py")).isFile();
 }
 
-struct PluginLoadOutcome {
-    bool loaded = false;
-    std::string failure;
-};
-
-std::mutex& pluginLoadMutex() {
-    static std::mutex mutex;
-    return mutex;
-}
-
-std::map<std::string, PluginLoadOutcome>& pluginLoadOutcomes() {
-    // Plugin definitions and global registrations are process-scoped. Keep
-    // only paths and plain diagnostics here; Python objects remain owned by
-    // their registries and are never destroyed by this cache without the GIL.
-    static std::map<std::string, PluginLoadOutcome> outcomes;
-    return outcomes;
-}
-
 } // namespace
+
+const PythonPluginLoadReport& bootstrapPythonPlugins() {
+    const auto* app = QCoreApplication::instance();
+    if (!app || QThread::currentThread() != app->thread()) {
+        throw std::runtime_error("Python plugin bootstrap requires the Qt application thread");
+    }
+    static const PythonPluginLoadReport report = [] {
+        MainWindowExecutionScope noOwner(nullptr);
+        lc::python::PythonInit::initialize();
+        installEventHooks();
+        const QString root = resolvePythonPackageRoot();
+        if (root.isEmpty()) {
+            throw std::runtime_error("Could not locate the lcUIPy application package");
+        }
+        py::gil_scoped_acquire gil;
+        const py::str parent(QFileInfo(root).dir().absolutePath().toStdString());
+        auto paths = py::module_::import("sys").attr("path");
+        if (!py::cast<bool>(paths.attr("__contains__")(parent))) {
+            paths.attr("insert")(0, parent);
+        }
+        const auto importModule = py::module_::import("importlib").attr("import_module");
+        std::vector<std::string> failures;
+        // Preserve the existing bounded top-level and two-subfolder scan.
+        // Separate plugin namespaces and Python's module cache remain intact.
+        for (const QString& subdir : {QString(), QStringLiteral("create_actions"),
+                                     QStringLiteral("actions")}) {
+            const QDir folder(QDir(root).filePath(subdir));
+            for (const QString& file : folder.entryList({"*.py"}, QDir::Files, QDir::Name)) {
+                if (file == "__init__.py" || (subdir.isEmpty() &&
+                    !file.startsWith("create_") && !file.startsWith("action_"))) continue;
+                const std::string module = ("lcUIPy." +
+                    (subdir.isEmpty() ? QString() : subdir + ".") + file.chopped(3)).toStdString();
+                try {
+                    importModule(module);
+                } catch (const py::error_already_set& error) {
+                    failures.push_back(module + ": " + error.what());
+                    std::cerr << "lcUIPy load failed: " << failures.back() << '\n';
+                }
+            }
+        }
+        auto result = loadPythonPlugins(QDir(root).filePath("plugins").toStdString(), "gui");
+        result.failures.insert(result.failures.begin(), failures.begin(), failures.end());
+        return result;
+    }();
+    return report;
+}
 
 PythonPluginLoadReport loadPythonPlugins(const std::string& pluginDir,
                                          const char* interfaceName) {
+    MainWindowExecutionScope noOwner(nullptr);
     PythonPluginLoadReport report;
     // Silent no-op on missing dir — same graceful-fail policy as
     // PluginManager::loadPluginsFrom().
@@ -86,10 +117,6 @@ PythonPluginLoadReport loadPythonPlugins(const std::string& pluginDir,
     report.directoryFound = true;
 
     py::gil_scoped_acquire gil;
-    // Acquire the GIL before the cache mutex: plugin code may invoke Python
-    // callbacks, and all concurrent callers must follow the same lock order.
-    std::lock_guard<std::mutex> cacheLock(pluginLoadMutex());
-    auto& outcomes = pluginLoadOutcomes();
 
     const QFileInfoList entries = dir.entryInfoList(
         QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
@@ -97,59 +124,26 @@ PythonPluginLoadReport loadPythonPlugins(const std::string& pluginDir,
         if (!hasPluginPy(entry.absoluteFilePath())) continue;
 
         const QString pluginPath = QDir(entry.absoluteFilePath()).filePath("plugin.py");
-        const QFileInfo pluginInfo(pluginPath);
-        QString identityPath = pluginInfo.canonicalFilePath();
-        if (identityPath.isEmpty()) {
-            identityPath = pluginInfo.absoluteFilePath();
-        }
-        const std::string pluginIdentity = identityPath.toStdString();
-        const auto cached = outcomes.find(pluginIdentity);
-        if (cached != outcomes.end()) {
-            // Report cached outcomes to callers (including runtime smoke) as
-            // if this invocation discovered each plugin, without evaluating
-            // its definition or repeating process-global registrations.
-            if (cached->second.loaded) {
-                report.loadedPlugins.emplace_back(entry.fileName().toStdString());
-            } else {
-                report.failures.emplace_back(
-                    entry.fileName().toStdString() + ": " +
-                    cached->second.failure);
-            }
-            continue;
-        }
-
-        const std::string pluginFile = pluginIdentity;
-        PluginLoadOutcome outcome;
+        const std::string pluginFile = pluginPath.toStdString();
         try {
             // Fresh namespace per plugin so `LC_interface` doesn't
             // leak between plugins and one plugin can't stomp another's
             // globals.  Import `lc` + `lcgui as gui` first for parity
             // with what ScriptDock's PyNamespace ships (see
             // scriptdock.cpp).  Plugins can `import lcUIPy.<module>`
-            // because LuaInterface adds the package parent to sys.path first.
+            // because bootstrap adds the package parent to sys.path first.
             py::dict ns;
             ns["__builtins__"] = py::module_::import("builtins");
             py::exec("import lc\ntry:\n    import lcgui as gui\nexcept ImportError:\n    pass\n", ns);
             ns["LC_interface"] = interfaceName;
             py::eval_file(pluginFile, ns);
-            outcome.loaded = true;
+            report.loadedPlugins.emplace_back(entry.fileName().toStdString());
         } catch (const py::error_already_set& e) {
             // Broken plugin — log and continue with the next.
-            outcome.failure = e.what();
-        } catch (const std::exception& e) {
-            outcome.failure = e.what();
-        } catch (...) {
-            outcome.failure = "unknown plugin load failure";
-        }
-
-        outcomes.emplace(pluginIdentity, outcome);
-        if (outcome.loaded) {
-            report.loadedPlugins.emplace_back(entry.fileName().toStdString());
-        } else {
             std::cerr << "Plugin " << pluginFile
-                      << " load failed: " << outcome.failure << std::endl;
+                      << " load failed: " << e.what() << std::endl;
             report.failures.emplace_back(
-                entry.fileName().toStdString() + ": " + outcome.failure);
+                entry.fileName().toStdString() + ": " + e.what());
         }
     }
     return report;

@@ -144,4 +144,3 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(met
         return _entities;
     };
 }
-

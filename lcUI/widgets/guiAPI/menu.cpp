@@ -63,14 +63,14 @@ void Menu::addItem(MenuItem* item) {
 }
 
 MenuItem* Menu::addItem(const char* menuItemLabel) {
-    MenuItem* newItem = new MenuItem(menuItemLabel);
+    MenuItem* newItem = new MenuItem(menuItemLabel, this);
     addItem(newItem);
 
     return newItem;
 }
 
 MenuItem* Menu::addItem(const char* menuItemLabel, lc::scripting::ScriptCallback callback) {
-    MenuItem* newItem = new MenuItem(menuItemLabel, std::move(callback));
+    MenuItem* newItem = new MenuItem(menuItemLabel, std::move(callback), this);
     addItem(newItem);
 
     return newItem;
@@ -89,7 +89,7 @@ void Menu::addMenu(Menu* newMenu) {
 }
 
 Menu* Menu::addMenu(const char* menuLabel) {
-    Menu* newMenu = new Menu(menuLabel);
+    Menu* newMenu = new Menu(menuLabel, this);
     addMenu(newMenu);
     return newMenu;
 }

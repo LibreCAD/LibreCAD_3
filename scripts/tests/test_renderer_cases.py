@@ -514,11 +514,11 @@ class CaseInputTests(unittest.TestCase):
 
     def test_real_repository_complete_input_bindings_not_execution(self):
         self.assertEqual(60, len(self.real['methods']))
-        self.assertEqual(75, len(self.real['consumers']))
+        self.assertEqual(79, len(self.real['consumers']))
         self.assertEqual({'F' + str(i) for i in range(1, 13)},
                          {f for c in self.base['cases'] for f in c['features']})
-        self.assertEqual(63, len(self.base['cases']))
-        self.assertEqual(249, len(self.real['requirements']))
+        self.assertEqual(64, len(self.base['cases']))
+        self.assertEqual(252, len(self.real['requirements']))
         self.assertEqual(6, len(self.real['fixtures']))
         self.assertNotIn('configurations', self.real)  # M3 is not qualified here.
         for required in self.real['requirements']:
@@ -1200,7 +1200,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_real_inventory_relations_and_not_execution(self):
         self.assertEqual(190, len(self.real['configurations']))
-        self.assertEqual(249, len(self.real['requirements']))
+        self.assertEqual(252, len(self.real['requirements']))
         summary = inventory.case_inventory_summary(self.real)
         self.assertFalse(summary['execution_evidence'])
         self.assertEqual('renderer-case-inventory', summary['evidence_kind'])
@@ -1528,7 +1528,7 @@ class SelectionTests(unittest.TestCase):
         summary = json.loads(result.stdout)
         self.assertEqual('renderer-case-inventory', summary['evidence_kind'])
         self.assertFalse(summary['execution_evidence'])
-        self.assertEqual(249, summary['variants'])
+        self.assertEqual(252, summary['variants'])
         args += ('--stage', 'R2', '--configuration', 'source-linux/LINUX-X64/rhi-only/offscreen/xcb/software')
         result, repeat = self.cli(*args), self.cli(*args)
         self.assertEqual(0, result.returncode, result.stderr)

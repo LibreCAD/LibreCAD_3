@@ -69,8 +69,8 @@ void dispatchToPlugin(const lc::scripting::ScriptCallback& callback,
 } // namespace
 
 LuaCustomEntityManager& LuaCustomEntityManager::getInstance() {
-    static LuaCustomEntityManager instance;
-    return instance;
+    static LuaCustomEntityManager _instance;
+    return _instance;
 }
 
 LuaCustomEntityManager::LuaCustomEntityManager() {

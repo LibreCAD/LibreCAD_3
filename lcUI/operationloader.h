@@ -70,13 +70,14 @@ public:
     /**
      * \brief Phase 5 PR-5.2 — walk `lc.operation_registry` (a Python
      * dict populated by `@lc.register_operation`), and for each entry,
-     * do the same wiring the Lua path does.  Wired today (this slice):
+     * do the same wiring the Lua path does:
      *   - CliCommand::addCommand (str + dict command_line forms),
      *   - MainWindow::connectMenuItem (menu_actions dict),
      *   - Toolbar::addButton (icon + description → tooltip),
-     *   - MainWindow::addOperationOptions (default and `_init_*`
-     *     operation-option dictionaries with module-relative icons),
      *   - ContextMenuManager::addOperation + addTransition.
+     *   - `operation_options` default and init-specific option buttons,
+     *     materialized when an operation starts and dispatched to the live
+     *     Python ScriptObject when clicked.
      *
      * Also pushes a Python-registry resolver onto MainWindow's ordered
      * resolver list (phase 4 PR-7) so `MainWindow::runOperationByName(

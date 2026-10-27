@@ -25,6 +25,7 @@
 #include "drawitems/lcdimlinear.h"
 #include "drawitems/lcdimaligned.h"
 #include "drawitems/lcdimangular.h"
+#include "drawitems/lcdimordinate.h"
 #include "drawitems/lclwpolyline.h"
 #include "drawitems/lcvspline.h"
 #include "drawitems/lcimage.h"
@@ -46,6 +47,8 @@ using namespace lc::viewer;
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
     _document(document),
     _painterPtr(nullptr),
+    // The green the canvas has always cleared to.
+    _backgroundColor(0.133, 0.545, 0.133, 1.0),
     _zoomMin(0.005),
     _zoomMax(200.0),
     _deviceWidth(0),
@@ -58,6 +61,11 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
     document->removeEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_removeEntityEvent>(this);
     document->commitProcessEvent().connect<DocumentCanvas, &DocumentCanvas::on_commitProcessEvent>(this);
+
+    // Reopened drawings already contain entities before their view is attached.
+    entityContainer().each<const lc::entity::CADEntity>([this](lc::entity::CADEntity_CSPtr entity) {
+        on_addEntityEvent(lc::event::AddEntityEvent(entity));
+    });
 
     // Render code for selected area
     _selectedAreaPainter = [](LcPainter & painter, lc::geo::Area area, bool occupies) {
@@ -108,6 +116,14 @@ DocumentCanvas::~DocumentCanvas() {
 void DocumentCanvas::setPainter(LcPainter* painter)
 {
     _painterPtr=painter;
+}
+
+void DocumentCanvas::setBackgroundColor(const lc::Color& color) {
+    _backgroundColor = color;
+}
+
+lc::Color DocumentCanvas::backgroundColor() const {
+    return _backgroundColor;
 }
 
 /*
@@ -201,7 +217,10 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
 
     switch(type) {
     case VIEWER_BACKGROUND: {
-        painter.clear(0.133,0.545,0.133);
+        painter.clear(_backgroundColor.red(),
+                      _backgroundColor.green(),
+                      _backgroundColor.blue(),
+                      _backgroundColor.alpha());
         painter.lineWidthCompensation(0.);
         _background(drawEvent);
         break;
@@ -613,7 +632,7 @@ void DocumentCanvas::selectAll() {
         _entityDrawItem[entity->id()]->selected(true);
         _selectedDrawables.push_back(_entityDrawItem[entity->id()]);
     });
-    selectionChanged();
+    _selectionChanged();
 }
 
 void DocumentCanvas::removeSelection() {
@@ -622,7 +641,7 @@ void DocumentCanvas::removeSelection() {
     };
 
     _selectedDrawables.clear();
-    selectionChanged();
+    _selectionChanged();
 }
 
 void DocumentCanvas::inverseSelection() {
@@ -753,6 +772,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
         return std::make_shared<LCDimAngular>(dimAngular);
     }
 
+    // Add 'DimOrdinate'
+    auto dimOrdinate = std::dynamic_pointer_cast<const lc::entity::DimOrdinate>(entity);
+
+    if (dimOrdinate != nullptr) {
+        return std::make_shared<LCDimOrdinate>(dimOrdinate);
+    }
+
     // Add 'LWPolyline'
     auto lwPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
 
@@ -866,6 +892,9 @@ void DocumentCanvas::selectPoint(double x, double y) {
 
 void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
     lc::viewer::LCVDrawItem_SPtr entityDrawable = getDrawable(entityPtr);
+    // Script pickers can contain a valid entity absent from this document.
+    // Such an entry has no drawable to select (including after removal).
+    if (!entityDrawable) return;
     entityDrawable->selected(true);
     _selectedDrawables.push_back(entityDrawable);
 }

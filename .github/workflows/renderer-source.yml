@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 # R1 native source/host matrix, not UI interaction, packaging or phase acceptance.
-# Only the pinned patched libdxfrw source submodule builds as a dependency.
+# Only the vendored libdxfrw submodule builds from source, in-tree with persistence.
 jobs:
   contracts:
     name: R1 source protocols and plan
@@ -192,7 +192,10 @@ jobs:
               common = ['.', '--build=never','-s:h','arch=x86_64','-s:h','compiler=msvc',
                          '-s:h','compiler.version=194','-s:h','compiler.cppstd=17','-s:h','compiler.runtime=dynamic',
                          '-s:h','compiler.runtime_type=Release','-s:h','build_type=Release',
-                         '-o','*:shared=False']
+                         '-o','*:shared=False',
+                         # Lua states cross the UI, CLI and binding DLLs; master's recipe
+                         # makes Lua shared on Windows for that, and a later -o wins.
+                         '-o','lua/*:shared=True']
               for key,value in options.items(): common += ['-o','&:'+key+'='+str(value)]
               graph=Path('build-r1')/('conan-'+name+'-preflight.json')
               lock=Path('build-r1')/('conan-'+name+'.lock')
@@ -232,15 +235,6 @@ jobs:
           if not manifest.is_file():raise ValueError('Missing restored ICD')
           with open(os.environ['GITHUB_ENV'],'a') as out:
               out.write('VK_DRIVER_FILES='+str(manifest)+'\nR1_VULKAN_ROOT='+str(root/'inputs')+'\n')
-      - name: Build pinned source-submodule persistence SDK
-        if: ${{ !startsWith(matrix.contract_scope, 'libraries-') && matrix.contract_scope != 'cli' }}
-        run: |
-          import os, subprocess, sys
-          from pathlib import Path
-          result=subprocess.run([sys.executable,'-B','scripts/build_libdxfrw.py',
-              '--platform',os.environ['R1_PLATFORM'],'--report-dir',str(Path('build-r1/dxfrw').resolve()),
-              '--timeout','180'],check=True,stdout=subprocess.PIPE,text=True)
-          Path('build-r1/libdxfrw-sdk.json').write_text(result.stdout)
       - name: Run selected library or CLI source contracts
         run: |
           import json, os, subprocess, sys
@@ -260,10 +254,8 @@ jobs:
               if kind=='cli':command+=['--host-install']
               if profile.endswith('-python'):command+=[
                   '--cmake-option','Python_EXECUTABLE='+sys.executable]
+              # Persistence hosts compile the vendored third_party/libdxfrw in-tree.
               if scope=='cli':command+=['--host-no-persistence']
-              else:
-                  sdk=json.loads(Path('build-r1/libdxfrw-sdk.json').read_text())
-                  for name,value in sdk['cmake_options'].items():command+=['--cmake-option',name+'='+value]
               if platform=='WIN-X64':
                   case=kind+'-'+profile+('' if os.environ['R1_TESTS']=='ON' else '-no-tests')
                   command+=['--generator','Visual Studio 17 2022','--cmake-option',

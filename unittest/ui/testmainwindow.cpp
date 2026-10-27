@@ -5,7 +5,6 @@
 #include <QTemporaryDir>
 #include <QTextEdit>
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <thread>
 
@@ -17,23 +16,17 @@
 #ifdef LC_WITH_PYTHONSCRIPT
 #include <qt_keywords_push.h>
 #include <pybind11/embed.h>
-#include <pybind11/eval.h>
 #include <qt_keywords_pop.h>
 #include <lcpython.h>
-#include <cad/primitive/insert.h>
-#include <cad/primitive/line.h>
-#include <cad/primitive/point.h>
-#if LC_USE_PERSISTENCE
-#include <cad/storage/documentimpl.h>
-#include <cad/storage/storagemanagerimpl.h>
-#include <persistence/file.h>
-#endif
 #include <python/pyeventhooks.h>
+#include <python/pypluginloader.h>
 #include <lcscripting/scriptvalue.h>
 #include <lcscripting/scriptobject.h>
 #include <lcscripting/scriptcallback.h>  // Phase 6 PR-6.1 nativeCallback
 #include <managers/luacustomentitymanager.h>  // Phase 6 PR-6.1 multi-window bug test
 #include <luainterface.h>  // Phase 6 PR-6.1 — construct/destruct LuaInterface directly
+#include <widgets/guiAPI/toolbargroup.h>
+#include <widgets/guiAPI/toolbarbutton.h>
 #endif
 
 TEST(MWindowTest, WindowWidgetTest) {
@@ -77,91 +70,6 @@ TEST(MWindowTest, FailedLuaEventListenersAreRemovedAfterSnapshot) {
 
     EXPECT_TRUE(mainWindow->testFailedLuaListenersAreRemovedAfterSnapshot());
 }
-
-#ifdef LC_WITH_PYTHONSCRIPT
-// NOLINTNEXTLINE(readability-identifier-naming)
-TEST(MWindowTest, PythonFailedEventListenerIsRemovedAndOtherListenerContinues) {
-    ensureUiApplication();
-    lc::python::PythonInit::initialize();
-    MainWindowTest mainWindow;
-
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::exec(R"py(
-import builtins
-import lc
-import lcgui
-
-builtins._lc_python_event_failure_state = {
-    "failed_calls": 0,
-    "healthy_calls": 0,
-    "owner": None,
-}
-
-def _lc_python_event_failure(event_name, args):
-    state = builtins._lc_python_event_failure_state
-    state["failed_calls"] += 1
-    raise RuntimeError("expected window-owned Python event failure")
-
-def _lc_python_event_survivor(event_name, args):
-    state = builtins._lc_python_event_failure_state
-    state["healthy_calls"] += 1
-    state["owner"] = lcgui.currentMainWindow()
-)py");
-        lc::ui::python::MainWindowExecutionScope ownerScope(&mainWindow);
-        pybind11::exec(R"py(
-import builtins, lc
-lc.event.register(
-    "pythonWindowFailureProbe", _lc_python_event_failure)
-lc.event.register(
-    "pythonWindowFailureProbe", _lc_python_event_survivor)
-)py");
-    }
-
-    const lc::scripting::ScriptValue noPayload;
-    mainWindow.luaInterface()->triggerEvent("pythonWindowFailureProbe",
-                                             noPayload);
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
-                  "pythonWindowFailureProbe"), 1u)
-        << "the failing exact registration must be removed after dispatch";
-
-    // LuaInterface's diagnostic sink queues traceback output to the CLI.
-    QCoreApplication::processEvents();
-    QTextEdit* history = mainWindow.cliCommand()->findChild<QTextEdit*>(
-        QStringLiteral("history"));
-    ASSERT_NE(history, nullptr);
-    EXPECT_TRUE(history->toPlainText().contains(
-        QStringLiteral("expected window-owned Python event failure")));
-
-    mainWindow.luaInterface()->triggerEvent("pythonWindowFailureProbe",
-                                             noPayload);
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
-                  "pythonWindowFailureProbe"), 1u);
-
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::module_ builtins = pybind11::module_::import("builtins");
-        pybind11::dict state = builtins.attr(
-            "_lc_python_event_failure_state");
-        EXPECT_EQ(state["failed_calls"].cast<int>(), 1);
-        EXPECT_EQ(state["healthy_calls"].cast<int>(), 2)
-            << "unrelated listeners must continue on both snapshots";
-        pybind11::object owner = state["owner"];
-        ASSERT_FALSE(owner.is_none());
-        EXPECT_EQ(owner.cast<lc::ui::MainWindow*>(), &mainWindow);
-
-        lc::ui::python::MainWindowExecutionScope ownerScope(&mainWindow);
-        pybind11::exec(R"py(
-import builtins, lc
-lc.event.deregister(
-    "pythonWindowFailureProbe", _lc_python_event_survivor)
-del _lc_python_event_failure
-del _lc_python_event_survivor
-del builtins._lc_python_event_failure_state
-)py");
-    }
-}
-#endif
 
 TEST(MWindowTest, LuaOperationEventRegistrationsAreScoped) {
     ensureUiApplication();
@@ -220,6 +128,198 @@ TEST(MWindowTest, MenuAPITest) {
 }
 
 #ifdef LC_WITH_PYTHONSCRIPT
+
+TEST(MWindowTest, PythonPluginBootstrapPrecedesWindowsAndIsIdempotent) {
+    ensureUiApplication();
+    const auto& report = lc::ui::python::bootstrapPythonPlugins();
+    EXPECT_TRUE(report.directoryFound);
+    EXPECT_TRUE(report.failures.empty());
+    EXPECT_EQ(std::count(report.loadedPlugins.begin(), report.loadedPlugins.end(), "gear"), 1);
+    EXPECT_EQ(std::count(report.loadedPlugins.begin(), report.loadedPlugins.end(), "rectangle"), 1);
+    EXPECT_TRUE(lc::lua::LuaCustomEntityManager::getInstance().hasPlugin("LC Plugin"));
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), nullptr);
+    MainWindowTest window;
+    lc::ui::python::MainWindowExecutionScope scope(&window);
+    EXPECT_EQ(&lc::ui::python::bootstrapPythonPlugins(), &report);
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), &window);
+    std::string failure;
+    std::thread worker([&] {
+        try {
+            (void)lc::ui::python::bootstrapPythonPlugins();
+        } catch (const std::exception& error) {
+            failure = error.what();
+        }
+    });
+    worker.join();
+    EXPECT_NE(failure.find("Qt application thread"), std::string::npos);
+}
+
+TEST(MWindowTest, PythonPluginDefinitionsAreSharedAcrossWindows) {
+    ensureUiApplication();
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    auto first = std::make_unique<MainWindowTest>();
+    struct RestoreRegistrationHook {
+        lc::python::LCPython& python;
+        lc::python::PyNamespace& ns;
+        ~RestoreRegistrationHook() {
+            (void)python.runString(
+                "if '_register_plugin' in globals(): lc.register_plugin = _register_plugin", ns);
+        }
+    } restore{python, ns};
+    ASSERT_EQ(python.runString(R"py(
+_definitions = {name: lc.operation_registry[name]
+                for name in ('PyGearOp', 'PyRectangleOp')}
+_rectangle_globals = _definitions['PyRectangleOp']._init_default.__globals__
+_register_plugin = lc.register_plugin
+_registrations = []
+def _record_registration(name, callback):
+    _registrations.append((name, callback))
+    _register_plugin(name, callback)
+lc.register_plugin = _record_registration
+)py", ns), "");
+
+    auto second = std::make_unique<MainWindowTest>();
+    EXPECT_EQ(python.runString(R"py(
+assert all(lc.operation_registry[name] is cls for name, cls in _definitions.items()), \
+    'new window replaced process-global plugin operation definitions'
+assert lc.operation_registry['PyRectangleOp']._init_default.__globals__ is _rectangle_globals
+assert not _registrations, 'new window replayed global custom-entity registrations'
+)py", ns), "");
+    for (auto* window : {first.get(), second.get()}) {
+        const auto commands = window->cliCommand()->availableCommands();
+        EXPECT_EQ(std::count(commands.begin(), commands.end(), "PYGEAR"), 1);
+        EXPECT_EQ(std::count(commands.begin(), commands.end(), "PYRECTANGLE"), 1);
+        window->cliCommand()->runCommand("PYRECTANGLE");
+        ASSERT_FALSE(window->currentOperation().isNil());
+        EXPECT_EQ(window->currentOperation().getAttr("step").asString(), "AWAIT_P1");
+        EXPECT_EQ(window->luaInterface()->listenerCount("point"), 1u);
+    }
+    first->triggerCoordinateEntered(lc::geo::Coordinate(1, 2));
+    EXPECT_EQ(first->currentOperation().getAttr("step").asString(), "AWAIT_P2");
+    EXPECT_EQ(second->currentOperation().getAttr("step").asString(), "AWAIT_P1");
+    first.reset();
+    EXPECT_EQ(second->luaInterface()->listenerCount("point"), 1u);
+    second->triggerCoordinateEntered(lc::geo::Coordinate(3, 4));
+    second->triggerCoordinateEntered(lc::geo::Coordinate(13, 12));
+    EXPECT_EQ(second->cadMdiChild()->document()->entityContainer().asVector(32767).size(), 1u);
+    EXPECT_EQ(second->luaInterface()->listenerCount("point"), 0u);
+    EXPECT_EQ(python.runString(R"py(
+assert all(lc.operation_registry[name] is cls for name, cls in _definitions.items())
+)py", ns), "");
+}
+
+TEST(MWindowTest, PythonPluginDefinitionsHaveNoWindowAndFailuresRemainIsolated) {
+    ensureUiApplication();
+    MainWindowTest window;
+    QTemporaryDir directory;
+    ASSERT_TRUE(directory.isValid());
+    auto writePlugin = [&](const QString& name, const QByteArray& source) {
+        const QString folder = QDir(directory.path()).filePath(name);
+        if (!QDir().mkpath(folder)) return false;
+        QFile file(QDir(folder).filePath("plugin.py"));
+        return file.open(QIODevice::WriteOnly) && file.write(source) == source.size();
+    };
+    ASSERT_TRUE(writePlugin("a_broken", "raise RuntimeError('expected plugin load failure')\n"));
+    ASSERT_TRUE(writePlugin("z_probe", R"py(
+import builtins
+builtins._lc_definition_without_owner = gui.currentMainWindow() is None
+assert LC_interface == 'gui'
+)py"));
+    lc::ui::python::MainWindowExecutionScope scope(&window);
+    const auto report = lc::ui::python::loadPythonPlugins(
+        directory.path().toStdString(), "gui");
+    EXPECT_TRUE(report.directoryFound);
+    EXPECT_EQ(report.loadedPlugins, std::vector<std::string>({"z_probe"}));
+    ASSERT_EQ(report.failures.size(), 1u);
+    EXPECT_NE(report.failures.front().find("expected plugin load failure"), std::string::npos);
+    EXPECT_EQ(lc::ui::python::currentMainWindow(), &window);
+    lc::python::LCPython python;
+    auto ns = python.makeNamespace();
+    EXPECT_EQ(python.runString(R"py(
+import builtins
+owner_free = builtins._lc_definition_without_owner
+del builtins._lc_definition_without_owner
+assert owner_free, 'global plugin definition captured the loading window'
+)py", ns), "");
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationOptionsWireDefaultAndInitSpecificActions) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+
+    struct RegistryEntryCleanup {
+        ~RegistryEntryCleanup() {
+            pybind11::gil_scoped_acquire gil;
+            pybind11::module_::import("lc").attr("operation_registry")
+                .attr("pop")("PyToolbarOptionsProbe", pybind11::none());
+        }
+    } cleanup;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import lc
+
+class PyToolbarOptionsProbe:
+    name = "PyToolbarOptionsProbe"
+    command_line = "PYOPTIONS"
+    operation_options = {
+        "Line": {"icon": "linesnormal.png", "action": "choose_line"},
+        "_init_special": {
+            "Arc": {"icon": "arc.svg", "action": "choose_arc"},
+        },
+    }
+
+    def _init_default(self):
+        self.selection = "default"
+
+    def _init_special(self):
+        self.selection = "special"
+
+    def choose_line(self):
+        self.selection = "line"
+
+    def choose_arc(self):
+        self.selection = "arc"
+
+lc.register_operation(PyToolbarOptionsProbe)
+)py");
+    }
+
+    MainWindowTest mainWindow;
+    auto findOptionButton = [](lc::ui::api::ToolbarGroup* group,
+                               const QString& tooltip) {
+        if (group == nullptr) return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
+        for (auto* button : group->buttons()) {
+            if (button->toolTip() == tooltip) return button;
+        }
+        return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
+    };
+
+    mainWindow.runOperationByName("PyToolbarOptionsProbe");
+    auto* currentGroup = mainWindow.toolbar()->tabByName("Quick Access")
+        ->groupByName("Current operation");
+    ASSERT_NE(currentGroup, nullptr);
+    auto* lineOption = findOptionButton(currentGroup, QStringLiteral("Line"));
+    ASSERT_NE(lineOption, nullptr);
+    lineOption->click();
+    EXPECT_EQ(mainWindow.currentOperation().getAttr("selection").asString(),
+              "line");
+
+    mainWindow.runOperationByName("PyToolbarOptionsProbe", "_init_special");
+    currentGroup = mainWindow.toolbar()->tabByName("Quick Access")
+        ->groupByName("Current operation");
+    ASSERT_NE(currentGroup, nullptr);
+    auto* arcOption = findOptionButton(currentGroup, QStringLiteral("Arc"));
+    ASSERT_NE(arcOption, nullptr);
+    arcOption->click();
+    EXPECT_EQ(mainWindow.currentOperation().getAttr("selection").asString(),
+              "arc");
+
+    mainWindow.luaInterface()->finishOperation();
+}
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MWindowTest, PythonWindowScopeAndOperationEventCleanup) {
@@ -297,6 +397,43 @@ globals().pop("_python_binding_scope_probe_owner", None)
 globals().pop("_python_binding_scope_probe_id", None)
 )py");
     }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonMainWindowExecutionScopeRestoresNestedOwner) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest firstWindow;
+    MainWindowTest secondWindow;
+
+    auto currentWindowFromPython = []() -> MainWindow* {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::object current =
+            pybind11::module_::import("lcgui").attr("currentMainWindow")();
+        return current.is_none() ? nullptr : current.cast<MainWindow*>();
+    };
+
+    EXPECT_EQ(currentWindowFromPython(), nullptr);
+    {
+        lc::ui::python::MainWindowExecutionScope firstScope(&firstWindow);
+        EXPECT_EQ(currentWindowFromPython(), &firstWindow);
+        {
+            lc::ui::python::MainWindowExecutionScope secondScope(&secondWindow);
+            EXPECT_EQ(currentWindowFromPython(), &secondWindow);
+        }
+        EXPECT_EQ(currentWindowFromPython(), &firstWindow);
+    }
+    EXPECT_EQ(currentWindowFromPython(), nullptr);
+
+    auto closingWindow = std::make_unique<MainWindowTest>();
+    {
+        lc::ui::python::MainWindowExecutionScope closingScope(
+            closingWindow.get());
+        EXPECT_EQ(currentWindowFromPython(), closingWindow.get());
+        closingWindow.reset();
+        EXPECT_EQ(currentWindowFromPython(), nullptr);
+    }
+    EXPECT_EQ(currentWindowFromPython(), nullptr);
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
@@ -378,6 +515,198 @@ import lc
 lc.operation_registry.pop("PyFailDuringOperationInit", None)
 )py");
     }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationCloseFailureReportsOnceAndCleansEvents) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import builtins
+import lc
+
+builtins._lc_close_failure_calls = 0
+def _lc_close_failure_listener(event, args):
+    pass
+
+@lc.register_operation
+class PyCloseFailureProbe:
+    name = "PyCloseFailureProbe"
+    def _init_default(self):
+        lc.event.register("_lc_close_failure_cleanup", _lc_close_failure_listener)
+    def close(self):
+        builtins._lc_close_failure_calls += 1
+        lc.event.register(
+            "_lc_close_failure_cleanup_from_close",
+            _lc_close_failure_listener)
+        raise RuntimeError("intentional operation close failure")
+)py");
+    }
+
+    mainWindow.runOperationByName("PyCloseFailureProbe");
+    ASSERT_FALSE(mainWindow.currentOperation().isNil());
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup"), 1u);
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup_from_close"), 0u);
+
+    mainWindow.luaInterface()->finishOperation();
+    QCoreApplication::processEvents();
+
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_close_failure_cleanup_from_close"), 0u);
+    auto* history = mainWindow.cliCommand()->findChild<QTextEdit*>(
+        QStringLiteral("history"));
+    ASSERT_NE(history, nullptr);
+    EXPECT_EQ(history->toPlainText().count(
+                  QStringLiteral("intentional operation close failure")), 1);
+    {
+        pybind11::gil_scoped_acquire gil;
+        EXPECT_EQ(pybind11::module_::import("builtins")
+                      .attr("_lc_close_failure_calls").cast<int>(), 1);
+        pybind11::exec(R"py(
+import builtins
+import lc
+lc.operation_registry.pop("PyCloseFailureProbe", None)
+del builtins._lc_close_failure_calls
+)py");
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+TEST(MWindowTest, PythonOperationCallbacksTrackAndCancelTheirEventRegistrations) {
+    ensureUiApplication();
+    lc::python::PythonInit::initialize();
+    MainWindowTest mainWindow;
+
+    struct PythonStateCleanup {
+        ~PythonStateCleanup() {
+            pybind11::gil_scoped_acquire gil;
+            pybind11::exec(R"py(
+import builtins
+import lc
+lc.operation_registry.pop("PyOperationEventTrackingProbe", None)
+for _name in ("_lc_operation_late_listener",):
+    if hasattr(builtins, _name):
+        delattr(builtins, _name)
+if hasattr(builtins, "_lc_operation_close_calls"):
+    del builtins._lc_operation_close_calls
+)py");
+        }
+    } cleanup;
+
+    {
+        pybind11::gil_scoped_acquire gil;
+        pybind11::exec(R"py(
+import builtins
+import lc
+
+def _lc_operation_late_listener(event, args):
+    pass
+builtins._lc_operation_late_listener = _lc_operation_late_listener
+builtins._lc_operation_close_calls = 0
+
+@lc.register_operation
+class PyOperationEventTrackingProbe:
+    name = "PyOperationEventTrackingProbe"
+    def _init_default(self):
+        lc.event.register("_lc_operation_dynamic_trigger", self)
+        lc.event.register("_lc_operation_failure_trigger", self)
+    @property
+    def step(self):
+        lc.event.register(
+            "_lc_operation_read_attribute", builtins._lc_operation_late_listener)
+        return "pick"
+    @step.setter
+    def step(self, value):
+        lc.event.register(
+            "_lc_operation_write_attribute", builtins._lc_operation_late_listener)
+    def register_from_action(self):
+        return lc.event.register(
+            "_lc_operation_action_registered",
+            builtins._lc_operation_late_listener)
+    def onEvent(self, event, args):
+        if event == "_lc_operation_dynamic_trigger":
+            lc.event.register(
+                "_lc_operation_late_registered",
+                builtins._lc_operation_late_listener)
+        elif event == "_lc_operation_failure_trigger":
+            raise RuntimeError("intentional operation event failure")
+    def close(self):
+        builtins._lc_operation_close_calls += 1
+        lc.event.register(
+            "_lc_operation_close_registered",
+            builtins._lc_operation_late_listener)
+)py");
+    }
+
+    mainWindow.runOperationByName("PyOperationEventTrackingProbe");
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_dynamic_trigger"), 1u);
+    ASSERT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_failure_trigger"), 1u);
+
+    std::string error;
+    EXPECT_EQ(mainWindow.luaInterface()->getOperationAttribute("step").asString(),
+              "pick");
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_read_attribute"), 2u);
+    ASSERT_TRUE(mainWindow.luaInterface()->setOperationAttributeChecked(
+        "step", lc::scripting::ScriptValue("next"), error)) << error;
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_write_attribute"), 1u);
+
+    lc::scripting::ScriptValue result;
+    ASSERT_TRUE(mainWindow.luaInterface()->callOperationMethodChecked(
+        "register_from_action", {}, result, error)) << error;
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_action_registered"), 1u);
+
+    mainWindow.luaInterface()->triggerEvent(
+        "_lc_operation_dynamic_trigger", lc::scripting::ScriptValue{});
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_late_registered"), 1u);
+
+    int unrelatedCalls = 0;
+    const auto unrelatedListener = lc::scripting::nativeCallback(
+        [&unrelatedCalls](const std::vector<lc::scripting::ScriptValue>&) {
+            ++unrelatedCalls;
+            return lc::scripting::ScriptValue{};
+        });
+    mainWindow.luaInterface()->registerEvent(
+        "_lc_operation_failure_trigger", unrelatedListener);
+    mainWindow.luaInterface()->triggerEvent(
+        "_lc_operation_failure_trigger", lc::scripting::ScriptValue{});
+
+    EXPECT_EQ(unrelatedCalls, 1);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_dynamic_trigger"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_failure_trigger"), 1u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_read_attribute"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_write_attribute"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_action_registered"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_late_registered"), 0u);
+    EXPECT_EQ(mainWindow.luaInterface()->listenerCount(
+                  "_lc_operation_close_registered"), 0u);
+    EXPECT_TRUE(mainWindow.currentOperation().isNil());
+    {
+        pybind11::gil_scoped_acquire gil;
+        EXPECT_EQ(pybind11::module_::import("builtins")
+                      .attr("_lc_operation_close_calls").cast<int>(), 1);
+    }
+    EXPECT_TRUE(mainWindow.luaInterface()->deleteEvent(
+        "_lc_operation_failure_trigger", unrelatedListener));
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
@@ -526,9 +855,8 @@ TEST(MWindowTest, PyGuiBridgeRejectsWorkerThreadAccess) {
               std::string::npos) << constructorError;
     {
         pybind11::gil_scoped_acquire gil;
-        // Drop the Python references while holding the GIL. Assigning None
-        // would leave two owned Py_None references whose later destructors
-        // run after PythonInit has released the main-thread GIL.
+        // Leave the outer C++ wrappers empty before releasing the GIL;
+        // otherwise their final decref of Python None runs without it.
         pythonWindow = pybind11::object();
         textGuiClass = pybind11::object();
     }
@@ -683,139 +1011,6 @@ if "PyDemoOp" in lc.operation_registry:
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-TEST(MWindowTest, PythonOperationOptionsWireDefaultAndNamedActions) {
-    ensureUiApplication();
-    lc::python::PythonInit::initialize();
-
-    constexpr const char* operationName = "PyToolbarOptionsOp";
-    QTemporaryDir fixtureDirectory;
-    ASSERT_TRUE(fixtureDirectory.isValid());
-    ASSERT_TRUE(QDir().mkpath(fixtureDirectory.filePath("icons")));
-    QFile fixtureIcon(fixtureDirectory.filePath("icons/option.svg"));
-    ASSERT_TRUE(fixtureIcon.open(QIODevice::WriteOnly));
-    static constexpr char svgIcon[] =
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\">"
-        "<rect width=\"16\" height=\"16\" fill=\"#336699\"/></svg>";
-    ASSERT_EQ(fixtureIcon.write(svgIcon, sizeof(svgIcon) - 1),
-              static_cast<qint64>(sizeof(svgIcon) - 1));
-    fixtureIcon.close();
-
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::dict ns;
-        ns["__builtins__"] = pybind11::module_::import("builtins");
-        ns["fixture_file"] = fixtureDirectory.filePath("operation.py").toStdString();
-        pybind11::exec(R"py(
-import lc
-import sys
-import types
-
-fixture_module = types.ModuleType("_lc_pytoolbar_options_fixture")
-fixture_module.__file__ = fixture_file
-sys.modules[fixture_module.__name__] = fixture_module
-fixture_module.__dict__["lc"] = lc
-exec(r'''
-@lc.register_operation
-class PyToolbarOptionsOp:
-    name = "PyToolbarOptionsOp"
-    command_line = "PYTOOLBAROPTIONS"
-    operation_options = {
-        "Line": {"icon": "option.svg", "action": "choose_line"},
-        "Fail": {"icon": "option.svg", "action": "choose_error"},
-        "Broken": {"icon": 12, "action": "choose_broken"},
-        "_init_alternate": {
-            "Arc": {"icon": "option.svg", "action": "choose_arc"},
-        },
-    }
-
-    def _init_default(self):
-        self.selected = "default"
-
-    def _init_alternate(self):
-        self.selected = "alternate-init"
-
-    def choose_line(self):
-        self.selected = "line"
-
-    def choose_error(self):
-        raise RuntimeError("expected toolbar option failure")
-
-    def choose_arc(self):
-        self.selected = "arc"
-''', fixture_module.__dict__)
-)py",
-            ns);
-    }
-
-    MainWindowTest mainWindow;
-    auto* quickAccess = mainWindow.toolbar()->tabByName("Quick Access");
-    auto findOption = [quickAccess](const char* tooltip) {
-        if (quickAccess == nullptr) return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
-        auto* group = quickAccess->groupByName("Current operation");
-        if (group == nullptr) return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
-        for (auto* button : group->buttons()) {
-            if (button->toolTip().toStdString() == tooltip) return button;
-        }
-        return static_cast<lc::ui::api::ToolbarButton*>(nullptr);
-    };
-
-    mainWindow.runOperationByName(operationName);
-    lc::scripting::ScriptObject current = mainWindow.currentOperation();
-    EXPECT_FALSE(current.isNil());
-    if (!current.isNil()) {
-        EXPECT_EQ(current.getAttr("selected").asString(), "default");
-    }
-    auto* lineOption = findOption("Line");
-    EXPECT_NE(lineOption, nullptr) << "default option metadata was not wired";
-    if (lineOption != nullptr) {
-        EXPECT_FALSE(lineOption->icon().isNull())
-            << "plugin-relative option icon was not loaded";
-        lineOption->click();
-        EXPECT_EQ(mainWindow.currentOperation().getAttr("selected").asString(), "line");
-    }
-    EXPECT_EQ(findOption("Broken"), nullptr)
-        << "malformed option metadata must be skipped without suppressing valid entries";
-    auto* failingOption = findOption("Fail");
-    EXPECT_NE(failingOption, nullptr);
-    auto* cliHistory = mainWindow.cliCommand()->findChild<QTextEdit*>();
-    EXPECT_NE(cliHistory, nullptr);
-    if (failingOption != nullptr && cliHistory != nullptr) {
-        failingOption->click();
-        EXPECT_TRUE(cliHistory->toPlainText().contains(
-            "Python operation 'PyToolbarOptionsOp' option 'choose_error' failed"))
-            << "Python option exceptions must be surfaced through the CLI";
-    }
-
-    mainWindow.operationFinished();
-    mainWindow.runOperationByName(operationName, "_init_alternate");
-    current = mainWindow.currentOperation();
-    EXPECT_FALSE(current.isNil());
-    if (!current.isNil()) {
-        EXPECT_EQ(current.getAttr("selected").asString(), "alternate-init");
-    }
-    auto* arcOption = findOption("Arc");
-    EXPECT_NE(arcOption, nullptr) << "init-specific option metadata was not selected";
-    EXPECT_EQ(findOption("Line"), nullptr)
-        << "an init-specific list must take precedence over default options";
-    if (arcOption != nullptr) {
-        EXPECT_FALSE(arcOption->icon().isNull())
-            << "plugin-relative init option icon was not loaded";
-        arcOption->click();
-        EXPECT_EQ(mainWindow.currentOperation().getAttr("selected").asString(), "arc");
-    }
-
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::exec(R"py(
-import lc
-import sys
-lc.operation_registry.pop("PyToolbarOptionsOp", None)
-sys.modules.pop("_lc_pytoolbar_options_fixture", None)
-)py");
-    }
-}
-
-// NOLINTNEXTLINE(readability-identifier-naming)
 TEST(MWindowTest, PyProofPortsImportAndRegister) {
     // Phase 5 PR-5.7 — verify the proof ports (point_operations.py +
     // remove_operation.py) import cleanly, run their
@@ -839,401 +1034,39 @@ TEST(MWindowTest, PyProofPortsImportAndRegister) {
     // exception and the test fails.
     {
         pybind11::gil_scoped_acquire gil;
+        pybind11::dict ns;
         pybind11::exec(R"py(
 import lc
-
-# The test requires the package copied beside the test executable.
 import importlib.util
-if importlib.util.find_spec('lcUIPy') is None:
-    raise RuntimeError('lcUIPy is missing beside the test executable')
-
-# Ensure clean slate — the tests above may have injected transient
-# PyDemoOp / PyDictCmdOp classes.
-if 'PyPointOperations' in lc.operation_registry:
-    del lc.operation_registry['PyPointOperations']
-if 'PyRemoveOperation' in lc.operation_registry:
-    del lc.operation_registry['PyRemoveOperation']
-
-# Import — triggers @lc.register_operation at module top-level.
-# LuaInterface imports operation modules during MainWindow construction, so
-# these modules may already be cached by earlier tests. Reload after clearing
-# the registry to exercise the decorators rather than relying on import cache.
-import importlib
-for _module_name in (
-    'lcUIPy.create_actions.point_operations',
-    'lcUIPy.actions.remove_operation',
-):
-    _module = importlib.import_module(_module_name)
-    importlib.reload(_module)
-
-# Registry entries must exist under their declared `name`.
-assert 'PyPointOperations' in lc.operation_registry, \
-    'point_operations.py did not register PyPointOperations'
-assert 'PyRemoveOperation' in lc.operation_registry, \
-    'remove_operation.py did not register PyRemoveOperation'
-
-# Class metadata: `command_line` must be PYPOINT/PYREMOVE (avoids
-# CLI collision with Lua's POINT/REMOVE).
-p_cls = lc.operation_registry['PyPointOperations']
-r_cls = lc.operation_registry['PyRemoveOperation']
-
-assert p_cls.command_line == 'PYPOINT', \
-    'PyPointOperations.command_line must be PYPOINT for Lua parity'
-assert r_cls.command_line == 'PYREMOVE', \
-    'PyRemoveOperation.command_line must be PYREMOVE for Lua parity'
-
-# icon / description / menu_actions attributes present.
-assert p_cls.icon == 'point.svg'
-assert p_cls.description == 'Python Point'
-assert p_cls.menu_actions == {'default': 'actionPoint'}
-
-assert r_cls.icon == 'delete.svg'
-assert r_cls.description == 'Python Remove'
-)py");
+names = ('PyPointOperations', 'PyRemoveOperation')
+saved = {name: lc.operation_registry[name] for name in names if name in lc.operation_registry}
+try:
+    for name in names:
+        lc.operation_registry.pop(name, None)
+    # Execute the actual files under private aliases. Do not reload cached
+    # production modules or leave once-only bootstrap registrations missing.
+    for module_name in ('lcUIPy.create_actions.point_operations',
+                        'lcUIPy.actions.remove_operation'):
+        source = importlib.util.find_spec(module_name)
+        assert source is not None and source.origin, module_name
+        spec = importlib.util.spec_from_file_location(module_name + '_proof_test', source.origin)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    p_cls = lc.operation_registry['PyPointOperations']
+    r_cls = lc.operation_registry['PyRemoveOperation']
+    assert p_cls.command_line == 'PYPOINT'
+    assert p_cls.icon == 'point.svg'
+    assert p_cls.description == 'Python Point'
+    assert p_cls.menu_actions == {'default': 'actionPoint'}
+    assert r_cls.command_line == 'PYREMOVE'
+    assert r_cls.icon == 'delete.svg'
+    assert r_cls.description == 'Python Remove'
+finally:
+    for name in names:
+        lc.operation_registry.pop(name, None)
+    lc.operation_registry.update(saved)
+)py", ns);
     }
-
-    // Cleanup — remove the classes from the registry so subsequent
-    // tests aren't affected.  We can't reliably undo the module
-    // import (CPython caches modules in sys.modules) but we CAN
-    // clear the registry entries.
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::exec(R"py(
-import lc
-for _name in ('PyPointOperations', 'PyRemoveOperation'):
-    if _name in lc.operation_registry:
-        del lc.operation_registry[_name]
-)py");
-    }
-}
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-TEST(MWindowTest, PythonPointProofPortCreatesOnePointAndSupportsUndoRedo) {
-    ensureUiApplication();
-    lc::python::PythonInit::initialize();
-
-    // The registration-only proof-port test intentionally clears these
-    // entries. Reload the shipped module so this test is independent of test
-    // order and MainWindow can wire the real PYPOINT CLI operation.
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::module_::import("sys").attr("path").attr("insert")(
-            0, QCoreApplication::applicationDirPath().toStdString());
-        pybind11::object importlib = pybind11::module_::import("importlib");
-        pybind11::object pointModule = importlib.attr("import_module")(
-            "lcUIPy.create_actions.point_operations");
-        importlib.attr("reload")(pointModule);
-    }
-
-    MainWindowTest mainWindow;
-    auto document = mainWindow.cadMdiChild()->document();
-    const auto initialEntityCount =
-        document->entityContainer().asVector().size();
-    const auto initialPointListenerCount =
-        mainWindow.luaInterface()->listenerCount("point");
-
-    mainWindow.cliCommand()->runCommand("PYPOINT");
-    const auto firstOperation = mainWindow.currentOperation();
-    ASSERT_FALSE(firstOperation.isNil())
-        << "PYPOINT must resolve through the shipped Python operation registry";
-    EXPECT_EQ(firstOperation.getAttr("step").asString(), "enterPoint");
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("point"),
-              initialPointListenerCount + 1);
-
-    const lc::geo::Coordinate firstCoordinate(12.5, -3.25);
-    mainWindow.triggerCoordinateEntered(firstCoordinate);
-
-    auto entities = document->entityContainer().asVector();
-    ASSERT_EQ(entities.size(), initialEntityCount + 1)
-        << "one coordinate event must commit exactly one point";
-    auto firstPoint = std::dynamic_pointer_cast<const lc::entity::Point>(
-        entities.back());
-    ASSERT_NE(firstPoint, nullptr);
-    EXPECT_DOUBLE_EQ(firstPoint->x(), firstCoordinate.x());
-    EXPECT_DOUBLE_EQ(firstPoint->y(), firstCoordinate.y());
-    EXPECT_TRUE(firstOperation.getAttr("finished").asBool())
-        << "the one-shot point operation must mark itself finished after committing";
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("point"),
-              initialPointListenerCount)
-        << "finishing PYPOINT must unregister its point listener";
-
-    mainWindow.undo();
-    EXPECT_EQ(document->entityContainer().asVector().size(),
-              initialEntityCount);
-    mainWindow.redo();
-    EXPECT_EQ(document->entityContainer().asVector().size(),
-              initialEntityCount + 1);
-
-    // A second invocation catches stale duplicate registrations that can make
-    // the next click create multiple entities or leave a listener behind.
-    mainWindow.cliCommand()->runCommand("PYPOINT");
-    ASSERT_FALSE(mainWindow.currentOperation().isNil());
-    mainWindow.triggerCoordinateEntered(lc::geo::Coordinate(-4.0, 7.75));
-    EXPECT_EQ(document->entityContainer().asVector().size(),
-              initialEntityCount + 2);
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("point"),
-              initialPointListenerCount);
-}
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-TEST(MWindowTest, PythonRemoveProofPortRemovesSelectedPointAndSupportsUndoRedo) {
-    ensureUiApplication();
-    lc::python::PythonInit::initialize();
-
-    // The registration-only proof-port test may have cleared these entries.
-    // Reload the real modules before MainWindow wires their CLI operations.
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::module_::import("sys").attr("path").attr("insert")(
-            0, QCoreApplication::applicationDirPath().toStdString());
-        pybind11::object importlib = pybind11::module_::import("importlib");
-        for (const char* moduleName : {
-                 "lcUIPy.create_actions.point_operations",
-                 "lcUIPy.actions.remove_operation"}) {
-            pybind11::object module =
-                importlib.attr("import_module")(moduleName);
-            importlib.attr("reload")(module);
-        }
-    }
-
-    MainWindowTest mainWindow;
-    auto document = mainWindow.cadMdiChild()->document();
-    const auto initialEntityCount =
-        document->entityContainer().asVector().size();
-
-    mainWindow.cliCommand()->runCommand("PYPOINT");
-    ASSERT_FALSE(mainWindow.currentOperation().isNil());
-    mainWindow.triggerCoordinateEntered(lc::geo::Coordinate(6.5, 9.25));
-    ASSERT_EQ(document->entityContainer().asVector().size(),
-              initialEntityCount + 1);
-
-    auto* documentCanvas = mainWindow.cadMdiChild()->viewer()->documentCanvas().get();
-    ASSERT_NE(documentCanvas, nullptr);
-    documentCanvas->selectAll();
-    ASSERT_EQ(mainWindow.cadMdiChild()->selection().size(), 1)
-        << "the point must be selected through the real document canvas";
-
-    mainWindow.cliCommand()->runCommand("PYREMOVE");
-    const auto removeOperation = mainWindow.currentOperation();
-    ASSERT_FALSE(removeOperation.isNil())
-        << "PYREMOVE must resolve through the shipped Python operation registry";
-    EXPECT_TRUE(removeOperation.getAttr("finished").asBool());
-    EXPECT_EQ(document->entityContainer().asVector().size(), initialEntityCount)
-        << "PYREMOVE must remove the selected point from the document";
-
-    mainWindow.undo();
-    EXPECT_EQ(document->entityContainer().asVector().size(),
-              initialEntityCount + 1)
-        << "undo must restore the removed point";
-    mainWindow.redo();
-    EXPECT_EQ(document->entityContainer().asVector().size(), initialEntityCount)
-        << "redo must remove the point again";
-}
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-TEST(MWindowTest, PythonGearProofPortCreatesClosedOutlineAndSupportsUndoRedo) {
-    ensureUiApplication();
-    lc::python::PythonInit::initialize();
-
-    // Evaluate the shipped plugin using the same namespace setup as the
-    // production loader. This makes the test independent of test order and
-    // verifies the actual plugin file rather than a parallel test fixture.
-    const QString packageRoot = QDir(QCoreApplication::applicationDirPath())
-                                    .filePath("lcUIPy");
-    const QString pluginPath = QDir(packageRoot).filePath(
-        "plugins/gear/plugin.py");
-    ASSERT_TRUE(QFile::exists(pluginPath))
-        << "the test binary must have the shipped gear plugin beside it: "
-        << pluginPath.toStdString();
-
-    {
-        pybind11::gil_scoped_acquire gil;
-        pybind11::module_::import("sys").attr("path").attr("insert")(
-            0, QCoreApplication::applicationDirPath().toStdString());
-        pybind11::dict pluginNamespace;
-        pluginNamespace["__builtins__"] =
-            pybind11::module_::import("builtins");
-        pybind11::exec("import lc\nimport lcgui as gui\n", pluginNamespace);
-        pluginNamespace["LC_interface"] = "gui";
-        pybind11::eval_file(pluginPath.toStdString(), pluginNamespace);
-    }
-
-    MainWindowTest mainWindow;
-    auto document = mainWindow.cadMdiChild()->document();
-    const auto initialEntityCount =
-        document->entityContainer().asVector().size();
-    const auto initialBlockCount = document->blocks().size();
-    const auto initialPointListeners =
-        mainWindow.luaInterface()->listenerCount("point");
-    const auto initialMouseMoveListeners =
-        mainWindow.luaInterface()->listenerCount("mouseMove");
-    const auto initialNumberListeners =
-        mainWindow.luaInterface()->listenerCount("number");
-    const auto initialTextListeners =
-        mainWindow.luaInterface()->listenerCount("text");
-
-    mainWindow.cliCommand()->runCommand("PYGEAR");
-    const auto gearOperation = mainWindow.currentOperation();
-    ASSERT_FALSE(gearOperation.isNil())
-        << "PYGEAR must resolve through the shipped Python plugin registry";
-    EXPECT_EQ(gearOperation.getAttr("step").asString(), "AWAIT_TEETH");
-    mainWindow.triggerMouseMoved();
-    EXPECT_GT(gearOperation.getAttr("_preview_count").asInt(), 0)
-        << "a mouse move must create the temporary gear outline";
-
-    // This input combination exercises the rr < rb branch: eight outline
-    // vertices per tooth, committed as one closed 64-Line outline.
-    mainWindow.triggerNumberEntered(8.0);
-    EXPECT_EQ(gearOperation.getAttr("step").asString(), "AWAIT_PHI");
-    mainWindow.triggerNumberEntered(20.0);
-    EXPECT_EQ(gearOperation.getAttr("step").asString(), "AWAIT_PC");
-    mainWindow.triggerNumberEntered(15.0);
-    EXPECT_EQ(gearOperation.getAttr("step").asString(), "AWAIT_ORIGIN");
-    mainWindow.triggerCoordinateEntered(lc::geo::Coordinate(2.0, 3.0));
-    EXPECT_EQ(gearOperation.getAttr("step").asString(), "AWAIT_SCALE");
-    mainWindow.triggerCoordinateEntered(lc::geo::Coordinate(4.0, 3.0));
-
-    const auto entities = document->entityContainer().asVector();
-    ASSERT_EQ(entities.size(), initialEntityCount + 1)
-        << "PYGEAR must commit one block Insert after five input events";
-    auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(
-        entities[initialEntityCount]);
-    ASSERT_NE(insert, nullptr) << "the new model-space entity must be an Insert";
-    const auto block = insert->displayBlock();
-    ASSERT_NE(block, nullptr);
-    EXPECT_DOUBLE_EQ(insert->position().x(), 2.0);
-    EXPECT_DOUBLE_EQ(insert->position().y(), 3.0);
-    EXPECT_EQ(document->blocks().size(), initialBlockCount + 1);
-
-    auto blockEntities = document->entitiesByBlock(block).asVector();
-    ASSERT_EQ(blockEntities.size(), 64u)
-        << "the inserted block must contain the complete 64-Line outline";
-    std::vector<std::shared_ptr<const lc::entity::Line>> lines;
-    lines.reserve(64);
-    for (const auto& entity : blockEntities) {
-        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
-        ASSERT_NE(line, nullptr) << "every gear-outline entity must be a Line";
-        EXPECT_EQ(line->block(), block);
-        lines.push_back(std::move(line));
-    }
-    ASSERT_EQ(lines.size(), 64u);
-    std::sort(lines.begin(), lines.end(), [](const auto& left, const auto& right) {
-        return left->id() < right->id();
-    });
-    for (std::size_t i = 0; i < lines.size(); ++i) {
-        const auto& current = lines[i];
-        const auto& next = lines[(i + 1) % lines.size()];
-        EXPECT_DOUBLE_EQ(current->end().x(), next->start().x());
-        EXPECT_DOUBLE_EQ(current->end().y(), next->start().y());
-    }
-    EXPECT_TRUE(gearOperation.getAttr("finished").asBool());
-    EXPECT_EQ(gearOperation.getAttr("_preview_count").asInt(), 0)
-        << "finishing the operation must remove all preview Lines";
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("point"),
-              initialPointListeners);
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("mouseMove"),
-              initialMouseMoveListeners);
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("number"),
-              initialNumberListeners);
-    EXPECT_EQ(mainWindow.luaInterface()->listenerCount("text"),
-              initialTextListeners);
-
-    mainWindow.undo();
-    EXPECT_EQ(document->entityContainer().asVector().size(), initialEntityCount)
-        << "one undo must remove the Insert";
-    EXPECT_EQ(document->blocks().size(), initialBlockCount)
-        << "the same undo must remove the block definition";
-    EXPECT_TRUE(document->entitiesByBlock(block).asVector().empty())
-        << "the same undo must remove the block-local outline";
-    mainWindow.redo();
-    EXPECT_EQ(document->entityContainer().asVector().size(),
-              initialEntityCount + 1)
-        << "one redo must restore the Insert";
-    EXPECT_EQ(document->blocks().size(), initialBlockCount + 1);
-    EXPECT_EQ(document->entitiesByBlock(block).asVector().size(), 64u)
-        << "the same redo must restore all block-local Lines";
-
-#if LC_USE_PERSISTENCE
-    QTemporaryDir temporaryDirectory;
-    ASSERT_TRUE(temporaryDirectory.isValid());
-    const auto dxfPath = QDir(temporaryDirectory.path())
-                             .filePath("python-gear-roundtrip.dxf")
-                             .toStdString();
-    ASSERT_TRUE(lc::persistence::File::save(
-        document, dxfPath,
-        lc::persistence::File::Type::LIBDXFRW_DXF_R2000));
-
-    auto reopenedStorage = std::make_shared<lc::storage::StorageManagerImpl>();
-    auto reopenedDocument =
-        std::make_shared<lc::storage::DocumentImpl>(reopenedStorage);
-    EXPECT_EQ(lc::persistence::File::open(
-                  reopenedDocument, dxfPath,
-                  lc::persistence::File::Library::LIBDXFRW),
-              lc::persistence::File::Type::LIBDXFRW_DXF_R2000);
-
-    const auto reopenedEntities =
-        reopenedDocument->entityContainer().asVector();
-    ASSERT_EQ(reopenedEntities.size(), 1u)
-        << "the DXF must restore only the model-space gear Insert";
-    auto reopenedInsert =
-        std::dynamic_pointer_cast<const lc::entity::Insert>(
-            reopenedEntities.front());
-    ASSERT_NE(reopenedInsert, nullptr);
-    EXPECT_NEAR(reopenedInsert->position().x(), 2.0, 1e-8);
-    EXPECT_NEAR(reopenedInsert->position().y(), 3.0, 1e-8);
-
-    const auto reopenedBlock = reopenedInsert->displayBlock();
-    ASSERT_NE(reopenedBlock, nullptr);
-    const auto reopenedBlockEntities =
-        reopenedDocument->entitiesByBlock(reopenedBlock).asVector();
-    ASSERT_EQ(reopenedBlockEntities.size(), 64u)
-        << "the DXF must preserve all block-local gear outline Lines";
-    std::vector<std::shared_ptr<const lc::entity::Line>> reopenedLines;
-    reopenedLines.reserve(reopenedBlockEntities.size());
-    for (const auto& entity : reopenedBlockEntities) {
-        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
-        ASSERT_NE(line, nullptr)
-            << "the reopened gear block must contain only Lines";
-        EXPECT_EQ(line->block(), reopenedBlock);
-        reopenedLines.push_back(std::move(line));
-    }
-
-    const auto samePoint = [](const lc::geo::Coordinate& left,
-                              const lc::geo::Coordinate& right) {
-        return std::abs(left.x() - right.x()) <= 1e-8
-               && std::abs(left.y() - right.y()) <= 1e-8;
-    };
-    std::vector<bool> used(reopenedLines.size(), false);
-    used.front() = true;
-    const auto outlineStart = reopenedLines.front()->start();
-    auto currentPoint = reopenedLines.front()->end();
-    for (std::size_t i = 1; i < reopenedLines.size(); ++i) {
-        std::size_t nextIndex = reopenedLines.size();
-        lc::geo::Coordinate nextPoint;
-        for (std::size_t candidate = 0; candidate < reopenedLines.size();
-             ++candidate) {
-            if (used[candidate]) {
-                continue;
-            }
-            if (samePoint(reopenedLines[candidate]->start(), currentPoint)) {
-                nextIndex = candidate;
-                nextPoint = reopenedLines[candidate]->end();
-                break;
-            }
-            if (samePoint(reopenedLines[candidate]->end(), currentPoint)) {
-                nextIndex = candidate;
-                nextPoint = reopenedLines[candidate]->start();
-                break;
-            }
-        }
-        ASSERT_LT(nextIndex, reopenedLines.size())
-            << "the reopened block outline must remain connected";
-        used[nextIndex] = true;
-        currentPoint = nextPoint;
-    }
-    EXPECT_TRUE(samePoint(currentPoint, outlineStart))
-        << "the reopened 64-Line outline must remain closed";
-#endif
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
