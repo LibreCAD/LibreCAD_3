@@ -33,6 +33,9 @@ endfunction()
 lc_renderer_option(WITH_QT_UI "With QT user interface" ON)
 lc_renderer_option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 lc_renderer_option(WITH_UNITTESTS "Build unit tests" ON)
+# Python scripting support uses the selected build-time CPython SDK/runtime.
+lc_renderer_option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
+option(WITH_CAIRO "Compile with Cairo painter" OFF)
 
 # Provisional R1: legacy remains the default. Never force a cached request OFF.
 lc_renderer_option(WITH_LEGACY_OPENGL_RENDERER "Build the legacy OpenGL renderer" ON)

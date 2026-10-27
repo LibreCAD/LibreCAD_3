@@ -31,13 +31,10 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
+# Declares WITH_CAIRO and WITH_PYTHONSCRIPT too, before recording the preflight.
 include("${CMAKE_CURRENT_SOURCE_DIR}/lcviewernoqt/cmake/RendererOptions.cmake")
-option(WITH_CAIRO "Compile with Cairo painter" OFF)
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
 option(WITH_HEADERS "Install with development headers" OFF)
-
-# Python scripting support uses the selected build-time CPython SDK/runtime.
-lc_renderer_option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
@@ -426,9 +423,6 @@ endif()
 
 add_subdirectory("lcviewernoqt")
 if(WITH_RHI_RENDERER)
-    if(CMAKE_VERSION VERSION_LESS 3.21)
-        message(FATAL_ERROR "RHI builds require CMake 3.21 or newer")
-    endif()
     add_subdirectory("lcrenderer/rhi")
 endif()
 

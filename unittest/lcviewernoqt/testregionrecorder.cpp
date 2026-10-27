@@ -183,11 +183,20 @@ TEST(CpuRegionRecorderTest, GlobalRecordingAndPreparationWorkCapsFailAtomicallyA
 }
 TEST(CpuRegionRecorderTest, InvalidNullUnsupportedNonplanarAndDegenerateInputsDoNotDisappear) {
     auto r=region();auto& entities=const_cast<std::vector<Entity>&>(r.loopList()[0].entities());entities[0]=nullptr;
-    EXPECT_EQ("invalid-hatch-entity",error([&]{recordRegion(r);}));entities.clear();EXPECT_EQ("invalid-region-loop",error([&]{recordRegion(r);}));
+    EXPECT_EQ("invalid-hatch-entity",error([&]{recordRegion(r);}));
     EXPECT_EQ("unsupported-region-entity",error([&]{recordRegion(region({std::make_shared<lc::entity::Point>(Coordinate{},nullptr)}));}));
     EXPECT_EQ("invalid-hatch-coordinate",error([&]{recordRegion(region({line({0,0,1},{1,1,1})}));}));
     EXPECT_EQ("invalid-region-loop",error([&]{recordRegion(region({line({0,0},{0,0})}));}));
     RegionLimits l;l.joinError=.02;EXPECT_EQ("invalid-limits",error([&]{recordRegion(region(),{},l);}));
+}
+TEST(CpuRegionRecorderTest, EmptyDxfLoopsAreSkippedWithoutDroppingTheOtherLoops) {
+    // Master's DXF import keeps a hatch loop whose edges were all skipped.
+    lc::geo::Region r;r.addLoop(lc::geo::Loop({}));
+    EXPECT_TRUE(recordRegion(r).boundary.path.empty());EXPECT_TRUE(prepareRegionFill(r).triangles.empty());
+    r.addLoop(lc::geo::Loop(box()));r.addLoop(lc::geo::Loop({}));
+    const auto recorded=recordRegion(r);ASSERT_EQ(6u,recorded.boundary.path.size());
+    EXPECT_EQ(PathVerb::Close,recorded.boundary.path.back().verb);
+    const auto filled=prepareRegionFill(r);EXPECT_DOUBLE_EQ(100,area(filled));EXPECT_TRUE(covers(filled,{5,5}));
 }
 TEST(CpuRegionRecorderTest, EmptyRegionsValidatePaintAndGradientSnapshotsStayOwned) {
     lc::geo::Region empty;EXPECT_TRUE(recordRegion(empty).boundary.path.empty());EXPECT_TRUE(prepareRegionFill(empty).triangles.empty());

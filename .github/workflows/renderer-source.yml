@@ -103,14 +103,14 @@ jobs:
               qt6-base-dev=6.10.2+dfsg-7 qt6-base-private-dev=6.10.2+dfsg-7
               qt6-shadertools-dev=6.10.2-1 qt6-shader-baker=6.10.2-1
               libqt6shadertools6=6.10.2-1 libvulkan-dev=1.4.341.0-1
-              vulkan-validationlayers=1.4.341.0-1 mesa-vulkan-drivers=26.0.8-1ubuntu0.3
+              vulkan-validationlayers=1.4.341.0-1 mesa-vulkan-drivers
               qt6-wayland=6.10.2-4 libqt6waylandclient6=6.10.2+dfsg-7)
           fi
           if test "$R1_SCOPE" = ui || test "$R1_SCOPE" = both; then
             scoped_dependencies+=(qt6-tools-dev=6.10.2-1 qt6-svg-dev=6.10.2-2)
           fi
           sudo apt-get install --no-install-recommends -y cmake ninja-build g++ \
-            libboost-log-dev libboost-filesystem-dev libeigen3-dev liblua5.3-dev libglew-dev libglm-dev libfreetype-dev \
+            libboost-log-dev libboost-filesystem-dev libeigen3-dev liblua5.4-dev libglew-dev libglm-dev libfreetype-dev \
             rapidjson-dev "${test_dependencies[@]}" python3-dev "${scoped_dependencies[@]}"
           dpkg-query -W > build-r1/debian-packages.txt
           if test "$R1_SCOPE" = libraries || test "$R1_SCOPE" = ui || test "$R1_SCOPE" = both || test "$R1_TESTS" = ON; then
@@ -127,7 +127,7 @@ jobs:
           set -euo pipefail
           # Install every runtime dependency explicitly with --force-bottle and
           # --ignore-dependencies, in dependency order. A missing bottle is fatal.
-          core=(boost eigen rapidjson lua glew glm freetype)
+          core=(boost eigen rapidjson lua@5.4 glew glm freetype)
           if test "$R1_SCOPE" = cli || test "$R1_SCOPE" = cli-persistence || test "$R1_SCOPE" = both; then core+=(glfw); fi
           if test "$R1_TESTS" = ON; then core+=(googletest); fi
           dependencies="$(brew deps --formula --union --topological "${core[@]}")"
@@ -136,9 +136,9 @@ jobs:
           done <<< "$dependencies"
           brew install --formula --force-bottle --ignore-dependencies "${core[@]}"
           brew info --json=v2 --installed > build-r1/homebrew-packages.json
-          lua_root="$(brew --prefix lua)"
-          lua_include="$(find "$lua_root/include" -maxdepth 1 -type d -name 'lua5.*' -print -quit)"
-          test -n "$lua_include"
+          lua_root="$(brew --prefix lua@5.4)"
+          lua_include="$lua_root/include/lua5.4"
+          test -f "$lua_include/lua.h"
           printf 'R1_LUA_INCLUDE=%s\nR1_LUA_LIBRARY=%s\nR1_BREW_PREFIX=%s\n' \
             "$lua_include" "$lua_root/lib/liblua.dylib" "$(brew --prefix)" >> "$GITHUB_ENV"
       - name: Restore pinned Mac Qt modules

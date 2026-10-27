@@ -236,7 +236,8 @@ struct Builder {
                 if (at==0 && i && !input.tangents.empty() && !same(input.tangents[i-1].end,input.tangents[i].start)) phaseStable();
                 const double amount=std::min(remaining,length-at);
                 roundDistance(16*eps*(at+amount+remaining+length)*dashStretch);
-                const double next=at+amount;check(next>at,"precision-limit");
+                // at+(length-at) can round below length; end the edge exactly.
+                const double next=amount==length-at?length:at+amount;check(next>at,"precision-limit");
                 const Point q=next>=length?b:add(a,mul(delta,next/length));
                 check(!same(p,q),"precision-limit");
                 if (index%2==0) {

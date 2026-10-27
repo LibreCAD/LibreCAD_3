@@ -106,7 +106,9 @@ struct RegionBuilder {
         check(out.boundary.path.size()<limits.recording.elements,"vertex-limit");out.boundary.path.push_back(e);
     }
     void loop(const lc::geo::Loop& loop,const PaintState& state) {
-        const auto& entities=loop.entities();check(!entities.empty(),"invalid-region-loop");
+        // A DXF hatch may declare a loop with no edges; it encloses no area.
+        // A loop whose edges record nothing is still rejected below.
+        const auto& entities=loop.entities();if (entities.empty()) return;
         check(entities.size()<=limits.recording.elements-stored,"vertex-limit");std::vector<RegionEdge> edges;
         for (const auto& entity:entities) {
             tick();auto budget=limits.recording;budget.elements=std::min(budget.elements-stored,limits.work-out.visited);budget.commands=1;

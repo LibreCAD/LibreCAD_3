@@ -778,6 +778,14 @@ TEST(CpuStrokeTest, SignedDashPhaseAndSubpathRestartMatchAnalyticIntervals) {
     const auto subpaths=prepareStroke(recorded(r));
     for (double y:{0.,4.}) {EXPECT_TRUE(covers(subpaths,{.5,y}));EXPECT_FALSE(covers(subpaths,{1.5,y}));}
 }
+TEST(CpuStrokeTest, DashReachingTheEdgeEndStopsExactlyAtTheEnd) {
+    // Off the origin, at+(length-at) can round below length and leave a step
+    // too small to move the point; the dash must end the edge exactly instead.
+    PathRecorder r;r.lineWidth(.02);r.dash({.86,100},0,true);
+    r.moveTo({400,300});r.lineTo({401.34,301.36});r.lineTo({406.34,301.36});
+    const auto mesh=prepareStroke(recorded(r));
+    EXPECT_TRUE(covers(mesh,{400.3,300.3}));EXPECT_FALSE(covers(mesh,{403,301.36}));
+}
 TEST(CpuStrokeTest, DashUnitsUseTheStrokeTimeAffineMapNotAppendTimeState) {
     PathRecorder r;r.scale(4);r.moveTo({0,0});r.lineTo({3,0});r.dash({1,1},0,false);auto c=recorded(r);
     auto mesh=prepareStroke(c);EXPECT_TRUE(covers(mesh,{1.5,0}));EXPECT_FALSE(covers(mesh,{4.5,0}));

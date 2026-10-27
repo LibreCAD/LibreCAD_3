@@ -1632,7 +1632,17 @@ class RendererRunnerTests(unittest.TestCase):
             else:
                 self.assertRegex(action, r"@[0-9a-f]{40}$")
         self.assertIn("R0 scaffolding (not migration acceptance)", workflow)
-        self.assertIn("if: always()\n    needs:", workflow)
+        gate = ("github.event_name == 'workflow_dispatch' || "
+                "contains(github.event.pull_request.labels.*.name, 'renderer-ci')")
+        self.assertIn("if: always() && (" + gate + ")\n    needs:", workflow)
+        jobs = re.split(r"(?m)^  (?=[a-z0-9-]+:\n)", workflow.split("\njobs:\n", 1)[1])
+        jobs = {job.split(":", 1)[0]: job for job in jobs if job}
+        self.assertEqual({"r1-source", "renderer-contracts", "renderer-linux",
+                          "minimum-qt-provider-build", "r0-scaffold"}, set(jobs))
+        # Only the cheap manifest job runs on every push and PR.
+        self.assertNotRegex(jobs["renderer-contracts"], r"(?m)^    if:")
+        for name in ("r1-source", "renderer-linux", "minimum-qt-provider-build"):
+            self.assertIn("\n    if: " + gate + "\n", jobs[name])
         self.assertNotIn("assert results", workflow)
         self.assertIn("raise SystemExit", workflow)
 
