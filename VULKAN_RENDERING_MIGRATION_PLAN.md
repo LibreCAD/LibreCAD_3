@@ -1,6 +1,6 @@
 # Vulkan rendering migration plan
 
-Status: reviewed 2026-10-26; R0 remains active and unaccepted.
+Status: review corrections active 2026-10-28; R0 remains active and unaccepted.
 Provisional R1, R2.1, R2.2 and R2.3 implementation are authorized; R2.4–R7 remain proposed.
 Baseline: LibreCAD 3
 `132265a0573253980451facf9109678f8bffe743`, branch `fix/msvc-eigen-include`.
@@ -37,7 +37,35 @@ all60 source tuples (12 per architecture). This is latest-per-tuple proof across
 attempts1/2:59 initial successes plus one unchanged-budget Intel CLI retry, not
 sixty fresh second-attempt executions or pristine first-attempt success.
 
-### Latest exact-source closeout and next implementation boundary — 2026-10-26
+### Current PR #453 correction boundary — 2026-10-28
+
+Parent `4ab8c386` already contains master `6c331bdb`; its source run40603224689
+fails39/60 native profiles, so pre-merge green evidence does not qualify it.
+The owner authorizes fixing all ten review findings, regression tests, local
+validation, commit/push and a fresh complete five-platform source cohort.
+Reconcile the actual Python ABI field, backend-owned test inventory, Conan pins
+and Windows Lua dependencies. Reuse one compensated affine arithmetic helper;
+preserve pattern cell periods independently of ink bounds and certify Region
+joins before camera placement. Fill preparation uses local curve certificates,
+bounded topology refinement and sweep/active-edge processing within the original
+work cap, including adjacent-curve crossing rejection. Regression and pre-fix
+negative controls precede publication. Frozen Mac ARM64 validation passes553
+CPU/Python/persistence IDs and22 offscreen Metal IDs; full scripts pass851 with12
+expected platform skips. All138 path/geometry cases pass production ASan/UBSan
+(fixture ASan-only, dependencies and Mac leaks unqualified); new regression
+families fail preserved pre-fix implementations. Final plan/inventory/lint checks
+repeat before publication. All60 exact-SHA source jobs remain required; partial
+passes and earlier green commits are not qualification.
+The separate46-case Hatch/Region/Tiler/Catalog subset also passes ASan/UBSan
+with production and test TUs instrumented; dependency internals and Mac leaks
+remain unqualified. Durable local proof is retained in
+`build/renderer-evidence/pr453-ten-fixes-20261028.55Ne2l/`.
+Use the merged C++17/in-tree libdxfrw contract. Keep legacy default,0.25px and
+300/1200-second limits, every assertion and all acceptance gates unchanged.
+No new upstream reconciliation, R2.4+, hardware, application, package or release
+acceptance is authorized. Historical checkpoints below retain their old scope.
+
+### Previous exact-source closeout and implementation boundary — 2026-10-26
 
 Candidate `7720f239a675f5f1136404e3e4af2ca39f1ff633` has completed
 run40264405249 attempt1:62/62 source checks, all60 profiles/12 per platform.
@@ -3990,6 +4018,7 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-28 | Ten PR453 corrections locally validated; exact-source publication next | Four CI contracts, shared compensated affine math, explicit pattern periods, pan-independent Region certificates and locally certified bounded fill sweeps/refinement have regressions and preserved pre-fix failures. Frozen Mac553 CPU/Python/persistence and22 Metal IDs pass;851 scripts pass with12 expected platform skips. All138 path/geometry cases pass production ASan/UBSan (fixture ASan-only; dependencies/Mac leaks unqualified). Final plan/inventory/lint/diff checks repeat before commit/push, then require all60 exact-SHA source jobs. Evidence: /tmp/pr453-ten-fixes-evidence-20261028.iGl01n/ plus referenced focused controls. Original checkout/index preserved. Legacy default,0.25px/300/1200 bounds and every acceptance gate stay unchanged; no R2.4+ or new upstream reconciliation. |
 | 2026-10-26 | Provisional R2.3 ellipse-plane correction locally validated; source publication next | Frozen six-path correction adds one existing coordinate validation, two native regression IDs and exact ownership guards; no new provider/plane policy. Fresh Mac/Linux ARM64 each266 CPU preserves264 and22 Metal/Vulkan passes; Linux core/sync14instances14devices0errors. Both new IDs fail against preserved pre-fix libraries; focused Mac ASan/UBSan passes all27 recorder IDs, with other dependencies/Mac leaks unqualified. Full666 scripts pass (Mac11 expected Linux skips/Linux0); exact one-file test-guard transition preserves separate Linux native/protocol freezes and unchanged compiled inputs/helpers/providers. Four own caches/167 ordinary units/eight raw C++14 headers pass. All45 unchanged reader models,12 inventory rejection probes and both fresh native readbacks pass;672 compact Linux files retain no large executables/caches. Preserve all initial source-count, preflight and evidence-harness failures, six prior seals and original checkout/index/staging. Pre-final full-plan/checker42/worktree6paths16mapped gates/inventory190/lints/diff PASS; repeat after this final receipt, then publish six paths to the existing authorized fork branch and require fresh exact-SHA all60 source jobs/artifact audits. Evidence: build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. Legacy default,0.25px/300/1200 bounds, upstream deferral and all acceptance gates stay; full goal and R2.4 authority remain open. |
 | 2026-10-26 | R2.3 plane-validation correction implemented; protocol ownership update pending | Reuse point(majorP) before radius/angle derivation; no planar projection or new provider policy. Two new actual native IDs cover11 invalid axes/full or partial/both directions, atomicity/recovery and signed-zero rotated planar controls. Mac fresh266 CPU+22 Metal pass; immutable pre-fix libraries fail both new IDs. Focused Mac ASan/UBSan passes all27 recorder IDs without skips, instrumenting adapter/tests only; other dependencies/Mac leaks stay unqualified. Linux native CPU/Vulkan execution passes with additional byte/object readback still pending. Full Mac666 initially fails the two obsolete source-count guards (Region15 vs16/hatch10 vs11), not native tests; preserve that failure, bind the new IDs/counts and rerun complete protocols/maintenance before source publication/full five-platform CI. Initial preflight/helper failures remain retained in build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. All prior264 IDs, source bounds/assertions/defaults, upstream deferral and acceptance gates remain. R2.4 is requested, not approved; this is not full R2.3/full-goal completion. |
 | 2026-10-26 | Exact PR453 source cohort closed; remaining R2.3 implementation active | Candidate7720f239/run40264405249 attempt1 passes62/62 checks/all60 tuples (12 per platform); full archive readback verifies1753 process scopes and seven new regressions. Complete40-host/20-CLI audit verifies19984 files/120 project-library loads; final-closeout-v2 binds six seals and preserved original checkout/index/staging. Preserve the initial plan self-comparison failure and the corrected actual-parent six-path proof. Evidence: build/renderer-evidence/pr453-pch-chain-20261025.wlqdWF/hosted/final-closeout-v2.json. Existing local666 scripts/264CPU/22RHI source proof stays exact-source, not acceptance. Next enforce the declared planar-provider boundary for ellipse major axes, with pre-fix negative controls, full/partial/both-direction/atomic/recovery regressions and fresh native validation in build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. R2.4 executor readiness is audited, but its authorization remains pending. Prose-only sync does not stale product evidence; full plan/checker/worktree/inventory/lints/diff repeat. No default, upstream reconciliation,0.25px/time-limit or acceptance changes; full goal remains incomplete. |

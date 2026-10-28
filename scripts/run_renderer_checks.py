@@ -652,6 +652,8 @@ LIBRARY_PROFILES={'cpu':(False,False,False),'legacy':(True,False,False),'dual':(
     'cpu-python':(False,False,True),'legacy-python':(True,False,True),
     'dual-python':(True,True,True),'rhi-python':(False,True,True)}
 HOST_PROFILES=('legacy','dual','legacy-python','dual-python')
+# These source-owned backend tests still execute; only shared-ID parity excludes them.
+LEGACY_TEST_IDS={'FontBookTest.CopyAssignmentPreservesDefaultLookup'}
 UI_TEST_SOURCES=tuple('ui/'+name+'.cpp' for name in (
     'testtoolbar','testscriptdock','uitests','testlayers','testlinepatterns','testcommandline',
     'testcolorselect','testlinewidthselect','testmainwindow','testwindowmanager','gui/testmenuitem',
@@ -691,6 +693,8 @@ def library_profile_graph(build,flags,hosts=False):
     for name in PYTHON_TEST_SOURCES:
         if any(p.endswith(name) for p in sources('lcunittest'))!=(flags['WITH_PYTHONSCRIPT'] and flags['WITH_UNITTESTS']):
             raise ValueError('Python test-source membership mismatch: '+name)
+    if any(p.endswith('lcviewernoqt/fontbooktest.cpp') for p in sources('lcunittest'))!=(flags['WITH_LEGACY_OPENGL_RENDERER'] and flags['WITH_UNITTESTS']):
+        raise ValueError('Legacy test-source membership mismatch: fontbooktest.cpp')
     if hosts:
         test_sources={name:ui for name in UI_TEST_SOURCES}
         test_sources.update({'persistence/dxfexporttest.cpp':flags['WITH_PERSISTENCE'],
@@ -737,7 +741,7 @@ def library_profile_graph(build,flags,hosts=False):
         windows_abi=(sys.platform=='win32' and version and provider.get('provider_soabi')=='' and
             provider.get('provider_platform')=='win-amd64' and
             provider.get('provider_extension_suffix')=='.cp'+version[1]+version[2]+'-win_amd64.pyd')
-        if provider.get('target_pointer_bits')!='64' or not provider.get('provider_version') or not (provider.get('provider_soabi') or windows_abi):
+        if provider.get('provider_pointer_bits')!='64' or not provider.get('provider_version') or not (provider.get('provider_soabi') or windows_abi):
             raise ValueError('Missing Python provider ABI')
         for key in ('executable','link_library'):
             selected=Path(provider[key])
@@ -860,11 +864,14 @@ def build_library_matrix(args,selected,sdk,parent,tests=True,inputs=None):
         listing=re.sub(br'^LibreCAD v[^\r\n]+\r?\n',b'',(directory/'cpu-discovery/stdout.log').read_bytes(),count=1)
         found=gtest_discovery(listing);xml=directory/'cpu-tests/tests.xml'
         step([str(app),'--gtest_output=xml:'+str(xml)],'cpu-tests');gtest_results(xml.read_bytes(),found)
-        if python in common_ids and common_ids[python]!=found:raise ValueError('Library profiles compiled out different CPU/Python IDs')
-        common_ids[python]=found
-        python_ids=sorted(set(found)-set(common_ids[False])) if python else []
+        backend_ids=LEGACY_TEST_IDS if legacy else set()
+        if (set(found)&LEGACY_TEST_IDS)!=backend_ids:raise ValueError('Library profile omitted or leaked legacy tests')
+        shared_ids=sorted(set(found)-backend_ids)
+        if python in common_ids and common_ids[python]!=shared_ids:raise ValueError('Library profiles compiled out different CPU/Python IDs')
+        common_ids[python]=shared_ids
+        python_ids=sorted(set(shared_ids)-set(common_ids[False])) if python else []
         if python:
-            if not set(common_ids[False])<set(found):raise ValueError('Python build lost CPU IDs or omitted Python tests')
+            if not set(common_ids[False])<set(shared_ids):raise ValueError('Python build lost CPU IDs or omitted Python tests')
             if not {'PythonRuntime.IsolatedProviderIgnoresAmbientPaths','PythonRuntime.RuntimeConfigurationIsValidatedInFreshProcesses'}<=set(python_ids):
                 raise ValueError('Python build omitted selected-provider runtime probes')
             if python_provider not in (None,observed['python_provider']):raise ValueError('Python profiles selected different providers')
@@ -872,7 +879,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True,inputs=None):
         if sha256(app.read_bytes())!=binary or library_profile_graph(build,flags)!=observed:raise ValueError('Library build evidence changed')
         record=dict(schema_version=1,evidence_kind='r1-library-option-build',phase_or_platform_accepted=False,
             profile=profile,library_group=group,options=flags,observed=observed,commands=commands,cpu_ids=found,
-            base_cpu_ids=common_ids[False],python_ids=python_ids,app_sha256=binary,cpu_headers=cpu_header_contract(build,True),
+            base_cpu_ids=common_ids[False],backend_ids=sorted(backend_ids),python_ids=python_ids,app_sha256=binary,cpu_headers=cpu_header_contract(build,True),
             source_sha256=inputs,profile_budget_seconds=1200,command_timeout_seconds=args.timeout)
         (directory/'library-build.json').write_text(json.dumps(record,indent=2)+'\n');records.append(record)
     if inputs!=production_inputs():raise ValueError('Library matrix source/helper changed during execution')

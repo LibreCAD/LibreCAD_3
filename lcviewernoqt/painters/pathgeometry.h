@@ -28,6 +28,14 @@ struct Polyline {
     bool closed = false;
     // Present only for width-aware preparation; one entry per consecutive edge.
     std::vector<CurveTangents> tangents;
+    struct Edge {
+        std::array<Point,4> controls{}; // positive convex curve hull, including endpoints
+        unsigned degree = 1;
+        double positionBound = 0;
+    };
+    // Fill-only certificates, one per consecutive edge. Local bounds avoid
+    // applying a distant high-curvature span's error to every topology check.
+    std::vector<Edge> edges;
 };
 struct FlattenedPath {
     std::vector<Polyline> subpaths;
@@ -159,7 +167,8 @@ PreparedHatch prepareHatch(const PathCommand& boundary, const std::vector<HatchF
 // Point size follows the selected diameter contract (3 physical pixels).
 // This records geometry only: it does not repeat, clip, execute or cache tiles.
 struct HatchTile {
-    Point minimum{},maximum{};
+    Point minimum{},maximum{}; // tight finite ink bounds, not the cell footprint
+    Point period{}; // origin-based model cell dimensions supplied by the pattern
     PaintState state;
     std::vector<PathCommand> commands;
 };
@@ -178,7 +187,7 @@ struct PreparedTiledHatch {
     std::size_t cells = 0, instances = 0, visited = 0;
     double positionBound = 0;
 };
-// Repeat the actual finite commands at periods maximum-minimum, rotating and
+// Repeat the actual finite commands at the explicit cell period, rotating and
 // scaling the model pattern BEFORE the outer camera transform. Dash phase is
 // anchored to each whole primitive, never restarted at the mask/cull boundary.
 // Large lattice indices use compensated origin rebasing; uncertifiable numeric

@@ -17,9 +17,9 @@ CASES.update({name:(tests,profile.startswith('dual')) for name,(_,profile,tests)
 SETTINGS=dict(os='Windows',arch='x86_64',compiler='msvc',build_type='Release',**{
     'compiler.version':'194','compiler.cppstd':'17','compiler.runtime':'dynamic','compiler.runtime_type':'Release'})
 DIRECT={'boost/1.82.0','eigen/3.4.0','lua/5.3.5','rapidjson/1.1.0'}
-GTEST='gtest/1.18.0'
+GTEST='gtest/1.14.0'
 LEGACY_DIRECT={'freetype/2.13.0','glew/2.2.0','glm/0.9.9.8'}
-CLI_DIRECT={'glfw/3.3.8','libcurl/8.23.0'}
+CLI_DIRECT={'glfw/3.3.8','libcurl/8.15.0'}
 LEGACY={'freetype','glew','glm','opengl','glu','glfw','libcurl','libdxfrw','qt'}
 
 

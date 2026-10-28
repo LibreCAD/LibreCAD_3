@@ -9,6 +9,7 @@
 #include <boost/filesystem.hpp>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <set>
 #include <string>
 #include <fstream>
@@ -58,6 +59,36 @@ TEST(CpuHatchCatalogTest, EveryBundledPatternPreparesActualFiniteTileInkWithinGl
     }
     EXPECT_EQ(63u,patterns);EXPECT_GT(triangles,0u);RecordProperty("prepared_patterns",int(patterns));
     RecordProperty("finite_ink_triangles",int(triangles)); // normalized CPU preparation, NOT pixel/hardware acceptance
+}
+TEST(CpuHatchCatalogTest, ClayKeepsItsOriginBasedCellDespiteTheEmptyInkMargin) {
+    using namespace lc::viewer::render;
+    const auto& pattern=lc::persistence::PatternProvider::Instance()->getPattern("clay");
+    ASSERT_EQ("clay",pattern.name);const auto tile=recordHatchTile(pattern);
+    EXPECT_NEAR(6.667,tile.minimum.y,1e-12);EXPECT_DOUBLE_EQ(100,tile.maximum.y);
+    EXPECT_DOUBLE_EQ(100,tile.period.x);EXPECT_DOUBLE_EQ(100,tile.period.y);
+    auto cross=[](Point a,Point b,Point p){return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);};
+    auto inside=[&](const PreparedStroke& ink,Point p) {
+        for (const auto& t:ink.triangles) if (cross(t[0],t[1],p)>=0 && cross(t[1],t[2],p)>=0 && cross(t[2],t[0],p)>=0) return true;
+        return false;
+    };
+    // This full horizontal source segment is independent evidence for its
+    // 100-unit repeat; deriving the expected phase from tile.period would hide
+    // the original tight-bounds defect.
+    bool fullLine=false;
+    for (const auto& c:tile.commands) if (c.path.size()==2) {
+        const auto a=c.path[0].point,b=c.path[1].point;
+        fullLine|=a.x==0 && a.y==20 && b.x==100 && b.y==20;
+    }
+    ASSERT_TRUE(fullLine);
+    for (double scale:{.5,1.,2.}) for (bool reflected:{false,true}) for (double angle:{0.,.37}) {
+        auto placed=tile;placed.state.transform.xx=reflected?-1:1;
+        PathRecorder r;r.rectangle({reflected?-400.:0,0},400,400);r.fill();
+        const auto prepared=prepareTiledHatch(r.commands()[0],placed,scale,angle);
+        auto mapped=[&](Point p) {return placed.state.transform.point({scale*(std::cos(angle)*p.x-std::sin(angle)*p.y),
+            scale*(std::sin(angle)*p.x+std::cos(angle)*p.y)});};
+        EXPECT_TRUE(inside(prepared.ink,mapped({90,120})));
+        EXPECT_FALSE(inside(prepared.ink,mapped({90,126.666})));EXPECT_LE(prepared.positionBound,.25);
+    }
 }
 TEST(CpuHatchCatalogTest, RawDxfHatchImportsRealRegionLoopsAndPreparesItsHoleWithoutWriterSymmetry) {
     namespace fs=boost::filesystem;using namespace lc::viewer::render;

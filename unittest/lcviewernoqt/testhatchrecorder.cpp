@@ -57,6 +57,7 @@ TEST(CpuHatchRecorderTest, RealProviderGeometryTypesKeepOrderAndOwnedModelCoordi
     EXPECT_EQ(PathVerb::Conic,recorded.commands[3].path[1].verb);EXPECT_EQ(PathVerb::Line,recorded.commands[3].path.back().verb);
     p.entities.clear();p.boundingBox=lc::geo::Area({100,100},{200,200});
     EXPECT_DOUBLE_EQ(-10,recorded.minimum.x);EXPECT_DOUBLE_EQ(10,recorded.maximum.y);
+    EXPECT_DOUBLE_EQ(10,recorded.period.x);EXPECT_DOUBLE_EQ(10,recorded.period.y);
     EXPECT_DOUBLE_EQ(2,recorded.commands[0].path.back().point.x);EXPECT_DOUBLE_EQ(1,recorded.commands[2].path[0].point.x);
 }
 TEST(CpuHatchRecorderTest, OuterTransformAndInheritedStyleAreSnapshotsNotPrematureGeometryTransforms) {

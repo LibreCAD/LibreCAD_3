@@ -39,7 +39,8 @@ struct Builder {
     FlattenedPath result;
     std::size_t vertices = 0;
     double tangentNorm,lengthNorm;
-    Builder(CurveLimits l,CurveMetrics m) : limits(l),metrics(m),tangentNorm(mapNorm(m.tangent)),lengthNorm(mapNorm(m.length)) {}
+    bool topology;
+    Builder(CurveLimits l,CurveMetrics m,bool fill) : limits(l),metrics(m),tangentNorm(mapNorm(m.tangent)),lengthNorm(mapNorm(m.length)),topology(fill) {}
     void tick() {check(result.visited<limits.work,"subdivision-limit");++result.visited;}
     void point(Point p) {
         valid(p); check(vertices < limits.vertices,"vertex-limit");
@@ -61,13 +62,15 @@ struct Builder {
         }
         return {};
     }
-    void endpoint(Point p,CurveTangents tangents) {
+    void endpoint(Point p,CurveTangents tangents,Polyline::Edge edge={}) {
         point(p);if (metrics.physicalRadius) result.subpaths.back().tangents.push_back(tangents);
+        if (topology) result.subpaths.back().edges.push_back(edge);
     }
     void line(Point from,Point end,double budget,double round,Point knownTangent={}) {
         const double d=size(metrics.length.distance(difference(end,from)));
         round*=lengthNorm;check(2*round<budget,"precision-limit");
-        length(std::max(0.,d-round),d+round);const Point t=zero(knownTangent)?direction(difference(end,from)):knownTangent;endpoint(end,{t,t});
+        length(std::max(0.,d-round),d+round);const Point t=zero(knownTangent)?direction(difference(end,from)):knownTangent;
+        endpoint(end,{t,t},{{{from,end,{},{}}},1,0});
     }
     // A true collinear span is a line traversal, possibly with reversals. Solve
     // its scalar stationary parameters rather than recursively approaching an
@@ -224,7 +227,8 @@ struct Builder {
         if (error+positionRound <= limits.positionError && normal<=metrics.normalError && upper-lower+2*lengthRound <= budget) {
             result.positionBound = std::max(result.positionBound,error+positionRound);
             result.normalBound=std::max(result.normalBound,normal);
-            length(std::max(0.,lower-lengthRound),std::max(lower,upper)+lengthRound);endpoint(p[degree],{start,end});return;
+            length(std::max(0.,lower-lengthRound),std::max(lower,upper)+lengthRound);
+            endpoint(p[degree],{start,end},{p,degree,error+positionRound});return;
         }
         check(depth < limits.depth,"subdivision-limit");
         std::array<Point,4> left{}, right{};
@@ -267,7 +271,7 @@ FlattenedPath flatten(const PathCommand& command, CurveLimits limits,CurveMetric
     for (const auto& e : command.path) if (e.verb != PathVerb::Move) ++edges;
     const double total=limits.lengthError/metrics.lengthScale;
     const double budget = edges ? total/(2*double(edges)) : total;
-    Builder b(limits,metrics); bool current = false;
+    Builder b(limits,metrics,command.operation==PaintOperation::Fill); bool current = false;
     for (const auto& e : command.path) {
         b.tick();
         if (e.verb == PathVerb::Move) {

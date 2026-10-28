@@ -234,6 +234,25 @@ class RendererBuildOptionsTests(unittest.TestCase):
                 self.assertIn('OpenGL::GL', text)
                 self.assertIn('GLEW::GLEW', text)
 
+    def test_msvc_lua_target_configures_with_graphics_discovery_disabled(self):
+        with tempfile.TemporaryDirectory(prefix='renderer-lua-no-graphics-') as tmp:
+            root=Path(tmp)
+            (root/'CMakeLists.txt').write_text(
+                'cmake_minimum_required(VERSION 3.28)\nproject(LuaNoGraphics LANGUAGES CXX)\n'
+                'set(MSVC TRUE)\nset(WITH_PERSISTENCE OFF)\nset(WITH_LEGACY_OPENGL_RENDERER OFF)\n'
+                'set(CMAKE_DISABLE_FIND_PACKAGE_glew ON)\nset(CMAKE_DISABLE_FIND_PACKAGE_GLEW ON)\n'
+                'set(CMAKE_INSTALL_BINDIR bin)\nset(CMAKE_INSTALL_LIBDIR lib)\n'
+                'function(find_package name)\n'
+                ' if(name STREQUAL "Eigen3")\n  add_library(Eigen3::Eigen INTERFACE IMPORTED)\n'
+                ' elseif(NOT name STREQUAL "Lua" AND NOT name STREQUAL "Boost")\n  _find_package(${ARGV})\n endif()\nendfunction()\n'
+                'function(collect_lib)\nendfunction()\nfunction(install_headers)\nendfunction()\n'
+                'add_subdirectory("'+(ROOT/'lcadluascript').as_posix()+'" lua)\n'
+                'get_target_property(links lcluascript LINK_LIBRARIES)\n'
+                'if(links MATCHES "[Gg][Ll][Ee][Ww]" OR NOT "Eigen3::Eigen" IN_LIST links)\n'
+                ' message(FATAL_ERROR "Wrong Lua-only dependencies: ${links}")\nendif()\n')
+            result=subprocess.run(['cmake','-S',str(root),'-B',str(root/'build')],capture_output=True,text=True,timeout=30)
+            self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+
     def test_legacy_math_headers_are_an_explicit_target_dependency(self):
         text = (ROOT / 'lcviewernoqt/CMakeLists.txt').read_text().split('if(WITH_LEGACY_OPENGL_RENDERER)', 1)[1]
         self.assertIn('find_package(glm CONFIG REQUIRED)', text)

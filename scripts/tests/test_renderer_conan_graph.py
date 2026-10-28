@@ -1,4 +1,5 @@
 """Synthetic Conan graph/lock failures; no package or native Windows proof."""
+import ast
 import copy
 import json
 from pathlib import Path
@@ -29,6 +30,27 @@ def fixture(case='ordinary'):
 
 class ConanGraphTests(unittest.TestCase):
     def setUp(self):self.graph,self.lock=fixture()
+    def test_binary_route_versions_match_the_actual_recipe(self):
+        # Read the producer, not fixture()'s copies of the validator constants.
+        tree=ast.parse((Path(__file__).resolve().parents[2]/'conanfile.py').read_text())
+        refs={call.args[0].value for call in ast.walk(tree) if isinstance(call,ast.Call) and
+            isinstance(call.func,ast.Attribute) and call.func.attr=='requires' and
+            isinstance(call.func.value,ast.Name) and call.func.value.id=='self' and
+            len(call.args)==1 and isinstance(call.args[0],ast.Constant)}
+        self.assertEqual(refs,validator.DIRECT|{validator.GTEST}|validator.LEGACY_DIRECT|validator.CLI_DIRECT)
+
+    def test_superseded_versions_reject_even_with_consistent_graph_and_lock(self):
+        for case,current,stale in (('ordinary','gtest/1.14.0','gtest/1.18.0'),
+                                  ('cli-legacy-no-tests','libcurl/8.15.0','libcurl/8.23.0')):
+            graph,lock=fixture(case)
+            for node in graph['graph']['nodes'].values():
+                if node.get('ref','').startswith(current+'#'):node['ref']=node['ref'].replace(current,stale,1)
+                for edge in node['dependencies'].values():
+                    if edge['ref']==current:edge['ref']=stale
+            lock['requires']=[ref.replace(current+'#',stale+'#',1) for ref in lock['requires']]
+            with self.subTest(case=case),self.assertRaisesRegex(ValueError,'direct Conan requirements'):
+                validator.validate(graph,lock,case)
+
     def test_each_case_requires_exact_profile_options_and_binary_identities(self):
         for case in validator.CASES:
             graph,lock=fixture(case);result=validator.validate(graph,lock,case)

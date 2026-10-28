@@ -1,4 +1,5 @@
 #include "pathrecorder.h"
+#include "pathnumeric_p.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -31,19 +32,26 @@ void Transform::validate() const {
     require(std::isfinite(std::hypot(xx, yx)), "invalid-transform");
 }
 Point Transform::distance(Point p) const {
-    finite(p); return finite({xx * p.x + xy * p.y, yx * p.x + yy * p.y});
+    finite(p);
+    detail::Sum x("invalid-transform"),y("invalid-transform");
+    x.product(xx,p.x);x.product(xy,p.y);y.product(yx,p.x);y.product(yy,p.y);
+    return {x.value(),y.value()};
 }
 Point Transform::point(Point p) const {
-    finite(p); p = distance(finite({p.x - origin.x, p.y - origin.y}));
-    return finite({p.x + tx, p.y + ty});
+    finite(p);
+    detail::Sum x("invalid-transform"),y("invalid-transform");
+    x.add(p.x);x.add(-origin.x);y.add(p.y);y.add(-origin.y);
+    auto a=x.scaled(xx),b=x.scaled(yx);a.append(y.scaled(xy));b.append(y.scaled(yy));
+    a.add(tx);b.add(ty);return {a.value(),b.value()};
 }
 Point Transform::inverseDistance(Point p) const {
     finite(p); const auto i = inverse(*this);
-    return finite({i[0] * p.x + i[1] * p.y, i[2] * p.x + i[3] * p.y});
+    Transform t;t.xx=i[0];t.xy=i[1];t.yx=i[2];t.yy=i[3];return t.distance(p);
 }
 Point Transform::inversePoint(Point p) const {
-    finite(p); p = inverseDistance(finite({p.x - tx, p.y - ty}));
-    return finite({p.x + origin.x, p.y + origin.y});
+    finite(p);const auto i=inverse(*this);
+    Transform t;t.xx=i[0];t.xy=i[1];t.yx=i[2];t.yy=i[3];
+    t.origin={tx,ty};t.tx=origin.x;t.ty=origin.y;return t.point(p);
 }
 double Transform::scale() const { return std::hypot(xx, yx); }
 PathRecorder::PathRecorder(RecordingLimits limits) : _limits(limits) {

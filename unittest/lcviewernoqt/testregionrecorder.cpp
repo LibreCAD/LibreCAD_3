@@ -36,7 +36,7 @@ lc::entity::Spline_CSPtr spline(unsigned degree,std::vector<Coordinate> points) 
     b.setFlags(lc::geo::Spline::PLANAR);b.setControlPoints(points);return b.build();
 }
 HatchTile pattern(PaintState state={}) {
-    lc::objects::Pattern p;p.boundingBox=lc::geo::Area({-5,-5},{5,5});p.entities={line({2,2},{8,2})};return recordHatchTile(p,state);
+    lc::objects::Pattern p;p.boundingBox=lc::geo::Area({0,0},{10,10});p.entities={line({2,2},{8,2})};return recordHatchTile(p,state);
 }
 }
 TEST(CpuRegionRecorderTest, ActualUnorderedAndReversedCadEdgesProduceOneOwnedContour) {
@@ -64,6 +64,33 @@ TEST(CpuRegionRecorderTest, RealArcsAndFullEllipsesKeepCurvesAndExplicitClosedSe
     auto full=region({std::make_shared<lc::entity::Ellipse>(Coordinate{},Coordinate{4,0},2,0,0,false,nullptr)});
     const auto f=prepareRegionFill(full);EXPECT_NEAR(8*pi,area(f),1);EXPECT_TRUE(covers(f,{0,0}));EXPECT_FALSE(covers(f,{4,2}));
     EXPECT_EQ(PathVerb::Close,recordRegion(full).boundary.path.back().verb);
+}
+TEST(CpuRegionRecorderTest, AnalyticEndpointClosureIsPanInvariantButRealGapsStillReject) {
+    constexpr double pi=3.14159265358979323846,radius=1000;
+    auto arc=std::make_shared<lc::entity::Arc>(Coordinate{},radius,0,pi,true,nullptr);
+    const auto closed=region({arc,line({-radius,0},{radius,0})});
+    const auto gap=region({arc,line({-radius+1e-7,0},{radius,0})});
+    for (Transform linear:std::vector<Transform>{{},{-2,.25,0,.5,0,0,{}},{.5,0,0,.5,0,0,{}}}) {
+        for (Point pan:{Point{},Point{1000,0},Point{-1000,17}}) {
+            SCOPED_TRACE(::testing::Message()<<linear.xx<<","<<linear.xy<<","<<linear.yy<<" pan "<<pan.x<<","<<pan.y);
+            PaintState state;state.transform=linear;state.transform.tx=pan.x;state.transform.ty=pan.y;
+            RecordedRegion captured;ASSERT_NO_THROW(captured=recordRegion(closed,state));
+            EXPECT_LE(captured.positionBound,1.0/64);EXPECT_EQ(PathVerb::Close,captured.boundary.path.back().verb);
+            PreparedFill fill;ASSERT_NO_THROW(fill=prepareRegionFill(closed,state));
+            const double determinant=std::abs(linear.xx*linear.yy-linear.xy*linear.yx);
+            const double perimeter=(pi+2)*radius*(std::hypot(linear.xx,linear.yx)+std::hypot(linear.xy,linear.yy));
+            EXPECT_NEAR(pi*radius*radius*determinant/2,area(fill),perimeter*fill.positionBound+pi*fill.positionBound*fill.positionBound);
+            EXPECT_TRUE(covers(fill,state.transform.point({0,500})));EXPECT_FALSE(covers(fill,state.transform.point({0,-500})));
+            auto saved=captured;EXPECT_EQ("disconnected-region-loop",error([&]{saved=recordRegion(gap,state);}));
+            EXPECT_EQ(captured.boundary.path.size(),saved.boundary.path.size());
+        }
+    }
+    // Joining remains independent of far camera placement as well. The wider
+    // curve-preparation numeric domain is a separate certificate, not a reason
+    // to relabel an analytic seam as a disconnected CAD loop.
+    PaintState far;far.transform.tx=-1e6;far.transform.ty=1e6;
+    EXPECT_NO_THROW(recordRegion(closed,far));
+    EXPECT_EQ("disconnected-region-loop",error([&]{recordRegion(gap,far);}));
 }
 TEST(CpuRegionRecorderTest, BoundaryBulgesIgnoreStrokeDecorationWithoutEnablingPatternWidths) {
     auto p=std::make_shared<lc::entity::LWPolyline>(std::vector<lc::entity::LWVertex2D>{{{-2,0},1,2,3},{{2,0}},{{2,3}},{{-2,3}}},

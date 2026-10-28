@@ -11,7 +11,7 @@ PathCommand rectangle(double x,double y,double w,double h) {
 }
 HatchTile tile(Point a={2,2},Point b={4,2},double period=10) {
     PathRecorder r;r.moveTo(a);r.lineTo(b);r.stroke();HatchTile t;
-    t.minimum={-3,-7};t.maximum={period-3,period-7};t.commands=r.commands();return t;
+    t.minimum={-3,-7};t.maximum={period-3,period-7};t.period={period,period};t.commands=r.commands();return t;
 }
 void inherit(HatchTile& t) {for (auto& c:t.commands) {c.state=t.state;c.state.transform={};}}
 int cross(Point a,Point b,Point p) {
@@ -41,6 +41,10 @@ TEST(CpuHatchTilerTest, ActualFiniteSegmentsUseExtentPeriodsNotMaximumCoordinate
         EXPECT_FALSE(covers(h,{3.+10*col,5.+10*row}));
     }
     EXPECT_LE(h.positionBound,.25);EXPECT_EQ(StrokeCoverage::UnionBeforeOver,h.ink.coverage);
+    auto margins=tile();margins.minimum={1,1};margins.maximum={6,4};
+    const auto cropped=prepareTiledHatch(rectangle(0,0,30,20),margins);
+    EXPECT_EQ(h.ink.triangles.size(),cropped.ink.triangles.size());
+    for (Point p:{Point{3,2},Point{13,12},Point{7,2},Point{3,5}}) EXPECT_EQ(covers(h,p),covers(cropped,p));
 }
 TEST(CpuHatchTilerTest, ConcaveHolesAndDisconnectedMasksIntersectFullInkCoverage) {
     PathRecorder r;r.rectangle({0,0},30,20);r.rectangle({10,1},10,5);r.rectangle({40,0},10,10);r.fill();
@@ -136,6 +140,9 @@ TEST(CpuHatchTilerTest, DegenerateNonfiniteAndUncertifiableDomainsRejectWithoutP
     for (double scale:{0.,-1.,nan}) EXPECT_EQ("invalid-hatch-scale",error([&]{prepareTiledHatch(b,t,scale);}));
     EXPECT_EQ("invalid-hatch-scale",error([&]{prepareTiledHatch(b,t,1,nan);}));
     t.maximum.x=t.minimum.x;EXPECT_EQ("invalid-hatch-tile",error([&]{prepareTiledHatch(b,t);}));
+    for (Point period:{Point{0,10},Point{10,-1},Point{nan,10}}) {
+        t=tile();t.period=period;EXPECT_EQ("invalid-hatch-tile",error([&]{prepareTiledHatch(b,t);}));
+    }
     t=tile();t.state.transform.origin.x=1e18;EXPECT_EQ("precision-limit",error([&]{prepareTiledHatch(b,t);}));
     t=tile();t.state.transform.xx=1e-20;EXPECT_FALSE(error([&]{prepareTiledHatch(b,t);}).empty());
     t=tile();t.commands[0].path.back().point.x=nan;EXPECT_FALSE(error([&]{prepareTiledHatch(b,t);}).empty());

@@ -275,6 +275,41 @@ TEST(CpuTransformTest, SingularNonfiniteAndOverflowAreRecoverable) {
     EXPECT_TRUE(sameTransform(tiny, r.state().transform));
 }
 
+TEST(CpuTransformTest, AffineCancellationPreservesModelDetailBeforePreparation) {
+    using Exact=boost::multiprecision::cpp_bin_float_100;
+    const Point a{1,std::nextafter(-1.,0.)},b{std::nextafter(1.,2.),-1};
+    for (double magnitude:{1e12,1e16,1e20}) for (double sign:{-1.,1.}) {
+        Transform t;t.xx=sign*magnitude;t.xy=sign*magnitude;t.yx=1;t.yy=-1;
+        PathRecorder r;r.setTransform(t);r.moveTo(a);r.lineTo(b);r.stroke();
+        const auto& command=r.commands().front();
+        for (std::size_t i=0;i<2;++i) {
+            const Point p=i?b:a;
+            const double x=double(Exact(t.xx)*Exact(p.x)+Exact(t.xy)*Exact(p.y));
+            const double y=double(Exact(t.yx)*Exact(p.x)+Exact(t.yy)*Exact(p.y));
+            EXPECT_DOUBLE_EQ(x,command.path[i].point.x);
+            EXPECT_DOUBLE_EQ(y,command.path[i].point.y);
+        }
+        const auto mesh=prepareStroke(command);
+        EXPECT_FALSE(mesh.triangles.empty());EXPECT_LE(mesh.positionBound,.25);
+        // At1e16 the original rounded products shortened this segment by .89px.
+        EXPECT_GT(std::abs(command.path[1].point.x-command.path[0].point.x),0.);
+    }
+    Transform t;t.origin={1,-1};t.tx=-1e16;t.ty=1e16;
+    const Point model{1e16+2,-1e16-2};
+    const auto physical=t.point(model);
+    EXPECT_DOUBLE_EQ(1,physical.x);EXPECT_DOUBLE_EQ(-1,physical.y);
+    const auto restored=t.inversePoint(physical);
+    EXPECT_DOUBLE_EQ(model.x,restored.x);EXPECT_DOUBLE_EQ(model.y,restored.y);
+    PathRecorder r;r.setTransform(t);r.moveTo(model);
+    EXPECT_DOUBLE_EQ(1,r.path().front().point.x);EXPECT_DOUBLE_EQ(-1,r.path().front().point.y);
+    // Unrepresentable products still fail atomically with the existing diagnostic.
+    Transform overflow;overflow.xx=overflow.yy=std::numeric_limits<double>::max();
+    r.setTransform(overflow);
+    EXPECT_EQ("invalid-transform",diagnostic([&]{r.lineTo({2,2});}));
+    ASSERT_EQ(1u,r.path().size());r.resetTransform();r.lineTo({2,2});r.stroke();
+    ASSERT_EQ(1u,r.commands().size());EXPECT_EQ(2u,r.commands().front().path.size());
+}
+
 namespace {
 // Independent Bernstein evaluation in long double, not the subdivision routine.
 Point evaluate(const std::vector<Point>& p, long double t) {
@@ -1551,4 +1586,73 @@ TEST(CpuFillTest, RoundoffCanonicalizationCannotEraseARealThinContourOrTouchingC
     PathRecorder r;r.circle({0,0},4);r.circle({8,0},4);r.fill();
     EXPECT_THROW(out=prepareFill(r.commands()[0]),std::invalid_argument);EXPECT_TRUE(out.triangles.empty());
     EXPECT_DOUBLE_EQ(16,fillArea(prepareFill(fillPath({square(0,4)}))));
+}
+
+TEST(CpuFillTest, EllipsesUseLocalCurveCertificatesAndRetainAffineAreaAndMembership) {
+    constexpr double pi=3.14159265358979323846;
+    for (double ry:{1.,2.}) for (double reflection:{-1.,1.}) for (double start:{0.,100.}) {
+        Transform t;const double c=std::cos(.37),s=std::sin(.37);
+        t.xx=reflection*c;t.xy=-s;t.yx=reflection*s;t.yy=c;t.tx=17.125;t.ty=-8.375;
+        PathRecorder r;r.setTransform(t);r.ellipse({0,0},10,ry,start,start+2*pi);r.closePath();r.fill();
+        const auto command=r.commands()[0];const auto fill=prepareFill(command);
+        EXPECT_LE(fill.positionBound,.125);
+        // An inscribed convex approximation loses at most perimeter*distance;
+        // 2*pi*majorRadius bounds the analytic ellipse perimeter independently.
+        EXPECT_NEAR(pi*10*ry,fillArea(fill),2*pi*10*fill.positionBound);
+        for (unsigned i=0;i<64;++i) {
+            const double a=2*pi*(i+.31)/64;
+            EXPECT_TRUE(covers(fill,t.point({9*std::cos(a),.9*ry*std::sin(a)})));
+            EXPECT_FALSE(covers(fill,t.point({11*std::cos(a),1.1*ry*std::sin(a)})));
+        }
+        const auto flat=flatten(command);
+        for (const auto& path:flat.subpaths) EXPECT_EQ(path.points.size()-1,path.edges.size());
+    }
+}
+TEST(CpuFillTest, ScreenSizedCircleUsesBoundedSweepWorkAndPreservesLimits) {
+    constexpr double pi=3.14159265358979323846;
+    PathRecorder r;r.circle({.125,-.375},500);r.fill();const auto command=r.commands()[0];
+    const auto fill=prepareFill(command);
+    EXPECT_LT(fill.visited,4*MaxFrameElements);EXPECT_LE(fill.positionBound,.125);
+    EXPECT_NEAR(pi*500*500,fillArea(fill),2*pi*500*fill.positionBound);
+    for (unsigned i=0;i<64;++i) {
+        const double a=2*pi*(i+.23)/64;
+        EXPECT_TRUE(covers(fill,{.125+499.75*std::cos(a),-.375+499.75*std::sin(a)}));
+        EXPECT_FALSE(covers(fill,{.125+500.25*std::cos(a),-.375+500.25*std::sin(a)}));
+    }
+    FillLimits exact;exact.work=fill.visited;
+    EXPECT_EQ(fill.visited,prepareFill(command,FillRule::EvenOdd,exact).visited);
+    --exact.work;PreparedFill saved=fill;
+    EXPECT_EQ("fill-work-limit",diagnostic([&]{saved=prepareFill(command,FillRule::EvenOdd,exact);}));
+    EXPECT_EQ(fill.triangles.size(),saved.triangles.size());
+}
+TEST(CpuFillTest, AdjacentCurvesCannotHideCrossingsBehindSharedEndpoints) {
+    PathRecorder r;r.moveTo({0,0});r.quadraticTo({5,.05},{10,0});r.lineTo({0,.01});r.fill();
+    // Q(t)=(10t,.1t(1-t)) crosses B->D at t=.1: (1,.009),
+    // away from the common endpoint. Its coarse chord alone looks triangular.
+    PreparedFill saved;
+    EXPECT_EQ("unsupported-fill-topology",diagnostic([&]{saved=prepareFill(r.commands()[0]);}));
+    EXPECT_TRUE(saved.triangles.empty());
+    // This tiny cubic has two parameters t and1-t with t(1-t)=1/61
+    // at the same point. Its whole loop previously fitted inside one chord.
+    PathRecorder loop;loop.moveTo({0,0});loop.cubicTo({.001,.001},{-.001,.001},{.0001,0});
+    loop.lineTo({0,-1});loop.closePath();loop.fill();
+    EXPECT_THROW(saved=prepareFill(loop.commands()[0]),std::invalid_argument);EXPECT_TRUE(saved.triangles.empty());
+    PathRecorder valid;valid.moveTo({0,0});valid.quadraticTo({5,.05},{10,0});valid.lineTo({0,-.01});valid.fill();
+    EXPECT_FALSE(prepareFill(valid.commands()[0]).triangles.empty());
+    EXPECT_DOUBLE_EQ(16,fillArea(prepareFill(fillPath({square(0,4)}))));
+}
+TEST(CpuFillTest, CurveRefinementChargesDiscardedAttemptsWithinTheOriginalBatchBudget) {
+    PathRecorder r;r.moveTo({0,0});r.quadraticTo({5,.05},{10,0});r.lineTo({10,-.01});
+    r.quadraticTo({5,.04},{0,-.01});r.closePath();r.fill();const auto command=r.commands()[0];
+    const auto fill=prepareFill(command);
+    EXPECT_NEAR(.1,fillArea(fill),1e-11);EXPECT_LT(fill.positionBound,.005);
+    EXPECT_TRUE(covers(fill,{5,.02}));EXPECT_FALSE(covers(fill,{5,.005}));EXPECT_FALSE(covers(fill,{5,.035}));
+    FillLimits exact;exact.work=fill.visited;
+    EXPECT_EQ(fill.visited,prepareFill(command,FillRule::EvenOdd,exact).visited);
+    --exact.work;PreparedFill saved=fill;
+    EXPECT_EQ("fill-work-limit",diagnostic([&]{saved=prepareFill(command,FillRule::EvenOdd,exact);}));
+    EXPECT_EQ(fill.triangles.size(),saved.triangles.size());
+    FillLimits batch;batch.work=2*(fill.visited+1)-1;
+    EXPECT_EQ("fill-work-limit",diagnostic([&]{prepareFills({command,command},FillRule::EvenOdd,batch);}));
+    EXPECT_FALSE(prepareFill(command).triangles.empty());
 }

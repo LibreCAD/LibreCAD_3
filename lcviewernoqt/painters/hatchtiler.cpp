@@ -1,4 +1,5 @@
 #include "pathgeometry.h"
+#include "pathnumeric_p.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -10,33 +11,7 @@ constexpr double eps=std::numeric_limits<double>::epsilon();
 constexpr double infinity=std::numeric_limits<double>::infinity();
 void check(bool ok,const char* code) {if (!ok) throw std::invalid_argument(code);}
 double up(double x) {return std::nextafter(x,infinity);}
-// Fixed error-free expansion, using FMA product residuals. In particular,
-// (integer * fractional period - large camera origin) is NOT rounded before
-// cancellation. No extended precision, global cache or unbounded allocation.
-struct Sum {
-    std::array<double,64> a{};unsigned n=0;
-    void add(double x) {
-        check(std::isfinite(x),"precision-limit");unsigned m=0;
-        for (unsigned i=0;i<n;++i) {
-            const double v=a[i],s=x+v,b=s-x,r=(x-(s-b))+(v-b);
-            check(std::isfinite(s),"precision-limit");
-            if (r) {check(m<a.size(),"precision-limit");a[m++]=r;} x=s;
-        }
-        if (x || !m) {check(m<a.size(),"precision-limit");a[m++]=x;} n=m;
-    }
-    void product(double x,double y) {
-        const double p=x*y;check(std::isfinite(p) && (!x || !y || std::abs(p)>=std::numeric_limits<double>::min()),"precision-limit");
-        add(std::fma(x,y,-p));add(p);
-    }
-    Sum scaled(double x) const {Sum out;for (unsigned i=0;i<n;++i) out.product(a[i],x);return out;}
-    void append(const Sum& s) {for (unsigned i=0;i<s.n;++i) add(s.a[i]);}
-    double value() const {return n?a[n-1]:0;}
-    double error() const {
-        double e=std::numeric_limits<double>::denorm_min()*1048576;
-        for (unsigned i=0;i+1<n;++i) e=up(e+std::abs(a[i]));
-        return e;
-    }
-};
+using detail::Sum;
 bool identity(const Transform& t) {
     return t.xx==1 && t.xy==0 && t.yx==0 && t.yy==1 && t.tx==0 && t.ty==0 && t.origin.x==0 && t.origin.y==0;
 }
@@ -61,7 +36,7 @@ bool overlaps(const PreparedStroke& s,Point shift,const Box& mask,double error) 
 }
 struct Lattice {
     Transform root,rotation,linear;double w,h,linearError=0;
-    Lattice(const HatchTile& tile,double scale,double angle):root(tile.state.transform),w(tile.maximum.x-tile.minimum.x),h(tile.maximum.y-tile.minimum.y) {
+    Lattice(const HatchTile& tile,double scale,double angle):root(tile.state.transform),w(tile.period.x),h(tile.period.y) {
         const double c=std::cos(angle)*scale,s=std::sin(angle)*scale;
         rotation.xx=c;rotation.xy=-s;rotation.yx=s;rotation.yy=c;rotation.validate();
         auto coefficient=[&](double a,double b,double c0,double d) {Sum x;x.product(a,b);x.product(c0,d);linearError=up(linearError+x.error());return x.value();};
@@ -99,6 +74,7 @@ PreparedTiledHatch prepareTiledHatch(const PathCommand& boundary,const HatchTile
     tick(input);tick(tile.commands.size());out.mask=prepareFill(boundary,rule,{limits.geometry.vertices,limits.geometry.work-out.visited},nullptr,inputPositionBound);tick(out.mask.visited);
     if (tile.commands.empty()) {out.positionBound=out.mask.positionBound;return out;}
     check(std::isfinite(tile.minimum.x) && std::isfinite(tile.minimum.y) && std::isfinite(tile.maximum.x) && std::isfinite(tile.maximum.y),"invalid-hatch-tile");
+    check(tile.maximum.x>tile.minimum.x && tile.maximum.y>tile.minimum.y,"invalid-hatch-tile");
     Lattice lattice(tile,scale,angle);
     check(std::isfinite(lattice.w) && std::isfinite(lattice.h) && lattice.w>0 && lattice.h>0,"invalid-hatch-tile");
     const Point center={(out.mask.minimum.x+out.mask.maximum.x)/2,(out.mask.minimum.y+out.mask.maximum.y)/2};

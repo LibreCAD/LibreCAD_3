@@ -88,8 +88,9 @@ class SourceBuildTests(unittest.TestCase):
         root=inventory.REPO_ROOT
         source=(root/'unittest/lcviewernoqt/testregionrecorder.cpp').read_text()
         names=set(re.findall(r'TEST\(CpuRegionRecorderTest,\s*(\w+)\)',source))
-        self.assertEqual(17,len(names))
+        self.assertEqual(18,len(names))
         self.assertIn('EllipseAxesValidateBeforeAnyRegionBoundaryOrPreparedInkEscapes',names)
+        self.assertIn('AnalyticEndpointClosureIsPanInvariantButRealGapsStillReject',names)
         self.assertIn('lcviewernoqt/testregionrecorder.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
         production=(root/'lcviewernoqt/painters/hatchrecorder.cpp').read_text()
         for name in ('recordRegion','prepareRegionFill','prepareRegionHatch','ambiguous-region-loop','region-work-limit','input.positionBound'):
@@ -108,8 +109,11 @@ class SourceBuildTests(unittest.TestCase):
                      'GlobalCellsInstancesVerticesAndWorkCapsFailAtomicallyAndRecover'):
             self.assertIn(name,source)
         production=(root/'lcviewernoqt/painters/hatchtiler.cpp').read_text()
-        for api in ('prepareFill','prepareStroke','hatch-cell-limit','hatch-instance-limit','hatch-work-limit','std::fma'):
+        for api in ('prepareFill','prepareStroke','hatch-cell-limit','hatch-instance-limit','hatch-work-limit'):
             self.assertIn(api,production)
+        self.assertIn('#include "pathnumeric_p.h"',production)
+        self.assertIn('using detail::Sum;',production)
+        self.assertIn('std::fma',(root/'lcviewernoqt/painters/pathnumeric_p.h').read_text())
         for forbidden in ('#include <Q','#include <cairo','QRhi','glDraw','multiprecision','long double'):
             self.assertNotIn(forbidden,production)
 
@@ -145,7 +149,11 @@ class SourceBuildTests(unittest.TestCase):
         self.assertIn('painters/pathfill.cpp',(root/'lcviewernoqt/CMakeLists.txt').read_text())
         for name in ('WindingOrientationNestingAndDisconnectedRegions','TopologyCrossingTouchingAndRetracingRejectAtomically',
                      'CurvedCircleAndPolynomialBoundaryHaveIndependentAreaAndDistance',
-                     'WorkVertexStateAndBatchCapsPreserveOrderAndPriorOutput'):
+                     'WorkVertexStateAndBatchCapsPreserveOrderAndPriorOutput',
+                     'EllipsesUseLocalCurveCertificatesAndRetainAffineAreaAndMembership',
+                     'ScreenSizedCircleUsesBoundedSweepWorkAndPreservesLimits',
+                     'AdjacentCurvesCannotHideCrossingsBehindSharedEndpoints',
+                     'CurveRefinementChargesDiscardedAttemptsWithinTheOriginalBatchBudget'):
             self.assertIn('CpuFillTest.'+name,implemented)
         self.assertIn('CpuHatchTest.FiniteWidthCoverageUsesMaskNotCenterlineClipping',implemented)
         self.assertIn('CpuGradientTest.StableDuplicatesStraightAlphaPaddingAndOwnedSnapshot',implemented)
@@ -248,6 +256,15 @@ class SourceBuildTests(unittest.TestCase):
         cmake=(inventory.REPO_ROOT/'unittest/CMakeLists.txt').read_text()
         self.assertIn('lcviewernoqt/testpathrecorder.cpp',cmake.split('# Issue #412')[0])
         self.assertIn('build_contract::pinnedFixture',source)
+        self.assertIn('CpuTransformTest.AffineCancellationPreservesModelDetailBeforePreparation',implemented)
+
+    def test_provider_period_regression_is_an_owned_persistence_test(self):
+        source=(inventory.REPO_ROOT/'unittest/persistence/hatchcatalogtest.cpp').read_text()
+        names=set(re.findall(r'TEST\(CpuHatchCatalogTest,\s*(\w+)\)',source))
+        self.assertEqual(4,len(names))
+        self.assertIn('ClayKeepsItsOriginBasedCellDespiteTheEmptyInkMargin',names)
+        cmake=(inventory.REPO_ROOT/'unittest/CMakeLists.txt').read_text()
+        self.assertIn('persistence/hatchcatalogtest.cpp',cmake)
 
     def test_source_compiler_workers_use_available_cores_with_a_four_worker_cap(self):
         for count,wanted in ((None,'1'),(0,'1'),(1,'1'),(2,'2'),(3,'3'),(4,'4'),(64,'4')):
@@ -465,6 +482,7 @@ def library_graph(build,flags):
     for name in names:
         sources=[dict(path='lcviewernoqt/painters/opengl/createpainter.cpp' if name=='lcviewer_opengl' else name+'/fixture.cpp')]
         if name=='lcunittest' and flags['WITH_PYTHONSCRIPT']:sources+=[dict(path=p) for p in runner.PYTHON_TEST_SOURCES]
+        if name=='lcunittest' and flags['WITH_LEGACY_OPENGL_RENDERER']:sources+=[dict(path='unittest/lcviewernoqt/fontbooktest.cpp')]
         (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
         if flags.get('WITH_RENDERER_TESTS') and name in runner.SOURCE_PRIVATE_PCH:
             path=reply/(name+'.json');data=json.loads(path.read_text())
@@ -510,7 +528,7 @@ def library_graph(build,flags):
         packages+=['Python'];sdk=build.parent.parent.parent/'synthetic-sdk';sdk.mkdir(exist_ok=True)
         (sdk/'Python.h').write_text('not-real-Python-headers')
         (build/'python-runtime-inventory.txt').write_text('provider_implementation=CPython\nprovider_version=3.12.10\n'
-            'provider_soabi=synthetic-only\ntarget_pointer_bits=64\nexecutable='+sys.executable+'\nlink_library='+sys.executable+'\ninclude_dirs='+str(sdk)+'\n')
+            'provider_soabi=synthetic-only\nprovider_pointer_bits=64\nexecutable='+sys.executable+'\nlink_library='+sys.executable+'\ninclude_dirs='+str(sdk)+'\n')
     (build.parent/'trace.jsonl').write_text(json.dumps(dict(version={'major':1}))+'\n'+''.join(
         json.dumps(dict(cmd='find_package',args=[p]))+'\n' for p in packages))
 
@@ -1133,11 +1151,15 @@ class LibraryMatrixTests(unittest.TestCase):
             tree=Path(command[command.index('-B')+1])
             if getattr(self,'change_provider',False) and where.parent.name=='dual-python':
                 path=tree/'python-runtime-inventory.txt';path.write_text(path.read_text().replace('3.12.10','3.12.11'))
-        if where.parent.name.endswith('-python') and where.name in ('cpu-discovery','cpu-tests'):
-            ids=['S.A','S.B','PythonRuntime.IsolatedProviderIgnoresAmbientPaths','PythonRuntime.RuntimeConfigurationIsValidatedInFreshProcesses']
-            if getattr(self,'omit_python',False):ids=['S.A','S.B']
-            if getattr(self,'omit_probe',False):ids.pop()
-            if getattr(self,'lose_cpu',False):ids.remove('S.B')
+        if where.parent.name in runner.LIBRARY_PROFILES and where.name in ('cpu-discovery','cpu-tests'):
+            legacy,_,python=runner.LIBRARY_PROFILES[where.parent.name]
+            ids=['S.A','S.B']
+            if python and not getattr(self,'omit_python',False):
+                ids+=['PythonRuntime.IsolatedProviderIgnoresAmbientPaths','PythonRuntime.RuntimeConfigurationIsValidatedInFreshProcesses']
+                if getattr(self,'omit_probe',False):ids.pop()
+                if getattr(self,'lose_cpu',False):ids.remove('S.B')
+            if (legacy and not getattr(self,'omit_backend',False)) or getattr(self,'leak_backend',False):ids+=sorted(runner.LEGACY_TEST_IDS)
+            if getattr(self,'subset',False) and where.parent.name=='legacy':ids.remove('S.B')
             if getattr(self,'drift',False) and where.parent.name=='dual-python':ids+=['PythonExtra.OnlyOneMode']
             if where.name=='cpu-discovery':
                 listing=''.join(g+'.\n'+''.join('  '+i.split('.')[1]+'\n' for i in ids if i.startswith(g+'.')) for g in sorted({i.split('.')[0] for i in ids}))
@@ -1149,11 +1171,6 @@ class LibraryMatrixTests(unittest.TestCase):
                     suite=ET.SubElement(xml,'testsuite',name=group,tests=str(len(names)),failures='0',disabled='0',errors='0',skipped='0')
                     for name in names:ET.SubElement(suite,'testcase',name=name,classname=group,status='run',result='completed')
                 ET.ElementTree(xml).write(where/'tests.xml')
-        if where.name=='cpu-discovery' and getattr(self,'subset',False) and 'legacy' in where.parts:
-            (where/'stdout.log').write_bytes(b'S.\n  A\n')
-        if where.name=='cpu-tests' and getattr(self,'subset',False) and 'legacy' in where.parts:
-            tree=ET.parse(where/'tests.xml');tree.getroot().set('tests','1');suite=tree.find('testsuite')
-            suite.set('tests','1');suite.remove(suite.findall('testcase')[1]);tree.write(where/'tests.xml')
         return dict(synthetic_only=True)
 
     def execute(self):
@@ -1168,6 +1185,8 @@ class LibraryMatrixTests(unittest.TestCase):
         for r in record['library_matrix']:
             self.assertEqual(['S.A','S.B'],r['base_cpu_ids']);self.assertIs(r['phase_or_platform_accepted'],False)
             self.assertEqual(2 if r['options']['WITH_PYTHONSCRIPT'] else 0,len(r['python_ids']))
+            self.assertEqual(sorted(runner.LEGACY_TEST_IDS) if r['options']['WITH_LEGACY_OPENGL_RENDERER'] else [],r['backend_ids'])
+            self.assertEqual(set(r['base_cpu_ids'])|set(r['python_ids'])|set(r['backend_ids']),set(r['cpu_ids']))
             self.assertIs(r['options']['WITH_RENDERER_TESTS'],False)
             self.assertEqual(1200,r['profile_budget_seconds']);self.assertEqual(self.args.timeout,r['command_timeout_seconds'])
         configure=[c for c,e in self.commands if '-S' in c]
@@ -1255,9 +1274,35 @@ class LibraryMatrixTests(unittest.TestCase):
         self.json_edit(target,lambda v:v['sources'].pop())
         with self.assertRaisesRegex(ValueError,'test-source membership'):runner.library_profile_graph(build,flags)
         target.write_text(original);path=build/'python-runtime-inventory.txt';raw=path.read_text()
-        for changed in (raw+'executable='+sys.executable+'\n',raw.replace('CPython','PyPy'),raw.replace('target_pointer_bits=64','target_pointer_bits=32')):
+        for changed in (raw+'executable='+sys.executable+'\n',raw.replace('CPython','PyPy'),raw.replace('provider_pointer_bits=64','provider_pointer_bits=32'),
+                        raw.replace('provider_pointer_bits=64','target_pointer_bits=64')):
             path.write_text(changed)
             with self.assertRaises(ValueError):runner.library_profile_graph(build,flags)
+
+    def test_python_inventory_uses_the_real_cmake_producer_schema(self):
+        flags=dict(self.flags,WITH_PYTHONSCRIPT=True);build=self.root/'producer-python/build';library_graph(build,flags)
+        source=(inventory.REPO_ROOT/'lcadpythonscript/CMakeLists.txt').read_text()
+        # Execute the producer's own bounded identity query rather than inventing
+        # an ABI field in the fixture. Only paths/headers remain synthetic here.
+        query=re.search(r'"(import platform,struct,sys,sysconfig;[^"\n]+)"',source)
+        self.assertIsNotNone(query)
+        actual=subprocess.run([sys.executable,'-I','-S','-c',query[1]],capture_output=True,text=True,check=True,timeout=10).stdout
+        path=build/'python-runtime-inventory.txt';raw=path.read_text()
+        path.write_text(''.join(line+'\n' for line in raw.splitlines() if not line.startswith('provider_'))+actual)
+        selected=runner.library_profile_graph(build,flags)['python_provider']
+        self.assertEqual('64',selected['provider_pointer_bits']);self.assertNotIn('target_pointer_bits',selected)
+
+    def test_backend_test_inventory_is_exact_and_bound_to_its_real_source(self):
+        source=(inventory.REPO_ROOT/'unittest/lcviewernoqt/fontbooktest.cpp').read_text()
+        self.assertEqual(runner.LEGACY_TEST_IDS,{suite+'.'+name for suite,name in re.findall(r'^TEST\((\w+),\s*(\w+)\)',source,re.M)})
+        for flag in ('omit_backend','leak_backend'):
+            setattr(self,flag,True)
+            with self.subTest(flag=flag),self.assertRaisesRegex(ValueError,'legacy tests'):self.execute()
+            setattr(self,flag,False)
+        flags=dict(self.flags,WITH_LEGACY_OPENGL_RENDERER=True);build=self.root/'legacy-membership/build';library_graph(build,flags)
+        path=build/'.cmake/api/v1/reply/lcunittest.json'
+        self.json_edit(path,lambda target:target['sources'].pop())
+        with self.assertRaisesRegex(ValueError,'Legacy test-source membership'):runner.library_profile_graph(build,flags)
 
     def test_windows_python_empty_soabi_requires_exact_extension_abi(self):
         flags=dict(self.flags,WITH_PYTHONSCRIPT=True);build=self.root/'windows-python/build';library_graph(build,flags)
