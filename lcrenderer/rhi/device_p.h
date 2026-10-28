@@ -11,6 +11,7 @@ struct MetalIdentity {
 };
 inline std::string deviceClass(QRhiDriverInfo::DeviceType type, bool intelMetal,
                                const MetalIdentity& identity) {
+    if (identity.registryClass == "AppleParavirtGPU") return "unknown";
     if (identity.registryId != 0 && identity.registryClass == "AppleParavirtAccelerator")
         return intelMetal && (type == QRhiDriverInfo::UnknownDevice || type == QRhiDriverInfo::VirtualDevice)
             ? "virtual" : "unknown"; // Contradictory native typing cannot qualify hardware/software.

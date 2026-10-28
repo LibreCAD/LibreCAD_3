@@ -837,10 +837,13 @@ def build_library_matrix(args,selected,sdk,parent,tests=True,inputs=None):
             WITH_UNITTESTS=tests,WITH_RENDERER_TESTS=False,WITH_PERSISTENCE=False,WITH_LIBOPENCAD=False,WITH_DOCUMENTATION=False,
             WITH_COVERAGE=False,TINYSPLINE_BUILD_EXAMPLES=False)
         deadline=time.monotonic()+1200;commands=[]
+        # Stable metadata for this immutable profile avoids rebuilding/relinking
+        # the kernel just because a later staged command has a newer clock.
+        profile_env=dict(env,SOURCE_DATE_EPOCH=str(int(time.time())))
         def step(command,name):
             where=directory/name;where.mkdir();remaining=deadline-time.monotonic()
             if remaining<=0:raise ValueError('Library build deadline expired; logs in '+str(directory))
-            commands.append(run_command(command,where,min(args.timeout,remaining),env))
+            commands.append(run_command(command,where,min(args.timeout,remaining),profile_env))
         command=[str(Path(args.cmake or shutil.which('cmake')).resolve(strict=True)),'-S',str(inventory.REPO_ROOT),'-B',str(build),
             '-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CONFIGURATION_TYPES=Release','-DCMAKE_INSTALL_PREFIX='+str(directory/'stage'),
             '-DLC_RENDERER_SOURCE_PCH:BOOL=ON',
@@ -1109,7 +1112,8 @@ def build_host_source(args):
     deadline=time.monotonic()+1200;commands=[]
     env={k:v for k,v in os.environ.items() if not k.startswith('GTEST_') and k not in
          ('DISPLAY','XAUTHORITY','WAYLAND_DISPLAY','WAYLAND_SOCKET','PYTHONHOME','PYTHONPATH','DESTDIR','LC_RENDERER_DLL_REPORT')}
-    env.update(QT_QPA_PLATFORM='offscreen',LIBRECAD_SETTINGS_DIR=str(directory/'settings'))
+    env.update(QT_QPA_PLATFORM='offscreen',LIBRECAD_SETTINGS_DIR=str(directory/'settings'),
+               SOURCE_DATE_EPOCH=str(int(time.time())))
     def step(command,label,expected=0,environment=None):
         where=directory/label;where.mkdir();remaining=deadline-time.monotonic()
         if remaining<=0:raise ValueError('Host profile deadline expired; logs in '+str(directory))
@@ -1132,8 +1136,9 @@ def build_host_source(args):
     if python and 'Python_EXECUTABLE' in sdk and Path(sdk['Python_EXECUTABLE']).resolve()!=Path(observed['python_provider']['executable']).resolve():
         raise ValueError('Host selected a different Python SDK')
     prebuild_cold_kernel(cmake,build,step)
-    libraries=['lckernel','lcviewernoqt','lcviewer_opengl','lcscripting','lcluascript']
+    libraries=['lckernel','lcviewernoqt','lcviewer_opengl','lcscripting']
     if flags['WITH_PERSISTENCE']:libraries+=['persistence']
+    libraries+=['lcluascript'] # Its persistence dependency has its own command cap.
     if python:libraries+=['lcpythonscript']
     if flags['WITH_RHI_RENDERER']:libraries+=['lcrenderer_rhi']
     # Stage actual dependency targets explicitly; each command keeps its cap and
@@ -1286,6 +1291,7 @@ def build_rhi_source(args):
     query=build/'.cmake/api/v1/query/client-renderer-source';query.mkdir(parents=True);(query/'codemodel-v2').touch()
     env={k:v for k,v in os.environ.items() if not k.startswith('GTEST_') and k not in
          ('DISPLAY','XAUTHORITY','WAYLAND_DISPLAY','WAYLAND_SOCKET')}
+    env['SOURCE_DATE_EPOCH']=str(int(time.time()))
     deadline=time.monotonic()+args.timeout;commands=[]
     def step(command,name):
         where=directory/name;where.mkdir()
@@ -1402,6 +1408,8 @@ def rhi_results(args, directory, selection):
                     'rhi_arch':expected_arch,'rhi_build_arch':expected_arch,'rhi_case':row['id']}
         if any(props.get(k) != v for k,v in expected.items()) or not props.get('rhi_device','').strip():
             raise ValueError('RHI API/device/QPA/architecture/input identity mismatch')
+        if props.get('rhi_metal_registry_class') in ('AppleParavirtAccelerator','AppleParavirtGPU') and config['device'] != 'virtual':
+            raise ValueError('Native virtual Metal cannot qualify hardware/software')
         if config['device'] == 'virtual':
             registry = props.get('rhi_metal_registry_id', '')
             if (config['platform'] != 'MAC-X64' or config['backend'] != 'metal' or

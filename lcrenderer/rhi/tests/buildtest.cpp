@@ -198,6 +198,10 @@ protected:
         ASSERT_EQ(nativeApi, info.api);
         ASSERT_EQ(expectedDevice, info.deviceClass) << "Metal/Vulkan adapter: " << info.name;
         ASSERT_FALSE(info.name.empty());
+#ifdef Q_OS_MACOS
+        ASSERT_FALSE(info.metalRegistryId.empty());
+        ASSERT_FALSE(info.metalRegistryClass.empty());
+#endif
         ASSERT_EQ(64u, info.shaderHash.size());
         RecordProperty("rhi_api", apiName); RecordProperty("rhi_device", info.name);
         RecordProperty("rhi_device_class", info.deviceClass); RecordProperty("rhi_qt", info.qtVersion);
@@ -356,6 +360,10 @@ TEST(RenderFactoryTest, InvalidPolicyBeforeDeviceCreation) {
     using D = QRhiDriverInfo;
     using lc::rhi::detail::deviceClass;
     const lc::rhi::detail::MetalIdentity verified{1, "AppleParavirtAccelerator"};
+    for (const auto type : {D::UnknownDevice, D::VirtualDevice, D::IntegratedDevice, D::DiscreteDevice,
+                           D::ExternalDevice, D::CpuDevice})
+        for (bool intel : {false, true})
+            EXPECT_EQ("unknown", deviceClass(type, intel, {1, "AppleParavirtGPU"}));
     for (const auto type : {D::UnknownDevice, D::VirtualDevice}) {
         EXPECT_EQ("virtual", deviceClass(type, true, verified));
         EXPECT_EQ("unknown", deviceClass(type, false, verified));

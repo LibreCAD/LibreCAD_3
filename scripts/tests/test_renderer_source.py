@@ -127,6 +127,33 @@ class KernelObjectTests(unittest.TestCase):
 
 
 class SourceBuildTests(unittest.TestCase):
+    def test_build_metadata_stays_stable_per_profile_but_real_inputs_still_refresh(self):
+        with tempfile.TemporaryDirectory(prefix='renderer-build-metadata-') as temporary:
+            root=Path(temporary);kernel=root/'lckernel';kernel.mkdir()
+            shutil.copyfile(inventory.REPO_ROOT/'lckernel/build_constants.cpp.in',kernel/'build_constants.cpp.in')
+            def run(argv,env=None):
+                result=subprocess.run(argv,cwd=root,env=env,capture_output=True,text=True,timeout=30)
+                self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+                return result.stdout.strip()
+            run(['git','init','-q'])
+            commit=['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                    '-c','commit.gpgsign=false','commit','--allow-empty','-qm']
+            run([*commit,'first'])
+            output=root/'build_constants.cpp'
+            command=['cmake','-DDIR='+str(kernel),'-DOUTPUT_FILE='+str(output),'-DLIBDXFRW_BUILD_VERSION=fixture',
+                     '-P',str(inventory.REPO_ROOT/'lckernel/cmake/SetBuildInfo.cmake')]
+            env=dict(os.environ,SOURCE_DATE_EPOCH='1700000000')
+            run(command,env);first=output.read_bytes();os.utime(output,ns=(1_000_000_000,1_000_000_000))
+            run(command,env)
+            self.assertEqual(first,output.read_bytes());self.assertEqual(1_000_000_000,output.stat().st_mtime_ns)
+            env['SOURCE_DATE_EPOCH']='1700000001';run(command,env);second=output.read_bytes()
+            self.assertNotEqual(first,second);self.assertNotEqual(1_000_000_000,output.stat().st_mtime_ns)
+            os.utime(output,ns=(1_000_000_000,1_000_000_000))
+            run([*commit,'second']);revision=run(['git','rev-parse','--short','HEAD'])
+            run(command,env)
+            self.assertNotEqual(second,output.read_bytes());self.assertIn(('commit '+revision).encode(),output.read_bytes())
+            self.assertNotEqual(1_000_000_000,output.stat().st_mtime_ns)
+
     def test_r2_3_actual_regions_share_curve_recording_and_propagate_join_certificates(self):
         root=inventory.REPO_ROOT
         source=(root/'unittest/lcviewernoqt/testregionrecorder.cpp').read_text()
@@ -356,11 +383,13 @@ class SourceBuildTests(unittest.TestCase):
             return runner.build_rhi_source(self.args)
 
     def test_fresh_build_keeps_every_cpu_id_and_no_dependency_manager(self):
-        with patch.dict(os.environ,GTEST_FILTER='S.A'):directory=self.execute()
+        with patch.dict(os.environ,GTEST_FILTER='S.A',SOURCE_DATE_EPOCH='poison'), \
+                patch.object(runner.time,'time',return_value=1700000000.9):directory=self.execute()
         record=json.loads((directory/'source-build.json').read_text())
         self.assertIs(record['phase_or_platform_accepted'],False)
         self.assertEqual(['S.A','S.B'],record['cpu_executed_ids']);self.assertEqual(4,len(self.commands))
-        for command,env in self.commands:self.assertNotIn('GTEST_FILTER',env)
+        for command,env in self.commands:
+            self.assertNotIn('GTEST_FILTER',env);self.assertEqual('1700000000',env['SOURCE_DATE_EPOCH'])
         configure=self.commands[0][0];build=self.commands[1][0]
         for flag in ('WITH_QT_UI','WITH_PYTHONSCRIPT','WITH_LEGACY_OPENGL_RENDERER','WITH_PERSISTENCE'):
             self.assertIn('-D'+flag+':BOOL=OFF',configure)
@@ -706,9 +735,39 @@ class InstalledCliTests(unittest.TestCase):
         root=(inventory.REPO_ROOT/'CMakeLists.txt').read_text()
         cli=(inventory.REPO_ROOT/'luacmdinterface/CMakeLists.txt').read_text()
         self.assertIn('install(TARGETS luacmdinterface\n    ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}',cli)
-        self.assertEqual(2,root.count('foreach(_librecad_host librecad luacmdinterface)'))
-        for path in ('@executable_path/../${CMAKE_INSTALL_LIBDIR}','$ORIGIN/../${CMAKE_INSTALL_LIBDIR}'):
-            self.assertIn('INSTALL_RPATH "'+path+'"',root)
+        block=root.split('# library-to-library dependencies from each library\'s own directory.\n',1)[1].split('\n# On macOS, Python\'s embed target',1)[0]
+        fixture=self.root/'rpath-fixture';fixture.mkdir()
+        (fixture/'CMakeLists.txt').write_text('''cmake_minimum_required(VERSION 3.28)
+project(RpathFixture NONE)
+set(APPLE "${FIXTURE_APPLE}")
+set(UNIX "${FIXTURE_UNIX}")
+set(CMAKE_INSTALL_LIBDIR chosen-lib)
+foreach(name IN LISTS FIXTURE_TARGETS)
+    add_library(${name} INTERFACE)
+    set_target_properties(${name} PROPERTIES INSTALL_RPATH untouched)
+endforeach()
+'''+block+'''
+file(WRITE "${CMAKE_BINARY_DIR}/rpaths.txt" "")
+foreach(name IN LISTS FIXTURE_TARGETS)
+    get_target_property(value ${name} INSTALL_RPATH)
+    file(APPEND "${CMAKE_BINARY_DIR}/rpaths.txt" "${name}=${value}\\n")
+endforeach()
+''')
+        shared=('lckernel','lcscripting','persistence','lcluascript','lcpythonscript','lcviewernoqt','lcviewer_opengl','lcui')
+        hosts=('librecad','luacmdinterface')
+        for platform,apple,unix,library,host in (
+                ('macos','ON','ON','@loader_path','@executable_path/../chosen-lib'),
+                ('linux','OFF','ON','$ORIGIN','$ORIGIN/../chosen-lib'),
+                ('windows','OFF','OFF','untouched','untouched')):
+            for index,selected in enumerate((shared+hosts,('lckernel','luacmdinterface'),())):
+                with self.subTest(platform=platform,targets=selected):
+                    names=(*selected,'unowned');build=fixture/(platform+str(index))
+                    result=subprocess.run(['cmake','-S',str(fixture),'-B',str(build),'-DFIXTURE_APPLE='+apple,
+                        '-DFIXTURE_UNIX='+unix,'-DFIXTURE_TARGETS='+';'.join(names)],capture_output=True,text=True,timeout=30)
+                    self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+                    actual=dict(line.split('=',1) for line in (build/'rpaths.txt').read_text().splitlines())
+                    self.assertEqual({name:library if name in shared else host if name in hosts else 'untouched'
+                                      for name in names},actual)
 
     def test_windows_runtime_artifacts_and_actual_module_report_are_bound(self):
         (self.build/'CMakeCache.txt').write_text('CMAKE_INSTALL_BINDIR:PATH=bin\n')
@@ -816,7 +875,8 @@ class HostSourceTests(unittest.TestCase):
             for tests in ('ON','OFF'):
                 with self.subTest(profile=profile,tests=tests):
                     self.args.host_profile=profile;self.args.host_tests=tests;self.commands=[]
-                    with patch.dict(os.environ,GTEST_FILTER='Wrong.Suite',DISPLAY=':999',PYTHONPATH='/poison'):
+                    with patch.dict(os.environ,GTEST_FILTER='Wrong.Suite',DISPLAY=':999',PYTHONPATH='/poison',SOURCE_DATE_EPOCH='poison'), \
+                            patch.object(runner.time,'time',return_value=1700000000.9):
                         directory=self.execute()
                     record=json.loads((directory/'host-build.json').read_text())
                     self.assertFalse(record['phase_or_platform_accepted']);self.assertFalse(record['runtime_graphics_executed'])
@@ -837,6 +897,7 @@ class HostSourceTests(unittest.TestCase):
                     self.assertEqual(tests=='OFF','-DCMAKE_DISABLE_FIND_PACKAGE_GTest=ON' in configure)
                     for command,env in self.commands:
                         for name in ('GTEST_FILTER','DISPLAY','PYTHONPATH'):self.assertNotIn(name,env)
+                        self.assertEqual('1700000000',env['SOURCE_DATE_EPOCH'])
                     self.assertEqual('offscreen',self.commands[-1][1]['QT_QPA_PLATFORM'])
                     libraries=[c for c,e in self.commands if '--target' in c and c[c.index('--target')+1]=='lcluascript']
                     self.assertEqual(1,len(libraries))
@@ -972,17 +1033,23 @@ class HostSourceTests(unittest.TestCase):
                 runner.host_test_selection(json.dumps(data).encode(),ids,inputs)
 
     def test_independent_host_kinds_and_explicit_persistence_off_are_not_fallbacks(self):
+        lua=(inventory.REPO_ROOT/'lcadluascript/CMakeLists.txt').read_text()
+        self.assertRegex(lua,r'if\(WITH_PERSISTENCE\)\s+target_link_libraries\(lcluascript persistence\)\s+endif\(\)')
         for kind,no_persistence in (('ui',False),('cli',False),('cli',True)):
             for profile in runner.HOST_PROFILES:
                 for tests in ('ON','OFF'):
                     with self.subTest(kind=kind,persistence=not no_persistence,profile=profile,tests=tests):
                         self.args.host_kind=kind;self.args.host_no_persistence=no_persistence
                         self.args.host_profile=profile;self.args.host_tests=tests;self.args.host_cairo=False
+                        self.commands=[]
                         directory=self.execute();record=json.loads((directory/'host-build.json').read_text())
                         self.assertEqual(kind,record['host_kind']);self.assertEqual(kind=='cli',record['cli_help_executed'])
                         names=record['artifacts_sha256']
                         self.assertEqual(kind=='ui','librecad' in names);self.assertEqual(kind=='cli','luacmdinterface' in names)
                         self.assertEqual(not no_persistence,'persistence' in names)
+                        stages=[c[c.index('--target')+1] for c,e in self.commands if '--target' in c]
+                        if not no_persistence:self.assertLess(stages.index('persistence'),stages.index('lcluascript'))
+                        else:self.assertNotIn('persistence',stages)
                         self.assertEqual((7 if 'python' in profile else 6) if kind=='ui' else 0,record['ui_objects']['ui_compilations'])
                         self.assertEqual(['UI.Unexecuted'] if kind=='ui' and tests=='ON' else [],record['unexecuted_widget_ids'])
         self.args.host_kind='ui';self.args.host_no_persistence=True
@@ -1106,6 +1173,16 @@ class LibraryMatrixTests(unittest.TestCase):
 
     def json_edit(self,path,change):
         value=json.loads(path.read_text());change(value);path.write_text(json.dumps(value))
+
+    def test_each_library_profile_owns_one_build_epoch_across_all_stages(self):
+        epochs=[1700000000+i for i in range(len(runner.LIBRARY_PROFILES))]
+        with patch.dict(os.environ,SOURCE_DATE_EPOCH='poison'),patch.object(runner.time,'time',side_effect=epochs), \
+                patch.object(runner,'run_command',side_effect=self.command):
+            records=runner.build_library_matrix(self.args,self.selected,{},self.root/'epochs')
+        for record,epoch in zip(records,epochs):
+            commands=[(c,e) for c,e in self.commands if any('/library-matrix/'+record['profile']+'/' in str(v).replace('\\','/') for v in c)]
+            self.assertGreater(len(commands),2)
+            self.assertEqual({str(epoch)},{e['SOURCE_DATE_EPOCH'] for c,e in commands})
 
     def test_python_copy_target_is_required_even_in_gui_less_profiles(self):
         build=self.root/'python-utility/build';flags=dict(self.flags,WITH_PYTHONSCRIPT=True)
@@ -1753,6 +1830,45 @@ class SourceWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.text=(inventory.REPO_ROOT/'.github/workflows/renderer-source.yml').read_text()
 
+    def test_ci_source_guard_keeps_owned_sdk_ignored_but_rejects_real_source_dirt(self):
+        marker='- name: Require clean source before compilation'
+        block=self.text.split(marker,1)[1].split('\n      - name:',1)[0]
+        code=textwrap.dedent(block.split('run: |\n',1)[1])
+        self.assertLess(self.text.index(marker),self.text.index('- name: Run selected library or CLI source contracts'))
+        sdk_block=self.text.split('- name: Stage immutable Vulkan headers without compiling a dependency',1)[1].split('\n      - name:',1)[0]
+        sdk=re.search(r'(?m)^\s+path: (\S+)$',sdk_block).group(1)
+        self.assertEqual('build-r1/vulkan-headers',sdk)
+        self.assertEqual(3,self.text.count("Path('"+sdk+"/include')"))
+        with tempfile.TemporaryDirectory(prefix='renderer-ci-clean-source-') as temporary:
+            root=Path(temporary);ignore=(inventory.REPO_ROOT/'.gitignore').read_bytes()
+            (root/'.gitignore').write_bytes(ignore);(root/'source.cpp').write_bytes(b'original source\n')
+            def git(*args,cwd=root):
+                result=subprocess.run(['git',*args],cwd=cwd,capture_output=True,text=True,timeout=30)
+                self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+            git('init','-q');git('add','.gitignore','source.cpp')
+            git('-c','user.name=Fixture','-c','user.email=fixture@example.invalid','-c','commit.gpgsign=false','commit','-qm','fixture')
+            header=root/sdk/'include/vulkan/vulkan.h';header.parent.mkdir(parents=True);header.write_bytes(b'owned SDK\n')
+            git('init','-q',cwd=root/sdk)
+            receipt=root/'build-r1/source-status-before-build.log'
+            def guard():
+                return subprocess.run([sys.executable,'-B','-c',code],cwd=root,capture_output=True,text=True,timeout=30)
+            clean=guard();self.assertEqual(0,clean.returncode,clean.stdout+clean.stderr)
+            self.assertEqual(b'',receipt.read_bytes())
+            for name in ('.r1-vulkan-headers/include/vulkan/vulkan.h','untracked/source.cpp','CMakeUserPresets.json','source.cpp'):
+                with self.subTest(path=name):
+                    path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'user bytes\n')
+                    if name.startswith('.r1-vulkan-headers/'):git('init','-q',cwd=root/'.r1-vulkan-headers')
+                    dirty=guard();self.assertNotEqual(0,dirty.returncode)
+                    self.assertIn(('.r1-vulkan-headers/' if name.startswith('.r1-vulkan-headers/') else name).encode(),receipt.read_bytes())
+                    self.assertEqual(b'user bytes\n',path.read_bytes())
+                    if name=='source.cpp':path.write_bytes(b'original source\n')
+                    elif name.startswith('.r1-vulkan-headers/'):shutil.rmtree(root/'.r1-vulkan-headers')
+                    else:path.unlink()
+            self.assertEqual(ignore,(root/'.gitignore').read_bytes())
+            self.assertEqual(b'owned SDK\n',header.read_bytes())
+            self.assertIn('build-r1/source-status-before-build.log',self.retained_files(self.text,
+                'Retain selected source/provider/build/test/process evidence on failure too',root))
+
     def retained_files(self,text,step,root):
         block=text.split('- name: '+step,1)[1].split('\n      - ',1)[0]
         self.assertIn('uses: actions/upload-artifact@',block)
@@ -2030,6 +2146,8 @@ class SourceWorkflowTests(unittest.TestCase):
         for i in graphs:
             before,check,install,after=commands[i:i+4]
             self.assertIn('--build=never',before);self.assertIn('--build=never',install)
+            for command in (before,install):
+                self.assertIn(['-c','tools.cmake.cmaketoolchain:user_presets='],[command[j:j+2] for j in range(len(command)-1)])
             self.assertEqual(['conan','install'],install[:2])
             lock=before[before.index('--lockfile-out')+1]
             self.assertEqual(lock,install[install.index('--lockfile')+1])

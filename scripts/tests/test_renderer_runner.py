@@ -116,6 +116,15 @@ class RhiRunnerTests(unittest.TestCase):
         self.write_results()
         with self.assertRaisesRegex(ValueError,'Inconsistent selected native'):self.result()
 
+    def test_native_virtual_classes_cannot_masquerade_as_hardware(self):
+        for name in ('AppleParavirtAccelerator','AppleParavirtGPU'):
+            with self.subTest(registry_class=name):
+                for props in self.props.values():
+                    if 'rhi_case' in props:
+                        props.update(rhi_qrhi_device_type='1',rhi_metal_registry_id='4294967706',rhi_metal_registry_class=name)
+                self.write_results()
+                with self.assertRaisesRegex(ValueError,'Native virtual Metal cannot qualify'):self.result()
+
     def change_xml(self, change):
         path=self.root/'tests.xml'; tree=ET.parse(path); change(tree.getroot()); tree.write(path,encoding='utf-8')
 

@@ -49,7 +49,7 @@ detail::MetalIdentity selectedMetalIdentity(QRhi* device) {
     std::uint64_t actualId = 0;
     io_name_t name = {};
     const bool verified = IORegistryEntryGetRegistryEntryID(entry, &actualId) == KERN_SUCCESS && actualId == registryId &&
-            IOObjectGetClass(entry, name) == KERN_SUCCESS && IOObjectConformsTo(entry, "AppleParavirtAccelerator");
+            IOObjectGetClass(entry, name) == KERN_SUCCESS;
     IOObjectRelease(entry); // Release the native reference before potentially throwing string allocation.
     if (verified) {
         result.registryId = registryId;

@@ -167,7 +167,7 @@ jobs:
         with:
           repository: KhronosGroup/Vulkan-Headers
           ref: b5c8f996196ba4aa6d8f97e52b5d3b6e70f7e4e2 # v1.4.341 peeled commit
-          path: .r1-vulkan-headers
+          path: build-r1/vulkan-headers
           persist-credentials: false
       - name: Restore Windows core binaries and exact per-case toolchains
         if: runner.os == 'Windows'
@@ -190,7 +190,9 @@ jobs:
           runtimes=set()
           for name in names:
               options=case_options(name)
+              # CI passes the toolchain explicitly; keep IDE presets out of source.
               common = ['.', '--build=never','-s:h','arch=x86_64','-s:h','compiler=msvc',
+                         '-c','tools.cmake.cmaketoolchain:user_presets=',
                          '-s:h','compiler.version=194','-s:h','compiler.cppstd=17','-s:h','compiler.runtime=dynamic',
                          '-s:h','compiler.runtime_type=Release','-s:h','build_type=Release',
                          '-o','*:shared=False',
@@ -239,6 +241,14 @@ jobs:
           if not manifest.is_file():raise ValueError('Missing restored ICD')
           with open(os.environ['GITHUB_ENV'],'a') as out:
               out.write('VK_DRIVER_FILES='+str(manifest)+'\nR1_VULKAN_ROOT='+str(root/'inputs')+'\n')
+      - name: Require clean source before compilation
+        run: |
+          import subprocess
+          from pathlib import Path
+          status=subprocess.run(['git','status','--porcelain=v1','--untracked-files=all','--ignore-submodules=none'],
+                                check=True,stdout=subprocess.PIPE).stdout
+          Path('build-r1/source-status-before-build.log').write_bytes(status)
+          if status:raise SystemExit('Dirty source checkout; see build-r1/source-status-before-build.log')
       - name: Run selected library or CLI source contracts
         run: |
           import json, os, subprocess, sys
@@ -275,7 +285,7 @@ jobs:
                   qt_cmake=qt/('lib/'+os.environ.get('R1_TRIPLET','')+'/cmake/Qt6' if platform.startswith('LINUX-') else 'lib/cmake/Qt6')
                   command+=['--cmake-option','Qt6_DIR='+str(qt_cmake)]
               if platform=='WIN-X64':
-                  if profile.startswith('dual'):command+=['--cmake-option','LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('.r1-vulkan-headers/include').resolve())]
+                  if profile.startswith('dual'):command+=['--cmake-option','LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('build-r1/vulkan-headers/include').resolve())]
                   os.environ['PATH']=str(Path(os.environ['QT_ROOT_DIR'])/'bin')+os.pathsep+os.environ['PATH']
               subprocess.run(command,check=True)
               sys.exit(0) # Explicit CLI/OFF-path proof, not a UI or provider fallback.
@@ -298,7 +308,7 @@ jobs:
               for option in options:command+=['--cmake-option',option]
               if platform=='WIN-X64':
                   command+=['--generator','Visual Studio 17 2022','--cmake-option',
-                            'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('.r1-vulkan-headers/include').resolve())]
+                            'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('build-r1/vulkan-headers/include').resolve())]
                   for profile in ('cpu','legacy','dual','rhi','cpu-python','legacy-python','dual-python','rhi-python'):
                       graph='empty' if profile=='cpu' else profile+'-no-tests'
                       command+=['--case-cmake-option',profile+':CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',graph,'conan_toolchain.cmake').resolve())]
@@ -307,7 +317,7 @@ jobs:
           subprocess.run(cpu,check=True)
           if platform=='WIN-X64':
               options+=['CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan/rhi/conan_toolchain.cmake').resolve()),
-                        'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('.r1-vulkan-headers/include').resolve())]
+                        'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('build-r1/vulkan-headers/include').resolve())]
               os.environ['PATH']=os.environ['R1_VULKAN_ROOT']+os.pathsep+str(qt/'bin')+os.pathsep+os.environ['PATH']
           api='metal' if platform.startswith('MAC-') else 'vulkan'
           device='hardware' if api=='metal' else 'software'

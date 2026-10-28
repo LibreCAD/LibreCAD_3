@@ -491,33 +491,25 @@ endif()
 # relocatable by resolving app dependencies from its sibling lib directory and
 # library-to-library dependencies from each library's own directory.
 if(APPLE)
-    foreach(_librecad_shared_target
-            lckernel lcscripting persistence lcluascript lcpythonscript
-            lcviewernoqt lcviewer_opengl lcui)
-        if(TARGET ${_librecad_shared_target})
-            set_target_properties(${_librecad_shared_target} PROPERTIES
-                INSTALL_RPATH "@loader_path")
-        endif()
-    endforeach()
-    foreach(_librecad_host librecad luacmdinterface)
-        if(TARGET ${_librecad_host})
-            set_target_properties(${_librecad_host} PROPERTIES
-                INSTALL_RPATH "@executable_path/../${CMAKE_INSTALL_LIBDIR}")
-        endif()
-    endforeach()
+    set(_lc_shared_install_rpath "@loader_path")
+    set(_lc_host_install_rpath "@executable_path/../${CMAKE_INSTALL_LIBDIR}")
 elseif(UNIX)
+    set(_lc_shared_install_rpath "$ORIGIN")
+    set(_lc_host_install_rpath "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+endif()
+if(APPLE OR UNIX)
     foreach(_librecad_shared_target
             lckernel lcscripting persistence lcluascript lcpythonscript
             lcviewernoqt lcviewer_opengl lcui)
         if(TARGET ${_librecad_shared_target})
             set_target_properties(${_librecad_shared_target} PROPERTIES
-                INSTALL_RPATH "$ORIGIN")
+                INSTALL_RPATH "${_lc_shared_install_rpath}")
         endif()
     endforeach()
     foreach(_librecad_host librecad luacmdinterface)
         if(TARGET ${_librecad_host})
             set_target_properties(${_librecad_host} PROPERTIES
-                INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+                INSTALL_RPATH "${_lc_host_install_rpath}")
         endif()
     endforeach()
 endif()
