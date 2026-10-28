@@ -157,7 +157,7 @@ fi
 sudo chown "$(id -u):$(id -g)" librecad.snap
 
 # Keep the Snap's configure-selected provider separate from the earlier
-# AppImage/system build. Never substitute build/python-runtime-inventory.txt.
+# system build. Never substitute build/python-runtime-inventory.txt.
 snap_inventory=parts/librecad/build/python-runtime-inventory.txt
 sudo test -s "$snap_inventory"
 mkdir -p build

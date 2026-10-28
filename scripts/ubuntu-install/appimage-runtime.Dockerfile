@@ -1,4 +1,4 @@
-ARG RUNTIME_BASE=ubuntu:26.04
+ARG RUNTIME_BASE=ubuntu:24.04
 FROM ${RUNTIME_BASE}
 
 # Runtime-only display/graphics libraries; no Python, Qt SDK or compiler.

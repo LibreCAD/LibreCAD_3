@@ -743,7 +743,7 @@ class FullElfClosureTests(unittest.TestCase):
         runtime = (REPOSITORY_ROOT / "lcUI/python/pyruntimesmoke.cpp").read_text()
         clean = (REPOSITORY_ROOT / "scripts/ubuntu-install/smokeAppImageRuntime.sh").read_text()
         workflow = (REPOSITORY_ROOT / ".github/workflows/main.yml").read_text()
-        snap = workflow.split("- name: Smoke installed snap Python runtime", 1)[1].split("# if: always()", 1)[0]
+        snap = workflow.split("- name: Smoke installed snap Python runtime", 1)[1].split("\n      - name:", 1)[0]
         self.assertIn("from lcUIPy._runtimeaudit import audit_elf_closure", runtime)
         self.assertIn("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1", clean)
         self.assertIn("LIBRECAD_REQUIRE_FULL_ELF_CLOSURE=1", snap)
@@ -752,6 +752,13 @@ class FullElfClosureTests(unittest.TestCase):
         appimage = (REPOSITORY_ROOT / "scripts/ubuntu-install/createAppImage.sh").read_text()
         for library in ("libreadline.so.8", "libgdbm.so.6", "libtcl8.6.so", "libtk8.6.so", "libXft.so.2", "libXss.so.1"):
             self.assertIn("--library=/usr/lib/x86_64-linux-gnu/" + library, appimage)
+        # Ubuntu 24.04's _tkinter also links BLT; without it the clean-runtime
+        # closure audit fails.  Only where it exists: linuxdeploy rejects a
+        # missing --library.
+        self.assertIn("if [[ -e /usr/lib/libBLT.2.5.so.8.6 ]]; then\n"
+                      "    release_libraries+=(--library=/usr/lib/libBLT.2.5.so.8.6)", appimage)
+        self.assertIn('--library=/usr/lib/x86_64-linux-gnu/libXss.so.1 \\\n"${release_libraries[@]}" \\\n',
+                      appimage)
         recipe = (REPOSITORY_ROOT / "snapcraft.yaml").read_text()
         stage = recipe.split("    stage-packages:", 1)[1].split("    cmake-parameters:", 1)[0]
         for package in ("libreadline8t64", "libtcl8.6", "libtk8.6", "libxft2", "libxss1"):

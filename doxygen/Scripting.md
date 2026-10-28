@@ -66,7 +66,7 @@ not that every C++ method is exposed or every platform artifact has passed.
 | UI widgets | `lcgui` menu, toolbar, dialog, input, layer, and command APIs | `MenuFamilyConstructAndCall`, `MenuItemConstructAndCall`, `ToolbarWidgetFamilyConstructAndCompose`, `InputWidgetsConstructAndRoundTrip`, `DialogWidgetComposition` | The named widget families have focused coverage; this is not an exposure or validation claim for every Qt/C++ UI class. |
 | Custom entities | `lc.register_plugin`, `lc.entity.CustomEntity` | Typed callback/coexistence/error regressions and `CustomEntityDxfRoundTrip.PluginReconstructsEntityFromDxfAppData` | Python dispatch and DXF reconstruction pass hosted Linux x64/macOS arm64 source filters; Windows and complete packaged lifecycle validation remain open. |
 | ScriptDock and bundled plugins | `lcUIPy` package and `ScriptDock` | `ScriptDockTest.PythonCreatesLine`, `PythonEventDrivenOnEventReachesMainWindow`; packaged runtime smoke loads two plugins | Shipped examples and the smoke path are exercised; complete plugin lifecycle/packaged coverage remains outstanding. |
-| Runtime and distribution | Embedded CPython selected by CMake | `PythonRuntime.IsolatedProviderIgnoresAmbientPaths`; macOS arm64 relocated-bundle smoke | Hosted Linux x64 AppImage/Snap and macOS arm64 relocated-bundle smoke pass; clean Linux runtime, Windows and complete final-artifact acceptance remain open. |
+| Runtime and distribution | Embedded CPython selected by CMake | `PythonRuntime.IsolatedProviderIgnoresAmbientPaths`; macOS arm64 relocated-bundle smoke | Hosted Linux x64 Snap, the earlier 26.04-built AppImage and macOS arm64 relocated-bundle smoke pass; the ubuntu-24.04 AppImage job awaits its first hosted run; clean Linux runtime, Windows and complete final-artifact acceptance remain open. |
 
 ### Python value conversion and construction
 
@@ -331,18 +331,26 @@ its SHA-256 and minimum OS, the selected-provider inventory, and test/smoke logs
 PR bundles are ad-hoc signed; Developer ID signing and notarization are separate
 release requirements.
 
-Linux AppImage CI additionally runs the exact artifact's extraction launcher
-in an unprivileged, offline, read-only Ubuntu 26.04 runtime container without
-system Python, libpython, or a Python SDK. The bounded smoke still requires
-bundled CPython and native extension dependencies; it complements the native
-FUSE-launcher check, not older-distribution compatibility. Initial native clean
-execution exposed missing HarfBuzz; explicit HarfBuzz/Graphite staging passes
-both native and SDK-free launcher smokes at `ab94eb1f`. The complete loadable-ELF
-gate also passes the SDK-free AppImage at `6f65ef05`; Snap's corresponding gate
-and final-candidate artifact freshness remain required.
-The inspected Linux candidate payload requires GLIBC 2.43
-and its executable declares x86-64-v3; compatibility with older glibc
-distributions or older x86_64 CPU baselines is not claimed.
+The AppImage is built in its own CI job on Ubuntu 24.04, the oldest system it
+is meant to run on, not on the Ubuntu 26.04 runner that the native build and
+the Snap use: an AppImage takes glibc, libstdc++ and its CPU baseline from the
+system that builds it, and the payload built on 26.04 required GLIBC 2.43 and
+declared x86-64-v3 in its executable. The job refuses an apt that installs an
+amd64 micro-architecture variant, then holds the extracted AppImage to the
+24.04 floor with `scripts/check_elf_floor.py` (GLIBC_2.39, GLIBCXX_3.4.33,
+CXXABI_1.3.15, GCC_14.0.0, x86-64-baseline) and keeps its report. It runs the
+exact artifact's extraction launcher in an unprivileged, offline, read-only
+`ubuntu:24.04` runtime container, checked to provide that glibc and libstdc++,
+and again in an Ubuntu 26.04 one, each without system Python, libpython, or a
+Python SDK. The bounded smoke still requires bundled CPython -- 3.12 here, the
+24.04 system interpreter, where the Snap bundles 3.14 -- and native extension
+dependencies. Initial native clean execution exposed missing HarfBuzz; explicit
+HarfBuzz/Graphite staging passes both native and SDK-free launcher smokes at
+`ab94eb1f`. The complete loadable-ELF gate also passes the SDK-free AppImage at
+`6f65ef05`; Snap's corresponding gate and final-candidate artifact freshness
+remain required. The 24.04 floor is the target until a hosted run of that job
+passes; no CPU check runs on a hosted machine, so the ISA floor rests on the
+ELF notes and the apt-variant guard.
 
 Operation contract
 ------------------
