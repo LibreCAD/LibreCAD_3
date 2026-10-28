@@ -463,7 +463,7 @@ def source_parallelism():
 
 
 def kernel_object_targets(build):
-    """Bind Ninja's object outputs bijectively to the actual kernel source graph."""
+    """Bind Ninja's objects and private cache bijectively to the kernel graph."""
     build=build.resolve();target=source_targets(build)['lckernel'];groups=target.get('compileGroups',[])
     sources=set()
     for item in target.get('sources',[]):
@@ -488,8 +488,10 @@ def kernel_object_targets(build):
         if not isinstance(raw,str):raise ValueError('Malformed kernel object output')
         output=Path(raw);output=(output if output.is_absolute() else build/output).resolve()
         if source not in sources and not output.is_relative_to(owner):continue
+        owned_output=(output in (owner/'cmake_pch.hxx.pch',owner/'cmake_pch.hxx.gch')
+            if source==owner/'cmake_pch.hxx.cxx' else output.suffix=='.o')
         if (source not in sources or source in objects or Path(item.get('directory','')).resolve()!=build or
-                not output.is_relative_to(owner) or output.suffix!='.o' or output in objects.values() or
+                not output.is_relative_to(owner) or not owned_output or output in objects.values() or
                 '..' in Path(item.get('output','')).parts):
             raise ValueError('Foreign, escaping or duplicate kernel object mapping')
         objects[source]=output

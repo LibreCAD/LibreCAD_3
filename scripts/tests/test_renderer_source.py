@@ -33,6 +33,7 @@ class KernelObjectTests(unittest.TestCase):
                 output=str(self.build/('lckernel/CMakeFiles/lckernel.dir/source'+str(index)+'.cpp.o'))))
         self.write()
         self.root_patch=patch.object(inventory,'REPO_ROOT',self.root);self.root_patch.start();self.addCleanup(self.root_patch.stop)
+        self.real_graph=runner.source_targets
         self.graph_patch=patch.object(runner,'source_targets',side_effect=lambda _:dict(lckernel=self.target))
         self.graph_patch.start();self.addCleanup(self.graph_patch.stop)
 
@@ -45,6 +46,48 @@ class KernelObjectTests(unittest.TestCase):
         objects=runner.kernel_object_targets(self.build)
         self.assertEqual(65,len(objects));self.assertEqual(65,len(set(objects)))
         self.assertTrue(all(path.startswith('lckernel/CMakeFiles/lckernel.dir/') for path in objects))
+
+    def test_private_cache_requires_its_exact_owned_source_output_pair(self):
+        owner=self.build/'lckernel/CMakeFiles/lckernel.dir'
+        source=owner/'cmake_pch.hxx.cxx';output=owner/'cmake_pch.hxx.pch'
+        self.target['sources'].append(dict(path=str(source),compileGroupIndex=0))
+        self.entries.append(dict(directory=str(self.build),file=str(source),output=str(output)));self.write()
+        self.assertEqual(66,len(runner.kernel_object_targets(self.build)))
+        self.assertIn(str(output.relative_to(self.build)),runner.kernel_object_targets(self.build))
+        original=copy.deepcopy(self.entries)
+        for mutate in (lambda rows:rows.pop(),lambda rows:rows.append(rows[-1]),
+                lambda rows:rows[-1].update(output=str(owner/'cmake_pch.hxx.cxx.o')),
+                lambda rows:rows[-1].update(output=str(owner/'foreign.pch')),
+                lambda rows:rows[-1].update(file=str(owner/'foreign.cxx')),
+                lambda rows:rows[0].update(output=str(output)),
+                lambda rows:rows[-1].update(output=str(owner/'../cmake_pch.hxx.pch'))):
+            self.entries=copy.deepcopy(original);mutate(self.entries);self.write()
+            with self.subTest(mutate=mutate),self.assertRaises(ValueError):runner.kernel_object_targets(self.build)
+
+    def test_real_ninja_pch_graph_maps_and_builds_every_compiled_kernel_input(self):
+        kernel=self.root/'lckernel';kernel.mkdir()
+        (kernel/'tiny.cpp').write_text('int fixture() { return 7; }\n')
+        (kernel/'cache.hpp').write_text('#pragma once\n#include <vector>\n')
+        (kernel/'CMakeLists.txt').write_text('add_library(lckernel SHARED tiny.cpp)\n'
+            'target_precompile_headers(lckernel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/cache.hpp")\n')
+        (self.root/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.28)\nproject(KernelCache LANGUAGES CXX)\n'
+            'set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\nadd_subdirectory(lckernel)\n')
+        query=self.build/'.cmake/api/v1/query/client-renderer-source';query.mkdir(parents=True)
+        (query/'codemodel-v2').touch()
+        command=['cmake','-S',str(self.root),'-B',str(self.build),'-G','Ninja','-DCMAKE_BUILD_TYPE=Release']
+        result=subprocess.run(command,capture_output=True,text=True,timeout=30)
+        self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+        with patch.object(runner,'source_targets',self.real_graph):
+            if sys.platform=='win32':
+                # Chunking is Intel Mac/Ninja only; MSVC .obj mappings remain rejected.
+                with self.assertRaises(ValueError):runner.kernel_object_targets(self.build)
+                return
+            outputs=runner.kernel_object_targets(self.build)
+        self.assertEqual(2,len(outputs));self.assertEqual(1,sum(p.endswith(('.pch','.gch')) for p in outputs))
+        result=subprocess.run(['cmake','--build',str(self.build),'--target',*outputs,'--parallel','4'],
+            capture_output=True,text=True,timeout=30)
+        self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+        self.assertTrue(all((self.build/path).is_file() for path in outputs))
 
     def test_missing_duplicate_foreign_and_escaping_mapping_is_rejected(self):
         original=copy.deepcopy(self.entries)
