@@ -19,6 +19,7 @@ set(CMAKE_AUTOUIC ON)
 # resolving through another component's transitive link, which is luck rather
 # than a dependency.
 find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Svg UiTools Widgets)
+find_package(OpenGL REQUIRED)
 
 # HEADERS
 set(UI_hdrs
@@ -92,7 +93,16 @@ managers/contextmenumanager.h
 managers/copymanager.h
 managers/metainfomanager.h)
 
+set(UI_BINDING_srcs
+lua/guibridge.cpp
+managers/copymanager.cpp
+)
+
 set(UI_srcs
+# Schedule template-heavy dialogs/settings before the small widget sources.
+dialogs/textdialog.cpp
+managers/uisettings.cpp
+managers/contextmenumanager.cpp
 cadmdichild.cpp
 main.cpp
 luainterface.cpp
@@ -152,16 +162,11 @@ widgets/customizeToolbar/deleteiconarea.cpp
 widgets/customizeToolbar/customizetoolbar.cpp
 widgets/customizeToolbar/customizeparenttab.cpp
 widgets/customizeToolbar/customizegrouptab.cpp
-lua/guibridge.cpp
 dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-dialogs/textdialog.cpp
 managers/hookmanager.cpp
-managers/uisettings.cpp
-managers/contextmenumanager.cpp
-managers/copymanager.cpp
 managers/metainfomanager.cpp
 )
 
@@ -171,16 +176,14 @@ managers/metainfomanager.cpp
 # adding conditionally avoids any pybind11 include-path requirement
 # leaking into the OFF-build).
 if(WITH_PYTHONSCRIPT)
-    list(APPEND UI_srcs python/pyguibridge.cpp)
+    list(APPEND UI_BINDING_srcs python/pyguibridge.cpp)
+    list(INSERT UI_srcs 3 python/pyeventhooks.cpp python/pypluginloader.cpp python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyguibridge.h)
     # Phase 5 PR-5.1 — hook installer for lc.event.register/deregister.
-    list(APPEND UI_srcs python/pyeventhooks.cpp)
     list(APPEND UI_hdrs python/pyeventhooks.h)
     # Phase 5 PR-5.5 — Python plugin loader.
-    list(APPEND UI_srcs python/pypluginloader.cpp)
     list(APPEND UI_hdrs python/pypluginloader.h)
     # Actual installed-artifact import/plugin/document smoke used by CI.
-    list(APPEND UI_srcs python/pyruntimesmoke.cpp)
     list(APPEND UI_hdrs python/pyruntimesmoke.h)
 endif()
 
@@ -289,6 +292,9 @@ link_directories(${PANGO_LIBRARY_DIRS})
 set(EXTRA_LIBS
         lcluascript
         lcviewernoqt
+        lcviewer_opengl
+        OpenGL::GL
+        GLEW::GLEW
         persistence
         lckernel
         ${LUA_LIBRARIES}
@@ -321,34 +327,53 @@ if (MSVC)
     include_directories("${RapidJSON_INCLUDE_DIR}")
 endif()
 
-#Create library for unit tests
-if(WITH_UNITTESTS)
-    add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
-    set_target_properties(lcui PROPERTIES AUTOMOC TRUE)
-    target_compile_definitions(lcui PUBLIC LC_UI_SHARED)
-    target_compile_options(lcui PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
-    target_link_libraries(lcui ${EXTRA_LIBS})
+# Keep template-heavy bindings/serialization separately schedulable, without
+# recompiling any group for the application and optional test library. Split
+# plain widgets out so each cold build command fits its existing bound. The
+# root group alone owns all Qt-generated code and headers.
+set(UI_WIDGET_srcs ${UI_srcs})
+list(FILTER UI_WIDGET_srcs INCLUDE REGEX "^widgets/.*\\.cpp$")
+list(REMOVE_ITEM UI_srcs ${UI_WIDGET_srcs})
+add_library(lcui_objects OBJECT ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+add_library(lcui_bindings_objects OBJECT ${UI_BINDING_srcs})
+add_library(lcui_widgets_objects OBJECT ${UI_WIDGET_srcs})
+set_target_properties(lcui_bindings_objects lcui_widgets_objects PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+add_dependencies(lcui_widgets_objects lcui_objects) # UIC headers exist before widget compilation.
+foreach(ui_objects lcui_objects lcui_bindings_objects lcui_widgets_objects)
+    set_target_properties(${ui_objects} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    # These objects are lcui's own (and librecad's), so they compile as the
+    # exporting side of lcui_api.h; lcui's consumers see only LC_UI_SHARED.
+    target_compile_definitions(${ui_objects} PRIVATE LC_UI_SHARED lcui_EXPORTS)
+    # kaguya's headers use uint8_t without including <cstdint>; see the top-level
+    # CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
+    # compilation, where forcing a C++ header is a hard error.
+    target_compile_options(${ui_objects} PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
+    lc_parallel_msvc_compile(${ui_objects})
+    target_link_libraries(${ui_objects} PRIVATE ${EXTRA_LIBS})
     if(WITH_PYTHONSCRIPT)
-        add_dependencies(lcui lcuipy_build_tree)
+        add_dependencies(${ui_objects} lcuipy_build_tree)
     endif()
+endforeach()
+set(UI_OBJECTS $<TARGET_OBJECTS:lcui_objects> $<TARGET_OBJECTS:lcui_bindings_objects> $<TARGET_OBJECTS:lcui_widgets_objects>)
+
+# Create library for unit tests without recompiling the application sources.
+if(WITH_UNITTESTS)
+    add_library(lcui SHARED ${UI_OBJECTS})
+    set_target_properties(lcui PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+    target_compile_definitions(lcui PUBLIC LC_UI_SHARED)
+    target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
 if (MSVC)
-    add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+    add_executable(librecad ${UI_OBJECTS})
 else()
     set(UI_icon "${CMAKE_SOURCE_DIR}/res/librecad.rc")
-    add_executable(librecad ${UI_icon} ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+    add_executable(librecad ${UI_icon} ${UI_OBJECTS})
 endif()
 
-# kaguya's headers use uint8_t without including <cstdint>; see the top-level
-# CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
-# compilation, where forcing a C++ header is a hard error.
-target_compile_options(librecad PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
+set_target_properties(librecad PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
 ${GLEW_LIBRARY})
-if(WITH_PYTHONSCRIPT)
-    add_dependencies(librecad lcuipy_build_tree)
-endif()
 
 if(WITH_PYTHONSCRIPT AND WITH_PERSISTENCE)
     set_source_files_properties(python/pyruntimesmoke.cpp PROPERTIES

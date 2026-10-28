@@ -30,21 +30,14 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-option(WITH_QT_UI "With QT user interface" ON)
-option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
-option(WITH_UNITTESTS "Build unit tests" ON)
-option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
-option(WITH_CAIRO "Compile with Cairo painter" OFF)
+option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
+# Declares WITH_CAIRO and WITH_PYTHONSCRIPT too, before recording the preflight.
+include("${CMAKE_CURRENT_SOURCE_DIR}/lcviewernoqt/cmake/RendererOptions.cmake")
 option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
 option(WITH_HEADERS "Install with development headers" OFF)
 
-# Python scripting support uses the selected build-time CPython SDK/runtime.
-option(WITH_PYTHONSCRIPT "Build Python scripting support" ON)
-
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
-
-option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
 # DWG import through libdxfrw's own dwgRW, off by default.
 #
@@ -146,7 +139,7 @@ endif()
 
 set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
-if(CMAKE_TOOLCHAIN_FILE AND
+if(MSVC AND CMAKE_TOOLCHAIN_FILE AND
    CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$" AND
    EXISTS "${CMAKE_TOOLCHAIN_FILE}")
     set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
@@ -155,12 +148,9 @@ if(CMAKE_TOOLCHAIN_FILE AND
     #include(${CMAKE_SOURCE_DIR}/conan_toolchain.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
     
-    set(WITH_LUACMDINTERFACE FALSE)
-    set(WITH_RENDERING_UNITTESTS OFF)
-    set(WITH_CAIRO OFF)
-    # WITH_PYTHONSCRIPT remains an explicit user option in this dependency-
-    # provider branch. Windows CI supplies a matching CPython SDK; install
-    # rules stage the selected runtime beside the application.
+    # Backend/host/test choices are declared once in RendererOptions.cmake.
+    # Conan supplies defaults and disagreement fails before dependency lookup;
+    # this Windows packaging branch must not silently replace explicit choices.
 
     #set(Boost_NO_SYSTEM_PATHS true)
     #set (Boost_USE_STATIC_LIBS OFF CACHE BOOL "use static libraries from Boost")
@@ -187,28 +177,28 @@ if(CMAKE_TOOLCHAIN_FILE AND
 
     find_package(Eigen3 REQUIRED)
 
-    find_package(GLEW REQUIRED)
-
     set(ENV{LUA_DIR} "${CONAN_LUA_ROOT}")
 
-    set(GLEW_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLEW}")
-    message("GLEW:glew")
-    message("${GLEW_INCLUDE_DIR}")
-    set(ENV{GLEW_ROOT} "${CONAN_GLEW_ROOT}")
-    add_definitions("${CONAN_DEFINES_GLEW}")
-    
-    set(ENV{FREETYPE_DIR} "${CONAN_FREETYPE_ROOT}")
-    
-    set(PNG_PNG_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_LIBPNG}")
-    set(PNG_LIBRARY "${CONAN_LIB_DIRS_LIBPNG}/libpng16.lib")
-    
-    set(ZLIB_ROOT "${CONAN_ZLIB_ROOT}")
-    
-    set(BZIP2_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_BZIP2}")
-    set(BZIP2_LIBRARIES "${CONAN_LIB_DIRS_BZIP2}/bz2.lib")
-    
- 
-    set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
+    if(WITH_LEGACY_OPENGL_RENDERER)
+        find_package(GLEW REQUIRED)
+        set(GLEW_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLEW}")
+        message("GLEW:glew")
+        message("${GLEW_INCLUDE_DIR}")
+        set(ENV{GLEW_ROOT} "${CONAN_GLEW_ROOT}")
+        add_definitions("${CONAN_DEFINES_GLEW}")
+
+        set(ENV{FREETYPE_DIR} "${CONAN_FREETYPE_ROOT}")
+
+        set(PNG_PNG_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_LIBPNG}")
+        set(PNG_LIBRARY "${CONAN_LIB_DIRS_LIBPNG}/libpng16.lib")
+
+        set(ZLIB_ROOT "${CONAN_ZLIB_ROOT}")
+
+        set(BZIP2_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_BZIP2}")
+        set(BZIP2_LIBRARIES "${CONAN_LIB_DIRS_BZIP2}/bz2.lib")
+
+        set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
+    endif()
 
 else()
     set(Boost_USE_STATIC_LIBS OFF)
@@ -218,12 +208,12 @@ endif()
 if(MSVC)
     find_package(Eigen3 REQUIRED)
     include_directories(${EIGEN3_INCLUDE_DIR})
-    find_package(freetype REQUIRED)
-    include_directories(${freetype_INCLUDE_DIR})
-    find_package(glew REQUIRED)
-    include_directories(${glew_INCLUDE_DIR})
-    find_package(glm REQUIRED)
-	include_directories(${glm_INCLUDE_DIR})
+    if(WITH_LEGACY_OPENGL_RENDERER)
+        find_package(freetype REQUIRED)
+        include_directories(${freetype_INCLUDE_DIR})
+        find_package(glew REQUIRED)
+        include_directories(${glew_INCLUDE_DIR})
+    endif()
     add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     # Keep inherited toolchain flags as one string.  set(VAR ${VAR} "...")
@@ -289,6 +279,9 @@ message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
 message("  - Python scripting support: ${WITH_PYTHONSCRIPT}")
 message("  - Unit tests: ${WITH_UNITTESTS}")
 message("  - Rendering unit tests: ${WITH_RENDERING_UNITTESTS}")
+message("  - Legacy OpenGL renderer: ${WITH_LEGACY_OPENGL_RENDERER}")
+message("  - Experimental RHI renderer: ${WITH_RHI_RENDERER}")
+message("  - Experimental renderer tests: ${WITH_RENDERER_TESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
 message("  - Use Cairo: ${WITH_CAIRO}")
@@ -429,6 +422,9 @@ if(WITH_PYTHONSCRIPT)
 endif()
 
 add_subdirectory("lcviewernoqt")
+if(WITH_RHI_RENDERER)
+    add_subdirectory("lcrenderer/rhi")
+endif()
 
 if(WITH_QT_UI)
     add_definitions(-DWITH_QTUI)
@@ -443,6 +439,18 @@ if(WITH_UNITTESTS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
     add_subdirectory("unittest")
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+endif()
+
+if(WITH_RENDERER_TESTS)
+    # One graph avoids repeated MSBuild invocations/relinks for shared targets.
+    # This is opt-in, not an additional default or installed target.
+    foreach(_target IN ITEMS lckernel lcviewernoqt lcluascript lcunittest)
+        target_precompile_headers(${_target} PRIVATE <Eigen/Dense>)
+    endforeach()
+    target_precompile_headers(lcluascript PRIVATE <kaguya/kaguya.hpp>)
+    target_precompile_headers(lcunittest PRIVATE <gtest/gtest.h>)
+    add_custom_target(lcrenderer_source_checks DEPENDS
+        lcrenderertest lcrenderer_headercheck lcviewer_cpu_headercheck lcunittest)
 endif()
 
 if(MSVC)
@@ -477,35 +485,41 @@ endif()
 if(APPLE)
     foreach(_librecad_shared_target
             lckernel lcscripting persistence lcluascript lcpythonscript
-            lcviewernoqt lcui)
+            lcviewernoqt lcviewer_opengl lcui)
         if(TARGET ${_librecad_shared_target})
             set_target_properties(${_librecad_shared_target} PROPERTIES
                 INSTALL_RPATH "@loader_path")
         endif()
     endforeach()
-    if(TARGET librecad)
-        set_target_properties(librecad PROPERTIES
-            INSTALL_RPATH "@executable_path/../${CMAKE_INSTALL_LIBDIR}")
-    endif()
+    foreach(_librecad_host librecad luacmdinterface)
+        if(TARGET ${_librecad_host})
+            set_target_properties(${_librecad_host} PROPERTIES
+                INSTALL_RPATH "@executable_path/../${CMAKE_INSTALL_LIBDIR}")
+        endif()
+    endforeach()
 elseif(UNIX)
     foreach(_librecad_shared_target
             lckernel lcscripting persistence lcluascript lcpythonscript
-            lcviewernoqt lcui)
+            lcviewernoqt lcviewer_opengl lcui)
         if(TARGET ${_librecad_shared_target})
             set_target_properties(${_librecad_shared_target} PROPERTIES
                 INSTALL_RPATH "$ORIGIN")
         endif()
     endforeach()
-    if(TARGET librecad)
-        set_target_properties(librecad PROPERTIES
-            INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
-    endif()
+    foreach(_librecad_host librecad luacmdinterface)
+        if(TARGET ${_librecad_host})
+            set_target_properties(${_librecad_host} PROPERTIES
+                INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+        endif()
+    endforeach()
 endif()
 
 # On macOS, Python's embed target often has an absolute install name outside
 # the app prefix. Copy the exact selected runtime dylib and rewrite only the
 # installed consumers to a prefix-relative load name.
-if(APPLE AND WITH_PYTHONSCRIPT AND TARGET Python::Python)
+# Library-only development installs retain the selected external Python SDK.
+# App-runtime relocation requires an actual installed application target.
+if(APPLE AND WITH_PYTHONSCRIPT AND TARGET librecad AND TARGET Python::Python)
     option(LIBRECAD_RECORD_NATIVE_ORIGINS
         "Record selected original/final native bytes in a fresh macOS install (not notice qualification)" OFF)
     set(LIBRECAD_NATIVE_ORIGIN_PROJECT_REVISION "" CACHE STRING

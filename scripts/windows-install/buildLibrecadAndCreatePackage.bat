@@ -29,6 +29,7 @@ cmake -S %cd% ^
 -DWITH_UNITTESTS=ON ^
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ^
 -DWITH_RENDERING_UNITTESTS=OFF ^
+-DWITH_LUACMDINTERFACE=OFF ^
 --install-prefix %cd%\installprefix
 
 REM Fail here rather than letting a broken configure surface much later as a

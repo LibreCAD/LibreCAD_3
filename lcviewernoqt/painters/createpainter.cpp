@@ -4,7 +4,6 @@
 #include "lccairopainter.tcc"
 #endif
 
-#include <painters/opengl/openglrenderpainter.h>
 
 namespace lc {
 namespace viewer {
@@ -14,8 +13,5 @@ LcPainter* createCairoImagePainter(unsigned char* data, const unsigned int width
 }
 #endif
 
-LcPainter* createOpenGLPainter(unsigned char* data, const unsigned int width, const unsigned int height) {
-    return new OpenglRenderPainter(width,height);
-}
 }
 }

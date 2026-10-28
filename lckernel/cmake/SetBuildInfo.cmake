@@ -37,8 +37,8 @@ if(LIBDXFRW_GIT_COMMIT)
     set(LIBDXFRW_BUILD_VERSION "${LIBDXFRW_BUILD_VERSION} (${LIBDXFRW_GIT_COMMIT})")
 endif()
 
-if(NOT DEFINED OUTPUT_FILE OR OUTPUT_FILE STREQUAL "")
-    message(FATAL_ERROR "OUTPUT_FILE must point into the CMake binary tree")
+if(NOT DEFINED OUTPUT_FILE OR NOT IS_ABSOLUTE "${OUTPUT_FILE}")
+    message(FATAL_ERROR "SetBuildInfo requires an absolute build-tree OUTPUT_FILE")
 endif()
 configure_file("${DIR}/build_constants.cpp.in" "${OUTPUT_FILE}")
 

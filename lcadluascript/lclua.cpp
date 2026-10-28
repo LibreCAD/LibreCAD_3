@@ -79,6 +79,20 @@ void LCLua::addLuaLibs() {
     }
 }
 
+void LCLua::addModuleSearchPath(const std::string& directory) {
+    if (directory.empty()) return;
+    const char last = directory.back();
+    const std::string entry = directory +
+        ((last == '/' || last == '\\') ? "?.lua" : "/?.lua");
+    kaguya::State state(_L);
+    const std::string paths = state["package"]["path"].get<std::string>();
+    if ((";" + paths + ";").find(";" + entry + ";") == std::string::npos) {
+        // Assign a value rather than generating Lua source: install paths can
+        // contain quotes, spaces, or Windows backslashes.
+        state["package"]["path"] = paths.empty() ? entry : paths + ";" + entry;
+    }
+}
+
 void LCLua::setDocument(const lc::storage::Document_SPtr& document) {
     kaguya::State state(_L);
     state["document"] = document;

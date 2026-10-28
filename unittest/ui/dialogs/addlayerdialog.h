@@ -1,6 +1,9 @@
 #pragma once
 
-#include <dialogs/addlayerdialog.cpp>
+#include <lcUI/dialogs/addlayerdialog.h>
+#include <ui_addlayerdialog.h>
+
+using lc::ui::dialog::AddLayerDialog;
 
 class AddLayerDialogTest : public AddLayerDialog {
 public:

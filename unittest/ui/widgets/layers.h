@@ -1,8 +1,12 @@
 #pragma once
 
 #include <QTest>
-#include <widgets/layers.cpp>
+#include <lcUI/widgets/layers.h>
+#include <ui_layers.h>
 #include <cadmdichild.h>
+
+using lc::ui::widgets::Layers;
+using lc::ui::widgets::LayerModel;
 
 class LayersTest : public lc::ui::widgets::Layers {
 public:

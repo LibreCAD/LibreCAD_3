@@ -6,7 +6,7 @@ message("***** LibreCAD unit tests *****")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTORCC ${WITH_QT_UI})
 
 
 # Eigen 3
@@ -36,12 +36,41 @@ include_directories(${GLEW_INCLUDE_DIR})
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
+find_package(GTest REQUIRED)
 
 if (MSVC)
 	#gtest
-	find_package(GTest REQUIRED)
 	include_directories(${GTest_INCLUDE_DIRS})
 	include_directories(${RapidJSON_INCLUDE_DIRS})
+endif()
+
+# Source/build contracts are a separate, Qt-free executable. The shared runner
+# prepares real CMake cases; these native IDs inspect their unmodified outputs.
+set(_build_contract_fixture "${CMAKE_SOURCE_DIR}/unittest/rendering/fixtures/renderer_contracts.json")
+file(SHA256 "${_build_contract_fixture}" BUILD_CONTRACT_FIXTURE_SHA256)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_build_contract_fixture}")
+configure_file("${_build_contract_fixture}" renderer-build-contracts.json COPYONLY)
+set(BUILD_CONTRACT_SOURCES "")
+foreach(_input CMakeLists.txt lcviewernoqt/cmake/RendererOptions.cmake unittest/CMakeLists.txt
+        unittest/rendering/buildcontracts.cpp unittest/rendering/buildcontracts_config.h.in)
+    file(SHA256 "${CMAKE_SOURCE_DIR}/${_input}" _digest)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/${_input}")
+    string(APPEND BUILD_CONTRACT_SOURCES "${_digest}  ${_input}\n")
+endforeach()
+configure_file(rendering/buildcontracts_config.h.in buildcontracts_config.h @ONLY)
+add_executable(lcbuildcontracttest rendering/buildcontracts.cpp)
+target_compile_features(lcbuildcontracttest PRIVATE cxx_std_17)
+target_include_directories(lcbuildcontracttest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+# FindGTest before CMake 3.20 provides GTest::GTest, not GTest::gtest.
+if(TARGET GTest::gtest)
+    set(_build_contract_gtest GTest::gtest)
+else()
+    set(_build_contract_gtest GTest::GTest)
+endif()
+target_link_libraries(lcbuildcontracttest PRIVATE ${_build_contract_gtest} Boost::filesystem)
+unset(_build_contract_gtest)
+if(MSVC)
+    target_compile_options(lcbuildcontracttest PRIVATE /utf-8)
 endif()
 
 
@@ -71,11 +100,15 @@ lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
-lcviewernoqt/fontbooktest.cpp
 lcviewernoqt/mtextdrawtest.cpp
 lcviewernoqt/mtextlayouttest.cpp
 lcviewernoqt/dimordinatedrawtest.cpp
 lcviewernoqt/dimlineardrawtest.cpp
+lcviewernoqt/testrenderframe.cpp
+lcviewernoqt/testpathrecorder.cpp
+lcviewernoqt/testhatchrecorder.cpp
+lcviewernoqt/testhatchtiler.cpp
+lcviewernoqt/testregionrecorder.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
@@ -90,7 +123,19 @@ lckernel/geometry/comparecoordinate.cpp
 lckernel/operations/layerops.cpp
 luacmdinterface/dispatch_test.cpp
 lckernel/logger/loggertest.cpp
+scripting/luapackagepath_test.cpp
 )
+
+# Font_Book is the legacy OpenGL renderer's font atlas, in lcviewer_opengl. Only
+# the Qt UI brings that library in otherwise, so a UI-off build must link it.
+if(WITH_LEGACY_OPENGL_RENDERER)
+    list(APPEND src lcviewernoqt/fontbooktest.cpp)
+    set(EXTRA_LIBS ${EXTRA_LIBS} lcviewer_opengl)
+endif()
+
+if(WITH_CAIRO)
+    list(APPEND src lcviewernoqt/testcairofactory.cpp)
+endif()
 
 # Issue #412 phase 0 — verify the DXF exporter actually writes what the
 # reader can consume.  Independent of the Python bindings (unlike the
@@ -107,6 +152,7 @@ lckernel/logger/loggertest.cpp
 # way: parse raw DXF group codes instead of pulling in the library.
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
+    list(APPEND src persistence/hatchcatalogtest.cpp)
     list(APPEND src persistence/dxfroundtriptest.cpp)
     list(APPEND src persistence/formattest.cpp)
     list(APPEND src persistence/mtextcodectest.cpp)
@@ -266,11 +312,16 @@ if(WITH_RENDERING_UNITTESTS)
     link_directories(${Boost_LIBRARY_DIRS})
 
     find_package(glfw3 3.2 REQUIRED)
+    find_package(OpenGL REQUIRED)
+    find_package(GLEW REQUIRED)
 
     set(EXTRA_LIBS
         ${EXTRA_LIBS}
         ${Boost_LIBRARIES}
         glfw
+        lcviewer_opengl
+        GLEW::GLEW
+        OpenGL::GL
     )
 
     set(src
@@ -299,11 +350,15 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 # Phase 2 slice 2.1 — dispatch.h lives under luacmdinterface/.
 include_directories("${CMAKE_SOURCE_DIR}")
 add_executable(lcunittest ${src} ${hdrs})
+lc_parallel_msvc_compile(lcunittest)
 
 # kaguya's headers use uint8_t without including <cstdint>; see the top-level
 # CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
 # compilation, where forcing a C++ header is a hard error.
 target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_compile_features(lcunittest PRIVATE cxx_std_17)
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS}
+# Guards the scripted DXF round trips out of persistence-free CPU/RHI builds.
+target_compile_definitions(lcunittest PRIVATE LC_USE_PERSISTENCE=${LC_USE_PERSISTENCE})
+target_include_directories(lcunittest PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(lcunittest lckernel lcviewernoqt lcluascript gtest ${EXTRA_LIBS}
     ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})

@@ -1,0 +1,33 @@
+{
+  "format": "librecad-r0-provider-v1",
+  "provider": "chromium-swiftshader",
+  "platform": "windows",
+  "payload_architectures": ["x86_64"],
+  "scope": "R0 binary-input/loader candidate only; not an accepted ICD, device, renderer, package or deployment floor",
+  "source_version": "156.0.8078.47",
+  "source_revision": "1706539",
+  "source_metadata_url": "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json",
+  "archive": {
+    "filename": "chrome-headless-shell-win64.zip",
+    "url": "https://storage.googleapis.com/chrome-for-testing-public/156.0.8078.47/win64/chrome-headless-shell-win64.zip?generation=1792453636893180",
+    "bytes": 126051683,
+    "sha256": "e0af9b23f8051cca4f37ca49cd425e8055701bfc0383c198d67f8d5cc5884249",
+    "published_gcs_md5": "9401cfc6509d7126f764c63aa0871324",
+    "gcs_generation": "1792453636893180",
+    "prefix": "chrome-headless-shell-win64"
+  },
+  "files": {
+    "vulkan-1.dll": {"bytes": 986112, "sha256": "d3d7cdda680ce9b38939cbdd225f7ecdc959d1208c82b0fa07fa245c3d8f5467"},
+    "vk_swiftshader.dll": {"bytes": 5397504, "sha256": "f0705e5ce47abfcc51f7926a551bde67d05a5cb2afa10d06d65242e019056a4e"},
+    "vk_swiftshader_icd.json": {"bytes": 106, "sha256": "32d83ff113fef532a9f97e0d2831f8656628ab1c99e9060f0332b1532839afd9"},
+    "LICENSE.headless_shell": {"bytes": 2451393, "sha256": "1b6e83846a68f8f0a383057c78d180d58ec11a0abfcba380f11d5c2f4b45b273"}
+  },
+  "icd_manifest": {"file_format_version": "1.0.0", "ICD": {"library_path": ".\\vk_swiftshader.dll", "api_version": "1.0.5"}},
+  "notes": [
+    "Extract only these four verified files; never install or execute the browser or other archive programs.",
+    "The bundled notice contains SwiftShader, Vulkan Loader and third-party license text. Redistribution review remains open.",
+    "The manifest's legacy 1.0.5 value is preserved, not rewritten or accepted as an observed driver API version.",
+    "Static PE32+/AMD64 inspection and a native loader-version preflight do not qualify ICD/device creation, presentation, validation layers, pixels or hardware.",
+    "Native Windows x64 execution, full Qt/CRT/OS closure and deployment/package acceptance remain required."
+  ]
+}

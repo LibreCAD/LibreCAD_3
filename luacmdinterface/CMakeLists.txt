@@ -11,6 +11,14 @@ include_directories(${CURL_INCLUDE_DIRS})
 link_directories(${CURL_LIBRARY_DIRS})
 
 find_package(glfw3 3.2 REQUIRED)
+if(TARGET glfw AND NOT TARGET glfw3::glfw)
+    add_library(glfw3::glfw ALIAS glfw)
+endif()
+if(NOT TARGET glfw3::glfw)
+    message(FATAL_ERROR "GLFW provider exports neither glfw nor glfw3::glfw")
+endif()
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -71,13 +79,15 @@ add_executable(luacmdinterface ${src} ${hdrs})
 # CMakeLists.txt. Applied here rather than project-wide so it cannot reach a C
 # compilation, where forcing a C++ header is a hard error.
 target_compile_options(luacmdinterface PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
+target_include_directories(luacmdinterface PRIVATE "${CMAKE_SOURCE_DIR}")
 target_link_libraries(luacmdinterface
         ${CMAKE_THREAD_LIBS_INIT}
         ${Boost_LIBRARIES}
         ${CURL_LIBRARIES}
         ${APR_LIBRARIES}
         ${LUA_LIBRARIES}
-        lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES} glfw
+        lcluascript lckernel lcluascript lcviewernoqt lcviewer_opengl ${Boost_LIBRARIES}
+        glfw3::glfw OpenGL::GL GLEW::GLEW
 
 )
 
@@ -92,3 +102,7 @@ if(WITH_PYTHONSCRIPT)
         "${CMAKE_SOURCE_DIR}/lcadpythonscript")
     target_link_libraries(luacmdinterface lcpythonscript)
 endif()
+
+install(TARGETS luacmdinterface
+    ${LC_INSTALL_RUNTIME_DEPENDENCY_SET_ARGS}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")

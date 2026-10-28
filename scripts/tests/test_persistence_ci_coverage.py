@@ -30,7 +30,10 @@ class PersistenceCiCoverageTests(unittest.TestCase):
         cmake = (ROOT / "unittest/CMakeLists.txt").read_text()
         runtime = (ROOT / "unittest/python/python_runtime_test.cpp").read_text()
         self.assertIn("LC_UNITTEST_WITH_QT", cmake)
-        self.assertIn("#ifdef LC_UNITTEST_WITH_QT\n#include <python_runtime_config.h>", runtime)
+        # The fresh-process runtime checks drive the probes through embedded
+        # CPython rather than Qt, so Qt-free test builds still run them.
+        self.assertIn("#include <python_runtime_config.h>", runtime)
+        self.assertNotRegex(runtime, r'#include\s*[<"]Q[A-Z]')
         self.assertIn("ui/testuisettings.cpp", cmake)
 
     def test_settings_signal_metaobject_is_exported_to_windows_consumers(self):

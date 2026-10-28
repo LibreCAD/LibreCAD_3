@@ -120,8 +120,7 @@ if(WITH_PERSISTENCE)
 endif()
 
 if (MSVC)
-    find_package(glew REQUIRED)
-    target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel Eigen3::Eigen GLEW::GLEW)
+    target_link_libraries(lcluascript Eigen3::Eigen)
 endif()
 
 # INSTALLATION

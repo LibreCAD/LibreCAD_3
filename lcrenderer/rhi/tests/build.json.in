@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "rhi-test-build-inputs",
+  "rhi_inputs": @RHI_INPUTS_JSON@,
+  "rhi_inputs_sha256": "@RHI_INPUT_SHA256@",
+  "compiler": @RHI_COMPILER_JSON@,
+  "revision": "@RHI_REVISION@",
+  "git_dirty": @RHI_GIT_DIRTY@,
+  "qt": "@Qt6_VERSION@",
+  "qsb": @RHI_QSB_JSON@,
+  "qsb_sha256": "@RHI_QSB_SHA256@",
+  "private_headers": {@RHI_PRIVATE_HEADERS_JSON@},
+  "options": {@RHI_OPTIONS_JSON@}
+}

@@ -1,0 +1,510 @@
+{
+  "format": "librecad-r0-provider-v1",
+  "scope": "Linux ARM64 current Qt full required-module binary restoration only; not a minimum selection, production/platform/release or OS/toolchain/driver qualification",
+  "qt_version": "6.10.2",
+  "platform": "linux",
+  "payload_architectures": [
+    "arm64"
+  ],
+  "components": [
+    "Core",
+    "Gui",
+    "GuiPrivate",
+    "Widgets",
+    "Svg",
+    "SvgWidgets",
+    "UiTools",
+    "Test",
+    "OpenGL",
+    "OpenGLWidgets",
+    "ShaderTools",
+    "WaylandClient"
+  ],
+  "packages": [
+    {
+      "architecture": "arm64",
+      "bytes": 559422,
+      "filename": "assistant-qt6_6.10.2-1_arm64.deb",
+      "package": "assistant-qt6",
+      "sha256": "c59618b68cca825fdef94a8d3ba9becd98922eb345765905ca6d96e54e559521",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/assistant-qt6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 181350,
+      "filename": "designer-qt6_6.10.2-1_arm64.deb",
+      "package": "designer-qt6",
+      "sha256": "457a44ad1ef6a51a52494f14347a082e69b275e8d8b0d7d19958d5c539f72fb2",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/designer-qt6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 33734,
+      "filename": "libqt6concurrent6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6concurrent6",
+      "sha256": "cfd37ef74db826181f30e7736147d6e0f066f8d2abe6c5568cdf8d2bc73f7fba",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6concurrent6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 1975156,
+      "filename": "libqt6core6t64_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6core6t64",
+      "sha256": "ef217aaa92e181f4d922e90a022ab4a9736523a02e38ac333227192080972097",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6core6t64_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 276190,
+      "filename": "libqt6dbus6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6dbus6",
+      "sha256": "0ba83747382ca6f3a8c91990e7a6b8c247624c9cdf08d89a60e6f69045875f7c",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6dbus6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 2962408,
+      "filename": "libqt6designer6_6.10.2-1_arm64.deb",
+      "package": "libqt6designer6",
+      "sha256": "74ce25c5a4589d2697a90750b1f9e2186f61912ecc984f0fd12369b9107d6c66",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/libqt6designer6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 903934,
+      "filename": "libqt6designercomponents6_6.10.2-1_arm64.deb",
+      "package": "libqt6designercomponents6",
+      "sha256": "5957c8f0744c0b2786bb2958b01fc5223e0a946a6da70a22a782197c27b1a027",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/libqt6designercomponents6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 3368998,
+      "filename": "libqt6gui6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6gui6",
+      "sha256": "1fc108e4f1fd30c086b94a200c3b9b661843f7a38e24f8ca3270b5c01d14d68f",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6gui6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 192238,
+      "filename": "libqt6help6_6.10.2-1_arm64.deb",
+      "package": "libqt6help6",
+      "sha256": "5168fa75a05f5b745334229d3c16e564923193104ac510692da47cfd119a4d4d",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/libqt6help6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 843134,
+      "filename": "libqt6network6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6network6",
+      "sha256": "acc8d497f7bdd14c3624cd18ff05aa7e91b6432b571a4142bf74d3f6d1567abc",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6network6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 430686,
+      "filename": "libqt6opengl6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6opengl6",
+      "sha256": "eed74185a00ce657e3ecea0a310f610b4859ed22a99953a150ff526a30fb47e0",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6opengl6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 44010,
+      "filename": "libqt6openglwidgets6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6openglwidgets6",
+      "sha256": "4ad581bbf33997e1081bb48c1d47ceadd990a188f5cd501c56ed58bea2e1430e",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6openglwidgets6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 222350,
+      "filename": "libqt6printsupport6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6printsupport6",
+      "sha256": "b10aedcdea84d8d84f906412b0e485ea2155c4046c437db55897eb3fb53ebc03",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6printsupport6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 1833440,
+      "filename": "libqt6qml6_6.10.2+dfsg-3_arm64.deb",
+      "package": "libqt6qml6",
+      "sha256": "d88b32d582a27dc86feac307362ef189a90dfdda3b29b6ac70820024269cc4c4",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-declarative/libqt6qml6_6.10.2+dfsg-3_arm64.deb",
+      "version": "6.10.2+dfsg-3"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 67970,
+      "filename": "libqt6qmlmeta6_6.10.2+dfsg-3_arm64.deb",
+      "package": "libqt6qmlmeta6",
+      "sha256": "d84e849d5e9d7d9fb5fadd8b3d82231aad66d8d65da7b369406e60f38a01cbba",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-declarative/libqt6qmlmeta6_6.10.2+dfsg-3_arm64.deb",
+      "version": "6.10.2+dfsg-3"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 379488,
+      "filename": "libqt6qmlmodels6_6.10.2+dfsg-3_arm64.deb",
+      "package": "libqt6qmlmodels6",
+      "sha256": "4d60693b01cfcc997f5d7c608e0cd4c05fafd8c6abf8aadfb7925f23f3713e0c",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-declarative/libqt6qmlmodels6_6.10.2+dfsg-3_arm64.deb",
+      "version": "6.10.2+dfsg-3"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 35626,
+      "filename": "libqt6qmlworkerscript6_6.10.2+dfsg-3_arm64.deb",
+      "package": "libqt6qmlworkerscript6",
+      "sha256": "1e0686239ecb4bcf407f40fb2972ff0895ea12317aa82ac69143cbb5ac90275d",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-declarative/libqt6qmlworkerscript6_6.10.2+dfsg-3_arm64.deb",
+      "version": "6.10.2+dfsg-3"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 2458278,
+      "filename": "libqt6quick6_6.10.2+dfsg-3_arm64.deb",
+      "package": "libqt6quick6",
+      "sha256": "de31883a0626a9076b630109cc8f36b1c36314d6879b372f1e39df9804a88d55",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-declarative/libqt6quick6_6.10.2+dfsg-3_arm64.deb",
+      "version": "6.10.2+dfsg-3"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 48682,
+      "filename": "libqt6quickwidgets6_6.10.2+dfsg-3_arm64.deb",
+      "package": "libqt6quickwidgets6",
+      "sha256": "eb9ff65c77a5e96830ad52e9917a4571fe309d72ad354cecdbd4f3da3368e33d",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-declarative/libqt6quickwidgets6_6.10.2+dfsg-3_arm64.deb",
+      "version": "6.10.2+dfsg-3"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 1502678,
+      "filename": "libqt6shadertools6_6.10.2-1_arm64.deb",
+      "package": "libqt6shadertools6",
+      "sha256": "a2fa00eefc9fc0d01d1eb352638f89a05c7e82cd54c554f9a5982a05d7c26eba",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-shadertools/libqt6shadertools6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 143660,
+      "filename": "libqt6sql6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6sql6",
+      "sha256": "b50cd01401a30090cb6cac86ccb0c13c97629cf4b42852f981002ad93b0f891a",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6sql6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 60186,
+      "filename": "libqt6sql6-sqlite_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6sql6-sqlite",
+      "sha256": "a77e7b1d23ec95240b45c79a9c5d68353271c5929fb0b8aa79a69ca71dbbeba5",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6sql6-sqlite_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 223496,
+      "filename": "libqt6svg6_6.10.2-2_arm64.deb",
+      "package": "libqt6svg6",
+      "sha256": "32a02f1adf0d5a0df9d8b0adf7abdf350532a5527f9b786792c797fce190ad6d",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-svg/libqt6svg6_6.10.2-2_arm64.deb",
+      "version": "6.10.2-2"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 18834,
+      "filename": "libqt6svgwidgets6_6.10.2-2_arm64.deb",
+      "package": "libqt6svgwidgets6",
+      "sha256": "8f77e42e6799cd3e1fd259dcf1a2eb54eed33389b3df39a8f0dfc5aa6c50dd6f",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-svg/libqt6svgwidgets6_6.10.2-2_arm64.deb",
+      "version": "6.10.2-2"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 185086,
+      "filename": "libqt6test6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6test6",
+      "sha256": "e3c171a9e3df0f7e600bc02def69851085538a942b700d23b295b6c5ee27b7eb",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6test6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 167130,
+      "filename": "libqt6uitools6_6.10.2-1_arm64.deb",
+      "package": "libqt6uitools6",
+      "sha256": "07ac18cec6e00acda6bf9cc29c6230fe6ec772439dd340bb9ea8c665ed26db1e",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/libqt6uitools6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 376248,
+      "filename": "libqt6waylandclient6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6waylandclient6",
+      "sha256": "cfacad4ce6fd3988c2fd8d87f50b03662d7790cef44b47dcb220ed278bc4ee8d",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6waylandclient6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 474468,
+      "filename": "libqt6waylandcompositor6_6.10.2-4_arm64.deb",
+      "package": "libqt6waylandcompositor6",
+      "sha256": "ffdb072165789e0ef4a2dd514a8591777f61504f38c8e82b2513f1ceec1be6c7",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-wayland/libqt6waylandcompositor6_6.10.2-4_arm64.deb",
+      "version": "6.10.2-4"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 2754502,
+      "filename": "libqt6widgets6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6widgets6",
+      "sha256": "d277cf171043f1f41c2362046fd0f1b2ede5bb1e36a5df69e2e322a3b1df6c96",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6widgets6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 97548,
+      "filename": "libqt6wlshellintegration6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6wlshellintegration6",
+      "sha256": "79a0743c4053fd4d04970a188aaaa4b6b25ab90d9c3fe4d8e834a0446dbb86df",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6wlshellintegration6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 81838,
+      "filename": "libqt6xml6_6.10.2+dfsg-7_arm64.deb",
+      "package": "libqt6xml6",
+      "sha256": "2ad72defe5a8fd9d5454c7c0d15c86202972c81157e4fa6f9f0e4c858f7e25c5",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/libqt6xml6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 345370,
+      "filename": "linguist-qt6_6.10.2-1_arm64.deb",
+      "package": "linguist-qt6",
+      "sha256": "4e5f3dfda50e9305d08d0b8572456b86045f162eaaba385766a311ffbbe96a80",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/linguist-qt6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 29922,
+      "filename": "qdbus-qt6_6.10.2-1_arm64.deb",
+      "package": "qdbus-qt6",
+      "sha256": "f97535320c69f79da61f7a4a8730a1fb0d5b6d449d43af84da2bebb291a5053b",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/qdbus-qt6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 633784,
+      "filename": "qdoc-qt6_6.10.2-1_arm64.deb",
+      "package": "qdoc-qt6",
+      "sha256": "3f1b324d31c6bbb108430537f70378eed767d3893ea6e7ea9597259259a675d5",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/qdoc-qt6_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 142906,
+      "filename": "qmake6_6.10.2+dfsg-7_arm64.deb",
+      "package": "qmake6",
+      "sha256": "dd824fba38e902d54ac5907d4e69bbbaf344ed79f8c1ce3325bc3439638ccd94",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qmake6_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 629608,
+      "filename": "qmake6-bin_6.10.2+dfsg-7_arm64.deb",
+      "package": "qmake6-bin",
+      "sha256": "93afe666f86c77a596fb97642b238c32806523c29da14e17bd08b7ac2fed300b",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qmake6-bin_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 2295812,
+      "filename": "qt6-base-dev_6.10.2+dfsg-7_arm64.deb",
+      "package": "qt6-base-dev",
+      "sha256": "75344bede93e35a4c38a01ed6d1f2dc54bda773b210e75d27b49d98c93bce63d",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qt6-base-dev_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 1099474,
+      "filename": "qt6-base-dev-tools_6.10.2+dfsg-7_arm64.deb",
+      "package": "qt6-base-dev-tools",
+      "sha256": "b27682743b8755df7cf4db1604e7a45dbdab90b2d4b957a6c8d6b3bf69a5874b",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qt6-base-dev-tools_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 902656,
+      "filename": "qt6-base-private-dev_6.10.2+dfsg-7_arm64.deb",
+      "package": "qt6-base-private-dev",
+      "sha256": "6d308bc6a3f290a1456b3e239426d700377bc4125687e98801078fb706e411ed",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qt6-base-private-dev_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 96316,
+      "filename": "qt6-documentation-tools_6.10.2-1_arm64.deb",
+      "package": "qt6-documentation-tools",
+      "sha256": "a87ad7417f84fee17637fded4b1fba1a040551ad05bdea128c7dca5da1b8ea1e",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/qt6-documentation-tools_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 94906,
+      "filename": "qt6-gtk-platformtheme_6.10.2+dfsg-7_arm64.deb",
+      "package": "qt6-gtk-platformtheme",
+      "sha256": "2fcb976b1b7bc41d71269e6b8c3aedf43047f8710ae1024e218896e8e01ec540",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qt6-gtk-platformtheme_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 356624,
+      "filename": "qt6-l10n-tools_6.10.2-1_arm64.deb",
+      "package": "qt6-l10n-tools",
+      "sha256": "c206bcca33c8e97d4e213f57fb1203b307f10614fc9e07ad43c78ed87e1d3fd5",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/qt6-l10n-tools_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 88684,
+      "filename": "qt6-qpa-plugins_6.10.2+dfsg-7_arm64.deb",
+      "package": "qt6-qpa-plugins",
+      "sha256": "83952e59675e4ddc22e1db6e4daadc518c398581efde8a00bffea2a99f1a2d88",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-base/qt6-qpa-plugins_6.10.2+dfsg-7_arm64.deb",
+      "version": "6.10.2+dfsg-7"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 35506,
+      "filename": "qt6-shader-baker_6.10.2-1_arm64.deb",
+      "package": "qt6-shader-baker",
+      "sha256": "b324cfe9d529445082e7620de9636e24eb71713a3a6757ba663d1d9ae8dada2e",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-shadertools/qt6-shader-baker_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 23786,
+      "filename": "qt6-shadertools-dev_6.10.2-1_arm64.deb",
+      "package": "qt6-shadertools-dev",
+      "sha256": "19229d09ef794ccaefe9a71b511c5eabd638d0444c1a193e21338f34635a9aaa",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-shadertools/qt6-shadertools-dev_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 22348,
+      "filename": "qt6-svg-dev_6.10.2-2_arm64.deb",
+      "package": "qt6-svg-dev",
+      "sha256": "019201749ac678a4193e679d3083cfdb804984dd05a1e33a6d973244fec894fb",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-svg/qt6-svg-dev_6.10.2-2_arm64.deb",
+      "version": "6.10.2-2"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 32482,
+      "filename": "qt6-svg-plugins_6.10.2-2_arm64.deb",
+      "package": "qt6-svg-plugins",
+      "sha256": "ee4298c3b4732fc45118fc90147a3cc72e742257fadcf1dbad4edac58bed8c14",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-svg/qt6-svg-plugins_6.10.2-2_arm64.deb",
+      "version": "6.10.2-2"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 211930,
+      "filename": "qt6-tools-dev_6.10.2-1_arm64.deb",
+      "package": "qt6-tools-dev",
+      "sha256": "b8d3ec433a8ef4687bd934f9ffcf4577cac2a34e60d9fef3c6bc1b72266d7187",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/qt6-tools-dev_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 271062,
+      "filename": "qt6-tools-dev-tools_6.10.2-1_arm64.deb",
+      "package": "qt6-tools-dev-tools",
+      "sha256": "0c458dcdccc80c2d703006f5126bdf09cac8ee4ee92ff1745e76fa0f3467803f",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-tools/qt6-tools-dev-tools_6.10.2-1_arm64.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "all",
+      "bytes": 2026828,
+      "filename": "qt6-translations-l10n_6.10.2-1_all.deb",
+      "package": "qt6-translations-l10n",
+      "sha256": "636699356af2227431ae48f26e47691946885e50522282ac3bcc38fee9d1d9da",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-translations/qt6-translations-l10n_6.10.2-1_all.deb",
+      "version": "6.10.2-1"
+    },
+    {
+      "architecture": "arm64",
+      "bytes": 103998,
+      "filename": "qt6-wayland_6.10.2-4_arm64.deb",
+      "package": "qt6-wayland",
+      "sha256": "bcb2f308eb70205e3a6856d6f25d8494d4abc472abe5ff515af4c92d932136b1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/q/qt6-wayland/qt6-wayland_6.10.2-4_arm64.deb",
+      "version": "6.10.2-4"
+    }
+  ],
+  "reference_files_sha256": {
+    "lib/aarch64-linux-gnu/libQt6Core.so.6.10.2": "29524628e0ac39568e2db84dbc1f2569c79106cd359631849e68db47bc9998e2",
+    "lib/aarch64-linux-gnu/libQt6Gui.so.6.10.2": "e9e5897048dcaabea22c874161f93e8663e02db69a48a1152493d08585be1713",
+    "lib/aarch64-linux-gnu/libQt6Widgets.so.6.10.2": "6500db07bb7d2c695a22f0879a9bf1ce714a073e6a903fc71e247a912c15ecad",
+    "lib/aarch64-linux-gnu/libQt6Svg.so.6.10.2": "ef375207cbb7e21053bfea96b9d207e00bbb7c4b37d4f2b339bbacf194c5f93f",
+    "lib/aarch64-linux-gnu/libQt6SvgWidgets.so.6.10.2": "f493ac359c348df6f823b4c19fec7add2391a884ac21f50f42c7fd9f6768d316",
+    "lib/aarch64-linux-gnu/libQt6UiTools.so.6.10.2": "b30ad73767d56febee3c16431e9d4853f953a519fa13a3a7c8b7973b509915c8",
+    "lib/aarch64-linux-gnu/libQt6Test.so.6.10.2": "f5db0bccedeb2370ed8d87a02542607fc3139cb222009a2610e3621a27dc128c",
+    "lib/aarch64-linux-gnu/libQt6OpenGL.so.6.10.2": "119de0117d17e29cb11b2acc9c3566fc8814d84dcd979bfff5ac35d021f67964",
+    "lib/aarch64-linux-gnu/libQt6OpenGLWidgets.so.6.10.2": "b585dee9e771f84521ff8514b39f91a2ee20c3d893deb6d6ad52e814c4c89667",
+    "lib/aarch64-linux-gnu/libQt6ShaderTools.so.6.10.2": "be412bf4073a0da7bc3bea6653be5e6117b4a92c2e2c452d1372847138b05185",
+    "lib/aarch64-linux-gnu/libQt6WaylandClient.so.6.10.2": "5c69976ba3b611f99bb98f989ecd631505ef7d52ff109ecd41a5c067978969c7",
+    "lib/qt6/bin/qsb": "de5a13ed06a4a47f985c78f6ce2bbf8418c0d3ac61352df834071cdf132a4a42",
+    "include/aarch64-linux-gnu/qt6/QtGui/6.10.2/QtGui/rhi/qrhi.h": "bd0717c691dfdee9e812489aa9170dd3e1c4588cf86f2ed5ee126eae51b9e63e",
+    "lib/aarch64-linux-gnu/cmake/Qt6UiTools/Qt6UiToolsDependencies.cmake": "6c592c4b53782c7bd21ac3f5a271385a73d3095fa6ad9fa16ac62d5a205eb492",
+    "lib/aarch64-linux-gnu/qt6/plugins/platforms/libqoffscreen.so": "451ac749cc5ffa12cea7856a4b134755c7d7389ea2f2797bb0b94b655c33d9ac",
+    "lib/aarch64-linux-gnu/qt6/plugins/platforms/libqxcb.so": "fccf0c378b1b3404196d5cf677800a7ef6d66b695c6f09c34012b69fbbc4f808",
+    "lib/aarch64-linux-gnu/qt6/plugins/platforms/libqwayland.so": "fad4f234998af0d4f4a51c2fb8f25195fcf6fa3d670c0b7a2134dfc61d9406df",
+    "lib/aarch64-linux-gnu/qt6/plugins/imageformats/libqsvg.so": "a8115badb32d4329b0c984491cb54b35357e7b8372dfe93379e1a443e49588ef",
+    "lib/aarch64-linux-gnu/qt6/plugins/iconengines/libqsvgicon.so": "73efcc3988d12f0feccbd43e37fa4d363e2ef4593a0bdf3cd7663f47700bc12c"
+  },
+  "notes": [
+    "Raw HTTPS Ubuntu packages are verified against the exact SHA256/size resolved from existing apt metadata; no dependency sources are built and no global packages are changed. Full dependency metadata and host inventory remain in the retained evidence.",
+    "This distribution UiTools CMake package imports OpenGL/OpenGLWidgets transitively. The module preflight links those APIs only and does not create an application graphics device or qualify a legacy GL context.",
+    "Other native architectures, deployment floors, full non-Qt closure, redistribution/source/notices review, external retention and D1-D6 acceptance remain open."
+  ]
+}

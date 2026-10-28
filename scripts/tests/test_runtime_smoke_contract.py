@@ -270,6 +270,16 @@ class RuntimeSmokeContractTests(unittest.TestCase):
         self.assertIn("python3-dev python3 xvfb patchelf", install_command)
         self.assertIn("--plugin qt", self.appimage_script)
 
+    def test_staged_python_omits_host_customization_and_development_symlinks(self):
+        source = (REPOSITORY_ROOT / "lcadpythonscript/CMakeLists.txt").read_text(encoding="utf-8")
+        for pattern in ("config-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}*",
+                        "sitecustomize.py", "usercustomize.py"):
+            self.assertIn('PATTERN "' + pattern + '" EXCLUDE', source)
+        self.assertEqual(3, source.count("${_LC_PYTHON_RUNTIME_INSTALL_EXCLUDES}"))
+        cmake = (REPOSITORY_ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
+        self.assertIn("list(APPEND _lc_source_license_files persistence/LICENSE third_party/libdxfrw/COPYING)",
+                      cmake)
+
     def test_windows_native_extension_origins_remain_confined_to_provider(self):
         self.assertIn("import _ctypes", self.python_smoke)
         self.assertIn("import _sqlite3", self.python_smoke)

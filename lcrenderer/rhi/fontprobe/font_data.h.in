@@ -1,0 +1,11 @@
+#pragma once
+// Generated only in the build tree from the existing pinned corpus and font.
+inline constexpr unsigned char fontBytes[] = {@FONT_BYTES@};
+inline constexpr char fontSha[] = "@FONT_SHA@";
+inline constexpr char inputsSha[] = "@INPUTS_SHA@";
+inline constexpr char family[] = "@FAMILY@";
+inline constexpr char style[] = "@STYLE@";
+inline constexpr unsigned unitsPerEm = @UPEM@;
+inline constexpr long leftBearing = @LEFT_BEARING@;
+struct Probe { const char* name; unsigned codepoint; unsigned glyph; long advance; };
+inline constexpr Probe probes[] = {@PROBES@};

@@ -1,0 +1,23 @@
+{
+  "id": "cad-rhi-spike-v2",
+  "width": 256,
+  "height": 192,
+  "tolerance": 3,
+  "landmarks": [
+    {"id": "background", "x": 240, "y": 180, "rgba": [16, 24, 32, 255], "transparent_rgba": [0, 0, 0, 0]},
+    {"id": "first-layer", "x": 28, "y": 24, "rgba": [255, 0, 0, 255]},
+    {"id": "join", "x": 88, "y": 20, "rgba": [0, 255, 255, 255]},
+    {"id": "dash-on", "x": 20, "y": 60, "rgba": [255, 255, 0, 255]},
+    {"id": "dash-off", "x": 28, "y": 60, "rgba": [16, 24, 32, 255], "transparent_rgba": [0, 0, 0, 0]},
+    {"id": "middle-layer", "x": 136, "y": 20, "rgba": [0, 255, 0, 255]},
+    {"id": "ordered-alpha-overlap", "x": 152, "y": 36, "rgba": [128, 127, 0, 255]},
+    {"id": "bitmap-text", "x": 17, "y": 102, "rgba": [255, 255, 255, 255]},
+    {"id": "glyph-hole", "x": 23, "y": 102, "rgba": [16, 24, 32, 255], "transparent_rgba": [0, 0, 0, 0]},
+    {"id": "image-top-left", "x": 120, "y": 104, "rgba": [255, 0, 0, 255]},
+    {"id": "image-bottom-right", "x": 172, "y": 156, "rgba": [255, 255, 0, 255]},
+    {"id": "large-coordinate-local-origin", "x": 220, "y": 112, "rgba": [255, 0, 255, 255]},
+    {"id": "half-alpha", "x": 168, "y": 48, "rgba": [136, 12, 16, 255], "transparent_rgba": [255, 0, 0, 128]},
+    {"id": "stacked-alpha", "x": 216, "y": 48, "rgba": [68, 6, 136, 255], "transparent_rgba": [85, 0, 170, 192]},
+    {"id": "image-alpha", "x": 164, "y": 148, "rgba": [8, 12, 144, 255], "transparent_rgba": [0, 0, 255, 128]}
+  ]
+}

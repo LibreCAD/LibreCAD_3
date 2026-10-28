@@ -74,7 +74,6 @@
 #include <lcpython.h>
 #include <bridge/py_lc.h>            // setRegisterPluginHook
 #include <scriptadapter/pythoncallback.h>  // makePythonCallback
-#include <persistence/file.h>
 #include <cad/operations/entitybuilder.h>
 
 #include <kaguya/kaguya.hpp>
@@ -911,6 +910,7 @@ TEST(ScriptCustomEntity, LuaCustomEntityTypedefStillWorks) {
 // platform builds.
 // -----------------------------------------------------------------------------
 
+#if LC_USE_PERSISTENCE
 namespace {
 
 std::string uniqueTmpDxf(const std::string& prefix) {
@@ -1392,6 +1392,8 @@ assert abs(state['z']) < 1e-6
 }
 
 // -----------------------------------------------------------------------------
+#endif // LC_USE_PERSISTENCE
+
 // Phase 6 PR-6.1 sub-piece 3c 2nd fixup — runtime verification that
 // ScriptCustomEntity Lua registration wires up the cross-type
 // shared_ptr conversion.

@@ -54,7 +54,8 @@ class ConanProviderNoticesTests(unittest.TestCase):
         exec(compile(ast.fix_missing_locations(ast.Module(body=[method], type_ignores=[])),
                      "conanfile.py", "exec"), namespace)
         namespace["generate"](SimpleNamespace(generators_folder=str(self.generators),
-                                             dependencies=SimpleNamespace(host=self.dependencies)))
+                                             dependencies=SimpleNamespace(host=self.dependencies),
+                                             _cmake_options=()))
         return Path(self.toolchain.variables["LIBRECAD_DEPENDENCY_LICENSE_DIR"])
 
     def test_preserves_every_host_package_notice_and_identity(self):

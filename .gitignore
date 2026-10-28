@@ -2,6 +2,9 @@ CMakeFiles/
 *_autogen/
 kerneldev.pro.user
 *.cmake
+# Hand-maintained R0 source, required by the standalone renderer CMake project.
+!lcrenderer/rhi/spike/cmake/LegacyQtMacSdk.cmake
+!lcviewernoqt/cmake/RendererOptions.cmake
 !/.cmake
 !/.cmake/*.cmake
 *.autosave
@@ -13,6 +16,7 @@ lcdemo*
 *.so
 .idea
 build
+/build-r1/
 install
 release
 CMakeLists.txt.user

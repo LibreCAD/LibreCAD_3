@@ -20,6 +20,9 @@ public:
      */
     void addLuaLibs();
 
+    /** Add directory/?.lua to package.path once, preserving existing entries. */
+    void addModuleSearchPath(const std::string& directory);
+
     void importLCKernel();
 
     void setDocument(const lc::storage::Document_SPtr& document);
