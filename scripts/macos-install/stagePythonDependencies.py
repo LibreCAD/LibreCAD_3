@@ -635,6 +635,9 @@ class RuntimeStager:
             )
         if self.scan_frameworks:
             queue.extend(self._framework_binaries())
+        # Explicit project originals may include more than the GUI executable
+        # (for example the installed CLI). Never infer ownership by basename.
+        queue.extend(self.project_files)
         # Capture selected originals for ALL initial copies before the first
         # runtime/consumer install-name or RPATH change. External dependencies
         # are captured in _stage_external before their copy is made.

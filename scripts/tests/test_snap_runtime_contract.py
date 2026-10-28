@@ -8,6 +8,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from lcUIPy._runtimeaudit import audit_elf_closure
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -52,6 +56,46 @@ class SnapRuntimeContractTests(unittest.TestCase):
         for package in ("libgdbm6t64", "libxml2-16"):
             with self.subTest(package=package):
                 self.assertRegex(stage_packages, r"(?m)^      - {}$".format(package))
+
+    def test_stages_the_installed_cli_runtime_providers_without_sdk_packages(self):
+        build, stage = self.snapcraft.split("    build-packages:", 1)[1].split("    stage-packages:", 1)
+        stage = stage.split("    cmake-parameters:", 1)[0]
+        cli = (REPOSITORY_ROOT / "luacmdinterface/CMakeLists.txt").read_text()
+        self.assertIn("install(TARGETS luacmdinterface", cli)
+        self.assertNotIn("-DWITH_LUACMDINTERFACE=OFF", self.snapcraft)
+        # Ubuntu 26.04's libcurl4-gnutls-dev depends on libcurl3t64-gnutls;
+        # its package number is not the SONAME. GLFW also needs its runtime.
+        # https://packages.ubuntu.com/resolute-updates/libcurl4-gnutls-dev
+        for sdk, runtime, link in (("libglfw3-dev", "libglfw3", "glfw3::glfw"),
+                                   ("libcurl4-gnutls-dev", "libcurl3t64-gnutls", "${CURL_LIBRARIES}")):
+            with self.subTest(provider=runtime):
+                self.assertRegex(build, r"(?m)^      - " + re.escape(sdk) + r"$")
+                self.assertRegex(stage, r"(?m)^      - " + re.escape(runtime) + r"$")
+                self.assertNotIn("      - " + sdk + "\n", stage)
+                self.assertIn(link, cli)
+
+    def test_whole_snap_elf_audit_rejects_missing_cli_libraries_even_if_gui_resolves(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            directory = root / "usr/bin"
+            directory.mkdir(parents=True)
+            header = b"\x7fELF\x02\x01\x01" + b"\0" * 9 + b"\x02\0\x3e\0"
+            for name in ("librecad", "luacmdinterface"):
+                (directory / name).write_bytes(header)
+            for missing in ("libglfw.so.3", "libcurl-gnutls.so.4", None):
+                def inspect(args, **kwargs):
+                    failed = missing and Path(args[-1]).name == "luacmdinterface"
+                    return SimpleNamespace(returncode=127 if failed else 0,
+                        stdout=(missing + ": cannot open shared object file") if failed else "resolved")
+                with self.subTest(missing=missing), patch("lcUIPy._runtimeaudit._glibc_loader", return_value=Path("/loader")), \
+                        patch("lcUIPy._runtimeaudit.subprocess.run", side_effect=inspect) as loader:
+                    if missing:
+                        with self.assertRaisesRegex(RuntimeError, "unresolved ELF closure for usr/bin/luacmdinterface"):
+                            audit_elf_closure(root)
+                    else:
+                        self.assertEqual(2, audit_elf_closure(root))
+                    self.assertEqual({str(directory / name) for name in ("librecad", "luacmdinterface")},
+                                     {call.args[0][-1] for call in loader.call_args_list})
 
     def test_relocates_libproxy_private_backend_search_path(self):
         # Ubuntu's libproxy RUNPATH is absolute /usr/lib/.../libproxy, outside

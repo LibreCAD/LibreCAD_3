@@ -366,6 +366,7 @@ TEST(RenderFactoryTest, InvalidPolicyBeforeDeviceCreation) {
     }
     for (const auto type : {D::IntegratedDevice, D::DiscreteDevice, D::ExternalDevice}) {
         EXPECT_EQ("unknown", deviceClass(type, true, verified));
+        EXPECT_EQ("unknown", deviceClass(type, false, verified));
         EXPECT_EQ("hardware", deviceClass(type, true, {}));
     }
     EXPECT_EQ("unknown", deviceClass(D::CpuDevice, true, verified));

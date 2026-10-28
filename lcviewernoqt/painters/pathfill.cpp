@@ -1,4 +1,5 @@
 #include "pathgeometry.h"
+#include "pathnumeric_p.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -24,21 +25,6 @@ void validate(FillRule rule, FillLimits limits) {
 // Exact sign for the bounded input-double domain: two-difference, FMA product
 // residuals, and fixed-size error-free expansion sums. No epsilon winding test,
 // extended precision, allocation, or platform-specific long-double assumption.
-struct Expansion {
-    std::array<double,64> data{};
-    unsigned n=0;
-    void add(double x) {
-        unsigned m=0;
-        for (unsigned i=0;i<n;++i) {
-            const double a=data[i],sum=x+a,b=sum-x;
-            const double tail=(x-(sum-b))+(a-b);
-            if (tail) data[m++]=tail;
-            x=sum;
-        }
-        if (x || !m) data[m++]=x;
-        check(m<=data.size(),"precision-limit");n=m;
-    }
-};
 std::array<double,2> difference(double a,double b) {
     const double x=a-b,z=x-a;
     return {{(a-(x-z))-(b+z),x}};
@@ -46,13 +32,13 @@ std::array<double,2> difference(double a,double b) {
 int orient(Point a,Point b,Point c) {
     const auto x=difference(b.x,a.x),y=difference(b.y,a.y);
     const auto u=difference(c.x,a.x),v=difference(c.y,a.y);
-    Expansion e;
+    detail::Sum e;
     for (unsigned i=0;i<2;++i) for (unsigned j=0;j<2;++j) {
         const double p=x[i]*v[j],q=y[i]*u[j];
         e.add(std::fma(x[i],v[j],-p));e.add(p);
         e.add(-std::fma(y[i],u[j],-q));e.add(-q);
     }
-    return e.data[e.n-1]>0?1:(e.data[e.n-1]<0?-1:0);
+    return e.value()>0?1:(e.value()<0?-1:0);
 }
 struct Refine {};
 struct Edge { Point a,b; std::size_t loop,index,count; Polyline::Edge curve; };

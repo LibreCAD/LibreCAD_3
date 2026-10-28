@@ -387,7 +387,7 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
 
         conan = self.conan_script.lower()
         self.assertIn(
-            "conan install .. -s build_type=release -s compiler.cppstd=14 --build=never",
+            "conan install .. -s build_type=release -s compiler.cppstd=17 --build=never",
             conan,
         )
         self.assertNotIn("--build missing", conan)

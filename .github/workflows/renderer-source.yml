@@ -175,10 +175,10 @@ jobs:
           import os, subprocess, sys
           from pathlib import Path
           sys.path.insert(0,'scripts')
-          from validate_renderer_conan_graph import CASES, HOST_CASES, case_options
+          from validate_renderer_conan_graph import CASES, HOST_CASES, case_options, windows_runtime_directories
           subprocess.run([sys.executable, '-m', 'pip', 'install', '--only-binary=:all:', 'conan==2.33.0'], check=True)
           # Fresh cache. --build=never forbids a source-build fallback, including
-          # transitive requirements. Static core binaries avoid hidden run-env DLLs.
+          # transitive requirements. Only Lua is shared; publish its validated DLL path.
           os.environ['CONAN_HOME'] = str(Path(os.environ['RUNNER_TEMP']) / 'renderer-r1-conan')
           subprocess.run(['conan', 'profile', 'detect'], check=True)
           scope=os.environ['R1_SCOPE'];tests=os.environ['R1_TESTS']=='ON'
@@ -187,6 +187,7 @@ jobs:
           else:
               kind='cli' if scope.startswith('cli') else scope
               names=[kind+'-'+os.environ['R1_HOST_PROFILE']+('' if tests else '-no-tests')]
+          runtimes=set()
           for name in names:
               options=case_options(name)
               common = ['.', '--build=never','-s:h','arch=x86_64','-s:h','compiler=msvc',
@@ -212,6 +213,9 @@ jobs:
                               '-of',str(Path('build-r1/conan')/name),'--format=json','--out-file',str(installed)],check=True)
               subprocess.run([*validate,'--graph',str(installed),'--expected-route',str(route),
                               '--report',str(Path('build-r1')/('conan-'+name+'-installed-route.json'))],check=True)
+              runtimes.add(tuple(windows_runtime_directories(installed)))
+          if len(runtimes)!=1:raise ValueError('R1 profiles must share one installed Lua runtime')
+          with open(os.environ['GITHUB_PATH'],'a',encoding='utf-8') as out:out.write('\n'.join(next(iter(runtimes)))+'\n')
           with open(os.environ['GITHUB_ENV'],'a') as out:out.write('CONAN_HOME='+os.environ['CONAN_HOME']+'\n')
       - name: Restore pinned Windows software Vulkan inputs
         if: runner.os == 'Windows' && matrix.tests == 'ON' && startsWith(matrix.contract_scope, 'libraries-')

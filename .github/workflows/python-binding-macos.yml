@@ -78,7 +78,7 @@ jobs:
             -DWITH_RENDERING_UNITTESTS=OFF
 
       - name: Build application and tests
-        run: cmake --build build --target tinyspline librecad lcunittest --parallel 3
+        run: cmake --build build --target tinyspline librecad luacmdinterface lcunittest --parallel 3
 
       - name: Require Python binding regression suites
         shell: bash

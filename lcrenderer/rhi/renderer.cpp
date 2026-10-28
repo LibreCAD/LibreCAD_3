@@ -12,7 +12,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <thread>
-#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+#if defined(Q_OS_MACOS)
 #include <IOKit/IOKitLib.h>
 #include <objc/message.h>
 #include <objc/runtime.h>
@@ -32,7 +32,7 @@ using viewer::render::Snapshot;
 static_assert(sizeof(Vertex) == 6 * sizeof(float), "RHI vertex layout must be packed floats");
 detail::MetalIdentity selectedMetalIdentity(QRhi* device) {
     detail::MetalIdentity result;
-#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+#if defined(Q_OS_MACOS)
     if (device->backend() != QRhi::Metal) return result;
     const auto* handles = static_cast<const QRhiMetalNativeHandles*>(device->nativeHandles());
     if (!handles || !handles->dev) return result;

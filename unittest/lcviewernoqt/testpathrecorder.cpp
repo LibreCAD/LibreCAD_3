@@ -310,6 +310,37 @@ TEST(CpuTransformTest, AffineCancellationPreservesModelDetailBeforePreparation) 
     ASSERT_EQ(1u,r.commands().size());EXPECT_EQ(2u,r.commands().front().path.size());
 }
 
+TEST(CpuTransformTest, AffineResidualCancellationRejectsBeforePublishingSmallPhysicalCoordinates) {
+    using Exact=boost::multiprecision::cpp_bin_float_100;
+    Transform t;t.xx=std::ldexp(-.91630652385963662,40);t.xy=std::ldexp(-2754124.3216463276,40);
+    t.yx=0;t.yy=1;t.tx=std::ldexp(547564.46569010592,40);
+    t.origin={-1.6300049239829838e-10,-6.7902190497415888e-12};
+    const Point a{169445.07147576811,.14244122466039988},b{std::nextafter(a.x,1e6),a.y};
+    PathRecorder r;r.moveTo({2,3});r.lineTo({4,5});const auto saved=r.path();r.setTransform(t);
+    unsigned i=0;
+    for (Point p:{a,b}) {
+        const Exact x=Exact(t.xx)*(Exact(p.x)-t.origin.x)+Exact(t.xy)*(Exact(p.y)-t.origin.y)+t.tx;
+        const Exact y=Exact(p.y)-t.origin.y;
+        // Both exact physical points are small and representable. Extracting
+        // only the final expansion component used to publish -64/-128 instead,
+        // then prepare a .0625px-bound mesh with6px/40px endpoint errors.
+        EXPECT_LT(abs(x),128);EXPECT_LT(abs(y),1);
+        EXPECT_GT(abs(x-Exact(i++?-128:-64)),.25);
+        EXPECT_EQ("precision-limit",diagnostic([&]{t.point(p);}));
+        EXPECT_EQ("precision-limit",diagnostic([&]{r.moveTo(p);}));
+        EXPECT_EQ("precision-limit",diagnostic([&]{r.lineTo(p);}));
+        ASSERT_EQ(saved.size(),r.path().size());
+        for (std::size_t j=0;j<saved.size();++j) {
+            EXPECT_DOUBLE_EQ(saved[j].point.x,r.path()[j].point.x);
+            EXPECT_DOUBLE_EQ(saved[j].point.y,r.path()[j].point.y);
+        }
+        EXPECT_TRUE(r.commands().empty());
+    }
+    EXPECT_EQ("precision-limit",diagnostic([&]{t.distance(a);}));
+    r.resetTransform();r.lineTo({6,7});r.stroke();
+    ASSERT_EQ(1u,r.commands().size());EXPECT_FALSE(prepareStroke(r.commands()[0]).triangles.empty());
+}
+
 namespace {
 // Independent Bernstein evaluation in long double, not the subdivision routine.
 Point evaluate(const std::vector<Point>& p, long double t) {

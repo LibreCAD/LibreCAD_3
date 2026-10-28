@@ -441,14 +441,22 @@ if(WITH_UNITTESTS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
-if(WITH_RENDERER_TESTS)
-    # One graph avoids repeated MSBuild invocations/relinks for shared targets.
-    # This is opt-in, not an additional default or installed target.
+option(LC_RENDERER_SOURCE_PCH "Private header caches for cold renderer source checks" OFF)
+if(WITH_RENDERER_TESTS OR LC_RENDERER_SOURCE_PCH)
+    # Each target owns its cache and compile environment; public header checks
+    # remain independent. Cold library/host checks opt in without GPU tests.
     foreach(_target IN ITEMS lckernel lcviewernoqt lcluascript lcunittest)
-        target_precompile_headers(${_target} PRIVATE <Eigen/Dense>)
+        if(TARGET ${_target})
+            target_precompile_headers(${_target} PRIVATE <Eigen/Dense>)
+        endif()
     endforeach()
     target_precompile_headers(lcluascript PRIVATE <kaguya/kaguya.hpp>)
-    target_precompile_headers(lcunittest PRIVATE <gtest/gtest.h>)
+    if(TARGET lcunittest)
+        target_precompile_headers(lcunittest PRIVATE <gtest/gtest.h>)
+    endif()
+endif()
+if(WITH_RENDERER_TESTS)
+    # One graph avoids repeated MSBuild invocations/relinks for shared targets.
     add_custom_target(lcrenderer_source_checks DEPENDS
         lcrenderertest lcrenderer_headercheck lcviewer_cpu_headercheck lcunittest)
 endif()
@@ -536,8 +544,8 @@ if(APPLE AND WITH_PYTHONSCRIPT AND TARGET librecad AND TARGET Python::Python)
             message(FATAL_ERROR "Native origin capture requires a supported native macOS architecture")
         endif()
         set(_lc_native_project_args "")
-        foreach(_lc_origin_target librecad lckernel lcscripting persistence
-                lcluascript lcpythonscript lcviewernoqt dxfrw)
+        foreach(_lc_origin_target librecad luacmdinterface lckernel lcscripting persistence
+                lcluascript lcpythonscript lcviewernoqt lcviewer_opengl dxfrw)
             if(NOT TARGET ${_lc_origin_target})
                 continue()
             endif()

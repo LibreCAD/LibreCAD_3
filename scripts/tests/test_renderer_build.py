@@ -496,13 +496,14 @@ class ConanRendererRecipeTests(unittest.TestCase):
     def test_disabled_unit_tests_do_not_require_gtest(self):
         self.assertNotIn('gtest', self.requirements(with_unittests=False))
 
-    def test_test_dependency_is_pinned_without_raising_application_cppstd(self):
-        # Master's Windows lane takes prebuilt C++14 binaries; GoogleTest 1.14 is one.
+    def test_test_dependency_and_windows_toolchain_match_the_project_standard(self):
+        # GoogleTest disables cross-cppstd compatibility because it changes its ABI.
         recipe=self.recipe();recipe.requirements()
-        self.assertIn('gtest/1.14.0',recipe.dependencies_requested)
+        self.assertIn('gtest/1.18.0',recipe.dependencies_requested)
         command=(ROOT/'scripts/windows-install/createConanDirAndInstallDependencies.bat').read_text()
-        self.assertIn('-s compiler.cppstd=14',command)
-        self.assertNotIn('-s compiler.cppstd=17',command)
+        self.assertIn('set(CMAKE_CXX_STANDARD 17)',(ROOT/'CMakeLists.txt').read_text())
+        self.assertIn('-s compiler.cppstd=17',command)
+        self.assertNotIn('-s compiler.cppstd=14',command)
 
     def test_all_option_combinations_fail_closed(self):
         names = tuple(self.recipe_class.default_options)

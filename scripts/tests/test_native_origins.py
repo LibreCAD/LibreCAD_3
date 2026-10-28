@@ -727,6 +727,44 @@ class NativeOriginTests(unittest.TestCase):
                 stager.stage()
             command.assert_not_called()
 
+    def test_registered_cli_and_split_renderer_are_captured_before_rewriting(self):
+        cmake=(ROOT/'CMakeLists.txt').read_text()
+        registered=cmake.split('foreach(_lc_origin_target ',1)[1].split(')',1)[0].split()
+        self.assertIn('luacmdinterface',registered)
+        self.assertIn('lcviewer_opengl',registered)
+        for unknown in (False,True):
+            with self.subTest(unknown=unknown):
+                prefix=self.payload/str(unknown);build=self.root/('build-'+str(unknown))
+                for directory in (prefix/'bin',prefix/'lib',prefix/'python',build):directory.mkdir(parents=True)
+                files=[]
+                for relative in ('bin/librecad','bin/luacmdinterface','lib/liblcviewer_opengl.dylib'):
+                    staged,original=prefix/relative,build/Path(relative).name
+                    original.write_bytes(binary());shutil.copy2(original,staged);files.append((staged,original))
+                extra=prefix/'bin/unregistered'
+                if unknown:extra.write_bytes(binary())
+                manifest=prefix/'origins.json'
+                stager=RuntimeStager(prefix,prefix/'python',prefix/'lib','otool','install_name_tool','codesign',
+                    prefix/'bin/librecad',False,[],False,origin_manifest=manifest,origin_platform='macos-arm64',
+                    project_files=files,project_root=build,project_revision='a'*40,project_version='3.0')
+                def command(args):
+                    self.assertEqual(3,len(stager.origins.files))
+                    self.assertNotEqual(extra,Path(args[-1]))
+                    if args[0]=='install_name_tool' or '--sign' in args:
+                        path=Path(args[-1]);path.write_bytes(path.read_bytes()+b'fixture rewrite/signature')
+                    return ''
+                with patch.object(stager,'_loads',return_value=[]),patch.object(stager,'_rpaths',return_value=[]), \
+                        patch.object(stager,'_run',side_effect=command):
+                    if unknown:
+                        with self.assertRaisesRegex(ValueError,'native original coverage differs'):stager.stage()
+                        self.assertFalse(manifest.exists())
+                    else:
+                        stager.stage()
+                        self.assertEqual((3,1),origins.audit_native_origins(prefix,manifest))
+                        report=json.loads(manifest.read_bytes())
+                        self.assertEqual({path.relative_to(prefix).as_posix() for path,_ in files},
+                                         {entry['path'] for entry in report['files']})
+                self.assertTrue(all(original.read_bytes()==binary() for _,original in files))
+
     def test_bundle_does_not_mislabel_install_prefix_byte_hashes_as_final_app_coverage(self):
         source = (ROOT / "scripts/macos-install/createBundle.sh").read_text()
         self.assertLess(source.index("audit_native_origins(root, sys.argv[2])"), source.index('ditto "$prefix/bin/librecad"'))

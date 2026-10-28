@@ -578,8 +578,15 @@ def source_check_graph(build):
             len(ids)!=len(edges) or any(not isinstance(value,str) or not value for value in ids) or
             len(ids)!=len(set(ids)) or not set(required.values())<=set(ids)):
         raise ValueError('Missing/changed source checks aggregate or required dependencies')
+    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids),
+                private_pch=source_private_pch_graph(targets))
+
+
+def source_private_pch_graph(targets,tests=True):
+    """Require the exact target-owned cache set; no consumer/header leakage."""
+    expected={name:value for name,value in SOURCE_PRIVATE_PCH.items() if name!='lcunittest' or tests}
     private={}
-    for name,(standard,headers) in SOURCE_PRIVATE_PCH.items():
+    for name,(standard,headers) in expected.items():
         standard=standard or project_cxx_standard()
         item=targets.get(name,{});groups=item.get('compileGroups',[])
         if (item.get('type')!=('EXECUTABLE' if name=='lcunittest' else 'SHARED_LIBRARY') or not groups or any(
@@ -592,9 +599,9 @@ def source_check_graph(build):
     if any(any(g.get('precompileHeaders') or any('cmake_pch' in f.get('fragment','')
             for f in g.get('compileCommandFragments',[])) for g in item.get('compileGroups',[])) or
             any(Path(s.get('path','')).name.startswith('cmake_pch') for s in item.get('sources',[]))
-            for name,item in targets.items() if name not in SOURCE_PRIVATE_PCH):
+            for name,item in targets.items() if name not in expected):
         raise ValueError('Private source PCH leaked into another target')
-    return dict(target=target['id'],required_targets=required,dependency_ids=sorted(ids),private_pch=private)
+    return private
 
 
 CPU_PUBLIC_HEADERS=('painters/lcpainter.h','painters/createpainter.h','painters/renderframe.h','painters/pathrecorder.h','painters/pathgeometry.h','documentcanvas.h','lcdrawoptions.h')
@@ -685,6 +692,9 @@ def library_profile_graph(build,flags,hosts=False):
               'lcrenderertest':False,'lcrenderer_headercheck':False}
     for key,present in expected.items():
         if (key in targets)!=present:raise ValueError('Library matrix target mismatch: '+key)
+    if not re.search(r'^LC_RENDERER_SOURCE_PCH:BOOL=ON$',cache,re.M):
+        raise ValueError('Cold source profile omits its explicit private PCH opt-in')
+    private_pch=source_private_pch_graph(targets,tests=flags['WITH_UNITTESTS'])
     def sources(name):return [s['path'].replace('\\','/') for s in targets.get(name,{}).get('sources',[])]
     factory='painters/opengl/createpainter.cpp'
     if any(p.endswith(factory) for p in sources('lcviewernoqt')):raise ValueError('Legacy factory leaked into CPU target')
@@ -695,6 +705,8 @@ def library_profile_graph(build,flags,hosts=False):
             raise ValueError('Python test-source membership mismatch: '+name)
     if any(p.endswith('lcviewernoqt/fontbooktest.cpp') for p in sources('lcunittest'))!=(flags['WITH_LEGACY_OPENGL_RENDERER'] and flags['WITH_UNITTESTS']):
         raise ValueError('Legacy test-source membership mismatch: fontbooktest.cpp')
+    if any(p.endswith('scripting/luapersistence_test.cpp') for p in sources('lcunittest'))!=(flags['WITH_PYTHONSCRIPT'] and flags['WITH_PERSISTENCE'] and flags['WITH_UNITTESTS']):
+        raise ValueError('Lua persistence test-source membership mismatch')
     if hosts:
         test_sources={name:ui for name in UI_TEST_SOURCES}
         test_sources.update({'persistence/dxfexporttest.cpp':flags['WITH_PERSISTENCE'],
@@ -767,7 +779,7 @@ def library_profile_graph(build,flags,hosts=False):
             selected=entry(name+'_DIR')/(name+'Config.cmake')
             host_sdk[str(selected)]=sha256(selected.read_bytes())
     return dict(targets=sorted(targets),package_discoveries=packages,python_provider=provider,
-                host_sdk_files_sha256=host_sdk,
+                host_sdk_files_sha256=host_sdk,private_pch=private_pch,
                 cpu_headers=cpu_header_contract(build) if flags['WITH_UNITTESTS'] else None,
                 legacy_factory_owner='lcviewer_opengl' if flags['WITH_LEGACY_OPENGL_RENDERER'] else None)
 
@@ -829,6 +841,7 @@ def build_library_matrix(args,selected,sdk,parent,tests=True,inputs=None):
             commands.append(run_command(command,where,min(args.timeout,remaining),env))
         command=[str(Path(args.cmake or shutil.which('cmake')).resolve(strict=True)),'-S',str(inventory.REPO_ROOT),'-B',str(build),
             '-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CONFIGURATION_TYPES=Release','-DCMAKE_INSTALL_PREFIX='+str(directory/'stage'),
+            '-DLC_RENDERER_SOURCE_PCH:BOOL=ON',
             '--trace-expand','--trace-format=json-v1','--trace-redirect='+str(directory/'trace.jsonl')]
         if args.generator:command+=['-G',args.generator]
         selected_sdk=dict(sdk,**overrides[profile])
@@ -1102,6 +1115,7 @@ def build_host_source(args):
         return where
     command=[cmake,'-S',str(inventory.REPO_ROOT),'-B',str(build),'-DCMAKE_BUILD_TYPE=Release',
         '-DCMAKE_CONFIGURATION_TYPES=Release','-DCMAKE_INSTALL_PREFIX='+str(directory/'stage'),
+        '-DLC_RENDERER_SOURCE_PCH:BOOL=ON',
         '--trace-expand','--trace-format=json-v1','--trace-redirect='+str(directory/'trace.jsonl')]
     if args.generator:command+=['-G',args.generator]
     command+=['-D'+k+'='+v for k,v in sdk.items()]+['-D'+k+':BOOL='+('ON' if v else 'OFF') for k,v in flags.items()]

@@ -17,7 +17,7 @@ CASES.update({name:(tests,profile.startswith('dual')) for name,(_,profile,tests)
 SETTINGS=dict(os='Windows',arch='x86_64',compiler='msvc',build_type='Release',**{
     'compiler.version':'194','compiler.cppstd':'17','compiler.runtime':'dynamic','compiler.runtime_type':'Release'})
 DIRECT={'boost/1.82.0','eigen/3.4.0','lua/5.3.5','rapidjson/1.1.0'}
-GTEST='gtest/1.14.0'
+GTEST='gtest/1.18.0'
 LEGACY_DIRECT={'freetype/2.13.0','glew/2.2.0','glm/0.9.9.8'}
 CLI_DIRECT={'glfw/3.3.8','libcurl/8.15.0'}
 LEGACY={'freetype','glew','glm','opengl','glu','glfw','libcurl','libdxfrw','qt'}
@@ -102,6 +102,37 @@ def validate(graph,lock,case):
         packages.append(dict(ref=ref,package_id=node['package_id'],package_revision=node['prev'],settings=dict(node['settings'])))
     require(observed==locked,'Recipe revisions differ from the generated lockfile')
     return dict(case=case,consumer_settings=dict(SETTINGS),consumer_options=expected,packages=sorted(packages,key=lambda p:p['ref']))
+
+
+def windows_runtime_directories(installed_graph):
+    """Expose only the installed shared Lua package's owned DLL directories."""
+    document=read_json(installed_graph)
+    require(isinstance(document,dict) and isinstance(document.get('graph'),dict),'Missing installed Conan graph')
+    graph=document['graph'];nodes=graph.get('nodes')
+    require(graph.get('error','missing') is None and isinstance(nodes,dict),'Missing installed Conan graph')
+    lua=[n for n in nodes.values() if isinstance(n,dict) and n.get('context')=='host' and
+         isinstance(n.get('ref'),str) and n['ref'].startswith('lua/')]
+    require(len(lua)==1,'Expected exactly one installed host Lua package')
+    node=lua[0]
+    require(node.get('binary') in ('Cache','Download') and isinstance(node.get('options'),dict) and
+            node['options'].get('shared')=='True','Installed Lua must be an available shared binary')
+    cpp=node.get('cpp_info')
+    require(isinstance(cpp,dict) and isinstance(cpp.get('root'),dict),'Missing installed Lua runtime metadata')
+    folder=node.get('package_folder');bindirs=cpp['root'].get('bindirs')
+    require(isinstance(folder,str) and Path(folder).is_absolute() and Path(folder).is_dir(),
+            'Missing absolute installed Lua package folder')
+    package=Path(folder).resolve(strict=True)
+    require(isinstance(bindirs,list) and 0<len(bindirs)<16,'Missing installed Lua DLL directories')
+    result=[]
+    for value in bindirs:
+        require(isinstance(value,str) and not any(c in value for c in '\r\n') and Path(value).is_absolute(),
+                'Lua DLL directory must be an absolute path')
+        directory=Path(value).resolve(strict=True)
+        require(directory.is_dir() and package in directory.parents,'Lua DLL directory escapes its package')
+        dlls=[p for p in directory.iterdir() if p.suffix.lower()=='.dll' and p.is_file()]
+        require(dlls and all(directory in p.resolve(strict=True).parents for p in dlls),'Missing/escaping installed Lua DLL')
+        require(str(directory) not in result,'Duplicate Lua DLL directory');result.append(str(directory))
+    return sorted(result)
 
 
 def main():

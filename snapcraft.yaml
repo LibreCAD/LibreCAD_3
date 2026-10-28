@@ -100,6 +100,10 @@ parts:
       - qt6-wayland
       - liblua5.3-0
       - libglew2.2
+      # The installed CLI links GLFW and the GnuTLS curl provider selected by
+      # libcurl4-gnutls-dev; build-package SDKs are absent from the final snap.
+      - libglfw3
+      - libcurl3t64-gnutls
       - libboost-log1.90.0
       - libboost-filesystem1.90.0
       - libboost-thread1.90.0

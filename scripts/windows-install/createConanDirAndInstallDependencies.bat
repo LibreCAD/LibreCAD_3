@@ -12,9 +12,8 @@ if errorlevel 1 (popd & exit /b 1)
 REM Use Conan Center's prebuilt Windows 2022/MSVC binaries only. The workflow
 REM pins windows-2022 to match Qt's MSVC 2022 package ABI; fail immediately if
 REM any dependency has no compatible binary instead of compiling it from source.
-REM Keep dependency package IDs on the published C++14 binaries; the LibreCAD
-REM CMake project independently selects C++17 for its own sources.
-conan install .. -s build_type=Release -s compiler.cppstd=14 --build=never --output-folder "%LIBRECAD_ROOT%\conan"
+REM Match the project's C++17 ABI, including GoogleTest's C++17-only binaries.
+conan install .. -s build_type=Release -s compiler.cppstd=17 --build=never --output-folder "%LIBRECAD_ROOT%\conan"
 if errorlevel 1 (popd & exit /b 1)
 popd
 if not exist conan\conan_toolchain.cmake exit /b 1

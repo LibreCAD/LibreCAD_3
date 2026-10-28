@@ -196,10 +196,6 @@ if(WITH_PYTHONSCRIPT)
         # 5.5 that Homebrew defaults to — see the GC-constant mapping in the
         # top-level CMakeLists.txt.
         scripting/customentitymanager_test.cpp
-        # Lua-side parity for the persistence result types (phase 2
-        # bind-new-persistence-api). Same requirements: lcluascript, kaguya
-        # and a real Lua runtime.
-        scripting/luapersistence_test.cpp
         scripting/luatextbuilder_test.cpp
         # The Lua createActions/actions operations: the typed-text decoding
         # that makes MTextOperations more than a copy of TextOperations, plus
@@ -225,7 +221,7 @@ if(WITH_PYTHONSCRIPT)
     # Phase 2 slice 2.6 — persistence round-trip test.  Only when both
     # options are on (test needs `lc.persistence.File` + libdxfrw runtime).
     if(WITH_PERSISTENCE)
-        list(APPEND src python/persistence_test.cpp)
+        list(APPEND src python/persistence_test.cpp scripting/luapersistence_test.cpp)
     endif()
 endif()
 

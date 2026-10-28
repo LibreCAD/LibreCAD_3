@@ -14,6 +14,12 @@ void require(bool condition, const char* diagnostic) {
 Point finite(Point p, const char* diagnostic = "invalid-transform") {
     require(std::isfinite(p.x) && std::isfinite(p.y), diagnostic); return p;
 }
+Point coordinates(const detail::Sum& x,const detail::Sum& y) {
+    // Translation can cancel the largest component while leaving significant
+    // residuals. Reserve 1/64px of the shared budget before discarding them.
+    require(x.error()+y.error()<=1.0/64,"precision-limit");
+    return {x.value(),y.value()};
+}
 std::array<double, 4> inverse(const Transform& t) {
     const double m = std::max({std::abs(t.xx), std::abs(t.xy), std::abs(t.yx), std::abs(t.yy)});
     require(std::isfinite(m) && m > 0, "invalid-transform");
@@ -35,14 +41,14 @@ Point Transform::distance(Point p) const {
     finite(p);
     detail::Sum x("invalid-transform"),y("invalid-transform");
     x.product(xx,p.x);x.product(xy,p.y);y.product(yx,p.x);y.product(yy,p.y);
-    return {x.value(),y.value()};
+    return coordinates(x,y);
 }
 Point Transform::point(Point p) const {
     finite(p);
     detail::Sum x("invalid-transform"),y("invalid-transform");
     x.add(p.x);x.add(-origin.x);y.add(p.y);y.add(-origin.y);
     auto a=x.scaled(xx),b=x.scaled(yx);a.append(y.scaled(xy));b.append(y.scaled(yy));
-    a.add(tx);b.add(ty);return {a.value(),b.value()};
+    a.add(tx);b.add(ty);return coordinates(a,b);
 }
 Point Transform::inverseDistance(Point p) const {
     finite(p); const auto i = inverse(*this);

@@ -120,7 +120,7 @@ class LibreCAD3(ConanFile):
             if self.options.with_luacmdinterface or self.options.with_rendering_unittests:
                 self.requires("glfw/3.3.8")
         if self.options.with_unittests:
-            self.requires("gtest/1.14.0")
+            self.requires("gtest/1.18.0")
         if self.options.with_luacmdinterface:
             self.requires("libcurl/8.15.0")
         self.requires("lua/5.3.5")

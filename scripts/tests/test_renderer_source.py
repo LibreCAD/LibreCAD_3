@@ -257,6 +257,7 @@ class SourceBuildTests(unittest.TestCase):
         self.assertIn('lcviewernoqt/testpathrecorder.cpp',cmake.split('# Issue #412')[0])
         self.assertIn('build_contract::pinnedFixture',source)
         self.assertIn('CpuTransformTest.AffineCancellationPreservesModelDetailBeforePreparation',implemented)
+        self.assertIn('CpuTransformTest.AffineResidualCancellationRejectsBeforePublishingSmallPhysicalCoordinates',implemented)
 
     def test_provider_period_regression_is_an_owned_persistence_test(self):
         source=(inventory.REPO_ROOT/'unittest/persistence/hatchcatalogtest.cpp').read_text()
@@ -484,7 +485,7 @@ def library_graph(build,flags):
         if name=='lcunittest' and flags['WITH_PYTHONSCRIPT']:sources+=[dict(path=p) for p in runner.PYTHON_TEST_SOURCES]
         if name=='lcunittest' and flags['WITH_LEGACY_OPENGL_RENDERER']:sources+=[dict(path='unittest/lcviewernoqt/fontbooktest.cpp')]
         (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=sources,type='SHARED_LIBRARY',artifacts=[dict(path='lib/'+name+'.fixture')])))
-        if flags.get('WITH_RENDERER_TESTS') and name in runner.SOURCE_PRIVATE_PCH:
+        if name in runner.SOURCE_PRIVATE_PCH:
             path=reply/(name+'.json');data=json.loads(path.read_text())
             directory={'lcluascript':'lcadluascript','lcunittest':'unittest'}.get(name,name)
             standard,headers=runner.SOURCE_PRIVATE_PCH[name];standard=standard or runner.project_cxx_standard()
@@ -498,7 +499,7 @@ def library_graph(build,flags):
             path.write_text(json.dumps(data))
         if name=='lcuipy_build_tree':
             (reply/(name+'.json')).write_text(json.dumps(dict(name=name,id=name+'::fixture',sources=[],type='UTILITY')))
-        if flags.get('WITH_RENDERER_TESTS') and name in ('lcunittest','lcrenderertest','lcrenderer_headercheck'):
+        if name=='lcunittest' or flags.get('WITH_RENDERER_TESTS') and name in ('lcrenderertest','lcrenderer_headercheck'):
             path=reply/(name+'.json');data=json.loads(path.read_text())
             data['type']='OBJECT_LIBRARY' if name=='lcrenderer_headercheck' else 'EXECUTABLE'
             path.write_text(json.dumps(data))
@@ -520,7 +521,8 @@ def library_graph(build,flags):
     (reply/'model.json').write_text(json.dumps(model))
     (reply/'index-fixture.json').write_text(json.dumps(dict(reply={'client-renderer-source':{'codemodel-v2':{'jsonFile':'model.json'}}})))
     (build/'renderer-preflight.json').write_text(json.dumps(dict(evidence_kind='renderer-option-preflight',options=flags)))
-    (build/'CMakeCache.txt').write_text(''.join(k+':BOOL='+('ON' if v else 'OFF')+'\n' for k,v in flags.items()))
+    (build/'CMakeCache.txt').write_text(''.join(k+':BOOL='+('ON' if v else 'OFF')+'\n' for k,v in flags.items())+
+        ('' if 'LC_RENDERER_SOURCE_PCH' in flags else 'LC_RENDERER_SOURCE_PCH:BOOL=ON\n'))
     packages=['Boost','Eigen3','Lua']+(['GTest'] if flags['WITH_UNITTESTS'] else [])
     if flags['WITH_LEGACY_OPENGL_RENDERER']:packages+=['OpenGL','GLEW','glm','Freetype']
     if flags['WITH_RHI_RENDERER']:packages+=['Qt6','Qt6Gui','Qt6ShaderTools']
@@ -558,7 +560,7 @@ def host_graph(build,flags):
         data=json.loads(path.read_text()) if path.exists() else dict(name=name,sources=[],artifacts=[dict(path='lib/'+name+'.fixture')])
         data.update(id=name+'::fixture',type='SHARED_LIBRARY',dependencies=[])
         if name=='lcviewer_cpu_headercheck':data['type']='OBJECT_LIBRARY'
-        if name in ('lckernel','lcviewernoqt'):data['compileGroups']=[dict(language='CXX',languageStandard=dict(standard=runner.project_cxx_standard()))]
+        if name in ('lckernel','lcviewernoqt'):data.setdefault('compileGroups',[dict(language='CXX',languageStandard=dict(standard=runner.project_cxx_standard()))])
         if name in ('lcui_objects','lcui_bindings_objects','lcui_widgets_objects'):
             sources=([str(build/'lcUI'/n) for n in ('main.cpp','mocs_compilation.cpp','qrc_resource.cpp')]
                 if name=='lcui_objects' else widgets if name=='lcui_widgets_objects' else bindings)
@@ -579,7 +581,7 @@ def host_graph(build,flags):
             data['sources']+=[dict(path='unittest/'+n) for n in (runner.UI_TEST_SOURCES if flags['WITH_QT_UI'] else ())+(
                 ('persistence/dxfexporttest.cpp',) if flags['WITH_PERSISTENCE'] else ())+
                 (('lcviewernoqt/testcairofactory.cpp',) if flags['WITH_CAIRO'] else ())+
-                (('python/persistence_test.cpp',) if flags['WITH_PYTHONSCRIPT'] and flags['WITH_PERSISTENCE'] else ())]
+                (('python/persistence_test.cpp','scripting/luapersistence_test.cpp') if flags['WITH_PYTHONSCRIPT'] and flags['WITH_PERSISTENCE'] else ())]
         if name=='lcuipy_build_tree':data.update(type='UTILITY',artifacts=[])
         path.write_text(json.dumps(data))
     sdk=build.parent/'synthetic-host-sdk';sdk.mkdir()
@@ -786,6 +788,9 @@ class HostSourceTests(unittest.TestCase):
                     configure=self.commands[0][0]
                     for flag in ('WITH_QT_UI','WITH_LUACMDINTERFACE','WITH_PERSISTENCE'):
                         self.assertIn('-D'+flag+':BOOL=ON',configure)
+                    self.assertIn('-DLC_RENDERER_SOURCE_PCH:BOOL=ON',configure)
+                    self.assertEqual(set(runner.SOURCE_PRIVATE_PCH)-({'lcunittest'} if tests=='OFF' else set()),
+                                     set(record['observed']['private_pch']))
                     self.assertEqual(tests=='OFF','-DCMAKE_DISABLE_FIND_PACKAGE_GTest=ON' in configure)
                     for command,env in self.commands:
                         for name in ('GTEST_FILTER','DISPLAY','PYTHONPATH'):self.assertNotIn(name,env)
@@ -940,6 +945,20 @@ class HostSourceTests(unittest.TestCase):
         self.args.host_kind='ui';self.args.host_no_persistence=True
         with self.assertRaisesRegex(ValueError,'Persistence OFF'):self.execute()
 
+    def test_lua_persistence_test_tracks_both_feature_flags(self):
+        for no_persistence in (False,True):
+            self.args.host_kind='cli';self.args.host_no_persistence=no_persistence
+            self.args.host_profile='legacy-python';self.args.host_cairo=False
+            directory=self.execute();build=directory/'build'
+            flags=json.loads((directory/'host-build.json').read_text())['options']
+            path=build/'.cmake/api/v1/reply/lcunittest.json';data=json.loads(path.read_text())
+            name='unittest/scripting/luapersistence_test.cpp'
+            if no_persistence:data['sources'].append(dict(path=name))
+            else:data['sources']=[s for s in data['sources'] if s['path']!=name]
+            path.write_text(json.dumps(data))
+            with self.subTest(persistence=not no_persistence),self.assertRaisesRegex(ValueError,'Lua persistence test-source membership'):
+                runner.library_profile_graph(build,flags,hosts=True)
+
     def test_missing_generation_dependency_and_empty_cpu_groups_are_rejected(self):
         self.args.host_profile='legacy-python';directory=self.execute();build=directory/'build'
         reply=build/'.cmake/api/v1/reply';flags=json.loads((directory/'host-build.json').read_text())['options']
@@ -1060,6 +1079,29 @@ class LibraryMatrixTests(unittest.TestCase):
             other=self.root/(str(legacy)+str(rhi))/'build';flags=dict(self.flags,WITH_LEGACY_OPENGL_RENDERER=legacy,WITH_RHI_RENDERER=rhi)
             library_graph(other,flags);actual=runner.library_profile_graph(other,flags)
             self.assertEqual('lcviewer_opengl' if legacy else None,actual['legacy_factory_owner'])
+
+    def test_cold_profiles_require_exact_private_caches_and_explicit_opt_in(self):
+        for tests in (True,False):
+            flags=dict(self.flags,WITH_UNITTESTS=tests);build=self.root/('pch-'+str(tests))/'build'
+            library_graph(build,flags);reply=build/'.cmake/api/v1/reply'
+            expected=set(runner.SOURCE_PRIVATE_PCH)-({'lcunittest'} if not tests else set())
+            self.assertEqual(expected,set(runner.library_profile_graph(build,flags)['private_pch']))
+            cache=build/'CMakeCache.txt';original=cache.read_text()
+            for marker in ('','LC_RENDERER_SOURCE_PCH:BOOL=OFF\n'):
+                cache.write_text(original.replace('LC_RENDERER_SOURCE_PCH:BOOL=ON\n',marker))
+                with self.subTest(tests=tests,marker=marker),self.assertRaisesRegex(ValueError,'explicit private PCH opt-in'):
+                    runner.library_profile_graph(build,flags)
+            cache.write_text(original)
+            for name in expected:
+                path=reply/(name+'.json');original=path.read_text()
+                self.json_edit(path,lambda d:d['compileGroups'][0].pop('precompileHeaders'))
+                with self.subTest(tests=tests,target=name),self.assertRaisesRegex(ValueError,'private source PCH'):
+                    runner.library_profile_graph(build,flags)
+                path.write_text(original)
+            path=reply/('lcviewer_cpu_headercheck.json' if tests else 'lcscripting.json')
+            self.json_edit(path,lambda d:d.update(compileGroups=[dict(language='CXX',precompileHeaders=[dict(header='<Eigen/Dense>')])]))
+            with self.subTest(tests=tests,leaked=path.name),self.assertRaisesRegex(ValueError,'leaked into another target'):
+                runner.library_profile_graph(build,flags)
 
     def test_foreign_models_ambiguous_release_and_escaping_references_rejected(self):
         reply=self.build/'.cmake/api/v1/reply';model=reply/'model.json';original=model.read_text()
@@ -1189,7 +1231,9 @@ class LibraryMatrixTests(unittest.TestCase):
             self.assertEqual(set(r['base_cpu_ids'])|set(r['python_ids'])|set(r['backend_ids']),set(r['cpu_ids']))
             self.assertIs(r['options']['WITH_RENDERER_TESTS'],False)
             self.assertEqual(1200,r['profile_budget_seconds']);self.assertEqual(self.args.timeout,r['command_timeout_seconds'])
+            self.assertEqual(set(runner.SOURCE_PRIVATE_PCH),set(r['observed']['private_pch']))
         configure=[c for c,e in self.commands if '-S' in c]
+        self.assertTrue(all('-DLC_RENDERER_SOURCE_PCH:BOOL=ON' in c for c in configure[:-1]))
         self.assertIn('-DCMAKE_TOOLCHAIN_FILE=/sdk/dual',configure[2])
         self.assertNotIn('-DCMAKE_TOOLCHAIN_FILE=/sdk/dual',configure[3])
         for c,e in self.commands:self.assertNotIn('GTEST_FILTER',e)
@@ -1271,7 +1315,7 @@ class LibraryMatrixTests(unittest.TestCase):
         flags=dict(self.flags,WITH_PYTHONSCRIPT=True);build=self.root/'python-case/build';library_graph(build,flags)
         self.assertEqual('CPython',runner.library_profile_graph(build,flags)['python_provider']['provider_implementation'])
         target=build/'.cmake/api/v1/reply/lcunittest.json';original=target.read_text()
-        self.json_edit(target,lambda v:v['sources'].pop())
+        self.json_edit(target,lambda v:v.update(sources=[s for s in v['sources'] if s['path']!=runner.PYTHON_TEST_SOURCES[-1]]))
         with self.assertRaisesRegex(ValueError,'test-source membership'):runner.library_profile_graph(build,flags)
         target.write_text(original);path=build/'python-runtime-inventory.txt';raw=path.read_text()
         for changed in (raw+'executable='+sys.executable+'\n',raw.replace('CPython','PyPy'),raw.replace('provider_pointer_bits=64','provider_pointer_bits=32'),
@@ -1301,7 +1345,8 @@ class LibraryMatrixTests(unittest.TestCase):
             setattr(self,flag,False)
         flags=dict(self.flags,WITH_LEGACY_OPENGL_RENDERER=True);build=self.root/'legacy-membership/build';library_graph(build,flags)
         path=build/'.cmake/api/v1/reply/lcunittest.json'
-        self.json_edit(path,lambda target:target['sources'].pop())
+        self.json_edit(path,lambda target:target.update(sources=[s for s in target['sources']
+            if not s['path'].endswith('lcviewernoqt/fontbooktest.cpp')]))
         with self.assertRaisesRegex(ValueError,'Legacy test-source membership'):runner.library_profile_graph(build,flags)
 
     def test_windows_python_empty_soabi_requires_exact_extension_abi(self):
@@ -1361,6 +1406,7 @@ class ProductionBuildTests(unittest.TestCase):
             self.assertIs(item['options']['WITH_UNITTESTS'],False);self.assertIsNone(item['observed']['cpu_headers'])
             self.assertIs(item['runtime_tests_executed'],False);self.assertNotIn('cpu_ids',item)
             self.assertGreaterEqual(len(item['artifacts_sha256']),4)
+            self.assertEqual(set(runner.SOURCE_PRIVATE_PCH)-{'lcunittest'},set(item['observed']['private_pch']))
             for target in ('lcunittest','lcbuildcontracttest','lcviewer_cpu_headercheck','lcrenderertest','lcrenderer_headercheck'):
                 self.assertNotIn(target,item['observed']['targets'])
         for command,env in self.commands:
@@ -1499,30 +1545,41 @@ class SourceCheckGraphTests(unittest.TestCase):
                 with self.subTest(target=name,mutation=mutation),self.assertRaisesRegex(ValueError,'leaked'):self.check()
             path.write_bytes(original)
 
-    def test_cmake_pch_is_private_owned_and_renderer_test_only(self):
+    def test_cmake_pch_is_private_owned_and_explicitly_opted_in(self):
         source=(inventory.REPO_ROOT/'CMakeLists.txt').read_text()
-        block=re.search(r'if\(WITH_RENDERER_TESTS\)\s+foreach\(_target IN ITEMS lckernel lcviewernoqt lcluascript lcunittest\).*?endif\(\)',
-            re.sub(r'(?m)^\s*#[^\n]*\n','',source),re.S)
-        self.assertIsNotNone(block);self.assertNotIn('REUSE_FROM',block[0])
+        block='option(LC_RENDERER_SOURCE_PCH '+source.split('option(LC_RENDERER_SOURCE_PCH ',1)[1].split(
+            'if(WITH_RENDERER_TESTS)\n    # One graph',1)[0]
+        self.assertIn('"Private header caches for cold renderer source checks" OFF)',block)
+        self.assertIn('if(WITH_RENDERER_TESTS OR LC_RENDERER_SOURCE_PCH)',block)
+        self.assertIn('if(TARGET ${_target})',block);self.assertIn('if(TARGET lcunittest)',block)
+        self.assertNotIn('REUSE_FROM',block)
         self.assertEqual(3,source.count('target_precompile_headers('))
         self.assertNotIn('target_precompile_headers(', (inventory.REPO_ROOT/'lckernel/CMakeLists.txt').read_text())
         directory=self.build.parent/'scope';directory.mkdir();(directory/'dummy.cpp').write_text('int fixture() { return 0; }\n')
-        (directory/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.21)\nproject(PchScope LANGUAGES CXX)\n'
-            'include("'+str(inventory.REPO_ROOT/'lcviewernoqt/cmake/RendererOptions.cmake')+'")\n'
-            +''.join('add_library('+name+' STATIC dummy.cpp)\n' for name in runner.SOURCE_PRIVATE_PCH)+block[0]+'\n'
-            'foreach(name IN ITEMS lckernel lcviewernoqt lcluascript lcunittest)\n'
-            'get_target_property(own ${name} PRECOMPILE_HEADERS)\n'
-            'get_target_property(exported ${name} INTERFACE_PRECOMPILE_HEADERS)\n'
-            'get_target_property(reused ${name} PRECOMPILE_HEADERS_REUSE_FROM)\n'
-            'file(APPEND "${CMAKE_BINARY_DIR}/scope.txt" "${name}\\n${own}\\n${exported}\\n${reused}\\n")\nendforeach()\n')
-        for enabled in (False,True):
-            build=directory/('on' if enabled else 'off')
-            options=['-DWITH_RENDERER_TESTS=ON','-DWITH_RHI_RENDERER=ON'] if enabled else []
-            result=subprocess.run(['cmake','-S',str(directory),'-B',str(build),*options],capture_output=True,text=True,timeout=30)
-            self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-            self.assertEqual([value for name,(_,headers) in runner.SOURCE_PRIVATE_PCH.items() for value in
-                (name,';'.join(headers) if enabled else 'own-NOTFOUND','exported-NOTFOUND','reused-NOTFOUND')],
-                (build/'scope.txt').read_text().splitlines())
+        for header in ('Eigen/Dense','gtest/gtest.h','kaguya/kaguya.hpp'):
+            path=directory/'sdk'/header;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('#pragma once\n')
+        for tests,renderer,cold in ((True,False,False),(False,False,False),(True,True,False),
+                                    (True,False,True),(False,False,True)):
+            with self.subTest(tests=tests,renderer=renderer,cold=cold):
+                names=[n for n in runner.SOURCE_PRIVATE_PCH if n!='lcunittest' or tests]+['headercheck','lcscripting']
+                (directory/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.21)\nproject(PchScope LANGUAGES CXX)\n'
+                    +''.join('add_library('+name+' STATIC dummy.cpp)\ntarget_include_directories('+name+' PRIVATE sdk)\n' for name in names)+block+'\n'
+                    'foreach(name IN ITEMS '+' '.join(names)+')\n'
+                    'get_target_property(own ${name} PRECOMPILE_HEADERS)\n'
+                    'get_target_property(exported ${name} INTERFACE_PRECOMPILE_HEADERS)\n'
+                    'get_target_property(reused ${name} PRECOMPILE_HEADERS_REUSE_FROM)\n'
+                    'file(APPEND "${CMAKE_BINARY_DIR}/scope.txt" "${name}\\n${own}\\n${exported}\\n${reused}\\n")\nendforeach()\n')
+                build=directory/(str(tests)+str(renderer)+str(cold))
+                options=['-DWITH_RENDERER_TESTS='+('ON' if renderer else 'OFF')]
+                if cold:options+=['-DLC_RENDERER_SOURCE_PCH=ON']
+                result=subprocess.run(['cmake','-S',str(directory),'-B',str(build),*options],capture_output=True,text=True,timeout=30)
+                self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+                self.assertEqual([value for name in names for value in
+                    (name,';'.join(runner.SOURCE_PRIVATE_PCH[name][1]) if (renderer or cold) and name in runner.SOURCE_PRIVATE_PCH
+                     else 'own-NOTFOUND','exported-NOTFOUND','reused-NOTFOUND')],(build/'scope.txt').read_text().splitlines())
+                if cold:
+                    result=subprocess.run(['cmake','--build',str(build),'--parallel','4'],capture_output=True,text=True,timeout=30)
+                    self.assertEqual(0,result.returncode,result.stdout+result.stderr)
 
     def pch_files(self):
         result={}
@@ -1911,8 +1968,12 @@ class SourceWorkflowTests(unittest.TestCase):
         code=self.text.split('- name: Restore Windows core binaries and exact per-case toolchains',1)[1]
         code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n      - name:',1)[0])
         with tempfile.TemporaryDirectory(prefix='conan-workflow-fixture-') as tmp, \
-             patch.dict(os.environ,R1_SCOPE='libraries',R1_TESTS='ON',RUNNER_TEMP=tmp,GITHUB_ENV=str(Path(tmp)/'env')),patch.object(subprocess,'run') as run:
+             patch.dict(os.environ,R1_SCOPE='libraries',R1_TESTS='ON',RUNNER_TEMP=tmp,GITHUB_ENV=str(Path(tmp)/'env'),GITHUB_PATH=str(Path(tmp)/'path')), \
+             patch('validate_renderer_conan_graph.windows_runtime_directories',return_value=[str(Path(tmp)/'LuaBin')]) as runtime, \
+             patch.object(subprocess,'run') as run:
             exec(compile(code,'renderer-source.yml Windows Conan step','exec'),{})
+            self.assertEqual(str(Path(tmp)/'LuaBin')+'\n',(Path(tmp)/'path').read_text())
+            self.assertEqual(9,runtime.call_count)
         commands=[c.args[0] for c in run.call_args_list]
         graphs=[i for i,c in enumerate(commands) if c[:3]==['conan','graph','info']]
         self.assertEqual(9,len(graphs))
@@ -1938,14 +1999,28 @@ class SourceWorkflowTests(unittest.TestCase):
         code=self.text.split('- name: Restore Windows core binaries and exact per-case toolchains',1)[1]
         code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n      - name:',1)[0])
         with tempfile.TemporaryDirectory(prefix='conan-tests-off-fixture-') as tmp, \
-             patch.dict(os.environ,R1_SCOPE='libraries',R1_TESTS='OFF',RUNNER_TEMP=tmp,GITHUB_ENV=str(Path(tmp)/'env')),patch.object(subprocess,'run') as run:
+             patch.dict(os.environ,R1_SCOPE='libraries',R1_TESTS='OFF',RUNNER_TEMP=tmp,GITHUB_ENV=str(Path(tmp)/'env'),GITHUB_PATH=str(Path(tmp)/'path')), \
+             patch('validate_renderer_conan_graph.windows_runtime_directories',return_value=[str(Path(tmp)/'LuaBin')]) as runtime, \
+             patch.object(subprocess,'run') as run:
             exec(compile(code,'tests-OFF Conan step','exec'),{})
+            self.assertEqual(str(Path(tmp)/'LuaBin')+'\n',(Path(tmp)/'path').read_text())
+            self.assertEqual(8,runtime.call_count)
         commands=[c.args[0] for c in run.call_args_list];graphs=[c for c in commands if c[:3]==['conan','graph','info']]
         self.assertEqual(8,len(graphs))
         for command in graphs:
             self.assertIn('&:with_unittests=False',command);self.assertIn('&:with_renderer_tests=False',command)
             self.assertIn('--build=never',command)
         self.assertEqual(8,sum(c[:2]==['conan','install'] for c in commands))
+
+    def test_windows_profiles_cannot_publish_different_lua_runtimes(self):
+        code=self.text.split('- name: Restore Windows core binaries and exact per-case toolchains',1)[1]
+        code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n      - name:',1)[0])
+        with tempfile.TemporaryDirectory(prefix='conan-runtime-workflow-') as tmp, \
+             patch.dict(os.environ,R1_SCOPE='libraries',R1_TESTS='OFF',RUNNER_TEMP=tmp,GITHUB_ENV=str(Path(tmp)/'env'),GITHUB_PATH=str(Path(tmp)/'path')), \
+             patch('validate_renderer_conan_graph.windows_runtime_directories',side_effect=[[str(Path(tmp)/('LuaBin'+str(i)))] for i in range(8)]), \
+             patch.object(subprocess,'run'):
+            with self.assertRaisesRegex(ValueError,'one installed Lua runtime'):exec(compile(code,'inconsistent Lua runtime step','exec'),{})
+            self.assertFalse((Path(tmp)/'path').exists());self.assertFalse((Path(tmp)/'env').exists())
 
     def test_shared_sdk_probe_checks_link_stubs_not_just_a_framework_directory(self):
         cmake=shutil.which('cmake');self.assertTrue(cmake)

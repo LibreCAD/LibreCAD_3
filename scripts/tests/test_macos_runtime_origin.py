@@ -2,6 +2,8 @@
 
 import importlib.util
 import os
+import shlex
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,6 +17,32 @@ spec.loader.exec_module(audit)
 
 
 class MacOSRuntimeOriginTests(unittest.TestCase):
+    def test_full_install_builds_the_configured_cli_as_well_as_the_application(self):
+        workflow=(ROOT/'.github/workflows/python-binding-macos.yml').read_text()
+        build=workflow.split('- name: Build application and tests\n',1)[1].split('- name:',1)[0]
+        command=shlex.split(build.split('run: ',1)[1].strip())
+        self.assertNotIn('-DWITH_LUACMDINTERFACE=OFF',workflow)
+        self.assertEqual({'tinyspline','librecad','luacmdinterface','lcunittest'},
+            set(command[command.index('--target')+1:command.index('--parallel')]))
+        self.assertIn('cmake --install build',workflow)
+        # Exercise the actual workflow target selection against a strict full
+        # install. These tiny stand-ins require no Qt/Python/provider SDK.
+        with tempfile.TemporaryDirectory(prefix='macos-install-targets-') as temporary:
+            root=Path(temporary)
+            (root/'main.cpp').write_text('int main() { return 0; }\n')
+            (root/'CMakeLists.txt').write_text(
+                'cmake_minimum_required(VERSION 3.15)\nproject(InstallTargets LANGUAGES CXX)\n'
+                'add_library(tinyspline STATIC main.cpp)\n'
+                'foreach(name librecad luacmdinterface lcunittest)\n'
+                ' add_executable(${name} main.cpp)\nendforeach()\n'
+                'install(TARGETS librecad luacmdinterface RUNTIME DESTINATION bin)\n')
+            for argv in (['cmake','-S',str(root),'-B','build','-DCMAKE_BUILD_TYPE=Release',
+                          '-DCMAKE_INSTALL_PREFIX='+str(root/'prefix')],
+                         [*command,'--config','Release'],['cmake','--install','build','--config','Release']):
+                result=subprocess.run(argv,cwd=root,capture_output=True,text=True,timeout=30)
+                self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+            self.assertEqual(2,len(list((root/'prefix/bin').iterdir())))
+
     def test_resolves_actual_c_api_address_and_rejects_external_origin(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()

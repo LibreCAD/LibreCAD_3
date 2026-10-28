@@ -44,18 +44,28 @@ fails39/60 native profiles, so pre-merge green evidence does not qualify it.
 The owner authorizes fixing all ten review findings, regression tests, local
 validation, commit/push and a fresh complete five-platform source cohort.
 Reconcile the actual Python ABI field, backend-owned test inventory, Conan pins
-and Windows Lua dependencies. Reuse one compensated affine arithmetic helper;
-preserve pattern cell periods independently of ink bounds and certify Region
+and Windows Lua dependencies. Reuse one exact-sum helper for affine transforms,
+tile/Region placement and fill orientation; remove the duplicate fill adder.
+Preserve pattern cell periods independently of ink bounds and certify Region
 joins before camera placement. Fill preparation uses local curve certificates,
 bounded topology refinement and sweep/active-edge processing within the original
 work cap, including adjacent-curve crossing rejection. Regression and pre-fix
-negative controls precede publication. Frozen Mac ARM64 validation passes553
-CPU/Python/persistence IDs and22 offscreen Metal IDs; full scripts pass851 with12
-expected platform skips. All138 path/geometry cases pass production ASan/UBSan
+negative controls precede publication. Frozen Mac ARM64 validation passes554
+CPU/Python/persistence IDs and22 offscreen Metal IDs; full scripts pass860 with12
+expected platform skips. All139 path/geometry cases pass production ASan/UBSan
 (fixture ASan-only, dependencies and Mac leaks unqualified); new regression
 families fail preserved pre-fix implementations. Final plan/inventory/lint checks
 repeat before publication. All60 exact-SHA source jobs remain required; partial
 passes and earlier green commits are not qualification.
+The failed5cec106 cohort exposed installed-runtime and feature-membership gaps:
+publish only validated shared Lua DLL directories on Windows, select the
+available GTest1.18/C++17 binary, guard Lua persistence tests with both features,
+build/register the installed Mac CLI, and stage its GLFW/GnuTLS curl providers
+in Snap. Reuse existing target-owned header caches through one default-OFF
+cold-source opt-in, preserving300/1200 limits. Capture native Metal identity on
+both Mac architectures; retain the Intel-only virtual policy and every
+contradictory-typing assertion. ARM virtual identity must fail closed, with no
+new acceptance authorization.
 The separate46-case Hatch/Region/Tiler/Catalog subset also passes ASan/UBSan
 with production and test TUs instrumented; dependency internals and Mac leaks
 remain unqualified. Durable local proof is retained in
@@ -4018,6 +4028,7 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-28 | Compact shared helpers and platform-CI follow-up locally validated | Remove14 duplicate fill-adder lines; reuse the strict private-cache graph for default-OFF cold-source PCH. Repair real GTest/C++17, Windows Lua DLL, feature-guard, Mac install/origin and Snap runtime failures. Native Metal capture covers both architectures; Intel-only virtual policy/assertions stay. Frozen Mac554 CPU/Python/persistence +22 Metal and860 scripts pass (12 expected platform skips);139 geometry cases pass production ASan/UBSan, fixture ASan-only, dependencies/Mac leaks unqualified. Actual persistence-OFF447 pass; causal negatives remain. Evidence: build/renderer-evidence/pr453-ten-fixes-20261028.55Ne2l/local-ci-followup-final/. Failed5cec source run40694421566 is unqualified (34 passed,20 failed,8 ARM jobs never acquired runners); require a fresh exact-SHA all60 cohort. Final plan31/inventory64/lints/worktree/full-PR/diff checks precede commit/push. Original checkout/index, legacy default,0.25px/300/1200 bounds and all gates remain; no R2.4+ or upstream reconciliation. Exemption: .gitignore retains the merged generated build-r1 exclusion and two hand-maintained renderer CMake inclusions. |
 | 2026-10-28 | Ten PR453 corrections locally validated; exact-source publication next | Four CI contracts, shared compensated affine math, explicit pattern periods, pan-independent Region certificates and locally certified bounded fill sweeps/refinement have regressions and preserved pre-fix failures. Frozen Mac553 CPU/Python/persistence and22 Metal IDs pass;851 scripts pass with12 expected platform skips. All138 path/geometry cases pass production ASan/UBSan (fixture ASan-only; dependencies/Mac leaks unqualified). Final plan/inventory/lint/diff checks repeat before commit/push, then require all60 exact-SHA source jobs. Evidence: /tmp/pr453-ten-fixes-evidence-20261028.iGl01n/ plus referenced focused controls. Original checkout/index preserved. Legacy default,0.25px/300/1200 bounds and every acceptance gate stay unchanged; no R2.4+ or new upstream reconciliation. Exemption: .gitignore carries the existing generated build-r1 exclusion and the two hand-maintained renderer CMake source inclusions from the master merge; these are not new feature or gate changes. |
 | 2026-10-26 | Provisional R2.3 ellipse-plane correction locally validated; source publication next | Frozen six-path correction adds one existing coordinate validation, two native regression IDs and exact ownership guards; no new provider/plane policy. Fresh Mac/Linux ARM64 each266 CPU preserves264 and22 Metal/Vulkan passes; Linux core/sync14instances14devices0errors. Both new IDs fail against preserved pre-fix libraries; focused Mac ASan/UBSan passes all27 recorder IDs, with other dependencies/Mac leaks unqualified. Full666 scripts pass (Mac11 expected Linux skips/Linux0); exact one-file test-guard transition preserves separate Linux native/protocol freezes and unchanged compiled inputs/helpers/providers. Four own caches/167 ordinary units/eight raw C++14 headers pass. All45 unchanged reader models,12 inventory rejection probes and both fresh native readbacks pass;672 compact Linux files retain no large executables/caches. Preserve all initial source-count, preflight and evidence-harness failures, six prior seals and original checkout/index/staging. Pre-final full-plan/checker42/worktree6paths16mapped gates/inventory190/lints/diff PASS; repeat after this final receipt, then publish six paths to the existing authorized fork branch and require fresh exact-SHA all60 source jobs/artifact audits. Evidence: build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. Legacy default,0.25px/300/1200 bounds, upstream deferral and all acceptance gates stay; full goal and R2.4 authority remain open. |
 | 2026-10-26 | R2.3 plane-validation correction implemented; protocol ownership update pending | Reuse point(majorP) before radius/angle derivation; no planar projection or new provider policy. Two new actual native IDs cover11 invalid axes/full or partial/both directions, atomicity/recovery and signed-zero rotated planar controls. Mac fresh266 CPU+22 Metal pass; immutable pre-fix libraries fail both new IDs. Focused Mac ASan/UBSan passes all27 recorder IDs without skips, instrumenting adapter/tests only; other dependencies/Mac leaks stay unqualified. Linux native CPU/Vulkan execution passes with additional byte/object readback still pending. Full Mac666 initially fails the two obsolete source-count guards (Region15 vs16/hatch10 vs11), not native tests; preserve that failure, bind the new IDs/counts and rerun complete protocols/maintenance before source publication/full five-platform CI. Initial preflight/helper failures remain retained in build/renderer-evidence/r2-3-ellipse-plane-20261026.egZvFY/. All prior264 IDs, source bounds/assertions/defaults, upstream deferral and acceptance gates remain. R2.4 is requested, not approved; this is not full R2.3/full-goal completion. |

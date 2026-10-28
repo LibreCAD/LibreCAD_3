@@ -40,7 +40,7 @@ class ConanGraphTests(unittest.TestCase):
         self.assertEqual(refs,validator.DIRECT|{validator.GTEST}|validator.LEGACY_DIRECT|validator.CLI_DIRECT)
 
     def test_superseded_versions_reject_even_with_consistent_graph_and_lock(self):
-        for case,current,stale in (('ordinary','gtest/1.14.0','gtest/1.18.0'),
+        for case,current,stale in (('ordinary','gtest/1.18.0','gtest/1.14.0'),
                                   ('cli-legacy-no-tests','libcurl/8.15.0','libcurl/8.23.0')):
             graph,lock=fixture(case)
             for node in graph['graph']['nodes'].values():
@@ -158,6 +158,40 @@ class ConanGraphTests(unittest.TestCase):
     def test_output_does_not_mutate_global_profile_settings(self):
         result=validator.validate(self.graph,self.lock,'ordinary');result['consumer_settings']['arch']='other'
         self.assertEqual('x86_64',validator.SETTINGS['arch'])
+
+    def test_shared_lua_runtime_uses_only_existing_package_owned_dll_directories(self):
+        with tempfile.TemporaryDirectory(prefix='conan-lua-runtime-') as tmp:
+            root=Path(tmp).resolve();package=root/'package';binary=package/'bin';binary.mkdir(parents=True)
+            (binary/'lua.dll').write_bytes(b'fixture-dll-not-native-proof')
+            node=next(n for n in self.graph['graph']['nodes'].values() if n.get('name')=='lua')
+            node.update(package_folder=str(package),cpp_info={'root':{'bindirs':[str(binary)]}})
+            graph=root/'installed.json'
+            for status in ('Cache','Download'):
+                node['binary']=status;graph.write_text(json.dumps(self.graph))
+                with self.subTest(binary=status):self.assertEqual([str(binary)],validator.windows_runtime_directories(graph))
+
+    def test_shared_lua_runtime_rejects_missing_dll_escaped_bindir_and_static_or_unavailable_packages(self):
+        with tempfile.TemporaryDirectory(prefix='conan-lua-runtime-') as tmp:
+            root=Path(tmp).resolve();package=root/'package';binary=package/'bin';binary.mkdir(parents=True)
+            dll=binary/'lua.dll';dll.write_bytes(b'fixture-dll-not-native-proof');foreign=root/'foreign';foreign.mkdir()
+            (foreign/'lua.dll').write_bytes(b'foreign-fixture-dll')
+            node=next(n for n in self.graph['graph']['nodes'].values() if n.get('name')=='lua')
+            node.update(package_folder=str(package),cpp_info={'root':{'bindirs':[str(binary)]}})
+            original=copy.deepcopy(self.graph);graph=root/'installed.json'
+            for mutation in ('missing-dll','escape','relative','missing-directory','duplicate','static','unavailable','missing-lua','multiple-lua'):
+                value=copy.deepcopy(original);lua=next(n for n in value['graph']['nodes'].values() if n.get('name')=='lua')
+                if mutation=='missing-dll':dll.unlink()
+                if mutation=='escape':lua['cpp_info']['root']['bindirs']=[str(foreign)]
+                if mutation=='relative':lua['cpp_info']['root']['bindirs']=['package/bin']
+                if mutation=='missing-directory':lua['cpp_info']['root']['bindirs']=[str(package/'absent')]
+                if mutation=='duplicate':lua['cpp_info']['root']['bindirs']*=2
+                if mutation=='static':lua['options']['shared']='False'
+                if mutation=='unavailable':lua['binary']='Missing'
+                if mutation=='missing-lua':lua['context']='build'
+                if mutation=='multiple-lua':value['graph']['nodes']['99']=copy.deepcopy(lua)
+                graph.write_text(json.dumps(value))
+                with self.subTest(mutation=mutation),self.assertRaises((ValueError,OSError)):validator.windows_runtime_directories(graph)
+                if mutation=='missing-dll':dll.write_bytes(b'fixture-dll-not-native-proof')
 
     def test_cli_reports_metadata_only_and_binds_preflight_binary_route(self):
         with tempfile.TemporaryDirectory(prefix='conan-route-fixture-') as tmp:
