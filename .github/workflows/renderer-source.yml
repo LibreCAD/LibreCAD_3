@@ -152,8 +152,27 @@ jobs:
             --destination "$provider_root/sdk" > build-r1/qt-restore.json
           cp lcrenderer/rhi/providers/qt683-macos.json build-r1/qt-pin.json
           printf 'QT_ROOT_DIR=%s\n' "$provider_root/sdk" >> "$GITHUB_ENV"
+      - name: Prepare Windows Qt installer logging
+        if: runner.os == 'Windows'
+        run: |
+          from configparser import RawConfigParser
+          from pathlib import Path
+          config=RawConfigParser()
+          config.read_dict({
+              'loggers':{'keys':'root,aqt'}, 'handlers':{'keys':'console,file'}, 'formatters':{'keys':'verbose,brief'},
+              'logger_root':{'level':'NOTSET','handlers':'console'},
+              'logger_aqt':{'level':'DEBUG','handlers':'console,file','propagate':'0','qualname':'aqt'},
+              'handler_console':{'level':'INFO','class':'logging.StreamHandler','formatter':'brief','args':'(sys.stderr,)'},
+              'handler_file':{'level':'DEBUG','class':'logging.FileHandler','formatter':'verbose',
+                              'args':repr((str(Path('build-r1/aqtinstall.log').resolve()),'a'))},
+              'formatter_verbose':{'format':'%(asctime)s - %(name)s - %(levelname)s - %(module)s %(thread)d %(message)s','class':'logging.Formatter'},
+              'formatter_brief':{'format':'%(levelname)-8s: %(message)s','class':'logging.Formatter'},
+          })
+          with Path('build-r1/aqt-logging.ini').open('w',encoding='utf-8') as out:config.write(out)
       - uses: jurplel/install-qt-action/action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005
         if: runner.os == 'Windows'
+        env:
+          LOG_CFG: ${{ github.workspace }}/build-r1/aqt-logging.ini
         with:
           version: '6.8.3'
           arch: win64_msvc2022_64
@@ -358,6 +377,7 @@ jobs:
             build-r1/**/*.json
             build-r1/**/*.jsonl
             build-r1/**/*.log
+            build-r1/aqt-logging.ini
             build-r1/**/*.xml
             build-r1/**/discovery.txt
             build-r1/**/vk_layer_settings.txt

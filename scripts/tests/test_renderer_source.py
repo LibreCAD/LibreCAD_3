@@ -1830,6 +1830,46 @@ class SourceWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.text=(inventory.REPO_ROOT/'.github/workflows/renderer-source.yml').read_text()
 
+    def test_qt_installer_log_stays_owned_without_hiding_unrelated_root_dirt(self):
+        marker='- name: Prepare Windows Qt installer logging'
+        block=self.text.split(marker,1)[1].split('\n      - ',1)[0]
+        self.assertIn("if: runner.os == 'Windows'",block)
+        prepare=textwrap.dedent(block.split('run: |\n',1)[1])
+        action='- uses: jurplel/install-qt-action/action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005'
+        self.assertLess(self.text.index(marker),self.text.index(action))
+        self.assertIn('LOG_CFG: ${{ github.workspace }}/build-r1/aqt-logging.ini',
+                      self.text.split(action,1)[1].split('\n      - ',1)[0])
+        guard=self.text.split('- name: Require clean source before compilation',1)[1].split('\n      - name:',1)[0]
+        guard=textwrap.dedent(guard.split('run: |\n',1)[1])
+        with tempfile.TemporaryDirectory(prefix='renderer-qt-log-') as temporary:
+            root=Path(temporary)/"source's checkout";root.mkdir();(root/'build-r1').mkdir()
+            ignore=(inventory.REPO_ROOT/'.gitignore').read_bytes();(root/'.gitignore').write_bytes(ignore)
+            def run(argv,env=None):
+                return subprocess.run(argv,cwd=root,env=env,capture_output=True,text=True,timeout=30)
+            for command in (['git','init','-q'],['git','add','.gitignore'],
+                            ['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                             '-c','commit.gpgsign=false','commit','-qm','fixture']):
+                result=run(command);self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+            result=run([sys.executable,'-B','-c',prepare]);self.assertEqual(0,result.returncode,result.stderr)
+            config=root/'build-r1/aqt-logging.ini';owned=root/'build-r1/aqtinstall.log'
+            env=dict(os.environ,LOG_CFG=str(config))
+            emit="import logging.config,os; logging.config.fileConfig(os.environ['LOG_CFG']); logger=logging.getLogger('aqt.installer'); logger.info('installer-info'); logger.debug('installer-debug')"
+            result=run([sys.executable,'-B','-c',emit],env);self.assertEqual(0,result.returncode,result.stderr)
+            self.assertIn('INFO    : installer-info',result.stderr);self.assertNotIn('installer-debug',result.stderr)
+            first=owned.read_bytes();self.assertIn(b' - aqt.installer - INFO - ',first)
+            self.assertIn(b'installer-info',first);self.assertIn(b' - aqt.installer - DEBUG - ',first)
+            self.assertIn(b'installer-debug',first);self.assertFalse((root/'aqtinstall.log').exists())
+            result=run([sys.executable,'-B','-c',guard]);self.assertEqual(0,result.returncode,result.stderr)
+            unrelated=root/'aqtinstall.log';unrelated.write_bytes(b'unrelated user log\n')
+            result=run([sys.executable,'-B','-c',emit],env);self.assertEqual(0,result.returncode,result.stderr)
+            self.assertTrue(owned.read_bytes().startswith(first));self.assertEqual(2,owned.read_bytes().count(b'installer-debug'))
+            self.assertEqual(b'unrelated user log\n',unrelated.read_bytes())
+            self.assertNotEqual(0,run([sys.executable,'-B','-c',guard]).returncode)
+            self.assertEqual(b'?? aqtinstall.log',(root/'build-r1/source-status-before-build.log').read_bytes().strip())
+            self.assertEqual(ignore,(root/'.gitignore').read_bytes())
+            retained=self.retained_files(self.text,'Retain selected source/provider/build/test/process evidence on failure too',root)
+            for path in ('build-r1/aqt-logging.ini','build-r1/aqtinstall.log'):self.assertIn(path,retained)
+
     def test_ci_source_guard_keeps_owned_sdk_ignored_but_rejects_real_source_dirt(self):
         marker='- name: Require clean source before compilation'
         block=self.text.split(marker,1)[1].split('\n      - name:',1)[0]
