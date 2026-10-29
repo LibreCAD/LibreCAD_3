@@ -10,10 +10,12 @@ struct MetalIdentity {
     std::string registryClass;
 };
 inline std::string deviceClass(QRhiDriverInfo::DeviceType type, bool intelMetal,
-                               const MetalIdentity& identity) {
-    if (identity.registryClass == "AppleParavirtGPU") return "unknown";
+                               const MetalIdentity& identity, bool armMetal = false) {
+    if (identity.registryClass == "AppleParavirtGPU")
+        return armMetal && !intelMetal && identity.registryId != 0 && type == QRhiDriverInfo::IntegratedDevice
+            ? "virtual" : "unknown";
     if (identity.registryId != 0 && identity.registryClass == "AppleParavirtAccelerator")
-        return intelMetal && (type == QRhiDriverInfo::UnknownDevice || type == QRhiDriverInfo::VirtualDevice)
+        return intelMetal && !armMetal && (type == QRhiDriverInfo::UnknownDevice || type == QRhiDriverInfo::VirtualDevice)
             ? "virtual" : "unknown"; // Contradictory native typing cannot qualify hardware/software.
     switch (type) {
     case QRhiDriverInfo::CpuDevice: return "software";

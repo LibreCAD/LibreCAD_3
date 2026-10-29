@@ -116,6 +116,47 @@ class RhiRunnerTests(unittest.TestCase):
         self.write_results()
         with self.assertRaisesRegex(ValueError,'Inconsistent selected native'):self.result()
 
+    def arm_virtual_fixture(self):
+        self.virtual_fixture()
+        self.selection=inventory.select_case_requirements(self.inventory,'R1',
+            'r1-source-virtual-metal-arm64/MAC-ARM64/rhi-offscreen/offscreen/cocoa/virtual')
+        for props in self.props.values():
+            if 'rhi_case' in props:
+                props.update(rhi_arch='arm64',rhi_build_arch='arm64',rhi_qrhi_device_type='1',
+                    rhi_metal_registry_id='4294967706',rhi_metal_registry_class='AppleParavirtGPU')
+        self.write_results()
+
+    def test_arm_virtual_metal_requires_its_exact_native_identity(self):
+        self.arm_virtual_fixture()
+        self.assertEqual(3,len(self.result()['native_device_attestations']))
+        for props in self.props.values():
+            if 'rhi_case' in props:props['rhi_metal_registry_id']=str(2**64-1)
+        self.write_results();self.assertEqual(3,len(self.result()['native_device_attestations']))
+        original=copy.deepcopy(self.props)
+        for field,value in (('rhi_device_class','hardware'),('rhi_api','vulkan'),
+                            ('rhi_arch','x86_64'),('rhi_build_arch','x86_64'),
+                            ('rhi_qrhi_device_type','0'),('rhi_qrhi_device_type','4'),('rhi_qrhi_device_type','2'),
+                            ('rhi_qrhi_device_type','3'),('rhi_qrhi_device_type','5'),('rhi_qrhi_device_type','unknown'),
+                            ('rhi_metal_registry_id',''),('rhi_metal_registry_id','0'),('rhi_metal_registry_id','01'),
+                            ('rhi_metal_registry_id','-1'),('rhi_metal_registry_id',str(2**64)),
+                            ('rhi_metal_registry_class',''),('rhi_metal_registry_class','AppleParavirtAccelerator'),
+                            ('rhi_metal_registry_class','AppleParavirtGPUSpoof')):
+            self.props=copy.deepcopy(original)
+            next(v for v in self.props.values() if 'rhi_case' in v)[field]=value
+            self.write_results()
+            with self.subTest(field=field,value=value),self.assertRaises(ValueError):self.result()
+        self.props=copy.deepcopy(original);self.selection['configuration']['platform']='MAC-X64'
+        for props in self.props.values():
+            if 'rhi_case' in props:props.update(rhi_arch='x86_64',rhi_build_arch='x86_64')
+        self.write_results()
+        with self.assertRaisesRegex(ValueError,'selected native virtual Metal attestation'):self.result()
+
+    def test_arm_virtual_metal_registry_id_must_match_across_cases(self):
+        self.arm_virtual_fixture()
+        next(v for v in self.props.values() if 'rhi_case' in v)['rhi_metal_registry_id']='4294967707'
+        self.write_results()
+        with self.assertRaisesRegex(ValueError,'Inconsistent selected native'):self.result()
+
     def test_native_virtual_classes_cannot_masquerade_as_hardware(self):
         for name in ('AppleParavirtAccelerator','AppleParavirtGPU'):
             with self.subTest(registry_class=name):

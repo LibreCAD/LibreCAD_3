@@ -218,6 +218,7 @@ jobs:
                          # Lua states cross the UI, CLI and binding DLLs; master's recipe
                          # makes Lua shared on Windows for that, and a later -o wins.
                          '-o','lua/*:shared=True']
+              if scope=='libraries':common+=['-c','tools.cmake.cmaketoolchain:generator=Ninja']
               for key,value in options.items(): common += ['-o','&:'+key+'='+str(value)]
               graph=Path('build-r1')/('conan-'+name+'-preflight.json')
               lock=Path('build-r1')/('conan-'+name+'.lock')
@@ -238,6 +239,25 @@ jobs:
           if len(runtimes)!=1:raise ValueError('R1 profiles must share one installed Lua runtime')
           with open(os.environ['GITHUB_PATH'],'a',encoding='utf-8') as out:out.write('\n'.join(next(iter(runtimes)))+'\n')
           with open(os.environ['GITHUB_ENV'],'a') as out:out.write('CONAN_HOME='+os.environ['CONAN_HOME']+'\n')
+      - name: Activate selected Windows library compiler
+        if: runner.os == 'Windows' && startsWith(matrix.contract_scope, 'libraries-')
+        run: |
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          raw=Path('build-r1/conan/empty/conanvcvars.bat');script=raw.resolve(strict=True)
+          if raw.is_symlink() or script!=raw.absolute() or not script.is_file() or not script.stat().st_size:raise ValueError('Foreign compiler environment script')
+          captured=subprocess.run('cmd /d /u /s /c call "'+str(script)+'" >nul && set',
+                                  check=True,stdout=subprocess.PIPE,encoding='utf-16-le',timeout=60)
+          required=('PATH','INCLUDE','LIB','LIBPATH');selected={}
+          for line in captured.stdout.splitlines():
+              key,separator,value=line.partition('=');key=key.upper()
+              if separator and key in required:
+                  if key in selected:raise ValueError('Duplicate compiler environment variable')
+                  selected[key]=value
+          if any(not selected.get(key,'').strip() for key in required):raise ValueError('Incomplete compiler environment')
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as out:out.write(''.join(key+'='+selected[key]+'\n' for key in required))
+          Path('build-r1/msvc-environment.json').write_text(json.dumps(dict(evidence_kind='renderer-msvc-environment',
+              script=str(script),script_sha256=hashlib.sha256(script.read_bytes()).hexdigest(),exported_keys=list(required)),indent=2)+'\n')
       - name: Restore pinned Windows software Vulkan inputs
         if: runner.os == 'Windows' && matrix.tests == 'ON' && startsWith(matrix.contract_scope, 'libraries-')
         run: |
@@ -276,7 +296,7 @@ jobs:
           base=[sys.executable,'-B','scripts/run_renderer_checks.py']
           # Ninja schedules multiple requested targets as one graph, avoiding
           # Make's repeated kernel build-info regeneration and consumer relinks.
-          if platform!='WIN-X64':base+=['--generator','Ninja']
+          if platform!='WIN-X64' or scope=='libraries':base+=['--generator','Ninja']
           if scope not in ('libraries','cli','cli-persistence','ui','both'):raise ValueError('Unknown source contract scope')
           if scope!='libraries':
               kind='cli' if scope.startswith('cli') else scope
@@ -317,7 +337,6 @@ jobs:
           if platform=='WIN-X64':
               for variant in ('ordinary','empty'):
                   cpu+=['--case-cmake-option',variant+':CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',variant,'conan_toolchain.cmake').resolve())]
-              cpu+=['--generator','Visual Studio 17 2022']
           for option in sdk:cpu+=['--cmake-option',option]
           qt_cmake=qt/('lib/'+os.environ.get('R1_TRIPLET','')+'/cmake/Qt6' if platform.startswith('LINUX-') else 'lib/cmake/Qt6')
           options=sdk+['CMAKE_PREFIX_PATH='+str(qt),'Qt6_DIR='+str(qt_cmake),'Python_EXECUTABLE='+sys.executable]
@@ -326,7 +345,7 @@ jobs:
                   '--platform',platform,'--report-dir',str(Path('build-r1/production').resolve()),'--timeout','300']
               for option in options:command+=['--cmake-option',option]
               if platform=='WIN-X64':
-                  command+=['--generator','Visual Studio 17 2022','--cmake-option',
+                  command+=['--cmake-option',
                             'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('build-r1/vulkan-headers/include').resolve())]
                   for profile in ('cpu','legacy','dual','rhi','cpu-python','legacy-python','dual-python','rhi-python'):
                       graph='empty' if profile=='cpu' else profile+'-no-tests'
@@ -339,12 +358,12 @@ jobs:
                         'LC_RHI_VULKAN_INCLUDE_DIR='+str(Path('build-r1/vulkan-headers/include').resolve())]
               os.environ['PATH']=os.environ['R1_VULKAN_ROOT']+os.pathsep+str(qt/'bin')+os.pathsep+os.environ['PATH']
           api='metal' if platform.startswith('MAC-') else 'vulkan'
-          device='hardware' if api=='metal' else 'software'
-          if platform=='MAC-X64': device='virtual' # Owner-approved, selected-device IOKit attestation is mandatory.
+          virtual_route={'MAC-X64':'r1-source-virtual-metal','MAC-ARM64':'r1-source-virtual-metal-arm64'}.get(platform)
+          device='virtual' if virtual_route else 'hardware' if api=='metal' else 'software'
           host='macos' if api=='metal' else 'windows' if platform=='WIN-X64' else 'linux'
           for qpa in (['xcb','wayland'] if host=='linux' else ['cocoa' if api=='metal' else 'windows']):
               command=base+['--rhi-contracts','--build-source','--configuration',
-                  ('r1-source-virtual-metal' if device=='virtual' else 'gui-less-'+host)+'/'+platform+'/rhi-offscreen/offscreen/'+qpa+'/'+device,
+                  (virtual_route or 'gui-less-'+host)+'/'+platform+'/rhi-offscreen/offscreen/'+qpa+'/'+device,
                   '--provider-prefix',str(qt),'--backend',api,'--device',device,'--mode','offscreen','--expected-qpa',qpa,
                   '--report-dir',str(Path('build-r1/rhi-'+qpa).resolve()),'--timeout','300']
               for option in options:command+=['--cmake-option',option]
@@ -355,7 +374,6 @@ jobs:
                       for profile,graph in [('cpu','ordinary'),('legacy','legacy'),('dual','dual')]+[(p,p) for p in
                               ('cpu-python','legacy-python','dual-python','rhi-python')]:
                           command+=['--case-cmake-option',profile+':CMAKE_TOOLCHAIN_FILE='+str(Path('build-r1/conan',graph,'conan_toolchain.cmake').resolve())]
-              if host=='windows':command+=['--generator','Visual Studio 17 2022']
               if api=='vulkan':command+=['--icd-manifest',os.environ['VK_DRIVER_FILES']]
               if host=='linux':
                   command+=['--xvfb-run','/usr/bin/xvfb-run','--vulkan-validation-manifest',
@@ -378,6 +396,7 @@ jobs:
             build-r1/**/*.jsonl
             build-r1/**/*.log
             build-r1/aqt-logging.ini
+            build-r1/conan/empty/conanvcvars.bat
             build-r1/**/*.xml
             build-r1/**/discovery.txt
             build-r1/**/vk_layer_settings.txt

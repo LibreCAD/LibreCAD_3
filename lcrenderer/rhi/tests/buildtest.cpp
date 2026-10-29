@@ -364,8 +364,18 @@ TEST(RenderFactoryTest, InvalidPolicyBeforeDeviceCreation) {
                            D::ExternalDevice, D::CpuDevice})
         for (bool intel : {false, true})
             EXPECT_EQ("unknown", deviceClass(type, intel, {1, "AppleParavirtGPU"}));
+    for (const auto type : {D::UnknownDevice, D::VirtualDevice, D::IntegratedDevice, D::DiscreteDevice,
+                           D::ExternalDevice, D::CpuDevice}) {
+        EXPECT_EQ(type == D::IntegratedDevice ? "virtual" : "unknown",
+                  deviceClass(type, false, {1, "AppleParavirtGPU"}, true));
+        EXPECT_EQ("unknown", deviceClass(type, true, {1, "AppleParavirtGPU"}, true));
+        EXPECT_EQ("unknown", deviceClass(type, false, {0, "AppleParavirtGPU"}, true));
+    }
+    for (const auto* name : {"", "Apple Paravirtual device", "AppleParavirtGPUSpoof", "AppleParavirtAccelerator"})
+        EXPECT_NE("virtual", deviceClass(D::IntegratedDevice, false, {1, name}, true));
     for (const auto type : {D::UnknownDevice, D::VirtualDevice}) {
         EXPECT_EQ("virtual", deviceClass(type, true, verified));
+        EXPECT_EQ("unknown", deviceClass(type, true, verified, true));
         EXPECT_EQ("unknown", deviceClass(type, false, verified));
         EXPECT_EQ("unknown", deviceClass(type, true, {}));
         EXPECT_EQ("unknown", deviceClass(type, true, {0, verified.registryClass}));

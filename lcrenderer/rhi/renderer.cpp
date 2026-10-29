@@ -273,7 +273,12 @@ struct OffscreenRenderer::Impl {
 #else
         const bool intelMetal = false;
 #endif
-        const auto kind = detail::deviceClass(native.deviceType, intelMetal, identity);
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM_64)
+        const bool armMetal = api == Api::Metal;
+#else
+        const bool armMetal = false;
+#endif
+        const auto kind = detail::deviceClass(native.deviceType, intelMetal, identity, armMetal);
         info = {api, QString::fromUtf8(native.deviceName).toStdString(), kind, qVersion(),
                 executor.shaderIdentity().toStdString(), minimum, maximum, std::min(policyLimit, maximum),
                 int(native.deviceType), identity.registryId ? std::to_string(identity.registryId) : "", identity.registryClass};

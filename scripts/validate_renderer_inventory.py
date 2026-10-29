@@ -426,9 +426,10 @@ def case_configurations(configs):
             else:
                 virtual = device == 'virtual'
                 if virtual:
-                    require((ident, platform, backend, profile, mode, qpa, artifact) ==
+                    require((ident, platform, backend, profile, mode, qpa, artifact) in {
                             ('r1-source-virtual-metal', 'MAC-X64', 'metal', 'rhi-offscreen', 'offscreen', 'cocoa', 'source'),
-                            'virtual Metal is Intel R1 source/offscreen only')
+                            ('r1-source-virtual-metal-arm64', 'MAC-ARM64', 'metal', 'rhi-offscreen', 'offscreen', 'cocoa', 'source')},
+                            'virtual Metal requires an approved R1 source/offscreen tuple')
                 require(backend == api and qpa in native_qpas and (device in native_devices or virtual) and
                         options['WITH_RHI_RENDERER'], 'wrong API/QPA/device for required platform')
                 require(not (platform == 'WIN-X64' and options['WITH_LUACMDINTERFACE']),
@@ -526,7 +527,7 @@ def validate_case_inputs(path=CASE_PATH, root=REPO_ROOT):
         _references(case['profiles'], PROFILE_MODES.keys(), 'case profile')
         _references(case['modes'], {'cpu', 'offscreen', 'widget'}, 'case mode')
         _references(case['devices'], {'none', 'software', 'hardware', 'virtual', 'any'}, 'case device')
-        if 'virtual' in case['devices'] or 'r1-source-virtual-metal' in groups:
+        if 'virtual' in case['devices'] or {'r1-source-virtual-metal','r1-source-virtual-metal-arm64'}.intersection(groups):
             require(case['id'] == 'rhi-build-options' and case['stage'] == 'R1' and
                     case['binding'] == 'proposed-gtest' and case['dataset'] == 'rhi-build-options',
                     'virtual Metal cannot qualify another stage/case')

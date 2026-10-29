@@ -1199,7 +1199,7 @@ class SelectionTests(unittest.TestCase):
                                *map(str, args)], text=True, capture_output=True, timeout=20)
 
     def test_real_inventory_relations_and_not_execution(self):
-        self.assertEqual(190, len(self.real['configurations']))
+        self.assertEqual(191, len(self.real['configurations']))
         self.assertEqual(252, len(self.real['requirements']))
         summary = inventory.case_inventory_summary(self.real)
         self.assertFalse(summary['execution_evidence'])
@@ -1210,7 +1210,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_virtual_metal_retains_hardware_and_only_selects_r1(self):
         key = 'r1-source-virtual-metal/MAC-X64/rhi-offscreen/offscreen/cocoa/virtual'
-        virtual = [k for k,c in self.real['configurations'].items() if c['device'] == 'virtual']
+        virtual = [k for k,c in self.real['configurations'].items() if c['device'] == 'virtual' and c['platform'] == 'MAC-X64']
         self.assertEqual([key], virtual)
         self.assertEqual(3, len(self.select('R1', key)['requirements']))
         for stage in ('R2','R3','R4','R5','R6','R7'):
@@ -1234,6 +1234,36 @@ class SelectionTests(unittest.TestCase):
         case['stage'] = 'R2'
         with self.assertRaisesRegex(ValueError,'another stage/case'):
             self.validate()
+
+    def test_arm_virtual_metal_is_a_separate_exact_r1_source_route(self):
+        key = 'r1-source-virtual-metal-arm64/MAC-ARM64/rhi-offscreen/offscreen/cocoa/virtual'
+        intel = 'r1-source-virtual-metal/MAC-X64/rhi-offscreen/offscreen/cocoa/virtual'
+        self.assertEqual({intel,key},{k for k,c in self.real['configurations'].items() if c['device'] == 'virtual'})
+        self.assertEqual(3,len(self.select('R1',key)['requirements']))
+        for stage in ('R2','R3','R4','R5','R6','R7'):
+            with self.subTest(stage=stage),self.assertRaisesRegex(ValueError,'R1 only'):
+                self.select(stage,key)
+
+    def test_arm_virtual_metal_cannot_expand_platform_host_package_or_case_scope(self):
+        original = copy.deepcopy(self.manifest)
+        changes = [('platforms',[platform]) for platform in ('MAC-X64','LINUX-X64','LINUX-ARM64','WIN-X64')]
+        changes += [('artifact',artifact) for artifact in ('install','bundle','appimage','snap','nsis')]
+        changes += [('profiles',[profile]) for profile in ('rhi-only','rhi-cli','rhi-cli-python')]
+        changes += [('modes',['widget']),('backend','vulkan'),('qpas',['xcb']),('id','unapproved-virtual-arm')]
+        for field,value in changes:
+            self.manifest = copy.deepcopy(original)
+            self.config('r1-source-virtual-metal-arm64')[field] = value
+            with self.subTest(field=field,value=value),self.assertRaises(ValueError):
+                inventory.case_configurations(self.manifest['configurations'])
+        for field,value in (('stage','R2'),('id','unapproved-virtual-case'),
+                            ('binding','proposed-runner-check'),('dataset','other')):
+            self.manifest = copy.deepcopy(original)
+            case = self.case('rhi-build-options')
+            case['configurations'] = ['r1-source-virtual-metal-arm64']
+            case['devices'] = ['hardware']
+            case[field] = value
+            with self.subTest(field=field,value=value),self.assertRaisesRegex(ValueError,'another stage/case'):
+                self.validate()
 
     def test_profiles_explicitly_define_python_widgets_cli_and_test_intent(self):
         for name in ('rhi-only', 'dual', 'rhi-offscreen', 'rhi-cli', 'dual-legacy', 'cpu', 'cairo'):

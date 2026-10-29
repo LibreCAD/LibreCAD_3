@@ -1260,9 +1260,11 @@ def private_pch_contract(build):
         compiled=sorted(p for root in owners for p in root.rglob('cmake_pch*') if p.suffix in ('.pch','.gch'))
         header=next((p.read_bytes() for p in raw if p.name=='cmake_pch.hxx' and p.is_file()),b'')
         includes=re.findall(rb'^\s*#\s*include\s+([^\r\n]+)',re.sub(rb'/\*.*?\*/|//[^\r\n]*',b'',header,flags=re.S),re.M)
+        cache_names=('cmake_pch.pch','cmake_pch.hxx.pch','cmake_pch.hxx.gch')
+        if owner/'cmake_pch.cxx' in raw:cache_names+=('cmake_pch.cxx.pch',)
         if (len(raw)!=2 or {p.name for p in raw} not in
                 ({'cmake_pch.hxx','cmake_pch.cxx'},{'cmake_pch.hxx','cmake_pch.hxx.cxx'}) or
-                len(compiled)!=1 or compiled[0].name not in ('cmake_pch.pch','cmake_pch.hxx.pch','cmake_pch.hxx.gch') or
+                len(compiled)!=1 or compiled[0].name not in cache_names or
                 any(p.is_symlink() or not p.is_file() or not p.stat().st_size for p in raw+compiled) or
                 any(not p.resolve().is_relative_to(owner) for p in raw) or
                 any(not any(p.resolve().is_relative_to(root) for root in owners) for p in compiled) or
@@ -1412,9 +1414,10 @@ def rhi_results(args, directory, selection):
             raise ValueError('Native virtual Metal cannot qualify hardware/software')
         if config['device'] == 'virtual':
             registry = props.get('rhi_metal_registry_id', '')
-            if (config['platform'] != 'MAC-X64' or config['backend'] != 'metal' or
-                    props.get('rhi_qrhi_device_type') not in ('0','4') or
-                    props.get('rhi_metal_registry_class') != 'AppleParavirtAccelerator' or
+            identity = (config['platform'],props.get('rhi_metal_registry_class'),props.get('rhi_qrhi_device_type'))
+            if (config['backend'] != 'metal' or identity not in (
+                    ('MAC-X64','AppleParavirtAccelerator','0'),('MAC-X64','AppleParavirtAccelerator','4'),
+                    ('MAC-ARM64','AppleParavirtGPU','1')) or
                     not re.fullmatch(r'[1-9][0-9]{0,19}', registry) or int(registry) > 2**64-1):
                 raise ValueError('Missing/mismatched selected native virtual Metal attestation')
             attestations.append((props['rhi_qrhi_device_type'], registry, props['rhi_metal_registry_class'], props['rhi_device']))

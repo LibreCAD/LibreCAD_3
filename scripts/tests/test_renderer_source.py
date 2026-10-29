@@ -1763,6 +1763,28 @@ class SourceCheckGraphTests(unittest.TestCase):
             with self.subTest(foreign=name),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
             foreign.unlink();binary.write_bytes(b'synthetic-visual-studio-pch')
 
+    def test_ninja_msvc_cache_requires_the_owned_cxx_source_and_single_output(self):
+        files=self.pch_files()
+        for name,(header,source,binary) in files.items():
+            owner=header.parent;target=self.reply/(name+'.json');data=json.loads(target.read_text())
+            new_source=owner/'cmake_pch.cxx';source.rename(new_source)
+            for item in data['sources']:
+                if item['path']==str(source):item['path']=str(new_source)
+            target.write_text(json.dumps(data));binary.rename(owner/'cmake_pch.cxx.pch')
+        self.assertEqual(set(files),set(runner.private_pch_contract(self.build)))
+        for name,(header,old_source,old_binary) in files.items():
+            owner=header.parent;source=owner/'cmake_pch.cxx';binary=owner/'cmake_pch.cxx.pch'
+            target=self.reply/(name+'.json');original=target.read_bytes();data=json.loads(original)
+            for item in data['sources']:
+                if item['path']==str(source):item['path']=str(old_source)
+            source.rename(old_source);target.write_text(json.dumps(data))
+            with self.subTest(target=name,kind='wrong-source'),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
+            old_source.rename(source);target.write_bytes(original);old_binary.write_bytes(b'duplicate')
+            with self.subTest(target=name,kind='multiple'),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
+            old_binary.unlink();foreign=owner.parent/'foreign.dir/cmake_pch.cxx.pch';foreign.parent.mkdir(exist_ok=True);binary.rename(foreign)
+            with self.subTest(target=name,kind='foreign'),self.assertRaises(ValueError):runner.private_pch_contract(self.build)
+            foreign.rename(binary)
+
     def test_omitting_any_required_direct_target_is_rejected_even_if_reachable(self):
         for name in self.required:
             graph=copy.deepcopy(self.original)
@@ -1829,6 +1851,49 @@ class CpuHeaderContractTests(unittest.TestCase):
 class SourceWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.text=(inventory.REPO_ROOT/'.github/workflows/renderer-source.yml').read_text()
+
+    def test_windows_library_compiler_exports_only_validated_owned_variables(self):
+        marker='- name: Activate selected Windows library compiler'
+        block=self.text.split(marker,1)[1].split('\n      - name:',1)[0]
+        self.assertIn("if: runner.os == 'Windows' && startsWith(matrix.contract_scope, 'libraries-')",block)
+        code=textwrap.dedent(block.split('run: |\n',1)[1])
+        with tempfile.TemporaryDirectory(prefix='renderer-msvc-env-') as temporary:
+            root=Path(temporary)/"source's SDK workspace";raw=root/'build-r1/conan/empty/conanvcvars.bat'
+            raw.parent.mkdir(parents=True);raw.write_bytes(b'@echo off\r\n')
+            envfile=root/'github-env';baseline='EXISTING=kept\n';before=Path.cwd()
+            output='=C:=C:\\work\r\nPath=C:\\VS tools;C:\\system\r\ninclude=C:\\SDK include\r\nLIB=C:\\lib\r\nLibPath=C:\\libpath\r\nGITHUB_TOKEN=do-not-export\r\n'
+            try:
+                os.chdir(root)
+                with patch.dict(os.environ,GITHUB_ENV=str(envfile)):
+                    envfile.write_text(baseline)
+                    with patch.object(subprocess,'run',return_value=subprocess.CompletedProcess('cmd',0,stdout=output)) as run:
+                        exec(compile(code,'selected compiler environment','exec'),{})
+                    self.assertEqual('cmd /d /u /s /c call "'+str(raw.resolve())+'" >nul && set',run.call_args.args[0])
+                    self.assertEqual(60,run.call_args.kwargs['timeout']);self.assertEqual('utf-16-le',run.call_args.kwargs['encoding'])
+                    self.assertTrue(run.call_args.kwargs['check'])
+                    self.assertNotIn('stderr',run.call_args.kwargs)
+                    self.assertEqual(baseline+'PATH=C:\\VS tools;C:\\system\nINCLUDE=C:\\SDK include\nLIB=C:\\lib\nLIBPATH=C:\\libpath\n',envfile.read_text())
+                    receipt=root/'build-r1/msvc-environment.json';record=json.loads(receipt.read_text())
+                    self.assertEqual(inventory.sha256(raw.read_bytes()),record['script_sha256'])
+                    self.assertEqual(['PATH','INCLUDE','LIB','LIBPATH'],record['exported_keys'])
+                    self.assertNotIn('do-not-export',receipt.read_text()+envfile.read_text())
+                    retained=self.retained_files(self.text,'Retain selected source/provider/build/test/process evidence on failure too',root)
+                    for path in ('build-r1/conan/empty/conanvcvars.bat','build-r1/msvc-environment.json'):self.assertIn(path,retained)
+                    cases=[output.replace('LIB=C:\\lib\r\n',''),output.replace('include=C:\\SDK include','include= '),
+                           output+'PATH=duplicate\r\n',subprocess.CalledProcessError(1,'cmd'),subprocess.TimeoutExpired('cmd',60)]
+                    for value in cases:
+                        envfile.write_text(baseline);receipt.unlink(missing_ok=True)
+                        with self.subTest(value=type(value).__name__),patch.object(subprocess,'run') as run:
+                            if isinstance(value,Exception):run.side_effect=value
+                            else:run.return_value=subprocess.CompletedProcess('cmd',0,stdout=value)
+                            with self.assertRaises((ValueError,subprocess.SubprocessError)):
+                                exec(compile(code,'rejected compiler environment','exec'),{})
+                        self.assertEqual(baseline,envfile.read_text());self.assertFalse(receipt.exists())
+                    raw.unlink();envfile.write_text(baseline)
+                    with patch.object(subprocess,'run') as run,self.assertRaises(FileNotFoundError):
+                        exec(compile(code,'missing compiler script','exec'),{})
+                    run.assert_not_called();self.assertEqual(baseline,envfile.read_text())
+            finally:os.chdir(before)
 
     def test_qt_installer_log_stays_owned_without_hiding_unrelated_root_dirt(self):
         marker='- name: Prepare Windows Qt installer logging'
@@ -2025,10 +2090,14 @@ class SourceWorkflowTests(unittest.TestCase):
                 exec(compile(code,'renderer-source.yml shared native step','exec'),{})
                 commands=[c.args[0] for c in run.call_args_list]
                 self.assertEqual(3 if platform.startswith('LINUX-') else 2,len(commands))
+                for command in commands:
+                    self.assertEqual('Ninja',command[command.index('--generator')+1])
+                    self.assertEqual('300',command[command.index('--timeout')+1])
                 rhi=commands[-1]
-                expected='virtual' if platform=='MAC-X64' else 'hardware' if platform=='MAC-ARM64' else 'software'
+                expected='virtual' if platform in ('MAC-X64','MAC-ARM64') else 'software'
                 self.assertEqual(expected,rhi[rhi.index('--device')+1])
                 self.assertEqual(platform=='MAC-X64','r1-source-virtual-metal/' in rhi[rhi.index('--configuration')+1])
+                self.assertEqual(platform=='MAC-ARM64','r1-source-virtual-metal-arm64/' in rhi[rhi.index('--configuration')+1])
                 self.assertIn('--build-contracts',commands[0]);self.assertIn('cpu-source/'+platform+'/cpu/cpu/none/none',commands[0])
                 for command in commands[1:]:
                     self.assertIn('--rhi-contracts',command);self.assertIn('--build-source',command);self.assertNotIn('--app',command)
@@ -2037,7 +2106,7 @@ class SourceWorkflowTests(unittest.TestCase):
                         self.assertIn('--xvfb-run',command);self.assertIn('--vulkan-validation-library',command)
                 if platform=='WIN-X64':
                     for variant in ('ordinary','empty'):self.assertTrue(any(v.startswith(variant+':CMAKE_TOOLCHAIN_FILE=') for v in commands[0]))
-                    self.assertIn('--icd-manifest',commands[1]);self.assertIn('Visual Studio 17 2022',commands[1])
+                    self.assertIn('--icd-manifest',commands[1]);self.assertNotIn('Visual Studio 17 2022',commands[1])
                     for profile in runner.LIBRARY_PROFILES:
                         self.assertTrue(any(v.startswith(profile+':CMAKE_TOOLCHAIN_FILE=') for v in commands[1]))
                 self.assertIn('Python_EXECUTABLE='+sys.executable,commands[1])
@@ -2058,6 +2127,8 @@ class SourceWorkflowTests(unittest.TestCase):
                 self.assertIn('--production-builds',command);self.assertNotIn('--rhi-contracts',command)
                 self.assertNotIn('--build-contracts',command);self.assertNotIn('--xvfb-run',command)
                 self.assertEqual(platform,command[command.index('--platform')+1])
+                self.assertEqual('Ninja',command[command.index('--generator')+1])
+                self.assertEqual('300',command[command.index('--timeout')+1])
                 if platform=='WIN-X64':
                     overrides=[command[i+1] for i,v in enumerate(command) if v=='--case-cmake-option']
                     self.assertEqual(8,len(overrides))
@@ -2188,6 +2259,7 @@ class SourceWorkflowTests(unittest.TestCase):
             self.assertIn('--build=never',before);self.assertIn('--build=never',install)
             for command in (before,install):
                 self.assertIn(['-c','tools.cmake.cmaketoolchain:user_presets='],[command[j:j+2] for j in range(len(command)-1)])
+                self.assertIn(['-c','tools.cmake.cmaketoolchain:generator=Ninja'],[command[j:j+2] for j in range(len(command)-1)])
             self.assertEqual(['conan','install'],install[:2])
             lock=before[before.index('--lockfile-out')+1]
             self.assertEqual(lock,install[install.index('--lockfile')+1])
@@ -2211,7 +2283,24 @@ class SourceWorkflowTests(unittest.TestCase):
         for command in graphs:
             self.assertIn('&:with_unittests=False',command);self.assertIn('&:with_renderer_tests=False',command)
             self.assertIn('--build=never',command)
+            self.assertIn('tools.cmake.cmaketoolchain:generator=Ninja',command)
         self.assertEqual(8,sum(c[:2]==['conan','install'] for c in commands))
+
+    def test_windows_host_toolchains_keep_the_visual_studio_route(self):
+        code=self.text.split('- name: Restore Windows core binaries and exact per-case toolchains',1)[1]
+        code=textwrap.dedent(code.split('run: |\n',1)[1].split('\n      - name:',1)[0])
+        for scope in ('cli','cli-persistence','ui','both'):
+            for tests in ('ON','OFF'):
+                with self.subTest(scope=scope,tests=tests),tempfile.TemporaryDirectory(prefix='conan-host-generator-') as tmp, \
+                     patch.dict(os.environ,R1_SCOPE=scope,R1_TESTS=tests,R1_HOST_PROFILE='dual-python',RUNNER_TEMP=tmp,
+                                GITHUB_ENV=str(Path(tmp)/'env'),GITHUB_PATH=str(Path(tmp)/'path')), \
+                     patch('validate_renderer_conan_graph.windows_runtime_directories',return_value=[str(Path(tmp)/'LuaBin')]), \
+                     patch.object(subprocess,'run') as run:
+                    exec(compile(code,'unchanged host toolchain route','exec'),{})
+                    commands=[c.args[0] for c in run.call_args_list]
+                    self.assertEqual(1,sum(c[:3]==['conan','graph','info'] for c in commands))
+                    self.assertEqual(1,sum(c[:2]==['conan','install'] for c in commands))
+                    self.assertTrue(all('tools.cmake.cmaketoolchain:generator=Ninja' not in c for c in commands))
 
     def test_windows_profiles_cannot_publish_different_lua_runtimes(self):
         code=self.text.split('- name: Restore Windows core binaries and exact per-case toolchains',1)[1]
