@@ -213,9 +213,19 @@ struct RecordedRegion {
 // The raw boundary MUST travel with its positionBound; wrappers do so and share
 // recording/preparation work caps. No references to mutable CAD entities escape.
 RecordedRegion recordRegion(const lc::geo::Region& region, const PaintState& state = {}, RegionLimits limits = {});
+// Carry the recording certificate and its work charge into preparation. Keep
+// the recorded boundary, positionBound and visited together and unmodified;
+// this mutable value cannot authenticate a forged or stale certificate.
+PreparedFill prepareRegionFill(const RecordedRegion& region, FillRule rule = FillRule::EvenOdd,
+                               FillLimits limits = {}, const LinearGradient* gradient = nullptr);
 PreparedFill prepareRegionFill(const lc::geo::Region& region, const PaintState& state = {},
                                FillRule rule = FillRule::EvenOdd, FillLimits limits = {},
                                const LinearGradient* gradient = nullptr);
+// The recorded boundary is already physical. Its mask retains the recorded
+// state; the tile may have its own transform and supplies the ink state.
+PreparedTiledHatch prepareRegionHatch(const RecordedRegion& region, const HatchTile& tile,
+    double scale = 1, double angle = 0, FillRule rule = FillRule::EvenOdd,
+    StrokeStyle style = {}, TiledHatchLimits limits = {});
 PreparedTiledHatch prepareRegionHatch(const lc::geo::Region& region, const HatchTile& tile,
     double scale = 1, double angle = 0, FillRule rule = FillRule::EvenOdd,
     StrokeStyle style = {}, TiledHatchLimits limits = {});

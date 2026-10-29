@@ -49,13 +49,17 @@ struct RecordingLimits {
 // Owns every path/style value. Validation failures throw a stable diagnostic and
 // leave the previous state/path/commands intact (including unmatched restore).
 // save/restore excludes the path. Stroke/fill consume it, including empty paths.
-// Access is const; later preparation reads snapshots, never live painter state.
+// Lvalue access is a const view; temporary access returns an owned snapshot.
+// Later preparation reads snapshots, never live painter state.
 class PathRecorder {
 public:
     explicit PathRecorder(RecordingLimits limits = {});
-    const PaintState& state() const { return _state; }
-    const std::vector<PathElement>& path() const { return _path; }
-    const std::vector<PathCommand>& commands() const { return _commands; }
+    const PaintState& state() const & { return _state; }
+    PaintState state() const && { return _state; }
+    const std::vector<PathElement>& path() const & { return _path; }
+    std::vector<PathElement> path() const && { return _path; }
+    const std::vector<PathCommand>& commands() const & { return _commands; }
+    std::vector<PathCommand> commands() const && { return _commands; }
     void newPath();
     void newSubPath();
     void moveTo(Point p);

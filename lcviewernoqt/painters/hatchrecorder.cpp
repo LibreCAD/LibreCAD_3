@@ -176,6 +176,10 @@ struct RegionBuilder {
         check(out.positionBound<=limits.joinError,"precision-limit");
     }
 };
+void chargeRegion(const RecordedRegion& input,std::size_t vertices,std::size_t& work) {
+    check(vertices<=MaxFrameElements && work<=4*MaxFrameElements,"invalid-limits");
+    check(input.visited<=work,"region-work-limit");work-=input.visited;
+}
 }
 HatchTile recordHatchTile(const lc::objects::Pattern& pattern,const PaintState& state,RecordingLimits limits) {
     PathRecorder recorder(limits);inherit(recorder,state);
@@ -205,14 +209,20 @@ RecordedRegion recordRegion(const lc::geo::Region& region,const PaintState& stat
     builder.place(state.transform);
     return std::move(builder.out);
 }
+PreparedFill prepareRegionFill(const RecordedRegion& input,FillRule rule,FillLimits limits,const LinearGradient* gradient) {
+    chargeRegion(input,limits.vertices,limits.work);
+    auto out=prepareFill(input.boundary,rule,limits,gradient,input.positionBound);out.visited+=input.visited;return out;
+}
 PreparedFill prepareRegionFill(const lc::geo::Region& region,const PaintState& state,FillRule rule,FillLimits limits,const LinearGradient* gradient) {
     RegionLimits recording;recording.recording.elements=limits.vertices;recording.work=limits.work;
-    auto input=recordRegion(region,state,recording);limits.work-=input.visited;
-    auto out=prepareFill(input.boundary,rule,limits,gradient,input.positionBound);out.visited+=input.visited;return out;
+    return prepareRegionFill(recordRegion(region,state,recording),rule,limits,gradient);
+}
+PreparedTiledHatch prepareRegionHatch(const RecordedRegion& input,const HatchTile& tile,double scale,double angle,FillRule rule,StrokeStyle style,TiledHatchLimits limits) {
+    chargeRegion(input,limits.geometry.vertices,limits.geometry.work);
+    auto out=prepareTiledHatch(input.boundary,tile,scale,angle,rule,style,limits,input.positionBound);out.mask.visited+=input.visited;out.visited+=input.visited;return out;
 }
 PreparedTiledHatch prepareRegionHatch(const lc::geo::Region& region,const HatchTile& tile,double scale,double angle,FillRule rule,StrokeStyle style,TiledHatchLimits limits) {
     RegionLimits recording;recording.recording.elements=limits.geometry.vertices;recording.work=limits.geometry.work;
-    auto input=recordRegion(region,tile.state,recording);limits.geometry.work-=input.visited;
-    auto out=prepareTiledHatch(input.boundary,tile,scale,angle,rule,style,limits,input.positionBound);out.mask.visited+=input.visited;out.visited+=input.visited;return out;
+    return prepareRegionHatch(recordRegion(region,tile.state,recording),tile,scale,angle,rule,style,limits);
 }
 }}}

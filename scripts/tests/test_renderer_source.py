@@ -158,9 +158,10 @@ class SourceBuildTests(unittest.TestCase):
         root=inventory.REPO_ROOT
         source=(root/'unittest/lcviewernoqt/testregionrecorder.cpp').read_text()
         names=set(re.findall(r'TEST\(CpuRegionRecorderTest,\s*(\w+)\)',source))
-        self.assertEqual(18,len(names))
+        self.assertEqual(19,len(names))
         self.assertIn('EllipseAxesValidateBeforeAnyRegionBoundaryOrPreparedInkEscapes',names)
         self.assertIn('AnalyticEndpointClosureIsPanInvariantButRealGapsStillReject',names)
+        self.assertIn('RecordedRegionPreparationPreservesCertificatesBudgetsAndIndependentTileState',names)
         self.assertIn('lcviewernoqt/testregionrecorder.cpp',(root/'unittest/CMakeLists.txt').read_text().split('# Issue #412')[0])
         production=(root/'lcviewernoqt/painters/hatchrecorder.cpp').read_text()
         for name in ('recordRegion','prepareRegionFill','prepareRegionHatch','ambiguous-region-loop','region-work-limit','input.positionBound'):

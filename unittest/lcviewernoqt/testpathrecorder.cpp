@@ -12,10 +12,22 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 namespace {
 using namespace lc::viewer::render;
 namespace json = rapidjson;
+// Lvalue access remains a view; even a const temporary returns an owned value.
+#define CHECK_RECORDER_ACCESSOR(name, type) \
+    static_assert(std::is_same<decltype(std::declval<PathRecorder&>().name()), const type&>::value, "mutable lvalue view"); \
+    static_assert(std::is_same<decltype(std::declval<const PathRecorder&>().name()), const type&>::value, "const lvalue view"); \
+    static_assert(std::is_same<decltype(std::declval<PathRecorder&&>().name()), type>::value, "mutable rvalue ownership"); \
+    static_assert(std::is_same<decltype(std::declval<const PathRecorder&&>().name()), type>::value, "const rvalue ownership")
+CHECK_RECORDER_ACCESSOR(state, PaintState);
+CHECK_RECORDER_ACCESSOR(path, std::vector<PathElement>);
+CHECK_RECORDER_ACCESSOR(commands, std::vector<PathCommand>);
+#undef CHECK_RECORDER_ACCESSOR
 // Shared manifest IDs execute the real recorder using the existing typed
 // corpus, not a second copy of its expected values. Unknown/unused assertions
 // fail closed. Extra regression IDs below test the provisional semantic edges.
@@ -106,6 +118,20 @@ bool sameStyle(const PaintState& a, const PaintState& b) {
         a.dashScaled == b.dashScaled && a.antialias == b.antialias;
 }
 void segment(PathRecorder& r) { r.moveTo({0, 0}); r.lineTo({3, 4}); }
+}
+TEST(CpuPainterContractTest, TemporaryRecorderAccessOwnsSnapshots) {
+    const auto make = [] {
+        PathRecorder r;r.source(.1,.2,.3,.4);r.dash({1,2});segment(r);r.stroke();r.moveTo({7,8});return r;
+    };
+    const auto& state=make().state();
+    const auto& path=make().path();
+    const auto& commands=make().commands();
+    EXPECT_DOUBLE_EQ(.4,state.rgba[3]);EXPECT_EQ((std::vector<double>{1,2}),state.dash);
+    ASSERT_EQ(1u,path.size());EXPECT_DOUBLE_EQ(7,path[0].point.x);EXPECT_DOUBLE_EQ(8,path[0].point.y);
+    ASSERT_EQ(1u,commands.size());ASSERT_EQ(2u,commands[0].path.size());
+    EXPECT_DOUBLE_EQ(3,commands[0].path[1].point.x);EXPECT_DOUBLE_EQ(.4,commands[0].state.rgba[3]);
+    auto named=make();const auto copy=std::move(named).commands();
+    EXPECT_EQ(1u,copy.size());EXPECT_EQ(1u,named.commands().size());
 }
 TEST(CpuPainterContractTest, CpuPathStateOrdinary) {
     Contract c("path-state", "ordinary"); PathRecorder r;

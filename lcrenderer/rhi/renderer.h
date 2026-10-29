@@ -16,10 +16,15 @@ struct DeviceInfo {
 class TextureSizeLimitError : public std::invalid_argument {
 public:
     static constexpr const char* code() noexcept { return "texture-size-limit"; }
-    explicit TextureSizeLimitError(int maximum) : std::invalid_argument(code()), maximum_(maximum) {}
+    // Legacy one-argument callers assume the smallest non-suspended size is 1.
+    explicit TextureSizeLimitError(int maximum) : TextureSizeLimitError(maximum, 1) {}
+    TextureSizeLimitError(int maximum, int minimum)
+        : std::invalid_argument(code()), maximum_(maximum), minimum_(minimum) {}
     int maximum() const noexcept { return maximum_; }
+    int minimum() const noexcept { return minimum_; }
 private:
     int maximum_;
+    int minimum_;
 };
 // Private owned offscreen host. Requires a live QGuiApplication. Create, use and
 // destroy on the same thread; it owns no document, widget or borrowed QRhi.

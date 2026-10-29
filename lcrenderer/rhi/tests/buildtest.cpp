@@ -285,6 +285,11 @@ TEST_F(RenderBuildTest, SuspendAndResume) {
     EXPECT_EQ(0u, suspended.indexedDrawCount);
     pixel(old, 10, 10, {{255, 0, 0, 255}});
     pixel(renderer->render(ordinary(97, 73)), 10, 10, {{255, 0, 0, 255}});
+    suspended = renderer->render(Frame{});
+    EXPECT_FALSE(suspended.targetReady);
+    EXPECT_TRUE(suspended.rgba.empty());
+    pixel(renderer->render(ordinary()), 10, 10, {{255, 0, 0, 255}});
+    pixel(renderer->render(ordinary(97, 73)), 10, 10, {{255, 0, 0, 255}});
 }
 TEST_F(RenderBuildTest, IndexedBufferReuse) {
     renderer->render(ordinary());
@@ -315,6 +320,21 @@ TEST_F(RenderBuildTest, InvalidIndexRecovery) {
 TEST_F(RenderBuildTest, TexturePolicyRecovery) {
     Frame f; f.width = info.textureLimit + 1; f.height = 1;
     EXPECT_THROW(renderer->render(f), lc::rhi::TextureSizeLimitError);
+    try {
+        renderer->render(f);
+        ADD_FAILURE() << "Over-budget frame was not rejected";
+    } catch (const lc::rhi::TextureSizeLimitError& error) {
+        EXPECT_EQ(info.textureSizeMin, error.minimum());
+        EXPECT_EQ(info.textureLimit, error.maximum());
+        EXPECT_STREQ(lc::rhi::TextureSizeLimitError::code(), error.what());
+    }
+    const lc::rhi::TextureSizeLimitError legacy(7);
+    EXPECT_EQ(1, legacy.minimum());
+    EXPECT_EQ(7, legacy.maximum());
+    EXPECT_STREQ(lc::rhi::TextureSizeLimitError::code(), legacy.what());
+    const lc::rhi::TextureSizeLimitError bounded(7, 3);
+    EXPECT_EQ(3, bounded.minimum());
+    EXPECT_EQ(7, bounded.maximum());
     pixel(renderer->render(ContractCase(dataset, "ordinary").quad()), 1, 1, {{255, 0, 0, 255}});
 }
 TEST_F(RenderBuildTest, ClearOnly) {

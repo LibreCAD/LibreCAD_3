@@ -166,6 +166,9 @@ TEST(CpuRegionRecorderTest, RoundoffOnlyJoinsAreCertifiedAndPassedIntoFillAndHat
 TEST(CpuRegionRecorderTest, SourceBoundaryErrorParticipatesInTopologyClearanceNotJustOutputMetadata) {
     PathRecorder r;r.rectangle({0,0},10,10);r.rectangle({10.001,0},10,10);r.fill();const auto c=r.commands()[0];
     EXPECT_FALSE(prepareFill(c).triangles.empty());EXPECT_EQ("precision-limit",error([&]{prepareFill(c,FillRule::EvenOdd,{},nullptr,.01);}));
+    RecordedRegion captured;captured.boundary=c;captured.positionBound=.01;
+    EXPECT_EQ("precision-limit",error([&]{prepareRegionFill(captured);}));
+    EXPECT_EQ("precision-limit",error([&]{prepareRegionHatch(captured,pattern());}));
     for (double bound:{-.01,.02,std::numeric_limits<double>::quiet_NaN()}) {
         EXPECT_EQ("invalid-boundary-error",error([&]{prepareFill(c,FillRule::EvenOdd,{},nullptr,bound);}));
         EXPECT_EQ("invalid-boundary-error",error([&]{prepareTiledHatch(c,pattern(),1,0,FillRule::EvenOdd,{}, {},bound);}));
@@ -195,6 +198,49 @@ TEST(CpuRegionRecorderTest, EndToEndCadRegionAndFinitePatternKeepHoleMaskDashPha
     const auto h=prepareRegionHatch(r,pattern(state));EXPECT_TRUE(covers(h.mask,{6,4}));EXPECT_TRUE(covers(h.ink,{6,4}));
     EXPECT_FALSE(covers(h.ink,{10,4}));EXPECT_TRUE(covers(h.ink,{26,4}));EXPECT_FALSE(covers(h.mask,{26,4}));
     EXPECT_EQ(state.rgba,h.ink.state.rgba);EXPECT_EQ(StrokeCoverage::UnionBeforeOver,h.ink.coverage);EXPECT_LE(h.positionBound,.25);
+}
+TEST(CpuRegionRecorderTest, RecordedRegionPreparationPreservesCertificatesBudgetsAndIndependentTileState) {
+    const auto r=region({line({0,0},{10,0}),line({10+1e-13,0},{10,10}),line({10,10},{0,0})});
+    PaintState state;state.rgba={{.2,.4,.6,.5}};const auto input=recordRegion(r,state);ASSERT_GT(input.visited,0u);ASSERT_GT(input.positionBound,0);
+    const auto tile=pattern(state);const auto fill=prepareRegionFill(input),directFill=prepareRegionFill(r,state);
+    EXPECT_DOUBLE_EQ(area(directFill),area(fill));EXPECT_DOUBLE_EQ(directFill.positionBound,fill.positionBound);
+    EXPECT_EQ(directFill.visited,fill.visited);EXPECT_EQ(directFill.triangles.size(),fill.triangles.size());
+    const auto hatch=prepareRegionHatch(input,tile),directHatch=prepareRegionHatch(r,tile);
+    EXPECT_DOUBLE_EQ(directHatch.mask.positionBound,hatch.mask.positionBound);EXPECT_EQ(directHatch.visited,hatch.visited);
+    EXPECT_EQ(directHatch.mask.visited,hatch.mask.visited);EXPECT_EQ(directHatch.ink.triangles.size(),hatch.ink.triangles.size());
+    EXPECT_TRUE(covers(hatch.mask,{5,2}));EXPECT_EQ(state.rgba,hatch.mask.state.rgba);
+
+    FillLimits fillLimit;fillLimit.work=fill.visited;
+    EXPECT_EQ(fill.visited,prepareRegionFill(input,FillRule::EvenOdd,fillLimit).visited);
+    --fillLimit.work;auto savedFill=fill;
+    EXPECT_FALSE(error([&]{savedFill=prepareRegionFill(input,FillRule::EvenOdd,fillLimit);}).empty());
+    EXPECT_EQ(fill.triangles.size(),savedFill.triangles.size());EXPECT_EQ(fill.visited,savedFill.visited);
+    fillLimit.work=input.visited-1;
+    EXPECT_EQ("region-work-limit",error([&]{savedFill=prepareRegionFill(input,FillRule::EvenOdd,fillLimit);}));
+    TiledHatchLimits hatchLimit;hatchLimit.geometry.work=hatch.visited;
+    EXPECT_EQ(hatch.visited,prepareRegionHatch(input,tile,1,0,FillRule::EvenOdd,{},hatchLimit).visited);
+    --hatchLimit.geometry.work;auto savedHatch=hatch;
+    EXPECT_FALSE(error([&]{savedHatch=prepareRegionHatch(input,tile,1,0,FillRule::EvenOdd,{},hatchLimit);}).empty());
+    EXPECT_EQ(hatch.ink.triangles.size(),savedHatch.ink.triangles.size());EXPECT_EQ(hatch.visited,savedHatch.visited);
+    hatchLimit.geometry.work=input.visited-1;
+    EXPECT_EQ("region-work-limit",error([&]{savedHatch=prepareRegionHatch(input,tile,1,0,FillRule::EvenOdd,{},hatchLimit);}));
+
+    fillLimit={};fillLimit.work=4*MaxFrameElements+1;
+    EXPECT_EQ("invalid-limits",error([&]{prepareRegionFill(input,FillRule::EvenOdd,fillLimit);}));
+    hatchLimit={};hatchLimit.geometry.vertices=MaxFrameElements+1;
+    EXPECT_EQ("invalid-limits",error([&]{prepareRegionHatch(input,tile,1,0,FillRule::EvenOdd,{},hatchLimit);}));
+    for (double bound:{-.01,.02,std::numeric_limits<double>::quiet_NaN()}) {
+        auto corrupt=input;corrupt.positionBound=bound;
+        EXPECT_EQ("invalid-boundary-error",error([&]{prepareRegionFill(corrupt);}));
+        EXPECT_EQ("invalid-boundary-error",error([&]{prepareRegionHatch(corrupt,tile);}));
+    }
+
+    PaintState other=state;other.transform.tx=3;other.rgba={{.8,.3,.1,1}};const auto otherTile=pattern(other);
+    const auto separate=prepareRegionHatch(input,otherTile);
+    const auto raw=prepareTiledHatch(input.boundary,otherTile,1,0,FillRule::EvenOdd,{}, {},input.positionBound);
+    EXPECT_EQ(state.rgba,separate.mask.state.rgba);EXPECT_EQ(other.rgba,separate.ink.state.rgba);
+    EXPECT_DOUBLE_EQ(raw.mask.positionBound,separate.mask.positionBound);EXPECT_EQ(raw.visited+input.visited,separate.visited);
+    EXPECT_EQ(raw.ink.triangles.size(),separate.ink.triangles.size());
 }
 TEST(CpuRegionRecorderTest, GlobalRecordingAndPreparationWorkCapsFailAtomicallyAndRecover) {
     auto r=region();const auto input=recordRegion(r);RecordedRegion saved=input;RegionLimits l;l.work=input.visited-1;

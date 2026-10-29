@@ -237,10 +237,11 @@ struct OffscreenRenderer::Impl {
     std::unique_ptr<QRhiTextureRenderTarget> target;
     const std::thread::id owner = std::this_thread::get_id();
     DeviceInfo info;
-    ~Impl() {
+    void releaseTarget() {
         // Pipelines must be released before their target/pass descriptors.
         executor.releaseTarget(); target.reset(); pass.reset(); texture.reset();
     }
+    ~Impl() { releaseTarget(); }
     explicit Impl(Api api, int policyLimit) {
         require(qobject_cast<QGuiApplication*>(QCoreApplication::instance()), "RHI requires a live QGuiApplication");
         require(QString::fromLatin1(qVersion()) == QString::fromLatin1(QT_VERSION_STR), "Private RHI Qt build/runtime mismatch");
@@ -291,7 +292,7 @@ struct OffscreenRenderer::Impl {
         require(!failed, "RHI host has a latched terminal failure");
         viewer::render::validateFrame(f); // Invalid input cannot mutate host/resources.
         if (f.width == 0 || f.height == 0) {
-            executor.releaseTarget(); target.reset(); pass.reset(); texture.reset();
+            releaseTarget();
             completed = false; readback = QRhiReadbackResult();
             Snapshot suspended;
             suspended.width = f.width; suspended.height = f.height;
@@ -300,10 +301,10 @@ struct OffscreenRenderer::Impl {
         }
         if (f.width < info.textureSizeMin || f.height < info.textureSizeMin ||
             f.width > info.textureLimit || f.height > info.textureLimit)
-            throw TextureSizeLimitError(info.textureLimit);
+            throw TextureSizeLimitError(info.textureLimit, info.textureSizeMin);
         try {
             if (!texture || texture->pixelSize() != QSize(f.width, f.height)) {
-                executor.releaseTarget(); target.reset(); pass.reset(); texture.reset();
+                releaseTarget();
                 texture.reset(device->newTexture(QRhiTexture::RGBA8, {f.width, f.height}, 1,
                     QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
                 require(texture->create(), "RHI target texture allocation failed");

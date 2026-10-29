@@ -1,6 +1,6 @@
 # Vulkan rendering migration plan
 
-Status: review corrections active 2026-10-28; R0 remains active and unaccepted.
+Status: modular/API refinement active 2026-10-29; R0 remains active and unaccepted.
 Provisional R1, R2.1, R2.2 and R2.3 implementation are authorized; R2.4–R7 remain proposed.
 Baseline: LibreCAD 3
 `132265a0573253980451facf9109678f8bffe743`, branch `fix/msvc-eigen-include`.
@@ -37,7 +37,21 @@ all60 source tuples (12 per architecture). This is latest-per-tuple proof across
 attempts1/2:59 initial successes plus one unchanged-budget Intel CLI retry, not
 sixty fresh second-attempt executions or pristine first-attempt success.
 
-### Current PR #453 correction boundary — 2026-10-28
+### Current PR #453 correction boundary — 2026-10-29
+
+On 2026-10-29 the owner requested a compact modular/API refinement. The
+`cf77a989` baseline completed all60 source profiles across five platforms;
+one Intel host profile passed an unchanged-budget retry after timing out. Keep
+that source evidence separate from the new candidate. Consolidate target
+lifetime management, preserve certified Region bounds and shared work accounting
+through the preparation API, make temporary recorder results owned, and report
+both device texture limits on rejection. Validate locally and require a new
+all60-profile source cohort for the changed candidate.
+Recorder accessor member-pointer types become ref-qualified; overloaded Region
+preparation requires explicit types for function pointers. RecordedRegion is a
+mutable snapshot: callers must keep its boundary, certificate and work together.
+Legacy remains the default, all acceptance gates remain open, and upstream
+reconciliation remains separate.
 
 Parent `4ab8c386` already contains master `6c331bdb`; its source run40603224689
 fails39/60 native profiles, so pre-merge green evidence does not qualify it.
@@ -4034,6 +4048,7 @@ the moving documentation is not a version-14 provider pin.
 
 | Date | State | Scope and next action |
 |---|---|---|
+| 2026-10-29 | Modular/API refinement locally validated | Consolidate target teardown, report the full texture interval, return owned recorder snapshots from temporaries, and carry Region certificates and work into preparation. The `cf77a989` baseline passed all60 source profiles after one unchanged-budget Intel retry; its proof does not qualify the new candidate. Fresh Mac ARM64 passes556 CPU/Python/persistence IDs,22 Metal IDs and874 scripts (12 expected skips); standalone C++14 sanitizers reproduce the old recorder use-after-free and pass the new code. Evidence: `build/renderer-evidence/pr453-ten-fixes-20261028.55Ne2l/local-modular-refinement/` and `local-recorder-accessors/`. Run final plan checks and a fresh all60-profile source cohort. Keep legacy default, existing assertions/budgets and all gates; upstream reconciliation remains separate. Exemption: .gitignore retains the generated build-r1 exclusion and two maintained renderer CMake inclusions. |
 | 2026-10-28 | Approved ARM source route and bounded Windows scheduling | Owner explicitly authorizes the distinct ARM virtual Metal R1 source route. Require actual ARM Metal plus selected-ID-matched AppleParavirtGPU/type1/nonzero uint64 identity; retain every Intel/default/contradictory-host assertion and all hardware templates. Only the exact new source/offscreen tuple is additive; R2–R7, widgets and packages reject it. Diagnose bb3707's two Windows initial-source300s timeouts as VS project serialization; library lanes use Ninja with the Conan-selected MSVC194/x64 environment, while host lanes retain Visual Studio. Admit only the exact owned Ninja/MSVC PCH filename; every target/test and300/1200 limits remain. Frozen Mac554 CPU/Python/persistence +22 Metal and874 scripts complete (12 expected Mac skips);191 configurations/252 requirements, focused rejection/activation/cache tests and generation-only Conan/CMake probes pass. Evidence: build/renderer-evidence/pr453-ten-fixes-20261028.55Ne2l/local-arm-ninja-final/ and hosted/windows-ninja-*-generation/. Retain bb3707's57-success/5-failure cohort as unqualified; fresh exact-SHA all60 CI and final maintenance remain required. Legacy default, all acceptance gates and separate upstream reconciliation remain. Exemption: .gitignore retains the merged generated build-r1 exclusion and two hand-maintained renderer CMake inclusions. |
 | 2026-10-28 | Route the pinned Qt installer log to owned evidence | Keep the pinned aqt3.3.0/action and active stock logging; supported LOG_CFG sends its file output to the absolute owned build-r1 log, with INI/log retained. No new ignores or source cleanup. The actual pinned wheel CLI proves default root dirt, clean configured execution, append behavior and untouched unrelated dirt still rejected by the guard. All867 scripts complete (12 expected Mac skips);19 workflow tests pass. Native554 CPU/Python/persistence +22 Metal evidence is reused after every source/helper digest compares unchanged. Evidence: build/renderer-evidence/pr453-ten-fixes-20261028.55Ne2l/local-aqt-log-followup/ and hosted/aqt330-clean-source/. Retain0911 source-guard failures as unqualified; require final maintenance and fresh exact-SHA all60 CI. Intel virtual source scope stays; the ARM virtual route or physical runner awaits the owner decision. Existing targets/assertions,300/1200 limits, compiler flags, legacy default and all acceptance gates remain; upstream reconciliation stays separate. Exemption: .gitignore retains the merged generated build-r1 exclusion and two hand-maintained renderer CMake inclusions. |
 | 2026-10-28 | Compact build follow-up and native Metal identity | Share the Mac/Linux install-path target loops (eight fewer production lines); the existing test evaluates actual CMake properties across all/partial/no targets on all three platforms. Freeze metadata per owned profile, stage persistence before Lua, and keep Windows SDK/presets out of source without new ignores or cleanup. Real Git/Conan/metadata regressions preserve dirt detection and invalidation. Retain the selected Metal device's ID-matched actual registry class; reject native virtual classes claimed as hardware. The hosted ARM probe proves AppleParavirtGPU/type1, explaining the old Intel-class filter failure. New native assertions pass; preserved old collector/classifier/reader controls fail. Frozen Mac554 CPU/Python/persistence +22 Metal and866 scripts complete (12 expected Mac skips). Evidence: build/renderer-evidence/pr453-ten-fixes-20261028.55Ne2l/local-compact-refactor-final/, local-metal-identity-followup-native/, local-metal-reader-followup/ and hosted/metal-probe-hosted/. Intel virtual source scope stays unchanged; an ARM virtual source route or physical runner requires the pending owner decision. Five retained cap failures and dirty Windows RHI success remain unqualified; fresh exact-SHA all60 CI and final maintenance remain required. Original checkout/index, every existing target/assertion,300/1200 limits, compiler flags, legacy default and all gates remain; upstream reconciliation stays separate. Exemption: .gitignore retains the merged generated build-r1 exclusion and two hand-maintained renderer CMake inclusions. |
