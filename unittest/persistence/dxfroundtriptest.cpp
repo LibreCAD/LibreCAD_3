@@ -3148,8 +3148,28 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
         EXPECT_EQ(insUnits, c.insUnits) << c.what << ": the drawing was rescaled by saving it";
         EXPECT_EQ(measurement, c.measurement) << c.what;
 
+        // R12 cannot encode $INSUNITS. The 2D drawing is still written, but
+        // the conversion must report that unit metadata was dropped.
+        const std::string legacy = uniqueTmpDxf((std::string(c.what) + "-r12").c_str());
+        boost::filesystem::remove(legacy);
+        const auto legacyResult = lc::persistence::File::exportFile(
+            doc, legacy, lc::persistence::File::LIBDXFRW_DXF_R12);
+        ASSERT_TRUE(legacyResult.ok) << c.what;
+        ASSERT_EQ(legacyResult.loss.notes.size(), 1u) << c.what;
+        EXPECT_NE(legacyResult.loss.notes.front().find("insertion units"),
+                  std::string::npos) << legacyResult.loss.notes.front();
+        std::ifstream legacyWritten(legacy, std::ios::binary);
+        const std::string legacyText(
+            (std::istreambuf_iterator<char>(legacyWritten)),
+            std::istreambuf_iterator<char>());
+        legacyWritten.close();
+        EXPECT_EQ(legacyText.find("$INSUNITS"), std::string::npos) << c.what;
+        EXPECT_EQ(recordsInSection(legacy, "ENTITIES").count("LINE"), 1u)
+            << c.what << ": R12 should keep the 2D geometry";
+
         boost::filesystem::remove(source);
         boost::filesystem::remove(resaved);
+        boost::filesystem::remove(legacy);
     }
 }
 
