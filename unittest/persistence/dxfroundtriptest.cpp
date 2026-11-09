@@ -3092,6 +3092,7 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
         int measurement;
         const char* what;
     } cases[] = {
+        {0, 0, "unitless"},
         {1, 0, "inches, imperial"},
         {4, 1, "millimetres, metric"},
         {6, 1, "metres, metric"},
@@ -3147,6 +3148,40 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
         written.close();
         EXPECT_EQ(insUnits, c.insUnits) << c.what << ": the drawing was rescaled by saving it";
         EXPECT_EQ(measurement, c.measurement) << c.what;
+
+        // R12 and R14 cannot encode $INSUNITS. The 2D drawing is still
+        // written, but non-unitless source metadata must be reported as lost.
+        // Unitless inputs have no insertion-unit information to lose.
+        const std::pair<lc::persistence::File::Type, const char*> legacyTypes[] = {
+            {lc::persistence::File::LIBDXFRW_DXF_R12, "r12"},
+            {lc::persistence::File::LIBDXFRW_DXF_R14, "r14"},
+        };
+        for (const auto& legacyType : legacyTypes) {
+            const std::string legacy = uniqueTmpDxf(
+                (std::string(c.what) + "-" + legacyType.second).c_str());
+            boost::filesystem::remove(legacy);
+            const auto legacyResult = lc::persistence::File::exportFile(
+                doc, legacy, legacyType.first);
+            ASSERT_TRUE(legacyResult.ok) << c.what << ": " << legacyType.second;
+            const std::size_t expectedLossCount = c.insUnits == 0 ? 0u : 1u;
+            ASSERT_EQ(legacyResult.loss.notes.size(), expectedLossCount)
+                << c.what << ": " << legacyType.second;
+            if (c.insUnits != 0) {
+                EXPECT_NE(legacyResult.loss.notes.front().find("insertion units"),
+                          std::string::npos) << legacyResult.loss.notes.front();
+            }
+            std::ifstream legacyWritten(legacy, std::ios::binary);
+            const std::string legacyText(
+                (std::istreambuf_iterator<char>(legacyWritten)),
+                std::istreambuf_iterator<char>());
+            legacyWritten.close();
+            EXPECT_EQ(legacyText.find("$INSUNITS"), std::string::npos)
+                << c.what << ": " << legacyType.second;
+            EXPECT_EQ(recordsInSection(legacy, "ENTITIES").count("LINE"), 1u)
+                << c.what << ": " << legacyType.second
+                << " should keep the 2D geometry";
+            boost::filesystem::remove(legacy);
+        }
 
         boost::filesystem::remove(source);
         boost::filesystem::remove(resaved);

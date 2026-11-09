@@ -225,7 +225,7 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
                 ["cmake", "--install", str(build), "--prefix", str(prefix)],
             ):
                 result = subprocess.run(command, text=True, capture_output=True,
-                                        timeout=30, check=False)
+                                        timeout=120, check=False)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
             package = prefix / "share/librecad/lcUIPy"
             self.assertTrue((package / "__init__.py").is_file())

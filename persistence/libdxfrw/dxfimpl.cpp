@@ -2393,7 +2393,15 @@ void DXFimpl::writeHeader(DRW_Header& data) {
     const auto preserved = preservedOn(_document);
     if (preserved != nullptr && preserved->hasHeader) {
         data.addInt("$MEASUREMENT", preserved->measurement, 70);
-        data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+        // $INSUNITS is available from AutoCAD 2000 (AC1015). Older DXF
+        // targets cannot preserve this header variable, and libdxfrw rejects
+        // it rather than silently writing it to an unsupported revision.
+        if (_exportVersion > DRW::AC1014) {
+            data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+        } else if (preserved->insUnitsCode != 0) {
+            _loss.notes.push_back(
+                "Drawing insertion units were not retained: R12/R14 DXF has no $INSUNITS variable.");
+        }
         if (preserved->lineTypeScale > 0.0) {
             data.addDouble("$LTSCALE", preserved->lineTypeScale, 40);
         }
@@ -2410,7 +2418,9 @@ void DXFimpl::writeHeader(DRW_Header& data) {
     // drawing, so hard-code the sensible default rather than the DXF
     // spec-default of 0 (unitless).
     data.addInt("$MEASUREMENT", 1, 70);       // 0 = English, 1 = Metric
-    data.addInt("$INSUNITS", 4, 70);          // 4 = Millimeter
+    if (_exportVersion > DRW::AC1014) {
+        data.addInt("$INSUNITS", 4, 70);      // 4 = Millimeter
+    }
 }
 
 // Issue #412 phase 1: populate the DRW_Dimension base header shared by all
