@@ -11,6 +11,12 @@ export HOMEBREW_NO_INSTALL_CLEANUP=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 
+# Refresh the formula/API snapshot explicitly before resolving the dependency
+# graph. Runner images may contain an older API cache than the bottle manifests
+# Homebrew downloads; mixing those snapshots can record runtime dependencies
+# that do not match the bottles poured below.
+brew update --quiet
+
 roots=(cmake boost eigen freetype glew glfw glm googletest lua@5.4 rapidjson qt python@3.14)
 # --os selects current declared dependencies, not stale installed runtime tabs.
 # Capture separately so a failed discovery cannot disappear in process substitution.

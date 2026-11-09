@@ -30,7 +30,10 @@ with Path(os.environ["BREW_TEST_LOG"]).open("a") as stream:
         "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK")})) + "\\n")
 if args[0] == os.environ["BREW_TEST_FAILURE"]:
     sys.exit(93)
-if args[0] == "deps":
+if args[0] == "update":
+    if args != ["update", "--quiet"]:
+        sys.exit("unexpected formula metadata refresh")
+elif args[0] == "deps":
     sys.stdout.write(os.environ["BREW_TEST_DEPENDENCIES"])
 elif args[0] != "reinstall" or "--force-bottle" not in args:
     sys.exit("unexpected command or dependency source-build risk")
@@ -49,10 +52,11 @@ elif args[0] != "reinstall" or "--force-bottle" not in args:
     def test_refreshes_preinstalled_runtime_closure_and_all_roots_from_bottles(self):
         result, calls = self.run_installer()
         self.assertEqual(0, result.returncode, result.stderr)
-        self.assertEqual(["deps", "--union", "--topological", "--os=macos", *ROOTS], calls[0]["args"])
+        self.assertEqual(["update", "--quiet"], calls[0]["args"])
+        self.assertEqual(["deps", "--union", "--topological", "--os=macos", *ROOTS], calls[1]["args"])
         self.assertEqual(["reinstall", "--formula", "--force-bottle", "zstd", "mpdecimal", "freetype", "qtbase",
-                          *(name for name in ROOTS if name != "freetype")], calls[1]["args"])
-        self.assertEqual(2, len(calls))
+                          *(name for name in ROOTS if name != "freetype")], calls[2]["args"])
+        self.assertEqual(3, len(calls))
 
     def test_retains_inputs_and_freezes_metadata_without_upgrading_unrelated_dependents(self):
         result, calls = self.run_installer()
@@ -61,21 +65,26 @@ elif args[0] != "reinstall" or "--force-bottle" not in args:
             self.assertEqual({"HOMEBREW_NO_INSTALL_CLEANUP": "1", "HOMEBREW_NO_AUTO_UPDATE": "1",
                               "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK": "1"}, call["env"])
 
+    def test_formula_metadata_refresh_failure_prevents_dependency_installation(self):
+        result, calls = self.run_installer(failure="update")
+        self.assertEqual(93, result.returncode, result.stderr)
+        self.assertEqual([["update", "--quiet"]], [call["args"] for call in calls])
+
     def test_dependency_discovery_failure_prevents_installation(self):
         result, calls = self.run_installer(failure="deps")
         self.assertEqual(93, result.returncode, result.stderr)
-        self.assertEqual(["deps"], [call["args"][0] for call in calls])
+        self.assertEqual(["update", "deps"], [call["args"][0] for call in calls])
 
     def test_missing_bottle_or_refresh_failure_propagates_without_source_fallback(self):
         result, calls = self.run_installer(failure="reinstall")
         self.assertEqual(93, result.returncode, result.stderr)
-        self.assertEqual(["deps", "reinstall"], [call["args"][0] for call in calls])
-        self.assertIn("--force-bottle", calls[1]["args"])
+        self.assertEqual(["update", "deps", "reinstall"], [call["args"][0] for call in calls])
+        self.assertIn("--force-bottle", calls[2]["args"])
 
     def test_empty_dependency_union_still_refreshes_every_root(self):
         result, calls = self.run_installer(dependencies="")
         self.assertEqual(0, result.returncode, result.stderr)
-        self.assertEqual(["reinstall", "--formula", "--force-bottle", *ROOTS], calls[1]["args"])
+        self.assertEqual(["reinstall", "--formula", "--force-bottle", *ROOTS], calls[2]["args"])
 
     def test_refuses_to_mutate_a_non_ci_homebrew_installation(self):
         result, calls = self.run_installer(ci=False)
