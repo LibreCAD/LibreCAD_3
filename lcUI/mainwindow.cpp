@@ -971,6 +971,9 @@ void MainWindow::writeSettings() {
 void MainWindow::readUiSettings() {
     _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
     _customizeToolbar->setCloseMode(widgets::CustomizeToolbar::CloseMode::Save);
+    // This restore runs after plugins have registered their toolbar entries;
+    // they are not part of the saved layout and must not be deleted by it.
+    _customizeToolbar->setPreserveRuntimeGroups(true);
     _uiSettings.readSettings(_customizeToolbar);
     _customizeToolbar->close();
 }

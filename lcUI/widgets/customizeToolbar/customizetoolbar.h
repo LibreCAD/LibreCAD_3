@@ -102,6 +102,16 @@ public:
     */
     void setCloseMode(CloseMode closeMode);
 
+    /**
+    * \brief Keep toolbar groups that the customize model does not know about
+    *
+    * Set by the automatic startup restore: groups contributed at runtime by
+    * plugins are not part of the persisted layout and must survive it.
+    * Manual customization leaves this off so removing a group still removes
+    * it from the toolbar.
+    */
+    void setPreserveRuntimeGroups(bool preserve);
+
 signals:
     /**
     * \brief Signal for customize widget being closed
@@ -160,6 +170,7 @@ private:
     // 1 - save and close
     // 2 - close without saving
     CloseMode _saveOnClose;
+    bool _preserveRuntimeGroups;
 };
 }
 }

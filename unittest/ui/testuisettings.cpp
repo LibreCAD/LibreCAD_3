@@ -138,6 +138,66 @@ TEST_F(UiSettingsTest, PartialToolbarKeepsGoodTabsGroupsAndButtons) {
     EXPECT_STREQ(group["buttons"][0].GetString(), "Known");
 }
 
+TEST_F(UiSettingsTest, RuntimeGroupsSurviveTheStartupSettingsRestore) {
+    auto* quickAccess = toolbar.addTab("Quick Access");
+    quickAccess->addGroup("Creation")->addButton("Line", "");
+
+    // Simulates a plugin that contributed its own toolbar group while the
+    // application was starting; the settings document knows nothing about it.
+    auto* pluginGroup = quickAccess->addGroup("Plugin");
+    pluginGroup->addButton("Rectangle", "");
+
+    // A plugin may also contribute a whole tab that the settings document
+    // knows nothing about.
+    auto* pluginTab = toolbar.addTab("Plugin Tab");
+    pluginTab->addGroup("Extra")->addButton("Gear", "");
+    toolbar.generateButtonsMap();
+
+    rapidjson::Document input;
+    ASSERT_FALSE(input.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line"]}]}]}})").HasParseError());
+
+    customize.readData(input);
+    customize.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    customize.setPreserveRuntimeGroups(true);
+    customize.close();
+
+    auto* restoredTab = toolbar.tabByName("Quick Access");
+    ASSERT_NE(nullptr, restoredTab);
+
+    auto* restoredManagedGroup = restoredTab->groupByName("Creation");
+    ASSERT_NE(nullptr, restoredManagedGroup);
+    EXPECT_NE(nullptr, restoredManagedGroup->buttonByName("Line"));
+
+    auto* restoredPluginGroup = restoredTab->groupByName("Plugin");
+    ASSERT_NE(nullptr, restoredPluginGroup);
+    EXPECT_NE(nullptr, restoredPluginGroup->buttonByName("Rectangle"));
+
+    auto* restoredPluginTab = toolbar.tabByName("Plugin Tab");
+    ASSERT_NE(nullptr, restoredPluginTab);
+    auto* restoredExtraGroup = restoredPluginTab->groupByName("Extra");
+    ASSERT_NE(nullptr, restoredExtraGroup);
+    EXPECT_NE(nullptr, restoredExtraGroup->buttonByName("Gear"));
+}
+
+TEST_F(UiSettingsTest, ManualCustomizationStillRemovesGroupsMissingFromTheModel) {
+    auto* quickAccess = toolbar.addTab("Quick Access");
+    auto* removedGroup = quickAccess->addGroup("Removed");
+    removedGroup->addButton("Old", "");
+    toolbar.generateButtonsMap();
+
+    rapidjson::Document input;
+    ASSERT_FALSE(input.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[]}]}})").HasParseError());
+
+    customize.readData(input);
+    customize.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    customize.close();
+
+    auto* restoredTab = toolbar.tabByName("Quick Access");
+    ASSERT_NE(nullptr, restoredTab);
+    EXPECT_EQ(nullptr, restoredTab->groupByName("Removed"));
+}
+
 TEST_F(UiSettingsTest, InvalidSettingsFilesCanBeRewrittenAsObjects) {
     for (const char* json : {"null", "[]", "{", "{}", "{\"toolbar\":42}"}) {
         SCOPED_TRACE(json);

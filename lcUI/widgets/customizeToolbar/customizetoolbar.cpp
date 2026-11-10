@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QFile>
+#include <QSet>
 
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/schema.h>
@@ -17,8 +18,16 @@
 #include "customizegrouptab.h"
 #include "deleteiconarea.h"
 #include "iconlist.h"
-#include <string>
 #include <fstream>
+#include <string>
+
+namespace {
+// Tab and group labels are not unique across the toolbar on their own; the
+// settings document is keyed by the pair.
+QString groupKey(const std::string& tabLabel, const std::string& groupLabel) {
+    return QString::fromStdString(tabLabel) + QChar(0x1f) + QString::fromStdString(groupLabel);
+}
+}
 
 using namespace lc::ui::widgets;
 
@@ -27,7 +36,8 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     QDialog(parent),
     ui(new Ui::CustomizeToolbar),
     _toolbar(toolbar),
-    _saveOnClose(CloseMode::Ask)
+    _saveOnClose(CloseMode::Ask),
+    _preserveRuntimeGroups(false)
 {
     ui->setupUi(this);
 
@@ -137,6 +147,50 @@ void CustomizeToolbar::closeEvent(QCloseEvent* e) {
 }
 
 void CustomizeToolbar::updateButtons() {
+    // During the automatic startup restore, the customize model describes the
+    // persisted layout.  Groups contributed at runtime (for example by a Lua
+    // or Python plugin) are not in it; take them aside before the restore
+    // rebuilds the managed layout and put them back afterwards.
+    struct DetachedGroup {
+        std::string tabLabel;
+        lc::ui::api::ToolbarGroup* group;
+    };
+    std::vector<DetachedGroup> detachedGroups;
+
+    if (_preserveRuntimeGroups) {
+        QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
+        QSet<QString> managedGroups;
+        if (tabWidget != nullptr) {
+            const int tabCount = tabWidget->count() - 1;
+            for (int i = 0; i < tabCount; i++) {
+                CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
+                if (parentTab == nullptr) {
+                    continue;
+                }
+
+                const int groupCount = parentTab->count() - 1;
+                for (int j = 0; j < groupCount; j++) {
+                    CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
+                    if (groupTab != nullptr) {
+                        managedGroups.insert(groupKey(parentTab->label(), groupTab->label()));
+                    }
+                }
+            }
+        }
+
+        for (lc::ui::api::ToolbarTab* toolbarTab : _toolbar->tabs()) {
+            for (lc::ui::api::ToolbarGroup* toolbarGroup : toolbarTab->groups()) {
+                if (toolbarGroup->nonButtonGroup()
+                        || managedGroups.contains(groupKey(toolbarTab->label(), toolbarGroup->label()))) {
+                    continue;
+                }
+
+                toolbarTab->takeGroup(toolbarGroup);
+                detachedGroups.push_back({toolbarTab->label(), toolbarGroup});
+            }
+        }
+    }
+
     QList<lc::ui::api::ToolbarTab*> toolbarTabs = _toolbar->tabs();
 
     for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
@@ -161,6 +215,11 @@ void CustomizeToolbar::updateButtons() {
     }
 
     reAddButtons();
+
+    for (const DetachedGroup& detached : detachedGroups) {
+        lc::ui::api::ToolbarTab* toolbarTab = _toolbar->addTab(detached.tabLabel.c_str());
+        toolbarTab->addGroup(detached.group);
+    }
 }
 
 void CustomizeToolbar::reAddButtons() {
@@ -439,4 +498,8 @@ void CustomizeToolbar::okButtonClicked() {
 
 void CustomizeToolbar::setCloseMode(CloseMode closeMode) {
     _saveOnClose = closeMode;
+}
+
+void CustomizeToolbar::setPreserveRuntimeGroups(bool preserve) {
+    _preserveRuntimeGroups = preserve;
 }
