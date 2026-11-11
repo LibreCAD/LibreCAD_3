@@ -74,6 +74,15 @@ public:
     void addCallback(const char* cb_name, lc::scripting::ScriptCallback callback);
 
     /**
+    * \brief Mark a script-contributed button for startup settings restoration
+    *
+    * Script and plugin buttons may not appear in the saved toolbar layout.
+    * Startup restoration keeps those buttons when rebuilding a managed group.
+    */
+    void setPreserveOnUiSettingsRestore(bool preserve);
+    bool preserveOnUiSettingsRestore() const;
+
+    /**
     * \brief remove named callback
     */
     void removeCallback(const char* cb_name);
@@ -129,6 +138,7 @@ private:
     std::vector<lc::scripting::ScriptCallback> callbacks;
     std::unordered_map<std::string, int> namedCallbacks;
     bool _checkable;
+    bool _preserveOnUiSettingsRestore = false;
 };
 }
 }

@@ -141,6 +141,9 @@ TEST_F(UiSettingsTest, PartialToolbarKeepsGoodTabsGroupsAndButtons) {
 TEST_F(UiSettingsTest, RuntimeGroupsSurviveTheStartupSettingsRestore) {
     auto* quickAccess = toolbar.addTab("Quick Access");
     quickAccess->addGroup("Creation")->addButton("Line", "");
+    toolbar.addButton("PythonPluginOperation", "", "Creation",
+                      lc::scripting::nativeCallback([] {}),
+                      "Plugin operation", false, "Quick Access", nullptr, true);
 
     // Simulates a plugin that contributed its own toolbar group while the
     // application was starting; the settings document knows nothing about it.
@@ -168,6 +171,7 @@ TEST_F(UiSettingsTest, RuntimeGroupsSurviveTheStartupSettingsRestore) {
     auto* restoredManagedGroup = restoredTab->groupByName("Creation");
     ASSERT_NE(nullptr, restoredManagedGroup);
     EXPECT_NE(nullptr, restoredManagedGroup->buttonByName("Line"));
+    EXPECT_NE(nullptr, restoredManagedGroup->buttonByName("PythonPluginOperation"));
 
     auto* restoredPluginGroup = restoredTab->groupByName("Plugin");
     ASSERT_NE(nullptr, restoredPluginGroup);
@@ -196,6 +200,30 @@ TEST_F(UiSettingsTest, ManualCustomizationStillRemovesGroupsMissingFromTheModel)
     auto* restoredTab = toolbar.tabByName("Quick Access");
     ASSERT_NE(nullptr, restoredTab);
     EXPECT_EQ(nullptr, restoredTab->groupByName("Removed"));
+}
+
+TEST_F(UiSettingsTest, ManualCustomizationStillRemovesRuntimeButtonsOmittedFromAManagedGroup) {
+    auto* quickAccess = toolbar.addTab("Quick Access");
+    quickAccess->addGroup("Creation")->addButton("Line", "");
+    toolbar.addButton("PluginOperation", "", "Creation",
+                      lc::scripting::nativeCallback([] {}),
+                      "Plugin operation", false, "Quick Access", nullptr, true);
+    toolbar.generateButtonsMap();
+
+    rapidjson::Document input;
+    ASSERT_FALSE(input.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line"]}]}]}})").HasParseError());
+
+    customize.readData(input);
+    customize.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    customize.close();
+
+    auto* restoredTab = toolbar.tabByName("Quick Access");
+    ASSERT_NE(nullptr, restoredTab);
+    auto* restoredGroup = restoredTab->groupByName("Creation");
+    ASSERT_NE(nullptr, restoredGroup);
+    EXPECT_NE(nullptr, restoredGroup->buttonByName("Line"));
+    EXPECT_EQ(nullptr, restoredGroup->buttonByName("PluginOperation"));
 }
 
 TEST_F(UiSettingsTest, InvalidSettingsFilesCanBeRewrittenAsObjects) {

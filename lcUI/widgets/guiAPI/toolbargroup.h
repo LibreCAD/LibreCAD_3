@@ -89,6 +89,14 @@ public:
     void removeButton(const char* buttonName);
 
     /**
+    * \brief Detach a button without deleting it
+    *
+    * The button is removed from this group's layout and parent so it can be
+    * re-added after a toolbar settings restore rebuilds the group.
+    */
+    void takeButton(ToolbarButton* button);
+
+    /**
     * \brief Remove this group
     */
     void remove();

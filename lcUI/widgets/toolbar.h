@@ -78,7 +78,8 @@ public:
                    lc::scripting::ScriptCallback cb,
                    const char* tooltip = "", bool checkable = false,
                    const char* tabName = "Quick Access",
-                   const char* iconFallbackDir = nullptr);
+                   const char* iconFallbackDir = nullptr,
+                   bool preserveOnUiSettingsRestore = false);
 
     /**
      * \brief Remove group from quickaccesstab if it exists

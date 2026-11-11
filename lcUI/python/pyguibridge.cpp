@@ -590,7 +590,9 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
                  self.addButton(
                      name.c_str(), icon.c_str(), group.c_str(),
                      makeUiCallback(std::move(cb), &self),
-                     tooltip.c_str());
+                     tooltip.c_str(), /*checkable=*/false,
+                     /*tabName=*/"Quick Access", /*iconFallbackDir=*/nullptr,
+                     /*preserveOnUiSettingsRestore=*/true);
              },
              py::arg("name"), py::arg("icon"), py::arg("group"),
              py::arg("callback"), py::arg("tooltip") = std::string{}, py::call_guard<QtUiThreadCallGuard>());
@@ -937,6 +939,9 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              [](lc::ui::api::ToolbarTab& self,
                 lc::ui::api::ToolbarButton* button,
                 const std::string& groupName) {
+                 if (button != nullptr) {
+                     button->setPreserveOnUiSettingsRestore(true);
+                 }
                  self.addButton(button, groupName.c_str());
              },
              py::arg("button"), py::arg("group_name"), py::call_guard<QtUiThreadCallGuard>())
@@ -1183,13 +1188,19 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
         .def("addButton",
              [](lc::ui::api::ToolbarGroup& self,
                 lc::ui::api::ToolbarButton* button) {
+                 if (button != nullptr) {
+                     button->setPreserveOnUiSettingsRestore(true);
+                 }
                  self.addButton(button);
              },
              py::arg("button"), py::call_guard<QtUiThreadCallGuard>())
         .def("addButton",
              [](lc::ui::api::ToolbarGroup& self,
                 const std::string& name, const std::string& icon) {
-                 return self.addButton(name.c_str(), icon.c_str());
+                 lc::ui::api::ToolbarButton* button =
+                     self.addButton(name.c_str(), icon.c_str());
+                 button->setPreserveOnUiSettingsRestore(true);
+                 return button;
              },
              py::arg("name"), py::arg("icon"),
              py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())
@@ -1197,9 +1208,11 @@ PYBIND11_EMBEDDED_MODULE(lcgui, m) {
              [](lc::ui::api::ToolbarGroup& self,
                 const std::string& name, const std::string& icon,
                 py::object cb) {
-                 return self.addButton(
+                 lc::ui::api::ToolbarButton* button = self.addButton(
                      name.c_str(), icon.c_str(),
                      makeUiCallback(std::move(cb), &self));
+                 button->setPreserveOnUiSettingsRestore(true);
+                 return button;
              },
              py::arg("name"), py::arg("icon"), py::arg("callback"),
              py::return_value_policy::reference, py::call_guard<QtUiThreadCallGuard>())

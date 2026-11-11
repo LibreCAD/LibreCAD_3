@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QFile>
+#include <QHash>
 #include <QSet>
 
 #include <rapidjson/istreamwrapper.h>
@@ -155,11 +156,18 @@ void CustomizeToolbar::updateButtons() {
         std::string tabLabel;
         lc::ui::api::ToolbarGroup* group;
     };
+    struct DetachedButton {
+        std::string tabLabel;
+        std::string groupLabel;
+        lc::ui::api::ToolbarButton* button;
+    };
     std::vector<DetachedGroup> detachedGroups;
+    std::vector<DetachedButton> detachedButtons;
 
     if (_preserveRuntimeGroups) {
         QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
         QSet<QString> managedGroups;
+        QHash<QString, QSet<QString>> managedButtons;
         if (tabWidget != nullptr) {
             const int tabCount = tabWidget->count() - 1;
             for (int i = 0; i < tabCount; i++) {
@@ -172,7 +180,11 @@ void CustomizeToolbar::updateButtons() {
                 for (int j = 0; j < groupCount; j++) {
                     CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
                     if (groupTab != nullptr) {
-                        managedGroups.insert(groupKey(parentTab->label(), groupTab->label()));
+                        const QString key = groupKey(parentTab->label(), groupTab->label());
+                        managedGroups.insert(key);
+                        for (const QString& buttonName : groupTab->buttonNames()) {
+                            managedButtons[key].insert(buttonName);
+                        }
                     }
                 }
             }
@@ -180,13 +192,31 @@ void CustomizeToolbar::updateButtons() {
 
         for (lc::ui::api::ToolbarTab* toolbarTab : _toolbar->tabs()) {
             for (lc::ui::api::ToolbarGroup* toolbarGroup : toolbarTab->groups()) {
-                if (toolbarGroup->nonButtonGroup()
-                        || managedGroups.contains(groupKey(toolbarTab->label(), toolbarGroup->label()))) {
+                if (toolbarGroup->nonButtonGroup()) {
                     continue;
                 }
 
-                toolbarTab->takeGroup(toolbarGroup);
-                detachedGroups.push_back({toolbarTab->label(), toolbarGroup});
+                if (!managedGroups.contains(groupKey(toolbarTab->label(), toolbarGroup->label()))) {
+                    toolbarTab->takeGroup(toolbarGroup);
+                    detachedGroups.push_back({toolbarTab->label(), toolbarGroup});
+                    continue;
+                }
+
+                // A plugin operation can append its button to a built-in
+                // group such as Creation. Preserve only explicitly marked
+                // runtime buttons omitted from the settings model; ordinary
+                // buttons removed by the user still follow the saved layout.
+                const QSet<QString> savedButtonNames =
+                    managedButtons.value(groupKey(toolbarTab->label(), toolbarGroup->label()));
+                for (lc::ui::api::ToolbarButton* button : toolbarGroup->buttons()) {
+                    if (!button->preserveOnUiSettingsRestore()
+                            || savedButtonNames.contains(QString::fromStdString(button->label()))) {
+                        continue;
+                    }
+
+                    toolbarGroup->takeButton(button);
+                    detachedButtons.push_back({toolbarTab->label(), toolbarGroup->label(), button});
+                }
             }
         }
     }
@@ -219,6 +249,16 @@ void CustomizeToolbar::updateButtons() {
     for (const DetachedGroup& detached : detachedGroups) {
         lc::ui::api::ToolbarTab* toolbarTab = _toolbar->addTab(detached.tabLabel.c_str());
         toolbarTab->addGroup(detached.group);
+    }
+
+    for (const DetachedButton& detached : detachedButtons) {
+        lc::ui::api::ToolbarTab* toolbarTab = _toolbar->addTab(detached.tabLabel.c_str());
+        lc::ui::api::ToolbarGroup* toolbarGroup = toolbarTab->groupByName(detached.groupLabel.c_str());
+        if (toolbarGroup == nullptr) {
+            toolbarGroup = toolbarTab->addGroup(detached.groupLabel.c_str());
+        }
+        toolbarGroup->addButton(detached.button);
+        detached.button->setVisible(true);
     }
 }
 

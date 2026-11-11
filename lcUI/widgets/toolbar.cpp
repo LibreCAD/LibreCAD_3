@@ -170,7 +170,8 @@ void Toolbar::addSnapOptions() {
 void Toolbar::addButton(const char* name, const char* icon, const char* groupBox,
                         lc::scripting::ScriptCallback cb,
                         const char* tooltip, bool checkable, const char* tabName,
-                        const char* iconFallbackDir)
+                        const char* iconFallbackDir,
+                        bool preserveOnUiSettingsRestore)
 {
     if (_tabs.find(tabName) == _tabs.end()) {
         addTab(tabName);
@@ -184,6 +185,7 @@ void Toolbar::addButton(const char* name, const char* icon, const char* groupBox
         new lc::ui::api::ToolbarButton(name, icon, std::move(cb), tooltip,
                                        checkable, /*parent=*/nullptr,
                                        iconFallbackDir);
+    button->setPreserveOnUiSettingsRestore(preserveOnUiSettingsRestore);
     _tabs[tabName]->addButton(button, groupBox);
 }
 
