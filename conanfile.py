@@ -84,6 +84,11 @@ class LibreCAD3(ConanFile):
             self.options["lua"].shared = True
 
     def requirements(self):
+        if self.settings.os == "Windows":
+            # Conan Center's Windows binaries for our current Boost, FreeType,
+            # and libcurl versions were built with zlib 1.3.x.  Resolving
+            # zlib 1.4 changes their package IDs; those binaries are missing.
+            self.requires("zlib/1.3.1", override=True)
         self.requires("boost/1.82.0")
         self.requires("eigen/3.4.0")
         self.requires("freetype/2.13.0")
