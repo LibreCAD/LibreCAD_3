@@ -6,6 +6,8 @@
 #include <QHBoxLayout>
 #include <QListView>
 #include <QTableView>
+#include <set>
+#include <tuple>
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -163,6 +165,12 @@ private:
 
     void addPlusButton();
 
+    void snapshotToolbar();
+    void snapshotModel();
+
+    using GroupKey = std::pair<std::string, std::string>;
+    using ButtonKey = std::tuple<std::string, std::string, std::string>;
+
 private:
     Ui::CustomizeToolbar* ui;
     Toolbar* _toolbar;
@@ -171,6 +179,11 @@ private:
     // 2 - close without saving
     CloseMode _saveOnClose;
     bool _preserveRuntimeGroups;
+    bool _resetRemovals = false;
+    std::set<GroupKey> _originalGroups;
+    std::set<ButtonKey> _originalRuntimeButtons;
+    std::set<GroupKey> _removedGroups;
+    std::set<ButtonKey> _removedRuntimeButtons;
 };
 }
 }

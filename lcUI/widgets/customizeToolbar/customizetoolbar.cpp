@@ -23,6 +23,64 @@
 #include <string>
 
 namespace {
+using GroupKey = std::pair<std::string, std::string>;
+using ButtonKey = std::tuple<std::string, std::string, std::string>;
+
+std::string jsonString(const rapidjson::Value& value) {
+    return std::string(value.GetString(), value.GetStringLength());
+}
+
+void readRemovals(const rapidjson::Value& document, std::set<GroupKey>& groups,
+                  std::set<ButtonKey>& buttons) {
+    if (!document.IsObject()) return;
+    auto groupMember = document.FindMember("toolbarRemovedGroups");
+    if (groupMember != document.MemberEnd() && groupMember->value.IsArray()) {
+        for (const auto& item : groupMember->value.GetArray()) {
+            if (item.IsArray() && item.Size() == 2 && item[0].IsString() && item[1].IsString()) {
+                groups.emplace(jsonString(item[0]), jsonString(item[1]));
+            }
+        }
+    }
+    auto buttonMember = document.FindMember("toolbarRemovedRuntimeButtons");
+    if (buttonMember != document.MemberEnd() && buttonMember->value.IsArray()) {
+        for (const auto& item : buttonMember->value.GetArray()) {
+            if (item.IsArray() && item.Size() == 3 && item[0].IsString()
+                    && item[1].IsString() && item[2].IsString()) {
+                buttons.emplace(jsonString(item[0]), jsonString(item[1]), jsonString(item[2]));
+            }
+        }
+    }
+}
+
+void writeRemovals(rapidjson::Document& document, const std::set<GroupKey>& groups,
+                   const std::set<ButtonKey>& buttons) {
+    auto& allocator = document.GetAllocator();
+    auto pushString = [&allocator](rapidjson::Value& array, const std::string& text) {
+        rapidjson::Value value;
+        value.SetString(text.data(), static_cast<rapidjson::SizeType>(text.size()), allocator);
+        array.PushBack(value, allocator);
+    };
+    rapidjson::Value groupArray(rapidjson::kArrayType);
+    for (const auto& group : groups) {
+        rapidjson::Value item(rapidjson::kArrayType);
+        pushString(item, group.first);
+        pushString(item, group.second);
+        groupArray.PushBack(item, allocator);
+    }
+    rapidjson::Value buttonArray(rapidjson::kArrayType);
+    for (const auto& button : buttons) {
+        rapidjson::Value item(rapidjson::kArrayType);
+        pushString(item, std::get<0>(button));
+        pushString(item, std::get<1>(button));
+        pushString(item, std::get<2>(button));
+        buttonArray.PushBack(item, allocator);
+    }
+    document.RemoveMember("toolbarRemovedGroups");
+    document.RemoveMember("toolbarRemovedRuntimeButtons");
+    document.AddMember("toolbarRemovedGroups", groupArray, allocator);
+    document.AddMember("toolbarRemovedRuntimeButtons", buttonArray, allocator);
+}
+
 // Tab and group labels are not unique across the toolbar on their own; the
 // settings document is keyed by the pair.
 QString groupKey(const std::string& tabLabel, const std::string& groupLabel) {
@@ -45,11 +103,49 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     initializeGroupList();
     initialize();
     initializeParentTab();
+    snapshotToolbar();
 }
 
 CustomizeToolbar::~CustomizeToolbar()
 {
     delete ui;
+}
+
+void CustomizeToolbar::snapshotToolbar() {
+    _originalGroups.clear();
+    _originalRuntimeButtons.clear();
+    for (auto* tab : _toolbar->tabs()) {
+        for (auto* group : tab->groups()) {
+            if (group->nonButtonGroup()) continue;
+            _originalGroups.emplace(tab->label(), group->label());
+            for (auto* button : group->buttons()) {
+                if (button->preserveOnUiSettingsRestore()) {
+                    _originalRuntimeButtons.emplace(tab->label(), group->label(), button->label());
+                }
+            }
+        }
+    }
+}
+
+void CustomizeToolbar::snapshotModel() {
+    _originalGroups.clear();
+    _originalRuntimeButtons.clear();
+    auto* tabs = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
+    for (int i = 0; i < tabs->count() - 1; ++i) {
+        auto* tab = qobject_cast<CustomizeParentTab*>(tabs->widget(i));
+        if (!tab) continue;
+        for (int j = 0; j < tab->count() - 1; ++j) {
+            auto* group = qobject_cast<CustomizeGroupTab*>(tab->widget(j));
+            if (!group) continue;
+            _originalGroups.emplace(tab->label(), group->label());
+            for (const auto& name : group->buttonNames()) {
+                auto* button = _toolbar->buttonByName(name);
+                if (button && button->preserveOnUiSettingsRestore()) {
+                    _originalRuntimeButtons.emplace(tab->label(), group->label(), name.toStdString());
+                }
+            }
+        }
+    }
 }
 
 void CustomizeToolbar::initializeGroupList() {
@@ -197,6 +293,17 @@ void CustomizeToolbar::updateButtons() {
                 }
 
                 if (!managedGroups.contains(groupKey(toolbarTab->label(), toolbarGroup->label()))) {
+                    const bool groupWasRemoved =
+                        _removedGroups.count({toolbarTab->label(), toolbarGroup->label()}) != 0;
+                    for (auto* button : toolbarGroup->buttons()) {
+                        if (_removedRuntimeButtons.count({toolbarTab->label(), toolbarGroup->label(), button->label()})
+                                || (groupWasRemoved && !button->preserveOnUiSettingsRestore())) {
+                            toolbarGroup->takeButton(button);
+                        }
+                    }
+                    // A removed group can receive a new plugin contribution
+                    // later. Restore only the new buttons in that case.
+                    if (groupWasRemoved && toolbarGroup->buttons().empty()) continue;
                     toolbarTab->takeGroup(toolbarGroup);
                     detachedGroups.push_back({toolbarTab->label(), toolbarGroup});
                     continue;
@@ -210,6 +317,7 @@ void CustomizeToolbar::updateButtons() {
                     managedButtons.value(groupKey(toolbarTab->label(), toolbarGroup->label()));
                 for (lc::ui::api::ToolbarButton* button : toolbarGroup->buttons()) {
                     if (!button->preserveOnUiSettingsRestore()
+                            || _removedRuntimeButtons.count({toolbarTab->label(), toolbarGroup->label(), button->label()})
                             || savedButtonNames.contains(QString::fromStdString(button->label()))) {
                         continue;
                     }
@@ -316,6 +424,11 @@ void CustomizeToolbar::parentTabClosed(int index) {
 
 void CustomizeToolbar::generateData(rapidjson::Document& document) {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
+    std::set<GroupKey> groups = _resetRemovals ? std::set<GroupKey>{} : _removedGroups;
+    std::set<ButtonKey> buttons = _resetRemovals ? std::set<ButtonKey>{} : _removedRuntimeButtons;
+    if (!_resetRemovals) readRemovals(document, groups, buttons);
+    std::set<GroupKey> currentGroups;
+    std::set<ButtonKey> currentButtons;
 
     rapidjson::Value toolbarData(rapidjson::kObjectType);
     rapidjson::Value tabsData(rapidjson::kArrayType);
@@ -335,6 +448,7 @@ void CustomizeToolbar::generateData(rapidjson::Document& document) {
 
         for (int j = 0; j < groupCount; j++) {
             CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
+            currentGroups.emplace(parentTab->label(), groupTab->label());
             rapidjson::Value groupData(rapidjson::kObjectType);
 
             rapidjson::Value labelData;
@@ -348,6 +462,7 @@ void CustomizeToolbar::generateData(rapidjson::Document& document) {
             QList<QString> buttonNameList = groupTab->buttonNames();
 
             for (QString& buttonName : buttonNameList) {
+                currentButtons.emplace(parentTab->label(), groupTab->label(), buttonName.toStdString());
                 rapidjson::Value buttonData;
                 buttonData.SetString(buttonName.toStdString().c_str(), buttonName.size(), document.GetAllocator());
                 buttonsData.PushBack(buttonData, document.GetAllocator());
@@ -362,6 +477,15 @@ void CustomizeToolbar::generateData(rapidjson::Document& document) {
 
     toolbarData.AddMember("tabs", tabsData, document.GetAllocator());
     document.AddMember("toolbar", toolbarData, document.GetAllocator());
+    for (const auto& group : _originalGroups) {
+        if (!currentGroups.count(group)) groups.insert(group);
+    }
+    for (const auto& button : _originalRuntimeButtons) {
+        if (!currentButtons.count(button)) buttons.insert(button);
+    }
+    for (const auto& group : currentGroups) groups.erase(group);
+    for (const auto& button : currentButtons) buttons.erase(button);
+    writeRemovals(document, groups, buttons);
 }
 
 void CustomizeToolbar::clearContents() {
@@ -377,6 +501,10 @@ void CustomizeToolbar::clearContents() {
 }
 
 void CustomizeToolbar::readData(rapidjson::Document& document) {
+    _resetRemovals = false;
+    _removedGroups.clear();
+    _removedRuntimeButtons.clear();
+    readRemovals(document, _removedGroups, _removedRuntimeButtons);
     clearContents();
     addPlusButton();
 
@@ -524,6 +652,8 @@ void CustomizeToolbar::loadToolbarFile() {
 
 void CustomizeToolbar::defaultButtonClicked() {
     emit defaultSettingsLoad();
+    _resetRemovals = true;
+    snapshotModel();
 }
 
 void CustomizeToolbar::cancelButtonClicked() {

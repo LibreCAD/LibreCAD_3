@@ -122,6 +122,9 @@ void ToolbarGroup::takeButton(ToolbarButton* button) {
     QObject::disconnect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)));
     button->setVisible(false);
     button->setParent(nullptr);
+    // Keep the grid contiguous and its insertion count accurate when the
+    // remainder of this group will stay on the toolbar.
+    setWidth(_width);
 }
 
 void ToolbarGroup::removeButton(const char* buttonName) {
