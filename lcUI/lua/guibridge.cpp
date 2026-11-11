@@ -229,7 +229,9 @@ void addLCBindings(lua_State *L) {
                                        const char* tooltip) {
         toolbar->addButton(name, icon, group,
                            lc::lua::makeLuaCallback(std::move(cb)),
-                           tooltip);
+                           tooltip, /*checkable=*/false,
+                           /*tabName=*/"Quick Access", /*iconFallbackDir=*/nullptr,
+                           /*preserveOnUiSettingsRestore=*/true);
     })
                                    );
 
@@ -412,7 +414,14 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<api::ToolbarTab>()
                                         .setConstructors<api::ToolbarTab(const char*)>()
-                                        .addFunction("addButton", &api::ToolbarTab::addButton)
+    .addOverloadedFunctions("addButton", [](api::ToolbarTab& self,
+                                             api::ToolbarButton* button,
+                                             const char* groupName) {
+        if (button != nullptr) {
+            button->setPreserveOnUiSettingsRestore(true);
+        }
+        self.addButton(button, groupName);
+    })
                                         .addFunction("buttonByText", &api::ToolbarTab::buttonByText)
                                         .addFunction("groupByName", &api::ToolbarTab::groupByName)
                                         .addFunction("label", &api::ToolbarTab::label)
@@ -518,11 +527,24 @@ void addLuaGUIAPIBindings(lua_State* L) {
     })
     // Phase 4 PR-3 — the callback-taking addButton overload takes a
     // LuaRef on the Lua side; wrap into ScriptCallback before forwarding.
-    .addOverloadedFunctions("addButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::addButton),
-                            static_cast<lc::ui::api::ToolbarButton * (lc::ui::api::ToolbarGroup::*)(const char*, const char*)>(&lc::ui::api::ToolbarGroup::addButton),
+    .addOverloadedFunctions("addButton",
+        [](lc::ui::api::ToolbarGroup& self, lc::ui::api::ToolbarButton* button) {
+            if (button != nullptr) {
+                button->setPreserveOnUiSettingsRestore(true);
+            }
+            self.addButton(button);
+        },
+        [](lc::ui::api::ToolbarGroup& self, const char* name, const char* icon) {
+            lc::ui::api::ToolbarButton* button = self.addButton(name, icon);
+            button->setPreserveOnUiSettingsRestore(true);
+            return button;
+        },
         [](lc::ui::api::ToolbarGroup& self, const char* name, const char* icon,
            kaguya::LuaRef cb) {
-            return self.addButton(name, icon, lc::lua::makeLuaCallback(std::move(cb)));
+            lc::ui::api::ToolbarButton* button =
+                self.addButton(name, icon, lc::lua::makeLuaCallback(std::move(cb)));
+            button->setPreserveOnUiSettingsRestore(true);
+            return button;
         })
     .addOverloadedFunctions("removeButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::removeButton),
                             static_cast<void(lc::ui::api::ToolbarGroup::*)(const char*)>(&lc::ui::api::ToolbarGroup::removeButton))

@@ -79,6 +79,12 @@ const char* settingSchema = R"(
    ],
    "title": "Toolbar Data Schema",
    "properties": {
+     "toolbarRemovedGroups": {
+       "description": "Removed toolbar group [tab, group] identities"
+     },
+     "toolbarRemovedRuntimeButtons": {
+       "description": "Removed runtime button [tab, group, button] identities"
+     },
      "toolbar": {
        "type": "object",
        "properties": {

@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts/macos-install"))
 import _nativeorigins as origins
 import collect_provider_notices as collector
-from stagePythonDependencies import RuntimeStager, homebrew_origin
+from stagePythonDependencies import RuntimeStager, homebrew_origin, selected_dependency_receipt
 import bundleNativeOrigins as bundle_origins
 
 
@@ -488,6 +488,57 @@ class NativeOriginTests(unittest.TestCase):
         source, _, _, _, _, digest = self.post_pour_fixture()
         self.assertTrue(homebrew_origin(source, "arm64")[0]["revision"].endswith(digest))
 
+    def test_poured_dependency_compatibility_is_compared_when_available(self):
+        # Homebrew does not record the compatibility version in poured kegs;
+        # the parent can nevertheless record one when it recomputes its table.
+        absent = object()
+        for index, (recorded, accepted) in enumerate(((absent, True), (None, True), (1, True), (2, False),
+                                                       ("1", False), (-1, False), (True, False))):
+            with self.subTest(recorded=recorded):
+                source, keg, dependency, _, _, digest = self.post_pour_fixture("compat" + str(index))
+                file = keg / "INSTALL_RECEIPT.json"
+                receipt = json.loads(file.read_bytes())
+                receipt["runtime_dependencies"][0]["compatibility_version"] = 1
+                file.write_text(json.dumps(receipt))
+                file = dependency / "INSTALL_RECEIPT.json"
+                dep_receipt = json.loads(file.read_bytes())
+                if recorded is absent:
+                    dep_receipt["source"]["versions"].pop("compatibility_version", None)
+                else:
+                    dep_receipt["source"]["versions"]["compatibility_version"] = recorded
+                file.write_text(json.dumps(dep_receipt))
+                if accepted:
+                    self.assertTrue(homebrew_origin(source, "arm64")[0]["revision"].endswith(digest))
+                else:
+                    with self.assertRaises((RuntimeError, ValueError)):
+                        homebrew_origin(source, "arm64")
+
+    def test_dependency_receipt_diagnostics_name_the_mismatched_fields(self):
+        _, keg, dependency, _, _, _ = self.post_pour_fixture("diagnostics")
+        parent = json.loads((keg / "INSTALL_RECEIPT.json").read_text())
+        entry = parent["runtime_dependencies"][0]
+        file = dependency / "INSTALL_RECEIPT.json"
+        receipt = json.loads(file.read_text())
+        receipt.update(arch="x86_64", built_as_bottle=False, poured_from_bottle=False)
+        receipt["source"]["tap"] = "another/tap"
+        receipt["source"]["versions"]["stable"] = "different"
+        file.write_text(json.dumps(receipt))
+        with self.assertRaises(ValueError) as error:
+            selected_dependency_receipt(keg, entry, "arm64")
+        for field in ("arch", "built_as_bottle", "poured_from_bottle", "source.tap", "source.versions.stable"):
+            self.assertIn(field, str(error.exception))
+
+    def test_top_level_compatibility_conflict_is_rejected(self):
+        _, keg, dependency, _, _, _ = self.post_pour_fixture("topcompat")
+        entry = json.loads((keg / "INSTALL_RECEIPT.json").read_text())["runtime_dependencies"][0]
+        entry["compatibility_version"] = 1
+        file = dependency / "INSTALL_RECEIPT.json"
+        receipt = json.loads(file.read_text())
+        receipt["compatibility_version"] = 2
+        file.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError, "compatibility_version"):
+            selected_dependency_receipt(keg, entry, "arm64")
+
     def test_post_pour_recomputed_names_and_declarations_bind_actual_kegs_not_old_parent_tables(self):
         for architecture in ("arm64", "x86_64"):
             for mutation in ("addition", "replacement", "declaration", "new-direct"):
@@ -569,6 +620,7 @@ class NativeOriginTests(unittest.TestCase):
                     dep["revision"] = True
                 elif mutation == "compatibility":
                     dep["compatibility_version"] = 3
+                    dep_receipt["source"]["versions"]["compatibility_version"] = 4
                 else:
                     dep["unknown-field"] = "unverified"
                 file.write_text(json.dumps(receipt))

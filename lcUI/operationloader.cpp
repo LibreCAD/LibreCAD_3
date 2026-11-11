@@ -713,7 +713,8 @@ void OperationLoader::loadPythonOperations() {
                                    /*tabName=*/"Quick Access",
                                    operationModuleDirectory.empty()
                                        ? nullptr
-                                       : operationModuleDirectory.c_str());
+                                       : operationModuleDirectory.c_str(),
+                                   /*preserveOnUiSettingsRestore=*/true);
             }
         }
 

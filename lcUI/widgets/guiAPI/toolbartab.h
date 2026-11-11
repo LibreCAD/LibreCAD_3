@@ -46,6 +46,15 @@ public:
     ToolbarGroup* addGroup(const char* name, int width = 3);
 
     /**
+     * \brief Detach a group from the layout without deleting it
+     *
+     * The group stays alive with the scroll-area container as its parent and
+     * can be handed to addGroup() again later.
+     * \param group Pointer to ToolbarGroup
+     */
+    void takeGroup(ToolbarGroup* group);
+
+    /**
      * \brief Add new button in given group
      * \param button ToolbarButton, group name
      */

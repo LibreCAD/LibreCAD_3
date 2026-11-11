@@ -33,13 +33,32 @@ def selected_dependency_receipt(keg: Path, entry: dict, architecture: str):
         raise ValueError("selected Homebrew dependency keg is linked or escaped: " + str(selected))
     receipt = unique_json(read_notice(selected / "INSTALL_RECEIPT.json"))
     source = receipt.get("source", {}) if isinstance(receipt, dict) else {}
-    if not isinstance(receipt, dict) or not isinstance(source, dict) or \
-            not isinstance(source.get("versions"), dict) or \
-            receipt.get("built_as_bottle") is not True or receipt.get("poured_from_bottle") is not True or \
-            receipt.get("arch") != architecture or source.get("tap") != "homebrew/core" or \
-            source["versions"].get("stable") != entry["version"] or \
-            receipt.get("compatibility_version") != entry.get("compatibility_version"):
-        raise ValueError("selected Homebrew dependency receipt differs: " + str(selected))
+    versions = source.get("versions", {}) if isinstance(source, dict) else {}
+    if not isinstance(receipt, dict) or not isinstance(source, dict) or not isinstance(versions, dict):
+        raise ValueError("selected Homebrew dependency receipt differs: {} (receipt/source/versions type)".format(selected))
+    mismatches = []
+    for field, valid in (("built_as_bottle", receipt.get("built_as_bottle") is True),
+                         ("poured_from_bottle", receipt.get("poured_from_bottle") is True),
+                         ("arch", receipt.get("arch") == architecture),
+                         ("source.tap", source.get("tap") == "homebrew/core"),
+                         ("source.versions.stable", versions.get("stable") == entry["version"])):
+        if not valid:
+            mismatches.append(field)
+    if mismatches:
+        raise ValueError("selected Homebrew dependency receipt differs: {} ({})".format(
+            selected, ", ".join(mismatches)))
+    # Poured kegs can have a null compatibility version even when Homebrew
+    # records a number in the parent's post-pour dependency table. Exact keg
+    # version is required above; compatibility never substitutes for it.
+    recorded = versions.get("compatibility_version")
+    expected = entry.get("compatibility_version")
+    # If a nonstandard top-level value is present, reject conflicts instead
+    # of letting it mask a mismatch with either authoritative location.
+    top_level = receipt.get("compatibility_version")
+    if any(value is not None and (type(value) is not int or value < 0)
+           for value in (recorded, expected, top_level)) or \
+            len({value for value in (recorded, expected, top_level) if value is not None}) > 1:
+        raise ValueError("selected Homebrew dependency receipt differs: {} (compatibility_version)".format(selected))
     return receipt
 
 

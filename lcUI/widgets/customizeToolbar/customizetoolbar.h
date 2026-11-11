@@ -6,6 +6,8 @@
 #include <QHBoxLayout>
 #include <QListView>
 #include <QTableView>
+#include <set>
+#include <tuple>
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -102,6 +104,16 @@ public:
     */
     void setCloseMode(CloseMode closeMode);
 
+    /**
+    * \brief Keep toolbar groups that the customize model does not know about
+    *
+    * Set by the automatic startup restore: groups contributed at runtime by
+    * plugins are not part of the persisted layout and must survive it.
+    * Manual customization leaves this off so removing a group still removes
+    * it from the toolbar.
+    */
+    void setPreserveRuntimeGroups(bool preserve);
+
 signals:
     /**
     * \brief Signal for customize widget being closed
@@ -153,6 +165,12 @@ private:
 
     void addPlusButton();
 
+    void snapshotToolbar();
+    void snapshotModel();
+
+    using GroupKey = std::pair<std::string, std::string>;
+    using ButtonKey = std::tuple<std::string, std::string, std::string>;
+
 private:
     Ui::CustomizeToolbar* ui;
     Toolbar* _toolbar;
@@ -160,6 +178,12 @@ private:
     // 1 - save and close
     // 2 - close without saving
     CloseMode _saveOnClose;
+    bool _preserveRuntimeGroups;
+    bool _resetRemovals = false;
+    std::set<GroupKey> _originalGroups;
+    std::set<ButtonKey> _originalRuntimeButtons;
+    std::set<GroupKey> _removedGroups;
+    std::set<ButtonKey> _removedRuntimeButtons;
 };
 }
 }

@@ -44,6 +44,13 @@ ToolbarGroup* ToolbarTab::addGroup(const char* name, int width) {
     return group;
 }
 
+void ToolbarTab::takeGroup(ToolbarGroup* group) {
+    if (group != nullptr) {
+        _layout->removeWidget(group);
+        QObject::disconnect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)));
+    }
+}
+
 void ToolbarTab::addButton(ToolbarButton* button, const char* groupName) {
     if (groupByName(groupName) == nullptr) {
         addGroup(new ToolbarGroup(groupName));

@@ -113,6 +113,14 @@ void ToolbarButton::removeCallback(const char* cb_name) {
     namedCallbacks.erase(namedCallbacks.find(cb_name));
 }
 
+void ToolbarButton::setPreserveOnUiSettingsRestore(bool preserve) {
+    _preserveOnUiSettingsRestore = preserve;
+}
+
+bool ToolbarButton::preserveOnUiSettingsRestore() const {
+    return _preserveOnUiSettingsRestore;
+}
+
 void ToolbarButton::callbackCalled() {
     for (size_t i = 0; i < callbacks.size(); i++) {
         // Nil-safe: nil callback's invoke() is a graceful no-op returning Nil.
@@ -129,6 +137,7 @@ void ToolbarButton::callbackCalledToggle(bool enabled) {
 ToolbarButton* ToolbarButton::clone() {
     ToolbarButton* clonedButton = new ToolbarButton(_label.c_str(), "", this->toolTip().toStdString().c_str(), _checkable);
     clonedButton->setIcon(this->icon());
+    clonedButton->setPreserveOnUiSettingsRestore(_preserveOnUiSettingsRestore);
 
     // Copy callbacks by value — ScriptCallback holds a shared_ptr pImpl,
     // so this is a refcount bump not a deep copy.  CustomizeToolbar

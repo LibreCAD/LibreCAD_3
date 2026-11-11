@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QDir>
 #include <QFile>
+#include <QGridLayout>
 #include <QPushButton>
 #include <QTemporaryDir>
 #include <managers/uisettings.h>
@@ -136,6 +137,329 @@ TEST_F(UiSettingsTest, PartialToolbarKeepsGoodTabsGroupsAndButtons) {
     EXPECT_EQ(group["width"].GetInt(), 2);
     ASSERT_EQ(group["buttons"].Size(), 1u);
     EXPECT_STREQ(group["buttons"][0].GetString(), "Known");
+}
+
+TEST_F(UiSettingsTest, RuntimeGroupsSurviveTheStartupSettingsRestore) {
+    auto* quickAccess = toolbar.addTab("Quick Access");
+    quickAccess->addGroup("Creation")->addButton("Line", "");
+    toolbar.addButton("PythonPluginOperation", "", "Creation",
+                      lc::scripting::nativeCallback([] {}),
+                      "Plugin operation", false, "Quick Access", nullptr, true);
+
+    // Simulates a plugin that contributed its own toolbar group while the
+    // application was starting; the settings document knows nothing about it.
+    auto* pluginGroup = quickAccess->addGroup("Plugin");
+    pluginGroup->addButton("Rectangle", "");
+
+    // A plugin may also contribute a whole tab that the settings document
+    // knows nothing about.
+    auto* pluginTab = toolbar.addTab("Plugin Tab");
+    pluginTab->addGroup("Extra")->addButton("Gear", "");
+    toolbar.generateButtonsMap();
+
+    rapidjson::Document input;
+    ASSERT_FALSE(input.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line"]}]}]}})").HasParseError());
+
+    customize.readData(input);
+    customize.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    customize.setPreserveRuntimeGroups(true);
+    customize.close();
+
+    auto* restoredTab = toolbar.tabByName("Quick Access");
+    ASSERT_NE(nullptr, restoredTab);
+
+    auto* restoredManagedGroup = restoredTab->groupByName("Creation");
+    ASSERT_NE(nullptr, restoredManagedGroup);
+    EXPECT_NE(nullptr, restoredManagedGroup->buttonByName("Line"));
+    EXPECT_NE(nullptr, restoredManagedGroup->buttonByName("PythonPluginOperation"));
+
+    auto* restoredPluginGroup = restoredTab->groupByName("Plugin");
+    ASSERT_NE(nullptr, restoredPluginGroup);
+    EXPECT_NE(nullptr, restoredPluginGroup->buttonByName("Rectangle"));
+
+    auto* restoredPluginTab = toolbar.tabByName("Plugin Tab");
+    ASSERT_NE(nullptr, restoredPluginTab);
+    auto* restoredExtraGroup = restoredPluginTab->groupByName("Extra");
+    ASSERT_NE(nullptr, restoredExtraGroup);
+    EXPECT_NE(nullptr, restoredExtraGroup->buttonByName("Gear"));
+}
+
+TEST_F(UiSettingsTest, ManualCustomizationStillRemovesGroupsMissingFromTheModel) {
+    auto* quickAccess = toolbar.addTab("Quick Access");
+    auto* removedGroup = quickAccess->addGroup("Removed");
+    removedGroup->addButton("Old", "");
+    toolbar.generateButtonsMap();
+
+    rapidjson::Document input;
+    ASSERT_FALSE(input.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[]}]}})").HasParseError());
+
+    customize.readData(input);
+    customize.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    customize.close();
+
+    auto* restoredTab = toolbar.tabByName("Quick Access");
+    ASSERT_NE(nullptr, restoredTab);
+    EXPECT_EQ(nullptr, restoredTab->groupByName("Removed"));
+}
+
+TEST_F(UiSettingsTest, ManualCustomizationStillRemovesRuntimeButtonsOmittedFromAManagedGroup) {
+    auto* quickAccess = toolbar.addTab("Quick Access");
+    quickAccess->addGroup("Creation")->addButton("Line", "");
+    toolbar.addButton("PluginOperation", "", "Creation",
+                      lc::scripting::nativeCallback([] {}),
+                      "Plugin operation", false, "Quick Access", nullptr, true);
+    toolbar.generateButtonsMap();
+
+    rapidjson::Document input;
+    ASSERT_FALSE(input.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line"]}]}]}})").HasParseError());
+
+    customize.readData(input);
+    customize.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    customize.close();
+
+    auto* restoredTab = toolbar.tabByName("Quick Access");
+    ASSERT_NE(nullptr, restoredTab);
+    auto* restoredGroup = restoredTab->groupByName("Creation");
+    ASSERT_NE(nullptr, restoredGroup);
+    EXPECT_NE(nullptr, restoredGroup->buttonByName("Line"));
+    EXPECT_EQ(nullptr, restoredGroup->buttonByName("PluginOperation"));
+}
+
+TEST_F(UiSettingsTest, RuntimeRemovalsSurviveRestartAndCanBeReadded) {
+    auto populate = [](lc::ui::widgets::Toolbar& target, bool newPlugin) {
+        auto* tab = target.addTab("Quick Access");
+        tab->addGroup("Creation")->addButton("Line", "");
+        target.addButton("PluginOperation", "", "Creation", lc::scripting::nativeCallback([] {}),
+                         "", false, "Quick Access", nullptr, true);
+        tab->addGroup("Plugin")->addButton("Rectangle", "")->setPreserveOnUiSettingsRestore(true);
+        target.addTab("Plugin Tab")->addGroup("Extra")->addButton("Gear", "")->setPreserveOnUiSettingsRestore(true);
+        if (newPlugin) {
+            target.addButton("NewOperation", "", "Creation", lc::scripting::nativeCallback([] {}),
+                             "", false, "Quick Access", nullptr, true);
+            target.addButton("NewGroupOperation", "", "Plugin", lc::scripting::nativeCallback([] {}),
+                             "", false, "Quick Access", nullptr, true);
+            target.addButton("NewGroupOperation2", "", "Plugin", lc::scripting::nativeCallback([] {}),
+                             "", false, "Quick Access", nullptr, true);
+            tab->addGroup("New Plugin")->addButton("NewButton", "");
+        }
+        target.generateButtonsMap();
+    };
+    auto restore = [this](lc::ui::widgets::Toolbar& target) {
+        lc::ui::widgets::CustomizeToolbar startup(&target);
+        settings.readSettings(&startup);
+        startup.setPreserveRuntimeGroups(true);
+        startup.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+        startup.close();
+    };
+
+    lc::ui::widgets::Toolbar first(nullptr);
+    populate(first, false);
+    lc::ui::widgets::CustomizeToolbar edit(&first);
+    rapidjson::Document edited;
+    ASSERT_FALSE(edited.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line"]}]}]}})").HasParseError());
+    edit.readData(edited);
+    edit.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    edit.close();
+    settings.writeSettings(&edit);
+
+    lc::ui::widgets::Toolbar noNewPlugin(nullptr);
+    populate(noNewPlugin, false);
+    restore(noNewPlugin);
+    ASSERT_NE(nullptr, noNewPlugin.tabByName("Quick Access"));
+    EXPECT_EQ(nullptr, noNewPlugin.tabByName("Quick Access")->groupByName("Plugin"));
+
+    lc::ui::widgets::Toolbar second(nullptr);
+    populate(second, true);
+    restore(second);
+    auto* tab = second.tabByName("Quick Access");
+    ASSERT_NE(nullptr, tab);
+    auto* creation = tab->groupByName("Creation");
+    ASSERT_NE(nullptr, creation);
+    EXPECT_NE(nullptr, creation->buttonByName("Line"));
+    EXPECT_EQ(nullptr, creation->buttonByName("PluginOperation"));
+    EXPECT_NE(nullptr, creation->buttonByName("NewOperation"));
+    auto* plugin = tab->groupByName("Plugin");
+    ASSERT_NE(nullptr, plugin);
+    EXPECT_EQ(nullptr, plugin->buttonByName("Rectangle"));
+    ASSERT_NE(nullptr, plugin->buttonByName("NewGroupOperation"));
+    ASSERT_NE(nullptr, plugin->buttonByName("NewGroupOperation2"));
+    auto* grid = qobject_cast<QGridLayout*>(plugin->layout());
+    ASSERT_NE(nullptr, grid);
+    ASSERT_NE(nullptr, grid->itemAtPosition(0, 0));
+    ASSERT_NE(nullptr, grid->itemAtPosition(0, 1));
+    EXPECT_EQ(plugin->buttonByName("NewGroupOperation"), grid->itemAtPosition(0, 0)->widget());
+    EXPECT_EQ(plugin->buttonByName("NewGroupOperation2"), grid->itemAtPosition(0, 1)->widget());
+    auto* inserted = plugin->addButton("InsertedAfterRestore", "");
+    ASSERT_NE(nullptr, grid->itemAtPosition(0, 2));
+    EXPECT_EQ(inserted, grid->itemAtPosition(0, 2)->widget());
+    plugin->removeButton(inserted);
+    EXPECT_NE(nullptr, tab->groupByName("New Plugin"));
+    EXPECT_EQ(nullptr, second.tabByName("Plugin Tab"));
+
+    // Saving an unrelated later edit must retain earlier removal records.
+    lc::ui::widgets::CustomizeToolbar unrelated(&second);
+    settings.writeSettings(&unrelated);
+    lc::ui::widgets::Toolbar third(nullptr);
+    populate(third, true);
+    restore(third);
+    tab = third.tabByName("Quick Access");
+    ASSERT_NE(nullptr, tab);
+    ASSERT_NE(nullptr, tab->groupByName("Creation"));
+    EXPECT_EQ(nullptr, tab->groupByName("Creation")->buttonByName("PluginOperation"));
+    ASSERT_NE(nullptr, tab->groupByName("Plugin"));
+    EXPECT_EQ(nullptr, tab->groupByName("Plugin")->buttonByName("Rectangle"));
+    EXPECT_NE(nullptr, tab->groupByName("Plugin")->buttonByName("NewGroupOperation"));
+    EXPECT_EQ(nullptr, third.tabByName("Plugin Tab"));
+
+    lc::ui::widgets::CustomizeToolbar readd(&third);
+    rapidjson::Document restoredLayout;
+    ASSERT_FALSE(restoredLayout.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line","PluginOperation"]},
+        {"label":"Plugin","width":3,"buttons":["Rectangle"]}]},
+        {"label":"Plugin Tab","groups":[{"label":"Extra","width":3,"buttons":["Gear"]}]}]}})").HasParseError());
+    readd.readData(restoredLayout);
+    readd.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    readd.close();
+    settings.writeSettings(&readd);
+    lc::ui::widgets::Toolbar fourth(nullptr);
+    populate(fourth, false);
+    restore(fourth);
+    tab = fourth.tabByName("Quick Access");
+    ASSERT_NE(nullptr, tab);
+    ASSERT_NE(nullptr, tab->groupByName("Creation"));
+    EXPECT_NE(nullptr, tab->groupByName("Creation")->buttonByName("PluginOperation"));
+    ASSERT_NE(nullptr, tab->groupByName("Plugin"));
+    EXPECT_NE(nullptr, tab->groupByName("Plugin")->buttonByName("Rectangle"));
+    EXPECT_NE(nullptr, fourth.tabByName("Plugin Tab"));
+}
+
+TEST_F(UiSettingsTest, LegacyAndMalformedRemovalMetadataPreservesNewPlugins) {
+    for (const char* metadata : {"", R"(,"toolbarRemovedGroups":42,"toolbarRemovedRuntimeButtons":[null,[1,2,3]])"}) {
+        SCOPED_TRACE(metadata);
+        lc::ui::widgets::Toolbar target(nullptr);
+        target.addTab("Quick Access")->addGroup("Creation")->addButton("Line", "");
+        target.tabByName("Quick Access")->groupByName("Creation")->addButton("Unwanted", "");
+        target.addButton("PluginOperation", "", "Creation", lc::scripting::nativeCallback([] {}),
+                         "", false, "Quick Access", nullptr, true);
+        target.tabByName("Quick Access")->addGroup("Plugin")->addButton("Rectangle", "");
+        target.generateButtonsMap();
+        const std::string json = std::string(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[{"label":"Creation","buttons":["Line"]}]}]})") + metadata + "}";
+        rapidjson::Document input;
+        ASSERT_FALSE(input.Parse(json.c_str()).HasParseError());
+        writeSettingsFile(QByteArray::fromStdString(json));
+        lc::ui::widgets::CustomizeToolbar startup(&target);
+        settings.readSettings(&startup);
+        startup.setPreserveRuntimeGroups(true);
+        startup.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+        startup.close();
+        auto* tab = target.tabByName("Quick Access");
+        ASSERT_NE(nullptr, tab);
+        ASSERT_NE(nullptr, tab->groupByName("Creation"));
+        EXPECT_EQ(nullptr, tab->groupByName("Creation")->buttonByName("Unwanted"));
+        EXPECT_NE(nullptr, tab->groupByName("Creation")->buttonByName("PluginOperation"));
+        EXPECT_NE(nullptr, tab->groupByName("Plugin"));
+    }
+}
+
+TEST_F(UiSettingsTest, MovedRuntimeButtonStaysOnlyInItsSavedGroupAfterRestart) {
+    auto populate = [](lc::ui::widgets::Toolbar& target) {
+        auto* tab = target.addTab("Quick Access");
+        tab->addGroup("Creation")->addButton("Line", "");
+        tab->addGroup("Tools")->addButton("Other", "");
+        target.addButton("PluginOperation", "", "Creation", lc::scripting::nativeCallback([] {}),
+                         "", false, "Quick Access", nullptr, true);
+        target.generateButtonsMap();
+    };
+    auto restore = [this](lc::ui::widgets::Toolbar& target) {
+        lc::ui::widgets::CustomizeToolbar startup(&target);
+        settings.readSettings(&startup);
+        startup.setPreserveRuntimeGroups(true);
+        startup.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+        startup.close();
+    };
+    auto expectMoved = [](lc::ui::widgets::Toolbar& target) {
+        auto* tab = target.tabByName("Quick Access");
+        ASSERT_NE(nullptr, tab);
+        auto* creation = tab->groupByName("Creation");
+        auto* tools = tab->groupByName("Tools");
+        ASSERT_NE(nullptr, creation);
+        ASSERT_NE(nullptr, tools);
+        EXPECT_EQ(nullptr, creation->buttonByName("PluginOperation"));
+        EXPECT_NE(nullptr, tools->buttonByName("PluginOperation"));
+    };
+
+    lc::ui::widgets::Toolbar first(nullptr);
+    populate(first);
+    lc::ui::widgets::CustomizeToolbar edit(&first);
+    rapidjson::Document moved;
+    ASSERT_FALSE(moved.Parse(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","width":3,"buttons":["Line"]},
+        {"label":"Tools","width":3,"buttons":["Other","PluginOperation"]}]}]}})").HasParseError());
+    edit.readData(moved);
+    edit.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    edit.close();
+    settings.writeSettings(&edit);
+    expectMoved(first);
+
+    lc::ui::widgets::Toolbar second(nullptr);
+    populate(second);
+    restore(second);
+    expectMoved(second);
+    lc::ui::widgets::CustomizeToolbar unrelated(&second);
+    settings.writeSettings(&unrelated);
+    lc::ui::widgets::Toolbar third(nullptr);
+    populate(third);
+    restore(third);
+    expectMoved(third);
+}
+
+TEST_F(UiSettingsTest, RestoringDefaultsClearsRuntimeRemovalHistory) {
+    const QByteArray layout = R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","buttons":["Line"]}]}]}})";
+    QFile defaults(QDir(directory.path()).filePath("default_ui_settings.json"));
+    ASSERT_TRUE(defaults.open(QIODevice::WriteOnly));
+    ASSERT_EQ(defaults.write(layout), layout.size());
+    defaults.close();
+    writeSettingsFile(R"({"toolbar":{"tabs":[{"label":"Quick Access","groups":[
+        {"label":"Creation","buttons":["Line"]}]}]},
+        "toolbarRemovedRuntimeButtons":[["Quick Access","Creation","PluginOperation"]]})");
+
+    auto populate = [](lc::ui::widgets::Toolbar& target) {
+        target.addTab("Quick Access")->addGroup("Creation")->addButton("Line", "");
+        target.addButton("PluginOperation", "", "Creation", lc::scripting::nativeCallback([] {}),
+                         "", false, "Quick Access", nullptr, true);
+        target.generateButtonsMap();
+    };
+    auto restore = [this](lc::ui::widgets::Toolbar& target) {
+        lc::ui::widgets::CustomizeToolbar startup(&target);
+        settings.readSettings(&startup);
+        startup.setPreserveRuntimeGroups(true);
+        startup.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+        startup.close();
+    };
+    lc::ui::widgets::Toolbar first(nullptr);
+    populate(first);
+    restore(first);
+    ASSERT_EQ(nullptr, first.tabByName("Quick Access")->groupByName("Creation")->buttonByName("PluginOperation"));
+
+    lc::ui::widgets::CustomizeToolbar edit(&first);
+    QObject::connect(&edit, &lc::ui::widgets::CustomizeToolbar::defaultSettingsLoad,
+                     [&] { settings.readSettings(&edit, true); });
+    edit.defaultButtonClicked();
+    edit.setCloseMode(lc::ui::widgets::CustomizeToolbar::CloseMode::Save);
+    edit.close();
+    settings.writeSettings(&edit);
+
+    lc::ui::widgets::Toolbar second(nullptr);
+    populate(second);
+    restore(second);
+    auto* tab = second.tabByName("Quick Access");
+    ASSERT_NE(nullptr, tab);
+    ASSERT_NE(nullptr, tab->groupByName("Creation"));
+    EXPECT_NE(nullptr, tab->groupByName("Creation")->buttonByName("PluginOperation"));
 }
 
 TEST_F(UiSettingsTest, InvalidSettingsFilesCanBeRewrittenAsObjects) {
