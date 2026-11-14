@@ -183,6 +183,9 @@ private:
     // When set to true, the line width on screen will scale with the zoom factor
     bool _scaleLineWidth;
 
+    // Fit the document to the view once the widget has a real device size.
+    bool _autoScalePending;
+
     QPoint startSelectPos;
 
     // Entity container that track's all entities within the document

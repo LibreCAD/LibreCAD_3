@@ -140,8 +140,15 @@ void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
 
 void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
                           unsigned int deviceCenterX, unsigned int deviceCenterY) {
+    // Recover from a broken scale (for instance one left behind by an
+    // auto-scale on an empty document) instead of compounding the NaN.
+    if (!std::isfinite(painter.scale())) {
+        painter.reset_transformations();
+    }
+
     // Test for minimum and maximum zoom levels
-    if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
+    if (!std::isfinite(factor) || factor <= 0. ||
+        (_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
     }
 
@@ -158,7 +165,12 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
 void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
                           double userCenterX, double userCenterY,
                           unsigned int deviceCenterX, unsigned int deviceCenterY) {
-    if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
+    if (!std::isfinite(painter.scale())) {
+        painter.reset_transformations();
+    }
+
+    if (!std::isfinite(factor) || factor <= 0. ||
+        (_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
     }
 
@@ -183,12 +195,34 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
 
 void DocumentCanvas::autoScale(LcPainter& painter) {
     auto extends = entityContainer().boundingBox();
-    extends = extends.increaseBy(std::min(extends.width(), extends.height()) * 0.1);
+
+    // An empty document has no bounds to frame. Dividing by its zero extent
+    // below would make the zoom (and every later coordinate conversion) NaN,
+    // leaving the canvas permanently blank.
+    if (!(extends.width() > 0.) && !(extends.height() > 0.)) {
+        return;
+    }
+
+    // A drawing made of a single horizontal or vertical line has a zero
+    // width or height. Use the larger extent as the margin base so the zoom
+    // factor stays finite instead of dividing by zero.
+    double smallest = std::min(extends.width(), extends.height());
+    if (!(smallest > 0.)) {
+        smallest = std::max(extends.width(), extends.height());
+    }
+    extends = extends.increaseBy(smallest * 0.1);
 
     setDisplayArea(painter, extends);
 }
 
 void DocumentCanvas::setDisplayArea(LcPainter& painter, const lc::geo::Area& area) {
+    // Before the first resize the widget has no device size, and an empty
+    // area has nothing to fit; either would make the zoom non-finite.
+    if (_deviceWidth == 0 || _deviceHeight == 0 ||
+        !(area.width() > 0.) || !(area.height() > 0.)) {
+        return;
+    }
+
     double zoom = std::min(_deviceWidth / area.width(), _deviceHeight / area.height());
     this->zoom(painter, zoom, false,
                area.width() / 2 + area.minP().x(),

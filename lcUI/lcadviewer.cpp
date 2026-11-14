@@ -21,6 +21,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
     _zoomMin(0.05),
     _zoomMax(20.0),
     _scaleLineWidth(false),
+    _autoScalePending(false),
     _backgroundPainter(nullptr),
     _documentPainter(nullptr),
     _foregroundPainter(nullptr)
@@ -171,6 +172,8 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
 
     // Use this canvas's painter, not a closure borrowing a future/dead viewer.
     _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, nullptr, viewport);
+    _docCanvas->newDeviceSize(size().width(), size().height());
+    _autoScalePending = true;
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
@@ -439,6 +442,14 @@ void LCADViewer::paintGL()
 {
     if (_docCanvas == nullptr || _documentPainter == nullptr) {
         return;
+    }
+
+    // A document installed while the widget was not yet shown could not be
+    // fitted at that point. The first paint is the earliest moment the device
+    // size and the renderer resources are both valid.
+    if (_autoScalePending) {
+        _autoScalePending = false;
+        _docCanvas->autoScale(*_documentPainter);
     }
 
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_BACKGROUND);
