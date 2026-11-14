@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include <cad/math/floatingpoint.h>
 
 #include <gtest/gtest.h>
