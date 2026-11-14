@@ -28,8 +28,14 @@ TEST(FloatingPointTest, RespectsUlpBudgetOnBothSides) {
         EXPECT_EQ(FloatingOrder::Greater, compareWithinUlps(step(boundary, infinity, 5), boundary));
         EXPECT_EQ(FloatingOrder::Equivalent, compareWithinUlps(boundary, below));
         EXPECT_EQ(FloatingOrder::Equivalent, compareWithinUlps(boundary, above));
+        EXPECT_EQ(FloatingOrder::Less, compareWithinUlps(boundary, step(boundary, infinity, 5)));
+        EXPECT_EQ(FloatingOrder::Greater, compareWithinUlps(boundary, step(boundary, -infinity, 5)));
     }
     EXPECT_EQ(FloatingOrder::Greater, compareWithinUlps(std::nextafter(1.0, infinity), 1.0, 0));
+
+    const double sixtyFourUlpsAboveOne = step(1.0, infinity, 64);
+    EXPECT_EQ(FloatingOrder::Equivalent, compareWithinUlps(sixtyFourUlpsAboveOne, 1.0, 64));
+    EXPECT_EQ(FloatingOrder::Greater, compareWithinUlps(sixtyFourUlpsAboveOne, 1.0, 63));
 }
 
 TEST(FloatingPointTest, HandlesZeroSubnormalsAndSigns) {
@@ -40,6 +46,12 @@ TEST(FloatingPointTest, HandlesZeroSubnormalsAndSigns) {
     EXPECT_EQ(FloatingSign::Positive, signWithinUlpsOfZero(step(0.0, infinity, 5)));
     EXPECT_EQ(FloatingSign::Negative, signWithinUlpsOfZero(step(0.0, -infinity, 5)));
     EXPECT_EQ(FloatingSign::Positive, signWithinUlpsOfZero(std::numeric_limits<double>::denorm_min(), 0));
+    EXPECT_EQ(FloatingOrder::Equivalent,
+              compareWithinUlps(std::numeric_limits<double>::denorm_min(),
+                                -std::numeric_limits<double>::denorm_min(), 2));
+    EXPECT_EQ(FloatingOrder::Greater,
+              compareWithinUlps(std::numeric_limits<double>::denorm_min(),
+                                -std::numeric_limits<double>::denorm_min(), 1));
 }
 
 TEST(FloatingPointTest, KeepsNonFiniteValuesDistinct) {
