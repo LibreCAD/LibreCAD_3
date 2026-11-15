@@ -170,6 +170,7 @@ cad/interface/snapable.h
 cad/interface/splitable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
+cad/math/floatingpoint.h
 cad/math/equation.h
 cad/math/intersectionhandler.h
 cad/meta/color.h

@@ -37,12 +37,18 @@
 #include <cad/meta/metalinewidth.h>
 
 #include <cad/const.h>
+#include <cad/math/floatingpoint.h>
 #include <cmath>
 
 #include <typeinfo>
 
 using namespace lc;
 using namespace lc::viewer;
+
+using lc::maths::FloatingOrder;
+using lc::maths::FloatingSign;
+using lc::maths::compareWithinUlps;
+using lc::maths::signWithinUlpsOfZero;
 
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
     _document(document),
@@ -140,19 +146,18 @@ void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
 
 void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
                           unsigned int deviceCenterX, unsigned int deviceCenterY) {
-    // Recover from a broken scale (for instance one left behind by an
-    // auto-scale on an empty document) instead of compounding the NaN.
-    if (!std::isfinite(painter.scale())) {
+    double currentScale = painter.scale();
+    if (signWithinUlpsOfZero(currentScale) != FloatingSign::Positive) {
         painter.reset_transformations();
+        currentScale = painter.scale();
     }
 
-    // Test for minimum and maximum zoom levels
-    if (!std::isfinite(factor) || factor <= 0. ||
-        (_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
+    if (signWithinUlpsOfZero(currentScale) != FloatingSign::Positive ||
+        signWithinUlpsOfZero(factor) != FloatingSign::Positive) {
         return;
     }
 
-    // Find user location at the device location
+    // Find user location at the device location.
     painter.save();
     double userX = deviceCenterX;
     double userY = deviceCenterY;
@@ -165,50 +170,96 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
 void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
                           double userCenterX, double userCenterY,
                           unsigned int deviceCenterX, unsigned int deviceCenterY) {
-    if (!std::isfinite(painter.scale())) {
+    double currentScale = painter.scale();
+    if (signWithinUlpsOfZero(currentScale) != FloatingSign::Positive) {
         painter.reset_transformations();
+        currentScale = painter.scale();
     }
 
-    if (!std::isfinite(factor) || factor <= 0. ||
-        (_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
+    if (signWithinUlpsOfZero(currentScale) != FloatingSign::Positive ||
+        signWithinUlpsOfZero(factor) != FloatingSign::Positive ||
+        !std::isfinite(userCenterX) || !std::isfinite(userCenterY)) {
         return;
     }
 
-    if (relativezoom) {
-        factor = factor * painter.scale();
+    // Convert the requested zoom to a finite absolute scale before touching
+    // the transform. ULP-aware comparisons clamp relative zooms before their
+    // multiplication can overflow.
+    const double minFactor = relativezoom ? _zoomMin / currentScale : _zoomMin;
+    const double maxFactor = relativezoom ? _zoomMax / currentScale : _zoomMax;
+    const auto lower = compareWithinUlps(factor, minFactor);
+    const auto upper = compareWithinUlps(factor, maxFactor);
+    if (lower == FloatingOrder::Unordered || upper == FloatingOrder::Unordered) {
+        return;
     }
 
+    double targetScale;
+    if (lower != FloatingOrder::Greater) {
+        targetScale = _zoomMin;
+    }
+    else if (upper != FloatingOrder::Less) {
+        targetScale = _zoomMax;
+    }
+    else {
+        targetScale = relativezoom ? factor * currentScale : factor;
+    }
 
-    // Calculate reference device offset at device location
+    if (signWithinUlpsOfZero(targetScale) != FloatingSign::Positive ||
+        !std::isfinite(targetScale)) {
+        return;
+    }
+
+    // Calculate the reference device offset at the requested device location.
     painter.save();
     double refX = deviceCenterX;
     double refY = deviceCenterY;
     painter.reset_transformations();
-    painter.scale(factor);
+    painter.scale(targetScale);
     painter.device_to_user(&refX, &refY);
     painter.restore();
 
-    painter.reset_transformations();
-    painter.scale(factor);
-    painter.translate(refX - userCenterX,-refY + userCenterY);
-}
-
-void DocumentCanvas::autoScale(LcPainter& painter) {
-    auto extends = entityContainer().boundingBox();
-
-    // An empty document has no bounds to frame. Dividing by its zero extent
-    // below would make the zoom (and every later coordinate conversion) NaN,
-    // leaving the canvas permanently blank.
-    if (!(extends.width() > 0.) && !(extends.height() > 0.)) {
+    const double translateX = refX - userCenterX;
+    const double translateY = -refY + userCenterY;
+    if (!std::isfinite(refX) || !std::isfinite(refY) ||
+        !std::isfinite(translateX) || !std::isfinite(translateY)) {
         return;
     }
 
-    // A drawing made of a single horizontal or vertical line has a zero
-    // width or height. Use the larger extent as the margin base so the zoom
-    // factor stays finite instead of dividing by zero.
-    double smallest = std::min(extends.width(), extends.height());
-    if (!(smallest > 0.)) {
-        smallest = std::max(extends.width(), extends.height());
+    painter.reset_transformations();
+    painter.scale(targetScale);
+    painter.translate(translateX, translateY);
+}
+
+void DocumentCanvas::autoScale(LcPainter& painter) {
+    // An empty document has no bounds to frame. A real point-only drawing has
+    // the same zero-size box, so distinguish it from an empty entity map.
+    if (_entityDrawItem.empty()) {
+        return;
+    }
+
+    auto extends = entityContainer().boundingBox();
+    double width = extends.width();
+    double height = extends.height();
+    if (!std::isfinite(width) || !std::isfinite(height) ||
+        signWithinUlpsOfZero(width) == FloatingSign::Negative ||
+        signWithinUlpsOfZero(height) == FloatingSign::Negative) {
+        return;
+    }
+
+    // Give point-only drawings a small, finite world-space frame. The normal
+    // margin below then keeps the point away from the viewport edge.
+    if (signWithinUlpsOfZero(width) == FloatingSign::Zero &&
+        signWithinUlpsOfZero(height) == FloatingSign::Zero) {
+        extends = extends.increaseBy(0.5);
+        width = extends.width();
+        height = extends.height();
+    }
+
+    // A horizontal or vertical drawing has one zero extent. Use the larger
+    // extent as the margin base so the fitted area remains two-dimensional.
+    double smallest = std::fmin(width, height);
+    if (signWithinUlpsOfZero(smallest) != FloatingSign::Positive) {
+        smallest = std::fmax(width, height);
     }
     extends = extends.increaseBy(smallest * 0.1);
 
@@ -216,19 +267,31 @@ void DocumentCanvas::autoScale(LcPainter& painter) {
 }
 
 void DocumentCanvas::setDisplayArea(LcPainter& painter, const lc::geo::Area& area) {
-    // Before the first resize the widget has no device size, and an empty
-    // area has nothing to fit; either would make the zoom non-finite.
+    const double areaWidth = area.width();
+    const double areaHeight = area.height();
+    const auto minPoint = area.minP();
+
+    // Before the first resize there is no device area to fit. Reject invalid
+    // world bounds and computed scales before they reach the painter.
     if (_deviceWidth == 0 || _deviceHeight == 0 ||
-        !(area.width() > 0.) || !(area.height() > 0.)) {
+        !std::isfinite(areaWidth) || !std::isfinite(areaHeight) ||
+        signWithinUlpsOfZero(areaWidth) != FloatingSign::Positive ||
+        signWithinUlpsOfZero(areaHeight) != FloatingSign::Positive ||
+        !std::isfinite(minPoint.x()) || !std::isfinite(minPoint.y())) {
         return;
     }
 
-    double zoom = std::min(_deviceWidth / area.width(), _deviceHeight / area.height());
+    const double zoom = std::fmin(_deviceWidth / areaWidth, _deviceHeight / areaHeight);
+    if (!std::isfinite(zoom) ||
+        signWithinUlpsOfZero(zoom) != FloatingSign::Positive) {
+        return;
+    }
+
     this->zoom(painter, zoom, false,
-               area.width() / 2 + area.minP().x(),
-               area.height() / 2. + area.minP().y(),
-               (unsigned int) (_deviceWidth / 2.),
-               (unsigned int) (_deviceHeight / 2.)
+               areaWidth / 2 + minPoint.x(),
+               areaHeight / 2. + minPoint.y(),
+               static_cast<unsigned int>(_deviceWidth / 2.),
+               static_cast<unsigned int>(_deviceHeight / 2.)
               );
 }
 

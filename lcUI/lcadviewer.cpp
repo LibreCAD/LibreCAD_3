@@ -444,12 +444,14 @@ void LCADViewer::paintGL()
         return;
     }
 
-    // A document installed while the widget was not yet shown could not be
-    // fitted at that point. The first paint is the earliest moment the device
-    // size and the renderer resources are both valid.
-    if (_autoScalePending) {
-        _autoScalePending = false;
+    // A document installed while the widget was not yet shown cannot be
+    // fitted until it has a real device size. Keep the request pending if the
+    // first paint still has no usable dimensions.
+    if (_autoScalePending && width() > 0 && height() > 0) {
+        _docCanvas->newDeviceSize(static_cast<unsigned int>(width()),
+                                  static_cast<unsigned int>(height()));
         _docCanvas->autoScale(*_documentPainter);
+        _autoScalePending = false;
     }
 
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_BACKGROUND);
