@@ -760,6 +760,54 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
         doc->insertEntity(original);
         check(doc);
     }
+    const auto checkRotated = [](const std::shared_ptr<lc::storage::DocumentImpl>& target) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : target->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops[0].entities().size(), 1u);
+        const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+        ASSERT_NE(spline, nullptr);
+        ASSERT_EQ(spline->controlPoints().size(), 3u);
+        ASSERT_EQ(spline->fitPoints().size(), 2u);
+        const double xy[3][2] = {{28,11},{26,12},{28,13}};
+        for (std::size_t i = 0; i < 3; ++i) {
+            EXPECT_NEAR(spline->controlPoints()[i].x(), xy[i][0], 1e-12);
+            EXPECT_NEAR(spline->controlPoints()[i].y(), xy[i][1], 1e-12);
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), 3.0);
+        }
+        EXPECT_NEAR(spline->fitPoints()[0].x(), 28.0, 1e-12);
+        EXPECT_NEAR(spline->fitPoints()[0].y(), 11.0, 1e-12);
+        EXPECT_DOUBLE_EQ(spline->fitPoints()[0].z(), 3.0);
+        EXPECT_NEAR(spline->fitPoints()[1].x(), 28.0, 1e-12);
+        EXPECT_NEAR(spline->fitPoints()[1].y(), 13.0, 1e-12);
+        EXPECT_DOUBLE_EQ(spline->fitPoints()[1].z(), 3.0);
+        EXPECT_NEAR(spline->startTanX(), -2.0, 1e-12);
+        EXPECT_NEAR(spline->startTanY(), 1.0, 1e-12);
+        EXPECT_NEAR(spline->endTanX(), 2.0, 1e-12);
+        EXPECT_NEAR(spline->endTanY(), 1.0, 1e-12);
+        EXPECT_DOUBLE_EQ(spline->startTanZ(), 0.0);
+        EXPECT_DOUBLE_EQ(spline->endTanZ(), 0.0);
+    };
+    const auto rotated = original->rotate(lc::geo::Coordinate(10, 20, 100), std::acos(-1.0) / 2.0);
+    ASSERT_NE(rotated, nullptr);
+    doc->removeEntity(original);
+    doc->insertEntity(rotated);
+    checkRotated(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "/rotated-ascii.dxf" : "/rotated-binary.dxf") : tmpPath("rotated-spline-hatch");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        checkRotated(reopened);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    doc->removeEntity(rotated);
+    doc->insertEntity(original);
+    check(doc);
     const auto& edges = original->getRegion().loopList().front().entities();
     ASSERT_EQ(edges.size(), 1u);
     const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(edges[0]);
@@ -781,6 +829,30 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
         EXPECT_DOUBLE_EQ(transformed->boundingBox().minP().x(), 3.0);
         EXPECT_DOUBLE_EQ(transformed->boundingBox().maxP().x(), 5.0);
     }
+    const auto fitRotated = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        fitOnly->rotate(lc::geo::Coordinate(10, 20, 100), std::acos(-1.0) / 2.0));
+    ASSERT_NE(fitRotated, nullptr);
+    ASSERT_TRUE(fitRotated->controlPoints().empty());
+    ASSERT_EQ(fitRotated->fitPoints().size(), 2u);
+    EXPECT_NEAR(fitRotated->fitPoints()[0].x(), 28.0, 1e-12);
+    EXPECT_NEAR(fitRotated->fitPoints()[0].y(), 11.0, 1e-12);
+    EXPECT_DOUBLE_EQ(fitRotated->fitPoints()[0].z(), 3.0);
+    const auto vectors = std::make_shared<lc::entity::Spline>(
+        spline->controlPoints(), spline->knotPoints(), spline->fitPoints(),
+        spline->degree(), spline->closed(), spline->fitTolerance(), 4, 5, 6, 7, 8, 9,
+        1, 2, 3, spline->flags(), spline->layer());
+    const auto rotatedVectors = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->rotate(lc::geo::Coordinate(10, 20, 100), std::acos(-1.0) / 2.0));
+    ASSERT_NE(rotatedVectors, nullptr);
+    EXPECT_NEAR(rotatedVectors->startTanX(), -5.0, 1e-12);
+    EXPECT_NEAR(rotatedVectors->startTanY(), 4.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotatedVectors->startTanZ(), 6.0);
+    EXPECT_NEAR(rotatedVectors->endTanX(), -8.0, 1e-12);
+    EXPECT_NEAR(rotatedVectors->endTanY(), 7.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotatedVectors->endTanZ(), 9.0);
+    EXPECT_NEAR(rotatedVectors->nX(), -2.0, 1e-12);
+    EXPECT_NEAR(rotatedVectors->nY(), 1.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotatedVectors->nZ(), 3.0);
     auto points = spline->controlPoints();
     ASSERT_EQ(points.size(), 3u);
     points[1] = lc::geo::Coordinate(points[1].x(), points[1].y(), 4.0);

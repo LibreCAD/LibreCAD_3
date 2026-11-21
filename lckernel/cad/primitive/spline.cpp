@@ -1,5 +1,6 @@
 #include "cad/primitive/spline.h"
 #include <algorithm>
+#include <cmath>
 #include "cad/geometry/geoarea.h"
 #include "spline.h"
 
@@ -14,6 +15,21 @@ std::vector<geo::Coordinate> translatedPoints(const std::vector<geo::Coordinate>
     result.reserve(points.size());
     for (const auto& point : points)
         result.push_back(point + offset);
+    return result;
+}
+geo::Coordinate rotatedVector(const geo::Coordinate& vector, double cosine, double sine) {
+    return geo::Coordinate(vector.x() * cosine - vector.y() * sine,
+                           vector.x() * sine + vector.y() * cosine, vector.z());
+}
+
+std::vector<geo::Coordinate> rotatedPoints(const std::vector<geo::Coordinate>& points,
+                                          const geo::Coordinate& center, double cosine, double sine) {
+    std::vector<geo::Coordinate> result;
+    result.reserve(points.size());
+    for (const auto& point : points) {
+        const auto relative = rotatedVector(point - center, cosine, sine);
+        result.emplace_back(center.x() + relative.x(), center.y() + relative.y(), point.z());
+    }
     return result;
 }
 } // namespace
@@ -148,33 +164,16 @@ CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point.rotate(rotation_center, rotation_angle));
-    }
-
-    auto normal = geo::Coordinate(nX(), nY(), nZ()).rotate(rotation_angle);
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
-                     knotPoints(),
-                     fitPoints(),
-                     degree(),
-                     closed(),
-                     fitTolerance(),
-                     startTanX(),
-                     startTanY(),
-                     startTanZ(),
-                     endTanX(),
-                     endTanY(),
-                     endTanZ(),
-                     normal.x(),
-                     normal.y(),
-                     normal.z(),
-                     flags(),
-                     layer()
-                     , metaInfo(), block()
-                                             );
+    const double cosine = std::cos(rotation_angle);
+    const double sine = std::sin(rotation_angle);
+    const auto start = rotatedVector(geo::Coordinate(startTanX(), startTanY(), startTanZ()), cosine, sine);
+    const auto end = rotatedVector(geo::Coordinate(endTanX(), endTanY(), endTanZ()), cosine, sine);
+    const auto normal = rotatedVector(geo::Coordinate(nX(), nY(), nZ()), cosine, sine);
+    auto newSpline = std::make_shared<Spline>(
+        rotatedPoints(controlPoints(), rotation_center, cosine, sine), knotPoints(),
+        rotatedPoints(fitPoints(), rotation_center, cosine, sine), degree(), closed(), fitTolerance(),
+        start.x(), start.y(), start.z(), end.x(), end.y(), end.z(),
+        normal.x(), normal.y(), normal.z(), flags(), layer(), metaInfo(), block());
     newSpline->setID(this->id());
     return newSpline;
 }
