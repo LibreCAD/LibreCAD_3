@@ -808,6 +808,59 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
     doc->removeEntity(rotated);
     doc->insertEntity(original);
     check(doc);
+    for (const bool scale : {true, false}) {
+        SCOPED_TRACE(scale ? "scale" : "mirror");
+        const auto transformed = scale
+            ? original->scale(lc::geo::Coordinate(10, 20, 1), lc::geo::Coordinate(2, 3, 2))
+            : original->mirror(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(0, 1, 0));
+        ASSERT_NE(transformed, nullptr);
+        doc->removeEntity(original);
+        doc->insertEntity(transformed);
+        const auto checkTransform = [scale](const std::shared_ptr<lc::storage::DocumentImpl>& target) {
+            lc::entity::Hatch_CSPtr hatch;
+            for (const auto& entity : target->entityContainer().asVector())
+                if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+            ASSERT_NE(hatch, nullptr);
+            const auto& loops = hatch->getRegion().loopList();
+            ASSERT_EQ(loops.size(), 1u);
+            ASSERT_EQ(loops[0].entities().size(), 1u);
+            const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+            ASSERT_NE(spline, nullptr);
+            ASSERT_EQ(spline->controlPoints().size(), 3u);
+            ASSERT_EQ(spline->fitPoints().size(), 2u);
+            const double source[3][2] = {{1,2},{2,4},{3,2}};
+            for (std::size_t i = 0; i < 3; ++i) {
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[i].x(), scale ? 2 * source[i][0] - 10 : -source[i][0]);
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[i].y(), scale ? 3 * source[i][1] - 40 : source[i][1]);
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), scale ? 5.0 : 3.0);
+            }
+            for (std::size_t i = 0; i < 2; ++i) {
+                const std::size_t sourceIndex = i == 0 ? 0 : 2;
+                EXPECT_DOUBLE_EQ(spline->fitPoints()[i].x(), scale ? 2 * source[sourceIndex][0] - 10 : -source[sourceIndex][0]);
+                EXPECT_DOUBLE_EQ(spline->fitPoints()[i].y(), scale ? 3 * source[sourceIndex][1] - 40 : source[sourceIndex][1]);
+                EXPECT_DOUBLE_EQ(spline->fitPoints()[i].z(), scale ? 5.0 : 3.0);
+            }
+            EXPECT_DOUBLE_EQ(spline->startTanX(), scale ? 2.0 : -1.0);
+            EXPECT_DOUBLE_EQ(spline->startTanY(), scale ? 6.0 : 2.0);
+            EXPECT_DOUBLE_EQ(spline->endTanX(), scale ? 2.0 : -1.0);
+            EXPECT_DOUBLE_EQ(spline->endTanY(), scale ? -6.0 : -2.0);
+        };
+        checkTransform(doc);
+        for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                                lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+            const auto output = capture ? std::string(capture) + (scale ? "/scaled-" : "/mirrored-")
+                + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+                : tmpPath("transformed-spline-hatch");
+            ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+            auto reopened = newDwgDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            checkTransform(reopened);
+            if (!capture) boost::filesystem::remove(output);
+        }
+        doc->removeEntity(transformed);
+        doc->insertEntity(original);
+        check(doc);
+    }
     const auto& edges = original->getRegion().loopList().front().entities();
     ASSERT_EQ(edges.size(), 1u);
     const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(edges[0]);
@@ -853,6 +906,61 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
     EXPECT_NEAR(rotatedVectors->nX(), -2.0, 1e-12);
     EXPECT_NEAR(rotatedVectors->nY(), 1.0, 1e-12);
     EXPECT_DOUBLE_EQ(rotatedVectors->nZ(), 3.0);
+    const auto scaledFitOnly = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        fitOnly->scale(lc::geo::Coordinate(10, 20, 1), lc::geo::Coordinate(2, 3, 2)));
+    ASSERT_NE(scaledFitOnly, nullptr);
+    ASSERT_TRUE(scaledFitOnly->controlPoints().empty());
+    ASSERT_EQ(scaledFitOnly->fitPoints().size(), 2u);
+    EXPECT_DOUBLE_EQ(scaledFitOnly->fitPoints()[0].x(), -8.0);
+    EXPECT_DOUBLE_EQ(scaledFitOnly->fitPoints()[0].y(), -34.0);
+    EXPECT_DOUBLE_EQ(scaledFitOnly->fitPoints()[0].z(), 5.0);
+    const auto mirroredFitOnly = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        fitOnly->mirror(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(0, 1, 0)));
+    ASSERT_NE(mirroredFitOnly, nullptr);
+    ASSERT_TRUE(mirroredFitOnly->controlPoints().empty());
+    ASSERT_EQ(mirroredFitOnly->fitPoints().size(), 2u);
+    EXPECT_DOUBLE_EQ(mirroredFitOnly->fitPoints()[0].x(), -1.0);
+    EXPECT_DOUBLE_EQ(mirroredFitOnly->fitPoints()[0].y(), 2.0);
+    EXPECT_DOUBLE_EQ(mirroredFitOnly->fitPoints()[0].z(), 3.0);
+    const auto scaledVectors = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->scale(lc::geo::Coordinate(10, 20, 1), lc::geo::Coordinate(2, 3, 2)));
+    ASSERT_NE(scaledVectors, nullptr);
+    EXPECT_DOUBLE_EQ(scaledVectors->startTanX(), 8.0);
+    EXPECT_DOUBLE_EQ(scaledVectors->startTanY(), 15.0);
+    EXPECT_DOUBLE_EQ(scaledVectors->startTanZ(), 12.0);
+    EXPECT_NEAR(scaledVectors->nX() / scaledVectors->nZ(), 1.0 / 3.0, 1e-12);
+    EXPECT_NEAR(scaledVectors->nY() / scaledVectors->nZ(), 4.0 / 9.0, 1e-12);
+    const auto mirroredVectors = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->mirror(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(0, 1, 0)));
+    ASSERT_NE(mirroredVectors, nullptr);
+    EXPECT_DOUBLE_EQ(mirroredVectors->startTanX(), -4.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->startTanY(), 5.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->startTanZ(), 6.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->nX(), -1.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->nY(), 2.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->nZ(), 3.0);
+    const auto tiltedAxis = lc::geo::Coordinate(1, 1, 1);
+    const auto tiltedMirror = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis));
+    ASSERT_NE(tiltedMirror, nullptr);
+    const auto expectedControl = vectors->controlPoints()[0].mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis);
+    const auto expectedFit = vectors->fitPoints()[0].mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis);
+    const auto expectedTangent = lc::geo::Coordinate(4, 5, 6).mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis);
+    EXPECT_DOUBLE_EQ(tiltedMirror->controlPoints()[0].x(), expectedControl.x());
+    EXPECT_DOUBLE_EQ(tiltedMirror->controlPoints()[0].y(), expectedControl.y());
+    EXPECT_DOUBLE_EQ(tiltedMirror->controlPoints()[0].z(), expectedControl.z());
+    EXPECT_DOUBLE_EQ(tiltedMirror->fitPoints()[0].x(), expectedFit.x());
+    EXPECT_DOUBLE_EQ(tiltedMirror->fitPoints()[0].y(), expectedFit.y());
+    EXPECT_DOUBLE_EQ(tiltedMirror->fitPoints()[0].z(), expectedFit.z());
+    EXPECT_DOUBLE_EQ(tiltedMirror->startTanX(), expectedTangent.x());
+    EXPECT_DOUBLE_EQ(tiltedMirror->startTanY(), expectedTangent.y());
+    EXPECT_DOUBLE_EQ(tiltedMirror->startTanZ(), expectedTangent.z());
+    const auto singularScale = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->scale(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(2, 0, 2)));
+    ASSERT_NE(singularScale, nullptr);
+    EXPECT_DOUBLE_EQ(singularScale->nX(), 1.0);
+    EXPECT_DOUBLE_EQ(singularScale->nY(), 2.0);
+    EXPECT_DOUBLE_EQ(singularScale->nZ(), 3.0);
     auto points = spline->controlPoints();
     ASSERT_EQ(points.size(), 3u);
     points[1] = lc::geo::Coordinate(points[1].x(), points[1].y(), 4.0);

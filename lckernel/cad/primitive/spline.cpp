@@ -9,14 +9,36 @@ using namespace lc;
 using namespace entity;
 
 namespace {
-std::vector<geo::Coordinate> translatedPoints(const std::vector<geo::Coordinate>& points,
-                                             const geo::Coordinate& offset) {
+template<typename Transform>
+std::vector<geo::Coordinate> transformPoints(const std::vector<geo::Coordinate>& points,
+                                             const Transform& transform) {
     std::vector<geo::Coordinate> result;
     result.reserve(points.size());
-    for (const auto& point : points)
-        result.push_back(point + offset);
+    for (const auto& point : points) result.push_back(transform(point));
     return result;
 }
+
+std::vector<geo::Coordinate> translatedPoints(const std::vector<geo::Coordinate>& points,
+                                              const geo::Coordinate& offset) {
+    return transformPoints(points, [&offset](const geo::Coordinate& point) { return point + offset; });
+}
+
+geo::Coordinate scaledNormal(const geo::Coordinate& normal, const geo::Coordinate& factor) {
+    // A singular scale does not determine a unique transformed normal.
+    // Preserve the existing value in that case, as before.
+    if (factor.x() == 0.0 || factor.y() == 0.0 || factor.z() == 0.0)
+        return normal;
+    const geo::Coordinate transformed(normal.x() / factor.x(), normal.y() / factor.y(),
+                                      normal.z() / factor.z());
+    const double oldLength = std::hypot(normal.x(), normal.y(), normal.z());
+    const double newLength = std::hypot(transformed.x(), transformed.y(), transformed.z());
+    if (!std::isfinite(oldLength) || !std::isfinite(newLength) || newLength == 0.0)
+        return normal;
+    return geo::Coordinate((transformed.x() / newLength) * oldLength,
+                           (transformed.y() / newLength) * oldLength,
+                           (transformed.z() / newLength) * oldLength);
+}
+
 geo::Coordinate rotatedVector(const geo::Coordinate& vector, double cosine, double sine) {
     return geo::Coordinate(vector.x() * cosine - vector.y() * sine,
                            vector.x() * sine + vector.y() * cosine, vector.z());
@@ -24,13 +46,10 @@ geo::Coordinate rotatedVector(const geo::Coordinate& vector, double cosine, doub
 
 std::vector<geo::Coordinate> rotatedPoints(const std::vector<geo::Coordinate>& points,
                                           const geo::Coordinate& center, double cosine, double sine) {
-    std::vector<geo::Coordinate> result;
-    result.reserve(points.size());
-    for (const auto& point : points) {
+    return transformPoints(points, [&center, cosine, sine](const geo::Coordinate& point) {
         const auto relative = rotatedVector(point - center, cosine, sine);
-        result.emplace_back(center.x() + relative.x(), center.y() + relative.y(), point.z());
-    }
-    return result;
+        return geo::Coordinate(center.x() + relative.x(), center.y() + relative.y(), point.z());
+    });
 }
 } // namespace
 
@@ -179,61 +198,40 @@ CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, double ro
 }
 
 CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point.scale(scale_center, scale_factor));
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
-                     knotPoints(),
-                     fitPoints(),
-                     degree(),
-                     closed(),
-                     fitTolerance(),
-                     startTanX(),
-                     startTanY(),
-                     startTanZ(),
-                     endTanX(),
-                     endTanY(),
-                     endTanZ(),
-                     nX(),
-                     nY(),
-                     nZ(),
-                     flags(),
-                     layer()
-                     , metaInfo(), block()
-                                             );
+    const auto scalePoint = [&scale_center, &scale_factor](const geo::Coordinate& point) {
+        return point.scale(scale_center, scale_factor);
+    };
+    const auto start = geo::Coordinate(startTanX(), startTanY(), startTanZ()) * scale_factor;
+    const auto end = geo::Coordinate(endTanX(), endTanY(), endTanZ()) * scale_factor;
+    const auto normal = scaledNormal(geo::Coordinate(nX(), nY(), nZ()), scale_factor);
+    auto newSpline = std::make_shared<Spline>(
+        transformPoints(controlPoints(), scalePoint), knotPoints(), transformPoints(fitPoints(), scalePoint),
+        degree(), closed(), fitTolerance(), start.x(), start.y(), start.z(), end.x(), end.y(), end.z(),
+        normal.x(), normal.y(), normal.z(), flags(), layer(), metaInfo(), block());
     newSpline->setID(this->id());
     return newSpline;
 }
 
 CADEntity_CSPtr Spline::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point.mirror(axis1, axis2));
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
-                     knotPoints(),
-                     fitPoints(),
-                     degree(),
-                     closed(),
-                     fitTolerance(),
-                     startTanX(),
-                     startTanY(),
-                     startTanZ(),
-                     endTanX(),
-                     endTanY(),
-                     endTanZ(),
-                     nX(),
-                     nY(),
-                     nZ(),
-                     flags(),
-                     layer()
-                     , metaInfo(), block()
-                                             );
+    const bool planarAxis = axis1.z() == axis2.z();
+    const auto reflectPoint = [&axis1, &axis2, planarAxis](const geo::Coordinate& point) {
+        if (!planarAxis) return point.mirror(axis1, axis2);
+        const auto mapped = geo::Coordinate(point.x(), point.y(), axis1.z()).mirror(axis1, axis2);
+        return geo::Coordinate(mapped.x(), mapped.y(), point.z());
+    };
+    const auto reflectVector = [&axis1, &axis2, planarAxis](const geo::Coordinate& vector) {
+        const auto direction = axis2 - axis1;
+        const auto mapped = (planarAxis ? geo::Coordinate(vector.x(), vector.y(), 0.0) : vector)
+            .mirror(geo::Coordinate(0, 0, 0), direction);
+        return planarAxis ? geo::Coordinate(mapped.x(), mapped.y(), vector.z()) : mapped;
+    };
+    const auto start = reflectVector(geo::Coordinate(startTanX(), startTanY(), startTanZ()));
+    const auto end = reflectVector(geo::Coordinate(endTanX(), endTanY(), endTanZ()));
+    const auto normal = reflectVector(geo::Coordinate(nX(), nY(), nZ()));
+    auto newSpline = std::make_shared<Spline>(
+        transformPoints(controlPoints(), reflectPoint), knotPoints(), transformPoints(fitPoints(), reflectPoint),
+        degree(), closed(), fitTolerance(), start.x(), start.y(), start.z(), end.x(), end.y(), end.z(),
+        normal.x(), normal.y(), normal.z(), flags(), layer(), metaInfo(), block());
     newSpline->setID(this->id());
     return newSpline;
 }
