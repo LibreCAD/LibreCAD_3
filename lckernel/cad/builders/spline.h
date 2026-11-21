@@ -52,6 +52,9 @@ public:
      */
     void removeKnotPoint(int index);
 
+    const std::vector<double>& weights() const;
+    void setWeights(const std::vector<double>& weights);
+
     const std::vector<geo::Coordinate>& fitPoints() const;
     void setFitPoints(const std::vector<geo::Coordinate>& fitPoints);
     void addFitPoint(geo::Coordinate fitPoint);
@@ -73,6 +76,7 @@ private:
     std::vector<geo::Coordinate> _controlPoints;
     std::vector<double> _knotPoints;
     std::vector<geo::Coordinate> _fitPoints;
+    std::vector<double> _weights;
 
     short _degree;
     bool _closed;

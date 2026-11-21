@@ -90,6 +90,14 @@ void lc::builder::SplineBuilder::setKnotPoints(const std::vector<double>& knotPo
     _knotPoints = knotPoints;
 }
 
+const std::vector<double>& lc::builder::SplineBuilder::weights() const {
+    return _weights;
+}
+
+void lc::builder::SplineBuilder::setWeights(const std::vector<double>& weights) {
+    _weights = weights;
+}
+
 const std::vector<lc::geo::Coordinate>& lc::builder::SplineBuilder::fitPoints() const {
     return _fitPoints;
 }
@@ -143,6 +151,7 @@ void lc::builder::SplineBuilder::copy(entity::Spline_CSPtr entity) {
     setControlPoints(entity->controlPoints());
     setKnotPoints(entity->knotPoints());
     setFitPoints(entity->fitPoints());
+    setWeights(entity->weights());
     setFlags(entity->flags());
     CADEntityBuilder::copy(entity);
 }

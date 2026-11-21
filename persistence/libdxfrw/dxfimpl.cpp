@@ -731,9 +731,15 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                         static_cast<lc::geo::Spline::splineflag>(data->flags),
                         layer,
                         mf,
-                        getBlock(*data)
+                        getBlock(*data), data->weightlist
                                                             );
-
+        if ((data->flags & lc::geo::Spline::RATIONAL) != 0
+            || std::any_of(data->weightlist.begin(), data->weightlist.end(),
+                           [](double weight) { return weight != 1.0; })) {
+            const std::string note = "Rational SPLINE weights are preserved on save, but the displayed curve and geometry operations may be approximate.";
+            if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+                _loss.notes.push_back(note);
+        }
         deliver(lcSpline);
     });
 }
@@ -2270,6 +2276,7 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr& s) {
     getEntityAttributes(&sp, s);
 
     sp.knotslist = s->knotPoints();
+    sp.weightlist = s->weights();
     sp.normalVec = DRW_Coord(s->nX(), s->nY(), s->nZ());
     sp.tgEnd = DRW_Coord(s->endTanX(), s->endTanY(), s->endTanZ());
     sp.tgStart = DRW_Coord(s->startTanX(), s->startTanY(), s->startTanZ());
