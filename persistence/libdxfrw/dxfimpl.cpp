@@ -2092,6 +2092,8 @@ void DXFimpl::writeLTypes() {
     ltype.name = "CONTINUOUS";
     ltype.desc = "Solid line";
     dxfW->writeLineType(&ltype);
+    // The reserved ByLayer and ByBlock rows have empty descriptions.
+    ltype.desc.clear();
     ltype.name = "ByLayer";
     dxfW->writeLineType(&ltype);
     ltype.name = "ByBlock";
