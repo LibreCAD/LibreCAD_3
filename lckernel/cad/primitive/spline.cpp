@@ -7,6 +7,17 @@
 using namespace lc;
 using namespace entity;
 
+namespace {
+std::vector<geo::Coordinate> translatedPoints(const std::vector<geo::Coordinate>& points,
+                                             const geo::Coordinate& offset) {
+    std::vector<geo::Coordinate> result;
+    result.reserve(points.size());
+    for (const auto& point : points)
+        result.push_back(point + offset);
+    return result;
+}
+} // namespace
+
 Spline::Spline(
     const std::vector<geo::Coordinate>& controlPoints,
     const std::vector<double>& knotPoints,
@@ -90,15 +101,9 @@ geo::Coordinate Spline::nearestPointOnEntity(const geo::Coordinate& coord) const
 }
 
 CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point + offset);
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
+    auto newSpline = std::make_shared<Spline>(translatedPoints(controlPoints(), offset),
                      knotPoints(),
-                     fitPoints(),
+                     translatedPoints(fitPoints(), offset),
                      degree(),
                      closed(),
                      fitTolerance(),
@@ -120,15 +125,9 @@ CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point + offset);
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
+    auto newSpline = std::make_shared<Spline>(translatedPoints(controlPoints(), offset),
                      knotPoints(),
-                     fitPoints(),
+                     translatedPoints(fitPoints(), offset),
                      degree(),
                      closed(),
                      fitTolerance(),
