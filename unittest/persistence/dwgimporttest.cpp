@@ -682,7 +682,8 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
              "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
         ASSERT_TRUE(f.good());
     }
-    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc,
+                          const lc::geo::Coordinate& offset = lc::geo::Coordinate(0, 0, 0)) {
         lc::entity::Hatch_CSPtr hatch;
         for (const auto& entity : doc->entityContainer().asVector())
             if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
@@ -695,7 +696,12 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
         ASSERT_EQ(spline->controlPoints().size(), 3u);
         EXPECT_EQ(spline->degree(), 2);
         ASSERT_EQ(spline->fitPoints().size(), 2u);
-        for (const auto& point : spline->fitPoints()) EXPECT_DOUBLE_EQ(point.z(), 3.0);
+        const double fitXY[2][2] = {{1,2},{3,2}};
+        for (std::size_t i = 0; i < 2; ++i) {
+            EXPECT_DOUBLE_EQ(spline->fitPoints()[i].x(), fitXY[i][0] + offset.x());
+            EXPECT_DOUBLE_EQ(spline->fitPoints()[i].y(), fitXY[i][1] + offset.y());
+            EXPECT_DOUBLE_EQ(spline->fitPoints()[i].z(), 3.0 + offset.z());
+        }
         EXPECT_DOUBLE_EQ(spline->startTanX(), 1.0);
         EXPECT_DOUBLE_EQ(spline->startTanY(), 2.0);
         EXPECT_DOUBLE_EQ(spline->startTanZ(), 0.0);
@@ -704,9 +710,9 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
         EXPECT_DOUBLE_EQ(spline->endTanZ(), 0.0);
         const double xy[3][2] = {{1,2},{2,4},{3,2}};
         for (std::size_t i = 0; i < 3; ++i) {
-            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].x(), xy[i][0]);
-            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].y(), xy[i][1]);
-            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), 3.0);
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].x(), xy[i][0] + offset.x());
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].y(), xy[i][1] + offset.y());
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), 3.0 + offset.z());
         }
     };
     auto doc = newDwgDocument();
@@ -733,10 +739,50 @@ TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
     for (const auto& entity : doc->entityContainer().asVector())
         if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) original = value;
     ASSERT_NE(original, nullptr);
+    const lc::geo::Coordinate offset(2, 5, 7);
+    for (const bool copy : {false, true}) {
+        SCOPED_TRACE(copy ? "copy" : "move");
+        const auto transformed = copy ? original->copy(offset) : original->move(offset);
+        ASSERT_NE(transformed, nullptr);
+        doc->removeEntity(original);
+        doc->insertEntity(transformed);
+        check(doc, offset);
+        for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                                lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+            const auto output = capture ? std::string(capture) + (copy ? "/copied-" : "/moved-")
+                + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+                : tmpPath("translated-spline-hatch");
+            ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+            auto reopened = newDwgDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            check(reopened, offset);
+            if (!capture) boost::filesystem::remove(output);
+        }
+        doc->removeEntity(transformed);
+        doc->insertEntity(original);
+        check(doc);
+    }
     const auto& edges = original->getRegion().loopList().front().entities();
     ASSERT_EQ(edges.size(), 1u);
     const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(edges[0]);
     ASSERT_NE(spline, nullptr);
+    const auto fitOnly = std::make_shared<lc::entity::Spline>(
+        std::vector<lc::geo::Coordinate>{}, std::vector<double>{}, spline->fitPoints(),
+        2, false, spline->fitTolerance(), spline->startTanX(), spline->startTanY(), spline->startTanZ(),
+        spline->endTanX(), spline->endTanY(), spline->endTanZ(),
+        spline->nX(), spline->nY(), spline->nZ(), spline->flags(), spline->layer());
+    for (const bool copy : {false, true}) {
+        const auto transformed = std::dynamic_pointer_cast<const lc::entity::Spline>(
+            copy ? fitOnly->copy(offset) : fitOnly->move(offset));
+        ASSERT_NE(transformed, nullptr);
+        ASSERT_TRUE(transformed->controlPoints().empty());
+        ASSERT_EQ(transformed->fitPoints().size(), 2u);
+        EXPECT_DOUBLE_EQ(transformed->fitPoints()[0].x(), 3.0);
+        EXPECT_DOUBLE_EQ(transformed->fitPoints()[0].y(), 7.0);
+        EXPECT_DOUBLE_EQ(transformed->fitPoints()[0].z(), 10.0);
+        EXPECT_DOUBLE_EQ(transformed->boundingBox().minP().x(), 3.0);
+        EXPECT_DOUBLE_EQ(transformed->boundingBox().maxP().x(), 5.0);
+    }
     auto points = spline->controlPoints();
     ASSERT_EQ(points.size(), 3u);
     points[1] = lc::geo::Coordinate(points[1].x(), points[1].y(), 4.0);
