@@ -519,6 +519,9 @@ public:
     std::size_t _entitiesDelivered{0};
     std::size_t _attributesWithoutTags{0};
     std::size_t _mtextsAsText{0};
+    std::size_t _mpolygonsAsHatch{0};
+    std::size_t _mpolygonsWithNondefaultPlane{0};
+    std::size_t _mpolygonsWrittenAsHatch{0};
 
     void recordLoss(const char* recordKind) {
         _loss.droppedByType[recordKind]++;

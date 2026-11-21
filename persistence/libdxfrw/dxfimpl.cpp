@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
@@ -45,6 +46,211 @@
 #include <cad/tools/maphelper.h>
 
 using namespace lc::persistence;
+
+namespace {
+// The kernel's HATCH keeps this immutable source snapshot across ordinary
+// entity operations. A simple closed polyline can be replayed through planar
+// rigid transforms; other edits take the reported projection path.
+class MPolygonSnapshot final : public lc::meta::EntityMetaType {
+public:
+    struct Vertex { double x, y, bulge; };
+    MPolygonSnapshot(const DRW_MPolygon& polygon, const DRW_Hatch& projected,
+                     lc::meta::Block_CSPtr projectedBlock)
+        : block(std::move(projectedBlock)), name(polygon.name), solid(polygon.solid), angle(polygon.angle),
+          scale(polygon.scale), layer(projected.layer), lineType(projected.lineType),
+          color(projected.color), lineWeight(projected.lWeight) {
+        if (polygon.solid != 1 || polygon.associative != 0 || polygon.isGradient != 0
+            || polygon.hstyle != 0 || polygon.hpattern != 1 || polygon.doubleflag != 0
+            || !polygon.extData.empty() || !polygon.appData.empty()
+            || !polygon.reactorHandles.empty() || polygon.xDictHandle != 0
+            || polygon.shadowHandle != 0 || polygon.fullVisualStyleHandle != 0
+            || polygon.faceVisualStyleHandle != 0 || polygon.edgeVisualStyleHandle != 0
+            || polygon.hasDwgAcDbColorHandle() || polygon.dwgAcDbColorHandle() != 0
+            || !std::isfinite(polygon.xDirX) || !std::isfinite(polygon.xDirY)
+            || polygon.numProxyGraph != 0 || polygon.hasDataStorageRecord
+            || polygon.hasDataStoragePayloadMarker
+            || polygon.basePoint.z != 0.0 || polygon.extPoint.x != 0.0
+            || polygon.extPoint.y != 0.0 || polygon.extPoint.z != 1.0
+            || polygon.looplist.size() != 1 || !polygon.looplist[0]
+            || polygon.looplist[0]->type != 2
+            || !polygon.looplist[0]->m_boundaryHandles.empty()
+            || polygon.looplist[0]->objlist.size() != 1) return;
+        const auto* poly = dynamic_cast<const DRW_LWPolyline*>(
+            polygon.looplist[0]->objlist[0].get());
+        if (!poly || poly->flags != 1 || poly->vertlist.size() < 3
+            || poly->width != 0.0 || poly->elevation != 0.0
+            || poly->thickness != 0.0 || poly->extPoint.x != 0.0
+            || poly->extPoint.y != 0.0 || poly->extPoint.z != 1.0) return;
+        for (const auto& v : poly->vertlist) {
+            if (!v || !std::isfinite(v->x) || !std::isfinite(v->y)
+                || !std::isfinite(v->bulge) || v->stawidth != 0.0
+                || v->endwidth != 0.0) return;
+            const double x = v->x + polygon.xDirX;
+            const double y = v->y + polygon.xDirY;
+            if (!std::isfinite(x) || !std::isfinite(y)) return;
+            vertices.push_back({x, y, v->bulge});
+        }
+        source = std::make_unique<DRW_MPolygon>(polygon);
+    }
+    const std::string id() const override { return "_LIBDXFRW_MPOLYGON"; }
+    const std::string metaTypeID() const override { return id(); }
+    bool replayable(const DRW_Hatch& hatch, const lc::entity::Hatch_CSPtr& model,
+                    double& outputOffsetX, double& outputOffsetY,
+                    bool& rewriteBoundary) const {
+        if (!source || model->block() != block || hatch.name != name || hatch.solid != solid
+            || hatch.angle != angle || hatch.scale != scale
+            || hatch.layer != layer || hatch.lineType != lineType
+            || hatch.color != color || hatch.lWeight != lineWeight
+            || hatch.looplist.size() != 1 || !hatch.looplist[0]
+            || hatch.looplist[0]->type != 2
+            || hatch.looplist[0]->objlist.size() != 1) return false;
+        const auto* poly = dynamic_cast<const DRW_LWPolyline*>(
+            hatch.looplist[0]->objlist[0].get());
+        if (!poly || poly->flags != 1 || poly->vertlist.size() != vertices.size()
+            || poly->width != 0.0 || poly->elevation != 0.0 || poly->thickness != 0.0)
+            return false;
+        const auto& loops = model->getRegion().loopList();
+        if (loops.size() != 1 || loops[0].entities().size() != 1) return false;
+        const auto modelPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(
+            loops[0].entities()[0]);
+        if (!modelPolyline || modelPolyline->vertex().size() != vertices.size()
+            || modelPolyline->extrusionDirection().x() != 0.0
+            || modelPolyline->extrusionDirection().y() != 0.0
+            || modelPolyline->extrusionDirection().z() != 1.0) return false;
+        if (!poly->vertlist[0]) return false;
+        const double dx = poly->vertlist[0]->x - vertices[0].x;
+        const double dy = poly->vertlist[0]->y - vertices[0].y;
+        outputOffsetX = source->xDirX + dx;
+        outputOffsetY = source->xDirY + dy;
+        if (!std::isfinite(outputOffsetX) || !std::isfinite(outputOffsetY)) return false;
+        const auto* original = dynamic_cast<const DRW_LWPolyline*>(
+            source->looplist[0]->objlist[0].get());
+        if (!original || original->vertlist.size() != vertices.size()) return false;
+        bool translation = true;
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
+            if (modelPolyline->vertex()[i].location().z() != 0.0) return false;
+            const auto& v = poly->vertlist[i];
+            const auto& raw = original->vertlist[i];
+            if (!v || !raw || !std::isfinite(v->x) || !std::isfinite(v->y)
+                || v->bulge != vertices[i].bulge || v->stawidth != 0.0
+                || v->endwidth != 0.0) return false;
+            if (raw->x + outputOffsetX != v->x || raw->y + outputOffsetY != v->y)
+                translation = false;
+        }
+        rewriteBoundary = false;
+        if (translation) return true;
+
+        // A solid polygon without references or dormant pattern/gradient data
+        // can also be rotated without inventing a transformation for fields
+        // the kernel does not model.
+        if (source->annotatedBoundary != 0 || source->degenerateLoops != 0
+            || source->angle != 0.0 || !source->patternLines.empty()
+            || !source->seedPoints.empty() || source->pixelSize != 0.0
+            || source->gradReserved != 0 || source->gradAngle != 0.0
+            || source->gradShift != 0.0 || source->singleColor != 0
+            || source->gradTint != 0.0 || !source->gradName.empty()) return false;
+        std::size_t reference = 0;
+        double longest = 0.0;
+        for (std::size_t i = 1; i < vertices.size(); ++i) {
+            const double length = std::hypot(vertices[i].x - vertices[0].x,
+                                             vertices[i].y - vertices[0].y);
+            if (!std::isfinite(length)) return false;
+            if (length > longest) { longest = length; reference = i; }
+        }
+        if (reference == 0 || longest == 0.0) return false;
+        const double ux = (vertices[reference].x - vertices[0].x) / longest;
+        const double uy = (vertices[reference].y - vertices[0].y) / longest;
+        const double vx0 = poly->vertlist[reference]->x - poly->vertlist[0]->x;
+        const double vy0 = poly->vertlist[reference]->y - poly->vertlist[0]->y;
+        const double length = std::hypot(vx0, vy0);
+        if (!std::isfinite(length) || length == 0.0) return false;
+        const double vx = vx0 / length, vy = vy0 / length;
+        const double cosine = ux * vx + uy * vy;
+        const double sine = ux * vy - uy * vx;
+        const double epsilon = std::numeric_limits<double>::epsilon();
+        const double scale = std::max({std::numeric_limits<double>::min(), longest, length,
+                                       std::abs(vertices[0].x), std::abs(vertices[0].y),
+                                       std::abs(poly->vertlist[0]->x),
+                                       std::abs(poly->vertlist[0]->y)});
+        const double tolerance = 64.0 * epsilon * scale;
+        if (!std::isfinite(tolerance) || std::abs(longest - length) > tolerance)
+            return false;
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
+            const double sx = vertices[i].x - vertices[0].x;
+            const double sy = vertices[i].y - vertices[0].y;
+            const double tx = poly->vertlist[i]->x - poly->vertlist[0]->x;
+            const double ty = poly->vertlist[i]->y - poly->vertlist[0]->y;
+            const double predictedX = cosine * sx - sine * sy;
+            const double predictedY = sine * sx + cosine * sy;
+            if (!std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(tx)
+                || !std::isfinite(ty) || !std::isfinite(predictedX)
+                || !std::isfinite(predictedY)
+                || std::abs(predictedX - tx) > tolerance
+                || std::abs(predictedY - ty) > tolerance)
+                return false;
+        }
+        const double raw0x = original->vertlist[0]->x;
+        const double raw0y = original->vertlist[0]->y;
+        outputOffsetX = poly->vertlist[0]->x - (cosine * raw0x - sine * raw0y);
+        outputOffsetY = poly->vertlist[0]->y - (sine * raw0x + cosine * raw0y);
+        if (!std::isfinite(outputOffsetX) || !std::isfinite(outputOffsetY)) return false;
+        // A rounded center may not reconstruct every edited double exactly.
+        // Try nearby representable centers before falling back; the bounded
+        // search never changes an output vertex or permits approximate replay.
+        const auto fitOffset = [&poly](double& offset, bool xAxis) {
+            const auto exact = [&poly, xAxis](double candidate) {
+                if (!std::isfinite(candidate)) return false;
+                for (const auto& vertex : poly->vertlist) {
+                    const double point = xAxis ? vertex->x : vertex->y;
+                    const double raw = point - candidate;
+                    if (!std::isfinite(raw) || raw + candidate != point) return false;
+                }
+                return true;
+            };
+            if (exact(offset)) return true;
+            double lower = offset, upper = offset;
+            for (int i = 0; i < 16; ++i) {
+                lower = std::nextafter(lower, -std::numeric_limits<double>::infinity());
+                if (exact(lower)) { offset = lower; return true; }
+                upper = std::nextafter(upper, std::numeric_limits<double>::infinity());
+                if (exact(upper)) { offset = upper; return true; }
+            }
+            return false;
+        };
+        if (!fitOffset(outputOffsetX, true) || !fitOffset(outputOffsetY, false)) return false;
+        rewriteBoundary = true;
+        return true;
+    }
+    bool canWrite(DRW::Version version) const {
+        if (!source || (source->isGradient == 0 && !source->gradColors.empty()))
+            return false;
+#if !defined(LIBDXFRW_HAS_MPOLYGON_POLYLINE_POLICY)
+        // The older bundled codec interprets MPOLYGON groups 70/71 as the
+        // HATCH solid/associativity pair, so it cannot safely replay them.
+        (void)version;
+        return false;
+#else
+        if (source->dxfVersion != 1) return false;
+#endif
+        if (version < DRW::AC1018
+            && (source->isGradient != 0 || source->gradReserved != 0
+                || source->gradAngle != 0.0 || source->gradShift != 0.0
+                || source->singleColor != 0 || source->gradTint != 0.0
+                || !source->gradName.empty() || !source->gradColors.empty()))
+            return false;
+        return true;
+    }
+    static const char* key() { return "_LIBDXFRW_MPOLYGON"; }
+    std::unique_ptr<DRW_MPolygon> source;
+    lc::meta::Block_CSPtr block;
+    std::string name;
+    int solid; double angle, scale;
+    std::string layer, lineType;
+    int color; DRW_LW_Conv::lineWidth lineWeight;
+    std::vector<Vertex> vertices;
+};
+} // namespace
+
 
 const std::map<int, lc::Units> DXFimpl::_dxfToLCUnits = {
     {0, lc::Units::None},
@@ -925,32 +1131,64 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         LOG_TRACE << "addHatch ";
         auto layer = getLayer(*data);
         auto mf = getMetaInfo(*data);
-        // The default-normal HATCH stores one OCS elevation for its 2D
-        // boundary points. MPOLYGON offsets require a separate mapping.
-        const bool liftPlane = data->eType != DRW::MPOLYGON
-            && data->extPoint.x == 0.0 && data->extPoint.y == 0.0
-            && data->extPoint.z == 1.0 && std::isfinite(data->basePoint.z);
-        const double planeZ = data->basePoint.z;
-        const auto boundaryPoint = [this, liftPlane, data](const DRW_Coord& point) {
-            return liftPlane ? lc::geo::Coordinate(point.x, point.y, data->basePoint.z) : coord(point);
+        const auto* polygon = dynamic_cast<const DRW_MPolygon*>(data);
+        if (polygon && !mf) mf = lc::meta::MetaInfo::create();
+        // MPOLYGON stores boundary points in offset space. The offset is a
+        // point displacement, so it applies to points but not axis vectors or
+        // spline tangents. Ordinary HATCH boundaries have no such offset.
+        const double offsetX = polygon ? polygon->xDirX : 0.0;
+        const double offsetY = polygon ? polygon->xDirY : 0.0;
+        const auto addOffset = [polygon](double value, double offset) {
+            if (!polygon) return value;
+            const double mapped = value + offset;
+            if (polygon && !std::isfinite(mapped))
+                throw std::overflow_error("MPOLYGON boundary offset is not finite");
+            return mapped;
         };
-        const auto boundaryPoints = [this, liftPlane, data](const auto& points) {
-            auto result = coords(points);
-            if (liftPlane)
-                for (auto& point : result)
-                    point = lc::geo::Coordinate(point.x(), point.y(), data->basePoint.z);
-            return result;
+        const auto pointInOffsetPlane = [offsetX, offsetY, addOffset](const DRW_Coord& point) {
+            return lc::geo::Coordinate(addOffset(point.x, offsetX),
+                                       addOffset(point.y, offsetY), point.z);
+        };
+        // Default-normal DXF HATCH and MPOLYGON polyline paths lie at
+        // the entity's OCS elevation; their path coordinates have no Z.
+        // Leave tilted planes and DWG MPOLYGON projection on existing paths.
+        const bool liftBoundaryPlane = (!polygon || !_sourceIsDwg) && data->extPoint.x == 0.0
+            && data->extPoint.y == 0.0 && data->extPoint.z == 1.0
+            && std::isfinite(data->basePoint.z);
+        const double hatchPolylinePlaneZ = liftBoundaryPlane ? data->basePoint.z : 0.0;
+        const auto boundaryPointInPlane = [&pointInOffsetPlane, liftBoundaryPlane, hatchPolylinePlaneZ](const DRW_Coord& point) {
+            const auto mapped = pointInOffsetPlane(point);
+            return liftBoundaryPlane ? lc::geo::Coordinate(mapped.x(), mapped.y(), hatchPolylinePlaneZ) : mapped;
+        };
+        const auto pointsInOffsetPlane = [this, offsetX, offsetY, addOffset, liftBoundaryPlane, hatchPolylinePlaneZ](const auto& points) {
+            auto mapped = coords(points);
+            for (auto& point : mapped)
+                point = lc::geo::Coordinate(addOffset(point.x(), offsetX),
+                                            addOffset(point.y(), offsetY),
+                                            liftBoundaryPlane ? hatchPolylinePlaneZ : point.z());
+            return mapped;
         };
         lc::geo::Region reg;
         auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
                        mf,
                        getBlock(*data)
                                                           );
+        if (polygon) {
+            DRW_Hatch projected;
+            getEntityAttributes(&projected, lcHatch);
+            mf->add(std::make_shared<MPolygonSnapshot>(*polygon, projected, lcHatch->block()));
+        }
         lcHatch->setPatternName(data->name);
-        lcHatch->setSolid(data->solid);
+        int solidFlag = data->solid;
+#if !defined(LIBDXFRW_HAS_MPOLYGON_POLYLINE_POLICY)
+        // Older libdxfrw applies HATCH's group 70/71 interpretation to DXF
+        // MPOLYGON. Its DWG parser already delivers the actual solid flag.
+        if (polygon && !_sourceIsDwg) solidFlag = polygon->associative;
+#endif
+        lcHatch->setSolid(solidFlag);
         LOG_TRACE << "name " << data->name;
-        LOG_TRACE << "solid " << data->solid;
-        if(!data->solid) {
+        LOG_TRACE << "solid " << solidFlag;
+        if(!solidFlag) {
             //Load pattern from dxf
             lcHatch->setPattern(lc::persistence::PatternProvider::Instance()->getPattern(data->name));
         }
@@ -970,7 +1208,10 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     LOG_TRACE << "Polyline";
                     std::vector<lc::entity::LWVertex2D> points;
                     for (const auto& i : data->vertlist) {
-                        points.emplace_back(lc::geo::Coordinate(i->x, i->y, liftPlane ? planeZ : 0.0), i->bulge, i->stawidth, i->endwidth);
+                        points.emplace_back(lc::geo::Coordinate(addOffset(i->x, offsetX),
+                                                                addOffset(i->y, offsetY),
+                                                                hatchPolylinePlaneZ),
+                                            i->bulge, i->stawidth, i->endwidth);
                     }
                     auto isCLosed = (unsigned int) data->flags & 0x01u;
                     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
@@ -987,8 +1228,8 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     auto data = std::dynamic_pointer_cast<DRW_Line>(k);
                     LOG_TRACE << "line";
                     lc::builder::LineBuilder builder;
-                    builder.setStart(boundaryPoint(data->basePoint));
-                    builder.setEnd(boundaryPoint(data->secPoint));
+                    builder.setStart(boundaryPointInPlane(data->basePoint));
+                    builder.setEnd(boundaryPointInPlane(data->secPoint));
                     builder.setLayer(layer);
                     loopData.push_back(builder.build());
                 } else if(k->eType == DRW::ETYPE::ARC) { //done
@@ -1001,7 +1242,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     }
                     lc::builder::ArcBuilder builder;
                     LOG_TRACE << data->staangle <<','<< data->endangle;
-                    builder.setCenter(boundaryPoint(data->basePoint));
+                    builder.setCenter(boundaryPointInPlane(data->basePoint));
                     builder.setRadius(data->radious);
                     builder.setStartAngle(data->staangle);
                     builder.setEndAngle(data->endangle);
@@ -1012,7 +1253,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 } else if(k->eType == DRW::ETYPE::ELLIPSE) { //done
                     auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
                     auto secPoint = coord(data->secPoint);
-                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(boundaryPoint(data->basePoint),
+                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(boundaryPointInPlane(data->basePoint),
                                      secPoint,
                                      secPoint.magnitude() * data->ratio,
                                      data->staparam,
@@ -1024,9 +1265,9 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 } else if(k->eType == DRW::ETYPE::SPLINE) {
                     auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
                     // Same as addSpline: keep the file's knot vector intact.
-                    auto lcSpline = std::make_shared<lc::entity::Spline>(boundaryPoints(data->controllist),
+                    auto lcSpline = std::make_shared<lc::entity::Spline>(pointsInOffsetPlane(data->controllist),
                                     data->knotslist,
-                                    boundaryPoints(data->fitlist),
+                                    pointsInOffsetPlane(data->fitlist),
                                     data->degree,
                                     false,
                                     data->tolfit,
@@ -1046,6 +1287,20 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         }
         lcHatch->setRegion(reg);
         deliver(lcHatch);
+        // The default libdxfrw callback forwards MPOLYGON to addHatch. The
+        // kernel currently has no way to retain its subtype or extra fields.
+        if (data->eType == DRW::MPOLYGON && _mpolygonsAsHatch++ == 0) {
+            _loss.notes.push_back(
+                "MPOLYGON entities were imported as HATCH for editing. Some "
+                "polygon-specific information may not survive saving.");
+        }
+        if (polygon && (polygon->basePoint.z != 0.0 || polygon->extPoint.x != 0.0
+                        || polygon->extPoint.y != 0.0 || polygon->extPoint.z != 1.0)
+            && _mpolygonsWithNondefaultPlane++ == 0) {
+            _loss.notes.push_back(
+                "MPOLYGON elevation or extrusion is not fully mapped into "
+                "the editing plane; its displayed geometry may be incorrect.");
+        }
     });
 }
 
@@ -2833,6 +3088,39 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     }
     hatch.loopsnum = hatch.looplist.size();
 
+    const auto snapshot = h->metaInfo<MPolygonSnapshot>(MPolygonSnapshot::key());
+    double outputOffsetX = 0.0, outputOffsetY = 0.0;
+    bool rewriteBoundary = false;
+    if (snapshot && _exportVersion > DRW::AC1009 && snapshot->canWrite(_exportVersion)
+        && snapshot->replayable(hatch, h, outputOffsetX, outputOffsetY, rewriteBoundary)) {
+        DRW_MPolygon polygon(*snapshot->source);
+        // MPOLYGON stores vertices relative to its offset. A planar translation
+        // changes the offset, leaving the serialized boundary coordinates intact.
+        polygon.xDirX = outputOffsetX;
+        polygon.xDirY = outputOffsetY;
+        if (rewriteBoundary) {
+            auto* saved = static_cast<DRW_LWPolyline*>(polygon.looplist[0]->objlist[0].get());
+            const auto* current = static_cast<const DRW_LWPolyline*>(hatch.looplist[0]->objlist[0].get());
+            for (std::size_t i = 0; i < saved->vertlist.size(); ++i) {
+                saved->vertlist[i]->x = current->vertlist[i]->x - outputOffsetX;
+                saved->vertlist[i]->y = current->vertlist[i]->y - outputOffsetY;
+            }
+        }
+        // A new document assigns new entity and owner handles; the qualified
+        // profile has no other retained reference edges to remap.
+        polygon.handle = DRW::NoHandle;
+        polygon.parentHandle = DRW::NoHandle;
+        if (!dxfW->writeMPolygon(&polygon)) {
+            LOG_ERROR << "libdxfrw refused MPOLYGON " << hatch.name;
+            _loss.droppedByType["MPOLYGON"]++;
+        }
+        return;
+    }
+    if (snapshot && _mpolygonsWrittenAsHatch++ == 0) {
+        _loss.notes.push_back(
+            "Some MPOLYGON entities were written as HATCH; boundary geometry "
+            "or polygon-specific information may not be retained.");
+    }
     // Supported paths can share one default-normal HATCH elevation. Do not
     // infer it from unsupported or mixed loops.
     bool planar = !region.loopList().empty();
@@ -2901,7 +3189,7 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
             }
         }
     }
-    if (mixedOrNonfiniteElevation) {
+    if (mixedOrNonfiniteElevation && !snapshot) {
         _loss.notes.push_back(
             "HATCH boundary elevation varies or is nonfinite; the output "
             "cannot preserve its three-dimensional boundary.");
