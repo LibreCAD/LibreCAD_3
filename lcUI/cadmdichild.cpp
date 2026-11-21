@@ -18,6 +18,24 @@
 using namespace lc::ui;
 using namespace lc::viewer;
 
+namespace {
+QString lossDetails(const lc::persistence::LossSummary& loss, const QString& label) {
+    QString kinds;
+    for (const auto& dropped : loss.droppedByType) {
+        if (dropped.second == 0) continue;
+        if (!kinds.isEmpty()) kinds += ", ";
+        kinds += QString::number(static_cast<qulonglong>(dropped.second)) + " "
+                 + QString::fromStdString(dropped.first);
+    }
+    QString detail = kinds.isEmpty() ? QString() : label.arg(kinds);
+    for (const auto& note : loss.notes) {
+        if (!detail.isEmpty()) detail += QLatin1Char('\n');
+        detail += QString::fromStdString(note);
+    }
+    return detail;
+}
+} // namespace
+
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
     _activeLayer(nullptr) {
@@ -143,28 +161,20 @@ bool CadMdiChild::openFile() {
         replaceDocument(document, storage,
                         lc::persistence::sourceFromImport(file.toStdString(), result));
 
+        const QString detail = lossDetails(result.loss, tr("Records not imported: %1."));
         if (!result.ok) {
-            // The document holds whatever arrived before the failure, which is
-            // worth showing -- but the user has to know it is not the drawing.
-            QMessageBox::warning(nullptr, tr("Open"),
-                                 tr("%1 could not be read completely; %2 entities were "
-                                    "recovered. Saving will ask for a new file so the "
-                                    "original is not replaced by the part that was readable.")
-                                 .arg(QString::fromStdString(_filename))
-                                 .arg(static_cast<qulonglong>(result.entitiesDelivered)));
+            // Show retained loss observations with the partial-read warning.
+            QString message = tr("%1 could not be read completely; %2 entities were "
+                                 "recovered. Saving will ask for a new file so the "
+                                 "original is not replaced by the part that was readable.")
+                              .arg(QString::fromStdString(_filename))
+                              .arg(static_cast<qulonglong>(result.entitiesDelivered));
+            if (!detail.isEmpty()) message += QLatin1Char('\n') + detail;
+            QMessageBox::warning(nullptr, tr("Open"), message);
         } else if (!result.loss.empty()) {
-            QString dropped;
-            for (const auto& kind : result.loss.droppedByType) {
-                if (!dropped.isEmpty()) {
-                    dropped += ", ";
-                }
-                dropped += QString::number(static_cast<qulonglong>(kind.second)) + " "
-                           + QString::fromStdString(kind.first);
-            }
-            QMessageBox::information(nullptr, tr("Open"),
-                                     tr("%1 contains records LibreCAD has no equivalent for, "
-                                        "which were not imported: %2.")
-                                     .arg(QString::fromStdString(_filename)).arg(dropped));
+            QMessageBox::warning(nullptr, tr("Open"),
+                                 tr("%1 was opened with information loss:\n%2")
+                                 .arg(QString::fromStdString(_filename)).arg(detail));
         }
     }
     else {
@@ -216,19 +226,10 @@ void CadMdiChild::reportSaveResult(const lc::persistence::ExportResult& result,
         return;
     }
 
-    QString kinds;
-    for (const auto& dropped : result.loss.droppedByType) {
-        if (!kinds.isEmpty()) {
-            kinds += ", ";
-        }
-        kinds += QString::number(static_cast<qulonglong>(dropped.second)) + " "
-                 + QString::fromStdString(dropped.first);
-    }
-
+    const QString detail = lossDetails(result.loss, tr("Records not written: %1."));
     QMessageBox::warning(nullptr, tr("Save"),
-                         tr("%1 was written without %2: the chosen DXF revision cannot "
-                            "carry them. Save as DXF 2000 or newer to keep them.")
-                         .arg(QString::fromStdString(path)).arg(kinds));
+                         tr("%1 was saved with information loss:\n%2")
+                         .arg(QString::fromStdString(path)).arg(detail));
 }
 
 void CadMdiChild::reportSaveFailure(bool saved, const std::string& path) {
