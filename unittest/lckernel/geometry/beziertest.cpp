@@ -268,3 +268,41 @@ TEST(SplineBezierConversion, SupportsShiftedKnotDomain) {
     ASSERT_EQ(segments.size(), 2u);
     EXPECT_NEAR(segments[0]->getCP().back().x(), 1.5, 1e-12);
 }
+
+TEST(SplineBezierConversion, DegreeOneProducesExactLinearSegments) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,3}, {2,4,5}, {6,2,7}};
+    const std::vector<double> knots{0,0,0.25,1,1};
+    const lc::geo::Spline spline(controls, knots, {}, 1, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+    const auto segments = spline.beziers();
+    ASSERT_EQ(segments.size(), 2u);
+    for (std::size_t i = 0; i < segments.size(); ++i) {
+        const auto cps = segments[i]->getCP();
+        ASSERT_EQ(cps.size(), 3u);
+        EXPECT_NEAR(cps[0].x(), controls[i].x(), 1e-12);
+        EXPECT_NEAR(cps[0].y(), controls[i].y(), 1e-12);
+        EXPECT_NEAR(cps[0].z(), controls[i].z(), 1e-12);
+        EXPECT_NEAR(cps[2].x(), controls[i+1].x(), 1e-12);
+        EXPECT_NEAR(cps[2].y(), controls[i+1].y(), 1e-12);
+        EXPECT_NEAR(cps[2].z(), controls[i+1].z(), 1e-12);
+        const auto midpoint = segments[i]->DirectValueAt(0.5);
+        EXPECT_NEAR(midpoint.x(), (controls[i].x() + controls[i+1].x()) / 2, 1e-12);
+        EXPECT_NEAR(midpoint.y(), (controls[i].y() + controls[i+1].y()) / 2, 1e-12);
+        EXPECT_NEAR(midpoint.z(), (controls[i].z() + controls[i+1].z()) / 2, 1e-12);
+    }
+}
+
+TEST(SplineBezierConversion, DegreeOneIntersectsCrossingLine) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0}, {2,4}, {6,2}};
+    const std::vector<double> knots{0,0,0.25,1,1};
+    const lc::geo::Spline spline(controls, knots, {}, 1, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+    const auto hits = lc::maths::Intersection::splineLine(spline,
+        lc::geo::Vector(lc::geo::Coordinate(1,-1), lc::geo::Coordinate(1,5)));
+    ASSERT_EQ(hits.size(), 1u);
+    EXPECT_NEAR(hits[0].x(), 1.0, 1e-12);
+    EXPECT_NEAR(hits[0].y(), 2.0, 1e-12);
+    const auto parallel = lc::maths::Intersection::splineLine(spline,
+        lc::geo::Vector(lc::geo::Coordinate(0,10), lc::geo::Coordinate(2,14)));
+    EXPECT_TRUE(parallel.empty());
+}

@@ -1,4 +1,7 @@
 #include "cad/math/intersectionhandler.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
 using namespace lc;
 using namespace maths;
@@ -67,11 +70,16 @@ std::vector<geo::Coordinate> Intersection::bezierLine(const geo::BB_CSPtr& B, co
         auto rotate_angle = -ml.Angle1();
         auto cps = B->move(-V.start())->rotate(ml.start(), rotate_angle)->getCP();
 
-        auto t2 = cps[0].y() - 2*cps[1].y() + cps[2].y();
-        auto t1 = 2*(cps[1].y() - cps[0].y())/t2;
-        auto coeff = cps[0].y()/t2;
-
-        roots = lc::maths::Math::quadraticSolver({t1, coeff});
+        const auto t2 = cps[0].y() - 2*cps[1].y() + cps[2].y();
+        const auto t1 = 2*(cps[1].y() - cps[0].y());
+        const auto scale = std::max({std::abs(cps[0].y()), std::abs(cps[1].y()),
+                                     std::abs(cps[2].y())});
+        const auto tolerance = 8 * std::numeric_limits<double>::epsilon() * scale;
+        if (std::abs(t2) <= tolerance) {
+            if (std::abs(t1) > tolerance) roots.push_back(-cps[0].y() / t1);
+        } else {
+            roots = lc::maths::Math::quadraticSolver({t1 / t2, cps[0].y() / t2});
+        }
     }
     else {
         auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());

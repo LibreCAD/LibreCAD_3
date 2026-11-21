@@ -140,7 +140,19 @@ void Spline::populateCurve() {
 
     auto controlPoints = beziers.controlPoints();
 
-    if(splineCurve.degree() == 2) {
+    if (splineCurve.degree() == 1) {
+        // The viewer and intersection code consume quadratic/cubic Beziers.
+        // A quadratic whose middle point is the midpoint is exactly a line.
+        for (int i = 0; i < nbBeziers; ++i) {
+            const auto j = nbCoordinate * i;
+            const geo::Coordinate start(controlPoints[j], controlPoints[j+1], controlPoints[j+2]);
+            const geo::Coordinate end(controlPoints[j+3], controlPoints[j+4], controlPoints[j+5]);
+            const geo::Coordinate midpoint(start.x() / 2 + end.x() / 2,
+                                           start.y() / 2 + end.y() / 2,
+                                           start.z() / 2 + end.z() / 2);
+            _beziers.push_back(std::make_shared<Bezier>(start, midpoint, end));
+        }
+    } else if(splineCurve.degree() == 2) {
         for (int i = 0; i < nbBeziers; i++) {
             std::vector<geo::Coordinate> bez;
 
