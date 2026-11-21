@@ -1,6 +1,8 @@
 #include "geospline.h"
 #include <tinysplinecxx.cxx>
 #include <cad/logger/logger.h>
+#include <algorithm>
+#include <cmath>
 
 using namespace lc;
 using namespace geo;
@@ -80,6 +82,8 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 
 void Spline::populateCurve() {
     tinyspline::BSpline splineCurve;
+    tinyspline::BSpline beziers;
+    bool converted = false;
 
     try {
         auto nbControlPoints = _controlPoints.size();
@@ -92,13 +96,44 @@ void Spline::populateCurve() {
             ts_controlPoints.push_back(cp.z());
         }
         splineCurve.setControlPoints(ts_controlPoints);
+        // Rational and periodic curve interpretation needs a separate model.
+        // Use source knots for the bounded open-clamped profile. Preserve the
+        // existing fallback for other profiles or TinySpline conversion errors.
+        const bool ordinary = (_flags & (RATIONAL | PERIODIC)) == 0;
+        const std::size_t order = static_cast<std::size_t>(degree()) + 1u;
+        const bool validKnots = ordinary && !_knotPoints.empty()
+            && _knotPoints.size() == nbControlPoints + order
+            && std::all_of(_knotPoints.begin(), _knotPoints.end(),
+                           [](double knot) { return std::isfinite(knot); })
+            && std::is_sorted(_knotPoints.begin(), _knotPoints.end())
+            && _knotPoints[order - 1u] < _knotPoints[nbControlPoints]
+            && std::isfinite(_knotPoints[nbControlPoints] - _knotPoints[order - 1u])
+            && _knotPoints.front() == _knotPoints[order - 1u]
+            && _knotPoints[nbControlPoints] == _knotPoints.back()
+            && std::adjacent_find(_knotPoints.begin(), _knotPoints.end(),
+                 [](double a, double b) { return a < b &&
+                     (!std::isfinite(b - a) || b - a < TS_KNOT_EPSILON); })
+               == _knotPoints.end();
+        if (validKnots) {
+            try {
+                auto candidate = splineCurve;
+                candidate.setKnots(_knotPoints);
+                beziers = candidate.toBeziers();
+                splineCurve = candidate;
+                converted = true;
+            } catch (const std::runtime_error& e) {
+                LOG_ERROR << "Unable to apply spline knots: " << e.what() << std::endl;
+            }
+        }
     }
     catch (std::runtime_error& e) {
         LOG_ERROR << e.what() << std::endl;
         splineCurve = tinyspline::BSpline();
     }
 
-    auto beziers = splineCurve.toBeziers();
+    if (!converted) {
+        beziers = splineCurve.toBeziers();
+    }
 
     int nbBeziers = beziers.numControlPoints() / splineCurve.order();
     int nbCoordinate = splineCurve.order() * splineCurve.dimension();

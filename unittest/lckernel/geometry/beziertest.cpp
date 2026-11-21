@@ -2,6 +2,8 @@
 #include "cad/geometry/geobezier.h"
 #include "cad/geometry/geobezierbase.h"
 #include "cad/geometry/geobeziercubic.h"
+#include "cad/geometry/geospline.h"
+#include <limits>
 
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geovector.h"
@@ -194,4 +196,75 @@ TEST(SPLINE, SPLINELINE) {
     auto result = lc::maths::Intersection::splineLine(spline_, line).size();
 
     ASSERT_EQ(result, expectedres);
+}
+
+TEST(SplineBezierConversion, UsesNonuniformKnotVector) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,3}, {1,2,3}, {3,2,3}, {4,0,3}};
+    const std::vector<double> knots{0,0,0,0.25,1,1,1};
+    const lc::geo::Spline spline(controls, knots, {}, 2, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::PLANAR);
+    const auto segments = spline.beziers();
+    ASSERT_EQ(segments.size(), 2u);
+    ASSERT_NE(segments[0], nullptr);
+    ASSERT_NE(segments[1], nullptr);
+    const auto first = segments[0]->getCP();
+    const auto second = segments[1]->getCP();
+    ASSERT_EQ(first.size(), 3u);
+    ASSERT_EQ(second.size(), 3u);
+    // Quadratic de Boor evaluation at u=0.25: 0.75 * P1 + 0.25 * P2.
+    EXPECT_NEAR(first.back().x(), 1.5, 1e-12);
+    EXPECT_NEAR(first.back().y(), 2.0, 1e-12);
+    EXPECT_NEAR(first.back().z(), 3.0, 1e-12);
+    EXPECT_NEAR(second.front().x(), 1.5, 1e-12);
+    EXPECT_NEAR(second.front().y(), 2.0, 1e-12);
+    EXPECT_NEAR(second.front().z(), 3.0, 1e-12);
+}
+
+TEST(SplineBezierConversion, UsesCubicNonuniformKnotVector) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,2}, {1,3,2}, {2,-1,2}, {4,2,2}, {5,0,2}};
+    const std::vector<double> knots{0,0,0,0,0.4,1,1,1,1};
+    const lc::geo::Spline spline(controls, knots, {}, 3, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::PLANAR);
+    const auto segments = spline.beziers();
+    ASSERT_EQ(segments.size(), 2u);
+    const auto first = segments[0]->getCP();
+    const auto second = segments[1]->getCP();
+    ASSERT_EQ(first.size(), 4u);
+    ASSERT_EQ(second.size(), 4u);
+    // Independently evaluated de Boor point at u=0.4.
+    EXPECT_NEAR(first.back().x(), 1.96, 1e-12);
+    EXPECT_NEAR(first.back().y(), 0.92, 1e-12);
+    EXPECT_NEAR(first.back().z(), 2.0, 1e-12);
+    EXPECT_NEAR(second.front().x(), 1.96, 1e-12);
+    EXPECT_NEAR(second.front().y(), 0.92, 1e-12);
+    EXPECT_NEAR(second.front().z(), 2.0, 1e-12);
+}
+
+TEST(SplineBezierConversion, MissingOrInvalidKnotsKeepExistingFallback) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,3}, {1,2,3}, {3,2,3}, {4,0,3}};
+    for (const auto& knots : {std::vector<double>{},
+                              std::vector<double>{0,0,0,0.5,0.25,1,1},
+                              std::vector<double>{0,0,0,0.5,1,1},
+                              std::vector<double>{0,0,0,std::numeric_limits<double>::quiet_NaN(),1,1,1},
+                              std::vector<double>{0,0,0,0.00001,1,1,1},
+                              std::vector<double>{0,0,0,0,1,1,1},
+                              std::vector<double>{-1e308,-1e308,-1e308,0,1e308,1e308,1e308}}) {
+        const lc::geo::Spline spline(controls, knots, {}, 2, false, 0.0,
+                                     0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::PLANAR);
+        const auto segments = spline.beziers();
+        ASSERT_EQ(segments.size(), 2u);
+        const auto first = segments[0]->getCP();
+        ASSERT_EQ(first.size(), 3u);
+        EXPECT_NEAR(first.back().x(), 2.0, 1e-12);
+    }
+}
+
+TEST(SplineBezierConversion, SupportsShiftedKnotDomain) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,3}, {1,2,3}, {3,2,3}, {4,0,3}};
+    const std::vector<double> knots{10,10,10,11,14,14,14};
+    const lc::geo::Spline spline(controls, knots, {}, 2, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::PLANAR);
+    const auto segments = spline.beziers();
+    ASSERT_EQ(segments.size(), 2u);
+    EXPECT_NEAR(segments[0]->getCP().back().x(), 1.5, 1e-12);
 }
