@@ -925,6 +925,22 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         LOG_TRACE << "addHatch ";
         auto layer = getLayer(*data);
         auto mf = getMetaInfo(*data);
+        // The default-normal HATCH stores one OCS elevation for its 2D
+        // boundary points. MPOLYGON offsets require a separate mapping.
+        const bool liftPlane = data->eType != DRW::MPOLYGON
+            && data->extPoint.x == 0.0 && data->extPoint.y == 0.0
+            && data->extPoint.z == 1.0 && std::isfinite(data->basePoint.z);
+        const double planeZ = data->basePoint.z;
+        const auto boundaryPoint = [this, liftPlane, data](const DRW_Coord& point) {
+            return liftPlane ? lc::geo::Coordinate(point.x, point.y, data->basePoint.z) : coord(point);
+        };
+        const auto boundaryPoints = [this, liftPlane, data](const auto& points) {
+            auto result = coords(points);
+            if (liftPlane)
+                for (auto& point : result)
+                    point = lc::geo::Coordinate(point.x(), point.y(), data->basePoint.z);
+            return result;
+        };
         lc::geo::Region reg;
         auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
                        mf,
@@ -954,7 +970,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     LOG_TRACE << "Polyline";
                     std::vector<lc::entity::LWVertex2D> points;
                     for (const auto& i : data->vertlist) {
-                        points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
+                        points.emplace_back(lc::geo::Coordinate(i->x, i->y, liftPlane ? planeZ : 0.0), i->bulge, i->stawidth, i->endwidth);
                     }
                     auto isCLosed = (unsigned int) data->flags & 0x01u;
                     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
@@ -971,8 +987,8 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     auto data = std::dynamic_pointer_cast<DRW_Line>(k);
                     LOG_TRACE << "line";
                     lc::builder::LineBuilder builder;
-                    builder.setStart(coord(data->basePoint));
-                    builder.setEnd(coord(data->secPoint));
+                    builder.setStart(boundaryPoint(data->basePoint));
+                    builder.setEnd(boundaryPoint(data->secPoint));
                     builder.setLayer(layer);
                     loopData.push_back(builder.build());
                 } else if(k->eType == DRW::ETYPE::ARC) { //done
@@ -985,7 +1001,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     }
                     lc::builder::ArcBuilder builder;
                     LOG_TRACE << data->staangle <<','<< data->endangle;
-                    builder.setCenter(coord(data->basePoint));
+                    builder.setCenter(boundaryPoint(data->basePoint));
                     builder.setRadius(data->radious);
                     builder.setStartAngle(data->staangle);
                     builder.setEndAngle(data->endangle);
@@ -996,21 +1012,21 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 } else if(k->eType == DRW::ETYPE::ELLIPSE) { //done
                     auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
                     auto secPoint = coord(data->secPoint);
-                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
+                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(boundaryPoint(data->basePoint),
                                      secPoint,
                                      secPoint.magnitude() * data->ratio,
                                      data->staparam,
                                      data->endparam,
-                                     data->isccw,
+                                     !data->isccw,
                                      layer
                                                                           );
                     loopData.push_back(lcEllipse);
                 } else if(k->eType == DRW::ETYPE::SPLINE) {
                     auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
                     // Same as addSpline: keep the file's knot vector intact.
-                    auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
+                    auto lcSpline = std::make_shared<lc::entity::Spline>(boundaryPoints(data->controllist),
                                     data->knotslist,
-                                    coords(data->fitlist),
+                                    boundaryPoints(data->fitlist),
                                     data->degree,
                                     false,
                                     data->tolfit,
@@ -2815,6 +2831,79 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     }
     hatch.loopsnum = hatch.looplist.size();
 
+    // Supported paths can share one default-normal HATCH elevation. Do not
+    // infer it from unsupported or mixed loops.
+    bool planar = !region.loopList().empty();
+    bool haveElevation = false;
+    bool mixedOrNonfiniteElevation = false;
+    double elevation = 0.0;
+    const auto addElevation = [&](double z) {
+        if (!std::isfinite(z) || (haveElevation && z != elevation)) {
+            mixedOrNonfiniteElevation = true;
+            return false;
+        }
+        elevation = z;
+        haveElevation = true;
+        return true;
+    };
+    for (const auto& loop : region.loopList()) {
+        const auto& entities = loop.entities();
+        if (entities.empty()) { planar = false; break; }
+        for (const auto& entity : entities) {
+            const auto polyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+            if (polyline) {
+                if (entities.size() != 1 || !polyline->closed() || polyline->vertex().empty()
+                    || polyline->elevation() != 0.0 || polyline->tickness() != 0.0
+                    || polyline->extrusionDirection().x() != 0.0
+                    || polyline->extrusionDirection().y() != 0.0
+                    || polyline->extrusionDirection().z() != 1.0) {
+                    planar = false; break;
+                }
+                for (const auto& vertex : polyline->vertex())
+                    if (!addElevation(vertex.location().z())) { planar = false; break; }
+            } else if (const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+                if (!addElevation(line->start().z()) || !addElevation(line->end().z()))
+                    planar = false;
+            } else if (const auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
+                if (!addElevation(arc->center().z())) planar = false;
+            } else if (const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
+                if (ellipse->majorP().z() != 0.0 || !addElevation(ellipse->center().z()))
+                    planar = false;
+            } else if (const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+                if (spline->controlPoints().empty() || (spline->flags() & lc::geo::Spline::RATIONAL)
+                    || spline->startTanZ() != 0.0 || spline->endTanZ() != 0.0) {
+                    planar = false; break;
+                }
+                for (const auto& point : spline->controlPoints())
+                    if (!addElevation(point.z())) { planar = false; break; }
+                if (planar) for (const auto& point : spline->fitPoints())
+                    if (!addElevation(point.z())) { planar = false; break; }
+            } else {
+                planar = false;
+            }
+            if (!planar) break;
+        }
+        if (!planar) break;
+    }
+    if (planar && haveElevation) {
+        hatch.basePoint.z = elevation;
+        // Spline edge points are 2D in DXF. The common elevation above is
+        // their Z component, so do not submit a second geometric Z to the
+        // codec's strict HATCH boundary validator.
+        for (const auto& loop : hatch.looplist) {
+            for (const auto& entity : loop->objlist) {
+                const auto spline = std::dynamic_pointer_cast<DRW_Spline>(entity);
+                if (!spline) continue;
+                for (const auto& point : spline->controllist) if (point) point->z = 0.0;
+                for (const auto& point : spline->fitlist) if (point) point->z = 0.0;
+            }
+        }
+    }
+    if (mixedOrNonfiniteElevation) {
+        _loss.notes.push_back(
+            "HATCH boundary elevation varies or is nonfinite; the output "
+            "cannot preserve its three-dimensional boundary.");
+    }
     if (!dxfW->writeHatch(&hatch)) {
         LOG_ERROR << "libdxfrw refused HATCH " << hatch.name;
         _loss.droppedByType["HATCH"]++;
