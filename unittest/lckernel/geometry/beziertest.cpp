@@ -306,3 +306,72 @@ TEST(SplineBezierConversion, DegreeOneIntersectsCrossingLine) {
         lc::geo::Vector(lc::geo::Coordinate(0,10), lc::geo::Coordinate(2,14)));
     EXPECT_TRUE(parallel.empty());
 }
+
+TEST(SplineBezierConversion, DegreeOneIntersectsCircleAndArc) {
+    const std::vector<lc::geo::Coordinate> controls{{-2,0,3}, {2,0,3}};
+    const std::vector<double> knots{0,0,1,1};
+    const lc::geo::Spline spline(controls, knots, {}, 1, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+    auto hits = lc::maths::Intersection::splineCircle(spline,
+        lc::geo::Circle(lc::geo::Coordinate(0,0), 1));
+    ASSERT_EQ(hits.size(), 2u);
+    std::sort(hits.begin(), hits.end(), [](const auto& a, const auto& b) { return a.x() < b.x(); });
+    EXPECT_NEAR(hits[0].x(), -1.0, 1e-10);
+    EXPECT_NEAR(hits[1].x(), 1.0, 1e-10);
+    EXPECT_NEAR(hits[0].z(), 3.0, 1e-10);
+    EXPECT_NEAR(hits[1].z(), 3.0, 1e-10);
+    const auto arcHits = lc::maths::Intersection::splineArc(spline,
+        lc::geo::Arc(lc::geo::Coordinate(0,0), 1, -M_PI / 2, M_PI / 2));
+    ASSERT_EQ(arcHits.size(), 1u);
+    EXPECT_NEAR(arcHits[0].x(), 1.0, 1e-10);
+}
+
+TEST(SplineBezierConversion, DegreeOneCircleTangencyAndMiss) {
+    const std::vector<double> knots{0,0,1,1};
+    const auto check = [&](double y) {
+        const lc::geo::Spline spline({{-2,y}, {2,y}}, knots, {}, 1, false, 0.0,
+                                     0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+        return lc::maths::Intersection::splineCircle(spline, lc::geo::Circle({0,0}, 1));
+    };
+    const auto tangent = check(1.0);
+    ASSERT_EQ(tangent.size(), 1u);
+    EXPECT_NEAR(tangent[0].x(), 0.0, 1e-10);
+    EXPECT_NEAR(tangent[0].y(), 1.0, 1e-10);
+    EXPECT_TRUE(check(2.0).empty());
+}
+
+TEST(SplineBezierConversion, DegreeOneIntersectsTranslatedRotatedEllipse) {
+    const std::vector<double> knots{0,0,1,1};
+    const lc::geo::Spline horizontal({{3,7}, {7,7}}, knots, {}, 1, false, 0.0,
+                                     0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+    const lc::geo::Ellipse ellipse({5,7}, {0,2}, 1, 0, 2*M_PI);
+    auto hits = lc::maths::Intersection::splineEllipse(horizontal, ellipse);
+    ASSERT_EQ(hits.size(), 2u);
+    std::sort(hits.begin(), hits.end(), [](const auto& a, const auto& b) { return a.x() < b.x(); });
+    EXPECT_NEAR(hits[0].x(), 4.0, 1e-10);
+    EXPECT_NEAR(hits[1].x(), 6.0, 1e-10);
+    EXPECT_NEAR(hits[0].y(), 7.0, 1e-10);
+    EXPECT_NEAR(hits[1].y(), 7.0, 1e-10);
+    const lc::geo::Spline vertical({{5,4}, {5,10}}, knots, {}, 1, false, 0.0,
+                                   0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+    const lc::geo::Ellipse arc({5,7}, {0,2}, 1, -M_PI/4, 3*M_PI/4);
+    const auto arcHits = lc::maths::Intersection::splineEllipse(vertical, arc);
+    ASSERT_EQ(arcHits.size(), 1u);
+    EXPECT_NEAR(arcHits[0].x(), 5.0, 1e-10);
+    EXPECT_NEAR(arcHits[0].y(), 9.0, 1e-10);
+    const lc::geo::Ellipse reversed({5,7}, {0,2}, 1, -M_PI/4, 3*M_PI/4, true);
+    const auto reversedHits = lc::maths::Intersection::splineEllipse(vertical, reversed);
+    ASSERT_EQ(reversedHits.size(), 1u);
+    EXPECT_NEAR(reversedHits[0].y(), 5.0, 1e-10);
+}
+
+TEST(SplineBezierConversion, DegreeOneIntersectsSmallCircle) {
+    const std::vector<double> knots{0,0,1,1};
+    const lc::geo::Spline spline({{-2e-8,0}, {2e-8,0}}, knots, {}, 1, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::LINEAR);
+    auto hits = lc::maths::Intersection::splineCircle(spline, lc::geo::Circle({0,0}, 1e-8));
+    ASSERT_EQ(hits.size(), 2u);
+    std::sort(hits.begin(), hits.end(), [](const auto& a, const auto& b) { return a.x() < b.x(); });
+    EXPECT_NEAR(hits[0].x(), -1e-8, 1e-18);
+    EXPECT_NEAR(hits[1].x(), 1e-8, 1e-18);
+}
