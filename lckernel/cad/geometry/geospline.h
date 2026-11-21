@@ -26,11 +26,13 @@ public:
            int degree, bool closed, double fitTolerance,
            double stanx, double stany, double stanz,
            double etanx, double etany, double etanz,
-           double nx, double ny, double nz, splineflag flags) :
+           double nx, double ny, double nz, splineflag flags,
+           const std::vector<double>& weights = {}) :
         Base(),
         _controlPoints(control_points),
         _knotPoints(knotPoints),
         _fitPoints(fitPoints),
+        _weights(weights),
         _degree(degree), _closed(closed),
         _fitTolerance(fitTolerance),
         _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
@@ -61,6 +63,8 @@ public:
     * @return vector of Coordinate
     */
     const std::vector<Coordinate> &fitPoints() const;
+
+    const std::vector<double>& weights() const { return _weights; }
 
     /**
      * @brief Returns the fit point tolerance of the spline
@@ -124,6 +128,7 @@ private:
     const std::vector<Coordinate> _controlPoints;
     const std::vector<double> _knotPoints;
     const std::vector<Coordinate> _fitPoints;
+    const std::vector<double> _weights;
 
     const short _degree;
     const bool _closed;
