@@ -1787,3 +1787,95 @@ TEST(DwgImportTest, ElevatedMultiLoopHatchAndMpolygonRoundTrip) {
         boost::filesystem::remove(input);
     }
 }
+
+TEST(DwgImportTest, RationalHatchSplineWeightsSurviveSave) {
+    const auto input = tmpPath("rational-hatch-spline");
+    {
+        std::ofstream f(input);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n1\n92\n0\n93\n2\n"
+             "72\n4\n94\n2\n73\n1\n74\n0\n95\n6\n96\n3\n"
+             "40\n0\n40\n0\n40\n0\n40\n1\n40\n1\n40\n1\n"
+             "10\n1\n20\n0\n42\n1\n10\n1\n20\n1\n42\n0.7071067811865476\n10\n0\n20\n1\n42\n1\n97\n0\n"
+             "72\n1\n10\n0\n20\n1\n11\n1\n21\n0\n"
+             "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const std::vector<double> weights{1,0.7071067811865476,1};
+    const auto check = [&weights](const std::shared_ptr<lc::storage::DocumentImpl>& doc, double elevation) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops[0].entities().size(), 2u);
+        auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+        ASSERT_NE(spline, nullptr);
+        EXPECT_EQ(spline->weights(), weights);
+        EXPECT_NE(spline->flags() & lc::geo::Spline::RATIONAL, 0);
+        ASSERT_EQ(spline->controlPoints().size(), 3u);
+        EXPECT_DOUBLE_EQ(spline->controlPoints()[1].z(), elevation);
+    };
+    auto doc = newDwgDocument();
+    const auto imported = lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+    ASSERT_EQ(imported.loss.notes.size(), 1u);
+    EXPECT_NE(imported.loss.notes[0].find("displayed curve"), std::string::npos);
+    check(doc, 3.0);
+    lc::entity::Hatch_CSPtr original;
+    for (const auto& entity : doc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) original = value;
+    ASSERT_NE(original, nullptr);
+    const char* capture = std::getenv("LC3_RATIONAL_HATCH_CAPTURE");
+    for (bool moved : {false, true}) {
+        if (moved) {
+            doc->removeEntity(original);
+            doc->insertEntity(original->move({2,5,4}));
+            check(doc, 7.0);
+        }
+        for (auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000, lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+            const auto output = capture ? std::string(capture) + (moved ? "/moved-" : "/initial-")
+                + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+                : tmpPath("rational-hatch-output");
+            const auto exported = lc::persistence::File::exportFile(doc, output, type);
+            ASSERT_TRUE(exported.ok);
+            EXPECT_EQ(exported.loss.total(), 0u);
+            auto reopened = newDwgDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            check(reopened, moved ? 7.0 : 3.0);
+            if (!capture) boost::filesystem::remove(output);
+        }
+    }
+    // An edited spline with an incomplete weight vector must be reported as
+    // an omitted HATCH, rather than being silently padded by the older codec.
+    const auto& originalEdges = original->getRegion().loopList()[0].entities();
+    const auto sourceSpline = std::dynamic_pointer_cast<const lc::entity::Spline>(originalEdges[0]);
+    ASSERT_NE(sourceSpline, nullptr);
+    lc::builder::SplineBuilder builder;
+    builder.copy(sourceSpline);
+    builder.setWeights({1.0});
+    lc::geo::Region invalidRegion;
+    invalidRegion.addLoop(lc::geo::Loop({builder.build(), originalEdges[1]}));
+    auto invalidHatch = std::make_shared<lc::entity::Hatch>(original, false);
+    invalidHatch->setRegion(invalidRegion);
+    auto invalidDoc = newDwgDocument();
+    invalidDoc->insertEntity(invalidHatch);
+    const auto retryPath = tmpPath("rational-hatch-invalid");
+    for (auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000, lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto failed = lc::persistence::File::exportFile(invalidDoc, retryPath, type);
+        EXPECT_TRUE(!failed.ok || failed.loss.total() > 0u);
+        auto corrected = newDwgDocument();
+        corrected->insertEntity(original);
+        const auto retried = lc::persistence::File::exportFile(corrected, retryPath, type);
+        ASSERT_TRUE(retried.ok);
+        EXPECT_EQ(retried.loss.total(), 0u);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, retryPath, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened, 3.0);
+    }
+    boost::filesystem::remove(retryPath);
+    boost::filesystem::remove(input);
+}
