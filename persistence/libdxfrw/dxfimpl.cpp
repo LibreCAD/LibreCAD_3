@@ -93,6 +93,15 @@ inline int DXFimpl::widthToInt(double wid) const {
 }
 
 namespace {
+void noteRationalSplineApproximation(lc::persistence::LossSummary& loss, const DRW_Spline& spline) {
+    if ((spline.flags & lc::geo::Spline::RATIONAL) == 0
+        && std::none_of(spline.weightlist.begin(), spline.weightlist.end(),
+                        [](double weight) { return weight != 1.0; })) return;
+    const std::string note = "Rational spline weights are retained, but the displayed curve and geometry operations may be approximate.";
+    if (std::find(loss.notes.begin(), loss.notes.end(), note) == loss.notes.end())
+        loss.notes.push_back(note);
+}
+
 
 /**
  * Read a header variable without consuming it.
@@ -527,13 +536,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                         mf,
                         getBlock(*data), data->weightlist
                                                             );
-        if ((data->flags & lc::geo::Spline::RATIONAL) != 0
-            || std::any_of(data->weightlist.begin(), data->weightlist.end(),
-                           [](double weight) { return weight != 1.0; })) {
-            const std::string note = "Rational SPLINE weights are preserved on save, but the displayed curve and geometry operations may be approximate.";
-            if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
-                _loss.notes.push_back(note);
-        }
+        noteRationalSplineApproximation(_loss, *data);
         deliver(lcSpline);
     });
 }
@@ -1042,8 +1045,9 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                     static_cast<lc::geo::Spline::splineflag>(data->flags),
                                     layer,
                                     mf,
-                                    getBlock(*data)
+                                    getBlock(*data), data->weightlist
                                                                         );
+                    noteRationalSplineApproximation(_loss, *data);
                     loopData.push_back(lcSpline);
                 }
             }
@@ -2709,7 +2713,9 @@ std::shared_ptr<DRW_Entity> hatchEdge(const lc::entity::CADEntity_CSPtr& entity)
         auto edge = std::make_shared<DRW_Spline>();
         edge->degree = spline->degree();
         edge->flags = spline->flags();
+        if (!spline->weights().empty()) edge->flags |= lc::geo::Spline::RATIONAL;
         edge->knotslist = spline->knotPoints();
+        edge->weightlist = spline->weights();
         edge->tgStart = DRW_Coord(spline->startTanX(), spline->startTanY(), spline->startTanZ());
         edge->tgEnd = DRW_Coord(spline->endTanX(), spline->endTanY(), spline->endTanZ());
 
@@ -2795,6 +2801,15 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     const auto& region = h->getRegion();
     for (const auto& loop : region.loopList()) {
         const auto& entities = loop.entities();
+        for (const auto& entity : entities) {
+            const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+            if (spline && !spline->weights().empty()
+                && spline->weights().size() != spline->controlPoints().size()) {
+                LOG_ERROR << "Dropping HATCH with an incomplete spline weight vector";
+                _loss.droppedByType["HATCH"]++;
+                return;
+            }
+        }
 
         // DXF says a polyline boundary path is the whole path: group 92 bit 1
         // means "this loop is one polyline", and libdxfrw enforces it --
@@ -2879,7 +2894,7 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
                 if (ellipse->majorP().z() != 0.0 || !addElevation(ellipse->center().z()))
                     planar = false;
             } else if (const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
-                if (spline->controlPoints().empty() || (spline->flags() & lc::geo::Spline::RATIONAL)
+                if (spline->controlPoints().empty()
                     || spline->startTanZ() != 0.0 || spline->endTanZ() != 0.0) {
                     planar = false; break;
                 }
