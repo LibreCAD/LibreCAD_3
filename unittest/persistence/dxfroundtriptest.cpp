@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <iterator>
 #include <map>
@@ -73,6 +74,7 @@
 #include <cad/primitive/dimordinate.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/line.h>
+#include <cad/primitive/point.h>
 #include <cad/primitive/insert.h>
 #include <cad/primitive/mtext.h>
 #include <cad/primitive/lwpolyline.h>
@@ -834,6 +836,60 @@ TEST(DxfRoundTripTest, ThreeDimensionalSegmentSurvivesRoundTrip) {
         << "The 3-D LINE did not survive save/open with its z intact.";
 
     boost::filesystem::remove(path);
+}
+
+TEST(DxfRoundTripTest, EditedPointRetainsCoordinatesAcrossSaveAndReopen) {
+    using lc::geo::Coordinate;
+    using lc::entity::Point;
+    const struct Case { const char* name; Coordinate expected; } cases[] = {
+        {"move", Coordinate(5, 3, 12)}, {"copy", Coordinate(5, 3, 12)},
+        {"rotate", Coordinate(-1, 4, 7)}, {"scale", Coordinate(5, 8, 19)},
+        {"mirror", Coordinate(3, -4, 7)}};
+    const struct Target { const char* name; lc::persistence::File::Type type; } targets[] = {
+        {"ascii", lc::persistence::File::LIBDXFRW_DXF_R2000},
+        {"binary", lc::persistence::File::LIBDXFRW_DXB_R2000}};
+    const std::string sourcePath = uniqueTmpDxf("point-source");
+    auto sourceDoc = newDocument();
+    insertThroughBuilder(sourceDoc, {std::make_shared<Point>(Coordinate(3, 4, 7), defaultLayer())});
+    ASSERT_TRUE(lc::persistence::File::save(sourceDoc, sourcePath, targets[0].type));
+    auto imported = newDocument();
+    ASSERT_NO_THROW(lc::persistence::File::open(imported, sourcePath, lc::persistence::File::Library::LIBDXFRW));
+    std::shared_ptr<const Point> source;
+    for (const auto& entity : imported->entityContainer().asVector()) {
+        if (auto point = std::dynamic_pointer_cast<const Point>(entity)) source = point;
+    }
+    ASSERT_NE(source, nullptr);
+    EXPECT_DOUBLE_EQ(source->z(), 7);
+    for (const auto& item : cases) {
+        lc::entity::CADEntity_CSPtr edited;
+        const std::string name(item.name);
+        if (name == "move") edited = source->move(Coordinate(2, -1, 5));
+        else if (name == "copy") edited = source->copy(Coordinate(2, -1, 5));
+        else if (name == "rotate") edited = source->rotate(Coordinate(1, 2, 100), std::acos(-1.0) / 2);
+        else if (name == "scale") edited = source->scale(Coordinate(1, 2, 3), Coordinate(2, 3, 4));
+        else edited = source->mirror(Coordinate(0, 0, 42), Coordinate(1, 0, 42));
+        auto doc = newDocument();
+        insertThroughBuilder(doc, {edited});
+        for (const auto& target : targets) {
+            const char* capture = std::getenv("LC3_POINT3D_CAPTURE");
+            const std::string path = capture ? (boost::filesystem::path(capture) / (name + "-" + target.name + ".dxf")).string() : uniqueTmpDxf("point-edited");
+            ASSERT_TRUE(lc::persistence::File::save(doc, path, target.type)) << name << ' ' << target.name;
+            auto reopened = newDocument();
+            ASSERT_NO_THROW(lc::persistence::File::open(reopened, path, lc::persistence::File::Library::LIBDXFRW));
+            int count = 0;
+            for (const auto& entity : reopened->entityContainer().asVector()) {
+                auto point = std::dynamic_pointer_cast<const Point>(entity);
+                if (!point) continue;
+                ++count;
+                EXPECT_NEAR(point->x(), item.expected.x(), 1e-10) << name;
+                EXPECT_NEAR(point->y(), item.expected.y(), 1e-10) << name;
+                EXPECT_NEAR(point->z(), item.expected.z(), 1e-10) << name;
+            }
+            EXPECT_EQ(count, 1) << name << ' ' << target.name;
+            if (!capture) boost::filesystem::remove(path);
+        }
+    }
+    boost::filesystem::remove(sourcePath);
 }
 
 // DXF symbol-table names are case-insensitive, and writers disagree on how to

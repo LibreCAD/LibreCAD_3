@@ -67,6 +67,7 @@ lckernel/math/floatingpointtest.cpp
 lckernel/operations/entitybuildertest.cpp
 lckernel/geometry/testgeoarc.cpp
 lckernel/geometry/testgeocircle.cpp
+lckernel/primitive/point3dtest.cpp
 lckernel/geometry/testgeoregion.cpp
 lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
