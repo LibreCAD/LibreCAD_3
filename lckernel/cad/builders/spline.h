@@ -40,6 +40,9 @@ public:
     /**
      * @brief Remove control point
      * @param index Index of the element to remove, or negative to remove from the end
+     * A complete weight vector loses the corresponding weight. The caller
+     * must update the knot vector to match the edited control points.
+     * Throws if the index is invalid or existing weights are incomplete.
      */
     void removeControlPoint(int index);
 

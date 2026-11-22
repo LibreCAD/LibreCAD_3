@@ -1,5 +1,20 @@
 #include "spline.h"
 #include <cad/primitive/spline.h>
+#include <cstdint>
+#include <stdexcept>
+
+namespace {
+std::size_t removalIndex(std::size_t size, int index) {
+    if (index < 0) {
+        const auto distance = static_cast<std::uint64_t>(-static_cast<std::int64_t>(index));
+        if (distance > size) throw std::out_of_range("spline removal index");
+        return size - static_cast<std::size_t>(distance);
+    }
+    const auto position = static_cast<std::size_t>(index);
+    if (position >= size) throw std::out_of_range("spline removal index");
+    return position;
+}
+}
 
 lc::builder::SplineBuilder::SplineBuilder() {
     _degree = 2;
@@ -115,30 +130,19 @@ void lc::builder::SplineBuilder::setFlags(lc::geo::Spline::splineflag flags) {
 }
 
 void lc::builder::SplineBuilder::removeControlPoint(int index) {
-    if(index < 0) {
-        _controlPoints.erase(_controlPoints.end() + index);
-    }
-    else {
-        _controlPoints.erase(_controlPoints.begin() + index);
-    }
+    const auto position = removalIndex(_controlPoints.size(), index);
+    if (!_weights.empty() && _weights.size() != _controlPoints.size())
+        throw std::logic_error("spline weights do not match control points");
+    _controlPoints.erase(_controlPoints.begin() + position);
+    if (!_weights.empty()) _weights.erase(_weights.begin() + position);
 }
 
 void lc::builder::SplineBuilder::removeKnotPoint(int index) {
-    if(index < 0) {
-        _knotPoints.erase(_knotPoints.end() + index);
-    }
-    else {
-        _knotPoints.erase(_knotPoints.begin() + index);
-    }
+    _knotPoints.erase(_knotPoints.begin() + removalIndex(_knotPoints.size(), index));
 }
 
 void lc::builder::SplineBuilder::removeFitPoint(int index) {
-    if(index < 0) {
-        _fitPoints.erase(_fitPoints.end() + index);
-    }
-    else {
-        _fitPoints.erase(_fitPoints.begin() + index);
-    }
+    _fitPoints.erase(_fitPoints.begin() + removalIndex(_fitPoints.size(), index));
 }
 
 void lc::builder::SplineBuilder::copy(entity::Spline_CSPtr entity) {

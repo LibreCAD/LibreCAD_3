@@ -38,6 +38,7 @@
 #include <cmath>
 #include <fstream>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -4283,4 +4284,95 @@ TEST(DxfRoundTripTest, AreaMergePreservesThreeDimensionalExtents) {
     EXPECT_DOUBLE_EQ(area.minP().x(),1); EXPECT_DOUBLE_EQ(area.maxP().x(),8);
     EXPECT_DOUBLE_EQ(area.minP().y(),-3); EXPECT_DOUBLE_EQ(area.maxP().y(),5);
     EXPECT_DOUBLE_EQ(area.minP().z(),-4); EXPECT_DOUBLE_EQ(area.maxP().z(),6);
+}
+
+TEST(DxfRoundTripTest, InvalidSplineWeightsPreserveDestinationAndAllowRetry) {
+    auto valid=std::make_shared<lc::entity::Spline>(std::vector<lc::geo::Coordinate>{{1,0,3},{1,1,3},{0,1,3}},
+        std::vector<double>{0,0,0,1,1,1},std::vector<lc::geo::Coordinate>{},2,false,0,
+        0,0,0,0,0,0,0,0,1,lc::geo::Spline::RATIONAL,defaultLayer(),nullptr,nullptr,
+        std::vector<double>{1,0.5,1});
+    lc::builder::SplineBuilder builder;
+    builder.copy(valid); builder.setWeights({1});
+    const auto invalid=builder.build();
+    const std::string path=uniqueTmpDxf("bad-spline-retry");
+    for (auto type : {lc::persistence::File::Type::LIBDXFRW_DXF_R2000,
+                      lc::persistence::File::Type::LIBDXFRW_DXB_R2000}) {
+        auto doc=newDocument();
+        doc->insertEntity(invalid);
+        { std::ofstream out(path,std::ios::binary); out << "preserve this destination"; }
+        const auto failed=lc::persistence::File::exportFile(doc,path,type);
+        EXPECT_FALSE(failed.ok);
+        std::ifstream in(path,std::ios::binary);
+        const std::string contents((std::istreambuf_iterator<char>(in)),std::istreambuf_iterator<char>());
+        EXPECT_EQ(contents,"preserve this destination");
+        doc->removeEntity(invalid); doc->insertEntity(valid);
+        const auto retried=lc::persistence::File::exportFile(doc,path,type);
+        ASSERT_TRUE(retried.ok);
+        auto reopened=newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened,path,lc::persistence::File::Library::LIBDXFRW).ok);
+        bool found=false;
+        for (const auto& entity : reopened->entityContainer().asVector()) {
+            if (auto spline=std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+                found=true;
+                EXPECT_EQ(spline->weights(),(std::vector<double>{1,0.5,1}));
+            }
+        }
+        EXPECT_TRUE(found);
+    }
+    boost::filesystem::remove(path);
+}
+
+TEST(DxfRoundTripTest, SplineBuilderMaintainsWeightAssociation) {
+    auto source=std::make_shared<lc::entity::Spline>(
+        std::vector<lc::geo::Coordinate>{{10,10,3},{20,20,4},{30,10,5},{40,20,6}},
+        std::vector<double>{0,0,0,0.5,1,1,1},std::vector<lc::geo::Coordinate>{},
+        2,false,0,0,0,0,0,0,0,0,0,1,lc::geo::Spline::RATIONAL,defaultLayer(),nullptr,nullptr,
+        std::vector<double>{1,0.5,2,4});
+    lc::builder::SplineBuilder builder;
+    builder.copy(source);
+    builder.removeControlPoint(-2);
+    ASSERT_EQ(builder.weights(),(std::vector<double>{1,0.5,4}));
+    ASSERT_EQ(builder.controlPoints().size(),3u);
+    EXPECT_DOUBLE_EQ(builder.controlPoints()[2].x(),40);
+    builder.removeKnotPoint(3);
+    EXPECT_THROW(builder.removeControlPoint(3),std::out_of_range);
+    EXPECT_THROW(builder.removeControlPoint(-4),std::out_of_range);
+    EXPECT_THROW(builder.removeControlPoint(std::numeric_limits<int>::min()),std::out_of_range);
+    EXPECT_THROW(builder.removeKnotPoint(6),std::out_of_range);
+    EXPECT_THROW(builder.removeKnotPoint(-7),std::out_of_range);
+    EXPECT_THROW(builder.removeFitPoint(0),std::out_of_range);
+    EXPECT_THROW(builder.removeFitPoint(-1),std::out_of_range);
+    builder.addFitPoint({1,2}); builder.addFitPoint({3,4});
+    builder.removeFitPoint(-1);
+    ASSERT_EQ(builder.fitPoints().size(),1u);
+    EXPECT_DOUBLE_EQ(builder.fitPoints()[0].x(),1);
+    builder.removeFitPoint(0);
+    EXPECT_EQ(builder.controlPoints().size(),3u);
+    EXPECT_EQ(builder.weights(),(std::vector<double>{1,0.5,4}));
+    builder.setWeights({1});
+    EXPECT_THROW(builder.removeControlPoint(0),std::logic_error);
+    EXPECT_EQ(builder.controlPoints().size(),3u);
+    builder.setWeights({1,0.5,4});
+    lc::builder::SplineBuilder firstRemoval;
+    firstRemoval.copy(source); firstRemoval.removeControlPoint(0);
+    EXPECT_EQ(firstRemoval.weights(),(std::vector<double>{0.5,2,4}));
+    const auto edited=builder.build();
+    const std::string path=uniqueTmpDxf("spline-builder-weights");
+    for (auto type : {lc::persistence::File::Type::LIBDXFRW_DXF_R2000,
+                      lc::persistence::File::Type::LIBDXFRW_DXB_R2000}) {
+        auto doc=newDocument(); doc->insertEntity(edited);
+        ASSERT_TRUE(lc::persistence::File::save(doc,path,type));
+        auto reopened=newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened,path,lc::persistence::File::Library::LIBDXFRW).ok);
+        bool found=false;
+        for (const auto& entity : reopened->entityContainer().asVector())
+            if (auto spline=std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+                found=true;
+                EXPECT_EQ(spline->weights(),(std::vector<double>{1,0.5,4}));
+                ASSERT_EQ(spline->controlPoints().size(),3u);
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[2].x(),40);
+            }
+        EXPECT_TRUE(found);
+    }
+    boost::filesystem::remove(path);
 }
