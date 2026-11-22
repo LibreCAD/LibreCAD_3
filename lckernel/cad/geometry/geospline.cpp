@@ -31,7 +31,8 @@ bool rationalSegments(const std::vector<Coordinate>& points, const std::vector<d
                       std::vector<BB_CSPtr>& result) {
     constexpr std::size_t maxSegments = 8192;
     constexpr unsigned maxDepth = 16;
-    if (degree < 1 || degree > 3 || points.size() > maxSegments
+    // Bound de Casteljau's quadratic per-piece work on untrusted input.
+    if (degree < 1 || degree > 64 || points.size() > maxSegments
         || (!weights.empty() && weights.size() != points.size())
         || !usableKnots(knots, points.size(), degree)) return false;
     try {
@@ -198,6 +199,10 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 
 void Spline::populateCurve() {
     _beziers.clear();
+    if (degree() > 3) {
+        rationalSegments(_controlPoints, _knotPoints, _weights, degree(), _beziers);
+        return;
+    }
     if (((_flags & RATIONAL) != 0 || !_weights.empty())
         && rationalSegments(_controlPoints, _knotPoints, _weights, degree(), _beziers)) return;
     tinyspline::BSpline splineCurve;

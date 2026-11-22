@@ -4148,3 +4148,59 @@ TEST(DxfRoundTripTest, NonClampedSplinesKeepSourceGeometry) {
     boost::filesystem::remove(input);
     boost::filesystem::remove(output);
 }
+
+TEST(DxfRoundTripTest, HighDegreeSplinesRenderAndReportApproximation) {
+    const std::string input=uniqueTmpDxf("high-degree-input");
+    const std::string output=uniqueTmpDxf("high-degree-output");
+    {
+        std::ofstream dxf(input);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+               "0\nSECTION\n2\nENTITIES\n";
+        for (int degree : {4,5}) {
+            dxf << "0\nSPLINE\n8\n0\n70\n" << (degree==5 ? 4 : 0)
+                << "\n71\n" << degree << "\n72\n" << 7+degree << "\n73\n6\n74\n0\n";
+            for (int i=0;i<=degree;++i) dxf << "40\n0\n";
+            if (degree==4) dxf << "40\n0.3\n";
+            for (int i=0;i<=degree;++i) dxf << "40\n1\n";
+            const double points[6][3]={{0,0,0},{1,3,1},{3,-1,2},{4,4,3},{7,-2,4},{9,1,5}};
+            const double weights[6]={1,0.5,2,1,3,1};
+            for (int i=0;i<6;++i) {
+                dxf << "10\n" << points[i][0] << "\n20\n" << points[i][1]
+                    << "\n30\n" << points[i][2] << "\n";
+                if (degree==5) dxf << "41\n" << weights[i] << "\n";
+            }
+        }
+        dxf << "0\nENDSEC\n0\nEOF\n";
+    }
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        int found=0;
+        for (const auto& entity : doc->entityContainer().asVector()) {
+            const auto spline=std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+            if (!spline) continue;
+            ASSERT_TRUE(spline->degree()==4 || spline->degree()==5);
+            const auto segments=spline->beziers();
+            ASSERT_GT(segments.size(),2u);
+            const auto first=segments.front()->getCP().front(), last=segments.back()->getCP().back();
+            EXPECT_NEAR(first.x(),0,1e-10); EXPECT_NEAR(first.z(),0,1e-10);
+            EXPECT_NEAR(last.x(),9,1e-10); EXPECT_NEAR(last.z(),5,1e-10);
+            ++found;
+        }
+        EXPECT_EQ(found,2);
+    };
+    auto doc=newDocument();
+    const auto imported=lc::persistence::File::importFile(doc,input,lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+    EXPECT_TRUE(std::any_of(imported.loss.notes.begin(),imported.loss.notes.end(),[](const std::string& s) {
+        return s.find("High-degree spline")!=std::string::npos;
+    }));
+    check(doc);
+    for (auto type : {lc::persistence::File::Type::LIBDXFRW_DXF_R2000,
+                      lc::persistence::File::Type::LIBDXFRW_DXB_R2000}) {
+        ASSERT_TRUE(lc::persistence::File::save(doc,output,type));
+        auto reopened=newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened,output,lc::persistence::File::Library::LIBDXFRW).ok);
+        check(reopened);
+    }
+    boost::filesystem::remove(input);
+    boost::filesystem::remove(output);
+}

@@ -93,7 +93,12 @@ inline int DXFimpl::widthToInt(double wid) const {
 }
 
 namespace {
-void noteRationalSplineApproximation(lc::persistence::LossSummary& loss, const DRW_Spline& spline) {
+void noteSplineApproximation(lc::persistence::LossSummary& loss, const DRW_Spline& spline) {
+    if (spline.degree > 3) {
+        const std::string note = "High-degree spline display and geometry operations may be approximate or unavailable.";
+        if (std::find(loss.notes.begin(), loss.notes.end(), note) == loss.notes.end())
+            loss.notes.push_back(note);
+    }
     if ((spline.flags & lc::geo::Spline::RATIONAL) == 0
         && std::none_of(spline.weightlist.begin(), spline.weightlist.end(),
                         [](double weight) { return weight != 1.0; })) return;
@@ -536,7 +541,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                         mf,
                         getBlock(*data), data->weightlist
                                                             );
-        noteRationalSplineApproximation(_loss, *data);
+        noteSplineApproximation(_loss, *data);
         deliver(lcSpline);
     });
 }
@@ -1047,7 +1052,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                     mf,
                                     getBlock(*data), data->weightlist
                                                                         );
-                    noteRationalSplineApproximation(_loss, *data);
+                    noteSplineApproximation(_loss, *data);
                     loopData.push_back(lcSpline);
                 }
             }

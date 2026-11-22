@@ -612,3 +612,46 @@ TEST(SplineBezierConversion, NonClampedRationalUsesSourceDomain) {
     spline.populateCurve();
     EXPECT_EQ(spline.beziers().size(), segments.size());
 }
+
+TEST(SplineBezierConversion, HighDegreeCurvesMatchIndependentPoints) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,0},{1,3,1},{3,-1,2},{4,4,3},{7,-2,4},{9,1,5}};
+    const auto check = [&](const lc::geo::Spline& spline, const std::vector<lc::geo::Coordinate>& expected) {
+        const auto segments=spline.beziers();
+        ASSERT_GT(segments.size(),2u);
+        for (const auto& point : expected) {
+            double nearest=std::numeric_limits<double>::infinity();
+            for (const auto& segment : segments) {
+                const auto cp=segment->getCP();
+                const auto d=cp.back()-cp.front(), q=point-cp.front();
+                const double length2=d.x()*d.x()+d.y()*d.y()+d.z()*d.z();
+                const double t=length2>0 ? std::max(0.0,std::min(1.0,
+                    (q.x()*d.x()+q.y()*d.y()+q.z()*d.z())/length2)) : 0;
+                const auto e=point-(cp.front()+d*t);
+                nearest=std::min(nearest,std::hypot(std::hypot(e.x(),e.y()),e.z()));
+            }
+            EXPECT_LE(nearest,0.00091);
+        }
+    };
+    const lc::geo::Spline fourth(controls, {0,0,0,0,0,0.3,1,1,1,1,1}, {},
+        4, false, 0, 0,0,0, 0,0,0, 0,0,1, static_cast<lc::geo::Spline::splineflag>(0));
+    check(fourth, {{0,0,0},{1.5406875,1.858125,1.25625},{2.611,1.29,1.9},
+                   {5.2581875,0.720625,3.31875},{9,1,5}});
+    const lc::geo::Spline fifth(controls, {0,0,0,0,0,0,1,1,1,1,1,1}, {},
+        5, false, 0, 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::RATIONAL, {1,0.5,2,1,3,1});
+    check(fifth, {{0,0,0},{1.233959199975574,0.41786496761464037,0.8955218338142932},
+                  {2.6817075485626303,0.23989623099150023,1.8257650855250669},
+                  {5.647547254537985,-0.3939091276257335,3.416716987602413},{9,1,5}});
+}
+
+TEST(SplineBezierConversion, HighDegreeInvalidInputHasNoInventedGeometry) {
+    const lc::geo::Spline invalid({{0,0},{1,1},{2,0},{3,1},{4,0},{5,1}},
+        {0,0,0,0,0,0,1,1,1,1,1,1}, {}, 5, false, 0, 0,0,0, 0,0,0, 0,0,1,
+        lc::geo::Spline::RATIONAL, {1,1,0,1,1,1});
+    EXPECT_TRUE(invalid.beziers().empty());
+    const std::vector<lc::geo::Coordinate> many(66,{0,0,0});
+    std::vector<double> knots(132,1);
+    std::fill(knots.begin(),knots.begin()+66,0);
+    const lc::geo::Spline overLimit(many,knots,{},65,false,0,0,0,0,0,0,0,0,0,1,
+        static_cast<lc::geo::Spline::splineflag>(0));
+    EXPECT_TRUE(overLimit.beziers().empty());
+}
