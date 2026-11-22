@@ -655,3 +655,15 @@ TEST(SplineBezierConversion, HighDegreeInvalidInputHasNoInventedGeometry) {
         static_cast<lc::geo::Spline::splineflag>(0));
     EXPECT_TRUE(overLimit.beziers().empty());
 }
+
+TEST(SplineBezierConversion, ExplicitUnitWeightsRemainExact) {
+    const lc::geo::Spline spline({{1,0,3},{1,1,3},{0,1,3}}, {0,0,0,1,1,1}, {},
+        2,false,0,0,0,0,0,0,0,0,0,1,static_cast<lc::geo::Spline::splineflag>(0),{1,1,1});
+    const auto segments=spline.beziers();
+    ASSERT_EQ(segments.size(),1u);
+    const auto midpoint=segments[0]->DirectValueAt(0.5);
+    EXPECT_NEAR(midpoint.x(),0.75,1e-12);
+    EXPECT_NEAR(midpoint.y(),0.75,1e-12);
+    EXPECT_NEAR(midpoint.z(),3,1e-12);
+    EXPECT_EQ(spline.weights(),(std::vector<double>{1,1,1}));
+}

@@ -203,7 +203,10 @@ void Spline::populateCurve() {
         rationalSegments(_controlPoints, _knotPoints, _weights, degree(), _beziers);
         return;
     }
-    if (((_flags & RATIONAL) != 0 || !_weights.empty())
+    const bool unitWeights = _weights.empty() ||
+        (_weights.size() == _controlPoints.size() &&
+         std::all_of(_weights.begin(), _weights.end(), [](double weight) { return weight == 1.0; }));
+    if (((_flags & RATIONAL) != 0 || !unitWeights)
         && rationalSegments(_controlPoints, _knotPoints, _weights, degree(), _beziers)) return;
     tinyspline::BSpline splineCurve;
     tinyspline::BSpline beziers;
@@ -222,7 +225,7 @@ void Spline::populateCurve() {
         splineCurve.setControlPoints(ts_controlPoints);
         // Keep the existing fallback if the source knot profile is unsupported
         // or TinySpline cannot convert it.
-        const bool ordinary = (_flags & RATIONAL) == 0 && _weights.empty();
+        const bool ordinary = (_flags & RATIONAL) == 0 && unitWeights;
         const bool validKnots = ordinary && usableKnots(_knotPoints, nbControlPoints, degree());
         if (validKnots) {
             try {

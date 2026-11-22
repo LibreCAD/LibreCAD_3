@@ -4204,3 +4204,46 @@ TEST(DxfRoundTripTest, HighDegreeSplinesRenderAndReportApproximation) {
     boost::filesystem::remove(input);
     boost::filesystem::remove(output);
 }
+
+TEST(DxfRoundTripTest, ExplicitUnitWeightsKeepExactSplineGeometry) {
+    const std::string input=uniqueTmpDxf("unit-weights-input");
+    const std::string output=uniqueTmpDxf("unit-weights-output");
+    {
+        std::ofstream dxf(input);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+               "0\nSECTION\n2\nENTITIES\n0\nSPLINE\n8\n0\n70\n0\n71\n2\n72\n6\n73\n3\n74\n0\n"
+               "40\n0\n40\n0\n40\n0\n40\n1\n40\n1\n40\n1\n"
+               "10\n1\n20\n0\n30\n3\n41\n1\n10\n1\n20\n1\n30\n3\n41\n1\n"
+               "10\n0\n20\n1\n30\n3\n41\n1\n0\nENDSEC\n0\nEOF\n";
+    }
+    const auto check=[](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        int found=0;
+        for (const auto& entity : doc->entityContainer().asVector()) {
+            const auto spline=std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+            if (!spline) continue;
+            ++found;
+            EXPECT_EQ(spline->flags() & lc::geo::Spline::RATIONAL,0);
+            EXPECT_EQ(spline->weights(),(std::vector<double>{1,1,1}));
+            const auto segments=spline->beziers();
+            ASSERT_EQ(segments.size(),1u);
+            const auto p=segments[0]->DirectValueAt(0.5);
+            EXPECT_NEAR(p.x(),0.75,1e-12); EXPECT_NEAR(p.y(),0.75,1e-12);
+            EXPECT_NEAR(p.z(),3,1e-12);
+        }
+        EXPECT_EQ(found,1);
+    };
+    auto doc=newDocument();
+    const auto imported=lc::persistence::File::importFile(doc,input,lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(imported.ok); EXPECT_TRUE(imported.loss.notes.empty());
+    check(doc);
+    for (auto type : {lc::persistence::File::Type::LIBDXFRW_DXF_R2000,
+                      lc::persistence::File::Type::LIBDXFRW_DXB_R2000}) {
+        ASSERT_TRUE(lc::persistence::File::save(doc,output,type));
+        auto reopened=newDocument();
+        const auto result=lc::persistence::File::importFile(reopened,output,lc::persistence::File::Library::LIBDXFRW);
+        ASSERT_TRUE(result.ok); EXPECT_TRUE(result.loss.notes.empty());
+        check(reopened);
+    }
+    boost::filesystem::remove(input);
+    boost::filesystem::remove(output);
+}
