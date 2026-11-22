@@ -10,7 +10,7 @@ using namespace lc;
 using namespace geo;
 
 namespace {
-bool usableKnots(const std::vector<double>& knots, std::size_t count, int degree) {
+bool usableKnots(const std::vector<double>& knots, std::size_t count, int degree, bool requireClamped) {
     if (degree < 1 || static_cast<std::size_t>(degree) >= count) return false;
     const auto order = static_cast<std::size_t>(degree) + 1u;
     return knots.size() == count + order
@@ -18,7 +18,7 @@ bool usableKnots(const std::vector<double>& knots, std::size_t count, int degree
         && std::is_sorted(knots.begin(), knots.end())
         && knots[order - 1u] < knots[count]
         && std::isfinite(knots[count] - knots[order - 1u])
-        && knots.front() == knots[order - 1u] && knots[count] == knots.back()
+        && (!requireClamped || (knots.front() == knots[order - 1u] && knots[count] == knots.back()))
         && std::adjacent_find(knots.begin(), knots.end(), [](double a, double b) {
                return a < b && (!std::isfinite(b - a) || b - a < TS_KNOT_EPSILON);
            }) == knots.end();
@@ -28,13 +28,13 @@ using Homogeneous = std::array<double, 4>;
 struct RationalPiece { std::vector<Homogeneous> points; unsigned depth; };
 
 bool rationalSegments(const std::vector<Coordinate>& points, const std::vector<double>& knots,
-                      const std::vector<double>& weights, int degree,
+                      const std::vector<double>& weights, int degree, bool periodic,
                       std::vector<BB_CSPtr>& result) {
     constexpr std::size_t maxSegments = 8192;
     constexpr unsigned maxDepth = 16;
     if (degree < 1 || degree > 3 || points.size() > maxSegments
         || (!weights.empty() && weights.size() != points.size())
-        || !usableKnots(knots, points.size(), degree)) return false;
+        || !usableKnots(knots, points.size(), degree, !periodic)) return false;
     try {
         std::vector<double> homogeneous;
         homogeneous.reserve(points.size() * 4u);
@@ -198,8 +198,9 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 }
 
 void Spline::populateCurve() {
-    if ((_flags & PERIODIC) == 0 && ((_flags & RATIONAL) != 0 || !_weights.empty())
-        && rationalSegments(_controlPoints, _knotPoints, _weights, degree(), _beziers)) return;
+    const bool periodic = (_flags & PERIODIC) != 0;
+    if (((_flags & RATIONAL) != 0 || !_weights.empty())
+        && rationalSegments(_controlPoints, _knotPoints, _weights, degree(), periodic, _beziers)) return;
     tinyspline::BSpline splineCurve;
     tinyspline::BSpline beziers;
     bool converted = false;
@@ -215,11 +216,10 @@ void Spline::populateCurve() {
             ts_controlPoints.push_back(cp.z());
         }
         splineCurve.setControlPoints(ts_controlPoints);
-        // Periodic and unsupported rational profiles retain the existing fallback.
-        // Use source knots for the bounded open-clamped profile. Preserve the
-        // existing fallback for other profiles or TinySpline conversion errors.
-        const bool ordinary = (_flags & (RATIONAL | PERIODIC)) == 0 && _weights.empty();
-        const bool validKnots = ordinary && usableKnots(_knotPoints, nbControlPoints, degree());
+        // Keep the existing fallback if the source knot profile is unsupported
+        // or TinySpline cannot convert it.
+        const bool ordinary = (_flags & RATIONAL) == 0 && _weights.empty();
+        const bool validKnots = ordinary && usableKnots(_knotPoints, nbControlPoints, degree(), !periodic);
         if (validKnots) {
             try {
                 auto candidate = splineCurve;

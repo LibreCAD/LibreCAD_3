@@ -1098,3 +1098,59 @@ TEST(DwgImportTest, RationalHatchSplineWeightsSurviveSave) {
     boost::filesystem::remove(retryPath);
     boost::filesystem::remove(input);
 }
+
+TEST(DwgImportTest, PeriodicSplineHatchUsesSourceKnots) {
+    const auto input = tmpPath("periodic-spline-hatch");
+    {
+        std::ofstream f(input);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n1\n92\n0\n93\n1\n"
+             "72\n4\n94\n2\n73\n0\n74\n1\n95\n9\n96\n6\n"
+             "40\n0\n40\n1\n40\n2\n40\n3\n40\n4\n40\n5\n40\n6\n40\n7\n40\n8\n"
+             "10\n0\n20\n0\n10\n3\n20\n0\n10\n3\n20\n2\n10\n0\n20\n2\n10\n0\n20\n0\n10\n3\n20\n0\n97\n0\n"
+             "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops[0].entities().size(), 1u);
+        const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+        ASSERT_NE(spline, nullptr);
+        EXPECT_NE(spline->flags() & lc::geo::Spline::PERIODIC, 0);
+        ASSERT_EQ(spline->beziers().size(), 4u);
+        const auto first = spline->beziers().front()->getCP().front();
+        const auto last = spline->beziers().back()->getCP().back();
+        EXPECT_NEAR(first.x(), 1.5, 1e-10);
+        EXPECT_NEAR(first.y(), 0.0, 1e-10);
+        EXPECT_NEAR(first.z(), 3.0, 1e-10);
+        EXPECT_NEAR(last.x(), first.x(), 1e-10);
+        EXPECT_NEAR(last.y(), first.y(), 1e-10);
+        auto hits = hatch->getRegion().getLineIntersection(lc::geo::Vector({-1,1}, {4,1}));
+        ASSERT_EQ(hits.size(), 2u);
+        std::sort(hits.begin(), hits.end(), [](const auto& a, const auto& b) { return a.x() < b.x(); });
+        EXPECT_NEAR(hits[0].x(), 0.0, 1e-10);
+        EXPECT_NEAR(hits[1].x(), 3.0, 1e-10);
+    };
+    auto doc = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    check(doc);
+    const char* capture = std::getenv("LC3_PERIODIC_HATCH_CAPTURE");
+    for (auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000, lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) +
+            (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "/periodic-ascii.dxf" : "/periodic-binary.dxf")
+            : tmpPath("periodic-spline-hatch-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    boost::filesystem::remove(input);
+}

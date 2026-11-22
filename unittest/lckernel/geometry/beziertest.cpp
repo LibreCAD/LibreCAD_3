@@ -485,3 +485,75 @@ TEST(SplineBezierConversion, RationalCubicIncludesIndependentMidpoint) {
     }
     EXPECT_TRUE(found);
 }
+
+TEST(SplineBezierConversion, PeriodicQuadraticUsesSourceKnots) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,1},{3,0,1},{3,2,1},{0,2,1},{0,0,1},{3,0,1}};
+    const std::vector<double> knots{0,1,2,3,4,5,6,7,8};
+    const lc::geo::Spline spline(controls, knots, {}, 2, true, 0.0,
+        0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::PERIODIC);
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 1u);
+    const auto first = segments.front()->getCP().front();
+    const auto last = segments.back()->getCP().back();
+    EXPECT_NEAR(first.x(), 1.5, 1e-10);
+    EXPECT_NEAR(first.y(), 0.0, 1e-10);
+    EXPECT_NEAR(first.z(), 1.0, 1e-10);
+    EXPECT_NEAR(last.x(), 1.5, 1e-10);
+    EXPECT_NEAR(last.y(), 0.0, 1e-10);
+    EXPECT_NEAR(last.z(), 1.0, 1e-10);
+    ASSERT_EQ(segments.size(), 4u);
+    const std::vector<lc::geo::Coordinate> expected{{2.625,0.25,1},{2.625,1.75,1},
+                                                    {0.375,1.75,1},{0.375,0.25,1}};
+    for (std::size_t i = 0; i < segments.size(); ++i) {
+        const auto mid = segments[i]->DirectValueAt(0.5);
+        EXPECT_NEAR(mid.x(), expected[i].x(), 1e-10);
+        EXPECT_NEAR(mid.y(), expected[i].y(), 1e-10);
+        EXPECT_NEAR(mid.z(), expected[i].z(), 1e-10);
+    }
+}
+
+TEST(SplineBezierConversion, PeriodicRationalMatchesIndependentPoints) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,1},{3,0,1},{3,2,1},{0,2,1},{0,0,1},{3,0,1}};
+    const std::vector<double> knots{0,1,2,3,4,5,6,7,8};
+    const auto flags = static_cast<lc::geo::Spline::splineflag>(lc::geo::Spline::PERIODIC | lc::geo::Spline::RATIONAL);
+    const lc::geo::Spline spline(controls, knots, {}, 2, true, 0.0,
+        0,0,0, 0,0,0, 0,0,1, flags, {1,0.5,2,1.5,1,0.5});
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 4u);
+    const auto first = segments.front()->getCP().front();
+    const auto last = segments.back()->getCP().back();
+    EXPECT_NEAR(first.x(), 1.0, 1e-10);
+    EXPECT_NEAR(first.y(), 0.0, 1e-10);
+    EXPECT_NEAR(last.x(), 1.0, 1e-10);
+    EXPECT_NEAR(last.y(), 0.0, 1e-10);
+    for (std::size_t i = 0; i < segments.size(); ++i) {
+        const auto cp = segments[i]->getCP();
+        for (const auto& p : cp) {
+            EXPECT_GE(p.x(), -1e-10); EXPECT_LE(p.x(), 3.0 + 1e-10);
+            EXPECT_GE(p.y(), -1e-10); EXPECT_LE(p.y(), 2.0 + 1e-10);
+            EXPECT_NEAR(p.z(), 1.0, 1e-10);
+        }
+        if (i) {
+            const auto previous = segments[i-1]->getCP().back();
+            EXPECT_NEAR(previous.x(), cp.front().x(), 1e-10);
+            EXPECT_NEAR(previous.y(), cp.front().y(), 1e-10);
+            EXPECT_NEAR(previous.z(), cp.front().z(), 1e-10);
+        }
+    }
+    const std::vector<lc::geo::Coordinate> expected{{2.5,2.0/3,1},
+        {2.6785714285714284,1.9285714285714284,1},
+        {0.5,1.8333333333333333,1},{0.1875,0.375,1}};
+    for (const auto& point : expected) {
+        double nearest = std::numeric_limits<double>::infinity();
+        for (const auto& segment : segments) {
+            const auto cp = segment->getCP();
+            const auto d = cp.back() - cp.front(), q = point - cp.front();
+            const double length2 = d.x()*d.x() + d.y()*d.y() + d.z()*d.z();
+            const double t = length2 > 0 ? std::max(0.0, std::min(1.0,
+                (q.x()*d.x() + q.y()*d.y() + q.z()*d.z()) / length2)) : 0;
+            const auto e = point - (cp.front() + d*t);
+            nearest = std::min(nearest, std::hypot(std::hypot(e.x(),e.y()),e.z()));
+        }
+        EXPECT_LE(nearest, 0.00031);
+    }
+}
