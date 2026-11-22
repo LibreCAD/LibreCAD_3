@@ -1207,18 +1207,28 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     const auto liftedWrite = lc::persistence::File::exportFile(
         doc, liftedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(liftedWrite.ok);
-    EXPECT_TRUE(std::any_of(liftedWrite.loss.notes.begin(), liftedWrite.loss.notes.end(),
+    EXPECT_EQ(std::any_of(liftedWrite.loss.notes.begin(), liftedWrite.loss.notes.end(),
                             [](const std::string& note) {
                                 return note.find("boundary geometry") != std::string::npos;
-                            }));
+                            }), !asciiPreserved);
     auto liftedDoc = newDwgDocument();
     const auto liftedRead = lc::persistence::File::importFile(
         liftedDoc, liftedOutput, lc::persistence::File::LIBDXFRW);
     ASSERT_TRUE(liftedRead.ok);
-    EXPECT_TRUE(std::none_of(liftedRead.loss.notes.begin(), liftedRead.loss.notes.end(),
+    EXPECT_EQ(std::any_of(liftedRead.loss.notes.begin(), liftedRead.loss.notes.end(),
                              [](const std::string& note) {
                                  return note.find("MPOLYGON entities") != std::string::npos;
-                             }));
+                             }), asciiPreserved);
+    lc::entity::Hatch_CSPtr liftedReadHatch;
+    for (const auto& entity : liftedDoc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) liftedReadHatch = value;
+    ASSERT_NE(liftedReadHatch, nullptr);
+    ASSERT_EQ(liftedReadHatch->getRegion().loopList().size(), 1u);
+    ASSERT_EQ(liftedReadHatch->getRegion().loopList()[0].entities().size(), 1u);
+    const auto liftedReadPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(
+        liftedReadHatch->getRegion().loopList().at(0).entities().at(0));
+    ASSERT_NE(liftedReadPolyline, nullptr);
+    for (const auto& vertex : liftedReadPolyline->vertex()) EXPECT_DOUBLE_EQ(vertex.location().z(), 3.0);
 
     // A source outside the replay profile must take the reported path too.
     std::ifstream original(input);
@@ -1528,7 +1538,7 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
         f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
              "0\nSECTION\n2\nENTITIES\n0\nMPOLYGON\n5\n55\n"
              "100\nAcDbEntity\n8\n0\n100\nAcDbMPolygon\n70\n1\n"
-             "10\n0\n20\n0\n30\n0\n210\n0\n220\n0\n230\n1\n"
+             "10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
              "2\nSOLID\n71\n1\n91\n1\n92\n2\n73\n1\n72\n0\n93\n3\n"
              "10\n1\n20\n2\n10\n4\n20\n2\n10\n3\n20\n5\n"
              "76\n1\n78\n0\n63\n3\n98\n0\n11\n2\n21\n5\n99\n0\n"
@@ -1541,6 +1551,12 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
     for (const auto& e : doc->entityContainer().asVector())
         if (auto h = std::dynamic_pointer_cast<const lc::entity::Hatch>(e)) hatch = h;
     ASSERT_NE(hatch, nullptr);
+    ASSERT_EQ(hatch->getRegion().loopList().size(), 1u);
+    ASSERT_EQ(hatch->getRegion().loopList()[0].entities().size(), 1u);
+    const auto initialPoly = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(
+        hatch->getRegion().loopList().at(0).entities().at(0));
+    ASSERT_NE(initialPoly, nullptr);
+    for (const auto& vertex : initialPoly->vertex()) EXPECT_DOUBLE_EQ(vertex.location().z(), 3.0);
     auto lifted = hatch->move(lc::geo::Coordinate(0, 0, 3));
     ASSERT_NE(lifted, nullptr);
     doc->removeEntity(hatch);
@@ -1554,10 +1570,15 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
                                            : tmpPath("elevation-output");
         auto written = lc::persistence::File::exportFile(doc, output, encoding.second);
         ASSERT_TRUE(written.ok);
-        EXPECT_TRUE(std::any_of(written.loss.notes.begin(), written.loss.notes.end(),
-            [](const std::string& n) { return n.find("written as HATCH") != std::string::npos; }));
+        const bool fallback = std::any_of(written.loss.notes.begin(), written.loss.notes.end(),
+            [](const std::string& n) { return n.find("written as HATCH") != std::string::npos; });
+        if (const char* expected = std::getenv("LC3_EXPECT_MPOLYGON"))
+            EXPECT_EQ(fallback, std::string(expected) != "1");
         auto reopened = newDwgDocument();
-        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        const auto read = lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW);
+        ASSERT_TRUE(read.ok);
+        EXPECT_EQ(std::any_of(read.loss.notes.begin(), read.loss.notes.end(),
+            [](const std::string& n) { return n.find("MPOLYGON entities") != std::string::npos; }), !fallback);
         lc::entity::Hatch_CSPtr result;
         for (const auto& e : reopened->entityContainer().asVector())
             if (auto h = std::dynamic_pointer_cast<const lc::entity::Hatch>(e)) result = h;
@@ -1571,7 +1592,7 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
         for (std::size_t i = 0; i < 3; ++i) {
             EXPECT_DOUBLE_EQ(poly->vertex()[i].location().x(), expected[i][0]);
             EXPECT_DOUBLE_EQ(poly->vertex()[i].location().y(), expected[i][1]);
-            EXPECT_DOUBLE_EQ(poly->vertex()[i].location().z(), 3.0);
+            EXPECT_DOUBLE_EQ(poly->vertex()[i].location().z(), 6.0);
         }
         const std::string resaved = capture ? std::string(capture) + "/resave-" + encoding.first + ".dxf"
                                             : tmpPath("elevation-resave");
@@ -1588,9 +1609,53 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
             resavedHatch->getRegion().loopList()[0].entities()[0]);
         ASSERT_NE(resavedPoly, nullptr);
         ASSERT_EQ(resavedPoly->vertex().size(), 3u);
-        for (const auto& v : resavedPoly->vertex()) EXPECT_DOUBLE_EQ(v.location().z(), 3.0);
+        for (const auto& v : resavedPoly->vertex()) EXPECT_DOUBLE_EQ(v.location().z(), 6.0);
         if (!capture) { boost::filesystem::remove(output); boost::filesystem::remove(resaved); }
     }
+    // Rotation must preserve both the edited XY boundary and its shared Z.
+    const auto rotated = lifted->rotate(lc::geo::Coordinate(0, 0, 0), 0.5);
+    ASSERT_NE(rotated, nullptr);
+    const auto rotatedHatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(rotated);
+    ASSERT_NE(rotatedHatch, nullptr);
+    ASSERT_EQ(rotatedHatch->getRegion().loopList().size(), 1u);
+    ASSERT_EQ(rotatedHatch->getRegion().loopList()[0].entities().size(), 1u);
+    const auto rotatedPoly = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(
+        rotatedHatch->getRegion().loopList().at(0).entities().at(0));
+    ASSERT_NE(rotatedPoly, nullptr);
+    doc->removeEntity(lifted);
+    doc->insertEntity(rotated);
+    for (const auto& encoding : std::vector<std::pair<const char*, lc::persistence::File::Type>>{
+            {"ascii", lc::persistence::File::LIBDXFRW_DXF_R2000},
+            {"binary", lc::persistence::File::LIBDXFRW_DXB_R2000}}) {
+        const std::string output = capture ? std::string(capture) + "/rotated-" + encoding.first + ".dxf"
+                                           : tmpPath("rotated-elevated-mpolygon");
+        const auto written = lc::persistence::File::exportFile(doc, output, encoding.second);
+        ASSERT_TRUE(written.ok);
+        const bool fallback = std::any_of(written.loss.notes.begin(), written.loss.notes.end(),
+            [](const std::string& n) { return n.find("written as HATCH") != std::string::npos; });
+        if (const char* expected = std::getenv("LC3_EXPECT_MPOLYGON"))
+            EXPECT_EQ(fallback, std::string(expected) != "1");
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        lc::entity::Hatch_CSPtr actual;
+        for (const auto& entity : reopened->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) actual = value;
+        ASSERT_NE(actual, nullptr);
+        ASSERT_EQ(actual->getRegion().loopList().size(), 1u);
+        ASSERT_EQ(actual->getRegion().loopList()[0].entities().size(), 1u);
+        const auto actualPoly = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(
+            actual->getRegion().loopList()[0].entities()[0]);
+        ASSERT_NE(actualPoly, nullptr);
+        ASSERT_EQ(actualPoly->vertex().size(), rotatedPoly->vertex().size());
+        for (std::size_t i = 0; i < rotatedPoly->vertex().size(); ++i) {
+            EXPECT_DOUBLE_EQ(actualPoly->vertex()[i].location().x(), rotatedPoly->vertex()[i].location().x());
+            EXPECT_DOUBLE_EQ(actualPoly->vertex()[i].location().y(), rotatedPoly->vertex()[i].location().y());
+            EXPECT_DOUBLE_EQ(actualPoly->vertex()[i].location().z(), 6.0);
+        }
+        if (!capture) boost::filesystem::remove(output);
+    }
+    doc->removeEntity(rotated);
+    doc->insertEntity(lifted);
     // Mixed Z values cannot be represented by a single HATCH elevation.
     // The existing lossy fallback must not invent one from the first vertex.
     const auto liftedHatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(lifted);
@@ -1600,7 +1665,7 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
     ASSERT_NE(sourcePoly, nullptr);
     auto vertices = sourcePoly->vertex();
     ASSERT_EQ(vertices.size(), 3u);
-    vertices[2]._location = lc::geo::Coordinate(vertices[2].location().x(), vertices[2].location().y(), 4.0);
+    vertices[2]._location = lc::geo::Coordinate(vertices[2].location().x(), vertices[2].location().y(), 7.0);
     auto mixedPoly = std::make_shared<lc::entity::LWPolyline>(vertices, sourcePoly->width(),
         sourcePoly->elevation(), sourcePoly->tickness(), sourcePoly->closed(),
         sourcePoly->extrusionDirection(), sourcePoly->layer());
@@ -1650,7 +1715,7 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
     auto retryPoly = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(retryHatch->getRegion().loopList()[0].entities()[0]);
     ASSERT_NE(retryPoly, nullptr);
     ASSERT_EQ(retryPoly->vertex().size(), 3u);
-    for (const auto& v : retryPoly->vertex()) EXPECT_DOUBLE_EQ(v.location().z(), 3.0);
+    for (const auto& v : retryPoly->vertex()) EXPECT_DOUBLE_EQ(v.location().z(), 6.0);
     if (!capture) boost::filesystem::remove(retryOutput);
     boost::filesystem::remove(input);
 }

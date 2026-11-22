@@ -64,10 +64,10 @@ class MPolygonSnapshot final : public lc::meta::EntityMetaType {
 public:
     struct Vertex { double x, y, bulge; };
     MPolygonSnapshot(const DRW_MPolygon& polygon, const DRW_Hatch& projected,
-                     lc::meta::Block_CSPtr projectedBlock)
+                     lc::meta::Block_CSPtr projectedBlock, bool sourceIsDwg)
         : block(std::move(projectedBlock)), name(polygon.name), solid(polygon.solid), angle(polygon.angle),
           scale(polygon.scale), layer(projected.layer), lineType(projected.lineType),
-          color(projected.color), lineWeight(projected.lWeight) {
+          color(projected.color), lineWeight(projected.lWeight), allowElevation(!sourceIsDwg) {
         if (polygon.solid != 1 || polygon.associative != 0 || polygon.isGradient != 0
             || polygon.hstyle != 0 || polygon.hpattern != 1 || polygon.doubleflag != 0
             || !polygon.extData.empty() || !polygon.appData.empty()
@@ -78,7 +78,9 @@ public:
             || !std::isfinite(polygon.xDirX) || !std::isfinite(polygon.xDirY)
             || polygon.numProxyGraph != 0 || polygon.hasDataStorageRecord
             || polygon.hasDataStoragePayloadMarker
-            || polygon.basePoint.z != 0.0 || polygon.extPoint.x != 0.0
+            || polygon.basePoint.x != 0.0 || polygon.basePoint.y != 0.0
+            || !std::isfinite(polygon.basePoint.z)
+            || (sourceIsDwg && polygon.basePoint.z != 0.0) || polygon.extPoint.x != 0.0
             || polygon.extPoint.y != 0.0 || polygon.extPoint.z != 1.0
             || polygon.looplist.size() != 1 || !polygon.looplist[0]
             || polygon.looplist[0]->type != 2
@@ -105,6 +107,7 @@ public:
     const std::string metaTypeID() const override { return id(); }
     bool replayable(const DRW_Hatch& hatch, const lc::entity::Hatch_CSPtr& model,
                     double& outputOffsetX, double& outputOffsetY,
+                    double& outputElevation,
                     bool& rewriteBoundary) const {
         if (!source || model->block() != block || hatch.name != name || hatch.solid != solid
             || hatch.angle != angle || hatch.scale != scale
@@ -136,8 +139,10 @@ public:
             source->looplist[0]->objlist[0].get());
         if (!original || original->vertlist.size() != vertices.size()) return false;
         bool translation = true;
+        outputElevation = modelPolyline->vertex()[0].location().z();
+        if (!std::isfinite(outputElevation) || (!allowElevation && outputElevation != 0.0)) return false;
         for (std::size_t i = 0; i < vertices.size(); ++i) {
-            if (modelPolyline->vertex()[i].location().z() != 0.0) return false;
+            if (modelPolyline->vertex()[i].location().z() != outputElevation) return false;
             const auto& v = poly->vertlist[i];
             const auto& raw = original->vertlist[i];
             if (!v || !raw || !std::isfinite(v->x) || !std::isfinite(v->y)
@@ -256,6 +261,7 @@ public:
     int solid; double angle, scale;
     std::string layer, lineType;
     int color; DRW_LW_Conv::lineWidth lineWeight;
+    bool allowElevation;
     std::vector<Vertex> vertices;
 };
 } // namespace
@@ -1185,7 +1191,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         if (polygon) {
             DRW_Hatch projected;
             getEntityAttributes(&projected, lcHatch);
-            mf->add(std::make_shared<MPolygonSnapshot>(*polygon, projected, lcHatch->block()));
+            mf->add(std::make_shared<MPolygonSnapshot>(*polygon, projected, lcHatch->block(), _sourceIsDwg));
         }
         lcHatch->setPatternName(data->name);
         int solidFlag = data->solid;
@@ -1304,7 +1310,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 "MPOLYGON entities were imported as HATCH for editing. Some "
                 "polygon-specific information may not survive saving.");
         }
-        if (polygon && (polygon->basePoint.z != 0.0 || polygon->extPoint.x != 0.0
+        if (polygon && ((!liftBoundaryPlane && polygon->basePoint.z != 0.0) || polygon->extPoint.x != 0.0
                         || polygon->extPoint.y != 0.0 || polygon->extPoint.z != 1.0)
             && _mpolygonsWithNondefaultPlane++ == 0) {
             _loss.notes.push_back(
@@ -3112,14 +3118,16 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
 
     const auto snapshot = h->metaInfo<MPolygonSnapshot>(MPolygonSnapshot::key());
     double outputOffsetX = 0.0, outputOffsetY = 0.0;
+    double outputElevation = 0.0;
     bool rewriteBoundary = false;
     if (snapshot && _exportVersion > DRW::AC1009 && snapshot->canWrite(_exportVersion)
-        && snapshot->replayable(hatch, h, outputOffsetX, outputOffsetY, rewriteBoundary)) {
+        && snapshot->replayable(hatch, h, outputOffsetX, outputOffsetY, outputElevation, rewriteBoundary)) {
         DRW_MPolygon polygon(*snapshot->source);
         // MPOLYGON stores vertices relative to its offset. A planar translation
         // changes the offset, leaving the serialized boundary coordinates intact.
         polygon.xDirX = outputOffsetX;
         polygon.xDirY = outputOffsetY;
+        polygon.basePoint.z = outputElevation;
         if (rewriteBoundary) {
             auto* saved = static_cast<DRW_LWPolyline*>(polygon.looplist[0]->objlist[0].get());
             const auto* current = static_cast<const DRW_LWPolyline*>(hatch.looplist[0]->objlist[0].get());
