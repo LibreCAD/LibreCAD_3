@@ -638,6 +638,44 @@ TEST(DwgImportTest, ElevatedCurvedEdgeHatchRoundTrip) {
     ASSERT_NE(original, nullptr);
     const auto& edges = original->getRegion().loopList().front().entities();
     ASSERT_EQ(edges.size(), 2u);
+    const auto rotated = original->rotate(lc::geo::Coordinate(5, 7, 100), 0.5);
+    ASSERT_NE(rotated, nullptr);
+    doc->removeEntity(original);
+    doc->insertEntity(rotated);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) + (ccw ? "/ccw-rotated-" : "/cw-rotated-")
+            + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+            : tmpPath("rotated-curved-hatch");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        lc::entity::Hatch_CSPtr actual;
+        for (const auto& entity : reopened->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) actual = value;
+        ASSERT_NE(actual, nullptr);
+        ASSERT_EQ(actual->getRegion().loopList().size(), 1u);
+        ASSERT_EQ(actual->getRegion().loopList()[0].entities().size(), 2u);
+        const auto rotatedArc = std::dynamic_pointer_cast<const lc::entity::Arc>(actual->getRegion().loopList()[0].entities()[0]);
+        const auto rotatedEllipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(actual->getRegion().loopList()[0].entities()[1]);
+        ASSERT_NE(rotatedArc, nullptr);
+        ASSERT_NE(rotatedEllipse, nullptr);
+        const double expectedX = 5.0 - 4.0 * std::cos(0.5) + 5.0 * std::sin(0.5);
+        const double expectedY = 7.0 - 4.0 * std::sin(0.5) - 5.0 * std::cos(0.5);
+        EXPECT_NEAR(rotatedArc->center().x(), expectedX, 1e-12);
+        EXPECT_NEAR(rotatedArc->center().y(), expectedY, 1e-12);
+        EXPECT_DOUBLE_EQ(rotatedArc->center().z(), 3.0);
+        EXPECT_NEAR(rotatedEllipse->center().x(), expectedX, 1e-12);
+        EXPECT_NEAR(rotatedEllipse->center().y(), expectedY, 1e-12);
+        EXPECT_DOUBLE_EQ(rotatedEllipse->center().z(), 3.0);
+        EXPECT_NEAR(rotatedEllipse->majorP().x(), 2.0 * std::cos(0.5), 1e-12);
+        EXPECT_NEAR(rotatedEllipse->majorP().y(), 2.0 * std::sin(0.5), 1e-12);
+        EXPECT_DOUBLE_EQ(rotatedEllipse->majorP().z(), 0.0);
+        EXPECT_EQ(rotatedEllipse->isReversed(), !ccw);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    doc->removeEntity(rotated);
+    doc->insertEntity(original);
     const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(edges[1]);
     ASSERT_NE(ellipse, nullptr);
     lc::geo::Region mixedRegion;
