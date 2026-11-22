@@ -4247,3 +4247,40 @@ TEST(DxfRoundTripTest, ExplicitUnitWeightsKeepExactSplineGeometry) {
     boost::filesystem::remove(input);
     boost::filesystem::remove(output);
 }
+
+TEST(DxfRoundTripTest, BuiltSplineHasBoundsAndCanBeSelected) {
+    const auto layer=defaultLayer();
+    for (bool fitOnly : {false,true}) {
+        const std::vector<lc::geo::Coordinate> points{{100,200,3},{110,230,5},{120,210,7}};
+        const std::vector<lc::geo::Coordinate> empty;
+        auto source=std::make_shared<lc::entity::Spline>(fitOnly ? empty : points,
+            fitOnly ? std::vector<double>{} : std::vector<double>{0,0,0,1,1,1},
+            fitOnly ? points : empty, 2,false,0,0,0,0,0,0,0,0,0,1,
+            static_cast<lc::geo::Spline::splineflag>(0),layer);
+        lc::builder::SplineBuilder builder;
+        builder.copy(source);
+        const auto built=builder.build();
+        ASSERT_NE(built,nullptr);
+        const auto box=built->boundingBox();
+        EXPECT_DOUBLE_EQ(box.minP().x(),100); EXPECT_DOUBLE_EQ(box.maxP().x(),120);
+        EXPECT_DOUBLE_EQ(box.minP().y(),200); EXPECT_DOUBLE_EQ(box.maxP().y(),230);
+        EXPECT_DOUBLE_EQ(box.minP().z(),3); EXPECT_DOUBLE_EQ(box.maxP().z(),7);
+        auto doc=newDocument();
+        ASSERT_NO_THROW(insertThroughBuilder(doc,{built}));
+        const lc::geo::Area selection({90,190},{130,240});
+        EXPECT_NE(doc->entityContainer().entitiesFullWithinArea(selection).entityByID(built->id()),nullptr);
+        const lc::geo::Area origin({-1,-1},{1,1});
+        EXPECT_EQ(doc->entityContainer().entitiesFullWithinArea(origin).entityByID(built->id()),nullptr);
+    }
+}
+
+TEST(DxfRoundTripTest, AreaMergePreservesThreeDimensionalExtents) {
+    const lc::geo::Area a({1,2,3},{4,5,6});
+    const auto point=a.merge(lc::geo::Coordinate(0,4,9));
+    EXPECT_DOUBLE_EQ(point.minP().x(),0); EXPECT_DOUBLE_EQ(point.maxP().y(),5);
+    EXPECT_DOUBLE_EQ(point.minP().z(),3); EXPECT_DOUBLE_EQ(point.maxP().z(),9);
+    const auto area=a.merge(lc::geo::Area({2,-3,-4},{8,3,5}));
+    EXPECT_DOUBLE_EQ(area.minP().x(),1); EXPECT_DOUBLE_EQ(area.maxP().x(),8);
+    EXPECT_DOUBLE_EQ(area.minP().y(),-3); EXPECT_DOUBLE_EQ(area.maxP().y(),5);
+    EXPECT_DOUBLE_EQ(area.minP().z(),-4); EXPECT_DOUBLE_EQ(area.maxP().z(),6);
+}

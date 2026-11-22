@@ -99,6 +99,7 @@ Spline::Spline(const lc::builder::SplineBuilder& builder) :
                 builder.normalVector().y(),
                 builder.normalVector().z(),
                 builder.flags(), builder.weights()) {
+    calculateBoundingBox();
 }
 
 Spline::Spline(const Spline_CSPtr& other, bool sameID) :
