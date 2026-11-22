@@ -377,6 +377,33 @@ std::vector<geo::Coordinate> Intersection::splineLine(const geo::Spline& B, cons
         auto vecret = bezierLine(bezier, V);
         ret.insert(ret.end(), vecret.begin(), vecret.end());
     }
+    // bezierLine excludes segment endpoints. Preserve an exact internal
+    // junction once, including joins introduced by rational approximation.
+    const auto direction = V.end() - V.start();
+    const auto length = std::hypot(direction.x(), direction.y());
+    if (length > 0 && std::isfinite(length)) {
+        for (std::size_t i = 1; i < beziers.size(); ++i) {
+            const auto left = beziers[i-1]->getCP();
+            const auto right = beziers[i]->getCP();
+            if (left.empty() || right.empty()) continue;
+            const auto point = left.back();
+            if (point.x() != right.front().x() || point.y() != right.front().y()
+                || point.z() != right.front().z()) continue;
+            const auto relative = point - V.start();
+            const auto scale = std::max({1.0, std::abs(relative.x()), std::abs(relative.y()),
+                                         std::abs(point.x()), std::abs(point.y()), std::abs(point.z())});
+            const auto tolerance = 32 * std::numeric_limits<double>::epsilon() * scale;
+            const auto distance = relative.x() * (direction.y()/length)
+                                - relative.y() * (direction.x()/length);
+            if (!std::isfinite(distance) || std::abs(distance) > tolerance) continue;
+            const bool present = std::any_of(ret.begin(), ret.end(), [&](const geo::Coordinate& existing) {
+                return std::abs(existing.x()-point.x()) <= tolerance
+                    && std::abs(existing.y()-point.y()) <= tolerance
+                    && std::abs(existing.z()-point.z()) <= tolerance;
+            });
+            if (!present) ret.push_back(point);
+        }
+    }
     return ret;
 }
 

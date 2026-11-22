@@ -375,3 +375,113 @@ TEST(SplineBezierConversion, DegreeOneIntersectsSmallCircle) {
     EXPECT_NEAR(hits[0].x(), -1e-8, 1e-18);
     EXPECT_NEAR(hits[1].x(), 1e-8, 1e-18);
 }
+
+TEST(SplineBezierConversion, RationalQuarterCircleUsesWeights) {
+    const std::vector<lc::geo::Coordinate> controls{{1,0,3}, {1,1,3}, {0,1,3}};
+    const std::vector<double> knots{0,0,0,1,1,1};
+    const std::vector<double> weights{1,std::sqrt(0.5),1};
+    const lc::geo::Spline spline(controls, knots, {}, 2, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::RATIONAL, weights);
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 1u);
+    for (const auto& segment : segments) {
+        for (double t : {0.0, 0.5, 1.0}) {
+            const auto p = segment->DirectValueAt(t);
+            EXPECT_NEAR(std::hypot(p.x(), p.y()), 1.0, 0.0002);
+            EXPECT_NEAR(p.z(), 3.0, 1e-12);
+        }
+    }
+}
+
+TEST(SplineBezierConversion, WeightedNonuniformCurveMatchesIndependentPoints) {
+    const std::vector<lc::geo::Coordinate> controls{{0,0,1}, {2,4,2}, {4,-2,3}, {8,1,4}};
+    const std::vector<double> knots{0,0,0,0.35,1,1,1};
+    const std::vector<double> weights{1,0.4,2,1.5};
+    const lc::geo::Spline spline(controls, knots, {}, 2, false, 0.0,
+                                 0,0,0, 0,0,0, 0,0,1,
+                                 static_cast<lc::geo::Spline::splineflag>(0), weights);
+    const std::vector<lc::geo::Coordinate> expected{
+        {0.7947882736156353,0.8295331161780675,1.3973941368078178},
+        {2.129564193168434,0.96113074204947,2.064782096584217},
+        {3.458333333333333,-0.375,2.7291666666666665},
+        {4.008714596949892,-1.1437908496732025,2.945533769063181},
+        {5.325,-0.832142857142857,3.319642857142857},
+        {6.64842320919002,0.014853296261067128,3.660203409672935}};
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 1u);
+    for (const auto& point : expected) {
+        double nearest = std::numeric_limits<double>::infinity();
+        for (const auto& segment : segments) {
+            const auto cp = segment->getCP();
+            ASSERT_EQ(cp.size(), 3u);
+            const auto d = cp[2] - cp[0];
+            const auto q = point - cp[0];
+            const double denom = d.x()*d.x() + d.y()*d.y() + d.z()*d.z();
+            const double t = denom > 0 ? std::max(0.0, std::min(1.0,
+                (q.x()*d.x() + q.y()*d.y() + q.z()*d.z()) / denom)) : 0;
+            const auto e = point - (cp[0] + d*t);
+            nearest = std::min(nearest, std::hypot(std::hypot(e.x(),e.y()),e.z()));
+        }
+        EXPECT_LE(nearest, 0.00081); // 1e-4 of the 8-unit control extent.
+    }
+}
+
+TEST(SplineBezierConversion, RationalSplineCrossingLineTracksCircle) {
+    const lc::geo::Spline spline({{1,0,3}, {1,1,3}, {0,1,3}}, {0,0,0,1,1,1}, {},
+        2, false, 0.0, 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::RATIONAL,
+        {1,std::sqrt(0.5),1});
+    const auto hits = lc::maths::Intersection::splineLine(spline,
+        lc::geo::Vector({-1,0.5}, {2,0.5}));
+    ASSERT_EQ(hits.size(), 1u);
+    EXPECT_NEAR(hits[0].x(), std::sqrt(0.75), 0.0002);
+    EXPECT_NEAR(hits[0].y(), 0.5, 1e-12);
+}
+
+TEST(SplineBezierConversion, RationalSplineCrossingAtSegmentJunction) {
+    const lc::geo::Spline spline({{1,0,3}, {1,1,3}, {0,1,3}}, {0,0,0,1,1,1}, {},
+        2, false, 0.0, 0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::RATIONAL,
+        {1,std::sqrt(0.5),1});
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 3u);
+    const auto junction = segments[2]->getCP().back();
+    const auto hits = lc::maths::Intersection::splineLine(spline,
+        lc::geo::Vector({-1,junction.y()}, {2,junction.y()}));
+    ASSERT_EQ(hits.size(), 1u);
+    EXPECT_NEAR(hits[0].x(), junction.x(), 1e-10);
+}
+
+TEST(SplineBezierConversion, RationalSplineFindsExactInteriorJunction) {
+    const lc::geo::Spline spline({{-1,-1}, {-0.5,-0.5}, {0,0}, {0.5,0.5}, {1,1}},
+        {0,0,0,0.5,0.5,1,1,1}, {}, 2, false, 0.0, 0,0,0, 0,0,0, 0,0,1,
+        lc::geo::Spline::RATIONAL, {1,1,1,1,1});
+    const auto hits = lc::maths::Intersection::splineLine(spline, lc::geo::Vector({-2,0}, {2,0}));
+    ASSERT_EQ(hits.size(), 1u);
+    EXPECT_NEAR(hits[0].x(), 0.0, 1e-12);
+}
+
+TEST(SplineBezierConversion, InvalidRationalWeightsKeepExistingFallback) {
+    const std::vector<lc::geo::Coordinate> controls{{1,0,3}, {1,1,3}, {0,1,3}};
+    const std::vector<double> knots{0,0,0,1,1,1};
+    for (const auto& weights : {std::vector<double>{1,1}, std::vector<double>{1,0,1},
+                                std::vector<double>{1,-1,1},
+                                std::vector<double>{1,std::numeric_limits<double>::quiet_NaN(),1}}) {
+        const lc::geo::Spline spline(controls, knots, {}, 2, false, 0.0,
+                                     0,0,0, 0,0,0, 0,0,1, lc::geo::Spline::RATIONAL, weights);
+        ASSERT_EQ(spline.beziers().size(), 1u);
+    }
+}
+
+TEST(SplineBezierConversion, RationalCubicIncludesIndependentMidpoint) {
+    const lc::geo::Spline spline({{0,0,0},{1,4,1},{3,-2,2},{6,1,3}},
+        {0,0,0,0,1,1,1,1}, {}, 3, false, 0.0, 0,0,0, 0,0,0, 0,0,1,
+        lc::geo::Spline::RATIONAL, {1,0.5,1.5,1});
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 1u);
+    bool found = false;
+    for (const auto& segment : segments) {
+        const auto p = segment->getCP().back();
+        if (std::abs(p.x()-2.625) < 1e-12 && std::abs(p.y()+0.25) < 1e-12
+            && std::abs(p.z()-1.6875) < 1e-12) found = true;
+    }
+    EXPECT_TRUE(found);
+}

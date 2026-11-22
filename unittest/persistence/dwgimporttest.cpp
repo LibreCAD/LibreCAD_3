@@ -1029,6 +1029,14 @@ TEST(DwgImportTest, RationalHatchSplineWeightsSurviveSave) {
         EXPECT_NE(spline->flags() & lc::geo::Spline::RATIONAL, 0);
         ASSERT_EQ(spline->controlPoints().size(), 3u);
         EXPECT_DOUBLE_EQ(spline->controlPoints()[1].z(), elevation);
+        const auto offsetX = spline->controlPoints()[0].x() - 1.0;
+        const auto offsetY = spline->controlPoints()[0].y();
+        auto hits = hatch->getRegion().getLineIntersection(lc::geo::Vector(
+            {-1 + offsetX, 0.5 + offsetY}, {2 + offsetX, 0.5 + offsetY}));
+        ASSERT_EQ(hits.size(), 2u);
+        std::sort(hits.begin(), hits.end(), [](const auto& a, const auto& b) { return a.x() < b.x(); });
+        EXPECT_NEAR(hits[0].x(), 0.5 + offsetX, 0.0002);
+        EXPECT_NEAR(hits[1].x(), std::sqrt(0.75) + offsetX, 0.0002);
     };
     auto doc = newDwgDocument();
     const auto imported = lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW);
