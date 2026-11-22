@@ -557,3 +557,58 @@ TEST(SplineBezierConversion, PeriodicRationalMatchesIndependentPoints) {
         EXPECT_LE(nearest, 0.00031);
     }
 }
+
+TEST(SplineBezierConversion, NonClampedQuadraticUsesSourceDomain) {
+    lc::geo::Spline spline({{0,0,0},{2,3,1},{4,0,2},{5,4,3},{8,1,4},{9,3,5}},
+        {0,1,2,3,4,5,6,7,8}, {}, 2, false, 0.0, 0,0,0, 0,0,0, 0,0,1,
+        static_cast<lc::geo::Spline::splineflag>(0));
+    const auto segments = spline.beziers();
+    ASSERT_EQ(segments.size(), 4u);
+    const std::vector<lc::geo::Coordinate> expected{{2,2.25,1},{3.875,0.875,2},
+        {5.25,3.125,3},{7.75,1.625,4}};
+    const auto first = segments.front()->getCP().front();
+    const auto last = segments.back()->getCP().back();
+    EXPECT_NEAR(first.x(), 1, 1e-10); EXPECT_NEAR(first.y(), 1.5, 1e-10);
+    EXPECT_NEAR(first.z(), 0.5, 1e-10);
+    EXPECT_NEAR(last.x(), 8.5, 1e-10); EXPECT_NEAR(last.y(), 2, 1e-10);
+    EXPECT_NEAR(last.z(), 4.5, 1e-10);
+    for (std::size_t i=0; i<segments.size(); ++i) {
+        const auto p=segments[i]->DirectValueAt(0.5);
+        EXPECT_NEAR(p.x(),expected[i].x(),1e-10);
+        EXPECT_NEAR(p.y(),expected[i].y(),1e-10);
+        EXPECT_NEAR(p.z(),expected[i].z(),1e-10);
+    }
+    spline.populateCurve();
+    EXPECT_EQ(spline.beziers().size(), segments.size());
+}
+
+TEST(SplineBezierConversion, NonClampedRationalUsesSourceDomain) {
+    lc::geo::Spline spline({{0,0,0},{2,3,1},{4,0,2},{5,4,3},{8,1,4},{9,3,5}},
+        {0,1,2,3,4,5,6,7,8}, {}, 2, false, 0.0, 0,0,0, 0,0,0, 0,0,1,
+        lc::geo::Spline::RATIONAL, {1,0.5,2,1,3,1});
+    const auto segments = spline.beziers();
+    ASSERT_GT(segments.size(), 4u);
+    const auto first=segments.front()->getCP().front(), last=segments.back()->getCP().back();
+    EXPECT_NEAR(first.x(), 2.0/3, 1e-10); EXPECT_NEAR(first.y(), 1, 1e-10);
+    EXPECT_NEAR(first.z(), 1.0/3, 1e-10);
+    EXPECT_NEAR(last.x(), 8.25, 1e-10); EXPECT_NEAR(last.y(), 1.5, 1e-10);
+    EXPECT_NEAR(last.z(), 4.25, 1e-10);
+    const std::vector<lc::geo::Coordinate> expected{{2.333333333333333,1.5,1.1666666666666665},
+        {4,0.4074074074074074,2.037037037037037},{5.636363636363636,2.454545454545454,3.090909090909091},
+        {7.9,1.25,4}};
+    for (const auto& point : expected) {
+        double nearest=std::numeric_limits<double>::infinity();
+        for (const auto& segment : segments) {
+            const auto cp=segment->getCP();
+            const auto d=cp.back()-cp.front(), q=point-cp.front();
+            const double length2=d.x()*d.x()+d.y()*d.y()+d.z()*d.z();
+            const double t=length2>0 ? std::max(0.0,std::min(1.0,
+                (q.x()*d.x()+q.y()*d.y()+q.z()*d.z())/length2)) : 0;
+            const auto e=point-(cp.front()+d*t);
+            nearest=std::min(nearest,std::hypot(std::hypot(e.x(),e.y()),e.z()));
+        }
+        EXPECT_LE(nearest,0.00091);
+    }
+    spline.populateCurve();
+    EXPECT_EQ(spline.beziers().size(), segments.size());
+}

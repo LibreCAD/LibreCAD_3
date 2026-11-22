@@ -4090,3 +4090,61 @@ TEST(DxfRoundTripTest, RationalSplineKeepsWeightsOnSave) {
     boost::filesystem::remove(input);
     boost::filesystem::remove(output);
 }
+
+TEST(DxfRoundTripTest, NonClampedSplinesKeepSourceGeometry) {
+    const std::string input=uniqueTmpDxf("nonclamped-input");
+    const std::string output=uniqueTmpDxf("nonclamped-output");
+    {
+        std::ofstream dxf(input);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+               "0\nSECTION\n2\nENTITIES\n";
+        for (int rational : {0,1}) {
+            dxf << "0\nSPLINE\n8\n0\n70\n" << (rational ? 4 : 0)
+                << "\n71\n2\n72\n9\n73\n6\n74\n0\n";
+            for (int i=0;i<9;++i) dxf << "40\n" << i << "\n";
+            const double points[6][3]={{0,0,0},{2,3,1},{4,0,2},{5,4,3},{8,1,4},{9,3,5}};
+            const double weights[6]={1,0.5,2,1,3,1};
+            for (int i=0;i<6;++i) {
+                dxf << "10\n" << points[i][0] << "\n20\n" << points[i][1]
+                    << "\n30\n" << points[i][2] << "\n";
+                if (rational) dxf << "41\n" << weights[i] << "\n";
+            }
+        }
+        dxf << "0\nENDSEC\n0\nEOF\n";
+    }
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        int ordinary=0, weighted=0;
+        for (const auto& entity : doc->entityContainer().asVector()) {
+            const auto spline=std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+            if (!spline) continue;
+            const auto segments=spline->beziers();
+            ASSERT_FALSE(segments.empty());
+            EXPECT_EQ(spline->knotPoints(), (std::vector<double>{0,1,2,3,4,5,6,7,8}));
+            const auto first=segments.front()->getCP().front();
+            const auto last=segments.back()->getCP().back();
+            if ((spline->flags() & lc::geo::Spline::RATIONAL) != 0) {
+                ++weighted;
+                EXPECT_EQ(spline->weights(), (std::vector<double>{1,0.5,2,1,3,1}));
+                EXPECT_NEAR(first.x(),2.0/3,1e-10); EXPECT_NEAR(first.z(),1.0/3,1e-10);
+                EXPECT_NEAR(last.x(),8.25,1e-10); EXPECT_NEAR(last.z(),4.25,1e-10);
+            } else {
+                ++ordinary;
+                EXPECT_NEAR(first.x(),1,1e-10); EXPECT_NEAR(first.z(),0.5,1e-10);
+                EXPECT_NEAR(last.x(),8.5,1e-10); EXPECT_NEAR(last.z(),4.5,1e-10);
+            }
+        }
+        EXPECT_EQ(ordinary,1); EXPECT_EQ(weighted,1);
+    };
+    auto doc=newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc,input,lc::persistence::File::Library::LIBDXFRW).ok);
+    check(doc);
+    for (auto type : {lc::persistence::File::Type::LIBDXFRW_DXF_R2000,
+                      lc::persistence::File::Type::LIBDXFRW_DXB_R2000}) {
+        ASSERT_TRUE(lc::persistence::File::save(doc,output,type));
+        auto reopened=newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened,output,lc::persistence::File::Library::LIBDXFRW).ok);
+        check(reopened);
+    }
+    boost::filesystem::remove(input);
+    boost::filesystem::remove(output);
+}
