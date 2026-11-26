@@ -462,6 +462,9 @@ void DXFimpl::addVport(const DRW_Vport& data) {
 void DXFimpl::addBlock(const DRW_Block& data) {
     guarded("BLOCK", &data, [&] {
         LOG_TRACE << "addBlock " << data.name;
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (upperName(data.name) == "*PAPER_SPACE0") _sourceHasPaperSpace0 = true;
+#endif
 
         _currentBlock = nullptr;
 
@@ -1932,6 +1935,16 @@ void DXFimpl::addDxfLayoutSource(const DRW_Layout& layout, const DRW_RawDxfObjec
     _sourceLayouts.emplace_back(layout, source);
 }
 
+#ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
+bool DXFimpl::retainDxfBlockRecordSource(const DRW_Block_Record& row) const {
+    if (upperName(row.name) == "*PAPER_SPACE0") _sourceHasPaperSpace0 = true;
+    const bool layoutBlock = row.name == "*Model_Space" || row.name == "*Paper_Space" ||
+                             row.name == "*Paper_Space0";
+    if (!layoutBlock) _hasOtherBlockRecords = true;
+    return row.layoutHandle != 0 || layoutBlock;
+}
+#endif
+
 void DXFimpl::addDxfBlockRecordSource(const DRW_Block_Record& block, const DRW_RawDxfObject& source) {
     if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") {
         _hasOtherBlockRecords = true;
@@ -2137,6 +2150,9 @@ void DXFimpl::attachPreservedRecords(bool completeRead) {
     // Retain an empty shelf too: it distinguishes an imported headerless DXF
     // from a new document when deciding whether a default block is synthetic.
     auto preserved = std::make_shared<PreservedRecords>(_preserved);
+#if defined(LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH) && defined(LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR)
+    preserved->mayOmitSyntheticPaperSpace0 = completeRead && !_sourceHasPaperSpace0;
+#endif
     preserved->hasHeader = hasHeader;
     preserved->insUnitsCode = _header.insUnitsCode;
     preserved->hasInsUnits = _header.hasInsUnits;
@@ -2381,6 +2397,16 @@ bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
         if (referencesExtra(_document->entitiesByBlock(owner).asVector())) return true;
     return false;
 }
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+bool DXFimpl::mayOmitUnusedDefaultPaper() const {
+    const bool sourceAllowsOmission = !_shelf ||
+        (!_shelf->sourceWasDwg && _shelf->mayOmitSyntheticPaperSpace0 &&
+         !_shelf->hasSourceLayouts && _shelf->total() == 0 &&
+         _shelf->rootDictEntries.empty() && _shelf->classes.empty());
+    return sourceAllowsOmission && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
+}
+#endif
 
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     // Each attempt reports its own losses, including after an early refusal.
@@ -4270,7 +4296,7 @@ bool DXFimpl::isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block) {
 
 void DXFimpl::writeBlockRecords() {
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
-    const bool omitUnusedDefaultPaper = !_shelf && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
+    const bool omitUnusedDefaultPaper = mayOmitUnusedDefaultPaper();
 #endif
     for(const auto& block : _document->blocks()) {
         // Anonymous dimension blocks are geometry a writer draws a dimension
@@ -4803,7 +4829,7 @@ void DXFimpl::writeBlocks() {
     }
 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
-    const bool omitUnusedDefaultPaper = !_shelf && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
+    const bool omitUnusedDefaultPaper = mayOmitUnusedDefaultPaper();
 #endif
     for(const auto& block : _document->blocks()) {
         // Left out for the same reason as in writeBlockRecords(): the record

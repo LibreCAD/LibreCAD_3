@@ -112,6 +112,28 @@ TEST(LayoutGraph, EmptyBinaryDrawingDoesNotIntroduceLayoutWarnings) {
         ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
     }
 }
+TEST(LayoutGraph, ImportedModelOnlyBinaryOmitsSyntheticPaperBlock) {
+    Scratch dir; const auto input = dir.path / "model.dxf", output = dir.path / "model-binary.dxf";
+    { std::ofstream out(input); out << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n0\nLINE\n5\n55\n100\nAcDbEntity\n8\n0\n"
+        "100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n0\nENDSEC\n0\nEOF\n"; }
+    auto doc = makeDocument(); ASSERT_TRUE(File::importFile(doc, input.string(), File::LIBDXFRW).ok);
+    ASSERT_TRUE(File::exportFile(doc, output.string(), File::LIBDXFRW_DXB_R2004).ok);
+    EXPECT_EQ(bytes(output).find("*Paper_Space0"), std::string::npos);
+    auto reopened = makeDocument(); const auto result = File::importFile(reopened, output.string(), File::LIBDXFRW);
+    ASSERT_TRUE(result.ok); EXPECT_EQ(result.loss.droppedByType.count("LAYOUT"), 0u);
+    EXPECT_EQ(reopened->entityContainer().asVector().size(), 1u);
+}
+TEST(LayoutGraph, ImportedPaperBlockRecordPreventsOmission) {
+    Scratch dir; const auto input = dir.path / "record.dxf", output = dir.path / "record-binary.dxf";
+    { std::ofstream out(input); out << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nBLOCK_RECORD\n5\n1\n70\n1\n"
+        "0\nBLOCK_RECORD\n5\n35\n330\n1\n100\nAcDbSymbolTableRecord\n"
+        "100\nAcDbBlockTableRecord\n2\n*PAPER_SPACE0\n340\n0\n0\nENDTAB\n0\nENDSEC\n0\nEOF\n"; }
+    auto doc = makeDocument(); ASSERT_TRUE(File::importFile(doc, input.string(), File::LIBDXFRW).ok);
+    ASSERT_TRUE(File::exportFile(doc, output.string(), File::LIBDXFRW_DXB_R2004).ok);
+    EXPECT_NE(bytes(output).find("*Paper_Space0"), std::string::npos);
+}
 TEST(LayoutGraph, HeaderlessImportedPaperBlockIsNotOmitted) {
     Scratch dir; const auto source = dir.path / "source.dxf", output = dir.path / "output.dxf";
     { std::ofstream out(source); out << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n2\n*Paper_Space0\n70\n0\n10\n0\n20\n0\n30\n0\n0\nENDBLK\n0\nENDSEC\n0\nEOF\n"; }

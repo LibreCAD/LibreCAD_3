@@ -84,6 +84,8 @@ public:
 
     /** Whether the source contained layouts, including unsupported profiles. */
     bool sourceWasDwg{false};
+    // True only after a complete DXF read that checked both BLOCK_RECORD and BLOCK names.
+    bool mayOmitSyntheticPaperSpace0{false};
     bool hasSourceLayouts{false};
     bool checkedLayoutGraph{false};
     bool checkedBinaryLayoutGraph{false};

@@ -351,12 +351,7 @@ public:
     void addDxfLayoutSource(const DRW_Layout&, const DRW_RawDxfObject&) override;
     bool wantsDxfBlockRecordSource() const override { return true; }
 #ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
-    bool retainDxfBlockRecordSource(const DRW_Block_Record& row) const override {
-        const bool layoutBlock = row.name == "*Model_Space" || row.name == "*Paper_Space" ||
-                                 row.name == "*Paper_Space0";
-        if (!layoutBlock) _hasOtherBlockRecords = true;
-        return row.layoutHandle != 0 || layoutBlock;
-    }
+    bool retainDxfBlockRecordSource(const DRW_Block_Record& row) const override;
 #endif
     void addDxfBlockRecordSource(const DRW_Block_Record&, const DRW_RawDxfObject&) override;
     bool wantsDxfBlockSource() const override {
@@ -658,6 +653,7 @@ private:
     };
     std::vector<SourceBlockPair> _sourceLayoutBodies;
     int _activeSourceLayoutBody{-1};
+    mutable bool _sourceHasPaperSpace0{false};
     bool _unmatchedSourceLayoutBlock{false};
     mutable bool _hasOtherBlockRecords{false};
     std::uint32_t _sourceRootHandle{0};
@@ -671,6 +667,7 @@ private:
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
     std::string _writeFailureReason;
     bool hasUnsafeAdditionalPaperSpace() const;
+    bool mayOmitUnusedDefaultPaper() const;
 
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
