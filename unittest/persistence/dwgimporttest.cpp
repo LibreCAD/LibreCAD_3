@@ -1046,7 +1046,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
         ASSERT_TRUE(f.good());
         f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
              "0\nSECTION\n2\nENTITIES\n0\nMPOLYGON\n5\n55\n"
-             "100\nAcDbEntity\n8\n0\n100\nAcDbMPolygon\n70\n1\n"
+             "100\nAcDbEntity\n8\n0\n62\n1\n100\nAcDbMPolygon\n70\n1\n"
              "10\n0\n20\n0\n30\n0\n210\n0\n220\n0\n230\n1\n"
              "2\nSOLID\n71\n1\n91\n1\n92\n2\n73\n1\n72\n0\n93\n3\n"
              "10\n1\n20\n2\n10\n4\n20\n2\n10\n3\n20\n5\n"
@@ -1067,7 +1067,8 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     const auto fillMeta = hatch->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
     ASSERT_TRUE(fillMeta);
     EXPECT_EQ(fillMeta->color().redI(), 0); EXPECT_EQ(fillMeta->color().greenI(), 255); EXPECT_EQ(fillMeta->color().blueI(), 0);
-    EXPECT_FALSE(hatch->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME()));
+    const auto lineColor = hatch->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+    ASSERT_TRUE(lineColor); EXPECT_EQ(lineColor->color().redI(), 255); EXPECT_EQ(lineColor->color().greenI(), 0);
     const auto movedFillControl = std::dynamic_pointer_cast<const lc::entity::Hatch>(hatch->move(lc::geo::Coordinate(1, 0)));
     ASSERT_TRUE(movedFillControl); EXPECT_TRUE(movedFillControl->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME()));
 
@@ -1099,7 +1100,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     // The ASCII tags independently expose the preserved subtype and fields.
     std::ifstream f(ascii);
     ASSERT_TRUE(f.good());
-    bool inPolygon = false, seenPolygon = false, fill = false, xdir = false, ydir = false;
+    bool inPolygon = false, seenPolygon = false, fill = false, lineColorWritten = false, xdir = false, ydir = false;
     std::string code, value;
     while (std::getline(f, code) && std::getline(f, value)) {
         if (!code.empty() && code.back() == '\r') code.pop_back();
@@ -1111,10 +1112,11 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
             seenPolygon = seenPolygon || inPolygon;
         }
         if (inPolygon && group == 63) fill = std::stoi(value) == 3;
+        if (inPolygon && group == 62) lineColorWritten = std::stoi(value) == 1;
         if (inPolygon && group == 11) xdir = std::stod(value) == 2.0;
         if (inPolygon && group == 21) ydir = std::stod(value) == 5.0;
     }
-    if (asciiPreserved) EXPECT_TRUE(seenPolygon && fill && xdir && ydir);
+    if (asciiPreserved) EXPECT_TRUE(seenPolygon && fill && lineColorWritten && xdir && ydir);
     else EXPECT_FALSE(seenPolygon);
 
     // A planar translation changes the offset while retaining the subtype.
