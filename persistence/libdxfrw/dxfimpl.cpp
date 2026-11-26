@@ -1424,7 +1424,12 @@ lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
     // Try to find a entities meta color
     lc::meta::MetaColor_CSPtr col;
-    if(data.color == BYBLOCK_COLOR) {
+    if (data.color24 >= 0 && data.color24 <= 0xFFFFFF) {
+        const int rgb = data.color24;
+        col = std::make_shared<const lc::meta::MetaColorTrueColor>(
+            lc::Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF),
+            data.color, data.colorName);
+    } else if(data.color == BYBLOCK_COLOR) {
         col = std::make_shared<const lc::meta::MetaColorByBlock>();
     }
     else {
@@ -2852,7 +2857,23 @@ void DXFimpl::getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_C
 
     ent->layer = layer_->name();
 
-    if(metaColorByBlock != nullptr) {
+    auto trueColor = entity->metaInfo<lc::meta::MetaColorTrueColor>(lc::meta::MetaColor::LCMETANAME());
+    if (trueColor != nullptr) {
+        lc::iColor col;
+        if (_exportVersion > DRW::AC1015) {
+            const auto color = trueColor->color();
+            ent->color = trueColor->sourceAci();
+            ent->color24 = (static_cast<int>(color.redI()) << 16)
+                         | (static_cast<int>(color.greenI()) << 8)
+                         | static_cast<int>(color.blueI());
+            ent->colorName = trueColor->name();
+        } else {
+            ent->color = col.colorToInt(trueColor->color(), 1);
+            const std::string note = "True colors were approximated using indexed colors for the selected DXF version.";
+            if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+                _loss.notes.push_back(note);
+        }
+    } else if(metaColorByBlock != nullptr) {
         ent->color = BYBLOCK_COLOR;
     }
     else if(metaColorByValue != nullptr) {
@@ -3682,12 +3703,14 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
             const int sourceAci = fill->sourceAci();
             const int fillAci = sourceAci > 0 && sourceAci < 256
                 ? sourceAci : icol.colorToInt(fill->color());
-            if (hatch.color != fillAci) {
+            if (hatch.color != fillAci || hatch.color24 >= 0 || !hatch.colorName.empty()) {
                 const std::string note = "A projected HATCH uses the MPOLYGON fill color; its separate boundary color cannot be retained.";
                 if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
                     _loss.notes.push_back(note);
             }
             hatch.color = fillAci;
+            hatch.color24 = -1;
+            hatch.colorName.clear();
         }
     }
     // Supported paths can share one default-normal HATCH elevation. Do not

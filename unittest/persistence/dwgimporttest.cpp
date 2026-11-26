@@ -1047,7 +1047,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
         ASSERT_TRUE(f.good());
         f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
              "0\nSECTION\n2\nENTITIES\n0\nMPOLYGON\n5\n55\n"
-             "100\nAcDbEntity\n8\n0\n62\n1\n100\nAcDbMPolygon\n70\n1\n"
+             "100\nAcDbEntity\n8\n0\n62\n1\n420\n16711680\n100\nAcDbMPolygon\n70\n1\n"
              "10\n0\n20\n0\n30\n0\n210\n0\n220\n0\n230\n1\n"
              "2\nSOLID\n71\n1\n91\n1\n92\n2\n73\n1\n72\n0\n93\n3\n"
              "10\n1\n20\n2\n10\n4\n20\n2\n10\n3\n20\n5\n"
@@ -1077,8 +1077,8 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     const std::string binary = tmpPath("simple-mpolygon-binary");
     bool asciiPreserved = false;
     for (const auto& test : std::map<std::string, lc::persistence::File::Type>{
-             {ascii, lc::persistence::File::LIBDXFRW_DXF_R2000},
-             {binary, lc::persistence::File::LIBDXFRW_DXB_R2000}}) {
+             {ascii, lc::persistence::File::LIBDXFRW_DXF_R2004},
+             {binary, lc::persistence::File::LIBDXFRW_DXB_R2004}}) {
         const auto written = lc::persistence::File::exportFile(doc, test.first, test.second);
         ASSERT_TRUE(written.ok) << test.first;
         const bool preserved = written.loss.empty();
@@ -1127,7 +1127,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     doc->insertEntity(moved);
     const std::string edited = tmpPath("edited-mpolygon");
     const auto written = lc::persistence::File::exportFile(
-        doc, edited, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, edited, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(written.ok);
     EXPECT_EQ(written.loss.empty(), asciiPreserved);
     if (!asciiPreserved) {
@@ -1161,7 +1161,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     doc->insertEntity(rotated);
     const std::string rotatedOutput = tmpPath("rotated-mpolygon-output");
     const auto rotatedWrite = lc::persistence::File::exportFile(
-        doc, rotatedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, rotatedOutput, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(rotatedWrite.ok);
     EXPECT_EQ(rotatedWrite.loss.empty(), asciiPreserved);
     if (!asciiPreserved) {
@@ -1207,7 +1207,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     doc->insertEntity(scaled);
     const std::string scaledOutput = tmpPath("scaled-mpolygon-output");
     const auto scaledWrite = lc::persistence::File::exportFile(
-        doc, scaledOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, scaledOutput, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(scaledWrite.ok);
     EXPECT_TRUE(std::any_of(scaledWrite.loss.notes.begin(), scaledWrite.loss.notes.end(),
                             [](const std::string& note) {
@@ -1221,7 +1221,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     {
         std::ifstream projected(scaledOutput);
         ASSERT_TRUE(projected.good());
-        bool inHatch = false, foundIndex = false;
+        bool inHatch = false, foundIndex = false, foundTrueColor = false;
         std::string group, text;
         while (std::getline(projected, group) && std::getline(projected, text)) {
             if (!group.empty() && group.back() == '\r') group.pop_back();
@@ -1231,8 +1231,9 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
                 if (inHatch) break;
                 inHatch = text == "HATCH";
             } else if (inHatch && code == 62) foundIndex = std::stoi(text) == 90;
+            else if (inHatch && code == 420) foundTrueColor = true;
         }
-        EXPECT_TRUE(foundIndex);
+        EXPECT_TRUE(foundIndex); EXPECT_FALSE(foundTrueColor);
     }
     auto scaledDoc = newDwgDocument();
     ASSERT_TRUE(lc::persistence::File::importFile(scaledDoc, scaledOutput, lc::persistence::File::LIBDXFRW).ok);
@@ -1246,7 +1247,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     // Reusing one writer must report this fallback on every attempt.
     lc::persistence::DXFimpl repeatWriter(doc);
     for (int attempt = 0; attempt < 2; ++attempt) {
-        ASSERT_TRUE(repeatWriter.writeDXF(scaledOutput, lc::persistence::File::LIBDXFRW_DXF_R2000));
+        ASSERT_TRUE(repeatWriter.writeDXF(scaledOutput, lc::persistence::File::LIBDXFRW_DXF_R2004));
         const auto& notes = repeatWriter.loss().notes;
         EXPECT_TRUE(std::any_of(notes.begin(), notes.end(), [](const std::string& note) {
             return note.find("written as HATCH") != std::string::npos;
@@ -1261,7 +1262,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     doc->insertEntity(reflected);
     const std::string reflectedOutput = tmpPath("reflected-mpolygon-output");
     const auto reflectedWrite = lc::persistence::File::exportFile(
-        doc, reflectedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, reflectedOutput, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(reflectedWrite.ok);
     EXPECT_TRUE(std::any_of(reflectedWrite.loss.notes.begin(), reflectedWrite.loss.notes.end(),
                             [](const std::string& note) {
@@ -1273,7 +1274,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     doc->removeEntity(reflected);
     doc->insertEntity(hatch);
     const auto retried = lc::persistence::File::exportFile(
-        doc, edited, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, edited, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(retried.ok);
     EXPECT_EQ(retried.loss.empty(), asciiPreserved);
     auto retriedDoc = newDwgDocument();
@@ -1291,7 +1292,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     doc->insertEntity(lifted);
     const std::string liftedOutput = tmpPath("lifted-mpolygon-output");
     const auto liftedWrite = lc::persistence::File::exportFile(
-        doc, liftedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        doc, liftedOutput, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(liftedWrite.ok);
     EXPECT_EQ(std::any_of(liftedWrite.loss.notes.begin(), liftedWrite.loss.notes.end(),
                             [](const std::string& note) {
@@ -1335,7 +1336,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
         complexDoc, complexInput, lc::persistence::File::LIBDXFRW).ok);
     const std::string complexOutput = tmpPath("complex-mpolygon-output");
     const auto complexWrite = lc::persistence::File::exportFile(
-        complexDoc, complexOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        complexDoc, complexOutput, lc::persistence::File::LIBDXFRW_DXF_R2004);
     ASSERT_TRUE(complexWrite.ok);
     EXPECT_TRUE(std::any_of(complexWrite.loss.notes.begin(), complexWrite.loss.notes.end(),
                             [](const std::string& note) {
@@ -1519,7 +1520,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     const std::string newerOutput = tmpPath("newer-mpolygon-output");
     if (newerRead.ok && newerRead.entitiesDelivered != 0u) {
         const auto newerWrite = lc::persistence::File::exportFile(
-            newerDoc, newerOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+            newerDoc, newerOutput, lc::persistence::File::LIBDXFRW_DXF_R2004);
         ASSERT_TRUE(newerWrite.ok);
         EXPECT_TRUE(std::any_of(newerWrite.loss.notes.begin(), newerWrite.loss.notes.end(),
                                 [](const std::string& note) {

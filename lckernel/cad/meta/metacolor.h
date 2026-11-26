@@ -99,6 +99,18 @@ private:
     }
 };
 
+/** Imported DXF true color and its indexed fallback. */
+class MetaColorTrueColor : public MetaColorByValue {
+public:
+    MetaColorTrueColor(const Color& color, int sourceAci, const std::string& name)
+        : MetaColorByValue(color), _sourceAci(sourceAci), _name(name) {}
+    int sourceAci() const { return _sourceAci; }
+    const std::string& name() const { return _name; }
+private:
+    int _sourceAci;
+    std::string _name;
+};
+
 /** A solid fill color distinct from an entity's line color. */
 class MetaFillColor : public EntityMetaType {
 public:

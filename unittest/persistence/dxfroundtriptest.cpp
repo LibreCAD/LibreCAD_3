@@ -51,6 +51,7 @@
 #include <cad/storage/storagemanagerimpl.h>
 
 #include <cad/meta/color.h>
+#include <cad/meta/metacolor.h>
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
 #include <cad/meta/customentitystorage.h>
@@ -179,6 +180,62 @@ std::map<std::string, std::size_t> entitiesInDocument(
 // rather than projecting the pair onto a plane.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ExplicitTrueColorSurvivesImportEditAndExport) {
+    const auto input = uniqueTmpDxf("true-color-source");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n0\nLINE\n5\n55\n100\nAcDbEntity\n8\n0\n62\n1\n"
+        "420\n13132850\n430\nTest$Copper\n100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n"
+        "0\nENDSEC\n0\nEOF\n"; }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 1u);
+    auto color = entities[0]->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+    ASSERT_TRUE(color); EXPECT_EQ(color->redI(), 200); EXPECT_EQ(color->greenI(), 100); EXPECT_EQ(color->blueI(), 50);
+    auto moved = entities[0]->move(lc::geo::Coordinate(10, 0, 0)); ASSERT_TRUE(moved);
+    doc->removeEntity(entities[0]); doc->insertEntity(moved);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004,
+                            lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output = uniqueTmpDxf("true-color-output");
+        const auto written = lc::persistence::File::exportFile(doc, output, type);
+        ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.notes.empty());
+        auto reopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        auto read = reopened->entityContainer().asVector(); ASSERT_EQ(read.size(), 1u);
+        auto rgb = read[0]->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+        ASSERT_TRUE(rgb); EXPECT_EQ(rgb->redI(), 200); EXPECT_EQ(rgb->greenI(), 100); EXPECT_EQ(rgb->blueI(), 50);
+        const auto named = read[0]->metaInfo<lc::meta::MetaColorTrueColor>(lc::meta::MetaColor::LCMETANAME());
+        ASSERT_TRUE(named); EXPECT_EQ(named->sourceAci(), 1); EXPECT_EQ(named->name(), "Test$Copper");
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(read[0]); ASSERT_TRUE(line);
+        EXPECT_DOUBLE_EQ(line->start().x(), 11); EXPECT_DOUBLE_EQ(line->end().x(), 14);
+        boost::filesystem::remove(output);
+    }
+    const auto legacy = uniqueTmpDxf("true-color-legacy");
+    const auto converted = lc::persistence::File::exportFile(doc, legacy, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(converted.ok);
+    EXPECT_TRUE(std::any_of(converted.loss.notes.begin(), converted.loss.notes.end(), [](const std::string& note) {
+        return note.find("True colors were approximated") != std::string::npos;
+    }));
+    boost::filesystem::remove(legacy); boost::filesystem::remove(input);
+}
+
+TEST(DxfRoundTripTest, TrueBlackDowngradeDoesNotBecomeByBlock) {
+    const auto input = uniqueTmpDxf("true-black-source"), output = uniqueTmpDxf("true-black-r2000");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n0\nLINE\n5\n55\n100\nAcDbEntity\n8\n0\n62\n256\n420\n0\n"
+        "100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n0\nENDSEC\n0\nEOF\n"; }
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    const auto result = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    std::ifstream f(output); ASSERT_TRUE(f.good());
+    std::string code, value; bool line = false, found = false;
+    while (std::getline(f, code) && std::getline(f, value)) {
+        if (std::stoi(code) == 0) { if (line) break; line = value == "LINE"; }
+        else if (line && std::stoi(code) == 62) { found = true; EXPECT_GT(std::stoi(value), 0); EXPECT_LE(std::stoi(value), 255); }
+    }
+    EXPECT_TRUE(found);
+    f.close(); boost::filesystem::remove(input); boost::filesystem::remove(output);
+}
+
 TEST(DxfRoundTripTest, ThreeDimensionalSegmentInsertsWithoutThrowing) {
     auto doc = newDocument();
     auto layer = defaultLayer();
