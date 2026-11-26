@@ -83,6 +83,9 @@ class DXFimpl : public DRW_Interface
               , public DRW_DxfLayoutSourceHandler
               , public DRW_DxfBlockRecordSourceHandler
               , public DRW_DxfBlockSourceHandler
+#ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
+              , public DRW_DxfBlockRecordSourceSelector
+#endif
 #endif
 {
 public:
@@ -345,6 +348,12 @@ public:
     bool wantsDxfLayoutSource() const override { return !_sourceIsBinary; }
     void addDxfLayoutSource(const DRW_Layout&, const DRW_RawDxfObject&) override;
     bool wantsDxfBlockRecordSource() const override { return !_sourceIsBinary; }
+#ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
+    bool retainDxfBlockRecordSource(const DRW_Block_Record& row) const override {
+        return row.layoutHandle != 0 || row.name == "*Model_Space" ||
+               row.name == "*Paper_Space" || row.name == "*Paper_Space0";
+    }
+#endif
     void addDxfBlockRecordSource(const DRW_Block_Record&, const DRW_RawDxfObject&) override;
     bool wantsDxfBlockSource() const override { return !_sourceIsBinary; }
     void addDxfBlockBeginSource(const DRW_Block&, const DRW_RawDxfObject&) override;
