@@ -2668,6 +2668,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
     if (!prepareDefaultLayoutGraph()) {
+        _writeFailureReason = "The layout graph could not be safely prepared for this output; preserve the original and review the paper-space contents.";
         LOG_ERROR << "Cannot safely preserve the layout graph in " << filename;
         delete dxfW;
         dxfW = nullptr;

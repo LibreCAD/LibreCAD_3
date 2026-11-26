@@ -76,7 +76,9 @@ TEST(LayoutGraph, SavesReopensAndRetriesWithoutLosingPaperContents) {
     expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
     auto extra = std::make_shared<lc::meta::Block>("*Paper_Space9"); reopened->addDocumentMetaType(extra);
     { std::ofstream out(second); out << "preserve destination"; }
-    EXPECT_FALSE(File::exportFile(reopened, second.string(), File::LIBDXFRW_DXF_R2004).ok);
+    const auto refused = File::exportFile(reopened, second.string(), File::LIBDXFRW_DXF_R2004);
+    EXPECT_FALSE(refused.ok); ASSERT_FALSE(refused.diagnostics.empty());
+    EXPECT_NE(refused.diagnostics.front().message.find("layout graph"), std::string::npos);
     EXPECT_EQ(bytes(second), "preserve destination");
     reopened->removeDocumentMetaType(extra);
     ASSERT_TRUE(File::exportFile(reopened, second.string(), File::LIBDXFRW_DXF_R2004).ok);
@@ -157,6 +159,7 @@ TEST(LayoutGraph, BinaryLayoutsReopenSaveAndRetry) {
         { std::ofstream out(replay); out << "keep original"; }
         lc::persistence::DXFimpl writer(reopened);
         EXPECT_FALSE(writer.writeDXF(replay.string(), target));
+        EXPECT_NE(writer.writeFailureReason().find("layout graph"), std::string::npos);
         EXPECT_EQ(bytes(replay), "keep original");
         reopened->removeDocumentMetaType(extra);
         ASSERT_TRUE(writer.writeDXF(replay.string(), target));
