@@ -218,6 +218,14 @@ void CadMdiChild::saveFile() {
 void CadMdiChild::reportSaveResult(const lc::persistence::ExportResult& result,
                                    const std::string& path) {
     if (!result.ok) {
+        for (const auto& diagnostic : result.diagnostics) {
+            if (diagnostic.severity == lc::persistence::Severity::Error && !diagnostic.message.empty()) {
+                QMessageBox::critical(nullptr, tr("Save error"),
+                    tr("%1 could not be written. The file was not changed.\n%2")
+                        .arg(QString::fromStdString(path), QString::fromStdString(diagnostic.message)));
+                return;
+            }
+        }
         reportSaveFailure(false, path);
         return;
     }
