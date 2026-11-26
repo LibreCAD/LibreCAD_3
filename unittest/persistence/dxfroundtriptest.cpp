@@ -3257,6 +3257,31 @@ TEST(DxfRoundTripTest, R12ImportedExtraPaperBlockRetainsMetadataAndRefusesUnsafe
     }
 }
 
+TEST(DxfRoundTripTest, R14ImportedExtraPaperBlockRetainsMetadataAndRefusesUnsafeSave) {
+    const auto input = uniqueTmpDxf("r14-imported-paper");
+    const auto output = uniqueTmpDxf("r14-imported-paper-output");
+    {
+        std::ofstream out(input);
+        out << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1014\n0\nENDSEC\n"
+               "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n34\n100\nAcDbEntity\n8\n0\n"
+               "100\nAcDbBlockBegin\n2\n*Paper_Space0\n70\n0\n10\n1\n20\n0\n30\n0\n"
+               "3\n*Paper_Space0\n1\n\n0\nLINE\n5\n52\n100\nAcDbEntity\n8\n0\n"
+               "100\nAcDbLine\n10\n2\n20\n3\n30\n0\n11\n7\n21\n11\n31\n0\n"
+               "0\nENDBLK\n5\n35\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockEnd\n"
+               "0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    auto paper = doc->blockByName("*Paper_Space0"); ASSERT_TRUE(paper);
+    EXPECT_DOUBLE_EQ(paper->base().x(), 1);
+    ASSERT_EQ(doc->entitiesByBlock(paper).asVector().size(), 1u);
+    { std::ofstream out(output); out << "retain destination"; }
+    const auto refused = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R14);
+    EXPECT_FALSE(refused.ok);
+    { std::ifstream in(output); EXPECT_EQ(std::string((std::istreambuf_iterator<char>(in)), {}), "retain destination"); }
+    boost::filesystem::remove(input); boost::filesystem::remove(output);
+}
+
 TEST(DxfRoundTripTest, LegacyTargetsRefuseReferencedOrNondefaultExtraPaperSpace) {
     const auto path = uniqueTmpDxf("legacy-paper-metadata");
     auto doc = newDocument();

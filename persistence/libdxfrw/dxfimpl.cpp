@@ -460,11 +460,17 @@ void DXFimpl::addBlock(const DRW_Block& data) {
 
         auto base = coord(data.basePoint);
         std::string blockName = data.name;
-        // R12 uppercases names on the wire. Use the kernel's canonical paper
-        // names while retaining the source spelling in the lookup map below.
-        if (_header.acadVersion.empty() || _header.acadVersion == "AC1009") {
-            if (blockName == "*PAPER_SPACE") blockName = "*Paper_Space";
-            else if (blockName == "*PAPER_SPACE0") blockName = "*Paper_Space0";
+        bool legacyPaper = false;
+        // R12 uppercases names on the wire; R14 may use either spelling.
+        // Match the kernel defaults but retain the source lookup below.
+        if (_header.acadVersion.empty() || _header.acadVersion == "AC1009" ||
+            _header.acadVersion == "AC1014") {
+            auto upper = blockName;
+            std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) {
+                return static_cast<char>(std::toupper(c));
+            });
+            if (upper == "*PAPER_SPACE") { blockName = "*Paper_Space"; legacyPaper = true; }
+            else if (upper == "*PAPER_SPACE0") { blockName = "*Paper_Space0"; legacyPaper = true; }
         }
 
         auto appData = data.appData;
@@ -536,7 +542,7 @@ void DXFimpl::addBlock(const DRW_Block& data) {
         // document's name lookup does not yet include this definition. Keep
         // the parsed block indexed by its file name while the read is active.
         _blocks[data.name] = _currentBlock;
-        const auto existing = blockName != data.name ? _document->blockByName(blockName) : nullptr;
+        const auto existing = legacyPaper ? _document->blockByName(blockName) : nullptr;
         if (existing) {
             // Preserve the imported block's base and anonymous state as well as
             // its children; AddBlock alone leaves the kernel default in place.
