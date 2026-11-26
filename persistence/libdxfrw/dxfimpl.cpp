@@ -2462,16 +2462,17 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         //  * Same revision: a record valid in R2013 has no defined meaning in
         //    R12, and re-emitting it there would produce a file that claims to
         //    be R12 and is not.
-        //  * ASCII replay requires captured source spellings.
-        //  * Binary output is restricted to the checked default layout graph
-        //    and Normal plot-style pair captured as typed values.
+        //  * General ASCII replay requires captured source spellings.
+        //  * Typed cross-encoding is restricted to the checked default layout
+        //    graph and Normal plot-style pair.
         const bool sameRevision = _replay->version == exportVersion;
         const bool verbatimAvailable =
             std::all_of(_replay->objects.begin(), _replay->objects.end(),
                         [](const DRW_RawDxfObject& object) { return object.hasRawValues; });
 
-        const bool checkedBinaryGraph = isBinary && _replay->checkedBinaryLayoutGraph;
-        if (!sameRevision || (isBinary && !checkedBinaryGraph) || (!isBinary && !verbatimAvailable)) {
+        const bool checkedEncodingGraph = _replay->checkedBinaryLayoutGraph;
+        if (!sameRevision || (isBinary && !checkedEncodingGraph) ||
+            (!isBinary && !verbatimAvailable && !checkedEncodingGraph)) {
             const char* reason = !sameRevision ? "the revision differs from the one it was read as"
                                  : isBinary ? "binary DXF cannot carry them"
                                  : "they were read from a binary file and have no verbatim form";

@@ -195,6 +195,33 @@ TEST(LayoutGraph, CheckedAsciiGraphsConvertToSameRevisionBinary) {
         expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
     }
 }
+TEST(LayoutGraph, CheckedBinaryGraphsConvertToSameRevisionAscii) {
+    const std::pair<File::Type, File::Type> targets[] = {
+        {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXF_R2000},
+        {File::LIBDXFRW_DXB_R2004, File::LIBDXFRW_DXF_R2004},
+        {File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXF_R2007},
+        {File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXF_R2010},
+        {File::LIBDXFRW_DXB_R2013, File::LIBDXFRW_DXF_R2013}};
+    for (const auto& target : targets) {
+        Scratch dir; const auto binary = dir.path / "source.dxf", ascii = dir.path / "ascii.dxf";
+        auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space"); insertPaperLine(doc, "*Paper_Space0");
+        ASSERT_TRUE(File::exportFile(doc, binary.string(), target.first).ok);
+        auto imported = makeDocument(); const auto read = File::importFile(imported, binary.string(), File::LIBDXFRW);
+        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
+        if (target.first == File::LIBDXFRW_DXB_R2004) {
+            { std::ofstream out(ascii); out << "keep original"; }
+            lc::persistence::DXFimpl writer(imported);
+            EXPECT_FALSE(writer.writeDXF(ascii.string(), File::LIBDXFRW_DXF_R2010));
+            EXPECT_EQ(bytes(ascii), "keep original");
+            ASSERT_TRUE(writer.writeDXF(ascii.string(), target.second));
+        }
+        const auto written = File::exportFile(imported, ascii.string(), target.second);
+        ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.empty());
+        auto reopened = makeDocument(); const auto reread = File::importFile(reopened, ascii.string(), File::LIBDXFRW);
+        ASSERT_TRUE(reread.ok); EXPECT_EQ(reread.loss.droppedByType.count("LAYOUT"), 0u);
+        expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
+    }
+}
 TEST(LayoutGraph, ExtraAsciiRawRecordRefusesBinaryAndAllowsAsciiRetry) {
     Scratch dir; const auto original = dir.path / "original.dxf", changed = dir.path / "changed.dxf", output = dir.path / "output.dxf";
     auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
@@ -238,6 +265,8 @@ TEST(LayoutGraph, BinaryUnknownObjectKeepsLayoutUnverifiedAndRefusesSave) {
     ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
     { std::ofstream out(output); out << "keep original"; }
     EXPECT_FALSE(File::exportFile(imported, output.string(), File::LIBDXFRW_DXB_R2004).ok);
+    EXPECT_EQ(bytes(output), "keep original");
+    EXPECT_FALSE(File::exportFile(imported, output.string(), File::LIBDXFRW_DXF_R2004).ok);
     EXPECT_EQ(bytes(output), "keep original");
 }
 TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
