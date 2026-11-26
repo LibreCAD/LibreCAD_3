@@ -2175,7 +2175,12 @@ bool DXFimpl::prepareDefaultLayoutGraph() {
     if (_exportVersion < DRW::AC1015) return true;
     // Binary source graphs have no retained raw spellings yet. A new document
     // can still write the same checked, fully authored graph in binary.
-    if (lc::persistence::File::isBinaryType(_exportType) && _shelf) return true;
+    if (lc::persistence::File::isBinaryType(_exportType)) {
+        if (_shelf) return true;
+        const auto primary = _document->blockByName("*Paper_Space");
+        const bool primaryHasContent = primary && !_document->entitiesByBlock(primary).asVector().empty();
+        if (!primaryHasContent && !hasUnsafeAdditionalPaperSpace()) return true;
+    }
     if (!_defaultLayoutsFromSource &&
         (_replay || (_shelf && (_shelf->hasSourceLayouts || _shelf->total() != 0 ||
                                  !_shelf->rootDictEntries.empty())))) return true;

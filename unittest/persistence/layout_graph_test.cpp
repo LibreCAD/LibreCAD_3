@@ -96,18 +96,28 @@ TEST(LayoutGraph, LegacyRefusalSupportsSameWriterRetry) {
     EXPECT_TRUE(writer.writeFailureReason().empty());
     EXPECT_NE(bytes(output), "keep original");
 }
+TEST(LayoutGraph, EmptyBinaryDrawingDoesNotIntroduceLayoutWarnings) {
+    const File::Type targets[] = {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXB_R2004,
+        File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXB_R2013};
+    for (const auto target : targets) {
+        Scratch dir; const auto output = dir.path / "empty.dxf";
+        ASSERT_TRUE(File::exportFile(makeDocument(), output.string(), target).ok);
+        const auto read = File::importFile(makeDocument(), output.string(), File::LIBDXFRW);
+        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
+    }
+}
 TEST(LayoutGraph, NewBinaryLayoutsKeepPaperAndUnverifiedReplayRefuses) {
     const File::Type targets[] = {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXB_R2004,
         File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXB_R2013};
     for (const auto target : targets) {
         Scratch dir; const auto output = dir.path / "drawing.dxf", replay = dir.path / "replay.dxf";
-        auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
+        auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space"); insertPaperLine(doc, "*Paper_Space0");
         const auto written = File::exportFile(doc, output.string(), target);
         ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.empty());
         auto reopened = makeDocument();
         const auto read = File::importFile(reopened, output.string(), File::LIBDXFRW);
         ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
-        expectPaperLine(reopened, "*Paper_Space0");
+        expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
         { std::ofstream out(replay); out << "keep original"; }
         lc::persistence::DXFimpl writer(reopened);
         EXPECT_FALSE(writer.writeDXF(replay.string(), target));
