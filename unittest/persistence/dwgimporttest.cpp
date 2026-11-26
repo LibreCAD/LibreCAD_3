@@ -1214,6 +1214,17 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
                                 return note.find("written as HATCH") != std::string::npos;
                             }));
 
+    EXPECT_TRUE(std::any_of(scaledWrite.loss.notes.begin(), scaledWrite.loss.notes.end(),
+                            [](const std::string& note) { return note.find("separate boundary color") != std::string::npos; }));
+    auto scaledDoc = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(scaledDoc, scaledOutput, lc::persistence::File::LIBDXFRW).ok);
+    lc::entity::Hatch_CSPtr scaledHatch;
+    for (const auto& entity : scaledDoc->entityContainer().asVector())
+        if (auto candidate = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) scaledHatch = candidate;
+    ASSERT_TRUE(scaledHatch);
+    const auto scaledColor = scaledHatch->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+    ASSERT_TRUE(scaledColor); EXPECT_EQ(scaledColor->color().redI(), 0); EXPECT_EQ(scaledColor->color().greenI(), 255);
+
     // Reusing one writer must report this fallback on every attempt.
     lc::persistence::DXFimpl repeatWriter(doc);
     for (int attempt = 0; attempt < 2; ++attempt) {

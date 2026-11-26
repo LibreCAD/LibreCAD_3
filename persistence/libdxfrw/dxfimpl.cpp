@@ -3676,6 +3676,18 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
             "Some MPOLYGON entities were written as HATCH; boundary geometry "
             "or polygon-specific information may not be retained.");
     }
+    if (snapshot && hatch.solid) {
+        const auto fill = h->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
+        if (fill) {
+            const int fillAci = icol.colorToInt(fill->color());
+            if (hatch.color != fillAci) {
+                const std::string note = "A projected HATCH uses the MPOLYGON fill color; its separate boundary color cannot be retained.";
+                if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+                    _loss.notes.push_back(note);
+            }
+            hatch.color = fillAci;
+        }
+    }
     // Supported paths can share one default-normal HATCH elevation. Do not
     // infer it from unsupported or mixed loops.
     bool planar = !region.loopList().empty();
