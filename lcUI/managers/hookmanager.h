@@ -71,6 +71,9 @@ public:
      */
     void onMouseEvent(std::string, QMouseEvent*);
 
+    /** Cancel a captured mouse/key handler without dispatching another event. */
+    void cancel();
+
     /**
      * @brief Add function to array
      *
