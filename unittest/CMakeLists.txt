@@ -223,6 +223,7 @@ if(WITH_QT_UI)
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
             ui/testcommandline.cpp
+            ui/testlcadviewer.cpp
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp
             ui/testmainwindow.cpp

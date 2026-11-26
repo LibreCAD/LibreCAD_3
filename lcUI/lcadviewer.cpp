@@ -3,6 +3,7 @@
 #include <QtGui>
 #include <QVBoxLayout>
 #include <iostream>
+#include <QLabel>
 #include <QOpenGLContext>
 #include <QSurfaceFormat>
 #include <cad/logger/logger.h>
@@ -11,6 +12,19 @@
 
 using namespace lc;
 using namespace lc::ui;
+
+QString LCADViewer::glInitializationFailureMessage(const QString& detail)
+{
+    QString message = tr("The drawing canvas could not initialize OpenGL.");
+    if (!detail.isEmpty()) {
+        message += QStringLiteral("\n\n") + detail;
+    }
+    message += QStringLiteral("\n\n")
+        + tr("If this system uses a Wayland session, start LibreCAD from a "
+             "terminal with QT_QPA_PLATFORM=xcb set in the environment and "
+             "try again.");
+    return message;
+}
 
 LCADViewer::LCADViewer(QWidget *parent) :
     QOpenGLWidget(parent),
@@ -22,6 +36,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
     _zoomMax(20.0),
     _scaleLineWidth(false),
     _autoScalePending(false),
+    _glFailureOverlay(nullptr),
     _backgroundPainter(nullptr),
     _documentPainter(nullptr),
     _foregroundPainter(nullptr)
@@ -30,6 +45,14 @@ LCADViewer::LCADViewer(QWidget *parent) :
     this->_altKeyActive = false;
     this->_ctrlKeyActive = false;
     setCursor(Qt::BlankCursor);
+
+    _glFailureOverlay = new QLabel(this);
+    _glFailureOverlay->setWordWrap(true);
+    _glFailureOverlay->setAlignment(Qt::AlignCenter);
+    _glFailureOverlay->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _glFailureOverlay->setStyleSheet(
+        QStringLiteral("QLabel { background-color: #1e1e1e; color: #f0f0f0; padding: 24px; }"));
+    _glFailureOverlay->hide();
 
     QSurfaceFormat format;
     format.setMajorVersion(3);
@@ -125,7 +148,7 @@ void LCADViewer::initializeGL()
     makeCurrent();
     QOpenGLContext* glContext = QOpenGLContext::currentContext();
     if (glContext == nullptr) {
-        LOG_ERROR << "LCADViewer initialized without a current OpenGL context" << std::endl;
+        reportGlInitializationFailure(tr("No current OpenGL context is available."));
         return;
     }
 
@@ -144,15 +167,50 @@ void LCADViewer::initializeGL()
 
     std::string glewError;
     if (!initialiseGlew(glewError)) {
-        LOG_ERROR << glewError << std::endl;
+        reportGlInitializationFailure(QString::fromStdString(glewError));
         return;
     }
+
+    // A recreated context may succeed after an earlier failure.
+    _glInitializationFailure.clear();
+    _glFailureOverlay->hide();
 
     deletePainters();
     createPainters(width, height);
     _documentPainter->create_resources();
     if (_docCanvas != nullptr) {
         _docCanvas->autoScale(*_documentPainter);
+    }
+}
+
+void LCADViewer::reportGlInitializationFailure(const QString& detail)
+{
+    LOG_ERROR << "OpenGL initialization failed: " << detail.toStdString() << std::endl;
+
+    if (!_glInitializationFailure.isEmpty()) {
+        // initializeGL() runs again when the context is recreated; report the
+        // failure once.
+        return;
+    }
+
+    _glInitializationFailure = glInitializationFailureMessage(detail);
+
+    // Show the explanation inside the viewer instead of opening a dialog.
+    // initializeGL() runs while the widget is being realized, and this path is
+    // only reachable when the platform's GL setup is already failing; an
+    // in-canvas overlay needs neither a second platform window nor a nested
+    // event loop to become visible.
+    _glFailureOverlay->setText(_glInitializationFailure);
+    _glFailureOverlay->setGeometry(rect());
+    _glFailureOverlay->show();
+    _glFailureOverlay->raise();
+}
+
+void LCADViewer::resizeEvent(QResizeEvent* event)
+{
+    QOpenGLWidget::resizeEvent(event);
+    if (_glFailureOverlay != nullptr) {
+        _glFailureOverlay->setGeometry(rect());
     }
 }
 

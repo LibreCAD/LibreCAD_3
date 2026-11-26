@@ -15,6 +15,10 @@
 #include <map>
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
+#include <QString>
+
+class QLabel;
+class QResizeEvent;
 
 #include "cad/storage/document.h"
 #include "cad/storage/entitycontainer.h"
@@ -93,6 +97,16 @@ public:
 
     std::shared_ptr<lc::viewer::DocumentCanvas> documentCanvas() const;
 
+    /**
+     * @brief User-facing text for an OpenGL initialization failure.
+     *
+     * The drawing canvas cannot render without a working GL context. A
+     * failure used to leave a transparent widget with only a log line; this
+     * message states the cause and the known Wayland workaround so the user
+     * has something actionable to try.
+     */
+    static QString glInitializationFailureMessage(const QString& detail);
+
     void autoScale() const {
         if (_docCanvas != nullptr && _documentPainter != nullptr) {
             _docCanvas->autoScale(*_documentPainter);
@@ -126,6 +140,8 @@ protected:
 
     void resizeGL(int w, int h);
 
+    void resizeEvent(QResizeEvent* event) override;
+
     void contextMenuEvent(QContextMenuEvent* event) override;
 
 signals:
@@ -154,6 +170,8 @@ private:
     bool panHandler(lc::ui::HookEvent&);
 
     void initializeGL();
+
+    void reportGlInitializationFailure(const QString& detail);
 
     void createPainters(unsigned int width, unsigned int height);
 
@@ -185,6 +203,15 @@ private:
 
     // Fit the document to the view once the widget has a real device size.
     bool _autoScalePending;
+
+    // Non-empty once OpenGL initialization has failed; keeps the failure
+    // text from being shown again if the context is recreated.
+    QString _glInitializationFailure;
+
+    // Covers the dead canvas with the failure explanation. Kept as a child
+    // widget rather than a dialog: it needs no second platform window and no
+    // nested event loop while the GL context is being set up.
+    QLabel* _glFailureOverlay;
 
     QPoint startSelectPos;
 
