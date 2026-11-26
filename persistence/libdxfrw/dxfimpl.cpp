@@ -723,7 +723,8 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
 void DXFimpl::addLayer(const DRW_Layer& data) {
     guarded("LAYER", nullptr, [&] {
         LOG_TRACE << "addLayer " << data.name;
-        auto col = icol.intToColor(data.color);
+        const int sourceAci = data.color < 0 && data.color >= -255 ? -data.color : data.color;
+        auto col = icol.intToColor(sourceAci);
 
         if (col == nullptr) {
             col = icol.intToColor(255);
@@ -738,7 +739,19 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         auto lp = _document->linePatternByName(data.lineType);
         auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
 
-        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
+        const auto color = data.color24 >= 0 && data.color24 <= 0xFFFFFF
+            ? lc::Color((data.color24 >> 16) & 0xFF, (data.color24 >> 8) & 0xFF, data.color24 & 0xFF)
+            : col->color();
+        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), color, lp, isFrozen);
+        if (!data.name.empty() && data.name[0] != '*') {
+            _layers[upperName(data.name)] = layer;
+            _preserved.sourceLayerColors[data.name] = {layer, data.color, data.color24, data.colorName};
+        }
+        if (data.color < 0) {
+            const std::string note = "Layer on/off state is not represented for editing.";
+            if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+                _loss.notes.push_back(note);
+        }
         _preserved.sourceLayerWeights[data.name] = {
             lw->width(), data.lWeight == DRW_LW_Conv::widthDefault};
         // If a layer starts with a * it's a special layer we don't process yet
@@ -1396,7 +1409,9 @@ bool DXFimpl::isModelSpaceName(const std::string& name) {
                          });
 }
 
-lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {
+lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) {
+    const auto pending = _layers.find(upperName(data.layer));
+    if (pending != _layers.end()) return pending->second;
     lc::meta::Layer_CSPtr layer = _document->layerByName(data.layer);
 
     if (layer==nullptr) {
@@ -1408,6 +1423,7 @@ lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {
         layer = std::make_shared<lc::meta::Layer>(data.layer, lw->width(), col->color(), lp, isFrozen);
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
         _builder->append(al);
+        _layers[upperName(data.layer)] = layer;
     }
     return layer;
 }
@@ -1744,7 +1760,35 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
 
     auto col = layer->color();
     lay.name = layer->name();
-    lay.color = icol_inst.colorToInt(col);
+    lay.color = icol_inst.colorToInt(col, 1);
+    const PreservedRecords::SourceLayerColor* original = nullptr;
+    if (_shelf) {
+        const auto found = _shelf->sourceLayerColors.find(layer->name());
+        if (found != _shelf->sourceLayerColors.end()) original = &found->second;
+    }
+    const bool unchanged = original && original->layer.lock() == layer;
+    const bool explicitRgb = unchanged && original->rgb >= 0 && original->rgb <= 0xFFFFFF;
+    const auto indexed = icol_inst.intToColor(lay.color);
+    const bool needsRgb = explicitRgb || !indexed || !(indexed->color() == col);
+    if (unchanged && (!explicitRgb || _exportVersion > DRW::AC1015) &&
+        original->aci != 0 && original->aci >= -255 && original->aci <= 255)
+        lay.color = original->aci;
+    if (unchanged && original->aci < 0 && lay.color > 0) lay.color = -lay.color;
+    if (_exportVersion > DRW::AC1015) {
+        if (needsRgb)
+            lay.color24 = (static_cast<int>(col.redI()) << 16)
+                        | (static_cast<int>(col.greenI()) << 8) | static_cast<int>(col.blueI());
+        if (unchanged) lay.colorName = original->name;
+    } else if (needsRgb || (unchanged && !original->name.empty())) {
+        const std::string note = "Layer true colors or color names were approximated using indexed colors for the selected DXF version.";
+        if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+            _loss.notes.push_back(note);
+    }
+    if (original && !unchanged && (!original->name.empty() || original->aci < 0)) {
+        const std::string note = "Editing a layer may discard its source color name or on/off state.";
+        if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+            _loss.notes.push_back(note);
+    }
 
     // Issue #412 phase 3: (a) stop the stray `std::cout << wid;` that has
     // been dumping the layer line width to stdout on every save since 2016.
@@ -2211,6 +2255,7 @@ void DXFimpl::attachPreservedRecords(bool completeRead) {
 void DXFimpl::attachDwgProvenance() {
     auto preserved = std::make_shared<PreservedRecords>();
     preserved->sourceWasDwg = true;
+    preserved->sourceLayerColors = _preserved.sourceLayerColors;
     preserved->hasSourceLayouts = _preserved.hasSourceLayouts;
     _document->addDocumentMetaType(preserved);
 }

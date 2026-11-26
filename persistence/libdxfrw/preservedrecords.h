@@ -15,6 +15,7 @@
 #include <cad/interface/metatype.h>
 
 namespace lc {
+namespace meta { class Layer; }
 namespace persistence {
 
 /**
@@ -54,7 +55,7 @@ public:
 
     bool empty() const {
         return objects.empty() && entities.empty() && sections.empty()
-               && mtextExtendedData.empty() && sourceLayerWeights.empty() && !hasSourceLayouts;
+               && mtextExtendedData.empty() && sourceLayerWeights.empty() && sourceLayerColors.empty() && !hasSourceLayouts;
     }
 
     std::size_t total() const {
@@ -69,6 +70,14 @@ public:
         bool implicitDefault;
     };
     std::map<std::string, SourceLayerWeight> sourceLayerWeights;
+
+    struct SourceLayerColor {
+        std::weak_ptr<const lc::meta::Layer> layer;
+        int aci{7};
+        int rgb{-1};
+        std::string name;
+    };
+    std::map<std::string, SourceLayerColor> sourceLayerColors;
 
     /** OBJECTS-section records libdxfrw does not model. */
     std::vector<DRW_RawDxfObject> objects;

@@ -52,12 +52,14 @@
 
 #include <cad/meta/color.h>
 #include <cad/meta/metacolor.h>
+#include <cad/meta/icolor.h>
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
 #include <cad/meta/customentitystorage.h>
 
 #include <cad/operations/builder.h>
 #include <cad/operations/blockops.h>
+#include <cad/operations/layerops.h>
 #include <cad/operations/entitybuilder.h>
 
 #include <cad/geometry/geoarea.h>
@@ -234,6 +236,86 @@ TEST(DxfRoundTripTest, TrueBlackDowngradeDoesNotBecomeByBlock) {
     }
     EXPECT_TRUE(found);
     f.close(); boost::filesystem::remove(input); boost::filesystem::remove(output);
+}
+
+TEST(DxfRoundTripTest, LayerTrueColorAndByLayerEntitiesSurviveRoundTrip) {
+    const auto input = uniqueTmpDxf("layer-rgb-source");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n5\n2\n70\n2\n"
+        "0\nLAYER\n5\n10\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\n0\n70\n0\n62\n1\n420\n13132850\n430\nTest$Copper\n6\nCONTINUOUS\n"
+        "0\nLAYER\n5\n60\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\nCOLOR_LAYER\n70\n0\n62\n-3\n420\n0\n6\nCONTINUOUS\n"
+        "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n"
+        "0\nLINE\n5\n70\n100\nAcDbEntity\n8\n0\n100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n"
+        "0\nLINE\n5\n71\n100\nAcDbEntity\n8\ncolor_layer\n100\nAcDbLine\n10\n3\n20\n2\n30\n0\n11\n7\n21\n6\n31\n0\n"
+        "0\nENDSEC\n0\nEOF\n"; }
+    auto verify = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        const auto zero = doc->layerByName("0"), black = doc->layerByName("COLOR_LAYER");
+        ASSERT_TRUE(zero); ASSERT_TRUE(black);
+        EXPECT_EQ(zero->color().redI(), 200); EXPECT_EQ(zero->color().greenI(), 100); EXPECT_EQ(zero->color().blueI(), 50);
+        EXPECT_EQ(black->color().redI(), 0); EXPECT_EQ(black->color().greenI(), 0); EXPECT_EQ(black->color().blueI(), 0);
+        const auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 2u);
+        for (const auto& e : entities) {
+            const auto layer = doc->layerByName(e->layer()->name()); ASSERT_TRUE(layer);
+            EXPECT_EQ(e->layer(), layer);
+        }
+    };
+    auto doc = newDocument(); const auto imported = lc::persistence::File::importFile(doc,input,lc::persistence::File::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+    const auto reportsOff = [](const auto& notes) { return std::any_of(notes.begin(), notes.end(), [](const std::string& note) {
+        return note.find("Layer on/off state") != std::string::npos;
+    }); };
+    EXPECT_TRUE(reportsOff(imported.loss.notes));
+    verify(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output=uniqueTmpDxf("layer-rgb-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc,output,type).ok);
+        auto reopened=newDocument(); const auto reread = lc::persistence::File::importFile(reopened,output,lc::persistence::File::LIBDXFRW);
+        ASSERT_TRUE(reread.ok); EXPECT_TRUE(reportsOff(reread.loss.notes));
+        verify(reopened); boost::filesystem::remove(output);
+    }
+    const auto legacy = uniqueTmpDxf("layer-rgb-legacy");
+    const auto downgraded = lc::persistence::File::exportFile(doc, legacy, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(downgraded.ok);
+    EXPECT_TRUE(std::any_of(downgraded.loss.notes.begin(), downgraded.loss.notes.end(), [](const std::string& note) {
+        return note.find("Layer true colors or color names") != std::string::npos;
+    }));
+    auto oldDoc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(oldDoc, legacy, lc::persistence::File::LIBDXFRW).ok);
+    lc::iColor palette; auto nearestBlack = palette.intToColor(palette.colorToInt(lc::Color(0, 0, 0), 1));
+    ASSERT_TRUE(nearestBlack); ASSERT_TRUE(oldDoc->layerByName("COLOR_LAYER"));
+    auto oldColor = oldDoc->layerByName("COLOR_LAYER")->color(); EXPECT_TRUE(oldColor == nearestBlack->color());
+    boost::filesystem::remove(legacy);
+
+    // Replacing a layer with a new RGB must not reattach its stale source name.
+    const auto previous = doc->layerByName("0"); ASSERT_TRUE(previous);
+    const auto replacement = std::make_shared<lc::meta::Layer>("0", previous->lineWidth(), lc::Color(17, 34, 51), previous->linePattern(), previous->isFrozen());
+    auto edit = std::make_shared<lc::operation::Builder>(doc, "change layer color");
+    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, previous, replacement)); edit->execute();
+    const auto changed = uniqueTmpDxf("layer-rgb-changed");
+    const auto written = lc::persistence::File::exportFile(doc, changed, lc::persistence::File::LIBDXFRW_DXF_R2004);
+    ASSERT_TRUE(written.ok);
+    EXPECT_TRUE(std::any_of(written.loss.notes.begin(), written.loss.notes.end(), [](const std::string& note) {
+        return note.find("source color name") != std::string::npos;
+    }));
+    auto changedDoc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(changedDoc, changed, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_TRUE(changedDoc->layerByName("0"));
+    EXPECT_EQ(changedDoc->layerByName("0")->color().redI(), 17);
+    EXPECT_EQ(changedDoc->layerByName("0")->color().greenI(), 34);
+    EXPECT_EQ(changedDoc->layerByName("0")->color().blueI(), 51);
+    boost::filesystem::remove(changed); boost::filesystem::remove(input);
+}
+
+TEST(DxfRoundTripTest, MissingLayerUsesOneSharedFallback) {
+    const auto input = uniqueTmpDxf("missing-layer");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n"
+        "0\nLINE\n5\n70\n100\nAcDbEntity\n8\nMISSING\n100\nAcDbLine\n10\n1\n20\n2\n11\n4\n21\n6\n"
+        "0\nLINE\n5\n71\n100\nAcDbEntity\n8\nmissing\n100\nAcDbLine\n10\n3\n20\n2\n11\n7\n21\n6\n"
+        "0\nENDSEC\n0\nEOF\n"; }
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    const auto layer = doc->layerByName("MISSING"); ASSERT_TRUE(layer);
+    const auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 2u);
+    for (const auto& entity : entities) EXPECT_EQ(entity->layer(), layer);
+    boost::filesystem::remove(input);
 }
 
 TEST(DxfRoundTripTest, ThreeDimensionalSegmentInsertsWithoutThrowing) {

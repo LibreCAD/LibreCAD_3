@@ -680,7 +680,7 @@ private:
     static bool isModelSpaceName(const std::string& name);
 
     // this function adds layer too if not found: issue with some files
-    lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data) const;
+    lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data);
 
     /** Build an MText value using the owning entity's layer, metadata and block. */
     std::shared_ptr<lc::entity::MText> makeMText(
@@ -697,6 +697,7 @@ private:
     lc::iColor icol;
 
     std::vector<DRW_Image> imageMapCache;
+    std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;
 
