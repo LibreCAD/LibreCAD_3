@@ -2277,7 +2277,7 @@ bool DXFimpl::writeDxfFixedPaperSpaceContents() {
 #endif
 #endif
 
-bool DXFimpl::hasUnsafeLegacyPaperSpace() const {
+bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
     const std::string prefix = "*PAPER_SPACE";
     const auto blocks = _document->blocks();
     std::set<std::string> extraNames;
@@ -2362,7 +2362,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     // R12/R14 have no layout object to own additional paper-space blocks.
     // Peers can remove those orphan blocks together with their contents. Refuse
     // before opening the destination when such a block carries data or a link.
-    if (exportVersion <= DRW::AC1014 && hasUnsafeLegacyPaperSpace()) {
+    if (exportVersion <= DRW::AC1014 && hasUnsafeAdditionalPaperSpace()) {
         _writeFailureReason = "This DXF revision cannot safely retain additional paper-space contents or references; save as R2000 or newer.";
         return false;
     }
@@ -2609,6 +2609,12 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
     if (!prepareDefaultLayoutGraph()) {
         LOG_ERROR << "Cannot safely preserve the layout graph in " << filename;
+        delete dxfW;
+        dxfW = nullptr;
+        return false;
+    }
+    if (_defaultLayouts.empty() && hasUnsafeAdditionalPaperSpace()) {
+        _writeFailureReason = "The layout graph for additional paper-space contents or references cannot be retained in this output; preserve the original or use a supported ASCII DXF layout.";
         delete dxfW;
         dxfW = nullptr;
         return false;

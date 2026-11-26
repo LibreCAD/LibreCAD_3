@@ -96,14 +96,44 @@ TEST(LayoutGraph, LegacyRefusalSupportsSameWriterRetry) {
     EXPECT_TRUE(writer.writeFailureReason().empty());
     EXPECT_NE(bytes(output), "keep original");
 }
+TEST(LayoutGraph, BinaryRefusalSupportsRetryAsAscii) {
+    const std::pair<File::Type, File::Type> targets[] = {
+        {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXF_R2000},
+        {File::LIBDXFRW_DXB_R2004, File::LIBDXFRW_DXF_R2004},
+        {File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXF_R2007},
+        {File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXF_R2010},
+        {File::LIBDXFRW_DXB_R2013, File::LIBDXFRW_DXF_R2013}};
+    for (const auto& target : targets) {
+        Scratch dir; const auto output = dir.path / "drawing.dxf";
+        auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
+        { std::ofstream out(output); out << "keep original"; }
+        lc::persistence::DXFimpl writer(doc);
+        EXPECT_FALSE(writer.writeDXF(output.string(), target.first));
+        EXPECT_NE(writer.writeFailureReason().find("layout graph"), std::string::npos);
+        EXPECT_EQ(bytes(output), "keep original");
+        ASSERT_TRUE(writer.writeDXF(output.string(), target.second));
+        EXPECT_TRUE(writer.writeFailureReason().empty());
+        auto reopened = makeDocument();
+        const auto read = File::importFile(reopened, output.string(), File::LIBDXFRW);
+        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
+        expectPaperLine(reopened, "*Paper_Space0");
+    }
+}
 TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
-    ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto originalDoc = makeDocument(); insertPaperLine(originalDoc, "*Paper_Space0");
+    ASSERT_TRUE(File::exportFile(originalDoc, original.string(), File::LIBDXFRW_DXF_R2004).ok);
     auto input = bytes(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
     const auto subclass = input.find("100\nAcDbPlotSettings\n", layout); ASSERT_NE(subclass, std::string::npos);
     input.insert(subclass, "102\n{ACAD_REACTORS\n330\nC\n102\n}\n"); { std::ofstream out(changed); out << input; }
-    auto read = File::importFile(makeDocument(), changed.string(), File::LIBDXFRW);
+    auto imported = makeDocument(); const auto read = File::importFile(imported, changed.string(), File::LIBDXFRW);
     ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+    expectPaperLine(imported, "*Paper_Space0");
+    auto destination = dir.path / "refused.dxf"; { std::ofstream out(destination); out << "keep original"; }
+    const auto refused = File::exportFile(imported, destination.string(), File::LIBDXFRW_DXF_R2004);
+    EXPECT_FALSE(refused.ok); ASSERT_FALSE(refused.diagnostics.empty());
+    EXPECT_NE(refused.diagnostics.front().message.find("layout graph"), std::string::npos);
+    EXPECT_EQ(bytes(destination), "keep original");
 }
 TEST(LayoutGraph, UnmodeledPaperBlockMetadataRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";

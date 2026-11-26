@@ -663,7 +663,7 @@ private:
     /** The target of the current write, for the format-capability check. */
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
     std::string _writeFailureReason;
-    bool hasUnsafeLegacyPaperSpace() const;
+    bool hasUnsafeAdditionalPaperSpace() const;
 
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
