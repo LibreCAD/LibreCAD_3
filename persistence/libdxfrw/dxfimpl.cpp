@@ -523,7 +523,16 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             // where the convention is all there is.
             const bool anonymous = (data.flags & 1) != 0
                 || (_sourceIsDwg && isAnonymousDimensionBlockName(data.name));
-            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base, anonymous);
+            std::string blockName = data.name;
+            // R12 names are uppercased on the wire. Match the kernel-created
+            // paper blocks for the plain defaults so their children remain
+            // reachable after reopening. Keep nondefault metadata untouched.
+            if (_header.acadVersion == "AC1009" && !anonymous && data.flags == 0 &&
+                data.appData.empty() && base.x() == 0 && base.y() == 0 && base.z() == 0) {
+                if (blockName == "*PAPER_SPACE") blockName = "*Paper_Space";
+                else if (blockName == "*PAPER_SPACE0") blockName = "*Paper_Space0";
+            }
+            _currentBlock = std::make_shared<lc::meta::Block>(blockName, base, anonymous);
         }
         // Blocks are parsed before the top-level Builder executes, so the
         // document's name lookup does not yet include this definition. Keep
@@ -2259,8 +2268,42 @@ bool DXFimpl::writeDxfFixedPaperSpaceContents() {
 #endif
 #endif
 
+bool DXFimpl::hasUnsafeLegacyPaperSpace() const {
+    const auto upperName = [](std::string name) {
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        return name;
+    };
+    const std::string prefix = "*PAPER_SPACE";
+    const auto blocks = _document->blocks();
+    std::set<std::string> extraNames;
+    for (const auto& block : blocks) {
+        const auto name = upperName(block->name());
+        if (name == prefix || name.compare(0, prefix.size(), prefix) != 0) continue;
+        extraNames.insert(name);
+        const auto& base = block->base();
+        if (block->anonymous() || base.x() != 0 || base.y() != 0 || base.z() != 0 ||
+            std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block) ||
+            !_document->entitiesByBlock(block).asVector().empty()) return true;
+    }
+    if (extraNames.empty()) return false;
+    const auto referencesExtra = [&](const auto& entities) {
+        for (const auto& entity : entities) {
+            const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+            if (insert && insert->displayBlock() && extraNames.count(upperName(insert->displayBlock()->name())))
+                return true;
+        }
+        return false;
+    };
+    if (referencesExtra(_document->entityContainer().asVector())) return true;
+    for (const auto& owner : blocks)
+        if (referencesExtra(_document->entitiesByBlock(owner).asVector())) return true;
+    return false;
+}
+
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
-    dxfW = new dxfRW(filename.c_str());
+    _writeFailureReason.clear();
 
     //Default setting
     // Initialised: the switch below is exhaustive over the DXF and DXB targets,
@@ -2312,6 +2355,15 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         LOG_ERROR << "Unhandled file type " << static_cast<int>(type);
         return false;
     }
+
+    // R12/R14 have no layout object to own additional paper-space blocks.
+    // Peers can remove those orphan blocks together with their contents. Refuse
+    // before opening the destination when such a block carries data or a link.
+    if (exportVersion <= DRW::AC1014 && hasUnsafeLegacyPaperSpace()) {
+        _writeFailureReason = "This DXF revision cannot safely retain additional paper-space contents or references; save as R2000 or newer.";
+        return false;
+    }
+    dxfW = new dxfRW(filename.c_str());
 
     // Was `< LIBDXFRW_DXB_R2013`, so the last binary target wrote ASCII.
     const bool isBinary = lc::persistence::File::isBinaryType(type);
@@ -2573,6 +2625,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     }
 
     delete dxfW;
+    dxfW = nullptr;
 
     return success;
 }

@@ -3197,6 +3197,62 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
     }
 }
 
+TEST(DxfRoundTripTest, LegacyTargetsRefuseAdditionalPaperSpaceWithoutOverwriting) {
+    for (const auto target : {lc::persistence::File::LIBDXFRW_DXF_R12,
+                              lc::persistence::File::LIBDXFRW_DXF_R14,
+                              lc::persistence::File::LIBDXFRW_DXB_R12,
+                              lc::persistence::File::LIBDXFRW_DXB_R14}) {
+        auto doc = newDocument();
+        auto mainPaper = std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(1, 2, 0), lc::geo::Coordinate(3, 4, 0),
+            doc->layerByName("0"), nullptr, doc->blockByName("*Paper_Space"));
+        auto extraPaper = std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(2, 3, 0), lc::geo::Coordinate(7, 11, 0),
+            doc->layerByName("0"), nullptr, doc->blockByName("*Paper_Space0"));
+        insertThroughBuilder(doc, {mainPaper, extraPaper});
+        const auto path = uniqueTmpDxf("legacy-paper-refusal");
+        { std::ofstream out(path, std::ios::binary); out << "existing destination"; }
+        const auto refused = lc::persistence::File::exportFile(doc, path, target);
+        EXPECT_FALSE(refused.ok);
+        ASSERT_FALSE(refused.diagnostics.empty());
+        EXPECT_NE(refused.diagnostics.front().message.find("paper-space"), std::string::npos);
+        { std::ifstream in(path, std::ios::binary);
+          EXPECT_EQ(std::string((std::istreambuf_iterator<char>(in)), {}), "existing destination"); }
+        doc->removeEntity(extraPaper);
+        const auto retry = lc::persistence::File::exportFile(doc, path, target);
+        ASSERT_TRUE(retry.ok);
+        auto reopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, path, lc::persistence::File::LIBDXFRW).ok);
+        auto primary = reopened->blockByName("*Paper_Space"); ASSERT_TRUE(primary);
+        auto entities = reopened->entitiesByBlock(primary).asVector(); ASSERT_EQ(entities.size(), 1u);
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entities.front()); ASSERT_TRUE(line);
+        EXPECT_DOUBLE_EQ(line->start().x(), 1); EXPECT_DOUBLE_EQ(line->end().y(), 4);
+        boost::filesystem::remove(path);
+    }
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsRefuseReferencedOrNondefaultExtraPaperSpace) {
+    const auto path = uniqueTmpDxf("legacy-paper-metadata");
+    auto doc = newDocument();
+    auto paper = doc->blockByName("*Paper_Space0"); ASSERT_TRUE(paper);
+    lc::builder::InsertBuilder builder;
+    builder.setDocument(doc); builder.setLayer(doc->layerByName("0"));
+    builder.setDisplayBlock(paper); builder.setCoordinate(lc::geo::Coordinate(0, 0));
+    auto insert = builder.build(); insertThroughBuilder(doc, {insert});
+    EXPECT_FALSE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R14).ok);
+    doc->removeEntity(insert);
+    doc->removeDocumentMetaType(paper);
+    auto movedPaper = std::make_shared<lc::meta::Block>("*Paper_Space0", lc::geo::Coordinate(1, 0, 0));
+    doc->addDocumentMetaType(movedPaper);
+    EXPECT_FALSE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R14).ok);
+    doc->removeDocumentMetaType(movedPaper); doc->addDocumentMetaType(paper);
+    EXPECT_TRUE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R14).ok);
+    boost::filesystem::remove(path);
+}
+
 TEST(DxfRoundTripTest, LegacyTargetsReportExplicitLayerWidth) {
     const auto source = uniqueTmpDxf("layer-width-source");
     // DocumentImpl's numeric layer width is written explicitly by R2000.

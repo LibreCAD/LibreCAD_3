@@ -9,6 +9,7 @@
 #include <cad/operations/entitybuilder.h>
 #include <cad/primitive/line.h>
 #include "persistence/file.h"
+#include "persistence/libdxfrw/dxfimpl.h"
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -79,6 +80,21 @@ TEST(LayoutGraph, SavesReopensAndRetriesWithoutLosingPaperContents) {
     auto again = makeDocument(); auto reread = File::importFile(again, second.string(), File::LIBDXFRW);
     ASSERT_TRUE(reread.ok); EXPECT_EQ(reread.loss.droppedByType.count("LAYOUT"), 0u);
     expectPaperLine(again, "*Paper_Space"); expectPaperLine(again, "*Paper_Space0");
+}
+TEST(LayoutGraph, LegacyRefusalSupportsSameWriterRetry) {
+    Scratch dir; const auto output = dir.path / "legacy.dxf";
+    auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
+    auto paper = doc->blockByName("*Paper_Space0");
+    auto children = doc->entitiesByBlock(paper).asVector(); ASSERT_EQ(children.size(), 1u);
+    { std::ofstream out(output); out << "keep original"; }
+    lc::persistence::DXFimpl writer(doc);
+    EXPECT_FALSE(writer.writeDXF(output.string(), File::LIBDXFRW_DXF_R12));
+    EXPECT_NE(writer.writeFailureReason().find("paper-space"), std::string::npos);
+    EXPECT_EQ(bytes(output), "keep original");
+    doc->removeEntity(children.front());
+    ASSERT_TRUE(writer.writeDXF(output.string(), File::LIBDXFRW_DXF_R12));
+    EXPECT_TRUE(writer.writeFailureReason().empty());
+    EXPECT_NE(bytes(output), "keep original");
 }
 TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";

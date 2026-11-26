@@ -320,6 +320,7 @@ public:
 
     // WRITE FUNCTIONALITY
     bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
+    const std::string& writeFailureReason() const { return _writeFailureReason; }
 
     void writeHeader(DRW_Header& data) override;
 
@@ -612,7 +613,7 @@ private:
     * can be be read with just one routine
     */
 
-    dxfRW* dxfW;
+    dxfRW* dxfW{nullptr};
 
     /**
      * The DXF revision the current write targets. R12 cannot carry several
@@ -661,6 +662,8 @@ private:
 
     /** The target of the current write, for the format-capability check. */
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
+    std::string _writeFailureReason;
+    bool hasUnsafeLegacyPaperSpace() const;
 
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 

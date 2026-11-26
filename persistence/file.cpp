@@ -477,7 +477,8 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
 
     if (!result.ok) {
         result.diagnostics.push_back(Diagnostic{
-            Severity::Error, "emit-failure", "The file could not be written at this revision"});
+            Severity::Error, "emit-failure", writer.writeFailureReason().empty()
+                ? "The file could not be written at this revision" : writer.writeFailureReason()});
     } else if (!result.loss.empty()) {
         // The file exists and holds the rest of the drawing. Saying so is the
         // point: before this, one such entity meant no file at all.
