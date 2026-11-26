@@ -96,27 +96,23 @@ TEST(LayoutGraph, LegacyRefusalSupportsSameWriterRetry) {
     EXPECT_TRUE(writer.writeFailureReason().empty());
     EXPECT_NE(bytes(output), "keep original");
 }
-TEST(LayoutGraph, BinaryRefusalSupportsRetryAsAscii) {
-    const std::pair<File::Type, File::Type> targets[] = {
-        {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXF_R2000},
-        {File::LIBDXFRW_DXB_R2004, File::LIBDXFRW_DXF_R2004},
-        {File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXF_R2007},
-        {File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXF_R2010},
-        {File::LIBDXFRW_DXB_R2013, File::LIBDXFRW_DXF_R2013}};
-    for (const auto& target : targets) {
-        Scratch dir; const auto output = dir.path / "drawing.dxf";
+TEST(LayoutGraph, NewBinaryLayoutsKeepPaperAndUnverifiedReplayRefuses) {
+    const File::Type targets[] = {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXB_R2004,
+        File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXB_R2013};
+    for (const auto target : targets) {
+        Scratch dir; const auto output = dir.path / "drawing.dxf", replay = dir.path / "replay.dxf";
         auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
-        { std::ofstream out(output); out << "keep original"; }
-        lc::persistence::DXFimpl writer(doc);
-        EXPECT_FALSE(writer.writeDXF(output.string(), target.first));
-        EXPECT_NE(writer.writeFailureReason().find("layout graph"), std::string::npos);
-        EXPECT_EQ(bytes(output), "keep original");
-        ASSERT_TRUE(writer.writeDXF(output.string(), target.second));
-        EXPECT_TRUE(writer.writeFailureReason().empty());
+        const auto written = File::exportFile(doc, output.string(), target);
+        ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.empty());
         auto reopened = makeDocument();
         const auto read = File::importFile(reopened, output.string(), File::LIBDXFRW);
-        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
+        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
         expectPaperLine(reopened, "*Paper_Space0");
+        { std::ofstream out(replay); out << "keep original"; }
+        lc::persistence::DXFimpl writer(reopened);
+        EXPECT_FALSE(writer.writeDXF(replay.string(), target));
+        EXPECT_NE(writer.writeFailureReason().find("layout graph"), std::string::npos);
+        EXPECT_EQ(bytes(replay), "keep original");
     }
 }
 TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {

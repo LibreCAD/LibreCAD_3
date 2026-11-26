@@ -2172,7 +2172,10 @@ bool DXFimpl::prepareDefaultLayoutGraph() {
     _defaultLayoutDictionary = 0;
     _defaultLayoutWriteOk = true;
     _defaultLayoutsFromSource = _replay && _replay->checkedLayoutGraph;
-    if (_exportVersion < DRW::AC1015 || lc::persistence::File::isBinaryType(_exportType)) return true;
+    if (_exportVersion < DRW::AC1015) return true;
+    // Binary source graphs have no retained raw spellings yet. A new document
+    // can still write the same checked, fully authored graph in binary.
+    if (lc::persistence::File::isBinaryType(_exportType) && _shelf) return true;
     if (!_defaultLayoutsFromSource &&
         (_replay || (_shelf && (_shelf->hasSourceLayouts || _shelf->total() != 0 ||
                                  !_shelf->rootDictEntries.empty())))) return true;
