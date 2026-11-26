@@ -102,13 +102,15 @@ private:
 /** A solid fill color distinct from an entity's line color. */
 class MetaFillColor : public EntityMetaType {
 public:
-    explicit MetaFillColor(const Color& color) : _color(color) {}
+    explicit MetaFillColor(const Color& color, int sourceAci = -1) : _color(color), _sourceAci(sourceAci) {}
     static const std::string LCMETANAME() { return "_FILL_COLOR"; }
     const std::string id() const override { return LCMETANAME(); }
     const std::string metaTypeID() const override { return LCMETANAME(); }
     Color color() const { return _color; }
+    int sourceAci() const { return _sourceAci; }
 private:
     Color _color;
+    int _sourceAci;
 };
 
 class MetaColorByBlock : public MetaColor {

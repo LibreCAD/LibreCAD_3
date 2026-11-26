@@ -1051,7 +1051,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
              "10\n0\n20\n0\n30\n0\n210\n0\n220\n0\n230\n1\n"
              "2\nSOLID\n71\n1\n91\n1\n92\n2\n73\n1\n72\n0\n93\n3\n"
              "10\n1\n20\n2\n10\n4\n20\n2\n10\n3\n20\n5\n"
-             "76\n1\n78\n0\n63\n3\n98\n0\n11\n2\n21\n5\n99\n0\n"
+             "76\n1\n78\n0\n63\n90\n98\n0\n11\n2\n21\n5\n99\n0\n"
              "0\nENDSEC\n0\nEOF\n";
         ASSERT_TRUE(f.good());
     }
@@ -1112,7 +1112,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
             inPolygon = value == "MPOLYGON";
             seenPolygon = seenPolygon || inPolygon;
         }
-        if (inPolygon && group == 63) fill = std::stoi(value) == 3;
+        if (inPolygon && group == 63) fill = std::stoi(value) == 90;
         if (inPolygon && group == 62) lineColorWritten = std::stoi(value) == 1;
         if (inPolygon && group == 11) xdir = std::stod(value) == 2.0;
         if (inPolygon && group == 21) ydir = std::stod(value) == 5.0;
@@ -1216,6 +1216,24 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
 
     EXPECT_TRUE(std::any_of(scaledWrite.loss.notes.begin(), scaledWrite.loss.notes.end(),
                             [](const std::string& note) { return note.find("separate boundary color") != std::string::npos; }));
+    // ACI 90 and 3 share RGB green, but the original index must survive
+    // the HATCH projection instead of being reconstructed from RGB.
+    {
+        std::ifstream projected(scaledOutput);
+        ASSERT_TRUE(projected.good());
+        bool inHatch = false, foundIndex = false;
+        std::string group, text;
+        while (std::getline(projected, group) && std::getline(projected, text)) {
+            if (!group.empty() && group.back() == '\r') group.pop_back();
+            if (!text.empty() && text.back() == '\r') text.pop_back();
+            const int code = std::stoi(group);
+            if (code == 0) {
+                if (inHatch) break;
+                inHatch = text == "HATCH";
+            } else if (inHatch && code == 62) foundIndex = std::stoi(text) == 90;
+        }
+        EXPECT_TRUE(foundIndex);
+    }
     auto scaledDoc = newDwgDocument();
     ASSERT_TRUE(lc::persistence::File::importFile(scaledDoc, scaledOutput, lc::persistence::File::LIBDXFRW).ok);
     lc::entity::Hatch_CSPtr scaledHatch;
@@ -1399,7 +1417,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     ASSERT_TRUE(replaceOnce(hatchSource, "0\nMPOLYGON\n", "0\nHATCH\n"));
     ASSERT_TRUE(replaceOnce(hatchSource, "AcDbMPolygon", "AcDbHatch"));
     ASSERT_TRUE(replaceOnce(hatchSource, "71\n1\n91\n", "71\n0\n91\n"));
-    ASSERT_TRUE(replaceOnce(hatchSource, "63\n3\n98\n0\n11\n2\n21\n5\n99\n0\n", "98\n0\n"));
+    ASSERT_TRUE(replaceOnce(hatchSource, "63\n90\n98\n0\n11\n2\n21\n5\n99\n0\n", "98\n0\n"));
     const std::string hatchInput = tmpPath("ordinary-hatch-source");
     { std::ofstream hatchFile(hatchInput); hatchFile << hatchSource; }
     auto hatchDoc = newDwgDocument();

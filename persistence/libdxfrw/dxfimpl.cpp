@@ -1235,7 +1235,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
             polygon->fillColorAci > 0 && polygon->fillColorAci < 256 &&
             polygon->fillColorRgb < 0 && polygon->fillColorName.empty()) {
             const auto fill = icol.intToColor(polygon->fillColorAci);
-            if (fill) mf->add(std::make_shared<lc::meta::MetaFillColor>(fill->color()));
+            if (fill) mf->add(std::make_shared<lc::meta::MetaFillColor>(fill->color(), polygon->fillColorAci));
         }
         LOG_TRACE << "name " << data->name;
         LOG_TRACE << "solid " << solidFlag;
@@ -3679,7 +3679,9 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     if (snapshot && hatch.solid) {
         const auto fill = h->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
         if (fill) {
-            const int fillAci = icol.colorToInt(fill->color());
+            const int sourceAci = fill->sourceAci();
+            const int fillAci = sourceAci > 0 && sourceAci < 256
+                ? sourceAci : icol.colorToInt(fill->color());
             if (hatch.color != fillAci) {
                 const std::string note = "A projected HATCH uses the MPOLYGON fill color; its separate boundary color cannot be retained.";
                 if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
