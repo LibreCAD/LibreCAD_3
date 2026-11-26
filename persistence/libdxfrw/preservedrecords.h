@@ -86,6 +86,7 @@ public:
     bool sourceWasDwg{false};
     bool hasSourceLayouts{false};
     bool checkedLayoutGraph{false};
+    bool checkedBinaryLayoutGraph{false};
     std::uint32_t layoutDictionary{0};
     std::vector<DRW_Layout> layouts;
     std::vector<DRW_Block_Record> layoutBlockRecords;

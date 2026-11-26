@@ -354,13 +354,13 @@ public:
     bool retainDxfBlockRecordSource(const DRW_Block_Record& row) const override {
         const bool layoutBlock = row.name == "*Model_Space" || row.name == "*Paper_Space" ||
                                  row.name == "*Paper_Space0";
-        if (_sourceIsBinary && !layoutBlock) _binaryHasOtherBlockRecords = true;
+        if (!layoutBlock) _hasOtherBlockRecords = true;
         return row.layoutHandle != 0 || layoutBlock;
     }
 #endif
     void addDxfBlockRecordSource(const DRW_Block_Record&, const DRW_RawDxfObject&) override;
     bool wantsDxfBlockSource() const override {
-        return !_sourceIsBinary || (!_binaryHasOtherBlockRecords &&
+        return !_sourceIsBinary || (!_hasOtherBlockRecords &&
                !_unmatchedSourceLayoutBlock && _sourceLayoutBlocks.size() == 3);
     }
     void addDxfBlockBeginSource(const DRW_Block&, const DRW_RawDxfObject&) override;
@@ -659,7 +659,7 @@ private:
     std::vector<SourceBlockPair> _sourceLayoutBodies;
     int _activeSourceLayoutBody{-1};
     bool _unmatchedSourceLayoutBlock{false};
-    mutable bool _binaryHasOtherBlockRecords{false};
+    mutable bool _hasOtherBlockRecords{false};
     std::uint32_t _sourceRootHandle{0};
     std::vector<DRW_Layout> _defaultLayouts;
     std::uint32_t _defaultLayoutDictionary{0};
