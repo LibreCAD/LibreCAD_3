@@ -296,6 +296,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
 
         builder->execute();
         reader.buildDeferredInserts();
+        reader.attachDwgProvenance();
 
         result.entitiesDelivered = reader.entitiesDelivered();
         result.failures = reader.failures();

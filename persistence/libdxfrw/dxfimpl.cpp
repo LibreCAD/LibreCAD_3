@@ -2116,10 +2116,8 @@ void DXFimpl::attachPreservedRecords(bool completeRead) {
     // The header travels even when there is nothing else to carry: a drawing's
     // units are worth keeping on their own.
     const bool hasHeader = !_header.acadVersion.empty() || _header.hasInsUnits || _header.hasMeasurement;
-    if (_preserved.empty() && _preserved.classes.empty() && !hasHeader) {
-        return;
-    }
-
+    // Retain an empty shelf too: it distinguishes an imported headerless DXF
+    // from a new document when deciding whether a default block is synthetic.
     auto preserved = std::make_shared<PreservedRecords>(_preserved);
     preserved->hasHeader = hasHeader;
     preserved->insUnitsCode = _header.insUnitsCode;
@@ -2176,6 +2174,13 @@ void DXFimpl::attachPreservedRecords(bool completeRead) {
               << preserved->sections.size() << " section(s) this build does not model";
 }
 
+void DXFimpl::attachDwgProvenance() {
+    auto preserved = std::make_shared<PreservedRecords>();
+    preserved->sourceWasDwg = true;
+    preserved->hasSourceLayouts = _preserved.hasSourceLayouts;
+    _document->addDocumentMetaType(preserved);
+}
+
 /** The records a previous read of this document set aside, if any. */
 static std::shared_ptr<const lc::persistence::PreservedRecords> preservedOn(
     const std::shared_ptr<lc::storage::Document>& document) {
@@ -2228,7 +2233,7 @@ bool DXFimpl::prepareDefaultLayoutGraph() {
         if (!_defaultLayoutsFromSource && !primaryHasContent && !hasUnsafeAdditionalPaperSpace()) return true;
     }
     if (!_defaultLayoutsFromSource &&
-        (_replay || (_shelf && (_shelf->hasSourceLayouts || _shelf->total() != 0 ||
+        (_replay || (_shelf && (_shelf->sourceWasDwg || _shelf->hasSourceLayouts || _shelf->total() != 0 ||
                                  !_shelf->rootDictEntries.empty())))) return true;
 
     // Only synthesize defaults when the document has the two kernel-created
@@ -2668,8 +2673,15 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         dxfW = nullptr;
         return false;
     }
-    if (_defaultLayouts.empty() && hasUnsafeAdditionalPaperSpace()) {
-        _writeFailureReason = "The layout graph for additional paper-space contents or references cannot be retained in this output; preserve the original or use a supported ASCII DXF layout.";
+    const auto paperBlocks = _document->blocks();
+    const bool primaryPaperHasContent = exportVersion >= DRW::AC1015 &&
+        std::any_of(paperBlocks.begin(), paperBlocks.end(),
+                    [this](const auto& block) {
+                        return upperName(block->name()) == "*PAPER_SPACE" &&
+                            !_document->entitiesByBlock(block).asVector().empty();
+                    });
+    if (_defaultLayouts.empty() && (primaryPaperHasContent || hasUnsafeAdditionalPaperSpace())) {
+        _writeFailureReason = "The layout graph for paper-space contents or references cannot be retained in this output; preserve the original or use a supported ASCII DXF layout.";
         delete dxfW;
         dxfW = nullptr;
         return false;
@@ -4202,6 +4214,9 @@ bool DXFimpl::isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block) {
 }
 
 void DXFimpl::writeBlockRecords() {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    const bool omitUnusedDefaultPaper = !_shelf && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
+#endif
     for(const auto& block : _document->blocks()) {
         // Anonymous dimension blocks are geometry a writer draws a dimension
         // with, not anything a user made. This writer mints its own below, so
@@ -4213,7 +4228,8 @@ void DXFimpl::writeBlockRecords() {
             continue;
         }
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
-        if (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name()))) continue;
+        if ((omitUnusedDefaultPaper && block->name() == "*Paper_Space0") ||
+            (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name())))) continue;
 #endif
         dxfW->writeBlockRecord(block->name());
     }
@@ -4731,6 +4747,9 @@ void DXFimpl::writeBlocks() {
         }
     }
 
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    const bool omitUnusedDefaultPaper = !_shelf && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
+#endif
     for(const auto& block : _document->blocks()) {
         // Left out for the same reason as in writeBlockRecords(): the record
         // pass skipped these, so a block written here would have no record.
@@ -4738,7 +4757,8 @@ void DXFimpl::writeBlocks() {
             continue;
         }
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
-        if (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name()))) continue;
+        if ((omitUnusedDefaultPaper && block->name() == "*Paper_Space0") ||
+            (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name())))) continue;
 #endif
         writeBlock(block);
     }

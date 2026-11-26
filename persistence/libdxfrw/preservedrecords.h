@@ -83,6 +83,7 @@ public:
     std::vector<DRW_Class> classes;
 
     /** Whether the source contained layouts, including unsupported profiles. */
+    bool sourceWasDwg{false};
     bool hasSourceLayouts{false};
     bool checkedLayoutGraph{false};
     std::uint32_t layoutDictionary{0};

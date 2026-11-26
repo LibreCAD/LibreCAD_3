@@ -10,6 +10,9 @@
 #include <cad/primitive/line.h>
 #include "persistence/file.h"
 #include "persistence/libdxfrw/dxfimpl.h"
+#include "persistence/libdxfrw/preservedrecords.h"
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -102,10 +105,42 @@ TEST(LayoutGraph, EmptyBinaryDrawingDoesNotIntroduceLayoutWarnings) {
     for (const auto target : targets) {
         Scratch dir; const auto output = dir.path / "empty.dxf";
         ASSERT_TRUE(File::exportFile(makeDocument(), output.string(), target).ok);
+        EXPECT_EQ(bytes(output).find("*Paper_Space0"), std::string::npos);
         const auto read = File::importFile(makeDocument(), output.string(), File::LIBDXFRW);
         ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
     }
 }
+TEST(LayoutGraph, HeaderlessImportedPaperBlockIsNotOmitted) {
+    Scratch dir; const auto source = dir.path / "source.dxf", output = dir.path / "output.dxf";
+    { std::ofstream out(source); out << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n2\n*Paper_Space0\n70\n0\n10\n0\n20\n0\n30\n0\n0\nENDBLK\n0\nENDSEC\n0\nEOF\n"; }
+    auto doc = makeDocument(); ASSERT_TRUE(File::importFile(doc, source.string(), File::LIBDXFRW).ok);
+    ASSERT_TRUE(File::exportFile(doc, output.string(), File::LIBDXFRW_DXF_R12).ok);
+    auto written = bytes(output);
+    std::transform(written.begin(), written.end(), written.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::toupper(ch)); });
+    EXPECT_NE(written.find("*PAPER_SPACE0"), std::string::npos);
+}
+#if USE_DWG_IMPORT && defined(DWG_FIXTURES_DIR)
+TEST(LayoutGraph, DwgImportRecordsProvenance) {
+    auto doc = makeDocument();
+    const auto result = File::importFile(doc, std::string(DWG_FIXTURES_DIR) + "/ordinary_enc_AC1015.dwg", File::LIBDXFRW);
+    ASSERT_TRUE(result.ok);
+    const auto meta = doc->allMetaTypes();
+    const auto it = meta.find(lc::persistence::PreservedRecords::kId); ASSERT_NE(it, meta.end());
+    const auto source = std::dynamic_pointer_cast<const lc::persistence::PreservedRecords>(it->second);
+    ASSERT_TRUE(source); EXPECT_TRUE(source->sourceWasDwg);
+    insertPaperLine(doc, "*Paper_Space");
+    Scratch dir; const auto output = dir.path / "paper.dxf";
+    { std::ofstream out(output); out << "keep original"; }
+    lc::persistence::DXFimpl writer(doc);
+    EXPECT_FALSE(writer.writeDXF(output.string(), File::LIBDXFRW_DXF_R2004));
+    EXPECT_NE(writer.writeFailureReason().find("layout graph"), std::string::npos);
+    EXPECT_EQ(bytes(output), "keep original");
+    const auto children = doc->entitiesByBlock(doc->blockByName("*Paper_Space")).asVector();
+    ASSERT_EQ(children.size(), 1u); doc->removeEntity(children.front());
+    ASSERT_TRUE(writer.writeDXF(output.string(), File::LIBDXFRW_DXF_R2004));
+}
+#endif
 TEST(LayoutGraph, BinaryLayoutsReopenSaveAndRetry) {
     const File::Type targets[] = {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXB_R2004,
         File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXB_R2013};

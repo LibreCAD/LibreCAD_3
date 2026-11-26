@@ -106,7 +106,7 @@ public:
         _sourceIsDwg = isDwg;
     }
 
-    // The raw layout graph is currently replayable only from ASCII DXF.
+    // Binary source replay is restricted to the checked layout profile.
     void setSourceIsBinary(bool isBinary) { _sourceIsBinary = isBinary; }
 
     // READ FUNCTIONALITY
@@ -251,6 +251,7 @@ public:
      * writer from a document and knows nothing about where it came from.
      */
     void attachPreservedRecords(bool completeRead);
+    void attachDwgProvenance();
 
     void addLine(const DRW_Line& data) override;
 
