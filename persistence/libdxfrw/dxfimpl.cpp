@@ -459,6 +459,13 @@ void DXFimpl::addBlock(const DRW_Block& data) {
         _currentBlock = nullptr;
 
         auto base = coord(data.basePoint);
+        std::string blockName = data.name;
+        // R12 uppercases names on the wire. Use the kernel's canonical paper
+        // names while retaining the source spelling in the lookup map below.
+        if (_header.acadVersion.empty() || _header.acadVersion == "AC1009") {
+            if (blockName == "*PAPER_SPACE") blockName = "*Paper_Space";
+            else if (blockName == "*PAPER_SPACE0") blockName = "*Paper_Space0";
+        }
 
         auto appData = data.appData;
         auto it = appData.begin();
@@ -508,7 +515,7 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             // pointing at a block nothing defined -- which is why no plugin was
             // ever asked to rebuild a custom entity read back from a file.
             _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(
-                data.name, pluginName, entityName, base, params);
+                blockName, pluginName, entityName, base, params);
         }
 
         if(_currentBlock == nullptr) {
@@ -523,22 +530,20 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             // where the convention is all there is.
             const bool anonymous = (data.flags & 1) != 0
                 || (_sourceIsDwg && isAnonymousDimensionBlockName(data.name));
-            std::string blockName = data.name;
-            // R12 names are uppercased on the wire. Match the kernel-created
-            // paper blocks for the plain defaults so their children remain
-            // reachable after reopening. Keep nondefault metadata untouched.
-            if (_header.acadVersion == "AC1009" && !anonymous && data.flags == 0 &&
-                data.appData.empty() && base.x() == 0 && base.y() == 0 && base.z() == 0) {
-                if (blockName == "*PAPER_SPACE") blockName = "*Paper_Space";
-                else if (blockName == "*PAPER_SPACE0") blockName = "*Paper_Space0";
-            }
             _currentBlock = std::make_shared<lc::meta::Block>(blockName, base, anonymous);
         }
         // Blocks are parsed before the top-level Builder executes, so the
         // document's name lookup does not yet include this definition. Keep
         // the parsed block indexed by its file name while the read is active.
         _blocks[data.name] = _currentBlock;
-        _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
+        const auto existing = blockName != data.name ? _document->blockByName(blockName) : nullptr;
+        if (existing) {
+            // Preserve the imported block's base and anonymous state as well as
+            // its children; AddBlock alone leaves the kernel default in place.
+            _builder->append(std::make_shared<lc::operation::ReplaceBlock>(_document, existing, _currentBlock));
+        } else {
+            _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
+        }
 
         // May need to check if the block already exists: not sure
         _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, _currentBlock));
