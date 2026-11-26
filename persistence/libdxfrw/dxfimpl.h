@@ -3,6 +3,10 @@
 #include <libdxfrw.h>
 #include <drw_interface.h>
 #include <drw_base.h>
+
+#if defined(LIBDXFRW_HAS_DXF_STAGED_LAYOUT_LINK_INSPECTOR) && defined(LIBDXFRW_HAS_DXF_FIXED_PAPER_SPACE_WRITER)
+#define LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH 1
+#endif
 #include <iostream>
 #include "../file.h"
 #include "../format.h"
@@ -57,10 +61,12 @@ struct DrawingHeader {
 
     /** $INSUNITS as the raw DXF code, and as the kernel's enum. */
     int insUnitsCode{0};
+    bool hasInsUnits{false};
     lc::Units units{lc::Units::None};
 
     /** $MEASUREMENT: 0 = imperial (English), 1 = metric. */
     int measurement{0};
+    bool hasMeasurement{false};
 
     /** $LTSCALE, the global line-type scale. */
     double lineTypeScale{1.0};
@@ -71,7 +77,14 @@ struct DrawingHeader {
     lc::geo::Coordinate extMax;
 };
 
-class DXFimpl : public DRW_Interface {
+class DXFimpl : public DRW_Interface
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+              , public DRW_DxfFixedPaperSpaceWriter
+              , public DRW_DxfLayoutSourceHandler
+              , public DRW_DxfBlockRecordSourceHandler
+              , public DRW_DxfBlockSourceHandler
+#endif
+{
 public:
 
     DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation::Builder_SPtr builder);
@@ -89,6 +102,9 @@ public:
     void setSourceIsDwg(bool isDwg) {
         _sourceIsDwg = isDwg;
     }
+
+    // The raw layout graph is currently replayable only from ASCII DXF.
+    void setSourceIsBinary(bool isBinary) { _sourceIsBinary = isBinary; }
 
     // READ FUNCTIONALITY
     void addHeader(const DRW_Header* data) override;
@@ -174,25 +190,12 @@ public:
 
     void addViewport(const DRW_Viewport& data) override;
 
-    /**
-     * A layout is the page a drawing is printed from: its paper size, its
-     * viewports, its title block. LibreCAD models none of it, and libdxfrw
-     * parses LAYOUT and PLOTSETTINGS into typed objects rather than offering
-     * them to the raw passthrough net -- so unlike a record this build has
-     * never heard of, they cannot be kept verbatim and put back. Every save
-     * destroys them.
-     *
-     * They are counted here because that is the only place this build sees
-     * them at all: the writer is built from a document and has no idea they
-     * existed. Counting is not keeping, but it is the difference between a
-     * user who knows their layouts are gone and one who finds out later.
-     *
-     * The real fix belongs upstream, where processLayout and processPlotSettings
-     * need the addRawDxfObject call their siblings processScale, processSun and
-     * processDictionaryVar already make.
-     */
+    /** Count unsupported layouts. After a complete DXF read, the bounded
+     * plain layout graph may be retained and removed from this loss count;
+     * all other layouts continue to be reported. */
     void addLayout(const DRW_Layout& data) override {
         (void)data;
+        _preserved.hasSourceLayouts = true;
         recordLoss("LAYOUT");
     }
 
@@ -244,7 +247,7 @@ public:
      * survives from this read to the next save: File::save builds a fresh
      * writer from a document and knows nothing about where it came from.
      */
-    void attachPreservedRecords();
+    void attachPreservedRecords(bool completeRead);
 
     void addLine(const DRW_Line& data) override;
 
@@ -336,6 +339,20 @@ public:
     void writeAppId() override;
 
     void writeObjects() override;
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    bool finalizeDxfWrite() override;
+    bool wantsDxfLayoutSource() const override { return !_sourceIsBinary; }
+    void addDxfLayoutSource(const DRW_Layout&, const DRW_RawDxfObject&) override;
+    bool wantsDxfBlockRecordSource() const override { return !_sourceIsBinary; }
+    void addDxfBlockRecordSource(const DRW_Block_Record&, const DRW_RawDxfObject&) override;
+    bool wantsDxfBlockSource() const override { return !_sourceIsBinary; }
+    void addDxfBlockBeginSource(const DRW_Block&, const DRW_RawDxfObject&) override;
+    void addDxfBlockEndSource(const DRW_Block&, const DRW_RawDxfObject&) override;
+#endif
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    bool writeDxfFixedPaperSpaceContents() override;
+#endif
 
     void addPlotSettings(const DRW_PlotSettings *data) override {
         (void)data;
@@ -468,6 +485,7 @@ public:
     /// DRW_Block::flags at zero, so the anonymous bit a DXF carries is simply
     /// not there and the naming convention has to stand in for it.
     bool _sourceIsDwg{false};
+    bool _sourceIsBinary{false};
 
     static bool isAnonymousDimensionBlockName(const std::string& name);
     static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
@@ -608,6 +626,29 @@ private:
      * question.
      */
     std::shared_ptr<const PreservedRecords> _shelf;
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    bool prepareDefaultLayoutGraph();
+    bool acceptSourceLayoutGraph();
+    std::vector<dxfRW::DxfLayoutOutputLinks> defaultLayoutOutputLinks() const;
+    std::vector<std::pair<DRW_Layout, DRW_RawDxfObject>> _sourceLayouts;
+    std::vector<std::pair<DRW_Block_Record, DRW_RawDxfObject>> _sourceLayoutBlocks;
+    struct SourceBlockPair {
+        DRW_Block begin;
+        DRW_Block end;
+        DRW_RawDxfObject rawBegin;
+        DRW_RawDxfObject rawEnd;
+        bool hasEnd{false};
+    };
+    std::vector<SourceBlockPair> _sourceLayoutBodies;
+    int _activeSourceLayoutBody{-1};
+    bool _unmatchedSourceLayoutBlock{false};
+    std::uint32_t _sourceRootHandle{0};
+    std::vector<DRW_Layout> _defaultLayouts;
+    std::uint32_t _defaultLayoutDictionary{0};
+    bool _defaultLayoutWriteOk{true};
+    bool _defaultLayoutsFromSource{false};
+#endif
 
     /** The target of the current write, for the format-capability check. */
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};

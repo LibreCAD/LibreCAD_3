@@ -310,3 +310,16 @@ target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_compile_features(lcunittest PRIVATE cxx_std_17)
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS}
     ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})
+
+# Isolated codec-aware checks; the ordinary persistence suite deliberately
+# keeps libdxfrw's headers and link requirements private.
+if(WITH_PERSISTENCE)
+    add_executable(lclayoutgraphtest persistence/layout_graph_test.cpp)
+    target_compile_features(lclayoutgraphtest PRIVATE cxx_std_17)
+    target_link_libraries(lclayoutgraphtest PRIVATE persistence lckernel libdxfrw::libdxfrw ${Boost_LIBRARIES})
+    if(MSVC)
+        target_link_libraries(lclayoutgraphtest PRIVATE GTest::gtest GTest::gtest_main)
+    else()
+        target_link_libraries(lclayoutgraphtest PRIVATE gtest gtest_main)
+    endif()
+endif()

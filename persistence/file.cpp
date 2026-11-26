@@ -321,6 +321,8 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
     switch(library) {
     case LIBDXFRW: {
         DXFimpl reader(document, builder);
+        const bool sourceIsBinary = isBinaryDxfFile(path);
+        reader.setSourceIsBinary(sourceIsBinary);
         dxfRW R(path.c_str());
 
         // The DXF compatibility profile is left at its default, StandaloneSafe.
@@ -355,7 +357,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
 
         // Whatever this build does not model rides on the document, so a later
         // save can put it back exactly as it arrived.
-        reader.attachPreservedRecords();
+        reader.attachPreservedRecords(result.ok);
 
         const auto& header = reader.header();
         result.sourceVersionTag = header.acadVersion;
@@ -380,7 +382,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         // every reader accepts.
         bool recognised = false;
         auto sourceType = typeForAcadVersion(header.acadVersion, &recognised);
-        if (isBinaryDxfFile(path)) {
+        if (sourceIsBinary) {
             sourceType = binaryVariantFor(sourceType);
         }
         result.variantId = variantIdForType(sourceType);

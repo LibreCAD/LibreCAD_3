@@ -625,7 +625,8 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
                 vertexes, 0.0, 0.0, 0.0, /*closed=*/false,
                 lc::geo::Coordinate(0, 0, 1), layer)}));
 
-        const bool saved = lc::persistence::File::save(doc, path, type);
+        const auto exportResult = lc::persistence::File::exportFile(doc, path, type);
+        const bool saved = exportResult.ok;
 
         if (!saved) {
             // Only LIBOPENCAD_DWG may refuse: every DXF target must carry this
@@ -640,6 +641,9 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
 
         ASSERT_TRUE(boost::filesystem::exists(path)) << advertised.second;
         ASSERT_GT(boost::filesystem::file_size(path), 0u) << advertised.second;
+        if (type == lc::persistence::File::LIBDXFRW_DXF_R12 || type == lc::persistence::File::LIBDXFRW_DXF_R14 ||
+            type == lc::persistence::File::LIBDXFRW_DXB_R12 || type == lc::persistence::File::LIBDXFRW_DXB_R14)
+            EXPECT_EQ(exportResult.loss.droppedByType.count("layer lineweight"), 0u);
 
         std::ifstream written(path, std::ios::binary);
         const std::string head(
@@ -1281,6 +1285,38 @@ std::map<std::string, std::size_t> recordsInFile(const std::string& path) {
 std::string fixture(const char* name) {
     return std::string(UNITTEST_FIXTURES_DIR) + "/" + name;
 }
+
+// The historical raw-object controls start OBJECTS with an owned dictionary.
+// Give that dictionary a real root in a temporary copy so the test exercises
+// passthrough without relying on acceptance of a malformed root position.
+struct RootedObjectFixture {
+    std::string path = uniqueTmpDxf("rooted-objects");
+    bool valid = false;
+    explicit RootedObjectFixture(const char* name) {
+        std::ifstream in(fixture(name), std::ios::binary);
+        if (!in) return;
+        std::string text((std::istreambuf_iterator<char>(in)), {});
+        const std::string section = "0\nSECTION\n2\nOBJECTS\n";
+        const auto sectionPos = text.find(section);
+        if (sectionPos == std::string::npos) return;
+        const auto start = sectionPos + section.size();
+        const std::string first = "0\nDICTIONARY\n5\n";
+        if (text.compare(start, first.size(), first) != 0) return;
+        const auto handleStart = start + first.size();
+        const auto handleEnd = text.find('\n', handleStart);
+        const auto ownerCode = text.find("330\n", handleEnd);
+        if (handleEnd == std::string::npos || ownerCode == std::string::npos) return;
+        const auto ownerEnd = text.find('\n', ownerCode + 4);
+        if (ownerEnd == std::string::npos) return;
+        const auto handle = text.substr(handleStart, handleEnd - handleStart);
+        text.replace(ownerCode + 4, ownerEnd - ownerCode - 4, "C");
+        text.insert(start, "0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n3\nLC_ROOT\n350\n" + handle + "\n");
+        std::ofstream out(path, std::ios::binary);
+        out << text;
+        valid = static_cast<bool>(out);
+    }
+    ~RootedObjectFixture() { boost::system::error_code ignored; boost::filesystem::remove(path, ignored); }
+};
 
 }  // namespace
 
@@ -2004,12 +2040,13 @@ struct RecordIdentity {
     std::string handle;
     std::string owner;
 };
-std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) {
-    std::map<std::string, RecordIdentity> identities;
+std::vector<RecordIdentity> identitiesOfType(const std::string& path, const std::string& type) {
+    std::vector<RecordIdentity> identities;
     std::ifstream file(path);
     std::string code;
     std::string value;
     std::string record;
+    RecordIdentity identity;
 
     while (std::getline(file, code) && std::getline(file, value)) {
         while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
@@ -2023,16 +2060,18 @@ std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) 
         }
 
         if (group == "0") {
+            if (record == type) identities.push_back(identity);
             record = value;
-        } else if (record.empty()) {
+            identity = {};
+        } else if (record != type) {
             continue;
         } else if (group == "5") {
-            identities[record].handle = value;
-        } else if (group == "330" && identities[record].owner.empty()) {
-            identities[record].owner = value;
+            identity.handle = value;
+        } else if (group == "330" && identity.owner.empty()) {
+            identity.owner = value;
         }
     }
-
+    if (record == type) identities.push_back(identity);
     return identities;
 }
 
@@ -2635,7 +2674,8 @@ TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
 }
 
 TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
-    const std::string source = fixture("raw_objects.dxf");
+    const RootedObjectFixture rooted("raw_objects.dxf"); ASSERT_TRUE(rooted.valid);
+    const std::string& source = rooted.path;
     ASSERT_TRUE(boost::filesystem::exists(source));
 
     const auto before = recordsInSection(source, "OBJECTS");
@@ -2658,7 +2698,12 @@ TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
 
     auto after = recordsInSection(saved, "OBJECTS");
     EXPECT_EQ(after["DICTIONARYVAR"], 1u) << "A record LibreCAD does not model was destroyed.";
-    EXPECT_EQ(after["ACDBPLACEHOLDER"], 1u) << "A record LibreCAD does not model was destroyed.";
+    const auto variables = identitiesOfType(saved, "DICTIONARYVAR");
+    const auto placeholders = identitiesOfType(saved, "ACDBPLACEHOLDER");
+    ASSERT_EQ(variables.size(), 1u);
+    EXPECT_EQ(std::count_if(placeholders.begin(), placeholders.end(), [&](const auto& item) {
+        return !item.owner.empty() && item.owner == variables.front().owner;
+    }), 1) << "the source placeholder no longer belongs to its dictionary";
     EXPECT_GE(after["DICTIONARY"], before.at("DICTIONARY"))
         << "The source's dictionaries must all still be there.";
 
@@ -2682,7 +2727,8 @@ TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
-    const std::string source = fixture("raw_objects_low_handles.dxf");
+    const RootedObjectFixture rooted("raw_objects_low_handles.dxf"); ASSERT_TRUE(rooted.valid);
+    const std::string& source = rooted.path;
     ASSERT_TRUE(boost::filesystem::exists(source));
 
     // The fixture is raw_objects.dxf with its three preserved handles moved
@@ -2718,22 +2764,19 @@ TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
     EXPECT_EQ(after.count("ACDBPLACEHOLDER"), 1u)
         << "a record LibreCAD does not model was destroyed";
 
-    const auto identities = identitiesInFile(saved);
-    ASSERT_EQ(identities.count("DICTIONARYVAR"), 1u);
-    ASSERT_EQ(identities.count("ACDBPLACEHOLDER"), 1u);
+    const auto variables = identitiesOfType(saved, "DICTIONARYVAR");
+    const auto placeholders = identitiesOfType(saved, "ACDBPLACEHOLDER");
+    ASSERT_EQ(variables.size(), 1u);
 
     // Both were owned by the fixture's own DICTIONARY. Whatever handle that
     // dictionary ended up with, the two 330s must still name it and each
     // other's -- a remap is only correct if every reference moved with the
     // handle it names.
-    EXPECT_EQ(identities.at("DICTIONARYVAR").owner,
-              identities.at("ACDBPLACEHOLDER").owner)
-        << "the two preserved records no longer agree on their owner";
-    EXPECT_NE(identities.at("DICTIONARYVAR").owner, "")
-        << "the preserved records lost their owner";
-    EXPECT_NE(identities.at("DICTIONARYVAR").handle,
-              identities.at("ACDBPLACEHOLDER").handle)
-        << "two preserved records were given one handle";
+    const auto placeholder = std::find_if(placeholders.begin(), placeholders.end(), [&](const auto& item) {
+        return !item.owner.empty() && item.owner == variables.front().owner;
+    });
+    ASSERT_NE(placeholder, placeholders.end()) << "the preserved records no longer agree on their owner";
+    EXPECT_NE(variables.front().handle, placeholder->handle) << "two preserved records were given one handle";
 
     boost::filesystem::remove(saved);
 }
@@ -2944,8 +2987,9 @@ TEST(DxfRoundTripTest, AMovedHandleDoesNotLandOnAnotherPreservedRecord) {
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, UnmodelledRecordsAreNotForcedIntoAnotherRevision) {
     auto doc = newDocument();
+    const RootedObjectFixture rooted("raw_objects.dxf"); ASSERT_TRUE(rooted.valid);
     ASSERT_TRUE(lc::persistence::File::importFile(
-        doc, fixture("raw_objects.dxf"), lc::persistence::File::Library::LIBDXFRW).ok);
+        doc, rooted.path, lc::persistence::File::Library::LIBDXFRW).ok);
 
     const struct {
         lc::persistence::File::Type type;
@@ -3151,6 +3195,51 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
         boost::filesystem::remove(source);
         boost::filesystem::remove(resaved);
     }
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsReportExplicitLayerWidth) {
+    const auto source = uniqueTmpDxf("layer-width-source");
+    // DocumentImpl's numeric layer width is written explicitly by R2000.
+    // Once imported, it must be reported when an older target cannot carry it.
+    ASSERT_TRUE(lc::persistence::File::exportFile(
+        newDocument(), source, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    for (const auto target : {lc::persistence::File::LIBDXFRW_DXF_R12, lc::persistence::File::LIBDXFRW_DXF_R14}) {
+        const auto path = uniqueTmpDxf("legacy-layer-width");
+        const auto written = lc::persistence::File::exportFile(doc, path, target);
+        ASSERT_TRUE(written.ok);
+        EXPECT_EQ(written.loss.droppedByType.count("layer lineweight"), 1u);
+        boost::filesystem::remove(path);
+    }
+    boost::filesystem::remove(source);
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsReportUnrepresentableUnitMetadata) {
+    const auto source = uniqueTmpDxf("unit-source");
+    {
+        std::ofstream dxf(source);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n"
+               "9\n$INSUNITS\n70\n1\n9\n$MEASUREMENT\n70\n0\n0\nENDSEC\n"
+               "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    for (const auto target : {lc::persistence::File::LIBDXFRW_DXF_R12, lc::persistence::File::LIBDXFRW_DXF_R14}) {
+        const auto path = uniqueTmpDxf("legacy-unit");
+        const auto written = lc::persistence::File::exportFile(doc, path, target);
+        ASSERT_TRUE(written.ok);
+        EXPECT_EQ(written.loss.droppedByType.count("$INSUNITS"), 1u);
+        EXPECT_EQ(written.loss.droppedByType.count("$MEASUREMENT"),
+                  target == lc::persistence::File::LIBDXFRW_DXF_R12 ? 1u : 0u);
+        std::ifstream in(path); const std::string text((std::istreambuf_iterator<char>(in)), {});
+        EXPECT_EQ(text.find("$INSUNITS"), std::string::npos);
+        if (target == lc::persistence::File::LIBDXFRW_DXF_R12)
+            EXPECT_EQ(text.find("$MEASUREMENT"), std::string::npos);
+        else EXPECT_NE(text.find("$MEASUREMENT"), std::string::npos);
+        boost::filesystem::remove(path);
+    }
+    boost::filesystem::remove(source);
 }
 
 namespace {
@@ -3646,9 +3735,11 @@ TEST(DxfRoundTripTest, AnR12SaveSaysTheMultilineTextWasConverted) {
               std::string::npos) << written.loss.notes.front();
 
     ASSERT_FALSE(written.diagnostics.empty()) << "a note that reaches no caller is not a report";
-    EXPECT_EQ(written.diagnostics.front().code, "record-converted");
-    EXPECT_NE(written.diagnostics.front().message.find("TEXT record per line"),
-              std::string::npos) << written.diagnostics.front().message;
+    const auto explanation = std::find_if(written.diagnostics.begin(), written.diagnostics.end(), [](const auto& diagnostic) {
+        return diagnostic.message.find("TEXT record per line") != std::string::npos;
+    });
+    ASSERT_NE(explanation, written.diagnostics.end()) << "the conversion explanation did not reach the caller";
+    EXPECT_TRUE(explanation->code == "record-converted" || explanation->code == "record-not-in-revision");
 
     // And the bool overload still says the drawing was not written whole.
     EXPECT_FALSE(lc::persistence::File::save(

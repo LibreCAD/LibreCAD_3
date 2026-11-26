@@ -9,6 +9,7 @@
 
 #include <drw_base.h>
 #include <drw_classes.h>
+#include <drw_entities.h>
 #include <drw_objects.h>
 
 #include <cad/interface/metatype.h>
@@ -53,12 +54,21 @@ public:
 
     bool empty() const {
         return objects.empty() && entities.empty() && sections.empty()
-               && mtextExtendedData.empty();
+               && mtextExtendedData.empty() && sourceLayerWeights.empty() && !hasSourceLayouts;
     }
 
     std::size_t total() const {
         return objects.size() + entities.size() + sections.size();
     }
+
+    // Preserve whether an imported layer's width was an implicit DXF default.
+    // The kernel turns that into a numeric width; a legacy export must not
+    // report that unchanged synthesized value as lost user data.
+    struct SourceLayerWeight {
+        double kernelWidth;
+        bool implicitDefault;
+    };
+    std::map<std::string, SourceLayerWeight> sourceLayerWeights;
 
     /** OBJECTS-section records libdxfrw does not model. */
     std::vector<DRW_RawDxfObject> objects;
@@ -71,6 +81,15 @@ public:
 
     /** CLASSES entries, needed for the records above to be readable again. */
     std::vector<DRW_Class> classes;
+
+    /** Whether the source contained layouts, including unsupported profiles. */
+    bool hasSourceLayouts{false};
+    bool checkedLayoutGraph{false};
+    std::uint32_t layoutDictionary{0};
+    std::vector<DRW_Layout> layouts;
+    std::vector<DRW_Block_Record> layoutBlockRecords;
+    DRW_Block layoutExtraBlockBegin;
+    DRW_Block layoutExtraBlockEnd;
 
     /**
      * The source root NamedObjectsDictionary's entries, name and item handle.
@@ -95,7 +114,9 @@ public:
      */
     bool hasHeader{false};
     int insUnitsCode{0};
+    bool hasInsUnits{false};
     int measurement{0};
+    bool hasMeasurement{false};
     double lineTypeScale{1.0};
 
     /**

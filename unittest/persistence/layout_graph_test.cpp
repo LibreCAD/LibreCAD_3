@@ -1,0 +1,136 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+#include <libdxfrw.h>
+#include <drw_interface.h>
+#include <gtest/gtest.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
+#include <cad/meta/block.h>
+#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
+#include <cad/primitive/line.h>
+#include "persistence/file.h"
+#include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <sstream>
+
+#if defined(LIBDXFRW_HAS_DXF_STAGED_LAYOUT_LINK_INSPECTOR) && defined(LIBDXFRW_HAS_DXF_FIXED_PAPER_SPACE_WRITER)
+namespace {
+using File = lc::persistence::File;
+using Document = lc::storage::DocumentImpl;
+std::shared_ptr<Document> makeDocument() {
+    return std::make_shared<Document>(std::make_shared<lc::storage::StorageManagerImpl>());
+}
+std::string bytes(const std::filesystem::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    return {std::istreambuf_iterator<char>(in), {}};
+}
+std::string groupInRecord(const std::string& contents, const std::string& kind,
+                          int identityCode, const std::string& identity, int wantedCode) {
+    std::istringstream in(contents); std::string code, value;
+    bool record = false, match = false; std::string wanted;
+    while (std::getline(in, code) && std::getline(in, value)) {
+        const int group = std::stoi(code);
+        if (group == 0) {
+            if (record && match) return wanted;
+            record = value == kind; match = false; wanted.clear();
+        } else if (record) {
+            if (group == identityCode && value == identity) match = true;
+            if (group == wantedCode) wanted = value;
+        }
+    }
+    return record && match ? wanted : std::string{};
+}
+struct Scratch {
+    std::filesystem::path path = std::filesystem::temp_directory_path() /
+        ("lc-layout-graph-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    Scratch() { std::filesystem::create_directories(path); }
+    ~Scratch() { std::error_code error; std::filesystem::remove_all(path, error); }
+};
+void insertPaperLine(const std::shared_ptr<Document>& doc, const char* name) {
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(2,3,0), lc::geo::Coordinate(7,11,0),
+        doc->layerByName("0"), nullptr, doc->blockByName(name));
+    auto builder = std::make_shared<lc::operation::Builder>(doc, "paper line");
+    auto entities = std::make_shared<lc::operation::EntityBuilder>(doc);
+    entities->appendEntity(line); builder->append(entities); builder->execute();
+}
+void expectPaperLine(const std::shared_ptr<Document>& doc, const char* name) {
+    auto paper = doc->blockByName(name); ASSERT_TRUE(paper);
+    const auto entities = doc->entitiesByBlock(paper).asVector(); ASSERT_EQ(entities.size(), 1u);
+    auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entities.front()); ASSERT_TRUE(line);
+    EXPECT_EQ(line->start().x(), 2); EXPECT_EQ(line->start().y(), 3);
+    EXPECT_EQ(line->end().x(), 7); EXPECT_EQ(line->end().y(), 11);
+}
+TEST(LayoutGraph, SavesReopensAndRetriesWithoutLosingPaperContents) {
+    Scratch dir; auto first = dir.path / "first.dxf", second = dir.path / "second.dxf";
+    auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space"); insertPaperLine(doc, "*Paper_Space0");
+    ASSERT_TRUE(File::exportFile(doc, first.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto input = bytes(first); ASSERT_NE(input.find("  0\nLAYOUT\n"), std::string::npos);
+    auto reopened = makeDocument(); auto read = File::importFile(reopened, first.string(), File::LIBDXFRW);
+    ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
+    expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
+    auto extra = std::make_shared<lc::meta::Block>("*Paper_Space9"); reopened->addDocumentMetaType(extra);
+    { std::ofstream out(second); out << "preserve destination"; }
+    EXPECT_FALSE(File::exportFile(reopened, second.string(), File::LIBDXFRW_DXF_R2004).ok);
+    EXPECT_EQ(bytes(second), "preserve destination");
+    reopened->removeDocumentMetaType(extra);
+    ASSERT_TRUE(File::exportFile(reopened, second.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto again = makeDocument(); auto reread = File::importFile(again, second.string(), File::LIBDXFRW);
+    ASSERT_TRUE(reread.ok); EXPECT_EQ(reread.loss.droppedByType.count("LAYOUT"), 0u);
+    expectPaperLine(again, "*Paper_Space"); expectPaperLine(again, "*Paper_Space0");
+}
+TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
+    Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
+    ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto input = bytes(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
+    const auto subclass = input.find("100\nAcDbPlotSettings\n", layout); ASSERT_NE(subclass, std::string::npos);
+    input.insert(subclass, "102\n{ACAD_REACTORS\n330\nC\n102\n}\n"); { std::ofstream out(changed); out << input; }
+    auto read = File::importFile(makeDocument(), changed.string(), File::LIBDXFRW);
+    ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+}
+TEST(LayoutGraph, UnmodeledPaperBlockMetadataRemainsReported) {
+    Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
+    ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto input = bytes(original); const auto block = input.find("  0\nBLOCK\n  5\n1C\n"); ASSERT_NE(block, std::string::npos);
+    const auto subclass = input.find("100\nAcDbBlockBegin\n", block); ASSERT_NE(subclass, std::string::npos);
+    input.insert(subclass, " 62\n     1\n"); { std::ofstream out(changed); out << input; }
+    auto read = File::importFile(makeDocument(), changed.string(), File::LIBDXFRW);
+    ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+}
+TEST(LayoutGraph, ExternalPlotResourceRemainsReported) {
+    Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
+    ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto input = bytes(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
+    const auto printer = input.find("  2\n\n", layout); ASSERT_NE(printer, std::string::npos);
+    input.insert(printer + 4, "MissingPrinter.pc3"); { std::ofstream out(changed); out << input; }
+    auto read = File::importFile(makeDocument(), changed.string(), File::LIBDXFRW);
+    ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+}
+TEST(LayoutGraph, RemapsReferencesToThePreservedPaperBlockBoundary) {
+    Scratch dir; auto original = dir.path / "original.dxf", source = dir.path / "source.dxf", output = dir.path / "output.dxf";
+    ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
+    auto data = bytes(original);
+    const auto oldBegin = groupInRecord(data, "BLOCK", 2, "*Paper_Space0", 5); ASSERT_FALSE(oldBegin.empty());
+    const auto oldOwner = groupInRecord(data, "BLOCK", 2, "*Paper_Space0", 330); ASSERT_FALSE(oldOwner.empty());
+    const auto oldEnd = groupInRecord(data, "ENDBLK", 330, oldOwner, 5); ASSERT_FALSE(oldEnd.empty());
+    const auto root = data.find("  0\nDICTIONARY\n  5\nC\n"); ASSERT_NE(root, std::string::npos);
+    const auto rootEnd = data.find("  0\n", root + 6); ASSERT_NE(rootEnd, std::string::npos);
+    data.insert(rootEnd, "  3\nLC_TEST\n350\nABC\n");
+    const auto end = data.rfind("  0\nENDSEC\n"); ASSERT_NE(end, std::string::npos);
+    data.insert(end, "  0\nXRECORD\n  5\nABC\n330\nC\n100\nAcDbXrecord\n280\n     1\n340\n" + oldBegin + "\n341\n" + oldEnd + "\n");
+    { std::ofstream out(source); out << data; }
+    auto doc = makeDocument(); const auto imported = File::importFile(doc, source.string(), File::LIBDXFRW);
+    ASSERT_TRUE(imported.ok); EXPECT_EQ(imported.loss.droppedByType.count("LAYOUT"), 0u);
+    ASSERT_TRUE(File::exportFile(doc, output.string(), File::LIBDXFRW_DXF_R2004).ok);
+    const auto result = bytes(output);
+    const auto newBegin = groupInRecord(result, "BLOCK", 2, "*Paper_Space0", 5);
+    const auto newOwner = groupInRecord(result, "BLOCK", 2, "*Paper_Space0", 330);
+    const auto newEnd = groupInRecord(result, "ENDBLK", 330, newOwner, 5);
+    ASSERT_FALSE(newBegin.empty()); EXPECT_NE(newBegin, oldBegin);
+    EXPECT_EQ(groupInRecord(result, "XRECORD", 5, "ABC", 340), newBegin);
+    ASSERT_FALSE(newEnd.empty()); EXPECT_NE(newEnd, oldEnd);
+    EXPECT_EQ(groupInRecord(result, "XRECORD", 5, "ABC", 341), newEnd);
+}
+}
+#endif

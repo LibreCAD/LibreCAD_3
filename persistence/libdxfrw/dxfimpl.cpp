@@ -4,6 +4,7 @@
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <functional>
@@ -384,11 +385,12 @@ void DXFimpl::addHeader(const DRW_Header* data) {
 
         headerStr(*data, "$ACADVER", _header.acadVersion);
 
-        if (headerInt(*data, "$INSUNITS", _header.insUnitsCode)) {
+        _header.hasInsUnits = headerInt(*data, "$INSUNITS", _header.insUnitsCode);
+        if (_header.hasInsUnits) {
             _header.units = numberToUnit(_header.insUnitsCode);
         }
 
-        headerInt(*data, "$MEASUREMENT", _header.measurement);
+        _header.hasMeasurement = headerInt(*data, "$MEASUREMENT", _header.measurement);
         headerDouble(*data, "$LTSCALE", _header.lineTypeScale);
 
         // Extents are a pair or they are nothing: half a bounding box describes no
@@ -710,6 +712,8 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
 
         auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
+        _preserved.sourceLayerWeights[data.name] = {
+            lw->width(), data.lWeight == DRW_LW_Conv::widthDefault};
         // If a layer starts with a * it's a special layer we don't process yet
         if(data.name == "0") {
             auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
@@ -1651,6 +1655,11 @@ void DXFimpl::buildDeferredInserts() {
  *********************************************/
 
 void DXFimpl::writeObjects() {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (!_defaultLayoutsFromSource)
+        for (auto& layout : _defaultLayouts)
+            _defaultLayoutWriteOk = dxfW->writeLayout(&layout) && _defaultLayoutWriteOk;
+#endif
     if (_replay == nullptr) {
         return;
     }
@@ -1706,6 +1715,23 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     if (lwIdx >= 0) {
         lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>(lwIdx);
     } else {
+        lay.lWeight = DRW_LW_Conv::widthDefault;
+    }
+    if (_exportVersion <= DRW::AC1014 && lay.lWeight != DRW_LW_Conv::widthDefault) {
+        bool implicitDefault = false;
+        if (_shelf) {
+            const auto source = _shelf->sourceLayerWeights.find(layer->name());
+            if (source != _shelf->sourceLayerWeights.end()) {
+                implicitDefault = source->second.implicitDefault && source->second.kernelWidth == wid;
+            } else {
+                // DocumentImpl creates layer 0 at this width before importing
+                // any layer. A source layer, when present, takes precedence.
+                implicitDefault = layer->name() == "0" && wid == 1.0;
+            }
+        } else {
+            implicitDefault = layer->name() == "0" && wid == 1.0;
+        }
+        if (!implicitDefault) _loss.droppedByType["layer lineweight"]++;
         lay.lWeight = DRW_LW_Conv::widthDefault;
     }
 
@@ -1796,6 +1822,9 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
         if (!root) {
             return;
         }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        _sourceRootHandle = data.handle;
+#endif
 
         for (const auto& entry : data.m_entries) {
             if (entry.m_handle == 0 || entry.m_name.empty()) {
@@ -1816,11 +1845,209 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
     });
 }
 
-void DXFimpl::attachPreservedRecords() {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+namespace {
+bool smallLayoutSource(const DRW_RawDxfObject& source) {
+    if (!source.hasRawValues || source.groups.size() > 128 ||
+        source.rawValues.size() != source.groups.size()) return false;
+    std::size_t bytes = 0;
+    for (const auto& value : source.rawValues) {
+        if (value.size() > 4096 || bytes > 65536 - value.size()) return false;
+        bytes += value.size();
+    }
+    return true;
+}
+bool rawCodes(const DRW_RawDxfObject& source, const std::vector<int>& codes) {
+    if (!smallLayoutSource(source) || source.groups.size() != codes.size()) return false;
+    for (std::size_t i = 0; i < codes.size(); ++i)
+        if (source.groups[i].code() != codes[i]) return false;
+    return true;
+}
+bool rawText(const DRW_Variant& value, const std::string& text) {
+    return value.type() == DRW_Variant::STRING && value.content.s && *value.content.s == text;
+}
+bool rawNumber(const DRW_Variant& value, int expected) {
+    return value.type() == DRW_Variant::INTEGER && value.content.i == expected;
+}
+bool rawDouble(const DRW_Variant& value, double expected) {
+    return value.type() == DRW_Variant::DOUBLE && value.content.d == expected;
+}
+bool rawHandle(const DRW_Variant& value, std::uint32_t expected) {
+    if (value.type() != DRW_Variant::STRING || !value.content.s || value.content.s->empty()) return false;
+    try {
+        std::size_t used = 0;
+        const auto parsed = std::stoull(*value.content.s, &used, 16);
+        return used == value.content.s->size() && parsed == expected;
+    } catch (const std::exception&) { return false; }
+}
+}
+
+void DXFimpl::addDxfLayoutSource(const DRW_Layout& layout, const DRW_RawDxfObject& source) {
+    if (_sourceLayouts.size() >= 3 || !smallLayoutSource(source)) {
+        _unmatchedSourceLayoutBlock = true;
+        return;
+    }
+    _sourceLayouts.emplace_back(layout, source);
+}
+
+void DXFimpl::addDxfBlockRecordSource(const DRW_Block_Record& block, const DRW_RawDxfObject& source) {
+    if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") {
+        if (block.layoutHandle != 0) _unmatchedSourceLayoutBlock = true;
+        return;
+    }
+    if (_sourceLayoutBlocks.size() >= 3 || !smallLayoutSource(source)) {
+        _unmatchedSourceLayoutBlock = true;
+        return;
+    }
+    _sourceLayoutBlocks.emplace_back(block, source);
+}
+
+void DXFimpl::addDxfBlockBeginSource(const DRW_Block& block, const DRW_RawDxfObject& source) {
+    _activeSourceLayoutBody = -1;
+    if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") return;
+    if (_sourceLayoutBodies.size() >= 3 || !smallLayoutSource(source)) {
+        _unmatchedSourceLayoutBlock = true;
+        return;
+    }
+    _sourceLayoutBodies.push_back({block, DRW_Block{}, source, DRW_RawDxfObject{}, false});
+    _activeSourceLayoutBody = static_cast<int>(_sourceLayoutBodies.size() - 1);
+}
+
+void DXFimpl::addDxfBlockEndSource(const DRW_Block& block, const DRW_RawDxfObject& source) {
+    if (_activeSourceLayoutBody < 0) return;
+    auto& body = _sourceLayoutBodies[static_cast<std::size_t>(_activeSourceLayoutBody)];
+    _activeSourceLayoutBody = -1;
+    if (!smallLayoutSource(source)) { _unmatchedSourceLayoutBlock = true; return; }
+    body.end = block;
+    body.rawEnd = source;
+    body.hasEnd = true;
+}
+
+bool DXFimpl::acceptSourceLayoutGraph() {
+    if (_unmatchedSourceLayoutBlock || _sourceRootHandle != 0xCu ||
+        _sourceLayouts.size() != 3 || _sourceLayoutBlocks.size() != 3 || _sourceLayoutBodies.size() != 3) return false;
+    std::uint32_t dictionaryHandle = 0;
+    for (const auto& entry : _preserved.rootDictEntries) {
+        auto name = entry.first;
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        if (name != "ACAD_LAYOUT") continue;
+        if (entry.first != "ACAD_LAYOUT") return false;
+        if (dictionaryHandle != 0) return false;
+        dictionaryHandle = entry.second;
+    }
+    if (!dictionaryHandle || dictionaryHandle == DRW::NoHandle) return false;
+    const auto dictionary = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
+        [dictionaryHandle](const auto& value) { return value.name == "DICTIONARY" && value.handle == dictionaryHandle; });
+    if (dictionary == _preserved.objects.end() ||
+        std::count_if(_preserved.objects.begin(), _preserved.objects.end(),
+            [dictionaryHandle](const auto& value) { return value.handle == dictionaryHandle; }) != 1 ||
+        dictionary->parentHandle != 0xCu ||
+        !rawCodes(*dictionary, {5,330,100,280,281,3,360,3,360,3,360}) ||
+        !rawHandle(dictionary->groups[0], dictionaryHandle) || !rawHandle(dictionary->groups[1], 0xCu) ||
+        !rawText(dictionary->groups[2], "AcDbDictionary") || !rawNumber(dictionary->groups[3], 1) ||
+        !rawNumber(dictionary->groups[4], 1)) return false;
+    const char* names[] = {"Model", "Layout1", "Layout2"};
+    const char* blockNames[] = {"*Model_Space", "*Paper_Space", "*Paper_Space0"};
+    std::vector<DRW_Layout> layouts;
+    std::vector<DRW_Block_Record> blocks;
+    std::vector<DRW_RawDxfObject> rawLayouts;
+    for (int i = 0; i < 3; ++i) {
+        const auto layout = std::find_if(_sourceLayouts.begin(), _sourceLayouts.end(),
+            [&](const auto& item) { return item.first.name == names[i]; });
+        const auto block = std::find_if(_sourceLayoutBlocks.begin(), _sourceLayoutBlocks.end(),
+            [&](const auto& item) { return item.first.name == blockNames[i]; });
+        const auto body = std::find_if(_sourceLayoutBodies.begin(), _sourceLayoutBodies.end(),
+            [&](const auto& item) { return item.begin.name == blockNames[i]; });
+        if (layout == _sourceLayouts.end() || block == _sourceLayoutBlocks.end() || body == _sourceLayoutBodies.end()) return false;
+        const auto& l = layout->first; const auto& ls = layout->second;
+        const auto& b = block->first; const auto& bs = block->second;
+        std::vector<int> layoutCodes{5,330,100,1,2,4,6,40,41,42,43,44,45,46,47,48,49,140,141,142,143,70,72,73,74,7,75};
+        if (ls.m_version > DRW::AC1015) layoutCodes.insert(layoutCodes.end(), {76,77,78});
+        const std::vector<int> suffix{147,148,149,100,1,70,71,10,20,11,21,12,22,32,14,24,34,15,25,35,146,13,23,33,16,26,36,17,27,37,76,330};
+        layoutCodes.insert(layoutCodes.end(), suffix.begin(), suffix.end());
+        std::vector<int> blockCodes{5,330,100,100,2,340};
+        if (ls.m_version > DRW::AC1018) blockCodes.insert(blockCodes.end(), {70,280,281});
+        if (ls.m_version < DRW::AC1015 || ls.m_version != bs.m_version || ls.m_version != dictionary->m_version ||
+            ls.name != "LAYOUT" || bs.name != "BLOCK_RECORD" || !rawCodes(ls, layoutCodes) || !rawCodes(bs, blockCodes) ||
+            !l.handle || l.handle == DRW::NoHandle || l.parentHandle != dictionaryHandle || l.tabOrder != i ||
+            !l.pageSetupName.empty() || !l.printerConfig.empty() || !l.paperSize.empty() ||
+            !l.plotViewName.empty() || !l.currentStyleSheet.empty() ||
+            !b.handle || b.handle == DRW::NoHandle || b.layoutHandle != l.handle ||
+            l.paperSpaceBlockRecordHandle.ref != b.handle ||
+            ls.handle != l.handle || ls.parentHandle != dictionaryHandle || bs.handle != b.handle || bs.parentHandle != 1u ||
+            !rawHandle(ls.groups[0], l.handle) || !rawHandle(ls.groups[1], dictionaryHandle) ||
+            !rawText(ls.groups[2], "AcDbPlotSettings") || !rawText(ls.groups[ls.groups.size()-29], "AcDbLayout") ||
+            !rawHandle(ls.groups.back(), b.handle) || !rawHandle(bs.groups[0], b.handle) || !rawHandle(bs.groups[1], 1u) ||
+            !rawText(bs.groups[2], "AcDbSymbolTableRecord") || !rawText(bs.groups[3], "AcDbBlockTableRecord") ||
+            !rawText(bs.groups[4], blockNames[i]) || !rawHandle(bs.groups[5], l.handle) ||
+            (blockCodes.size() == 9 && (!rawNumber(bs.groups[6], 0) || !rawNumber(bs.groups[7], 1) || !rawNumber(bs.groups[8], 0))) ||
+            !rawText(dictionary->groups[5 + i*2], names[i]) || !rawHandle(dictionary->groups[6 + i*2], l.handle)) return false;
+        const auto& begin = body->rawBegin; const auto& end = body->rawEnd;
+        const std::uint32_t beginHandle = i == 0 ? 0x20u : i == 1 ? 0x1Cu : b.handle + 1u;
+        const std::uint32_t endHandle = i == 0 ? 0x21u : i == 1 ? 0x1Du : b.handle + 2u;
+        if (!body->hasEnd || b.handle > DRW::NoHandle - 2u || begin.name != "BLOCK" || end.name != "ENDBLK" ||
+            begin.m_version != ls.m_version || end.m_version != ls.m_version || begin.handle != beginHandle ||
+            end.handle != endHandle || begin.parentHandle != b.handle || end.parentHandle != b.handle) return false;
+        if (i < 2) {
+            if (!rawCodes(begin, {5,330,100,8,100,2,70,10,20,30,3,1}) ||
+                !rawCodes(end, {5,330,100,8,100}) || !rawHandle(begin.groups[0], beginHandle) ||
+                !rawHandle(begin.groups[1], b.handle) || !rawText(begin.groups[2], "AcDbEntity") ||
+                !rawText(begin.groups[3], "0") || !rawText(begin.groups[4], "AcDbBlockBegin") ||
+                !rawText(begin.groups[5], blockNames[i]) || !rawNumber(begin.groups[6], 0) ||
+                !rawDouble(begin.groups[7], 0) || !rawDouble(begin.groups[8], 0) || !rawDouble(begin.groups[9], 0) ||
+                !rawText(begin.groups[10], blockNames[i]) || !rawText(begin.groups[11], "") ||
+                !rawHandle(end.groups[0], endHandle) || !rawHandle(end.groups[1], b.handle) ||
+                !rawText(end.groups[2], "AcDbEntity") || !rawText(end.groups[3], "0") ||
+                !rawText(end.groups[4], "AcDbBlockEnd")) return false;
+        } else {
+            if (!rawCodes(begin, {5,330,100,8,6,62,370,100,2,70,10,20,3,1}) ||
+                !rawCodes(end, {5,330,100,8,6,62,370,100}) || !rawHandle(begin.groups[0], beginHandle) ||
+                !rawHandle(begin.groups[1], b.handle) || !rawText(begin.groups[2], "AcDbEntity") ||
+                !rawText(begin.groups[3], "0") || !rawText(begin.groups[4], "BYLAYER") ||
+                !rawNumber(begin.groups[5], 256) || !rawNumber(begin.groups[6], -1) ||
+                !rawText(begin.groups[7], "AcDbBlockBegin") || !rawText(begin.groups[8], blockNames[i]) ||
+                !rawNumber(begin.groups[9], 0) || !rawDouble(begin.groups[10], 0) || !rawDouble(begin.groups[11], 0) ||
+                !rawText(begin.groups[12], blockNames[i]) || !rawText(begin.groups[13], "") ||
+                !rawHandle(end.groups[0], endHandle) || !rawHandle(end.groups[1], b.handle) ||
+                !rawText(end.groups[2], "AcDbEntity") || !rawText(end.groups[3], "0") ||
+                !rawText(end.groups[4], "BYLAYER") || !rawNumber(end.groups[5], 256) ||
+                !rawNumber(end.groups[6], -1) || !rawText(end.groups[7], "AcDbBlockEnd")) return false;
+            _preserved.layoutExtraBlockBegin = body->begin;
+            _preserved.layoutExtraBlockEnd = body->end;
+        }
+        layouts.push_back(l); blocks.push_back(b); rawLayouts.push_back(ls);
+    }
+    std::set<std::uint32_t> identities{0xCu, dictionaryHandle};
+    if (identities.size() != 2) return false;
+    for (const auto& layout : layouts) if (!identities.insert(layout.handle).second) return false;
+    for (const auto& block : blocks) if (!identities.insert(block.handle).second) return false;
+    for (const auto& body : _sourceLayoutBodies)
+        if (!identities.insert(body.begin.handle).second || !identities.insert(body.end.handle).second) return false;
+    for (const auto& object : _preserved.objects)
+        if (object.handle != dictionaryHandle && identities.count(object.handle)) return false;
+    for (const auto& entity : _preserved.entities)
+        if (identities.count(entity.handle)) return false;
+    _preserved.layoutDictionary = dictionaryHandle;
+    _preserved.layouts = std::move(layouts);
+    _preserved.layoutBlockRecords = std::move(blocks);
+    _preserved.objects.insert(_preserved.objects.end(), rawLayouts.begin(), rawLayouts.end());
+    _preserved.checkedLayoutGraph = true;
+    _loss.droppedByType.erase("LAYOUT");
+    return true;
+}
+#endif
+
+void DXFimpl::attachPreservedRecords(bool completeRead) {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (completeRead) acceptSourceLayoutGraph();
+#else
+    (void)completeRead;
+#endif
     // The header travels even when there is nothing else to carry: a drawing's
     // units are worth keeping on their own.
-    const bool hasHeader = !_header.acadVersion.empty() || _header.insUnitsCode != 0
-                           || _header.measurement != 0;
+    const bool hasHeader = !_header.acadVersion.empty() || _header.hasInsUnits || _header.hasMeasurement;
     if (_preserved.empty() && _preserved.classes.empty() && !hasHeader) {
         return;
     }
@@ -1828,7 +2055,9 @@ void DXFimpl::attachPreservedRecords() {
     auto preserved = std::make_shared<PreservedRecords>(_preserved);
     preserved->hasHeader = hasHeader;
     preserved->insUnitsCode = _header.insUnitsCode;
+    preserved->hasInsUnits = _header.hasInsUnits;
     preserved->measurement = _header.measurement;
+    preserved->hasMeasurement = _header.hasMeasurement;
     preserved->lineTypeScale = _header.lineTypeScale;
 
     // The revision comes from the records themselves: libdxfrw stamps each one
@@ -1905,6 +2134,130 @@ namespace {
 constexpr std::uint32_t kFirstMintedHandle = 0x30;
 
 }  // namespace
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+std::vector<dxfRW::DxfLayoutOutputLinks> DXFimpl::defaultLayoutOutputLinks() const {
+    if (_defaultLayouts.size() != 3) return {};
+    return {
+        {"Model", "*Model_Space", dxfW->remapHandle(_defaultLayouts[0].handle), 0x1Fu, 0},
+        {"Layout1", "*Paper_Space", dxfW->remapHandle(_defaultLayouts[1].handle), 0x1Eu, 1},
+        {"Layout2", "*Paper_Space0", dxfW->remapHandle(_defaultLayouts[2].handle),
+         dxfW->getBlockRecordHandleToWrite("*Paper_Space0"), 2}
+    };
+}
+
+bool DXFimpl::prepareDefaultLayoutGraph() {
+    _defaultLayouts.clear();
+    _defaultLayoutDictionary = 0;
+    _defaultLayoutWriteOk = true;
+    _defaultLayoutsFromSource = _replay && _replay->checkedLayoutGraph;
+    if (_exportVersion < DRW::AC1015 || lc::persistence::File::isBinaryType(_exportType)) return true;
+    if (!_defaultLayoutsFromSource &&
+        (_replay || (_shelf && (_shelf->hasSourceLayouts || _shelf->total() != 0 ||
+                                 !_shelf->rootDictEntries.empty())))) return true;
+
+    // Only synthesize defaults when the document has the two kernel-created
+    // paper spaces and no additional paper-space identity to guess about.
+    unsigned paper = 0, paper0 = 0;
+    const std::string prefix = "*PAPER_SPACE";
+    for (const auto& block : _document->blocks()) {
+        const auto& name = block->name();
+        if (isModelSpaceName(name)) {
+            const auto& base = block->base();
+            if (name != "*Model_Space" || block->anonymous() || base.x() != 0 || base.y() != 0 || base.z() != 0 ||
+                std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block) ||
+                !_document->entitiesByBlock(block).asVector().empty()) return !_defaultLayoutsFromSource;
+            continue;
+        }
+        std::string upper = name;
+        std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        if (upper.compare(0, prefix.size(), prefix) != 0) continue;
+        if (name == "*Paper_Space") {
+            const auto& base = block->base();
+            if (block->anonymous() || base.x() != 0 || base.y() != 0 || base.z() != 0 ||
+                std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block)) return !_defaultLayoutsFromSource;
+            ++paper;
+        }
+        else if (name == "*Paper_Space0") ++paper0;
+        else return !_defaultLayoutsFromSource;
+    }
+    if (paper != 1 || paper0 != 1) return !_defaultLayoutsFromSource;
+
+    if (_defaultLayoutsFromSource) {
+        _defaultLayouts = _replay->layouts;
+        _defaultLayoutDictionary = dxfW->remapHandle(_replay->layoutDictionary);
+        dxfW->setSourceBlockRecords(_replay->layoutBlockRecords);
+    } else {
+        const auto claim = [this](std::uint32_t& handle) {
+            handle = dxfW->highWaterHandle();
+            return handle != 0 && handle != DRW::NoHandle && dxfW->reserveHandle(handle);
+        };
+        if (!claim(_defaultLayoutDictionary)) return false;
+        DRW_Dictionary dictionary;
+        dictionary.handle = _defaultLayoutDictionary;
+        dictionary.parentHandle = 0xCu;
+        dictionary.hardOwner = 1;
+        dictionary.cloning = 1;
+        std::vector<DRW_Block_Record> records;
+        const char* names[] = {"Model", "Layout1", "Layout2"};
+        const char* blocks[] = {"*Model_Space", "*Paper_Space", "*Paper_Space0"};
+        for (int i = 0; i < 3; ++i) {
+            std::uint32_t layoutHandle = 0, sourceBlockHandle = 0;
+            if (!claim(layoutHandle) || !claim(sourceBlockHandle)) return false;
+            DRW_Layout layout;
+            layout.handle = layoutHandle;
+            layout.parentHandle = _defaultLayoutDictionary;
+            layout.name = names[i];
+            layout.tabOrder = i;
+            layout.paperSpaceBlockRecordHandle.ref = sourceBlockHandle;
+            _defaultLayouts.push_back(layout);
+            DRW_Block_Record record;
+            record.handle = sourceBlockHandle;
+            record.name = blocks[i];
+            record.layoutHandle = layoutHandle;
+            records.push_back(record);
+            dictionary.m_entries.push_back({names[i], layoutHandle});
+        }
+        dxfW->setRootDictEntries({{"ACAD_LAYOUT", dxfW->toHexStrHandle(_defaultLayoutDictionary)}});
+        dxfW->setNamedDictObjects({dictionary});
+        dxfW->setSourceBlockRecords(records);
+    }
+    dxfW->setDxfWriteRecordInventoryEnabled(true);
+    return dxfW->setDxfTablesWriteInspector([this](const auto& view) {
+        return dxfW->inspectDxfLayoutBlockRecords(view, defaultLayoutOutputLinks());
+    }) && dxfW->setDxfObjectsWriteInspector([this](const auto& view) {
+        return dxfW->inspectDxfLayoutObjects(view, _defaultLayoutDictionary,
+                                             defaultLayoutOutputLinks());
+    });
+}
+
+bool DXFimpl::finalizeDxfWrite() {
+    if (_defaultLayouts.empty()) return true;
+    if (!_defaultLayoutWriteOk ||
+        !dxfW->dxfWriteRecordHasIdentity(_defaultLayoutDictionary, "DICTIONARY", "OBJECTS") ||
+        !dxfW->dxfWriteRecordHasOwner(_defaultLayoutDictionary, 0xCu)) return false;
+    for (const auto& link : defaultLayoutOutputLinks()) {
+        if (!dxfW->dxfWriteRecordHasIdentity(link.layout, "LAYOUT", "OBJECTS") ||
+            !dxfW->dxfWriteRecordHasOwner(link.layout, _defaultLayoutDictionary) ||
+            !dxfW->dxfWriteRecordHasIdentity(link.blockRecord, "BLOCK_RECORD", "TABLES")) return false;
+    }
+    return true;
+}
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+bool DXFimpl::writeDxfFixedPaperSpaceContents() {
+    if (_defaultLayouts.empty()) return true;
+    for (const auto& block : _document->blocks()) {
+        if (block->name() != "*Paper_Space") continue;
+        for (const auto& entity : _document->entitiesByBlock(block).asVector()) writeEntity(entity);
+        return true;
+    }
+    return false;
+}
+#endif
+#endif
 
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
@@ -2045,6 +2398,16 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         // prevent.
         std::map<std::uint32_t, std::uint32_t> remap;
         std::vector<std::uint32_t> needFresh;
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (_replay->checkedLayoutGraph)
+            for (const auto& block : _replay->layoutBlockRecords)
+                if (!dxfW->reserveHandle(block.handle)) { delete dxfW; dxfW = nullptr; return false; }
+        if (_replay->checkedLayoutGraph &&
+            (!dxfW->reserveHandle(_replay->layoutExtraBlockBegin.handle) ||
+             !dxfW->reserveHandle(_replay->layoutExtraBlockEnd.handle))) {
+            delete dxfW; dxfW = nullptr; return false;
+        }
+#endif
         const auto claim = [&](std::uint32_t handle) {
             if (handle == 0) {
                 return;
@@ -2188,6 +2551,14 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         dxfW->setRawDxfSections(_replay->sections);
     }
 
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (!prepareDefaultLayoutGraph()) {
+        LOG_ERROR << "Cannot safely preserve the layout graph in " << filename;
+        delete dxfW;
+        dxfW = nullptr;
+        return false;
+    }
+#endif
     bool success = dxfW->write(this, exportVersion, isBinary);
 
     if (!success) {
@@ -2350,10 +2721,11 @@ void DXFimpl::getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_C
         ent->lineType = LTYPE_BYBLOCK;
     }
 
-    if(metaWidthByValue != nullptr) {
+    if (_exportVersion <= DRW::AC1014 && (metaWidthByValue || metaWidthByBlock)) {
+        _loss.droppedByType["entity lineweight"]++;
+    } else if(metaWidthByValue != nullptr) {
         ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidthByValue->width()));
-    }
-    else if(metaWidthByBlock != nullptr) {
+    } else if(metaWidthByBlock != nullptr) {
         ent->lWeight = DRW_LW_Conv::lineWidth::widthByBlock;
     }
 }
@@ -2682,8 +3054,14 @@ void DXFimpl::writeHeader(DRW_Header& data) {
     // with nothing to indicate that LibreCAD did it.
     const auto preserved = preservedOn(_document);
     if (preserved != nullptr && preserved->hasHeader) {
-        data.addInt("$MEASUREMENT", preserved->measurement, 70);
-        data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+        if (preserved->hasMeasurement) {
+            if (_exportVersion > DRW::AC1009) data.addInt("$MEASUREMENT", preserved->measurement, 70);
+            else _loss.droppedByType["$MEASUREMENT"]++;
+        }
+        if (preserved->hasInsUnits) {
+            if (_exportVersion > DRW::AC1014) data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+            else _loss.droppedByType["$INSUNITS"]++;
+        }
         if (preserved->lineTypeScale > 0.0) {
             data.addDouble("$LTSCALE", preserved->lineTypeScale, 40);
         }
@@ -2699,8 +3077,8 @@ void DXFimpl::writeHeader(DRW_Header& data) {
     // doesn't currently expose a unit-of-measure field for the whole
     // drawing, so hard-code the sensible default rather than the DXF
     // spec-default of 0 (unitless).
-    data.addInt("$MEASUREMENT", 1, 70);       // 0 = English, 1 = Metric
-    data.addInt("$INSUNITS", 4, 70);          // 4 = Millimeter
+    if (_exportVersion > DRW::AC1009) data.addInt("$MEASUREMENT", 1, 70); // 0 = English, 1 = Metric
+    if (_exportVersion > DRW::AC1014) data.addInt("$INSUNITS", 4, 70);    // 4 = Millimeter
 }
 
 // Issue #412 phase 1: populate the DRW_Dimension base header shared by all
@@ -3717,6 +4095,9 @@ void DXFimpl::writeBlockRecords() {
         if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name()))) continue;
+#endif
         dxfW->writeBlockRecord(block->name());
     }
 
@@ -4239,6 +4620,9 @@ void DXFimpl::writeBlocks() {
         if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name()))) continue;
+#endif
         writeBlock(block);
     }
 }
@@ -4247,6 +4631,10 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     DRW_Block drwBlock;
 
     drwBlock.name = block->name();
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    const bool sourceLayoutBlock = _defaultLayoutsFromSource && block->name() == "*Paper_Space0";
+    if (sourceLayoutBlock) drwBlock.handle = _replay->layoutExtraBlockBegin.handle;
+#endif
     // Code 70 bit 1. A kept anonymous block that goes out unmarked is
     // indistinguishable from user content on the next read, so it would be
     // kept forever -- and one that really is user content must not acquire the
@@ -4282,6 +4670,9 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     for(const auto& entity : _document->entitiesByBlock(block).asVector()) {
         writeEntity(entity);
     }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (sourceLayoutBlock && !dxfW->writeBlockEnd(&_replay->layoutExtraBlockEnd)) _defaultLayoutWriteOk = false;
+#endif
 }
 
 
