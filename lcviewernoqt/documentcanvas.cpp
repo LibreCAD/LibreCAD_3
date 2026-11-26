@@ -435,7 +435,12 @@ lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, c
     if (selected) {
         return lcDrawOptions.selectedColor();
     }
-    else if (colorByValue != nullptr) {
+    const auto hatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity);
+    if (hatch && hatch->isSolid()) {
+        const auto fill = entity->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
+        if (fill) return fill->color();
+    }
+    if (colorByValue != nullptr) {
         return colorByValue->color();
     }
     else if(insert != nullptr &&

@@ -1064,6 +1064,12 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
         if (auto candidate = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity))
             hatch = candidate;
     ASSERT_NE(hatch, nullptr);
+    const auto fillMeta = hatch->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
+    ASSERT_TRUE(fillMeta);
+    EXPECT_EQ(fillMeta->color().redI(), 0); EXPECT_EQ(fillMeta->color().greenI(), 255); EXPECT_EQ(fillMeta->color().blueI(), 0);
+    EXPECT_FALSE(hatch->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME()));
+    const auto movedFillControl = std::dynamic_pointer_cast<const lc::entity::Hatch>(hatch->move(lc::geo::Coordinate(1, 0)));
+    ASSERT_TRUE(movedFillControl); EXPECT_TRUE(movedFillControl->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME()));
 
     const std::string ascii = tmpPath("simple-mpolygon-ascii");
     const std::string binary = tmpPath("simple-mpolygon-binary");

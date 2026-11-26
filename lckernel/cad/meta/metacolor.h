@@ -99,6 +99,18 @@ private:
     }
 };
 
+/** A solid fill color distinct from an entity's line color. */
+class MetaFillColor : public EntityMetaType {
+public:
+    explicit MetaFillColor(const Color& color) : _color(color) {}
+    static const std::string LCMETANAME() { return "_FILL_COLOR"; }
+    const std::string id() const override { return LCMETANAME(); }
+    const std::string metaTypeID() const override { return LCMETANAME(); }
+    Color color() const { return _color; }
+private:
+    Color _color;
+};
+
 class MetaColorByBlock : public MetaColor {
 public:
     MetaColorByBlock() {

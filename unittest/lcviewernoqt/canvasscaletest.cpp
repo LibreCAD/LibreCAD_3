@@ -5,6 +5,8 @@
 
 #include <cad/operations/entitybuilder.h>
 #include <cad/primitive/line.h>
+#include <cad/primitive/hatch.h>
+#include <cad/meta/metacolor.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
 
@@ -180,4 +182,41 @@ TEST(CanvasScaleTest, DegenerateBoundsStayFinite) {
 
     EXPECT_TRUE(std::isfinite(painter.scale()));
     EXPECT_GT(painter.scale(), 0.0);
+}
+
+TEST(CanvasScaleTest, SolidFillColorIsIndependentAndSelectionTakesPrecedence) {
+    class ColorPainter : public TransformPainter {
+    public:
+        void source_rgba(double red, double green, double blue, double alpha) override {
+            color = lc::Color(red, green, blue, alpha);
+        }
+        lc::Color color;
+    };
+    class EmptyDrawable : public lc::viewer::LCVDrawItem {
+    public:
+        explicit EmptyDrawable(const lc::entity::CADEntity_CSPtr& entity)
+            : LCVDrawItem(entity, true), _entity(entity) {}
+        lc::entity::CADEntity_CSPtr entity() const override { return _entity; }
+    private:
+        lc::entity::CADEntity_CSPtr _entity;
+    };
+    auto doc = makeDocument();
+    auto meta = lc::meta::MetaInfo::create();
+    meta->add(std::make_shared<lc::meta::MetaColorByValue>(255, 0, 0));
+    meta->add(std::make_shared<lc::meta::MetaFillColor>(lc::Color(0, 255, 0)));
+    auto hatch = std::make_shared<lc::entity::Hatch>(doc->layerByName("0"), meta);
+    hatch->setSolid(1);
+    auto item = std::make_shared<EmptyDrawable>(hatch);
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
+    ColorPainter painter;
+    canvas->drawEntity(painter, item);
+    EXPECT_EQ(painter.color.redI(), 0); EXPECT_EQ(painter.color.greenI(), 255); EXPECT_EQ(painter.color.blueI(), 0);
+    canvas->drawCachedEntity(painter, item);
+    EXPECT_EQ(painter.color.greenI(), 255);
+    item->selected(true);
+    canvas->drawEntity(painter, item);
+    EXPECT_EQ(painter.color.redI(), 0); EXPECT_EQ(painter.color.greenI(), 0); EXPECT_EQ(painter.color.blueI(), 255);
+    item->selected(false); hatch->setSolid(0);
+    canvas->drawEntity(painter, item);
+    EXPECT_EQ(painter.color.redI(), 255); EXPECT_EQ(painter.color.greenI(), 0); EXPECT_EQ(painter.color.blueI(), 0);
 }

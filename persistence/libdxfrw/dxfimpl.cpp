@@ -1229,6 +1229,14 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         if (polygon && !_sourceIsDwg) solidFlag = polygon->associative;
 #endif
         lcHatch->setSolid(solidFlag);
+        // MPOLYGON's fill color is independent of its common entity color.
+        // Keep it separate so the snapshot and DXF group 62 remain unchanged.
+        if (polygon && !_sourceIsDwg && solidFlag && !polygon->isGradient && polygon->gradColors.empty() &&
+            polygon->fillColorAci > 0 && polygon->fillColorAci < 256 &&
+            polygon->fillColorRgb < 0 && polygon->fillColorName.empty()) {
+            const auto fill = icol.intToColor(polygon->fillColorAci);
+            if (fill) mf->add(std::make_shared<lc::meta::MetaFillColor>(fill->color()));
+        }
         LOG_TRACE << "name " << data->name;
         LOG_TRACE << "solid " << solidFlag;
         if(!solidFlag) {
