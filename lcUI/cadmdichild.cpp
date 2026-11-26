@@ -306,12 +306,13 @@ void CadMdiChild::saveAsFile() {
     auto fileInfo = QFileInfo(file);
     auto ext = fileInfo.suffix().toStdString();
     if(ext=="")file+=("."+lc::persistence::File::getExtensionForFileType(type)).c_str();
-    _filename = file.toStdString();
+    const auto destination = file.toStdString();
 
-    const auto result = lc::persistence::File::exportFile(_document, _filename, type);
-    reportSaveResult(result, _filename);
+    const auto result = lc::persistence::File::exportFile(_document, destination, type);
+    reportSaveResult(result, destination);
 
     if (result.ok) {
+        _filename = destination;
         // The document now *is* this file, completely: a later Save writes
         // straight back here, whatever it was opened from.
         _source.hasPath = true;
