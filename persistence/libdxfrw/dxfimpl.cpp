@@ -1872,12 +1872,17 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
 namespace {
 bool smallLayoutSource(const DRW_RawDxfObject& source) {
-    if (!source.hasRawValues || source.groups.size() > 128 ||
-        source.rawValues.size() != source.groups.size()) return false;
+    if (source.groups.size() > 128 || source.rawValues.size() != source.groups.size()) return false;
     std::size_t bytes = 0;
-    for (const auto& value : source.rawValues) {
-        if (value.size() > 4096 || bytes > 65536 - value.size()) return false;
-        bytes += value.size();
+    for (std::size_t i = 0; i < source.groups.size(); ++i) {
+        const auto& group = source.groups[i];
+        const auto& raw = source.rawValues[i];
+        const std::size_t typedBytes = !source.hasRawValues && group.type() == DRW_Variant::STRING && group.content.s
+            ? group.content.s->size() : 0;
+        if (raw.size() > 4096 || typedBytes > 4096 || bytes > 65536 - raw.size()) return false;
+        bytes += raw.size();
+        if (bytes > 65536 - typedBytes) return false;
+        bytes += typedBytes;
     }
     return true;
 }
@@ -1916,6 +1921,7 @@ void DXFimpl::addDxfLayoutSource(const DRW_Layout& layout, const DRW_RawDxfObjec
 
 void DXFimpl::addDxfBlockRecordSource(const DRW_Block_Record& block, const DRW_RawDxfObject& source) {
     if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") {
+        if (_sourceIsBinary) _binaryHasOtherBlockRecords = true;
         if (block.layoutHandle != 0) _unmatchedSourceLayoutBlock = true;
         return;
     }
@@ -1969,6 +1975,47 @@ bool DXFimpl::acceptSourceLayoutGraph() {
         !rawHandle(dictionary->groups[0], dictionaryHandle) || !rawHandle(dictionary->groups[1], 0xCu) ||
         !rawText(dictionary->groups[2], "AcDbDictionary") || !rawNumber(dictionary->groups[3], 1) ||
         !rawNumber(dictionary->groups[4], 1)) return false;
+    // Binary replay is deliberately limited to the complete default graph and
+    // the codec's Normal plot-style pair. Arbitrary typed raw records need
+    // independent dependency and semantic validation before replay is safe.
+    if (_sourceIsBinary) {
+        if (_preserved.objects.size() != 3 || !_preserved.entities.empty() ||
+            !_preserved.sections.empty() || _preserved.classes.size() != 2 ||
+            _preserved.rootDictEntries.size() != 2) return false;
+        const auto expectedClass = [&](const char* name, const char* type) {
+            return std::count_if(_preserved.classes.begin(), _preserved.classes.end(),
+                [&](const auto& cls) {
+                    return cls.recName == name && cls.className == type &&
+                        cls.appName == "ObjectDBX Classes" && cls.proxyFlag == 0 &&
+                        cls.instanceCount == (dictionary->m_version == DRW::AC1015 ? 0 : 1) &&
+                        cls.wasaProxyFlag == 0 && cls.entityFlag == 0;
+                }) == 1;
+        };
+        if (!expectedClass("ACDBDICTIONARYWDFLT", "AcDbDictionaryWithDefault") ||
+            !expectedClass("ACDBPLACEHOLDER", "AcDbPlaceHolder")) return false;
+        const auto plotEntry = std::find_if(_preserved.rootDictEntries.begin(), _preserved.rootDictEntries.end(),
+            [](const auto& entry) { return entry.first == "ACAD_PLOTSTYLENAME"; });
+        if (plotEntry == _preserved.rootDictEntries.end() || !plotEntry->second ||
+            plotEntry->second == dictionaryHandle) return false;
+        const auto plot = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
+            [&](const auto& object) { return object.handle == plotEntry->second; });
+        if (plot == _preserved.objects.end() || plot->name != "ACDBDICTIONARYWDFLT" ||
+            plot->hasRawValues || plot->parentHandle != 0xCu ||
+            !rawCodes(*plot, {5,330,100,281,3,350,100,340}) ||
+            !rawHandle(plot->groups[0], plot->handle) || !rawHandle(plot->groups[1], 0xCu) ||
+            !rawText(plot->groups[2], "AcDbDictionary") || !rawNumber(plot->groups[3], 1) ||
+            !rawText(plot->groups[4], "Normal") || !rawText(plot->groups[6], "AcDbDictionaryWithDefault")) return false;
+        const auto placeholder = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
+            [&](const auto& object) { return object.name == "ACDBPLACEHOLDER"; });
+        if (placeholder == _preserved.objects.end() || placeholder->hasRawValues ||
+            !placeholder->handle || placeholder->handle == DRW::NoHandle ||
+            placeholder->handle == plot->handle || placeholder->handle == dictionaryHandle ||
+            placeholder->parentHandle != plot->handle || !rawCodes(*placeholder, {5,330}) ||
+            !rawHandle(placeholder->groups[0], placeholder->handle) ||
+            !rawHandle(placeholder->groups[1], plot->handle) ||
+            !rawHandle(plot->groups[5], placeholder->handle) ||
+            !rawHandle(plot->groups[7], placeholder->handle) || dictionary->hasRawValues) return false;
+    }
     const char* names[] = {"Model", "Layout1", "Layout2"};
     const char* blockNames[] = {"*Model_Space", "*Paper_Space", "*Paper_Space0"};
     std::vector<DRW_Layout> layouts;
@@ -2173,13 +2220,12 @@ bool DXFimpl::prepareDefaultLayoutGraph() {
     _defaultLayoutWriteOk = true;
     _defaultLayoutsFromSource = _replay && _replay->checkedLayoutGraph;
     if (_exportVersion < DRW::AC1015) return true;
-    // Binary source graphs have no retained raw spellings yet. A new document
-    // can still write the same checked, fully authored graph in binary.
+    // A new document or a checked binary source can write the graph in binary.
     if (lc::persistence::File::isBinaryType(_exportType)) {
-        if (_shelf) return true;
+        if (_shelf && !_defaultLayoutsFromSource) return true;
         const auto primary = _document->blockByName("*Paper_Space");
         const bool primaryHasContent = primary && !_document->entitiesByBlock(primary).asVector().empty();
-        if (!primaryHasContent && !hasUnsafeAdditionalPaperSpace()) return true;
+        if (!_defaultLayoutsFromSource && !primaryHasContent && !hasUnsafeAdditionalPaperSpace()) return true;
     }
     if (!_defaultLayoutsFromSource &&
         (_replay || (_shelf && (_shelf->hasSourceLayouts || _shelf->total() != 0 ||
@@ -2406,17 +2452,18 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         //  * Same revision: a record valid in R2013 has no defined meaning in
         //    R12, and re-emitting it there would produce a file that claims to
         //    be R12 and is not.
-        //  * ASCII target: these are replayed from the source spellings the
-        //    reader captured, and a binary write of them is refused by the
-        //    library -- which fails the whole file, so it must not be tried.
-        //  * Captured with those spellings: a record read from a binary DXF
-        //    has empty placeholders instead, and cannot be re-emitted verbatim.
+        //  * ASCII replay requires captured source spellings.
+        //  * Binary replay is restricted to the checked default layout graph
+        //    and Normal plot-style pair captured as typed binary values.
         const bool sameRevision = _replay->version == exportVersion;
         const bool verbatimAvailable =
             std::all_of(_replay->objects.begin(), _replay->objects.end(),
                         [](const DRW_RawDxfObject& object) { return object.hasRawValues; });
 
-        if (!sameRevision || isBinary || !verbatimAvailable) {
+        const bool checkedBinaryGraph = isBinary && _replay->checkedLayoutGraph &&
+            std::all_of(_replay->objects.begin(), _replay->objects.end(),
+                        [](const DRW_RawDxfObject& object) { return !object.hasRawValues; });
+        if (!sameRevision || (isBinary && !checkedBinaryGraph) || (!isBinary && !verbatimAvailable)) {
             const char* reason = !sameRevision ? "the revision differs from the one it was read as"
                                  : isBinary ? "binary DXF cannot carry them"
                                  : "they were read from a binary file and have no verbatim form";

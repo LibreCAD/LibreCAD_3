@@ -346,17 +346,22 @@ public:
 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
     bool finalizeDxfWrite() override;
-    bool wantsDxfLayoutSource() const override { return !_sourceIsBinary; }
+    bool wantsDxfLayoutSource() const override { return true; }
     void addDxfLayoutSource(const DRW_Layout&, const DRW_RawDxfObject&) override;
-    bool wantsDxfBlockRecordSource() const override { return !_sourceIsBinary; }
+    bool wantsDxfBlockRecordSource() const override { return true; }
 #ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
     bool retainDxfBlockRecordSource(const DRW_Block_Record& row) const override {
-        return row.layoutHandle != 0 || row.name == "*Model_Space" ||
-               row.name == "*Paper_Space" || row.name == "*Paper_Space0";
+        const bool layoutBlock = row.name == "*Model_Space" || row.name == "*Paper_Space" ||
+                                 row.name == "*Paper_Space0";
+        if (_sourceIsBinary && !layoutBlock) _binaryHasOtherBlockRecords = true;
+        return row.layoutHandle != 0 || layoutBlock;
     }
 #endif
     void addDxfBlockRecordSource(const DRW_Block_Record&, const DRW_RawDxfObject&) override;
-    bool wantsDxfBlockSource() const override { return !_sourceIsBinary; }
+    bool wantsDxfBlockSource() const override {
+        return !_sourceIsBinary || (!_binaryHasOtherBlockRecords &&
+               !_unmatchedSourceLayoutBlock && _sourceLayoutBlocks.size() == 3);
+    }
     void addDxfBlockBeginSource(const DRW_Block&, const DRW_RawDxfObject&) override;
     void addDxfBlockEndSource(const DRW_Block&, const DRW_RawDxfObject&) override;
 #endif
@@ -653,6 +658,7 @@ private:
     std::vector<SourceBlockPair> _sourceLayoutBodies;
     int _activeSourceLayoutBody{-1};
     bool _unmatchedSourceLayoutBlock{false};
+    mutable bool _binaryHasOtherBlockRecords{false};
     std::uint32_t _sourceRootHandle{0};
     std::vector<DRW_Layout> _defaultLayouts;
     std::uint32_t _defaultLayoutDictionary{0};

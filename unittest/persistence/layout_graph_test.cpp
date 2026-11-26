@@ -106,7 +106,7 @@ TEST(LayoutGraph, EmptyBinaryDrawingDoesNotIntroduceLayoutWarnings) {
         ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
     }
 }
-TEST(LayoutGraph, NewBinaryLayoutsKeepPaperAndUnverifiedReplayRefuses) {
+TEST(LayoutGraph, BinaryLayoutsReopenSaveAndRetry) {
     const File::Type targets[] = {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXB_R2004,
         File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXB_R2013};
     for (const auto target : targets) {
@@ -116,14 +116,49 @@ TEST(LayoutGraph, NewBinaryLayoutsKeepPaperAndUnverifiedReplayRefuses) {
         ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.empty());
         auto reopened = makeDocument();
         const auto read = File::importFile(reopened, output.string(), File::LIBDXFRW);
-        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+        ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
         expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
+        auto extra = std::make_shared<lc::meta::Block>("*Paper_Space9"); reopened->addDocumentMetaType(extra);
         { std::ofstream out(replay); out << "keep original"; }
         lc::persistence::DXFimpl writer(reopened);
         EXPECT_FALSE(writer.writeDXF(replay.string(), target));
-        EXPECT_NE(writer.writeFailureReason().find("layout graph"), std::string::npos);
         EXPECT_EQ(bytes(replay), "keep original");
+        reopened->removeDocumentMetaType(extra);
+        ASSERT_TRUE(writer.writeDXF(replay.string(), target));
+        auto again = makeDocument(); const auto reread = File::importFile(again, replay.string(), File::LIBDXFRW);
+        ASSERT_TRUE(reread.ok); EXPECT_EQ(reread.loss.droppedByType.count("LAYOUT"), 0u);
+        expectPaperLine(again, "*Paper_Space"); expectPaperLine(again, "*Paper_Space0");
     }
+}
+TEST(LayoutGraph, BinaryOtherBlockKeepsLayoutUnverified) {
+    Scratch dir; const auto source = dir.path / "source.dxf";
+    auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
+    doc->addDocumentMetaType(std::make_shared<lc::meta::Block>("OTHER_BLOCK"));
+    ASSERT_TRUE(File::exportFile(doc, source.string(), File::LIBDXFRW_DXB_R2004).ok);
+    auto reopened = makeDocument(); const auto read = File::importFile(reopened, source.string(), File::LIBDXFRW);
+    ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+    expectPaperLine(reopened, "*Paper_Space0");
+}
+TEST(LayoutGraph, BinaryUnknownObjectKeepsLayoutUnverifiedAndRefusesSave) {
+    Scratch dir; const auto source = dir.path / "source.dxf", changed = dir.path / "changed.dxf", output = dir.path / "output.dxf";
+    auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
+    ASSERT_TRUE(File::exportFile(doc, source.string(), File::LIBDXFRW_DXB_R2004).ok);
+    auto input = bytes(source);
+    const std::string endSection("\0\0ENDSEC\0", 9);
+    const auto at = input.rfind(endSection); ASSERT_NE(at, std::string::npos);
+    std::string xrecord;
+    const auto stringGroup = [&](unsigned char code, const char* value) {
+        xrecord.push_back(static_cast<char>(code)); xrecord.push_back(0); xrecord += value; xrecord.push_back(0);
+    };
+    stringGroup(0, "XRECORD"); stringGroup(5, "ABC");
+    xrecord.push_back(74); xrecord.push_back(1); xrecord += "C"; xrecord.push_back(0); // 330
+    stringGroup(100, "AcDbXrecord"); xrecord.push_back(24); xrecord.push_back(1); xrecord.push_back(1); xrecord.push_back(0); // 280
+    input.insert(at, xrecord); { std::ofstream out(changed, std::ios::binary); out.write(input.data(), input.size()); }
+    auto imported = makeDocument(); const auto read = File::importFile(imported, changed.string(), File::LIBDXFRW);
+    ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 1u);
+    { std::ofstream out(output); out << "keep original"; }
+    EXPECT_FALSE(File::exportFile(imported, output.string(), File::LIBDXFRW_DXB_R2004).ok);
+    EXPECT_EQ(bytes(output), "keep original");
 }
 TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
