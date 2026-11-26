@@ -108,7 +108,8 @@ public:
     static QString glInitializationFailureMessage(const QString& detail);
 
     void autoScale() const {
-        if (_docCanvas != nullptr && _documentPainter != nullptr) {
+        if (_glInitializationFailure.isEmpty()
+            && _docCanvas != nullptr && _documentPainter != nullptr) {
             _docCanvas->autoScale(*_documentPainter);
         }
     }
