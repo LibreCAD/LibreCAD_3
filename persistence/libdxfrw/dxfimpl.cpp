@@ -49,6 +49,13 @@
 using namespace lc::persistence;
 
 namespace {
+std::string upperName(std::string name) {
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    return name;
+}
+
 void noteRationalSplineApproximation(lc::persistence::LossSummary& loss, const DRW_Spline& spline) {
     if ((spline.flags & lc::geo::Spline::RATIONAL) == 0
         && std::none_of(spline.weightlist.begin(), spline.weightlist.end(),
@@ -465,10 +472,7 @@ void DXFimpl::addBlock(const DRW_Block& data) {
         // Match the kernel defaults but retain the source lookup below.
         if (_header.acadVersion.empty() || _header.acadVersion == "AC1009" ||
             _header.acadVersion == "AC1014") {
-            auto upper = blockName;
-            std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) {
-                return static_cast<char>(std::toupper(c));
-            });
+            const auto upper = upperName(blockName);
             if (upper == "*PAPER_SPACE") { blockName = "*Paper_Space"; legacyPaper = true; }
             else if (upper == "*PAPER_SPACE0") { blockName = "*Paper_Space0"; legacyPaper = true; }
         }
@@ -1948,10 +1952,7 @@ bool DXFimpl::acceptSourceLayoutGraph() {
         _sourceLayouts.size() != 3 || _sourceLayoutBlocks.size() != 3 || _sourceLayoutBodies.size() != 3) return false;
     std::uint32_t dictionaryHandle = 0;
     for (const auto& entry : _preserved.rootDictEntries) {
-        auto name = entry.first;
-        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
-            return static_cast<char>(std::toupper(c));
-        });
+        const auto name = upperName(entry.first);
         if (name != "ACAD_LAYOUT") continue;
         if (entry.first != "ACAD_LAYOUT") return false;
         if (dictionaryHandle != 0) return false;
@@ -2189,10 +2190,7 @@ bool DXFimpl::prepareDefaultLayoutGraph() {
                 !_document->entitiesByBlock(block).asVector().empty()) return !_defaultLayoutsFromSource;
             continue;
         }
-        std::string upper = name;
-        std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) {
-            return static_cast<char>(std::toupper(c));
-        });
+        const auto upper = upperName(name);
         if (upper.compare(0, prefix.size(), prefix) != 0) continue;
         if (name == "*Paper_Space") {
             const auto& base = block->base();
@@ -2280,12 +2278,6 @@ bool DXFimpl::writeDxfFixedPaperSpaceContents() {
 #endif
 
 bool DXFimpl::hasUnsafeLegacyPaperSpace() const {
-    const auto upperName = [](std::string name) {
-        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
-            return static_cast<char>(std::toupper(c));
-        });
-        return name;
-    };
     const std::string prefix = "*PAPER_SPACE";
     const auto blocks = _document->blocks();
     std::set<std::string> extraNames;
