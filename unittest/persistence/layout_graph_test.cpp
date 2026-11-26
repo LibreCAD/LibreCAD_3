@@ -187,6 +187,7 @@ TEST(LayoutGraph, CheckedAsciiGraphsConvertToSameRevisionBinary) {
             EXPECT_FALSE(writer.writeDXF(binary.string(), File::LIBDXFRW_DXB_R2010));
             EXPECT_EQ(bytes(binary), "keep original");
             ASSERT_TRUE(writer.writeDXF(binary.string(), target.second));
+            EXPECT_TRUE(writer.loss().empty());
         }
         const auto written = File::exportFile(imported, binary.string(), target.second);
         ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.empty());
@@ -214,6 +215,7 @@ TEST(LayoutGraph, CheckedBinaryGraphsConvertToSameRevisionAscii) {
             EXPECT_FALSE(writer.writeDXF(ascii.string(), File::LIBDXFRW_DXF_R2010));
             EXPECT_EQ(bytes(ascii), "keep original");
             ASSERT_TRUE(writer.writeDXF(ascii.string(), target.second));
+            EXPECT_TRUE(writer.loss().empty());
         }
         const auto written = File::exportFile(imported, ascii.string(), target.second);
         ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.empty());

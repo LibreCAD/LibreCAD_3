@@ -39,6 +39,7 @@
 #include <cad/primitive/text.h>
 
 #include "persistence/file.h"
+#include "persistence/libdxfrw/dxfimpl.h"
 #include "persistence/documentsource.h"
 #include "persistence/format.h"
 
@@ -1212,6 +1213,16 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
                             [](const std::string& note) {
                                 return note.find("written as HATCH") != std::string::npos;
                             }));
+
+    // Reusing one writer must report this fallback on every attempt.
+    lc::persistence::DXFimpl repeatWriter(doc);
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        ASSERT_TRUE(repeatWriter.writeDXF(scaledOutput, lc::persistence::File::LIBDXFRW_DXF_R2000));
+        const auto& notes = repeatWriter.loss().notes;
+        EXPECT_TRUE(std::any_of(notes.begin(), notes.end(), [](const std::string& note) {
+            return note.find("written as HATCH") != std::string::npos;
+        }));
+    }
 
     // Reflection is not an orientation-preserving rotation.
     const auto reflected = hatch->scale(lc::geo::Coordinate(0, 0, 0),

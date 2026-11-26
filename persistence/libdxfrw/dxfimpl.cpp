@@ -2378,6 +2378,11 @@ bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
 }
 
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
+    // Each attempt reports its own losses, including after an early refusal.
+    _loss = LossSummary{};
+    _mtextsAsText = 0;
+    _mpolygonsWrittenAsHatch = 0;
+    _dimensionBlocks.clear();
     _writeFailureReason.clear();
 
     //Default setting
