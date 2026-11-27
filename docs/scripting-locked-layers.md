@@ -20,9 +20,11 @@ refusal through its own `blockedByLockedLayer()` method.
 Copying a supported built-in locked entity and filtering it out of an edit
 remain allowed. An unknown operation or an unqualified custom copy with a
 locked input is refused unless explicitly overridden. To unlock and edit in
-one group, explicitly override the entity operation. Custom operations that
-obtain locked objects outside their supplied inputs, entities created earlier
-in the group, and other layer-state changes are not yet guaranteed atomic;
+one group, explicitly override the entity operation. Directly staged entities
+created earlier in the group are checked before later edits, including nested
+groups and layer replacements. Custom operations that obtain locked objects
+outside their supplied inputs, entities created by operation stacks, and other
+layer-state changes are not yet guaranteed atomic;
 separate those operations when a locked entity may be involved. Forced line,
 circle, arc, ellipse and spline edits retain the current same-named source layer after a
 layer-state change; verify layer metadata for other entity types or renamed

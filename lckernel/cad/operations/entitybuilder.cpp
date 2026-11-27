@@ -98,9 +98,20 @@ bool EntityBuilder::touchesLockedLayer() const {
         const bool changed = shadow ? shadow->changed() : original != candidate;
         return original && (removal || changed) && original->layer() && original->layer()->isLocked();
     };
-    return std::any_of(_workingBuffer.begin(), _workingBuffer.end(),
-                       [&](const auto& candidate) { return locked(candidate, false); }) ||
-           std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(),
+    // Two new records with one ID are applied in order. The first becomes an
+    // existing entity before the second is inserted, even though neither is
+    // present in the document during preflight.
+    std::unordered_map<ID_DATATYPE, entity::CADEntity_CSPtr> staged;
+    for (const auto& candidate : _workingBuffer) {
+        if (!candidate) continue;
+        if (locked(candidate, false)) return true;
+        if (document()->entityByID(candidate->id())) continue;
+        const auto previous = staged.find(candidate->id());
+        if (previous != staged.end() && previous->second != candidate &&
+            previous->second->layer() && previous->second->layer()->isLocked()) return true;
+        staged[candidate->id()] = candidate;
+    }
+    return std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(),
                        [&](const auto& candidate) { return locked(candidate, true); });
 }
 
