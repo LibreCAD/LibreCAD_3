@@ -1,6 +1,7 @@
 #include "image.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 #include "cad/geometry/geoarea.h"
@@ -75,24 +76,30 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
 }
 
 geo::Coordinate Image::nearestPointOnPath(const geo::Coordinate& coord) const {
-    std::vector<geo::Coordinate> points;
-    /** @todo nearestPointOnPath
-        auto v1 = geo::Vector(_bottomLeft, geo::Coordinate(_bottomLeft.x(), _topRight.y()));
-        auto v2 = geo::Vector(_bottomLeft, geo::Coordinate(_topRight.x(), _bottomLeft.y()));
-        auto v3 = geo::Vector(_topRight, geo::Coordinate(_topRight.x(), _bottomLeft.y()));
-        auto v4 = geo::Vector(_topRight, geo::Coordinate(_bottomLeft.x(), _topRight.y()));
-
-        points.push_back(v1.nearestPointOnEntity(coord));
-        points.push_back(v2.nearestPointOnEntity(coord));
-        points.push_back(v3.nearestPointOnEntity(coord));
-        points.push_back(v4.nearestPointOnEntity(coord));
-        std::sort(points.begin(), points.end(), geo::CoordinateDistanceSort(coord));
-    */
-    return geo::Coordinate();
+    const auto u = _uv * _width;
+    const auto v = _vv * _height;
+    const std::array<geo::Coordinate, 5> corners = {
+        _base, _base + u, _base + u + v, _base + v, _base
+    };
+    auto nearest = _base;
+    auto distance = (coord - nearest).squared();
+    for (std::size_t i = 0; i + 1 < corners.size(); ++i) {
+        const auto edge = corners[i + 1] - corners[i];
+        const double lengthSquared = edge.squared();
+        const double t = lengthSquared == 0.0 ? 0.0 :
+            std::max(0.0, std::min(1.0, (coord - corners[i]).dot(edge) / lengthSquared));
+        const auto candidate = corners[i] + edge * t;
+        const double candidateDistance = (coord - candidate).squared();
+        if (candidateDistance < distance) {
+            nearest = candidate;
+            distance = candidateDistance;
+        }
+    }
+    return nearest;
 }
 
 geo::Coordinate Image::nearestPointOnEntity(const geo::Coordinate& coord) const {
-    return geo::Coordinate();
+    return nearestPointOnPath(coord);
 }
 
 CADEntity_CSPtr Image::withGeometry(const geo::Coordinate& base, const geo::Coordinate& uv,

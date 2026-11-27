@@ -1046,6 +1046,30 @@ TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
     EXPECT_EQ(elevated.boundingBox().maxP(), geo::Coordinate(1, 2, 9));
 }
 
+TEST(ImageGeometryTest, FindsNearestBoundaryPointInThreeDimensions) {
+    auto layer = std::make_shared<Layer>();
+    const Image tilted("scratch.png", geo::Coordinate(10, 20, 30),
+                       geo::Coordinate(2, 0, 1), geo::Coordinate(0, 3, 0),
+                       2, 2, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(tilted.nearestPointOnEntity(geo::Coordinate(12, 19, 31)),
+              geo::Coordinate(12, 20, 31));
+    EXPECT_EQ(tilted.nearestPointOnPath(geo::Coordinate(15, 19, 33)),
+              geo::Coordinate(14, 20, 32));
+    const auto snaps = tilted.snapPoints(geo::Coordinate(12, 19.99, 31),
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
+    ASSERT_EQ(snaps.size(), 1u);
+    EXPECT_EQ(snaps.front().coordinate(), geo::Coordinate(12, 20, 31));
+    const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
+                       geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(3, 1)), geo::Coordinate(3, 2));
+    const Image point("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(),
+                      geo::Coordinate(), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(point.nearestPointOnEntity(geo::Coordinate(3, 4, 9)), geo::Coordinate(1, 2, 9));
+    const Image segment("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(0, 0, 1),
+                        geo::Coordinate(), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(segment.nearestPointOnEntity(geo::Coordinate(2, 2, 20)), geo::Coordinate(1, 2, 13));
+}
+
 TEST(ImageTransformTest, PreservesSpatialAxesAndMetadata) {
     auto layer = std::make_shared<Layer>();
     auto metadata = lc::meta::MetaInfo::create();
