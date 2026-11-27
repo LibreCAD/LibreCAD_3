@@ -1,8 +1,6 @@
 #include "image.h"
 
 
-#include <algorithm>
-#include <cad/math/helpermethods.h>
 #include "cad/geometry/geoarea.h"
 
 using namespace lc;
@@ -143,28 +141,9 @@ CADEntity_CSPtr Image::scale(const geo::Coordinate& scale_center, const geo::Coo
 }
 
 const geo::Area Image::boundingBox() const {
-    std::vector<geo::Coordinate> c;
-//    c.emplace_back(_base);
-//    c.emplace_back(_base.x(), _base.y() + _height);
-//    c.emplace_back(_base.x()+_width, _base.y() + _height);
-//    c.emplace_back(_base.x()+_width, _base.y());
-
-    // Create 4 corners
-    c.emplace_back(0.,0.);
-    c.emplace_back(0., _height);
-    c.emplace_back(_width, _height);
-    c.emplace_back(_width, 0.);
-
-    // Apply Transform
-    std::vector<geo::Coordinate> c2 = maths::HelperMethods::transform2d<geo::Coordinate>(c, _uv.x(), _uv.y(), _vv.x(), _vv.y(), _base.x(), _base.y());
-
-    // get bounding box
-    geo::Area area = geo::Area(c2.at(0), 0.,0.);
-    std::for_each(c2.begin(), c2.end(), [&](geo::Coordinate c) {
-        area = area.merge(c);
-    });
-
-    return area;
+    const auto u = _uv * _width;
+    const auto v = _vv * _height;
+    return geo::Area(_base, _base + u).merge(_base + v).merge(_base + u + v);
 }
 
 CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

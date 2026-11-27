@@ -5,6 +5,7 @@
 #include <cad/operations/layerops.h>
 #include <cad/primitive/text.h>
 #include <cad/primitive/mtext.h>
+#include <cad/primitive/image.h>
 #include <cad/primitive/textconst.h>
 #include <cmath>
 
@@ -1015,4 +1016,30 @@ TEST(TextBoundingBoxTest, AnImpossibleFactorGivesTheBoxSingleSpacing) {
         EXPECT_DOUBLE_EQ(heightFor(impossible), single)
             << "a factor of " << impossible << " is not one DXF allows";
     }
+}
+
+TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
+    auto layer = std::make_shared<Layer>();
+    auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),
+        geo::Coordinate(2, -1, 3), geo::Coordinate(-1, 4, -2),
+        2, 3, 50, 50, 0, layer, nullptr);
+    const auto bounds = image->boundingBox();
+    EXPECT_EQ(bounds.minP(), geo::Coordinate(7, 18, 24));
+    EXPECT_EQ(bounds.maxP(), geo::Coordinate(14, 32, 36));
+    EXPECT_TRUE(bounds.inArea(geo::Coordinate(10, 20, -100)));
+    EXPECT_FALSE(bounds.inArea(geo::Coordinate(6, 20, 30)));
+    auto moved = std::dynamic_pointer_cast<const Image>(image->move(geo::Coordinate(3, -5, 7)));
+    ASSERT_TRUE(moved);
+    EXPECT_EQ(moved->boundingBox().minP(), geo::Coordinate(10, 13, 31));
+    EXPECT_EQ(moved->boundingBox().maxP(), geo::Coordinate(17, 27, 43));
+    EXPECT_EQ(moved->id(), image->id());
+
+    const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
+                       geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(planar.boundingBox().minP(), geo::Coordinate(1, 2, 0));
+    EXPECT_EQ(planar.boundingBox().maxP(), geo::Coordinate(5, 7, 0));
+    const Image elevated("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(1, 0),
+                         geo::Coordinate(0, 1), -4, -5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(elevated.boundingBox().minP(), geo::Coordinate(-3, -3, 9));
+    EXPECT_EQ(elevated.boundingBox().maxP(), geo::Coordinate(1, 2, 9));
 }
