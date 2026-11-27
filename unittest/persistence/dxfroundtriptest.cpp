@@ -3494,6 +3494,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         std::string emptyCode, emptyValue;
         while (std::getline(emptyFile, emptyCode) && std::getline(emptyFile, emptyValue)) {
             if (!emptyValue.empty() && emptyValue.back() == '\r') emptyValue.pop_back();
+            if (std::stoi(emptyCode) == 2) EXPECT_NE(emptyValue, "*Paper_Space0");
             if (std::stoi(emptyCode) == 0) {
                 EXPECT_NE(emptyValue, "IMAGE");
                 EXPECT_NE(emptyValue, "IMAGEDEF");
@@ -3506,6 +3507,23 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         ASSERT_TRUE(restored.ok);
         EXPECT_EQ(imageGroups(emptyPath)[14], groups[14]);
         boost::filesystem::remove(emptyPath);
+    }
+    if (sourcePaper) {
+        const auto items = doc->entityContainer().asVector();
+        ASSERT_EQ(items.size(), 1u);
+        doc->removeEntity(items.front());
+        const std::string noImagePath = uniqueTmpDxf("image-source-paper-no-image");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, noImagePath,
+            lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+        std::ifstream output(noImagePath, std::ios::binary);
+        std::string code, value;
+        bool hasPaper = false;
+        while (std::getline(output, code) && std::getline(output, value)) {
+            if (!value.empty() && value.back() == '\r') value.pop_back();
+            if (std::stoi(code) == 2 && value == "*Paper_Space0") hasPaper = true;
+        }
+        EXPECT_TRUE(hasPaper);
+        boost::filesystem::remove(noImagePath);
     }
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
@@ -3581,15 +3599,18 @@ TEST(DxfRoundTripTest, RemovingLastImageDoesNotDiscardUnrelatedRawReactor) {
     std::ifstream file(saved, std::ios::binary);
     std::string code, value;
     bool reactor = false;
+    bool hasPaper = false;
     std::vector<std::string> handles;
     while (std::getline(file, code) && std::getline(file, value)) {
         if (!value.empty() && value.back() == '\r') value.pop_back();
         const int group = std::stoi(code);
+        if (group == 2 && value == "*Paper_Space0") hasPaper = true;
         if (group == 0) reactor = value == "IMAGEDEF_REACTOR";
         else if (reactor && group == 5) handles.push_back(value);
     }
     ASSERT_EQ(handles.size(), 1u);
     EXPECT_EQ(handles.front(), "84");
+    EXPECT_TRUE(hasPaper);
     file.close();
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);

@@ -2740,7 +2740,7 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
         _shelf->rootDictEntries.size() > 128) return false;
     bool hasImages = false;
     const auto skipped = skippedImageSourceHandles(hasImages);
-    if (!hasImages || skipped.empty()) return false;
+    if (skipped.empty()) return false;
     bool sameSource = true;
     visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
         const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
@@ -2762,7 +2762,7 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     }
     std::unordered_set<std::uint32_t> referenced;
     for (const auto& object : _shelf->objects) {
-        if (regeneratesImageObject(object, hasImages)) {
+        if (skipsSourceImageObject(object, hasImages, _shelf.get())) {
             if (!skipped.count(object.handle)) return false;
             continue;
         }
