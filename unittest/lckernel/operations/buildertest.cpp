@@ -1086,3 +1086,24 @@ TEST(BuilderTest, PointLayerReplacementAndTransformsPreserve3dCoordinate) {
     EXPECT_EQ(document->entityByID(point->id())->layer(), target);
     change->undo(); verify(); change->redo(); EXPECT_EQ(document->entityByID(point->id())->layer(), target);
 }
+
+TEST(BuilderTest, PointQueriesAndDragRoundTripPreserve3dCoordinate) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    auto point = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(1, 2, 3), layer);
+    const auto nearest = point->nearestPointOnEntity(lc::geo::Coordinate(20, 30, 40));
+    const auto path = point->nearestPointOnPath(lc::geo::Coordinate(20, 30, 40));
+    EXPECT_DOUBLE_EQ(nearest.x(), 1); EXPECT_DOUBLE_EQ(nearest.y(), 2); EXPECT_DOUBLE_EQ(nearest.z(), 3);
+    EXPECT_EQ(path, nearest); EXPECT_DOUBLE_EQ(path.z(), 3);
+    const auto bounds = point->boundingBox();
+    EXPECT_EQ(bounds.minP(), nearest); EXPECT_EQ(bounds.maxP(), nearest);
+    EXPECT_DOUBLE_EQ(bounds.minP().z(), 3); EXPECT_DOUBLE_EQ(bounds.maxP().z(), 3);
+    auto drag = point->dragPoints(); ASSERT_EQ(drag.size(), 1u); EXPECT_EQ(drag.at(0), nearest); EXPECT_DOUBLE_EQ(drag.at(0).z(), 3);
+    auto unchanged = std::dynamic_pointer_cast<const lc::entity::Point>(point->setDragPoints(drag));
+    ASSERT_TRUE(unchanged); EXPECT_EQ(unchanged->id(), point->id()); EXPECT_DOUBLE_EQ(unchanged->z(), 3);
+    const auto snaps = point->snapPoints(lc::geo::Coordinate(1, 2, 3), lc::SimpleSnapConstrain(), 0.1, 1);
+    ASSERT_EQ(snaps.size(), 1u); EXPECT_EQ(snaps.front().coordinate(), nearest); EXPECT_DOUBLE_EQ(snaps.front().coordinate().z(), 3);
+    auto planar = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(1, 2), layer);
+    const auto planarSnaps = planar->snapPoints(lc::geo::Coordinate(1, 2), lc::SimpleSnapConstrain(), 0.1, 1);
+    ASSERT_EQ(planarSnaps.size(), 1u); EXPECT_EQ(planarSnaps.front().coordinate(), lc::geo::Coordinate(1, 2));
+}

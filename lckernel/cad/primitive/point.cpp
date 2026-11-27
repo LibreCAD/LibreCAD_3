@@ -57,7 +57,8 @@ CADEntity_CSPtr Point::mirror(const geo::Coordinate& axis1, const geo::Coordinat
 }
 
 const geo::Area Point::boundingBox() const {
-    return geo::Area(geo::Coordinate(this->x(), this->y()), 0., 0.);
+    const auto& position = static_cast<const geo::Coordinate&>(*this);
+    return geo::Area(position, position);
 }
 
 CADEntity_CSPtr Point::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -73,11 +74,11 @@ CADEntity_CSPtr Point::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
 
 // additional options
 geo::Coordinate Point::nearestPointOnPath(const Coordinate& coord) const {
-    return geo::Coordinate(this->x(), this->y());
+    return static_cast<const geo::Coordinate&>(*this);
 }
 
 geo::Coordinate Point::nearestPointOnEntity(const Coordinate& coord) const {
-    return geo::Coordinate(this->x(), this->y());
+    return static_cast<const geo::Coordinate&>(*this);
 }
 
 
@@ -87,7 +88,7 @@ std::vector<EntityCoordinate> Point::snapPoints(const geo::Coordinate& coord,
         int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
-        points.emplace_back(geo::Coordinate(this->x(), this->y()),0);
+        points.emplace_back(static_cast<const geo::Coordinate&>(*this), 0);
     }
 
     Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
@@ -96,7 +97,7 @@ std::vector<EntityCoordinate> Point::snapPoints(const geo::Coordinate& coord,
 
 std::map<unsigned int, lc::geo::Coordinate> Point::dragPoints() const {
     std::map<unsigned int, lc::geo::Coordinate> points;
-    points[0]=(geo::Coordinate(this->x(), this->y()));
+    points[0] = static_cast<const geo::Coordinate&>(*this);
     return points;
 }
 
