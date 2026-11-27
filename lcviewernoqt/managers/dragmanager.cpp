@@ -1,4 +1,5 @@
 #include <cad/interface/unmanageddraggable.h>
+#include <cmath>
 #include "dragmanager.h"
 
 using namespace lc;
@@ -49,8 +50,10 @@ void DragManager::moveEntities() {
         }
         auto entityDragPoints = draggable->dragPoints();
         for (auto point : entityDragPoints) {
-            if (point.second.distanceTo(_selectedPoint) < LCTOLERANCE) {
-                entityDragPoints[point.first] = _cursor->position();
+            if (std::hypot(point.second.x() - _selectedPoint.x(),
+                           point.second.y() - _selectedPoint.y()) < LCTOLERANCE) {
+                const auto cursor = _cursor->position();
+                entityDragPoints[point.first] = lc::geo::Coordinate(cursor.x(), cursor.y(), point.second.z());
             }
         }
 
@@ -69,7 +72,8 @@ void DragManager::onMouseMove() {
     }
     dragPoints = selectedEntitiesDragPoints();
     _dragPointsEvent(lc::viewer::event::DragPointsEvent(dragPoints, _size));
-    _selectedPoint = _cursor->position();// Last known point
+    const auto cursor = _cursor->position();
+    _selectedPoint = _entityDragged ? lc::geo::Coordinate(cursor.x(), cursor.y(), _selectedPoint.z()) : cursor;
 
     double x = _size;
     double y = _size;
@@ -98,6 +102,7 @@ void DragManager::onMousePress() {
         if(draggable) {
             auto entityDragPoints = draggable->dragPoints();
             auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::entity::UnmanagedDraggable>(draggable);
+            bool managedAdded = false;
             for(auto point : entityDragPoints) {
                 if(unmanagedDraggable) {
                     _entityDragged=true;//Unhandled has drag point everywhere for now
@@ -107,8 +112,11 @@ void DragManager::onMousePress() {
                 } else if(_toleranceArea.inArea(point.second)) {
                     _entityDragged=true;
                     _selectedPoint = point.second;
-                    _replacementEntities.push_back(drawable->entity());
-                    _entityBuilder->appendEntity(drawable->entity());
+                    if (!managedAdded) {
+                        _replacementEntities.push_back(drawable->entity());
+                        _entityBuilder->appendEntity(drawable->entity());
+                        managedAdded = true;
+                    }
                 }
             }
         }

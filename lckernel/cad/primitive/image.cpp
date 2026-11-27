@@ -182,5 +182,6 @@ CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
                         metaInfo,
                         block
                     );
+    newImage->setID(id());
     return newImage;
 }

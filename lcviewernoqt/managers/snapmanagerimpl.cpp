@@ -1,9 +1,13 @@
 #include "snapmanagerimpl.h"
 #include <cad/vo/entitycoordinate.h>
 #include <cad/primitive/circle.h>
+#include <cad/primitive/point.h>
+#include <cad/meta/layer.h>
 #include <cad/base/visitor.h>
 #include <cad/base/cadentity.h>
 #include <cad/math/intersect.h>
+#include <algorithm>
+#include <cmath>
 
 using namespace lc;
 using namespace lc::viewer;
@@ -54,7 +58,33 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // consider for snapping. THis will mostly lickly be lines only
     std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
             realDistanceForPixels, _snapConstrain);
-    std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
+    // An elevated POINT is visible in the XY canvas even when its 3D distance
+    // from the cursor exceeds the snap radius. Keep the entity API 3D and add
+    // those POINT candidates using their screen-plane distance here.
+    if (static_cast<bool>(_snapConstrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
+        const lc::geo::Area area(lc::geo::Coordinate(location.x() - realDistanceForPixels,
+                                                     location.y() - realDistanceForPixels),
+                                 2 * realDistanceForPixels, 2 * realDistanceForPixels);
+        const auto nearby = _view->entityContainer().entitiesWithinAndCrossingAreaFast(area);
+        nearby.each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr candidate) {
+            const auto point = std::dynamic_pointer_cast<const lc::entity::Point>(candidate);
+            if (!point || (point->layer() && point->layer()->isFrozen()) ||
+                std::hypot(point->x() - location.x(), point->y() - location.y()) >= realDistanceForPixels)
+                return;
+            if (std::none_of(entities.begin(), entities.end(), [&](const lc::EntityDistance& value) {
+                    return value.entity()->id() == point->id();
+                }))
+                entities.emplace_back(point, lc::geo::Coordinate(point->x(), point->y(), point->z()));
+        });
+    }
+    entities.erase(std::remove_if(entities.begin(), entities.end(), [](const lc::EntityDistance& candidate) {
+        const auto entity = candidate.entity();
+        return entity && entity->layer() && entity->layer()->isHidden();
+    }), entities.end());
+    std::stable_sort(entities.begin(), entities.end(), [&](const lc::EntityDistance& a, const lc::EntityDistance& b) {
+        return std::hypot(a.coordinate().x() - location.x(), a.coordinate().y() - location.y()) <
+               std::hypot(b.coordinate().x() - location.x(), b.coordinate().y() - location.y());
+    });
 
     // Emit Snappoint event if a entity intersects with a other entity
     if (entities.size() > 1 && _snapIntersections) {
@@ -98,7 +128,9 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
             if (captr) {
                 // Locale snap points
-                std::vector<lc::EntityCoordinate> sp = captr->snapPoints(location, _snapConstrain,
+                const auto point = std::dynamic_pointer_cast<const lc::entity::Point>(entity.entity());
+                const auto reference = point ? lc::geo::Coordinate(location.x(), location.y(), point->z()) : location;
+                std::vector<lc::EntityCoordinate> sp = captr->snapPoints(reference, _snapConstrain,
                                                        realDistanceForPixels, 10);
                 // When a snappoint was found, emit it
                 if (!sp.empty()) {

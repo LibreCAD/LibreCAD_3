@@ -4,11 +4,13 @@
 
 #include "../patternLoader/patternProvider.h"
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <functional>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
@@ -45,6 +47,233 @@
 #include <cad/tools/maphelper.h>
 
 using namespace lc::persistence;
+
+namespace {
+std::string upperName(std::string name) {
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    return name;
+}
+
+void noteRationalSplineApproximation(lc::persistence::LossSummary& loss, const DRW_Spline& spline) {
+    if ((spline.flags & lc::geo::Spline::RATIONAL) == 0
+        && std::none_of(spline.weightlist.begin(), spline.weightlist.end(),
+                        [](double weight) { return weight != 1.0; })) return;
+    const std::string note = "Rational spline weights are retained, but the displayed curve and geometry operations may be approximate.";
+    if (std::find(loss.notes.begin(), loss.notes.end(), note) == loss.notes.end())
+        loss.notes.push_back(note);
+}
+
+// The kernel's HATCH keeps this immutable source snapshot across ordinary
+// entity operations. A simple closed polyline can be replayed through planar
+// rigid transforms; other edits take the reported projection path.
+class MPolygonSnapshot final : public lc::meta::EntityMetaType {
+public:
+    struct Vertex { double x, y, bulge; };
+    MPolygonSnapshot(const DRW_MPolygon& polygon, const DRW_Hatch& projected,
+                     lc::meta::Block_CSPtr projectedBlock, bool sourceIsDwg)
+        : block(std::move(projectedBlock)), name(polygon.name), solid(polygon.solid), angle(polygon.angle),
+          scale(polygon.scale), layer(projected.layer), lineType(projected.lineType),
+          color(projected.color), lineWeight(projected.lWeight), allowElevation(!sourceIsDwg) {
+        if (polygon.solid != 1 || polygon.associative != 0 || polygon.isGradient != 0
+            || polygon.hstyle != 0 || polygon.hpattern != 1 || polygon.doubleflag != 0
+            || !polygon.extData.empty() || !polygon.appData.empty()
+            || !polygon.reactorHandles.empty() || polygon.xDictHandle != 0
+            || polygon.shadowHandle != 0 || polygon.fullVisualStyleHandle != 0
+            || polygon.faceVisualStyleHandle != 0 || polygon.edgeVisualStyleHandle != 0
+            || polygon.hasDwgAcDbColorHandle() || polygon.dwgAcDbColorHandle() != 0
+            || !std::isfinite(polygon.xDirX) || !std::isfinite(polygon.xDirY)
+            || polygon.numProxyGraph != 0 || polygon.hasDataStorageRecord
+            || polygon.hasDataStoragePayloadMarker
+            || polygon.basePoint.x != 0.0 || polygon.basePoint.y != 0.0
+            || !std::isfinite(polygon.basePoint.z)
+            || (sourceIsDwg && polygon.basePoint.z != 0.0) || polygon.extPoint.x != 0.0
+            || polygon.extPoint.y != 0.0 || polygon.extPoint.z != 1.0
+            || polygon.looplist.size() != 1 || !polygon.looplist[0]
+            || polygon.looplist[0]->type != 2
+            || !polygon.looplist[0]->m_boundaryHandles.empty()
+            || polygon.looplist[0]->objlist.size() != 1) return;
+        const auto* poly = dynamic_cast<const DRW_LWPolyline*>(
+            polygon.looplist[0]->objlist[0].get());
+        if (!poly || poly->flags != 1 || poly->vertlist.size() < 3
+            || poly->width != 0.0 || poly->elevation != 0.0
+            || poly->thickness != 0.0 || poly->extPoint.x != 0.0
+            || poly->extPoint.y != 0.0 || poly->extPoint.z != 1.0) return;
+        for (const auto& v : poly->vertlist) {
+            if (!v || !std::isfinite(v->x) || !std::isfinite(v->y)
+                || !std::isfinite(v->bulge) || v->stawidth != 0.0
+                || v->endwidth != 0.0) return;
+            const double x = v->x + polygon.xDirX;
+            const double y = v->y + polygon.xDirY;
+            if (!std::isfinite(x) || !std::isfinite(y)) return;
+            vertices.push_back({x, y, v->bulge});
+        }
+        source = std::make_unique<DRW_MPolygon>(polygon);
+    }
+    const std::string id() const override { return "_LIBDXFRW_MPOLYGON"; }
+    const std::string metaTypeID() const override { return id(); }
+    bool replayable(const DRW_Hatch& hatch, const lc::entity::Hatch_CSPtr& model,
+                    double& outputOffsetX, double& outputOffsetY,
+                    double& outputElevation,
+                    bool& rewriteBoundary) const {
+        if (!source || model->block() != block || hatch.name != name || hatch.solid != solid
+            || hatch.angle != angle || hatch.scale != scale
+            || hatch.layer != layer || hatch.lineType != lineType
+            || hatch.color != color || hatch.lWeight != lineWeight
+            || hatch.looplist.size() != 1 || !hatch.looplist[0]
+            || hatch.looplist[0]->type != 2
+            || hatch.looplist[0]->objlist.size() != 1) return false;
+        const auto* poly = dynamic_cast<const DRW_LWPolyline*>(
+            hatch.looplist[0]->objlist[0].get());
+        if (!poly || poly->flags != 1 || poly->vertlist.size() != vertices.size()
+            || poly->width != 0.0 || poly->elevation != 0.0 || poly->thickness != 0.0)
+            return false;
+        const auto& loops = model->getRegion().loopList();
+        if (loops.size() != 1 || loops[0].entities().size() != 1) return false;
+        const auto modelPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(
+            loops[0].entities()[0]);
+        if (!modelPolyline || modelPolyline->vertex().size() != vertices.size()
+            || modelPolyline->extrusionDirection().x() != 0.0
+            || modelPolyline->extrusionDirection().y() != 0.0
+            || modelPolyline->extrusionDirection().z() != 1.0) return false;
+        if (!poly->vertlist[0]) return false;
+        const double dx = poly->vertlist[0]->x - vertices[0].x;
+        const double dy = poly->vertlist[0]->y - vertices[0].y;
+        outputOffsetX = source->xDirX + dx;
+        outputOffsetY = source->xDirY + dy;
+        if (!std::isfinite(outputOffsetX) || !std::isfinite(outputOffsetY)) return false;
+        const auto* original = dynamic_cast<const DRW_LWPolyline*>(
+            source->looplist[0]->objlist[0].get());
+        if (!original || original->vertlist.size() != vertices.size()) return false;
+        bool translation = true;
+        outputElevation = modelPolyline->vertex()[0].location().z();
+        if (!std::isfinite(outputElevation) || (!allowElevation && outputElevation != 0.0)) return false;
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
+            if (modelPolyline->vertex()[i].location().z() != outputElevation) return false;
+            const auto& v = poly->vertlist[i];
+            const auto& raw = original->vertlist[i];
+            if (!v || !raw || !std::isfinite(v->x) || !std::isfinite(v->y)
+                || v->bulge != vertices[i].bulge || v->stawidth != 0.0
+                || v->endwidth != 0.0) return false;
+            if (raw->x + outputOffsetX != v->x || raw->y + outputOffsetY != v->y)
+                translation = false;
+        }
+        rewriteBoundary = false;
+        if (translation) return true;
+
+        // A solid polygon without references or dormant pattern/gradient data
+        // can also be rotated without inventing a transformation for fields
+        // the kernel does not model.
+        if (source->annotatedBoundary != 0 || source->degenerateLoops != 0
+            || source->angle != 0.0 || !source->patternLines.empty()
+            || !source->seedPoints.empty() || source->pixelSize != 0.0
+            || source->gradReserved != 0 || source->gradAngle != 0.0
+            || source->gradShift != 0.0 || source->singleColor != 0
+            || source->gradTint != 0.0 || !source->gradName.empty()) return false;
+        std::size_t reference = 0;
+        double longest = 0.0;
+        for (std::size_t i = 1; i < vertices.size(); ++i) {
+            const double length = std::hypot(vertices[i].x - vertices[0].x,
+                                             vertices[i].y - vertices[0].y);
+            if (!std::isfinite(length)) return false;
+            if (length > longest) { longest = length; reference = i; }
+        }
+        if (reference == 0 || longest == 0.0) return false;
+        const double ux = (vertices[reference].x - vertices[0].x) / longest;
+        const double uy = (vertices[reference].y - vertices[0].y) / longest;
+        const double vx0 = poly->vertlist[reference]->x - poly->vertlist[0]->x;
+        const double vy0 = poly->vertlist[reference]->y - poly->vertlist[0]->y;
+        const double length = std::hypot(vx0, vy0);
+        if (!std::isfinite(length) || length == 0.0) return false;
+        const double vx = vx0 / length, vy = vy0 / length;
+        const double cosine = ux * vx + uy * vy;
+        const double sine = ux * vy - uy * vx;
+        const double epsilon = std::numeric_limits<double>::epsilon();
+        const double scale = std::max({std::numeric_limits<double>::min(), longest, length,
+                                       std::abs(vertices[0].x), std::abs(vertices[0].y),
+                                       std::abs(poly->vertlist[0]->x),
+                                       std::abs(poly->vertlist[0]->y)});
+        const double tolerance = 64.0 * epsilon * scale;
+        if (!std::isfinite(tolerance) || std::abs(longest - length) > tolerance)
+            return false;
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
+            const double sx = vertices[i].x - vertices[0].x;
+            const double sy = vertices[i].y - vertices[0].y;
+            const double tx = poly->vertlist[i]->x - poly->vertlist[0]->x;
+            const double ty = poly->vertlist[i]->y - poly->vertlist[0]->y;
+            const double predictedX = cosine * sx - sine * sy;
+            const double predictedY = sine * sx + cosine * sy;
+            if (!std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(tx)
+                || !std::isfinite(ty) || !std::isfinite(predictedX)
+                || !std::isfinite(predictedY)
+                || std::abs(predictedX - tx) > tolerance
+                || std::abs(predictedY - ty) > tolerance)
+                return false;
+        }
+        const double raw0x = original->vertlist[0]->x;
+        const double raw0y = original->vertlist[0]->y;
+        outputOffsetX = poly->vertlist[0]->x - (cosine * raw0x - sine * raw0y);
+        outputOffsetY = poly->vertlist[0]->y - (sine * raw0x + cosine * raw0y);
+        if (!std::isfinite(outputOffsetX) || !std::isfinite(outputOffsetY)) return false;
+        // A rounded center may not reconstruct every edited double exactly.
+        // Try nearby representable centers before falling back; the bounded
+        // search never changes an output vertex or permits approximate replay.
+        const auto fitOffset = [&poly](double& offset, bool xAxis) {
+            const auto exact = [&poly, xAxis](double candidate) {
+                if (!std::isfinite(candidate)) return false;
+                for (const auto& vertex : poly->vertlist) {
+                    const double point = xAxis ? vertex->x : vertex->y;
+                    const double raw = point - candidate;
+                    if (!std::isfinite(raw) || raw + candidate != point) return false;
+                }
+                return true;
+            };
+            if (exact(offset)) return true;
+            double lower = offset, upper = offset;
+            for (int i = 0; i < 16; ++i) {
+                lower = std::nextafter(lower, -std::numeric_limits<double>::infinity());
+                if (exact(lower)) { offset = lower; return true; }
+                upper = std::nextafter(upper, std::numeric_limits<double>::infinity());
+                if (exact(upper)) { offset = upper; return true; }
+            }
+            return false;
+        };
+        if (!fitOffset(outputOffsetX, true) || !fitOffset(outputOffsetY, false)) return false;
+        rewriteBoundary = true;
+        return true;
+    }
+    bool canWrite(DRW::Version version) const {
+        if (!source || (source->isGradient == 0 && !source->gradColors.empty()))
+            return false;
+#if !defined(LIBDXFRW_HAS_MPOLYGON_POLYLINE_POLICY)
+        // The older bundled codec interprets MPOLYGON groups 70/71 as the
+        // HATCH solid/associativity pair, so it cannot safely replay them.
+        (void)version;
+        return false;
+#else
+        if (source->dxfVersion != 1) return false;
+#endif
+        if (version < DRW::AC1018
+            && (source->isGradient != 0 || source->gradReserved != 0
+                || source->gradAngle != 0.0 || source->gradShift != 0.0
+                || source->singleColor != 0 || source->gradTint != 0.0
+                || !source->gradName.empty() || !source->gradColors.empty()))
+            return false;
+        return true;
+    }
+    static const char* key() { return "_LIBDXFRW_MPOLYGON"; }
+    std::unique_ptr<DRW_MPolygon> source;
+    lc::meta::Block_CSPtr block;
+    std::string name;
+    int solid; double angle, scale;
+    std::string layer, lineType;
+    int color; DRW_LW_Conv::lineWidth lineWeight;
+    bool allowElevation;
+    std::vector<Vertex> vertices;
+};
+} // namespace
+
 
 const std::map<int, lc::Units> DXFimpl::_dxfToLCUnits = {
     {0, lc::Units::None},
@@ -163,11 +392,12 @@ void DXFimpl::addHeader(const DRW_Header* data) {
 
         headerStr(*data, "$ACADVER", _header.acadVersion);
 
-        if (headerInt(*data, "$INSUNITS", _header.insUnitsCode)) {
+        _header.hasInsUnits = headerInt(*data, "$INSUNITS", _header.insUnitsCode);
+        if (_header.hasInsUnits) {
             _header.units = numberToUnit(_header.insUnitsCode);
         }
 
-        headerInt(*data, "$MEASUREMENT", _header.measurement);
+        _header.hasMeasurement = headerInt(*data, "$MEASUREMENT", _header.measurement);
         headerDouble(*data, "$LTSCALE", _header.lineTypeScale);
 
         // Extents are a pair or they are nothing: half a bounding box describes no
@@ -232,10 +462,23 @@ void DXFimpl::addVport(const DRW_Vport& data) {
 void DXFimpl::addBlock(const DRW_Block& data) {
     guarded("BLOCK", &data, [&] {
         LOG_TRACE << "addBlock " << data.name;
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (upperName(data.name) == "*PAPER_SPACE0") _sourceHasPaperSpace0 = true;
+#endif
 
         _currentBlock = nullptr;
 
         auto base = coord(data.basePoint);
+        std::string blockName = data.name;
+        bool legacyPaper = false;
+        // R12 uppercases names on the wire; R14 may use either spelling.
+        // Match the kernel defaults but retain the source lookup below.
+        if (_header.acadVersion.empty() || _header.acadVersion == "AC1009" ||
+            _header.acadVersion == "AC1014") {
+            const auto upper = upperName(blockName);
+            if (upper == "*PAPER_SPACE") { blockName = "*Paper_Space"; legacyPaper = true; }
+            else if (upper == "*PAPER_SPACE0") { blockName = "*Paper_Space0"; legacyPaper = true; }
+        }
 
         auto appData = data.appData;
         auto it = appData.begin();
@@ -285,7 +528,7 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             // pointing at a block nothing defined -- which is why no plugin was
             // ever asked to rebuild a custom entity read back from a file.
             _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(
-                data.name, pluginName, entityName, base, params);
+                blockName, pluginName, entityName, base, params);
         }
 
         if(_currentBlock == nullptr) {
@@ -300,13 +543,20 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             // where the convention is all there is.
             const bool anonymous = (data.flags & 1) != 0
                 || (_sourceIsDwg && isAnonymousDimensionBlockName(data.name));
-            _currentBlock = std::make_shared<lc::meta::Block>(data.name, base, anonymous);
+            _currentBlock = std::make_shared<lc::meta::Block>(blockName, base, anonymous);
         }
         // Blocks are parsed before the top-level Builder executes, so the
         // document's name lookup does not yet include this definition. Keep
         // the parsed block indexed by its file name while the read is active.
         _blocks[data.name] = _currentBlock;
-        _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
+        const auto existing = legacyPaper ? _document->blockByName(blockName) : nullptr;
+        if (existing) {
+            // Preserve the imported block's base and anonymous state as well as
+            // its children; AddBlock alone leaves the kernel default in place.
+            _builder->append(std::make_shared<lc::operation::ReplaceBlock>(_document, existing, _currentBlock));
+        } else {
+            _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
+        }
 
         // May need to check if the block already exists: not sure
         _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, _currentBlock));
@@ -473,7 +723,8 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
 void DXFimpl::addLayer(const DRW_Layer& data) {
     guarded("LAYER", nullptr, [&] {
         LOG_TRACE << "addLayer " << data.name;
-        auto col = icol.intToColor(data.color);
+        const int sourceAci = data.color < 0 && data.color >= -255 ? -data.color : data.color;
+        auto col = icol.intToColor(sourceAci);
 
         if (col == nullptr) {
             col = icol.intToColor(255);
@@ -488,7 +739,16 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         auto lp = _document->linePatternByName(data.lineType);
         auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
 
-        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
+        const auto color = data.color24 >= 0 && data.color24 <= 0xFFFFFF
+            ? lc::Color((data.color24 >> 16) & 0xFF, (data.color24 >> 8) & 0xFF, data.color24 & 0xFF)
+            : col->color();
+        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), color, lp, isFrozen, data.color < 0, (data.flags & 4) != 0);
+        if (!data.name.empty() && data.name[0] != '*') {
+            _layers[upperName(data.name)] = layer;
+            _preserved.sourceLayerColors[data.name] = {layer, data.color, data.color24, data.colorName};
+        }
+        _preserved.sourceLayerWeights[data.name] = {
+            lw->width(), data.lWeight == DRW_LW_Conv::widthDefault};
         // If a layer starts with a * it's a special layer we don't process yet
         if(data.name == "0") {
             auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
@@ -525,9 +785,9 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                         static_cast<lc::geo::Spline::splineflag>(data->flags),
                         layer,
                         mf,
-                        getBlock(*data)
+                        getBlock(*data), data->weightlist
                                                             );
-
+        noteRationalSplineApproximation(_loss, *data);
         deliver(lcSpline);
     });
 }
@@ -925,16 +1185,72 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         LOG_TRACE << "addHatch ";
         auto layer = getLayer(*data);
         auto mf = getMetaInfo(*data);
+        const auto* polygon = dynamic_cast<const DRW_MPolygon*>(data);
+        if (polygon && !mf) mf = lc::meta::MetaInfo::create();
+        // MPOLYGON stores boundary points in offset space. The offset is a
+        // point displacement, so it applies to points but not axis vectors or
+        // spline tangents. Ordinary HATCH boundaries have no such offset.
+        const double offsetX = polygon ? polygon->xDirX : 0.0;
+        const double offsetY = polygon ? polygon->xDirY : 0.0;
+        const auto addOffset = [polygon](double value, double offset) {
+            if (!polygon) return value;
+            const double mapped = value + offset;
+            if (polygon && !std::isfinite(mapped))
+                throw std::overflow_error("MPOLYGON boundary offset is not finite");
+            return mapped;
+        };
+        const auto pointInOffsetPlane = [offsetX, offsetY, addOffset](const DRW_Coord& point) {
+            return lc::geo::Coordinate(addOffset(point.x, offsetX),
+                                       addOffset(point.y, offsetY), point.z);
+        };
+        // Default-normal DXF HATCH and MPOLYGON polyline paths lie at
+        // the entity's OCS elevation; their path coordinates have no Z.
+        // Leave tilted planes and DWG MPOLYGON projection on existing paths.
+        const bool liftBoundaryPlane = (!polygon || !_sourceIsDwg) && data->extPoint.x == 0.0
+            && data->extPoint.y == 0.0 && data->extPoint.z == 1.0
+            && std::isfinite(data->basePoint.z);
+        const double hatchPolylinePlaneZ = liftBoundaryPlane ? data->basePoint.z : 0.0;
+        const auto boundaryPointInPlane = [&pointInOffsetPlane, liftBoundaryPlane, hatchPolylinePlaneZ](const DRW_Coord& point) {
+            const auto mapped = pointInOffsetPlane(point);
+            return liftBoundaryPlane ? lc::geo::Coordinate(mapped.x(), mapped.y(), hatchPolylinePlaneZ) : mapped;
+        };
+        const auto pointsInOffsetPlane = [this, offsetX, offsetY, addOffset, liftBoundaryPlane, hatchPolylinePlaneZ](const auto& points) {
+            auto mapped = coords(points);
+            for (auto& point : mapped)
+                point = lc::geo::Coordinate(addOffset(point.x(), offsetX),
+                                            addOffset(point.y(), offsetY),
+                                            liftBoundaryPlane ? hatchPolylinePlaneZ : point.z());
+            return mapped;
+        };
         lc::geo::Region reg;
         auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
                        mf,
                        getBlock(*data)
                                                           );
+        if (polygon) {
+            DRW_Hatch projected;
+            getEntityAttributes(&projected, lcHatch);
+            mf->add(std::make_shared<MPolygonSnapshot>(*polygon, projected, lcHatch->block(), _sourceIsDwg));
+        }
         lcHatch->setPatternName(data->name);
-        lcHatch->setSolid(data->solid);
+        int solidFlag = data->solid;
+#if !defined(LIBDXFRW_HAS_MPOLYGON_POLYLINE_POLICY)
+        // Older libdxfrw applies HATCH's group 70/71 interpretation to DXF
+        // MPOLYGON. Its DWG parser already delivers the actual solid flag.
+        if (polygon && !_sourceIsDwg) solidFlag = polygon->associative;
+#endif
+        lcHatch->setSolid(solidFlag);
+        // MPOLYGON's fill color is independent of its common entity color.
+        // Keep it separate so the snapshot and DXF group 62 remain unchanged.
+        if (polygon && !_sourceIsDwg && solidFlag && !polygon->isGradient && polygon->gradColors.empty() &&
+            polygon->fillColorAci > 0 && polygon->fillColorAci < 256 &&
+            polygon->fillColorRgb < 0 && polygon->fillColorName.empty()) {
+            const auto fill = icol.intToColor(polygon->fillColorAci);
+            if (fill) mf->add(std::make_shared<lc::meta::MetaFillColor>(fill->color(), polygon->fillColorAci));
+        }
         LOG_TRACE << "name " << data->name;
-        LOG_TRACE << "solid " << data->solid;
-        if(!data->solid) {
+        LOG_TRACE << "solid " << solidFlag;
+        if(!solidFlag) {
             //Load pattern from dxf
             lcHatch->setPattern(lc::persistence::PatternProvider::Instance()->getPattern(data->name));
         }
@@ -954,7 +1270,10 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     LOG_TRACE << "Polyline";
                     std::vector<lc::entity::LWVertex2D> points;
                     for (const auto& i : data->vertlist) {
-                        points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
+                        points.emplace_back(lc::geo::Coordinate(addOffset(i->x, offsetX),
+                                                                addOffset(i->y, offsetY),
+                                                                hatchPolylinePlaneZ),
+                                            i->bulge, i->stawidth, i->endwidth);
                     }
                     auto isCLosed = (unsigned int) data->flags & 0x01u;
                     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
@@ -971,8 +1290,8 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     auto data = std::dynamic_pointer_cast<DRW_Line>(k);
                     LOG_TRACE << "line";
                     lc::builder::LineBuilder builder;
-                    builder.setStart(coord(data->basePoint));
-                    builder.setEnd(coord(data->secPoint));
+                    builder.setStart(boundaryPointInPlane(data->basePoint));
+                    builder.setEnd(boundaryPointInPlane(data->secPoint));
                     builder.setLayer(layer);
                     loopData.push_back(builder.build());
                 } else if(k->eType == DRW::ETYPE::ARC) { //done
@@ -985,7 +1304,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                     }
                     lc::builder::ArcBuilder builder;
                     LOG_TRACE << data->staangle <<','<< data->endangle;
-                    builder.setCenter(coord(data->basePoint));
+                    builder.setCenter(boundaryPointInPlane(data->basePoint));
                     builder.setRadius(data->radious);
                     builder.setStartAngle(data->staangle);
                     builder.setEndAngle(data->endangle);
@@ -996,21 +1315,21 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 } else if(k->eType == DRW::ETYPE::ELLIPSE) { //done
                     auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
                     auto secPoint = coord(data->secPoint);
-                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
+                    auto lcEllipse = std::make_shared<lc::entity::Ellipse>(boundaryPointInPlane(data->basePoint),
                                      secPoint,
                                      secPoint.magnitude() * data->ratio,
                                      data->staparam,
                                      data->endparam,
-                                     data->isccw,
+                                     !data->isccw,
                                      layer
                                                                           );
                     loopData.push_back(lcEllipse);
                 } else if(k->eType == DRW::ETYPE::SPLINE) {
                     auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
                     // Same as addSpline: keep the file's knot vector intact.
-                    auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
+                    auto lcSpline = std::make_shared<lc::entity::Spline>(pointsInOffsetPlane(data->controllist),
                                     data->knotslist,
-                                    coords(data->fitlist),
+                                    pointsInOffsetPlane(data->fitlist),
                                     data->degree,
                                     false,
                                     data->tolfit,
@@ -1020,8 +1339,9 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                     static_cast<lc::geo::Spline::splineflag>(data->flags),
                                     layer,
                                     mf,
-                                    getBlock(*data)
+                                    getBlock(*data), data->weightlist
                                                                         );
+                    noteRationalSplineApproximation(_loss, *data);
                     loopData.push_back(lcSpline);
                 }
             }
@@ -1030,6 +1350,20 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         }
         lcHatch->setRegion(reg);
         deliver(lcHatch);
+        // The default libdxfrw callback forwards MPOLYGON to addHatch. The
+        // kernel currently has no way to retain its subtype or extra fields.
+        if (data->eType == DRW::MPOLYGON && _mpolygonsAsHatch++ == 0) {
+            _loss.notes.push_back(
+                "MPOLYGON entities were imported as HATCH for editing. Some "
+                "polygon-specific information may not survive saving.");
+        }
+        if (polygon && ((!liftBoundaryPlane && polygon->basePoint.z != 0.0) || polygon->extPoint.x != 0.0
+                        || polygon->extPoint.y != 0.0 || polygon->extPoint.z != 1.0)
+            && _mpolygonsWithNondefaultPlane++ == 0) {
+            _loss.notes.push_back(
+                "MPOLYGON elevation or extrusion is not fully mapped into "
+                "the editing plane; its displayed geometry may be incorrect.");
+        }
     });
 }
 
@@ -1070,7 +1404,9 @@ bool DXFimpl::isModelSpaceName(const std::string& name) {
                          });
 }
 
-lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {
+lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) {
+    const auto pending = _layers.find(upperName(data.layer));
+    if (pending != _layers.end()) return pending->second;
     lc::meta::Layer_CSPtr layer = _document->layerByName(data.layer);
 
     if (layer==nullptr) {
@@ -1082,6 +1418,7 @@ lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {
         layer = std::make_shared<lc::meta::Layer>(data.layer, lw->width(), col->color(), lp, isFrozen);
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
         _builder->append(al);
+        _layers[upperName(data.layer)] = layer;
     }
     return layer;
 }
@@ -1101,7 +1438,12 @@ lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
     // Try to find a entities meta color
     lc::meta::MetaColor_CSPtr col;
-    if(data.color == BYBLOCK_COLOR) {
+    if (data.color24 >= 0 && data.color24 <= 0xFFFFFF) {
+        const int rgb = data.color24;
+        col = std::make_shared<const lc::meta::MetaColorTrueColor>(
+            lc::Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF),
+            data.color, data.colorName);
+    } else if(data.color == BYBLOCK_COLOR) {
         col = std::make_shared<const lc::meta::MetaColorByBlock>();
     }
     else {
@@ -1364,6 +1706,11 @@ void DXFimpl::buildDeferredInserts() {
  *********************************************/
 
 void DXFimpl::writeObjects() {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (!_defaultLayoutsFromSource)
+        for (auto& layout : _defaultLayouts)
+            _defaultLayoutWriteOk = dxfW->writeLayout(&layout) && _defaultLayoutWriteOk;
+#endif
     if (_replay == nullptr) {
         return;
     }
@@ -1408,7 +1755,36 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
 
     auto col = layer->color();
     lay.name = layer->name();
-    lay.color = icol_inst.colorToInt(col);
+    lay.color = icol_inst.colorToInt(col, 1);
+    const PreservedRecords::SourceLayerColor* original = nullptr;
+    if (_shelf) {
+        const auto found = _shelf->sourceLayerColors.find(layer->name());
+        if (found != _shelf->sourceLayerColors.end()) original = &found->second;
+    }
+    const bool unchanged = original && layer->retainsColorFrom(original->layer.lock());
+    const bool explicitRgb = unchanged && original->rgb >= 0 && original->rgb <= 0xFFFFFF;
+    const auto indexed = icol_inst.intToColor(lay.color);
+    const bool needsRgb = explicitRgb || !indexed || !(indexed->color() == col);
+    if (unchanged && (!explicitRgb || _exportVersion > DRW::AC1015) &&
+        original->aci != 0 && original->aci >= -255 && original->aci <= 255)
+        lay.color = original->aci;
+    if (lay.color < 0) lay.color = -lay.color;
+    if (layer->isOff()) lay.color = -lay.color;
+    if (_exportVersion > DRW::AC1015) {
+        if (needsRgb)
+            lay.color24 = (static_cast<int>(col.redI()) << 16)
+                        | (static_cast<int>(col.greenI()) << 8) | static_cast<int>(col.blueI());
+        if (unchanged) lay.colorName = original->name;
+    } else if (needsRgb || (unchanged && !original->name.empty())) {
+        const std::string note = "Layer true colors or color names were approximated using indexed colors for the selected DXF version.";
+        if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+            _loss.notes.push_back(note);
+    }
+    if (original && !unchanged && !original->name.empty()) {
+        const std::string note = "Editing a layer may discard its source color name.";
+        if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+            _loss.notes.push_back(note);
+    }
 
     // Issue #412 phase 3: (a) stop the stray `std::cout << wid;` that has
     // been dumping the layer line width to stdout on every save since 2016.
@@ -1421,6 +1797,23 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     } else {
         lay.lWeight = DRW_LW_Conv::widthDefault;
     }
+    if (_exportVersion <= DRW::AC1014 && lay.lWeight != DRW_LW_Conv::widthDefault) {
+        bool implicitDefault = false;
+        if (_shelf) {
+            const auto source = _shelf->sourceLayerWeights.find(layer->name());
+            if (source != _shelf->sourceLayerWeights.end()) {
+                implicitDefault = source->second.implicitDefault && source->second.kernelWidth == wid;
+            } else {
+                // DocumentImpl creates layer 0 at this width before importing
+                // any layer. A source layer, when present, takes precedence.
+                implicitDefault = layer->name() == "0" && wid == 1.0;
+            }
+        } else {
+            implicitDefault = layer->name() == "0" && wid == 1.0;
+        }
+        if (!implicitDefault) _loss.droppedByType["layer lineweight"]++;
+        lay.lWeight = DRW_LW_Conv::widthDefault;
+    }
 
     // Issue #412 phase 3: emit the layer's line pattern name (code 6) so the
     // reader can match entities that reference it back to the layer LTYPE.
@@ -1430,7 +1823,7 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
         lay.lineType = lp->name();
     }
 
-    lay.flags = layer->isFrozen() ? 0x01 : 0x00;
+    lay.flags = (layer->isFrozen() ? 0x01 : 0x00) | (layer->isLocked() ? 0x04 : 0x00);
 
     dxfW->writeLayer(&lay);
 }
@@ -1509,6 +1902,9 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
         if (!root) {
             return;
         }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        _sourceRootHandle = data.handle;
+#endif
 
         for (const auto& entry : data.m_entries) {
             if (entry.m_handle == 0 || entry.m_name.empty()) {
@@ -1529,19 +1925,297 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
     });
 }
 
-void DXFimpl::attachPreservedRecords() {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+namespace {
+bool smallLayoutSource(const DRW_RawDxfObject& source) {
+    if (source.groups.size() > 128 || source.rawValues.size() != source.groups.size()) return false;
+    std::size_t bytes = 0;
+    for (std::size_t i = 0; i < source.groups.size(); ++i) {
+        const auto& group = source.groups[i];
+        const auto& raw = source.rawValues[i];
+        const std::size_t typedBytes = !source.hasRawValues && group.type() == DRW_Variant::STRING && group.content.s
+            ? group.content.s->size() : 0;
+        if (raw.size() > 4096 || typedBytes > 4096 || bytes > 65536 - raw.size()) return false;
+        bytes += raw.size();
+        if (bytes > 65536 - typedBytes) return false;
+        bytes += typedBytes;
+    }
+    return true;
+}
+bool rawCodes(const DRW_RawDxfObject& source, const std::vector<int>& codes) {
+    if (!smallLayoutSource(source) || source.groups.size() != codes.size()) return false;
+    for (std::size_t i = 0; i < codes.size(); ++i)
+        if (source.groups[i].code() != codes[i]) return false;
+    return true;
+}
+bool rawText(const DRW_Variant& value, const std::string& text) {
+    return value.type() == DRW_Variant::STRING && value.content.s && *value.content.s == text;
+}
+bool rawNumber(const DRW_Variant& value, int expected) {
+    return value.type() == DRW_Variant::INTEGER && value.content.i == expected;
+}
+bool rawDouble(const DRW_Variant& value, double expected) {
+    return value.type() == DRW_Variant::DOUBLE && value.content.d == expected;
+}
+bool rawHandle(const DRW_Variant& value, std::uint32_t expected) {
+    if (value.type() != DRW_Variant::STRING || !value.content.s || value.content.s->empty()) return false;
+    try {
+        std::size_t used = 0;
+        const auto parsed = std::stoull(*value.content.s, &used, 16);
+        return used == value.content.s->size() && parsed == expected;
+    } catch (const std::exception&) { return false; }
+}
+}
+
+void DXFimpl::addDxfLayoutSource(const DRW_Layout& layout, const DRW_RawDxfObject& source) {
+    if (!guarded("LAYOUT source", nullptr, [&] {
+        if (_sourceLayouts.size() >= 3 || !smallLayoutSource(source)) {
+            _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        _sourceLayouts.emplace_back(layout, source);
+    })) {
+        _unmatchedSourceLayoutBlock = true;
+    }
+}
+
+#ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
+bool DXFimpl::retainDxfBlockRecordSource(const DRW_Block_Record& row) const {
+    if (upperName(row.name) == "*PAPER_SPACE0") _sourceHasPaperSpace0 = true;
+    const bool layoutBlock = row.name == "*Model_Space" || row.name == "*Paper_Space" ||
+                             row.name == "*Paper_Space0";
+    if (!layoutBlock) _hasOtherBlockRecords = true;
+    return row.layoutHandle != 0 || layoutBlock;
+}
+#endif
+
+void DXFimpl::addDxfBlockRecordSource(const DRW_Block_Record& block, const DRW_RawDxfObject& source) {
+    if (!guarded("BLOCK_RECORD source", nullptr, [&] {
+        if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") {
+            _hasOtherBlockRecords = true;
+            if (block.layoutHandle != 0) _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        if (_sourceLayoutBlocks.size() >= 3 || !smallLayoutSource(source)) {
+            _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        _sourceLayoutBlocks.emplace_back(block, source);
+    })) {
+        _unmatchedSourceLayoutBlock = true;
+    }
+}
+
+void DXFimpl::addDxfBlockBeginSource(const DRW_Block& block, const DRW_RawDxfObject& source) {
+    if (!guarded("BLOCK source", nullptr, [&] {
+        _activeSourceLayoutBody = -1;
+        if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") return;
+        if (_sourceLayoutBodies.size() >= 3 || !smallLayoutSource(source)) {
+            _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        _sourceLayoutBodies.push_back({block, DRW_Block{}, source, DRW_RawDxfObject{}, false});
+        _activeSourceLayoutBody = static_cast<int>(_sourceLayoutBodies.size() - 1);
+    })) {
+        _activeSourceLayoutBody = -1;
+        _unmatchedSourceLayoutBlock = true;
+    }
+}
+
+void DXFimpl::addDxfBlockEndSource(const DRW_Block& block, const DRW_RawDxfObject& source) {
+    if (!guarded("ENDBLK source", nullptr, [&] {
+        if (_activeSourceLayoutBody < 0) return;
+        auto& body = _sourceLayoutBodies[static_cast<std::size_t>(_activeSourceLayoutBody)];
+        _activeSourceLayoutBody = -1;
+        if (!smallLayoutSource(source)) { _unmatchedSourceLayoutBlock = true; return; }
+        body.end = block;
+        body.rawEnd = source;
+        body.hasEnd = true;
+    })) {
+        _activeSourceLayoutBody = -1;
+        _unmatchedSourceLayoutBlock = true;
+    }
+}
+
+bool DXFimpl::acceptSourceLayoutGraph() {
+    if (_unmatchedSourceLayoutBlock || _sourceRootHandle != 0xCu ||
+        _sourceLayouts.size() != 3 || _sourceLayoutBlocks.size() != 3 || _sourceLayoutBodies.size() != 3) return false;
+    std::uint32_t dictionaryHandle = 0;
+    for (const auto& entry : _preserved.rootDictEntries) {
+        const auto name = upperName(entry.first);
+        if (name != "ACAD_LAYOUT") continue;
+        if (entry.first != "ACAD_LAYOUT") return false;
+        if (dictionaryHandle != 0) return false;
+        dictionaryHandle = entry.second;
+    }
+    if (!dictionaryHandle || dictionaryHandle == DRW::NoHandle) return false;
+    const auto dictionary = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
+        [dictionaryHandle](const auto& value) { return value.name == "DICTIONARY" && value.handle == dictionaryHandle; });
+    if (dictionary == _preserved.objects.end() ||
+        std::count_if(_preserved.objects.begin(), _preserved.objects.end(),
+            [dictionaryHandle](const auto& value) { return value.handle == dictionaryHandle; }) != 1 ||
+        dictionary->parentHandle != 0xCu ||
+        !rawCodes(*dictionary, {5,330,100,280,281,3,360,3,360,3,360}) ||
+        !rawHandle(dictionary->groups[0], dictionaryHandle) || !rawHandle(dictionary->groups[1], 0xCu) ||
+        !rawText(dictionary->groups[2], "AcDbDictionary") || !rawNumber(dictionary->groups[3], 1) ||
+        !rawNumber(dictionary->groups[4], 1)) return false;
+    // Conversion or replay to binary is limited to the complete default graph
+    // and Normal plot-style pair, regardless of source encoding.
+    const bool binaryCompatible = [&]() {
+        if (_hasOtherBlockRecords || _preserved.objects.size() != 3 || !_preserved.entities.empty() ||
+            !_preserved.sections.empty() || _preserved.classes.size() != 2 ||
+            _preserved.rootDictEntries.size() != 2) return false;
+        const auto expectedClass = [&](const char* name, const char* type) {
+            return std::count_if(_preserved.classes.begin(), _preserved.classes.end(),
+                [&](const auto& cls) {
+                    return cls.recName == name && cls.className == type &&
+                        cls.appName == "ObjectDBX Classes" && cls.proxyFlag == 0 &&
+                        cls.instanceCount == (dictionary->m_version == DRW::AC1015 ? 0 : 1) &&
+                        cls.wasaProxyFlag == 0 && cls.entityFlag == 0;
+                }) == 1;
+        };
+        if (!expectedClass("ACDBDICTIONARYWDFLT", "AcDbDictionaryWithDefault") ||
+            !expectedClass("ACDBPLACEHOLDER", "AcDbPlaceHolder")) return false;
+        const auto plotEntry = std::find_if(_preserved.rootDictEntries.begin(), _preserved.rootDictEntries.end(),
+            [](const auto& entry) { return entry.first == "ACAD_PLOTSTYLENAME"; });
+        if (plotEntry == _preserved.rootDictEntries.end() || !plotEntry->second ||
+            plotEntry->second == dictionaryHandle) return false;
+        const auto plot = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
+            [&](const auto& object) { return object.handle == plotEntry->second; });
+        if (plot == _preserved.objects.end() || plot->name != "ACDBDICTIONARYWDFLT" ||
+            plot->hasRawValues == _sourceIsBinary || plot->parentHandle != 0xCu ||
+            !rawCodes(*plot, {5,330,100,281,3,350,100,340}) ||
+            !rawHandle(plot->groups[0], plot->handle) || !rawHandle(plot->groups[1], 0xCu) ||
+            !rawText(plot->groups[2], "AcDbDictionary") || !rawNumber(plot->groups[3], 1) ||
+            !rawText(plot->groups[4], "Normal") || !rawText(plot->groups[6], "AcDbDictionaryWithDefault")) return false;
+        const auto placeholder = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
+            [&](const auto& object) { return object.name == "ACDBPLACEHOLDER"; });
+        if (placeholder == _preserved.objects.end() || placeholder->hasRawValues == _sourceIsBinary ||
+            !placeholder->handle || placeholder->handle == DRW::NoHandle ||
+            placeholder->handle == plot->handle || placeholder->handle == dictionaryHandle ||
+            placeholder->parentHandle != plot->handle || !rawCodes(*placeholder, {5,330}) ||
+            !rawHandle(placeholder->groups[0], placeholder->handle) ||
+            !rawHandle(placeholder->groups[1], plot->handle) ||
+            !rawHandle(plot->groups[5], placeholder->handle) ||
+            !rawHandle(plot->groups[7], placeholder->handle) || dictionary->hasRawValues == _sourceIsBinary) return false;
+        return true;
+    }();
+    if (_sourceIsBinary && !binaryCompatible) return false;
+    const char* names[] = {"Model", "Layout1", "Layout2"};
+    const char* blockNames[] = {"*Model_Space", "*Paper_Space", "*Paper_Space0"};
+    std::vector<DRW_Layout> layouts;
+    std::vector<DRW_Block_Record> blocks;
+    std::vector<DRW_RawDxfObject> rawLayouts;
+    for (int i = 0; i < 3; ++i) {
+        const auto layout = std::find_if(_sourceLayouts.begin(), _sourceLayouts.end(),
+            [&](const auto& item) { return item.first.name == names[i]; });
+        const auto block = std::find_if(_sourceLayoutBlocks.begin(), _sourceLayoutBlocks.end(),
+            [&](const auto& item) { return item.first.name == blockNames[i]; });
+        const auto body = std::find_if(_sourceLayoutBodies.begin(), _sourceLayoutBodies.end(),
+            [&](const auto& item) { return item.begin.name == blockNames[i]; });
+        if (layout == _sourceLayouts.end() || block == _sourceLayoutBlocks.end() || body == _sourceLayoutBodies.end()) return false;
+        const auto& l = layout->first; const auto& ls = layout->second;
+        const auto& b = block->first; const auto& bs = block->second;
+        std::vector<int> layoutCodes{5,330,100,1,2,4,6,40,41,42,43,44,45,46,47,48,49,140,141,142,143,70,72,73,74,7,75};
+        if (ls.m_version > DRW::AC1015) layoutCodes.insert(layoutCodes.end(), {76,77,78});
+        const std::vector<int> suffix{147,148,149,100,1,70,71,10,20,11,21,12,22,32,14,24,34,15,25,35,146,13,23,33,16,26,36,17,27,37,76,330};
+        layoutCodes.insert(layoutCodes.end(), suffix.begin(), suffix.end());
+        std::vector<int> blockCodes{5,330,100,100,2,340};
+        if (ls.m_version > DRW::AC1018) blockCodes.insert(blockCodes.end(), {70,280,281});
+        if (ls.m_version < DRW::AC1015 || ls.m_version != bs.m_version || ls.m_version != dictionary->m_version ||
+            ls.name != "LAYOUT" || bs.name != "BLOCK_RECORD" ||
+            ls.hasRawValues == _sourceIsBinary || bs.hasRawValues == _sourceIsBinary ||
+            !rawCodes(ls, layoutCodes) || !rawCodes(bs, blockCodes) ||
+            !l.handle || l.handle == DRW::NoHandle || l.parentHandle != dictionaryHandle || l.tabOrder != i ||
+            !l.pageSetupName.empty() || !l.printerConfig.empty() || !l.paperSize.empty() ||
+            !l.plotViewName.empty() || !l.currentStyleSheet.empty() ||
+            !b.handle || b.handle == DRW::NoHandle || b.layoutHandle != l.handle ||
+            l.paperSpaceBlockRecordHandle.ref != b.handle ||
+            ls.handle != l.handle || ls.parentHandle != dictionaryHandle || bs.handle != b.handle || bs.parentHandle != 1u ||
+            !rawHandle(ls.groups[0], l.handle) || !rawHandle(ls.groups[1], dictionaryHandle) ||
+            !rawText(ls.groups[2], "AcDbPlotSettings") || !rawText(ls.groups[ls.groups.size()-29], "AcDbLayout") ||
+            !rawHandle(ls.groups.back(), b.handle) || !rawHandle(bs.groups[0], b.handle) || !rawHandle(bs.groups[1], 1u) ||
+            !rawText(bs.groups[2], "AcDbSymbolTableRecord") || !rawText(bs.groups[3], "AcDbBlockTableRecord") ||
+            !rawText(bs.groups[4], blockNames[i]) || !rawHandle(bs.groups[5], l.handle) ||
+            (blockCodes.size() == 9 && (!rawNumber(bs.groups[6], 0) || !rawNumber(bs.groups[7], 1) || !rawNumber(bs.groups[8], 0))) ||
+            !rawText(dictionary->groups[5 + i*2], names[i]) || !rawHandle(dictionary->groups[6 + i*2], l.handle)) return false;
+        const auto& begin = body->rawBegin; const auto& end = body->rawEnd;
+        const std::uint32_t beginHandle = i == 0 ? 0x20u : i == 1 ? 0x1Cu : b.handle + 1u;
+        const std::uint32_t endHandle = i == 0 ? 0x21u : i == 1 ? 0x1Du : b.handle + 2u;
+        if (!body->hasEnd || b.handle > DRW::NoHandle - 2u || begin.name != "BLOCK" || end.name != "ENDBLK" ||
+            begin.m_version != ls.m_version || end.m_version != ls.m_version ||
+            begin.hasRawValues == _sourceIsBinary || end.hasRawValues == _sourceIsBinary || begin.handle != beginHandle ||
+            end.handle != endHandle || begin.parentHandle != b.handle || end.parentHandle != b.handle) return false;
+        if (i < 2) {
+            if (!rawCodes(begin, {5,330,100,8,100,2,70,10,20,30,3,1}) ||
+                !rawCodes(end, {5,330,100,8,100}) || !rawHandle(begin.groups[0], beginHandle) ||
+                !rawHandle(begin.groups[1], b.handle) || !rawText(begin.groups[2], "AcDbEntity") ||
+                !rawText(begin.groups[3], "0") || !rawText(begin.groups[4], "AcDbBlockBegin") ||
+                !rawText(begin.groups[5], blockNames[i]) || !rawNumber(begin.groups[6], 0) ||
+                !rawDouble(begin.groups[7], 0) || !rawDouble(begin.groups[8], 0) || !rawDouble(begin.groups[9], 0) ||
+                !rawText(begin.groups[10], blockNames[i]) || !rawText(begin.groups[11], "") ||
+                !rawHandle(end.groups[0], endHandle) || !rawHandle(end.groups[1], b.handle) ||
+                !rawText(end.groups[2], "AcDbEntity") || !rawText(end.groups[3], "0") ||
+                !rawText(end.groups[4], "AcDbBlockEnd")) return false;
+        } else {
+            if (!rawCodes(begin, {5,330,100,8,6,62,370,100,2,70,10,20,3,1}) ||
+                !rawCodes(end, {5,330,100,8,6,62,370,100}) || !rawHandle(begin.groups[0], beginHandle) ||
+                !rawHandle(begin.groups[1], b.handle) || !rawText(begin.groups[2], "AcDbEntity") ||
+                !rawText(begin.groups[3], "0") || !rawText(begin.groups[4], "BYLAYER") ||
+                !rawNumber(begin.groups[5], 256) || !rawNumber(begin.groups[6], -1) ||
+                !rawText(begin.groups[7], "AcDbBlockBegin") || !rawText(begin.groups[8], blockNames[i]) ||
+                !rawNumber(begin.groups[9], 0) || !rawDouble(begin.groups[10], 0) || !rawDouble(begin.groups[11], 0) ||
+                !rawText(begin.groups[12], blockNames[i]) || !rawText(begin.groups[13], "") ||
+                !rawHandle(end.groups[0], endHandle) || !rawHandle(end.groups[1], b.handle) ||
+                !rawText(end.groups[2], "AcDbEntity") || !rawText(end.groups[3], "0") ||
+                !rawText(end.groups[4], "BYLAYER") || !rawNumber(end.groups[5], 256) ||
+                !rawNumber(end.groups[6], -1) || !rawText(end.groups[7], "AcDbBlockEnd")) return false;
+            _preserved.layoutExtraBlockBegin = body->begin;
+            _preserved.layoutExtraBlockEnd = body->end;
+        }
+        layouts.push_back(l); blocks.push_back(b); rawLayouts.push_back(ls);
+    }
+    std::set<std::uint32_t> identities{0xCu, dictionaryHandle};
+    if (identities.size() != 2) return false;
+    for (const auto& layout : layouts) if (!identities.insert(layout.handle).second) return false;
+    for (const auto& block : blocks) if (!identities.insert(block.handle).second) return false;
+    for (const auto& body : _sourceLayoutBodies)
+        if (!identities.insert(body.begin.handle).second || !identities.insert(body.end.handle).second) return false;
+    for (const auto& object : _preserved.objects)
+        if (object.handle != dictionaryHandle && identities.count(object.handle)) return false;
+    for (const auto& entity : _preserved.entities)
+        if (identities.count(entity.handle)) return false;
+    _preserved.layoutDictionary = dictionaryHandle;
+    _preserved.layouts = std::move(layouts);
+    _preserved.layoutBlockRecords = std::move(blocks);
+    _preserved.objects.insert(_preserved.objects.end(), rawLayouts.begin(), rawLayouts.end());
+    _preserved.checkedLayoutGraph = true;
+    _preserved.checkedBinaryLayoutGraph = binaryCompatible;
+    _loss.droppedByType.erase("LAYOUT");
+    return true;
+}
+#endif
+
+void DXFimpl::attachPreservedRecords(bool completeRead) {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (completeRead) acceptSourceLayoutGraph();
+#else
+    (void)completeRead;
+#endif
     // The header travels even when there is nothing else to carry: a drawing's
     // units are worth keeping on their own.
-    const bool hasHeader = !_header.acadVersion.empty() || _header.insUnitsCode != 0
-                           || _header.measurement != 0;
-    if (_preserved.empty() && _preserved.classes.empty() && !hasHeader) {
-        return;
-    }
-
+    const bool hasHeader = !_header.acadVersion.empty() || _header.hasInsUnits || _header.hasMeasurement;
+    // Retain an empty shelf too: it distinguishes an imported headerless DXF
+    // from a new document when deciding whether a default block is synthetic.
     auto preserved = std::make_shared<PreservedRecords>(_preserved);
+#if defined(LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH) && defined(LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR)
+    preserved->mayOmitSyntheticPaperSpace0 = completeRead && !_sourceHasPaperSpace0;
+#endif
     preserved->hasHeader = hasHeader;
     preserved->insUnitsCode = _header.insUnitsCode;
+    preserved->hasInsUnits = _header.hasInsUnits;
     preserved->measurement = _header.measurement;
+    preserved->hasMeasurement = _header.hasMeasurement;
     preserved->lineTypeScale = _header.lineTypeScale;
 
     // The revision comes from the records themselves: libdxfrw stamps each one
@@ -1592,6 +2266,14 @@ void DXFimpl::attachPreservedRecords() {
               << preserved->sections.size() << " section(s) this build does not model";
 }
 
+void DXFimpl::attachDwgProvenance() {
+    auto preserved = std::make_shared<PreservedRecords>();
+    preserved->sourceWasDwg = true;
+    preserved->sourceLayerColors = _preserved.sourceLayerColors;
+    preserved->hasSourceLayouts = _preserved.hasSourceLayouts;
+    _document->addDocumentMetaType(preserved);
+}
+
 /** The records a previous read of this document set aside, if any. */
 static std::shared_ptr<const lc::persistence::PreservedRecords> preservedOn(
     const std::shared_ptr<lc::storage::Document>& document) {
@@ -1619,8 +2301,179 @@ constexpr std::uint32_t kFirstMintedHandle = 0x30;
 
 }  // namespace
 
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+std::vector<dxfRW::DxfLayoutOutputLinks> DXFimpl::defaultLayoutOutputLinks() const {
+    if (_defaultLayouts.size() != 3) return {};
+    return {
+        {"Model", "*Model_Space", dxfW->remapHandle(_defaultLayouts[0].handle), 0x1Fu, 0},
+        {"Layout1", "*Paper_Space", dxfW->remapHandle(_defaultLayouts[1].handle), 0x1Eu, 1},
+        {"Layout2", "*Paper_Space0", dxfW->remapHandle(_defaultLayouts[2].handle),
+         dxfW->getBlockRecordHandleToWrite("*Paper_Space0"), 2}
+    };
+}
+
+bool DXFimpl::prepareDefaultLayoutGraph() {
+    _defaultLayouts.clear();
+    _defaultLayoutDictionary = 0;
+    _defaultLayoutWriteOk = true;
+    _defaultLayoutsFromSource = _replay && _replay->checkedLayoutGraph;
+    if (_exportVersion < DRW::AC1015) return true;
+    // A new document or a checked binary source can write the graph in binary.
+    if (lc::persistence::File::isBinaryType(_exportType)) {
+        if (_shelf && !_defaultLayoutsFromSource) return true;
+        const auto primary = _document->blockByName("*Paper_Space");
+        const bool primaryHasContent = primary && !_document->entitiesByBlock(primary).asVector().empty();
+        if (!_defaultLayoutsFromSource && !primaryHasContent && !hasUnsafeAdditionalPaperSpace()) return true;
+    }
+    if (!_defaultLayoutsFromSource &&
+        (_replay || (_shelf && (_shelf->sourceWasDwg || _shelf->hasSourceLayouts || _shelf->total() != 0 ||
+                                 !_shelf->rootDictEntries.empty())))) return true;
+
+    // Only synthesize defaults when the document has the two kernel-created
+    // paper spaces and no additional paper-space identity to guess about.
+    unsigned paper = 0, paper0 = 0;
+    const std::string prefix = "*PAPER_SPACE";
+    for (const auto& block : _document->blocks()) {
+        const auto& name = block->name();
+        if (isModelSpaceName(name)) {
+            const auto& base = block->base();
+            if (name != "*Model_Space" || block->anonymous() || base.x() != 0 || base.y() != 0 || base.z() != 0 ||
+                std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block) ||
+                !_document->entitiesByBlock(block).asVector().empty()) return !_defaultLayoutsFromSource;
+            continue;
+        }
+        const auto upper = upperName(name);
+        if (upper.compare(0, prefix.size(), prefix) != 0) continue;
+        if (name == "*Paper_Space") {
+            const auto& base = block->base();
+            if (block->anonymous() || base.x() != 0 || base.y() != 0 || base.z() != 0 ||
+                std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block)) return !_defaultLayoutsFromSource;
+            ++paper;
+        }
+        else if (name == "*Paper_Space0") ++paper0;
+        else return !_defaultLayoutsFromSource;
+    }
+    if (paper != 1 || paper0 != 1) return !_defaultLayoutsFromSource;
+
+    if (_defaultLayoutsFromSource) {
+        _defaultLayouts = _replay->layouts;
+        _defaultLayoutDictionary = dxfW->remapHandle(_replay->layoutDictionary);
+        dxfW->setSourceBlockRecords(_replay->layoutBlockRecords);
+    } else {
+        const auto claim = [this](std::uint32_t& handle) {
+            handle = dxfW->highWaterHandle();
+            return handle != 0 && handle != DRW::NoHandle && dxfW->reserveHandle(handle);
+        };
+        if (!claim(_defaultLayoutDictionary)) return false;
+        DRW_Dictionary dictionary;
+        dictionary.handle = _defaultLayoutDictionary;
+        dictionary.parentHandle = 0xCu;
+        dictionary.hardOwner = 1;
+        dictionary.cloning = 1;
+        std::vector<DRW_Block_Record> records;
+        const char* names[] = {"Model", "Layout1", "Layout2"};
+        const char* blocks[] = {"*Model_Space", "*Paper_Space", "*Paper_Space0"};
+        for (int i = 0; i < 3; ++i) {
+            std::uint32_t layoutHandle = 0, sourceBlockHandle = 0;
+            if (!claim(layoutHandle) || !claim(sourceBlockHandle)) return false;
+            DRW_Layout layout;
+            layout.handle = layoutHandle;
+            layout.parentHandle = _defaultLayoutDictionary;
+            layout.name = names[i];
+            layout.tabOrder = i;
+            layout.paperSpaceBlockRecordHandle.ref = sourceBlockHandle;
+            _defaultLayouts.push_back(layout);
+            DRW_Block_Record record;
+            record.handle = sourceBlockHandle;
+            record.name = blocks[i];
+            record.layoutHandle = layoutHandle;
+            records.push_back(record);
+            dictionary.m_entries.push_back({names[i], layoutHandle});
+        }
+        dxfW->setRootDictEntries({{"ACAD_LAYOUT", dxfW->toHexStrHandle(_defaultLayoutDictionary)}});
+        dxfW->setNamedDictObjects({dictionary});
+        dxfW->setSourceBlockRecords(records);
+    }
+    dxfW->setDxfWriteRecordInventoryEnabled(true);
+    return dxfW->setDxfTablesWriteInspector([this](const auto& view) {
+        return dxfW->inspectDxfLayoutBlockRecords(view, defaultLayoutOutputLinks());
+    }) && dxfW->setDxfObjectsWriteInspector([this](const auto& view) {
+        return dxfW->inspectDxfLayoutObjects(view, _defaultLayoutDictionary,
+                                             defaultLayoutOutputLinks());
+    });
+}
+
+bool DXFimpl::finalizeDxfWrite() {
+    if (_defaultLayouts.empty()) return true;
+    if (!_defaultLayoutWriteOk ||
+        !dxfW->dxfWriteRecordHasIdentity(_defaultLayoutDictionary, "DICTIONARY", "OBJECTS") ||
+        !dxfW->dxfWriteRecordHasOwner(_defaultLayoutDictionary, 0xCu)) return false;
+    for (const auto& link : defaultLayoutOutputLinks()) {
+        if (!dxfW->dxfWriteRecordHasIdentity(link.layout, "LAYOUT", "OBJECTS") ||
+            !dxfW->dxfWriteRecordHasOwner(link.layout, _defaultLayoutDictionary) ||
+            !dxfW->dxfWriteRecordHasIdentity(link.blockRecord, "BLOCK_RECORD", "TABLES")) return false;
+    }
+    return true;
+}
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+bool DXFimpl::writeDxfFixedPaperSpaceContents() {
+    if (_defaultLayouts.empty()) return true;
+    for (const auto& block : _document->blocks()) {
+        if (block->name() != "*Paper_Space") continue;
+        for (const auto& entity : _document->entitiesByBlock(block).asVector()) writeEntity(entity);
+        return true;
+    }
+    return false;
+}
+#endif
+#endif
+
+bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
+    const std::string prefix = "*PAPER_SPACE";
+    const auto blocks = _document->blocks();
+    std::set<std::string> extraNames;
+    for (const auto& block : blocks) {
+        const auto name = upperName(block->name());
+        if (name == prefix || name.compare(0, prefix.size(), prefix) != 0) continue;
+        extraNames.insert(name);
+        const auto& base = block->base();
+        if (block->anonymous() || base.x() != 0 || base.y() != 0 || base.z() != 0 ||
+            std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block) ||
+            !_document->entitiesByBlock(block).asVector().empty()) return true;
+    }
+    if (extraNames.empty()) return false;
+    const auto referencesExtra = [&](const auto& entities) {
+        for (const auto& entity : entities) {
+            const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+            if (insert && insert->displayBlock() && extraNames.count(upperName(insert->displayBlock()->name())))
+                return true;
+        }
+        return false;
+    };
+    if (referencesExtra(_document->entityContainer().asVector())) return true;
+    for (const auto& owner : blocks)
+        if (referencesExtra(_document->entitiesByBlock(owner).asVector())) return true;
+    return false;
+}
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+bool DXFimpl::mayOmitUnusedDefaultPaper() const {
+    const bool sourceAllowsOmission = !_shelf ||
+        (!_shelf->sourceWasDwg && _shelf->mayOmitSyntheticPaperSpace0 &&
+         !_shelf->hasSourceLayouts && _shelf->total() == 0 &&
+         _shelf->rootDictEntries.empty() && _shelf->classes.empty());
+    return sourceAllowsOmission && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
+}
+#endif
+
 bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
-    dxfW = new dxfRW(filename.c_str());
+    // Each attempt reports its own losses, including after an early refusal.
+    _loss = LossSummary{};
+    _mtextsAsText = 0;
+    _mpolygonsWrittenAsHatch = 0;
+    _dimensionBlocks.clear();
+    _writeFailureReason.clear();
 
     //Default setting
     // Initialised: the switch below is exhaustive over the DXF and DXB targets,
@@ -1673,6 +2526,15 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         return false;
     }
 
+    // R12/R14 have no layout object to own additional paper-space blocks.
+    // Peers can remove those orphan blocks together with their contents. Refuse
+    // before opening the destination when such a block carries data or a link.
+    if (exportVersion <= DRW::AC1014 && hasUnsafeAdditionalPaperSpace()) {
+        _writeFailureReason = "This DXF revision cannot safely retain additional paper-space contents or references; save as R2000 or newer.";
+        return false;
+    }
+    dxfW = new dxfRW(filename.c_str());
+
     // Was `< LIBDXFRW_DXB_R2013`, so the last binary target wrote ASCII.
     const bool isBinary = lc::persistence::File::isBinaryType(type);
 
@@ -1703,17 +2565,17 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         //  * Same revision: a record valid in R2013 has no defined meaning in
         //    R12, and re-emitting it there would produce a file that claims to
         //    be R12 and is not.
-        //  * ASCII target: these are replayed from the source spellings the
-        //    reader captured, and a binary write of them is refused by the
-        //    library -- which fails the whole file, so it must not be tried.
-        //  * Captured with those spellings: a record read from a binary DXF
-        //    has empty placeholders instead, and cannot be re-emitted verbatim.
+        //  * General ASCII replay requires captured source spellings.
+        //  * Typed cross-encoding is restricted to the checked default layout
+        //    graph and Normal plot-style pair.
         const bool sameRevision = _replay->version == exportVersion;
         const bool verbatimAvailable =
             std::all_of(_replay->objects.begin(), _replay->objects.end(),
                         [](const DRW_RawDxfObject& object) { return object.hasRawValues; });
 
-        if (!sameRevision || isBinary || !verbatimAvailable) {
+        const bool checkedEncodingGraph = _replay->checkedBinaryLayoutGraph;
+        if (!sameRevision || (isBinary && !checkedEncodingGraph) ||
+            (!isBinary && !verbatimAvailable && !checkedEncodingGraph)) {
             const char* reason = !sameRevision ? "the revision differs from the one it was read as"
                                  : isBinary ? "binary DXF cannot carry them"
                                  : "they were read from a binary file and have no verbatim form";
@@ -1758,6 +2620,16 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         // prevent.
         std::map<std::uint32_t, std::uint32_t> remap;
         std::vector<std::uint32_t> needFresh;
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (_replay->checkedLayoutGraph)
+            for (const auto& block : _replay->layoutBlockRecords)
+                if (!dxfW->reserveHandle(block.handle)) { delete dxfW; dxfW = nullptr; return false; }
+        if (_replay->checkedLayoutGraph &&
+            (!dxfW->reserveHandle(_replay->layoutExtraBlockBegin.handle) ||
+             !dxfW->reserveHandle(_replay->layoutExtraBlockEnd.handle))) {
+            delete dxfW; dxfW = nullptr; return false;
+        }
+#endif
         const auto claim = [&](std::uint32_t handle) {
             if (handle == 0) {
                 return;
@@ -1901,6 +2773,28 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         dxfW->setRawDxfSections(_replay->sections);
     }
 
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (!prepareDefaultLayoutGraph()) {
+        _writeFailureReason = "The layout graph could not be safely prepared for this output; preserve the original and review the paper-space contents.";
+        LOG_ERROR << "Cannot safely preserve the layout graph in " << filename;
+        delete dxfW;
+        dxfW = nullptr;
+        return false;
+    }
+    const auto paperBlocks = _document->blocks();
+    const bool primaryPaperHasContent = exportVersion >= DRW::AC1015 &&
+        std::any_of(paperBlocks.begin(), paperBlocks.end(),
+                    [this](const auto& block) {
+                        return upperName(block->name()) == "*PAPER_SPACE" &&
+                            !_document->entitiesByBlock(block).asVector().empty();
+                    });
+    if (_defaultLayouts.empty() && (primaryPaperHasContent || hasUnsafeAdditionalPaperSpace())) {
+        _writeFailureReason = "The layout graph for paper-space contents or references cannot be retained in this output; preserve the original or use a supported ASCII DXF layout.";
+        delete dxfW;
+        dxfW = nullptr;
+        return false;
+    }
+#endif
     bool success = dxfW->write(this, exportVersion, isBinary);
 
     if (!success) {
@@ -1915,6 +2809,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     }
 
     delete dxfW;
+    dxfW = nullptr;
 
     return success;
 }
@@ -1999,6 +2894,7 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr& s) {
     getEntityAttributes(&sp, s);
 
     sp.knotslist = s->knotPoints();
+    sp.weightlist = s->weights();
     sp.normalVec = DRW_Coord(s->nX(), s->nY(), s->nZ());
     sp.tgEnd = DRW_Coord(s->endTanX(), s->endTanY(), s->endTanZ());
     sp.tgStart = DRW_Coord(s->startTanX(), s->startTanY(), s->startTanZ());
@@ -2046,7 +2942,23 @@ void DXFimpl::getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_C
 
     ent->layer = layer_->name();
 
-    if(metaColorByBlock != nullptr) {
+    auto trueColor = entity->metaInfo<lc::meta::MetaColorTrueColor>(lc::meta::MetaColor::LCMETANAME());
+    if (trueColor != nullptr) {
+        lc::iColor col;
+        if (_exportVersion > DRW::AC1015) {
+            const auto color = trueColor->color();
+            ent->color = trueColor->sourceAci();
+            ent->color24 = (static_cast<int>(color.redI()) << 16)
+                         | (static_cast<int>(color.greenI()) << 8)
+                         | static_cast<int>(color.blueI());
+            ent->colorName = trueColor->name();
+        } else {
+            ent->color = col.colorToInt(trueColor->color(), 1);
+            const std::string note = "True colors were approximated using indexed colors for the selected DXF version.";
+            if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+                _loss.notes.push_back(note);
+        }
+    } else if(metaColorByBlock != nullptr) {
         ent->color = BYBLOCK_COLOR;
     }
     else if(metaColorByValue != nullptr) {
@@ -2062,10 +2974,11 @@ void DXFimpl::getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_C
         ent->lineType = LTYPE_BYBLOCK;
     }
 
-    if(metaWidthByValue != nullptr) {
+    if (_exportVersion <= DRW::AC1014 && (metaWidthByValue || metaWidthByBlock)) {
+        _loss.droppedByType["entity lineweight"]++;
+    } else if(metaWidthByValue != nullptr) {
         ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidthByValue->width()));
-    }
-    else if(metaWidthByBlock != nullptr) {
+    } else if(metaWidthByBlock != nullptr) {
         ent->lWeight = DRW_LW_Conv::lineWidth::widthByBlock;
     }
 }
@@ -2076,6 +2989,8 @@ void DXFimpl::writeLTypes() {
     ltype.name = "CONTINUOUS";
     ltype.desc = "Solid line";
     dxfW->writeLineType(&ltype);
+    // The reserved ByLayer and ByBlock rows have empty descriptions.
+    ltype.desc.clear();
     ltype.name = "ByLayer";
     dxfW->writeLineType(&ltype);
     ltype.name = "ByBlock";
@@ -2392,8 +3307,14 @@ void DXFimpl::writeHeader(DRW_Header& data) {
     // with nothing to indicate that LibreCAD did it.
     const auto preserved = preservedOn(_document);
     if (preserved != nullptr && preserved->hasHeader) {
-        data.addInt("$MEASUREMENT", preserved->measurement, 70);
-        data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+        if (preserved->hasMeasurement) {
+            if (_exportVersion > DRW::AC1009) data.addInt("$MEASUREMENT", preserved->measurement, 70);
+            else _loss.droppedByType["$MEASUREMENT"]++;
+        }
+        if (preserved->hasInsUnits) {
+            if (_exportVersion > DRW::AC1014) data.addInt("$INSUNITS", preserved->insUnitsCode, 70);
+            else _loss.droppedByType["$INSUNITS"]++;
+        }
         if (preserved->lineTypeScale > 0.0) {
             data.addDouble("$LTSCALE", preserved->lineTypeScale, 40);
         }
@@ -2409,8 +3330,8 @@ void DXFimpl::writeHeader(DRW_Header& data) {
     // doesn't currently expose a unit-of-measure field for the whole
     // drawing, so hard-code the sensible default rather than the DXF
     // spec-default of 0 (unitless).
-    data.addInt("$MEASUREMENT", 1, 70);       // 0 = English, 1 = Metric
-    data.addInt("$INSUNITS", 4, 70);          // 4 = Millimeter
+    if (_exportVersion > DRW::AC1009) data.addInt("$MEASUREMENT", 1, 70); // 0 = English, 1 = Metric
+    if (_exportVersion > DRW::AC1014) data.addInt("$INSUNITS", 4, 70);    // 4 = Millimeter
 }
 
 // Issue #412 phase 1: populate the DRW_Dimension base header shared by all
@@ -2684,7 +3605,9 @@ std::shared_ptr<DRW_Entity> hatchEdge(const lc::entity::CADEntity_CSPtr& entity)
         auto edge = std::make_shared<DRW_Spline>();
         edge->degree = spline->degree();
         edge->flags = spline->flags();
+        if (!spline->weights().empty()) edge->flags |= lc::geo::Spline::RATIONAL;
         edge->knotslist = spline->knotPoints();
+        edge->weightlist = spline->weights();
         edge->tgStart = DRW_Coord(spline->startTanX(), spline->startTanY(), spline->startTanZ());
         edge->tgEnd = DRW_Coord(spline->endTanX(), spline->endTanY(), spline->endTanZ());
 
@@ -2770,6 +3693,15 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     const auto& region = h->getRegion();
     for (const auto& loop : region.loopList()) {
         const auto& entities = loop.entities();
+        for (const auto& entity : entities) {
+            const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+            if (spline && !spline->weights().empty()
+                && spline->weights().size() != spline->controlPoints().size()) {
+                LOG_ERROR << "Dropping HATCH with an incomplete spline weight vector";
+                _loss.droppedByType["HATCH"]++;
+                return;
+            }
+        }
 
         // DXF says a polyline boundary path is the whole path: group 92 bit 1
         // means "this loop is one polyline", and libdxfrw enforces it --
@@ -2815,6 +3747,130 @@ void DXFimpl::writeHatch(const lc::entity::Hatch_CSPtr& h) {
     }
     hatch.loopsnum = hatch.looplist.size();
 
+    const auto snapshot = h->metaInfo<MPolygonSnapshot>(MPolygonSnapshot::key());
+    double outputOffsetX = 0.0, outputOffsetY = 0.0;
+    double outputElevation = 0.0;
+    bool rewriteBoundary = false;
+    if (snapshot && _exportVersion > DRW::AC1009 && snapshot->canWrite(_exportVersion)
+        && snapshot->replayable(hatch, h, outputOffsetX, outputOffsetY, outputElevation, rewriteBoundary)) {
+        DRW_MPolygon polygon(*snapshot->source);
+        // MPOLYGON stores vertices relative to its offset. A planar translation
+        // changes the offset, leaving the serialized boundary coordinates intact.
+        polygon.xDirX = outputOffsetX;
+        polygon.xDirY = outputOffsetY;
+        polygon.basePoint.z = outputElevation;
+        if (rewriteBoundary) {
+            auto* saved = static_cast<DRW_LWPolyline*>(polygon.looplist[0]->objlist[0].get());
+            const auto* current = static_cast<const DRW_LWPolyline*>(hatch.looplist[0]->objlist[0].get());
+            for (std::size_t i = 0; i < saved->vertlist.size(); ++i) {
+                saved->vertlist[i]->x = current->vertlist[i]->x - outputOffsetX;
+                saved->vertlist[i]->y = current->vertlist[i]->y - outputOffsetY;
+            }
+        }
+        // A new document assigns new entity and owner handles; the qualified
+        // profile has no other retained reference edges to remap.
+        polygon.handle = DRW::NoHandle;
+        polygon.parentHandle = DRW::NoHandle;
+        if (!dxfW->writeMPolygon(&polygon)) {
+            LOG_ERROR << "libdxfrw refused MPOLYGON " << hatch.name;
+            _loss.droppedByType["MPOLYGON"]++;
+        }
+        return;
+    }
+    if (snapshot && _mpolygonsWrittenAsHatch++ == 0) {
+        _loss.notes.push_back(
+            "Some MPOLYGON entities were written as HATCH; boundary geometry "
+            "or polygon-specific information may not be retained.");
+    }
+    if (snapshot && hatch.solid) {
+        const auto fill = h->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
+        if (fill) {
+            const int sourceAci = fill->sourceAci();
+            const int fillAci = sourceAci > 0 && sourceAci < 256
+                ? sourceAci : icol.colorToInt(fill->color());
+            if (hatch.color != fillAci || hatch.color24 >= 0 || !hatch.colorName.empty()) {
+                const std::string note = "A projected HATCH uses the MPOLYGON fill color; its separate boundary color cannot be retained.";
+                if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
+                    _loss.notes.push_back(note);
+            }
+            hatch.color = fillAci;
+            hatch.color24 = -1;
+            hatch.colorName.clear();
+        }
+    }
+    // Supported paths can share one default-normal HATCH elevation. Do not
+    // infer it from unsupported or mixed loops.
+    bool planar = !region.loopList().empty();
+    bool haveElevation = false;
+    bool mixedOrNonfiniteElevation = false;
+    double elevation = 0.0;
+    const auto addElevation = [&](double z) {
+        if (!std::isfinite(z) || (haveElevation && z != elevation)) {
+            mixedOrNonfiniteElevation = true;
+            return false;
+        }
+        elevation = z;
+        haveElevation = true;
+        return true;
+    };
+    for (const auto& loop : region.loopList()) {
+        const auto& entities = loop.entities();
+        if (entities.empty()) { planar = false; break; }
+        for (const auto& entity : entities) {
+            const auto polyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+            if (polyline) {
+                if (entities.size() != 1 || !polyline->closed() || polyline->vertex().empty()
+                    || polyline->elevation() != 0.0 || polyline->tickness() != 0.0
+                    || polyline->extrusionDirection().x() != 0.0
+                    || polyline->extrusionDirection().y() != 0.0
+                    || polyline->extrusionDirection().z() != 1.0) {
+                    planar = false; break;
+                }
+                for (const auto& vertex : polyline->vertex())
+                    if (!addElevation(vertex.location().z())) { planar = false; break; }
+            } else if (const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity)) {
+                if (!addElevation(line->start().z()) || !addElevation(line->end().z()))
+                    planar = false;
+            } else if (const auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity)) {
+                if (!addElevation(arc->center().z())) planar = false;
+            } else if (const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity)) {
+                if (ellipse->majorP().z() != 0.0 || !addElevation(ellipse->center().z()))
+                    planar = false;
+            } else if (const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) {
+                if (spline->controlPoints().empty()
+                    || spline->startTanZ() != 0.0 || spline->endTanZ() != 0.0) {
+                    planar = false; break;
+                }
+                for (const auto& point : spline->controlPoints())
+                    if (!addElevation(point.z())) { planar = false; break; }
+                if (planar) for (const auto& point : spline->fitPoints())
+                    if (!addElevation(point.z())) { planar = false; break; }
+            } else {
+                planar = false;
+            }
+            if (!planar) break;
+        }
+        if (!planar) break;
+    }
+    if (planar && haveElevation) {
+        hatch.basePoint.z = elevation;
+        // Spline edge points are 2D in DXF. The common elevation above is
+        // their Z component, so do not submit a second geometric Z to the
+        // codec's strict HATCH boundary validator.
+        for (const auto& loop : hatch.looplist) {
+            for (const auto& entity : loop->objlist) {
+                const auto spline = std::dynamic_pointer_cast<DRW_Spline>(entity);
+                if (!spline) continue;
+                for (const auto& point : spline->controllist) if (point) point->z = 0.0;
+                for (const auto& point : spline->fitlist) if (point) point->z = 0.0;
+            }
+        }
+    }
+    if (mixedOrNonfiniteElevation && !snapshot) {
+        _loss.notes.push_back(
+            "HATCH boundary elevation varies or is nonfinite; the output "
+            "cannot preserve its three-dimensional boundary.");
+    }
     if (!dxfW->writeHatch(&hatch)) {
         LOG_ERROR << "libdxfrw refused HATCH " << hatch.name;
         _loss.droppedByType["HATCH"]++;
@@ -3298,6 +4354,9 @@ bool DXFimpl::isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block) {
 }
 
 void DXFimpl::writeBlockRecords() {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    const bool omitUnusedDefaultPaper = mayOmitUnusedDefaultPaper();
+#endif
     for(const auto& block : _document->blocks()) {
         // Anonymous dimension blocks are geometry a writer draws a dimension
         // with, not anything a user made. This writer mints its own below, so
@@ -3308,6 +4367,10 @@ void DXFimpl::writeBlockRecords() {
         if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if ((omitUnusedDefaultPaper && block->name() == "*Paper_Space0") ||
+            (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name())))) continue;
+#endif
         dxfW->writeBlockRecord(block->name());
     }
 
@@ -3824,12 +4887,19 @@ void DXFimpl::writeBlocks() {
         }
     }
 
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    const bool omitUnusedDefaultPaper = mayOmitUnusedDefaultPaper();
+#endif
     for(const auto& block : _document->blocks()) {
         // Left out for the same reason as in writeBlockRecords(): the record
         // pass skipped these, so a block written here would have no record.
         if(isRegeneratedDimensionBlock(block)) {
             continue;
         }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if ((omitUnusedDefaultPaper && block->name() == "*Paper_Space0") ||
+            (!_defaultLayouts.empty() && (block->name() == "*Paper_Space" || isModelSpaceName(block->name())))) continue;
+#endif
         writeBlock(block);
     }
 }
@@ -3838,6 +4908,10 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     DRW_Block drwBlock;
 
     drwBlock.name = block->name();
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    const bool sourceLayoutBlock = _defaultLayoutsFromSource && block->name() == "*Paper_Space0";
+    if (sourceLayoutBlock) drwBlock.handle = _replay->layoutExtraBlockBegin.handle;
+#endif
     // Code 70 bit 1. A kept anonymous block that goes out unmarked is
     // indistinguishable from user content on the next read, so it would be
     // kept forever -- and one that really is user content must not acquire the
@@ -3873,6 +4947,9 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     for(const auto& entity : _document->entitiesByBlock(block).asVector()) {
         writeEntity(entity);
     }
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    if (sourceLayoutBlock && !dxfW->writeBlockEnd(&_replay->layoutExtraBlockEnd)) _defaultLayoutWriteOk = false;
+#endif
 }
 
 

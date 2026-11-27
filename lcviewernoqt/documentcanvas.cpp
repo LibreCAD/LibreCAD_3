@@ -39,6 +39,7 @@
 #include <cad/const.h>
 #include <cad/math/floatingpoint.h>
 #include <cmath>
+#include <set>
 
 #include <typeinfo>
 
@@ -49,6 +50,48 @@ using lc::maths::FloatingOrder;
 using lc::maths::FloatingSign;
 using lc::maths::compareWithinUlps;
 using lc::maths::signWithinUlpsOfZero;
+
+namespace {
+lc::meta::Layer_CSPtr effectiveLayer(const lc::entity::CADEntity_CSPtr& entity,
+                                     const lc::entity::Insert_CSPtr& insert,
+                                     const lc::meta::Layer_CSPtr& inheritedLayer) {
+    if (insert && entity && entity->layer() && entity->layer()->name() == "0")
+        return inheritedLayer ? inheritedLayer : insert->layer();
+    return entity ? entity->layer() : nullptr;
+}
+bool layerIsHidden(const lc::entity::CADEntity_CSPtr& entity) {
+    return entity && entity->layer() && entity->layer()->isHidden();
+}
+bool layerIsUnselectable(const lc::entity::CADEntity_CSPtr& entity) {
+    return layerIsHidden(entity) || (entity && entity->layer() && entity->layer()->isLocked());
+}
+void includeVisibleBounds(const lc::entity::CADEntity_CSPtr& entity,
+                          const lc::entity::Insert_CSPtr& parent,
+                          const lc::meta::Layer_CSPtr& inheritedLayer,
+                          const lc::geo::Coordinate& offset,
+                          std::set<const lc::meta::Block*>& activeBlocks,
+                          lc::geo::Area& bounds, bool& haveBounds) {
+    if (!entity) return;
+    const auto layer = effectiveLayer(entity, parent, inheritedLayer);
+    if (layer && layer->isHidden()) return;
+    const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+    if (insert) {
+        const auto& block = insert->displayBlock();
+        if (!block || !activeBlocks.insert(block.get()).second) return;
+        const auto childOffset = offset + insert->position() - block->base();
+        insert->document()->entitiesByBlock(block).each<const lc::entity::CADEntity>(
+            [&](lc::entity::CADEntity_CSPtr child) {
+                includeVisibleBounds(child, insert, layer, childOffset, activeBlocks, bounds, haveBounds);
+            });
+        activeBlocks.erase(block.get());
+        return;
+    }
+    const auto entityBounds = entity->boundingBox();
+    const lc::geo::Area translated(entityBounds.minP() + offset, entityBounds.maxP() + offset);
+    bounds = haveBounds ? bounds.merge(translated) : translated;
+    haveBounds = true;
+}
+}
 
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
     _document(document),
@@ -237,7 +280,14 @@ void DocumentCanvas::autoScale(LcPainter& painter) {
         return;
     }
 
-    auto extends = entityContainer().boundingBox();
+    lc::geo::Area extends;
+    bool haveVisibleEntity = false;
+    std::set<const lc::meta::Block*> activeBlocks;
+    entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr entity) {
+        includeVisibleBounds(entity, nullptr, nullptr, lc::geo::Coordinate(0, 0),
+                             activeBlocks, extends, haveVisibleEntity);
+    });
+    if (!haveVisibleEntity) return;
     double width = extends.width();
     double height = extends.height();
     if (!std::isfinite(width) || !std::isfinite(height) ||
@@ -338,6 +388,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             }
         });
         for(const auto& di: visibleDrawables) {
+            if (layerIsHidden(di->entity())) continue;
             if(painter.isCachingEnabled() && di->cacheable())
             {
                 if(painter.isEntityCached( (di->entity())->id() ) == true)
@@ -435,7 +486,12 @@ lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, c
     if (selected) {
         return lcDrawOptions.selectedColor();
     }
-    else if (colorByValue != nullptr) {
+    const auto hatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity);
+    if (hatch && hatch->isSolid()) {
+        const auto fill = entity->metaInfo<lc::meta::MetaFillColor>(lc::meta::MetaFillColor::LCMETANAME());
+        if (fill) return fill->color();
+    }
+    if (colorByValue != nullptr) {
         return colorByValue->color();
     }
     else if(insert != nullptr &&
@@ -456,6 +512,15 @@ lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, c
 
 void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
                                 const lc::entity::Insert_CSPtr& insert) {
+    drawEntity(painter, drawable, insert, nullptr);
+}
+
+void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
+                                const lc::entity::Insert_CSPtr& insert,
+                                const lc::meta::Layer_CSPtr& inheritedLayer) {
+    if (!drawable) return;
+    const auto layer = effectiveLayer(drawable->entity(), insert, inheritedLayer);
+    if (layer && layer->isHidden()) return;
     LcDrawOptions lcDrawOptions;
 
     double x = 0.;
@@ -468,7 +533,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
 
     auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
     if(asInsert != nullptr) {
-        asInsert->draw(shared_from_this(), painter);
+        asInsert->draw(shared_from_this(), painter, layer);
         return;
     }
 
@@ -510,6 +575,9 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
 
 void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
                                       const lc::entity::Insert_CSPtr& insert) {
+    if (!drawable) return;
+    const auto layer = effectiveLayer(drawable->entity(), insert, nullptr);
+    if (layer && layer->isHidden()) return;
     LcDrawOptions lcDrawOptions;
 
     double wc = _deviceWidth;
@@ -523,7 +591,7 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
     auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
     if(asInsert != nullptr)
     {
-        asInsert->draw(shared_from_this(), painter);
+        asInsert->draw(shared_from_this(), painter, layer);
         return;
     }
     // getting CADEntity_CSPtr
@@ -603,6 +671,7 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
 
 void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
     entityContainer().optimise();
+    if (!_selectedDrawables.empty()) updateSelection();
 }
 
 // This assumes that the entity has already been added to _document->entityContainer()
@@ -660,6 +729,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
         entitiesInSelection = entityContainer().entitiesWithinAndCrossingArea(*_selectedArea);
     }
     entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        if (layerIsUnselectable(entity)) return;
         auto di = _entityDrawItem[entity->id()];
         // add if it does not previously exist
         auto iter = std::find(_newSelection.begin(), _newSelection.end(), di);
@@ -726,6 +796,7 @@ void DocumentCanvas::selectAll() {
     _newSelection.clear();
 
     entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        if (layerIsUnselectable(entity)) return;
         _entityDrawItem[entity->id()]->selected(true);
         _selectedDrawables.push_back(_entityDrawItem[entity->id()]);
     });
@@ -746,6 +817,7 @@ void DocumentCanvas::inverseSelection() {
     _newSelection.clear();
 
     entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        if (layerIsUnselectable(entity)) return;
         lc::viewer::LCVDrawItem_SPtr item = _entityDrawItem[entity->id()];
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), item);
         if (iter != _selectedDrawables.end())
@@ -912,6 +984,10 @@ void DocumentCanvas::updateSelection() {
     for(const auto& di: _selectedDrawables) {
         auto oldEntity=di->entity();
         auto newEntity=_document->entityByID(oldEntity->id());
+        if (!newEntity || layerIsUnselectable(newEntity)) {
+            di->selected(false);
+            continue;
+        }
         if(oldEntity!=newEntity) {
             auto newdi = _entityDrawItem[oldEntity->id()];
             if(newdi) {
@@ -959,12 +1035,14 @@ void DocumentCanvas::selectPoint(double x, double y) {
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
     auto entities = entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
     entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
+        if (layerIsUnselectable(entity)) return;
         //Check if it is on entity
         auto snapable = std::dynamic_pointer_cast<const lc::entity::Snapable>(entity);
 
         if(snapable) {
             auto nearestPoint = snapable->nearestPointOnEntity(point);
-            auto distance = nearestPoint.distanceTo(point);
+            // The canvas displays XY; elevation must not affect a screen pick.
+            auto distance = std::hypot(nearestPoint.x() - point.x(), nearestPoint.y() - point.y());
             //std::cout << nearestPoint << std::endl;
             //std::cout << point << std::endl;
             if (distance>mwh)
@@ -988,6 +1066,7 @@ void DocumentCanvas::selectPoint(double x, double y) {
 }
 
 void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
+    if (layerIsUnselectable(entityPtr)) return;
     lc::viewer::LCVDrawItem_SPtr entityDrawable = getDrawable(entityPtr);
     // Script pickers can contain a valid entity absent from this document.
     // Such an entry has no drawable to select (including after removal).

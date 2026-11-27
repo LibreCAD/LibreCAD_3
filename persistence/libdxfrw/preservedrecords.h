@@ -9,11 +9,13 @@
 
 #include <drw_base.h>
 #include <drw_classes.h>
+#include <drw_entities.h>
 #include <drw_objects.h>
 
 #include <cad/interface/metatype.h>
 
 namespace lc {
+namespace meta { class Layer; }
 namespace persistence {
 
 /**
@@ -41,7 +43,7 @@ class PreservedRecords : public lc::meta::DocumentMetaType {
 public:
     /** The key the document files this under. Leading underscore: not a name a
      *  user's layer, block or line type can collide with. */
-    static const char* const kId;
+    static constexpr const char* kId = "_LC_PRESERVED_DXF_RECORDS";
 
     const std::string id() const override {
         return kId;
@@ -53,12 +55,29 @@ public:
 
     bool empty() const {
         return objects.empty() && entities.empty() && sections.empty()
-               && mtextExtendedData.empty();
+               && mtextExtendedData.empty() && sourceLayerWeights.empty() && sourceLayerColors.empty() && !hasSourceLayouts;
     }
 
     std::size_t total() const {
         return objects.size() + entities.size() + sections.size();
     }
+
+    // Preserve whether an imported layer's width was an implicit DXF default.
+    // The kernel turns that into a numeric width; a legacy export must not
+    // report that unchanged synthesized value as lost user data.
+    struct SourceLayerWeight {
+        double kernelWidth;
+        bool implicitDefault;
+    };
+    std::map<std::string, SourceLayerWeight> sourceLayerWeights;
+
+    struct SourceLayerColor {
+        std::weak_ptr<const lc::meta::Layer> layer;
+        int aci{7};
+        int rgb{-1};
+        std::string name;
+    };
+    std::map<std::string, SourceLayerColor> sourceLayerColors;
 
     /** OBJECTS-section records libdxfrw does not model. */
     std::vector<DRW_RawDxfObject> objects;
@@ -71,6 +90,19 @@ public:
 
     /** CLASSES entries, needed for the records above to be readable again. */
     std::vector<DRW_Class> classes;
+
+    /** Whether the source contained layouts, including unsupported profiles. */
+    bool sourceWasDwg{false};
+    // True only after a complete DXF read that checked both BLOCK_RECORD and BLOCK names.
+    bool mayOmitSyntheticPaperSpace0{false};
+    bool hasSourceLayouts{false};
+    bool checkedLayoutGraph{false};
+    bool checkedBinaryLayoutGraph{false};
+    std::uint32_t layoutDictionary{0};
+    std::vector<DRW_Layout> layouts;
+    std::vector<DRW_Block_Record> layoutBlockRecords;
+    DRW_Block layoutExtraBlockBegin;
+    DRW_Block layoutExtraBlockEnd;
 
     /**
      * The source root NamedObjectsDictionary's entries, name and item handle.
@@ -95,7 +127,9 @@ public:
      */
     bool hasHeader{false};
     int insUnitsCode{0};
+    bool hasInsUnits{false};
     int measurement{0};
+    bool hasMeasurement{false};
     double lineTypeScale{1.0};
 
     /**

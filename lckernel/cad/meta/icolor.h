@@ -34,10 +34,11 @@ public:
     * Convert a color to a DXF integer
     * Use this function if you want to know if a color does exists in DXF and what it's int value is
     */
-    int colorToInt(const lc::Color& col) const {
-        int closestColor = 0;
+    int colorToInt(const lc::Color& col, int firstIndex = 0) const {
+        firstIndex = std::max(0, std::min(firstIndex, 255));
+        int closestColor = firstIndex;
         double diff = std::numeric_limits<double>::infinity();
-        for (int i = 0; i < 256; i++) {
+        for (int i = firstIndex; i < 256; i++) {
             auto tableColor = _intToCol[i]->color();
             if (_intToCol[i]->color() == col) {
                 return i;

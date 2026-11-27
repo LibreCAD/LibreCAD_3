@@ -2,11 +2,33 @@
 // Created by modest on 06.01.18.
 //
 
+#include <cmath>
 #include <gtest/gtest.h>
 #include <cad/geometry/geoellipse.h>
 
 using namespace lc;
 using namespace geo;
+
+TEST(lc__geo__EllipseTest, rotationPreservesAxisAndElevation) {
+    const Ellipse ellipse(Coordinate(5.0, 7.0, 3.0), Coordinate(4.0, 0.0, 0.0),
+                          2.0, 0.2, 1.7, true);
+    const auto rotated = ellipse.georotate(Coordinate(1.0, 2.0, 100.0), std::acos(-1.0) / 2.0);
+    EXPECT_NEAR(rotated.center().x(), -4.0, 1e-12);
+    EXPECT_NEAR(rotated.center().y(), 6.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated.center().z(), 3.0);
+    EXPECT_NEAR(rotated.majorP().x(), 0.0, 1e-12);
+    EXPECT_NEAR(rotated.majorP().y(), 4.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated.majorP().z(), 0.0);
+    EXPECT_DOUBLE_EQ(rotated.minorRadius(), 2.0);
+    EXPECT_DOUBLE_EQ(rotated.startAngle(), 0.2);
+    EXPECT_DOUBLE_EQ(rotated.endAngle(), 1.7);
+    EXPECT_TRUE(rotated.isReversed());
+    const Ellipse tilted(Coordinate(5.0, 7.0, 3.0), Coordinate(4.0, 0.0, 2.0),
+                         2.0, 0.2, 1.7);
+    const auto rotatedTilted = tilted.georotate(Coordinate(1.0, 2.0, 100.0), std::acos(-1.0) / 2.0);
+    EXPECT_DOUBLE_EQ(rotatedTilted.center().z(), 3.0);
+    EXPECT_DOUBLE_EQ(rotatedTilted.majorP().z(), 2.0);
+}
 
 TEST(lc__geo__EllipseTest, getPoint) {
     Ellipse el(Coordinate(0.,0.), Coordinate(20.,0.),10, 0, 0);

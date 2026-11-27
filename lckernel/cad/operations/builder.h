@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cad/storage/document.h>
+#include <unordered_map>
 #include <vector>
 #include "documentoperation.h"
 #include "undoable.h"
@@ -23,12 +24,25 @@ public:
 
     void undo() const override;
     void redo() const override;
+    bool blockedByLockedLayer() const { return _blockedByLockedLayer; }
 
 protected:
     virtual void processInternal() override;
 
 private:
+    bool containsBuilder(const Builder* target, std::vector<const Builder*>& visited) const;
+    using LayerTransitions = std::vector<std::pair<meta::Layer_CSPtr, meta::Layer_CSPtr>>;
+    struct StagedEntity {
+        entity::CADEntity_CSPtr entity;
+        meta::Layer_CSPtr layer;
+        bool sameObject = false;
+    };
+    using StagedEntities = std::unordered_map<ID_DATATYPE, StagedEntity>;
+    bool preflightLocked(std::vector<const Builder*>& active, LayerTransitions& transitions,
+                         StagedEntities& stagedEntities);
     std::vector<DocumentOperation_SPtr> _operations;
+    std::vector<DocumentOperation_SPtr> _committedOperations;
+    bool _blockedByLockedLayer = false;
 };
 
 DECLARE_SHORT_SHARED_PTR(Builder)

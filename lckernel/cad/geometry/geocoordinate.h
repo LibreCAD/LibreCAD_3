@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cad/const.h"
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
@@ -217,7 +218,7 @@ public:
     inline Coordinate rotate(const Coordinate& angleVector) const {
         double x0 = _x * angleVector.x() - _y * angleVector.y();
         double y0 = _x * angleVector.y() + _y * angleVector.x();
-        return Coordinate(x0, y0);
+        return Coordinate(x0, y0, _z);
     }
 
     /**
@@ -238,7 +239,8 @@ public:
      * @return
      */
     inline Coordinate rotate(const geo::Coordinate& point, const Coordinate& angleVector) const {
-        return point + (*this - point).rotate(angleVector);
+        const auto rotated = (*this - point).rotate(angleVector);
+        return Coordinate(point.x() + rotated.x(), point.y() + rotated.y(), _z);
     }
 
     /**
@@ -341,9 +343,14 @@ public:
      */
     inline Coordinate mirror(const Coordinate& axis1, const Coordinate& axis2) const {
         Coordinate dir(axis2 - axis1);
-        auto a= dir.squared();
-        auto ret= axis1 + dir* dot(*this- axis1, dir)/a; //projection point
-        return ret + ret - *this;
+        // Scaling the direction before squaring avoids overflow or underflow
+        // for a long or short representation of the same axis.
+        const double scale = std::max({std::abs(dir.x()), std::abs(dir.y()), std::abs(dir.z())});
+        if (scale > 0.0 && std::isfinite(scale))
+            dir = dir / scale;
+        const auto a = dir.squared();
+        const auto ret = axis1 + dir * dot(*this - axis1, dir) / a;
+        return ret + (ret - *this);
     }
 
 private:

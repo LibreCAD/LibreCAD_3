@@ -52,6 +52,7 @@ private:
 * Remove layer from document
 */
 class ReplaceLayer : public DocumentOperation {
+    friend class Builder;
 public:
     ReplaceLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr oldLayer, meta::Layer_CSPtr newLayer) ;
 

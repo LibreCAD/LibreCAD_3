@@ -20,6 +20,8 @@ public:
         NAME,
         EDIT,
         LOCKED,
+        VISIBILITY,
+        FROZEN,
         LAST
     };
 

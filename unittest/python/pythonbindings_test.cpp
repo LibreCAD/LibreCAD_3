@@ -28,6 +28,8 @@
 #include <cad/geometry/geocoordinate.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
+#include <cad/meta/layer.h>
+#include <cad/primitive/line.h>
 #include <memory>
 
 #include <memory>
@@ -1214,3 +1216,84 @@ TEST_F(PythonFixture, CustomEntityDispatchHooksCoexistInEitherInstallOrder) {
 }
 
 } // namespace
+
+TEST_F(PythonFixture, LockedLayerOperationReportsRefusalAndAllowsExplicitOverride) {
+    auto doc = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto layer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1), lc::Color(), nullptr, false, false, true);
+    doc->addDocumentMetaType(layer);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), layer, nullptr);
+    doc->insertEntity(line);
+    lcpy.setDocument(ns, doc);
+    const auto err = lcpy.runString(R"py(
+line = document.entityContainer().asVector(32767)[0]
+moved = line.move(lc.geo.Coordinate(2, 0))
+blocked = lc.operation.EntityBuilder.new(document)
+blocked.appendEntity(moved)
+blocked.execute()
+assert blocked.blockedByLockedLayer()
+force = lc.operation.EntityBuilder.new(document)
+force.setAllowLockedLayerEdits(True)
+force.appendEntity(moved)
+force.execute()
+assert not force.blockedByLockedLayer()
+later = moved.move(lc.geo.Coordinate(3, 0))
+child = lc.operation.EntityBuilder.new(document)
+child.appendEntity(later)
+group = lc.operation.Builder(document, "locked compound")
+group.append(child)
+group.execute()
+assert group.blockedByLockedLayer()
+stacked = lc.operation.EntityBuilder.new(document)
+stacked.appendEntity(moved)
+stacked.appendOperation(lc.operation.Push.new())
+stacked.appendOperation(lc.operation.Move.new(lc.geo.Coordinate(3, 0)))
+stacked_group = lc.operation.Builder(document, "locked stacked compound")
+stacked_group.append(stacked)
+stacked_group.execute()
+assert stacked_group.blockedByLockedLayer()
+nested_child = lc.operation.EntityBuilder.new(document)
+nested_child.appendEntity(later)
+inner = lc.operation.Builder(document, "inner locked compound")
+outer = lc.operation.Builder(document, "outer locked compound")
+inner.append(nested_child)
+outer.append(inner)
+outer.execute()
+assert outer.blockedByLockedLayer() and inner.blockedByLockedLayer()
+try:
+    inner.append(outer)
+    raise AssertionError("cyclic operation group was accepted")
+except ValueError:
+    pass
+try:
+    lc.operation.Builder(None, "invalid")
+    raise AssertionError("null document was accepted")
+except ValueError:
+    pass
+assert not document.tryInsertEntity(later)
+assert not document.tryRemoveEntity(moved)
+assert document.insertEntity(later) is None
+assert document.removeEntity(moved) is None
+assert document.entityContainer().asVector(32767)[0].start().x() == 2.0
+document.forceInsertEntity(later)
+assert document.entityContainer().asVector(32767)[0].start().x() == 5.0
+document.forceRemoveEntity(later)
+assert len(document.entityContainer().asVector(32767)) == 0
+assert document.tryInsertEntity(moved)  # adding a new object on the locked layer
+document.forceInsertEntity(None)
+document.forceRemoveEntity(None)
+try:
+    lc.storage.DocumentImpl(None)
+    raise AssertionError("null storage manager was accepted")
+except ValueError:
+    pass
+other = lc.storage.DocumentImpl(lc.storage.StorageManagerImpl())
+assert other.tryInsertEntity(moved)
+assert not other.tryRemoveEntity(moved)
+other.forceRemoveEntity(moved)
+assert len(other.entityContainer().asVector(32767)) == 0
+)py", ns);
+    ASSERT_EQ(err, "") << err;
+    const auto moved = std::dynamic_pointer_cast<const lc::entity::Line>(doc->entityByID(line->id()));
+    ASSERT_TRUE(moved);
+    EXPECT_DOUBLE_EQ(moved->start().x(), 2.0);
+}
