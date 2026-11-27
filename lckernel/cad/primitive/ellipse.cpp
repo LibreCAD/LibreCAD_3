@@ -152,8 +152,8 @@ const geo::Area Ellipse::boundingBox() const {
         checkPoint(point);
     }
 
-    return geo::Area(geo::Coordinate(minX, minY),
-                     geo::Coordinate(maxX, maxY));
+    return geo::Area(geo::Coordinate(minX, minY, center().z()),
+                     geo::Coordinate(maxX, maxY, center().z()));
 }
 
 CADEntity_CSPtr Ellipse::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -184,19 +184,19 @@ std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
     bool simple = false; // (major axis = ox axis) or (major axis =  oy axis)
 
     if (sin(angle) == 0) {
-        c1 = geo::Coordinate(this->center().x() + a, this->center().y());
-        c2 = geo::Coordinate(this->center().x(), this->center().y() + b);
-        c3 = geo::Coordinate(this->center().x() - a, this->center().y());
-        c4 = geo::Coordinate(this->center().x(), this->center().y() - b);
+        c1 = center() + geo::Coordinate(a, 0.);
+        c2 = center() + geo::Coordinate(0., b);
+        c3 = center() + geo::Coordinate(-a, 0.);
+        c4 = center() + geo::Coordinate(0., -b);
 
         simple = true;
     }
 
     if (cos(angle) == 0) {
-        c1 = geo::Coordinate(this->center().x() + b, this->center().y());
-        c2 = geo::Coordinate(this->center().x(), this->center().y() + a);
-        c3 = geo::Coordinate(this->center().x() - b, this->center().y());
-        c4 = geo::Coordinate(this->center().x(), this->center().y() - a);
+        c1 = center() + geo::Coordinate(b, 0.);
+        c2 = center() + geo::Coordinate(0., a);
+        c3 = center() + geo::Coordinate(-b, 0.);
+        c4 = center() + geo::Coordinate(0., -a);
 
         simple = true;
     }

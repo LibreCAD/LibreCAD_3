@@ -10,6 +10,7 @@
 #include <cad/primitive/point.h>
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
+#include <cad/primitive/ellipse.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/insert.h>
 #include <cad/builders/insert.h>
@@ -478,4 +479,27 @@ TEST(CanvasScaleTest, ElevatedCircleAndArcCanBeSelectedAndSnappedInPlanarView) {
         EXPECT_DOUBLE_EQ(receiver.point.z(), 70);
         snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
     }
+}
+
+TEST(CanvasScaleTest, ElevatedEllipseCanBeSelectedAndSnappedInPlanarView) {
+    struct Receiver {
+        lc::geo::Coordinate point;
+        void onSnap(const lc::viewer::event::SnapPointEvent& event) { point = event.snapPoint(); }
+    } receiver;
+    auto doc = makeDocument();
+    auto ellipse = std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(2, 3, 70),
+            lc::geo::Coordinate(5, 0), 2., 0., 2. * M_PI, false, doc->layerByName("0"));
+    auto insert = std::make_shared<lc::operation::EntityBuilder>(doc);
+    insert->appendEntity(ellipse); insert->execute();
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
+    canvas->selectPoint(7, 3);
+    ASSERT_EQ(canvas->selectedDrawables().size(), 1u);
+    lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10);
+    snap.setEntitySnappable(true);
+    snap.snapPointEvents().connect<Receiver, &Receiver::onSnap>(&receiver);
+    snap.setDeviceLocation(7, 3);
+    EXPECT_NEAR(receiver.point.x(), 7, 1e-12);
+    EXPECT_NEAR(receiver.point.y(), 3, 1e-12);
+    EXPECT_DOUBLE_EQ(receiver.point.z(), 70);
+    snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
 }

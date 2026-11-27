@@ -1141,3 +1141,27 @@ TEST(BuilderTest, AreaMergePreservesElevationRange) {
     EXPECT_DOUBLE_EQ(withArea.minP().z(), -4);
     EXPECT_DOUBLE_EQ(withArea.maxP().z(), 12);
 }
+
+TEST(BuilderTest, ElevatedEllipseBoundsKeepTheirPlane) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    for (double z : {-70., 0., 70.}) {
+        for (double angle : {0., M_PI / 4.}) {
+            auto major = lc::geo::Coordinate(5, 0).rotate(angle);
+            for (bool partial : {false, true}) {
+                auto ellipse = std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(2, 3, z),
+                        major, 2., partial ? 0.2 : 0., partial ? 1.7 : 2. * M_PI, false, layer);
+                const auto bounds = ellipse->boundingBox();
+                EXPECT_DOUBLE_EQ(bounds.minP().z(), z);
+                EXPECT_DOUBLE_EQ(bounds.maxP().z(), z);
+                for (const auto &point : ellipse->findBoxPoints()) {
+                    EXPECT_DOUBLE_EQ(point.z(), z);
+                    EXPECT_GE(point.x(), bounds.minP().x() - 1e-12);
+                    EXPECT_LE(point.x(), bounds.maxP().x() + 1e-12);
+                    EXPECT_GE(point.y(), bounds.minP().y() - 1e-12);
+                    EXPECT_LE(point.y(), bounds.maxP().y() + 1e-12);
+                }
+            }
+        }
+    }
+}
