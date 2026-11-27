@@ -3176,6 +3176,40 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
     boost::filesystem::remove(saved);
 }
 
+TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
+    const std::string source = uniqueTmpDxf("image-reactor-reference");
+    const std::string saved = uniqueTmpDxf("image-reactor-reference-out");
+    {
+        std::ofstream file(source, std::ios::binary);
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                "0\nSECTION\n2\nENTITIES\n0\nIMAGE\n5\n70\n8\n0\n100\nAcDbRasterImage\n90\n0\n"
+                "10\n1\n20\n2\n30\n3\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
+                "13\n2\n23\n3\n340\n81\n360\n82\n70\n3\n280\n1\n281\n50\n282\n50\n283\n0\n"
+                "71\n1\n91\n2\n14\n-0.5\n24\n-0.5\n14\n1.5\n24\n2.5\n0\nENDSEC\n"
+                "0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
+                "3\nACAD_IMAGE_DICT\n350\n80\n3\nLC_REACTOR\n350\n90\n"
+                "0\nDICTIONARY\n5\n80\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nscratch\n350\n81\n"
+                "0\nDICTIONARY\n5\n90\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n"
+                "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
+                "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
+                "0\nIMAGEDEF_REACTOR\n5\n82\n330\n70\n100\nAcDbRasterImageDefReactor\n90\n2\n"
+                "0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(file.good());
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("ACAD_IMAGE_DICT"), 1u);
+    EXPECT_EQ(names.count("LC_REACTOR"), 0u);
+    const auto loss = result.loss.droppedByType.find("unreferenced dictionaries");
+    ASSERT_NE(loss, result.loss.droppedByType.end());
+    EXPECT_EQ(loss->second, 2u);
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
 // A layout is the page a drawing prints from. LibreCAD models none of it, and
 // libdxfrw parses LAYOUT and PLOTSETTINGS into typed objects instead of handing
 // them to the raw passthrough net, so unlike a record this build has never

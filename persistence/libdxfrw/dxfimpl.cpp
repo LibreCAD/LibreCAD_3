@@ -51,6 +51,16 @@
 using namespace lc::persistence;
 
 namespace {
+bool hasDocumentImages(const std::shared_ptr<lc::storage::Document>& document) {
+    for (const auto& entity : document->entityContainer().asVector())
+        if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) return true;
+    return false;
+}
+
+bool regeneratesImageObject(const DRW_RawDxfObject& object, bool hasImages) {
+    return hasImages && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR");
+}
+
 std::string upperName(std::string name) {
     std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
         return static_cast<char>(std::toupper(c));
@@ -1722,17 +1732,10 @@ void DXFimpl::writeObjects() {
     // of each for one image, so the preserved copies give way to the regenerated
     // ones -- measured: without this, sample_AC1015_ascii comes back with two
     // reactors.
-    bool documentHasImages = false;
-    for (const auto& entity : _document->entityContainer().asVector()) {
-        if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) {
-            documentHasImages = true;
-            break;
-        }
-    }
+    const bool documentHasImages = hasDocumentImages(_document);
 
     for (const auto& object : _replay->objects) {
-        if (documentHasImages
-            && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR")) {
+        if (regeneratesImageObject(object, documentHasImages)) {
             continue;
         }
 
@@ -2692,8 +2695,9 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         std::size_t detached = 0;
         if (!_replay->rootDictEntries.empty()) {
             std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> emitted;
+            const bool documentHasImages = hasDocumentImages(_document);
             for (const auto& object : _replay->objects) {
-                if (object.handle != 0) {
+                if (object.handle != 0 && !regeneratesImageObject(object, documentHasImages)) {
                     emitted[object.handle] = &object;
                 }
             }
