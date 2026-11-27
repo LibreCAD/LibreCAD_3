@@ -118,8 +118,8 @@ CADEntity_CSPtr Circle::mirror(const geo::Coordinate &axis1, const geo::Coordina
 }
 
 const geo::Area Circle::boundingBox() const {
-    return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()),
-                     geo::Coordinate(center().x() + radius(), center().y() + radius()));
+    return geo::Area(center() + geo::Coordinate(-radius(), -radius()),
+                     center() + geo::Coordinate(radius(), radius()));
 }
 
 CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

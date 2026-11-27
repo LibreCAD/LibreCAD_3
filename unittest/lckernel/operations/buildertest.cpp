@@ -1107,3 +1107,37 @@ TEST(BuilderTest, PointQueriesAndDragRoundTripPreserve3dCoordinate) {
     const auto planarSnaps = planar->snapPoints(lc::geo::Coordinate(1, 2), lc::SimpleSnapConstrain(), 0.1, 1);
     ASSERT_EQ(planarSnaps.size(), 1u); EXPECT_EQ(planarSnaps.front().coordinate(), lc::geo::Coordinate(1, 2));
 }
+
+TEST(BuilderTest, ElevatedCircleAndArcBoundsKeepTheirPlane) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    for (double z : {-70., 0., 70.}) {
+        auto circle = std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(2, 3, z), 5, layer);
+        const auto circleBounds = circle->boundingBox();
+        EXPECT_DOUBLE_EQ(circleBounds.minP().x(), -3);
+        EXPECT_DOUBLE_EQ(circleBounds.minP().y(), -2);
+        EXPECT_DOUBLE_EQ(circleBounds.maxP().x(), 7);
+        EXPECT_DOUBLE_EQ(circleBounds.maxP().y(), 8);
+        EXPECT_DOUBLE_EQ(circleBounds.minP().z(), z);
+        EXPECT_DOUBLE_EQ(circleBounds.maxP().z(), z);
+        for (int quadrant = 0; quadrant != 4; ++quadrant) {
+            const double angle = quadrant * M_PI / 2.;
+            auto arc = std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(2, 3, z), 5,
+                    angle - M_PI / 4., angle + M_PI / 4., true, layer);
+            const auto bounds = arc->boundingBox();
+            EXPECT_DOUBLE_EQ(bounds.minP().z(), z);
+            EXPECT_DOUBLE_EQ(bounds.maxP().z(), z);
+        }
+    }
+}
+
+TEST(BuilderTest, AreaMergePreservesElevationRange) {
+    const lc::geo::Area area(lc::geo::Coordinate(1, 2, 4), lc::geo::Coordinate(3, 4, 8));
+    const auto withPoint = area.merge(lc::geo::Coordinate(5, 0, -2));
+    EXPECT_DOUBLE_EQ(withPoint.minP().z(), -2);
+    EXPECT_DOUBLE_EQ(withPoint.maxP().z(), 8);
+    const auto withArea = area.merge(lc::geo::Area(lc::geo::Coordinate(-1, 0, -4),
+                                                   lc::geo::Coordinate(2, 5, 12)));
+    EXPECT_DOUBLE_EQ(withArea.minP().z(), -4);
+    EXPECT_DOUBLE_EQ(withArea.maxP().z(), 12);
+}

@@ -8,6 +8,8 @@
 #include <cad/operations/layerops.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/point.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/insert.h>
 #include <cad/builders/insert.h>
@@ -444,4 +446,36 @@ TEST(CanvasScaleTest, ElevatedPointCanBeSelectedAndSnappedInPlanarView) {
     snap.setDeviceLocation(100, 100);
     EXPECT_DOUBLE_EQ(receiver.point.x(), 100); EXPECT_DOUBLE_EQ(receiver.point.y(), 100); EXPECT_DOUBLE_EQ(receiver.point.z(), 0);
     snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
+}
+
+TEST(CanvasScaleTest, ElevatedCircleAndArcCanBeSelectedAndSnappedInPlanarView) {
+    struct Receiver {
+        lc::geo::Coordinate point;
+        void onSnap(const lc::viewer::event::SnapPointEvent& event) { point = event.snapPoint(); }
+    };
+    for (bool arc : {false, true}) {
+        auto doc = makeDocument();
+        lc::entity::CADEntity_CSPtr entity;
+        if (arc) {
+            entity = std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(2, 3, 70), 5,
+                    -M_PI / 4., M_PI / 4., true, doc->layerByName("0"));
+        } else {
+            entity = std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(2, 3, 70), 5,
+                    doc->layerByName("0"));
+        }
+        auto insert = std::make_shared<lc::operation::EntityBuilder>(doc);
+        insert->appendEntity(entity); insert->execute();
+        auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
+        canvas->selectPoint(7, 3);
+        ASSERT_EQ(canvas->selectedDrawables().size(), 1u);
+        Receiver receiver;
+        lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10);
+        snap.setEntitySnappable(true);
+        snap.snapPointEvents().connect<Receiver, &Receiver::onSnap>(&receiver);
+        snap.setDeviceLocation(7, 3);
+        EXPECT_NEAR(receiver.point.x(), 7, 1e-12);
+        EXPECT_NEAR(receiver.point.y(), 3, 1e-12);
+        EXPECT_DOUBLE_EQ(receiver.point.z(), 70);
+        snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
+    }
 }

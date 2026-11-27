@@ -137,16 +137,16 @@ Area Arc::boundingBox() const {
     const double p3 = 1.5 * M_PI;
 
     if ((maths::Math::isAngleBetween(p0, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x() + _radius, _center.y()));
+        area = area.merge(_center + Coordinate(_radius, 0.));
     }
     if ((maths::Math::isAngleBetween(p1, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x(), _center.y() + _radius));
+        area = area.merge(_center + Coordinate(0., _radius));
     }
     if ((maths::Math::isAngleBetween(p2, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x() - _radius, _center.y()));
+        area = area.merge(_center + Coordinate(-_radius, 0.));
     }
     if ((maths::Math::isAngleBetween(p3, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x(), _center.y() - _radius));
+        area = area.merge(_center + Coordinate(0., -_radius));
     }
     return area;
 }

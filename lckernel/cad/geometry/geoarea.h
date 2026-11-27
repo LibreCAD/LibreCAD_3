@@ -153,8 +153,8 @@ public:
      */
     inline Area merge(const Area& other) const {
         return Area(
-                   Coordinate(std::min(other.minP().x(), this->minP().x()), std::min(other.minP().y(), this->minP().y())),
-                   Coordinate(std::max(other.maxP().x(), this->maxP().x()), std::max(other.maxP().y(), this->maxP().y())));
+                   Coordinate(std::min(other.minP().x(), this->minP().x()), std::min(other.minP().y(), this->minP().y()), std::min(other.minP().z(), this->minP().z())),
+                   Coordinate(std::max(other.maxP().x(), this->maxP().x()), std::max(other.maxP().y(), this->maxP().y()), std::max(other.maxP().z(), this->maxP().z())));
     }
 
     /**
@@ -165,8 +165,8 @@ public:
      */
     inline Area merge(const Coordinate& other) const {
         return Area(
-                   Coordinate(std::min(other.x(), this->minP().x()), std::min(other.y(), this->minP().y())),
-                   Coordinate(std::max(other.x(), this->maxP().x()), std::max(other.y(), this->maxP().y())));
+                   Coordinate(std::min(other.x(), this->minP().x()), std::min(other.y(), this->minP().y()), std::min(other.z(), this->minP().z())),
+                   Coordinate(std::max(other.x(), this->maxP().x()), std::max(other.y(), this->maxP().y()), std::max(other.z(), this->maxP().z())));
     }
 
     /**
