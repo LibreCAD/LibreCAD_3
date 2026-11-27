@@ -1,6 +1,7 @@
 #include "undomanagerimpl.h"
 
 #include "cad/operations/documentoperation.h"
+#include "cad/operations/entitybuilder.h"
 #include "cad/operations/undoable.h"
 #include <nano-signal-slot/nano_signal_slot.hpp>
 
@@ -12,6 +13,10 @@ UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) :
 }
 
 void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& event) {
+    // A rejected locked-layer edit changed nothing. In particular it must
+    // not consume an undo step or discard an existing redo history.
+    const auto entities = std::dynamic_pointer_cast<operation::EntityBuilder>(event.operation());
+    if (entities && entities->blockedByLockedLayer()) return;
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
     if (undoable != nullptr) {

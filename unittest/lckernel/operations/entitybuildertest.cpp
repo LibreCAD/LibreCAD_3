@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
+#include <cad/storage/undomanagerimpl.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/operations/layerops.h>
 #include <cad/primitive/line.h>
@@ -462,4 +463,39 @@ TEST(EntityBuilderTest, LockedLayerChangesAreAtomicAndExplicitlyOverrideable) {
 
 TEST(EntityBuilderTest, NullStorageManagerIsRejected) {
     EXPECT_THROW(std::make_shared<lc::storage::DocumentImpl>(nullptr), std::invalid_argument);
+}
+
+TEST(EntityBuilderTest, BlockedLockedEditPreservesUndoAndRedoHistory) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto undo = std::make_shared<lc::storage::UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(undo.get());
+    const auto lockedLayer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                               lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(lockedLayer);
+    const auto lockedLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), lockedLayer, nullptr);
+    document->insertEntity(lockedLine);
+    const auto freeLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 1), lc::geo::Coordinate(1, 1), document->layerByName("0"), nullptr);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document);
+    add->appendEntity(freeLine); add->execute();
+    ASSERT_TRUE(undo->canUndo());
+    undo->undo();
+    ASSERT_TRUE(undo->canRedo());
+    ASSERT_FALSE(undo->canUndo());
+    const auto rejectEdit = [&] {
+        auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+        edit->appendEntity(lockedLine->move(lc::geo::Coordinate(1, 0))); edit->execute();
+        EXPECT_TRUE(edit->blockedByLockedLayer());
+        EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    };
+    rejectEdit();
+    EXPECT_TRUE(undo->canRedo()); EXPECT_FALSE(undo->canUndo());
+    undo->redo();
+    ASSERT_EQ(document->entityByID(freeLine->id()), freeLine);
+    rejectEdit();
+    ASSERT_TRUE(undo->canUndo());
+    undo->undo();
+    EXPECT_FALSE(document->entityByID(freeLine->id()));
+    EXPECT_FALSE(undo->canUndo());
+    EXPECT_TRUE(undo->canRedo());
 }
