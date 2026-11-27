@@ -25,8 +25,10 @@ using namespace lc::geo;
 bool Math::isAngleBetween(double angle,
                           double start, double end,
                           bool CCW) {
-    double diffA = getAngleDifference(start, end, CCW);
-    double diffB = getAngleDifference(start, angle, CCW);
+    const double directedSpan = CCW ? end - start : start - end;
+    if (directedSpan >= 2.0 * M_PI) return true;
+    const double diffA = getAngleDifferenceShort(start, end, CCW);
+    const double diffB = getAngleDifferenceShort(start, angle, CCW);
     return diffB <= diffA;
 }
 

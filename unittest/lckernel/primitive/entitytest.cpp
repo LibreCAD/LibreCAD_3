@@ -1064,6 +1064,27 @@ TEST(VectorGeometryTest, EntitySnapReturnsTheBoundedPoint) {
     EXPECT_EQ(onPath.front().coordinate(), geo::Coordinate(2, 3, 74.05));
 }
 
+TEST(ArcGeometryTest, WrappedArcChoosesAndSnapsItsNearestEndpoint) {
+    auto layer = std::make_shared<Layer>();
+    const Arc arc(geo::Coordinate(0, 0, 9), 10, 350 * M_PI / 180,
+                  10 * M_PI / 180, true, layer);
+    const auto query = geo::Coordinate(0, 0, 9) + geo::Coordinate(-20 * M_PI / 180) * 10;
+    EXPECT_EQ(arc.nearestPointOnEntity(query), arc.startP());
+    const auto nearStart = geo::Coordinate(0, 0, 9) + geo::Coordinate(-10.1 * M_PI / 180) * 10;
+    const auto snapped = arc.snapPoints(nearStart,
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITY, 0, 0), 0.1, 1);
+    ASSERT_EQ(snapped.size(), 1u);
+    EXPECT_EQ(snapped.front().coordinate(), arc.startP());
+    const auto path = arc.snapPoints(nearStart,
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
+    ASSERT_EQ(path.size(), 1u);
+    EXPECT_NEAR(path.front().coordinate().distanceTo(nearStart), 0, 1e-12);
+    const Arc clockwise(geo::Coordinate(0, 0, 9), 10, 10 * M_PI / 180,
+                        350 * M_PI / 180, false, layer);
+    const auto clockwiseQuery = geo::Coordinate(0, 0, 9) + geo::Coordinate(20 * M_PI / 180) * 10;
+    EXPECT_EQ(clockwise.nearestPointOnEntity(clockwiseQuery), clockwise.startP());
+}
+
 TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
     auto layer = std::make_shared<Layer>();
     auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),

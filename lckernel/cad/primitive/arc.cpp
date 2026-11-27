@@ -65,11 +65,7 @@ std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate& coord, cons
 
     // Any where on entity
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
-        geo::Coordinate npoe = nearestPointOnPath(coord);
-        const double a = (npoe - center()).angle();
-        if (isAngleBetween(a)) {
-            points.emplace_back(npoe, -1);
-        }
+        points.emplace_back(nearestPointOnEntity(coord), -1);
     }
 
     // Cleanup array of snappoints
