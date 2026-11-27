@@ -1,4 +1,5 @@
 #include "geobezier.h"
+#include <algorithm>
 
 using namespace lc;
 using namespace geo;
@@ -20,31 +21,54 @@ const std::vector<geo::Coordinate> Bezier::getCP() const {
 }
 
 
+const Area BezierBase::boundsForControlPoints() const {
+    const auto points = getCP();
+    Area bounds(points.front(), points.back());
+    const auto include = [&](long double t) {
+        if (t > 0. && t < 1.)
+            bounds = bounds.merge(DirectValueAt(static_cast<double>(t)));
+    };
+    for (int axis = 0; axis != 3; ++axis) {
+        const auto component = [axis](const Coordinate& point) {
+            return static_cast<long double>(axis == 0 ? point.x() : axis == 1 ? point.y() : point.z());
+        };
+        // First differences retain small curvature at a large translation;
+        // normalize them before forming the derivative polynomial.
+        long double d1 = component(points[1]) - component(points[0]);
+        long double d2 = component(points[2]) - component(points[1]);
+        long double d3 = points.size() == 4 ? component(points[3]) - component(points[2]) : 0.;
+        long double scale = std::max({std::abs(d1), std::abs(d2), std::abs(d3)});
+        if (!std::isfinite(scale)) {
+            scale = 0.;
+            for (const auto& point : points)
+                scale = std::max(scale, std::abs(component(point)));
+            if (!std::isfinite(scale)) continue;
+            d1 = component(points[1]) / scale - component(points[0]) / scale;
+            d2 = component(points[2]) / scale - component(points[1]) / scale;
+            d3 = points.size() == 4 ? component(points[3]) / scale - component(points[2]) / scale : 0.;
+            scale = std::max({std::abs(d1), std::abs(d2), std::abs(d3)});
+        }
+        if (scale == 0.) continue;
+        d1 /= scale; d2 /= scale; d3 /= scale;
+        const long double a = points.size() == 4 ? d1 - 2. * d2 + d3 : 0.;
+        const long double b = (points.size() == 4 ? 2. : 1.) * (d2 - d1);
+        const long double c = d1;
+        if (a == 0.) {
+            if (b != 0.) include(-c / b);
+            continue;
+        }
+        const long double discriminant = b * b - 4. * a * c;
+        if (discriminant < 0.) continue;
+        // This form avoids cancellation in one root; their product gives the other.
+        const long double q = -0.5L * (b + std::copysign(std::sqrt(discriminant), b));
+        if (q == 0.) include(-b / (2. * a));
+        else { include(q / a); include(c / q); }
+    }
+    return bounds;
+}
+
 const Area Bezier::boundingBox() const {
-    /*
-     * T = A-B/(A - 2B + C)
-     */
-    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
-    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
-    std::vector<double> x_{_pointA.x(), _pointC.x() };
-    std::vector<double> y_{_pointA.y(), _pointC.y() };
-
-    if(tx_ > 0. && tx_ < 1.0) {
-        auto bez1 = DirectValueAt(tx_);
-        x_.push_back(bez1.x());
-        y_.push_back(bez1.y());
-    }
-
-    if(ty_ > 0. && ty_ < 1.0) {
-        auto bez2 = DirectValueAt(ty_);
-        x_.push_back(bez2.x());
-        y_.push_back(bez2.y());
-    }
-
-    std::sort(x_.begin(), x_.end());
-    std::sort(y_.begin(), y_.end());
-
-    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back(),y_.back()));
+    return boundsForControlPoints();
 }
 
 Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {
