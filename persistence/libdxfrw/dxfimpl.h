@@ -672,6 +672,7 @@ private:
     std::string _writeFailureReason;
     bool hasUnsafeAdditionalPaperSpace() const;
     bool mayOmitUnusedDefaultPaper() const;
+    bool hasCheckedImageGraphWithoutPaper() const;
 
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 

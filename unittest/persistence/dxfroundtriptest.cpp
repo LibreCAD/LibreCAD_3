@@ -3182,7 +3182,7 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}) {
+  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}) {
     const int space = mode >= 6 ? 0 : mode % 3;
     const bool modern = mode >= 3 && mode < 6;
     const bool extendedDictionary = mode == 6;
@@ -3194,6 +3194,8 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const bool nested = mode == 12 || mode == 13 || mode == 14;
     const bool invalidNestedOwner = mode == 13;
     const bool invalidNestedRootOwner = mode == 14;
+    const bool sourcePaper = mode == 15;
+    const bool duplicateTarget = mode == 16;
     const char* rootHandle = differentRoot ? "50" : "C";
     const bool inBlock = space != 0;
     const char* blockName = space == 2 ? "*U1" : "LC_IMG";
@@ -3203,6 +3205,10 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     {
         std::ofstream file(source, std::ios::binary);
         file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\n" << (modern ? "AC1024" : "AC1015") << "\n0\nENDSEC\n";
+        if (sourcePaper)
+            file << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n75\n8\n0\n2\n*Paper_Space0\n"
+                    "70\n0\n10\n0\n20\n0\n30\n0\n3\n*Paper_Space0\n1\n\n"
+                    "0\nENDBLK\n5\n76\n8\n0\n0\nENDSEC\n";
         if (inBlock)
             file << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n61\n330\n60\n8\n0\n2\n"
                  << blockName << "\n70\n" << (space == 2 ? 1 : 0)
@@ -3223,6 +3229,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
                 "0\nDICTIONARY\n5\n90\n330\n" << (invalidDictionaryOwner ? "92" : invalidNestedOwner ? "93" : nested ? "92" : rootHandle) << "\n";
         if (extendedDictionary) file << "102\n{LC_TEST\n1\ncustom\n102\n}\n";
         file << "100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n3\nKEEP\n350\n91\n";
+        if (duplicateTarget) file << "3\nALIAS\n350\n91\n";
         if (nested) file << "0\nDICTIONARY\n5\n92\n330\n" << (invalidNestedRootOwner ? "93" : "C") << "\n100\nAcDbDictionary\n281\n1\n3\nCHILD\n350\n90\n";
         file <<
                 "0\nXRECORD\n5\n91\n330\n" << (invalidOwner ? "92" : "90") << "\n100\nAcDbXrecord\n280\n1\n1\nkeep-value\n";
@@ -3279,6 +3286,19 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const auto result = lc::persistence::File::exportFile(doc, saved, modern ?
         lc::persistence::File::LIBDXFRW_DXF_R2010 : lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(result.ok);
+    {
+        std::ifstream output(saved, std::ios::binary);
+        std::string code, value;
+        bool blockRecord = false;
+        std::size_t paper0 = 0;
+        while (std::getline(output, code) && std::getline(output, value)) {
+            if (!value.empty() && value.back() == '\r') value.pop_back();
+            const int group = std::stoi(code);
+            if (group == 0) blockRecord = value == "BLOCK_RECORD";
+            if (blockRecord && group == 2 && value == "*Paper_Space0") ++paper0;
+        }
+        EXPECT_EQ(paper0, mode <= 5 ? 0u : 1u);
+    }
     const auto names = rootDictNames(saved);
     EXPECT_EQ(names.count("ACAD_IMAGE_DICT"), 1u);
     EXPECT_EQ(names.count("LC_REACTOR"), extendedDictionary || invalidOwner || unmodeledChild || invalidDictionaryOwner || differentRoot || invalidNestedOwner || invalidNestedRootOwner ? 0u : 1u);
@@ -3395,6 +3415,23 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         EXPECT_EQ(imageGroups(changed)[14], groups[14]);
         EXPECT_EQ(imageGroups(changed)[24], groups[24]);
         boost::filesystem::remove(changed);
+
+        auto paper = doc->blockByName("*Paper_Space0");
+        ASSERT_TRUE(paper);
+        auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2), lc::geo::Coordinate(3, 4),
+            doc->layerByName("0"), nullptr, paper);
+        doc->insertEntity(line);
+        const std::string protectedPath = uniqueTmpDxf("image-paper-refusal");
+        { std::ofstream output(protectedPath, std::ios::binary); output << "existing destination"; }
+        EXPECT_FALSE(lc::persistence::File::exportFile(doc, protectedPath, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+        { std::ifstream input(protectedPath, std::ios::binary);
+          EXPECT_EQ(std::string((std::istreambuf_iterator<char>(input)), {}), "existing destination"); }
+        doc->removeEntity(line);
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, protectedPath, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+        auto retryDoc = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(retryDoc, protectedPath, lc::persistence::File::LIBDXFRW).ok);
+        ASSERT_EQ(retryDoc->entityContainer().asVector().size(), 1u);
+        boost::filesystem::remove(protectedPath);
     }
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);

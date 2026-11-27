@@ -77,36 +77,75 @@ bool regeneratesImageObject(const DRW_RawDxfObject& object, bool hasImages) {
     return hasImages && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR");
 }
 
-// Remove only ordinary, fully recognized dictionary entries that still point
-// to source raster objects the writer will replace with new identities.
-// Unknown fields or application groups leave the complete object untouched.
-std::size_t dropRegeneratedImageEntries(DRW_RawDxfObject& object,
-                                        const std::unordered_set<std::uint32_t>& skipped) {
+bool sourceHandle(const DRW_Variant& value, std::uint32_t& handle) {
+    if (value.type() != DRW_Variant::STRING || !value.content.s) return false;
+    const auto& hex = *value.content.s;
+    if (hex.empty() || hex.size() > 8 ||
+        !std::all_of(hex.begin(), hex.end(), [](unsigned char c) { return std::isxdigit(c); })) return false;
+    handle = static_cast<std::uint32_t>(std::stoul(hex, nullptr, 16));
+    return true;
+}
+
+// Return the positions and source targets of canonical name/soft-owner pairs.
+bool ordinaryDictionaryEntries(const DRW_RawDxfObject& object,
+                               std::vector<std::pair<std::size_t, std::uint32_t>>& entries) {
     const auto& groups = object.groups;
+    std::uint32_t handle = 0, owner = 0;
     if (object.name != "DICTIONARY" || groups.size() < 3 ||
         object.rawValues.size() != groups.size() || groups[0].code() != 5 ||
         groups[1].code() != 330 || groups[2].code() != 100 ||
+        !sourceHandle(groups[0], handle) || handle != object.handle ||
+        !sourceHandle(groups[1], owner) || owner != object.parentHandle ||
         groups[2].type() != DRW_Variant::STRING || !groups[2].content.s ||
-        *groups[2].content.s != "AcDbDictionary") return 0;
+        *groups[2].content.s != "AcDbDictionary") return false;
     std::size_t pos = 3;
-    if (pos < groups.size() && groups[pos].code() == 280) ++pos;
-    if (pos < groups.size() && groups[pos].code() == 281) ++pos;
-    std::vector<bool> remove(groups.size(), false);
-    std::size_t count = 0;
+    if (pos < groups.size() && groups[pos].code() == 280) {
+        if (groups[pos].type() != DRW_Variant::INTEGER) return false;
+        ++pos;
+    }
+    if (pos < groups.size() && groups[pos].code() == 281) {
+        if (groups[pos].type() != DRW_Variant::INTEGER) return false;
+        ++pos;
+    }
     while (pos < groups.size()) {
         if (pos + 1 >= groups.size() || groups[pos].code() != 3 ||
             groups[pos].type() != DRW_Variant::STRING || !groups[pos].content.s ||
             groups[pos].content.s->empty() || groups[pos + 1].code() != 350 ||
-            groups[pos + 1].type() != DRW_Variant::STRING || !groups[pos + 1].content.s) return 0;
-        const auto& hex = *groups[pos + 1].content.s;
-        if (hex.empty() || hex.size() > 8 ||
-            !std::all_of(hex.begin(), hex.end(), [](unsigned char c) { return std::isxdigit(c); })) return 0;
-        const auto handle = static_cast<std::uint32_t>(std::stoul(hex, nullptr, 16));
-        if (skipped.count(handle)) {
-            remove[pos] = remove[pos + 1] = true;
+            !sourceHandle(groups[pos + 1], handle)) return false;
+        entries.emplace_back(pos, handle);
+        pos += 2;
+    }
+    return true;
+}
+
+bool simpleTextXRecord(const DRW_RawDxfObject& record, std::uint32_t expectedOwner) {
+    const auto& fields = record.groups;
+    std::uint32_t handle = 0, owner = 0;
+    return record.name == "XRECORD" && record.parentHandle == expectedOwner &&
+        record.rawValues.size() == fields.size() && fields.size() >= 4 &&
+        fields[0].code() == 5 && sourceHandle(fields[0], handle) && handle == record.handle &&
+        fields[1].code() == 330 && sourceHandle(fields[1], owner) && owner == expectedOwner &&
+        fields[2].code() == 100 && fields[2].type() == DRW_Variant::STRING &&
+        fields[2].content.s && *fields[2].content.s == "AcDbXrecord" &&
+        fields[3].code() == 280 && fields[3].type() == DRW_Variant::INTEGER &&
+        std::all_of(fields.begin() + 4, fields.end(), [](const DRW_Variant& field) {
+            return field.code() == 1 && field.type() == DRW_Variant::STRING;
+        });
+}
+
+// Unknown fields or application groups leave the complete object untouched.
+std::size_t dropRegeneratedImageEntries(DRW_RawDxfObject& object,
+                                        const std::unordered_set<std::uint32_t>& skipped) {
+    std::vector<std::pair<std::size_t, std::uint32_t>> entries;
+    if (!ordinaryDictionaryEntries(object, entries)) return 0;
+    const auto& groups = object.groups;
+    std::vector<bool> remove(groups.size(), false);
+    std::size_t count = 0;
+    for (const auto& entry : entries) {
+        if (skipped.count(entry.second)) {
+            remove[entry.first] = remove[entry.first + 1] = true;
             ++count;
         }
-        pos += 2;
     }
     if (count == 0) return 0;
     std::vector<DRW_Variant> keptGroups;
@@ -2581,11 +2620,60 @@ bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
 }
 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
+    if (!_shelf || _replay != _shelf || _shelf->rootDictSourceAmbiguous ||
+        _shelf->rootDictSourceHandle != kRootDictionaryHandle ||
+        !_shelf->entities.empty() || !_shelf->sections.empty() || !_shelf->classes.empty() ||
+        _shelf->objects.size() > 512 || _shelf->rootDictEntries.empty() ||
+        _shelf->rootDictEntries.size() > 128) return false;
+    bool hasImages = false;
+    const auto skipped = skippedImageSourceHandles(hasImages);
+    if (!hasImages || skipped.empty()) return false;
+    std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> objects;
+    for (const auto& object : _shelf->objects) {
+        if (object.handle == 0 || object.handle == kRootDictionaryHandle ||
+            object.groups.size() > 512 || !objects.emplace(object.handle, &object).second) return false;
+    }
+    std::unordered_set<std::uint32_t> roots;
+    std::set<std::string> rootNames;
+    for (const auto& entry : _shelf->rootDictEntries) {
+        const auto object = objects.find(entry.second);
+        if (entry.first.empty() || !rootNames.insert(upperName(entry.first)).second ||
+            !roots.insert(entry.second).second || object == objects.end() ||
+            object->second->name != "DICTIONARY") return false;
+    }
+    std::unordered_set<std::uint32_t> referenced;
+    for (const auto& object : _shelf->objects) {
+        if (regeneratesImageObject(object, hasImages)) {
+            if (!skipped.count(object.handle)) return false;
+            continue;
+        }
+        if (object.name == "XRECORD") continue;
+        if (object.parentHandle != kRootDictionaryHandle || !roots.count(object.handle)) return false;
+        std::vector<std::pair<std::size_t, std::uint32_t>> entries;
+        if (!ordinaryDictionaryEntries(object, entries)) return false;
+        std::set<std::string> names;
+        std::unordered_set<std::uint32_t> targets;
+        for (const auto& entry : entries) {
+            if (!names.insert(upperName(*object.groups[entry.first].content.s)).second ||
+                !targets.insert(entry.second).second) return false;
+            if (skipped.count(entry.second)) continue;
+            const auto target = objects.find(entry.second);
+            if (target == objects.end() || !simpleTextXRecord(*target->second, object.handle) ||
+                !referenced.insert(entry.second).second) return false;
+        }
+    }
+    for (const auto& object : _shelf->objects)
+        if (object.name == "XRECORD" && !referenced.count(object.handle)) return false;
+    return true;
+}
+
 bool DXFimpl::mayOmitUnusedDefaultPaper() const {
     const bool sourceAllowsOmission = !_shelf ||
         (!_shelf->sourceWasDwg && _shelf->mayOmitSyntheticPaperSpace0 &&
-         !_shelf->hasSourceLayouts && _shelf->total() == 0 &&
-         _shelf->rootDictEntries.empty() && _shelf->classes.empty());
+         !_shelf->hasSourceLayouts &&
+         ((_shelf->total() == 0 && _shelf->rootDictEntries.empty() && _shelf->classes.empty()) ||
+          hasCheckedImageGraphWithoutPaper()));
     return sourceAllowsOmission && _defaultLayouts.empty() && !hasUnsafeAdditionalPaperSpace();
 }
 #endif
@@ -2866,16 +2954,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                         // independently checked XRECORD profile. Other child
                         // graphs remain detached until their owners and
                         // references can be checked.
-                        const auto& record = *target->second;
-                        const auto& fields = record.groups;
-                        if (record.name != "XRECORD" || record.parentHandle != item.first ||
-                            fields.size() < 4 || fields[0].code() != 5 || fields[1].code() != 330 ||
-                            fields[2].code() != 100 || fields[2].type() != DRW_Variant::STRING ||
-                            !fields[2].content.s || *fields[2].content.s != "AcDbXrecord" ||
-                            fields[3].code() != 280 ||
-                            !std::all_of(fields.begin() + 4, fields.end(), [](const DRW_Variant& field) {
-                                return field.code() == 1 && field.type() == DRW_Variant::STRING;
-                            })) markIncomplete(item.first);
+                        if (!simpleTextXRecord(*target->second, item.first)) markIncomplete(item.first);
                     }
                 }
             }
