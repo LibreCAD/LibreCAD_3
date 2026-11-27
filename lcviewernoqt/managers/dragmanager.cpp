@@ -1,4 +1,5 @@
 #include <cad/interface/unmanageddraggable.h>
+#include <cmath>
 #include "dragmanager.h"
 
 using namespace lc;
@@ -49,7 +50,8 @@ void DragManager::moveEntities() {
         }
         auto entityDragPoints = draggable->dragPoints();
         for (auto point : entityDragPoints) {
-            if (point.second.distanceTo(_selectedPoint) < LCTOLERANCE) {
+            if (std::hypot(point.second.x() - _selectedPoint.x(),
+                           point.second.y() - _selectedPoint.y()) < LCTOLERANCE) {
                 const auto cursor = _cursor->position();
                 entityDragPoints[point.first] = lc::geo::Coordinate(cursor.x(), cursor.y(), point.second.z());
             }

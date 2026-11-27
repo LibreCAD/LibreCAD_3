@@ -96,6 +96,45 @@ TEST(SelectionTest, DragElevatedPointPreservesElevationAcrossMoves) {
     EXPECT_EQ(document->entityByID(point->id()), moved);
 }
 
+TEST(SelectionTest, DragCoincidentPointsPreservesEachElevation) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    auto history = std::make_shared<lc::storage::UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(history.get());
+    auto layer = document->layerByName("0");
+    auto first = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(3, 4, 20), layer);
+    auto second = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(3, 4, 100), layer);
+    document->insertEntity(first);
+    document->insertEntity(second);
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
+    canvas->selectEntity(first);
+    canvas->selectEntity(second);
+    auto cursor = std::make_shared<lc::viewer::drawable::Cursor>(10, canvas, lc::Color(), lc::Color());
+    auto temporary = std::make_shared<lc::viewer::drawable::TempEntities>(canvas);
+    lc::viewer::manager::DragManager drag(canvas, cursor, temporary, 10);
+    cursor->onSnapPointEvent(lc::viewer::event::SnapPointEvent(lc::geo::Coordinate(3, 4)));
+    drag.onMouseMove(); drag.onMousePress(); ASSERT_TRUE(drag.entityDragged());
+    cursor->onSnapPointEvent(lc::viewer::event::SnapPointEvent(lc::geo::Coordinate(8, 9)));
+    drag.onMouseMove();
+    cursor->onSnapPointEvent(lc::viewer::event::SnapPointEvent(lc::geo::Coordinate(9, 10)));
+    drag.onMouseMove(); drag.onMouseRelease();
+    const auto a = std::dynamic_pointer_cast<const lc::entity::Point>(document->entityByID(first->id()));
+    const auto b = std::dynamic_pointer_cast<const lc::entity::Point>(document->entityByID(second->id()));
+    ASSERT_TRUE(a); ASSERT_TRUE(b);
+    EXPECT_DOUBLE_EQ(a->x(), 9); EXPECT_DOUBLE_EQ(a->y(), 10); EXPECT_DOUBLE_EQ(a->z(), 20);
+    EXPECT_DOUBLE_EQ(b->x(), 9); EXPECT_DOUBLE_EQ(b->y(), 10); EXPECT_DOUBLE_EQ(b->z(), 100);
+    ASSERT_TRUE(history->canUndo()); history->undo();
+    const auto restoredA = std::dynamic_pointer_cast<const lc::entity::Point>(document->entityByID(first->id()));
+    const auto restoredB = std::dynamic_pointer_cast<const lc::entity::Point>(document->entityByID(second->id()));
+    ASSERT_TRUE(restoredA); ASSERT_TRUE(restoredB);
+    EXPECT_DOUBLE_EQ(restoredA->x(), 3); EXPECT_DOUBLE_EQ(restoredA->z(), 20);
+    EXPECT_DOUBLE_EQ(restoredB->x(), 3); EXPECT_DOUBLE_EQ(restoredB->z(), 100);
+    ASSERT_TRUE(history->canRedo()); history->redo();
+    EXPECT_EQ(document->entityByID(first->id()), a);
+    EXPECT_EQ(document->entityByID(second->id()), b);
+}
+
 TEST(SelectionTest, ElevatedPointOnFrozenLayerIsNotSnapped) {
     auto document = std::make_shared<lc::storage::DocumentImpl>(
         std::make_shared<lc::storage::StorageManagerImpl>());
