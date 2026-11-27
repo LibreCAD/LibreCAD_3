@@ -1094,6 +1094,12 @@ TEST(ImageTransformTest, PreservesSpatialAxesAndMetadata) {
     EXPECT_FALSE(image->mirror(geo::Coordinate(1, 2), geo::Coordinate(1, 2)));
     EXPECT_FALSE(image->mirror(geo::Coordinate(),
                                geo::Coordinate(1, std::numeric_limits<double>::quiet_NaN(), 0)));
+    EXPECT_EQ(image->base(), geo::Coordinate(10, 20, 30));
+    auto retried = std::dynamic_pointer_cast<const Image>(image->mirror(geo::Coordinate(), geo::Coordinate(1, 0)));
+    ASSERT_TRUE(retried);
+    EXPECT_EQ(retried->base(), mirrored->base());
+    EXPECT_EQ(retried->uv(), mirrored->uv());
+    EXPECT_EQ(retried->vv(), mirrored->vv());
     const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
                        geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
     auto planarScale = std::dynamic_pointer_cast<const Image>(planar.scale(geo::Coordinate(), geo::Coordinate(2, 3, 1)));
