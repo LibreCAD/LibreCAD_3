@@ -165,6 +165,7 @@ TEST(LayoutGraph, DwgImportRecordsProvenance) {
     ASSERT_TRUE(writer.writeDXF(output.string(), File::LIBDXFRW_DXF_R2004));
 }
 #endif
+
 TEST(LayoutGraph, BinaryLayoutsReopenSaveAndRetry) {
     const File::Type targets[] = {File::LIBDXFRW_DXB_R2000, File::LIBDXFRW_DXB_R2004,
         File::LIBDXFRW_DXB_R2007, File::LIBDXFRW_DXB_R2010, File::LIBDXFRW_DXB_R2013};
@@ -354,3 +355,10 @@ TEST(LayoutGraph, RemapsReferencesToThePreservedPaperBlockBoundary) {
 }
 }
 #endif
+
+// Define the entry point in this executable so that MSVC cannot select the
+// unrelated Boost test-execution monitor's main from a transitive static lib.
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

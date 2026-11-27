@@ -43,7 +43,7 @@ class PreservedRecords : public lc::meta::DocumentMetaType {
 public:
     /** The key the document files this under. Leading underscore: not a name a
      *  user's layer, block or line type can collide with. */
-    static const char* const kId;
+    static constexpr const char* kId = "_LC_PRESERVED_DXF_RECORDS";
 
     const std::string id() const override {
         return kId;
