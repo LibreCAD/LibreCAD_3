@@ -1,7 +1,46 @@
 #include "cad/math/intersectionhandler.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <utility>
 
 using namespace lc;
 using namespace maths;
+
+namespace {
+bool linearBezier(const std::vector<geo::Coordinate>& points) {
+    return points.size() == 3
+        && points[1].x() == points[0].x() / 2 + points[2].x() / 2
+        && points[1].y() == points[0].y() / 2 + points[2].y() / 2;
+}
+
+// Parameters where a linear Bezier intersects a rotated, translated ellipse.
+std::vector<double> linearConicRoots(const std::vector<geo::Coordinate>& points,
+                                     const geo::Coordinate& center,
+                                     double major, double minor, double angle) {
+    if (!(major > 0) || !(minor > 0) || !std::isfinite(major)
+        || !std::isfinite(minor) || !std::isfinite(angle)) return {};
+    const auto cs = std::cos(angle), sn = std::sin(angle);
+    const auto coordinates = [&](const geo::Coordinate& point) {
+        const auto x = point.x() - center.x(), y = point.y() - center.y();
+        return std::pair<double, double>{(cs*x + sn*y) / major,
+                                         (-sn*x + cs*y) / minor};
+    };
+    const auto first = coordinates(points[0]), last = coordinates(points[2]);
+    const auto dx = last.first - first.first, dy = last.second - first.second;
+    const auto a = dx*dx + dy*dy;
+    const auto b = 2 * (first.first*dx + first.second*dy);
+    const auto c = first.first*first.first + first.second*first.second - 1;
+    if (!(a > 0) || !std::isfinite(a) || !std::isfinite(b / a)
+        || !std::isfinite(c / a)) return {};
+    auto roots = lc::maths::Math::quadraticSolver({b / a, c / a});
+    std::sort(roots.begin(), roots.end());
+    roots.erase(std::unique(roots.begin(), roots.end(), [](double a, double b) {
+        return std::abs(a - b) <= 8 * std::numeric_limits<double>::epsilon();
+    }), roots.end());
+    return roots;
+}
+}
 std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
         const Equation& l2) {
     std::vector<lc::geo::Coordinate> ret;
@@ -67,11 +106,16 @@ std::vector<geo::Coordinate> Intersection::bezierLine(const geo::BB_CSPtr& B, co
         auto rotate_angle = -ml.Angle1();
         auto cps = B->move(-V.start())->rotate(ml.start(), rotate_angle)->getCP();
 
-        auto t2 = cps[0].y() - 2*cps[1].y() + cps[2].y();
-        auto t1 = 2*(cps[1].y() - cps[0].y())/t2;
-        auto coeff = cps[0].y()/t2;
-
-        roots = lc::maths::Math::quadraticSolver({t1, coeff});
+        const auto t2 = cps[0].y() - 2*cps[1].y() + cps[2].y();
+        const auto t1 = 2*(cps[1].y() - cps[0].y());
+        const auto scale = std::max({std::abs(cps[0].y()), std::abs(cps[1].y()),
+                                     std::abs(cps[2].y())});
+        const auto tolerance = 8 * std::numeric_limits<double>::epsilon() * scale;
+        if (std::abs(t2) <= tolerance) {
+            if (std::abs(t1) > tolerance) roots.push_back(-cps[0].y() / t1);
+        } else {
+            roots = lc::maths::Math::quadraticSolver({t1 / t2, cps[0].y() / t2});
+        }
     }
     else {
         auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
@@ -107,7 +151,13 @@ std::vector<geo::Coordinate> Intersection::bezierCircle(const geo::BB_CSPtr& B, 
 
     auto points = B->getCP();
 
-    if(points.size()== 3) {
+    if (linearBezier(points)) {
+        // A degree-one spline's exact midpoint Bezier has a quadratic
+        // intersection equation, whose leading quartic coefficient is zero.
+        roots = linearConicRoots(points, C.center(), C.radius(), C.radius(), 0);
+        for (const auto t : roots)
+            if (t > 0 && t < 1) ret.push_back(B->DirectValueAt(t));
+    } else if(points.size()== 3) {
 
         auto r = C.radius();
         auto d = C.center().x();
@@ -164,6 +214,26 @@ std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B,
     std::vector<double> roots;
     std::vector<geo::Coordinate> arc_ret, ret;
 
+    auto points = B->getCP();
+
+    if (linearBezier(points)) {
+        const auto major = E.majorP().magnitude();
+        roots = linearConicRoots(points, E.center(), major, E.minorRadius(), E.getAngle());
+        for (const auto t : roots) {
+            if (!(t > 0 && t < 1)) continue;
+            const auto point = B->DirectValueAt(t);
+            if (E.isArc()) {
+                const auto local = (point - E.center()).rotate(-E.getAngle());
+                const auto parameter = std::atan2(local.y() / E.minorRadius(), local.x() / major);
+                if (!maths::Math::isAngleBetween(maths::Math::correctAngle(parameter),
+                        maths::Math::correctAngle(E.startAngle()),
+                        maths::Math::correctAngle(E.endAngle()), !E.isReversed())) continue;
+            }
+            ret.push_back(point);
+        }
+        return ret;
+    }
+
     auto C = geo::Ellipse(E.center() - E.center(), E.majorP(), E.minorRadius(), E.startAngle(), E.endAngle())
              .georotate(geo::Coordinate(0,0), -E.getAngle())
              .geoscale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
@@ -172,8 +242,6 @@ std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B,
                ->rotate(geo::Coordinate(0,0), E.getAngle())
                ->scale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
 
-
-    auto points = B->getCP();
 
     if(points.size()== 3) {
         auto r = C.minorRadius();
@@ -308,6 +376,33 @@ std::vector<geo::Coordinate> Intersection::splineLine(const geo::Spline& B, cons
     for(const auto& bezier : beziers) {
         auto vecret = bezierLine(bezier, V);
         ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    // bezierLine excludes segment endpoints. Preserve an exact internal
+    // junction once, including joins introduced by rational approximation.
+    const auto direction = V.end() - V.start();
+    const auto length = std::hypot(direction.x(), direction.y());
+    if (length > 0 && std::isfinite(length)) {
+        for (std::size_t i = 1; i < beziers.size(); ++i) {
+            const auto left = beziers[i-1]->getCP();
+            const auto right = beziers[i]->getCP();
+            if (left.empty() || right.empty()) continue;
+            const auto point = left.back();
+            if (point.x() != right.front().x() || point.y() != right.front().y()
+                || point.z() != right.front().z()) continue;
+            const auto relative = point - V.start();
+            const auto scale = std::max({1.0, std::abs(relative.x()), std::abs(relative.y()),
+                                         std::abs(point.x()), std::abs(point.y()), std::abs(point.z())});
+            const auto tolerance = 32 * std::numeric_limits<double>::epsilon() * scale;
+            const auto distance = relative.x() * (direction.y()/length)
+                                - relative.y() * (direction.x()/length);
+            if (!std::isfinite(distance) || std::abs(distance) > tolerance) continue;
+            const bool present = std::any_of(ret.begin(), ret.end(), [&](const geo::Coordinate& existing) {
+                return std::abs(existing.x()-point.x()) <= tolerance
+                    && std::abs(existing.y()-point.y()) <= tolerance
+                    && std::abs(existing.z()-point.z()) <= tolerance;
+            });
+            if (!present) ret.push_back(point);
+        }
     }
     return ret;
 }

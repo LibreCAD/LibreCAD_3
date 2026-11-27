@@ -1,11 +1,57 @@
 #include "cad/primitive/spline.h"
 #include <algorithm>
+#include <cmath>
 #include "cad/geometry/geoarea.h"
 #include "spline.h"
 
 
 using namespace lc;
 using namespace entity;
+
+namespace {
+template<typename Transform>
+std::vector<geo::Coordinate> transformPoints(const std::vector<geo::Coordinate>& points,
+                                             const Transform& transform) {
+    std::vector<geo::Coordinate> result;
+    result.reserve(points.size());
+    for (const auto& point : points) result.push_back(transform(point));
+    return result;
+}
+
+std::vector<geo::Coordinate> translatedPoints(const std::vector<geo::Coordinate>& points,
+                                              const geo::Coordinate& offset) {
+    return transformPoints(points, [&offset](const geo::Coordinate& point) { return point + offset; });
+}
+
+geo::Coordinate scaledNormal(const geo::Coordinate& normal, const geo::Coordinate& factor) {
+    // A singular scale does not determine a unique transformed normal.
+    // Preserve the existing value in that case, as before.
+    if (factor.x() == 0.0 || factor.y() == 0.0 || factor.z() == 0.0)
+        return normal;
+    const geo::Coordinate transformed(normal.x() / factor.x(), normal.y() / factor.y(),
+                                      normal.z() / factor.z());
+    const double oldLength = std::hypot(normal.x(), normal.y(), normal.z());
+    const double newLength = std::hypot(transformed.x(), transformed.y(), transformed.z());
+    if (!std::isfinite(oldLength) || !std::isfinite(newLength) || newLength == 0.0)
+        return normal;
+    return geo::Coordinate((transformed.x() / newLength) * oldLength,
+                           (transformed.y() / newLength) * oldLength,
+                           (transformed.z() / newLength) * oldLength);
+}
+
+geo::Coordinate rotatedVector(const geo::Coordinate& vector, double cosine, double sine) {
+    return geo::Coordinate(vector.x() * cosine - vector.y() * sine,
+                           vector.x() * sine + vector.y() * cosine, vector.z());
+}
+
+std::vector<geo::Coordinate> rotatedPoints(const std::vector<geo::Coordinate>& points,
+                                          const geo::Coordinate& center, double cosine, double sine) {
+    return transformPoints(points, [&center, cosine, sine](const geo::Coordinate& point) {
+        const auto relative = rotatedVector(point - center, cosine, sine);
+        return geo::Coordinate(center.x() + relative.x(), center.y() + relative.y(), point.z());
+    });
+}
+} // namespace
 
 Spline::Spline(
     const std::vector<geo::Coordinate>& controlPoints,
@@ -18,7 +64,8 @@ Spline::Spline(
     enum Spline::splineflag flags,
     meta::Layer_CSPtr layer,
     meta::MetaInfo_CSPtr metaInfo,
-    meta::Block_CSPtr block) :
+    meta::Block_CSPtr block,
+    const std::vector<double>& weights) :
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     geo::Spline(controlPoints,
                 knotPoints,
@@ -29,7 +76,7 @@ Spline::Spline(
                 stanx, stany, stanz,
                 etanx, etany, etanz,
                 nx, ny, nz,
-                flags
+                flags, weights
                ) {
     calculateBoundingBox();
 }
@@ -51,7 +98,8 @@ Spline::Spline(const lc::builder::SplineBuilder& builder) :
                 builder.normalVector().x(),
                 builder.normalVector().y(),
                 builder.normalVector().z(),
-                builder.flags()) {
+                builder.flags(), builder.weights()) {
+    calculateBoundingBox();
 }
 
 Spline::Spline(const Spline_CSPtr& other, bool sameID) :
@@ -66,7 +114,7 @@ Spline::Spline(const Spline_CSPtr& other, bool sameID) :
         other->startTanX(), other->startTanY(), other->startTanZ(),
         other->endTanX(), other->endTanY(), other->endTanZ(),
         other->nX(), other->nY(), other->nZ(),
-        other->flags()
+        other->flags(), other->weights()
     ),
     _boundingBox(other->boundingBox()) {
 }
@@ -90,15 +138,9 @@ geo::Coordinate Spline::nearestPointOnEntity(const geo::Coordinate& coord) const
 }
 
 CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point + offset);
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
+    auto newSpline = std::make_shared<Spline>(translatedPoints(controlPoints(), offset),
                      knotPoints(),
-                     fitPoints(),
+                     translatedPoints(fitPoints(), offset),
                      degree(),
                      closed(),
                      fitTolerance(),
@@ -113,22 +155,16 @@ CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
                      nZ(),
                      flags(),
                      layer()
-                     , metaInfo(), block()
+                     , metaInfo(), block(), weights()
                                              );
     newSpline->setID(this->id());
     return newSpline;
 }
 
 CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point + offset);
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
+    auto newSpline = std::make_shared<Spline>(translatedPoints(controlPoints(), offset),
                      knotPoints(),
-                     fitPoints(),
+                     translatedPoints(fitPoints(), offset),
                      degree(),
                      closed(),
                      fitTolerance(),
@@ -143,99 +179,61 @@ CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
                      nZ(),
                      flags(),
                      layer()
-                     , metaInfo(), block()
+                     , metaInfo(), block(), weights()
                                              );
     return newSpline;
 }
 
 CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point.rotate(rotation_center, rotation_angle));
-    }
-
-    auto normal = geo::Coordinate(nX(), nY(), nZ()).rotate(rotation_angle);
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
-                     knotPoints(),
-                     fitPoints(),
-                     degree(),
-                     closed(),
-                     fitTolerance(),
-                     startTanX(),
-                     startTanY(),
-                     startTanZ(),
-                     endTanX(),
-                     endTanY(),
-                     endTanZ(),
-                     normal.x(),
-                     normal.y(),
-                     normal.z(),
-                     flags(),
-                     layer()
-                     , metaInfo(), block()
-                                             );
+    const double cosine = std::cos(rotation_angle);
+    const double sine = std::sin(rotation_angle);
+    const auto start = rotatedVector(geo::Coordinate(startTanX(), startTanY(), startTanZ()), cosine, sine);
+    const auto end = rotatedVector(geo::Coordinate(endTanX(), endTanY(), endTanZ()), cosine, sine);
+    const auto normal = rotatedVector(geo::Coordinate(nX(), nY(), nZ()), cosine, sine);
+    auto newSpline = std::make_shared<Spline>(
+        rotatedPoints(controlPoints(), rotation_center, cosine, sine), knotPoints(),
+        rotatedPoints(fitPoints(), rotation_center, cosine, sine), degree(), closed(), fitTolerance(),
+        start.x(), start.y(), start.z(), end.x(), end.y(), end.z(),
+        normal.x(), normal.y(), normal.z(), flags(), layer(), metaInfo(), block(), weights());
     newSpline->setID(this->id());
     return newSpline;
 }
 
 CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point.scale(scale_center, scale_factor));
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
-                     knotPoints(),
-                     fitPoints(),
-                     degree(),
-                     closed(),
-                     fitTolerance(),
-                     startTanX(),
-                     startTanY(),
-                     startTanZ(),
-                     endTanX(),
-                     endTanY(),
-                     endTanZ(),
-                     nX(),
-                     nY(),
-                     nZ(),
-                     flags(),
-                     layer()
-                     , metaInfo(), block()
-                                             );
+    const auto scalePoint = [&scale_center, &scale_factor](const geo::Coordinate& point) {
+        return point.scale(scale_center, scale_factor);
+    };
+    const auto start = geo::Coordinate(startTanX(), startTanY(), startTanZ()) * scale_factor;
+    const auto end = geo::Coordinate(endTanX(), endTanY(), endTanZ()) * scale_factor;
+    const auto normal = scaledNormal(geo::Coordinate(nX(), nY(), nZ()), scale_factor);
+    auto newSpline = std::make_shared<Spline>(
+        transformPoints(controlPoints(), scalePoint), knotPoints(), transformPoints(fitPoints(), scalePoint),
+        degree(), closed(), fitTolerance(), start.x(), start.y(), start.z(), end.x(), end.y(), end.z(),
+        normal.x(), normal.y(), normal.z(), flags(), layer(), metaInfo(), block(), weights());
     newSpline->setID(this->id());
     return newSpline;
 }
 
 CADEntity_CSPtr Spline::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    std::vector<geo::Coordinate> control_pts;
-
-    for (const auto& point : this->controlPoints()) {
-        control_pts.push_back(point.mirror(axis1, axis2));
-    }
-
-    auto newSpline = std::make_shared<Spline>(control_pts,
-                     knotPoints(),
-                     fitPoints(),
-                     degree(),
-                     closed(),
-                     fitTolerance(),
-                     startTanX(),
-                     startTanY(),
-                     startTanZ(),
-                     endTanX(),
-                     endTanY(),
-                     endTanZ(),
-                     nX(),
-                     nY(),
-                     nZ(),
-                     flags(),
-                     layer()
-                     , metaInfo(), block()
-                                             );
+    const bool planarAxis = axis1.z() == axis2.z();
+    const auto reflectPoint = [&axis1, &axis2, planarAxis](const geo::Coordinate& point) {
+        if (!planarAxis) return point.mirror(axis1, axis2);
+        const auto mapped = geo::Coordinate(point.x(), point.y(), axis1.z()).mirror(axis1, axis2);
+        return geo::Coordinate(mapped.x(), mapped.y(), point.z());
+    };
+    const auto reflectVector = [&axis1, &axis2, planarAxis](const geo::Coordinate& vector) {
+        const auto direction = axis2 - axis1;
+        const auto mapped = (planarAxis ? geo::Coordinate(vector.x(), vector.y(), 0.0) : vector)
+            .mirror(geo::Coordinate(0, 0, 0), direction);
+        return planarAxis ? geo::Coordinate(mapped.x(), mapped.y(), vector.z()) : mapped;
+    };
+    const auto start = reflectVector(geo::Coordinate(startTanX(), startTanY(), startTanZ()));
+    const auto end = reflectVector(geo::Coordinate(endTanX(), endTanY(), endTanZ()));
+    const auto normal = reflectVector(geo::Coordinate(nX(), nY(), nZ()));
+    auto newSpline = std::make_shared<Spline>(
+        transformPoints(controlPoints(), reflectPoint), knotPoints(), transformPoints(fitPoints(), reflectPoint),
+        degree(), closed(), fitTolerance(), start.x(), start.y(), start.z(), end.x(), end.y(), end.z(),
+        normal.x(), normal.y(), normal.z(), flags(), layer(), metaInfo(), block(), weights());
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -257,7 +255,7 @@ CADEntity_CSPtr Spline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr met
                          nX(), nY(), nZ(), flags(),
                          layer,
                          metaInfo,
-                         block
+                         block, weights()
                      );
     newSpline->setID(id());
 
@@ -330,7 +328,7 @@ CADEntity_CSPtr Spline::setDragPoints(std::map<unsigned int, lc::geo::Coordinate
                          nX(), nY(), nZ(),
                          flags(),
                          layer()
-                         , metaInfo(), block());
+                         , metaInfo(), block(), weights());
 
         newEntity->setID(id());
 
@@ -395,7 +393,7 @@ CADEntity_CSPtr Spline::setProperties(const PropertiesMap& propertiesMap) const 
     }
 
     auto newSpline = std::make_shared<Spline>(controlPointsp, knotPoints(), fitPoints(), degreep, closedp, fitTolerancep, startTangentp.x(),
-                     startTangentp.y(), startTangentp.z(), endTangentp.x(),endTangentp.y(), endTangentp.z(), normalVectorp.x(), normalVectorp.y(), normalVectorp.z(), flags(), layer(), metaInfo(), block());
+                     startTangentp.y(), startTangentp.z(), endTangentp.x(),endTangentp.y(), endTangentp.z(), normalVectorp.x(), normalVectorp.y(), normalVectorp.z(), flags(), layer(), metaInfo(), block(), weights());
     newSpline->setID(this->id());
     return newSpline;
 }

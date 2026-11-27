@@ -40,6 +40,9 @@ public:
     /**
      * @brief Remove control point
      * @param index Index of the element to remove, or negative to remove from the end
+     * A complete weight vector loses the corresponding weight. The caller
+     * must update the knot vector to match the edited control points.
+     * Throws if the index is invalid or existing weights are incomplete.
      */
     void removeControlPoint(int index);
 
@@ -51,6 +54,9 @@ public:
      * @param index Index of the element to remove, or negative to remove from the end
      */
     void removeKnotPoint(int index);
+
+    const std::vector<double>& weights() const;
+    void setWeights(const std::vector<double>& weights);
 
     const std::vector<geo::Coordinate>& fitPoints() const;
     void setFitPoints(const std::vector<geo::Coordinate>& fitPoints);
@@ -73,6 +79,7 @@ private:
     std::vector<geo::Coordinate> _controlPoints;
     std::vector<double> _knotPoints;
     std::vector<geo::Coordinate> _fitPoints;
+    std::vector<double> _weights;
 
     short _degree;
     bool _closed;
