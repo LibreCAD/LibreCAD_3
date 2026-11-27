@@ -50,7 +50,8 @@ void DragManager::moveEntities() {
         auto entityDragPoints = draggable->dragPoints();
         for (auto point : entityDragPoints) {
             if (point.second.distanceTo(_selectedPoint) < LCTOLERANCE) {
-                entityDragPoints[point.first] = _cursor->position();
+                const auto cursor = _cursor->position();
+                entityDragPoints[point.first] = lc::geo::Coordinate(cursor.x(), cursor.y(), point.second.z());
             }
         }
 
@@ -69,7 +70,8 @@ void DragManager::onMouseMove() {
     }
     dragPoints = selectedEntitiesDragPoints();
     _dragPointsEvent(lc::viewer::event::DragPointsEvent(dragPoints, _size));
-    _selectedPoint = _cursor->position();// Last known point
+    const auto cursor = _cursor->position();
+    _selectedPoint = _entityDragged ? lc::geo::Coordinate(cursor.x(), cursor.y(), _selectedPoint.z()) : cursor;
 
     double x = _size;
     double y = _size;

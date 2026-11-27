@@ -964,7 +964,8 @@ void DocumentCanvas::selectPoint(double x, double y) {
 
         if(snapable) {
             auto nearestPoint = snapable->nearestPointOnEntity(point);
-            auto distance = nearestPoint.distanceTo(point);
+            // The canvas displays XY; elevation must not affect a screen pick.
+            auto distance = std::hypot(nearestPoint.x() - point.x(), nearestPoint.y() - point.y());
             //std::cout << nearestPoint << std::endl;
             //std::cout << point << std::endl;
             if (distance>mwh)
