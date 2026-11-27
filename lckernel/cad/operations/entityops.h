@@ -92,6 +92,7 @@ DECLARE_SHORT_SHARED_PTR(Loop)
 * </pre>
 */
 class Begin : public Base {
+    friend class EntityBuilder;
 public:
     Begin();
 

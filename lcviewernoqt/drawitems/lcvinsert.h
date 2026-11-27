@@ -20,6 +20,8 @@ public:
     void draw(LcPainter& _painter, const LcDrawOptions& options, const lc::geo::Area& updateRect) const override;
 
     void draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter) const;
+    void draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter,
+              const lc::meta::Layer_CSPtr& inheritedLayer) const;
 
     lc::entity::CADEntity_CSPtr entity() const override;
 

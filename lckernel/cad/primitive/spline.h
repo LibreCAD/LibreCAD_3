@@ -52,7 +52,8 @@ public:
            double nx, double ny, double nz, splineflag flags,
            meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo = nullptr,
-           meta::Block_CSPtr block = nullptr);
+           meta::Block_CSPtr block = nullptr,
+           const std::vector<double>& weights = {});
     Spline(const Spline_CSPtr& other, bool sameID = false);
     Spline(const lc::builder::SplineBuilder& builder);
 

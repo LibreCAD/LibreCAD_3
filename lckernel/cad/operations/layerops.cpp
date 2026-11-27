@@ -33,7 +33,7 @@ RemoveLayer::RemoveLayer(std::shared_ptr<storage::Document> document, meta::Laye
 }
 
 void RemoveLayer::processInternal() {
-    auto le = document()->entityContainer().entitiesByLayer(_layer).asVector();
+    auto le = document()->entitiesByLayer(_layer).asVector();
     _entities.insert(_entities.end(), le.begin(), le.end());
 
     for (const auto& i : _entities) {
@@ -74,7 +74,7 @@ void ReplaceLayer::processInternal() {
 }
 
 void ReplaceLayer::undo() const {
-    auto le = document()->entityContainer().entitiesByLayer(_newLayer).asVector();
+    auto le = document()->entitiesByLayer(_newLayer).asVector();
 
     for (const auto& i : le) {
         document()->removeEntity(i);
@@ -86,7 +86,7 @@ void ReplaceLayer::undo() const {
 }
 
 void ReplaceLayer::redo() const {
-    auto le = document()->entityContainer().entitiesByLayer(_oldLayer).asVector();
+    auto le = document()->entitiesByLayer(_oldLayer).asVector();
 
     for (const auto& i : le) {
         document()->removeEntity(i);

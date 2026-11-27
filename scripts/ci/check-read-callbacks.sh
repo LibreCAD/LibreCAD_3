@@ -16,6 +16,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 impl="$root/persistence/libdxfrw/dxfimpl.cpp"
+header="$root/persistence/libdxfrw/dxfimpl.h"
 unguarded=()
 
 # Read callbacks are the add*/link* entry points; endBlock and setBlock touch
@@ -35,6 +36,17 @@ while read -r line; do
         unguarded+=("$method")
     fi
 done < <(grep -E '^void DXFimpl::(add|link)[A-Za-z0-9]*\(' "$impl")
+
+# Inline raw-record callbacks allocate too. Keep them under the same guard;
+# inspect only these explicit multi-line bodies (addComment is a no-op).
+for method in addRawDxfObject addRawDxfEntity addRawDxfSection addDxfClass; do
+    if ! awk -v want="^    void ${method}[(]" '
+        $0 ~ want { found = 1; next }
+        found { print; exit }
+    ' "$header" | grep -q 'guarded('; then
+        unguarded+=("$method")
+    fi
+done
 
 if [ ${#unguarded[@]} -ne 0 ]; then
     echo "error: these DXF read callbacks do not run inside DXFimpl::guarded():" >&2

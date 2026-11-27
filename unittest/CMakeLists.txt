@@ -68,6 +68,7 @@ lckernel/operations/entitybuildertest.cpp
 lckernel/geometry/testgeoarc.cpp
 lckernel/geometry/testgeocircle.cpp
 lckernel/primitive/point3dtest.cpp
+lckernel/geometry/testgeocoordinate.cpp
 lckernel/geometry/testgeoregion.cpp
 lckernel/functions/testintersect.cpp
 lckernel/math/testmatrices.cpp
@@ -104,10 +105,9 @@ lckernel/logger/loggertest.cpp
 # crashes that made File::open unusable on real DXF input (3-D segments,
 # empty hatch loops, fit-points-only splines) and File::save's bool result.
 #
-# Neither source includes a libdxfrw header, and neither adds a library.
-# persistence links libdxfrw PRIVATE on purpose (persistence/CMakeLists.txt),
-# so lcunittest has no way to reach its headers and no reason to.  Keep it that
-# way: parse raw DXF group codes instead of pulling in the library.
+# The DXF tests inspect group codes without codec headers. The DWG import
+# tests also exercise the adapter directly, so lcunittest needs the codec's
+# public usage requirements below.
 if(WITH_PERSISTENCE)
     list(APPEND src persistence/dxfexporttest.cpp)
     list(APPEND src persistence/dxfroundtriptest.cpp)
@@ -311,3 +311,17 @@ target_compile_options(lcunittest PRIVATE ${LIBDXFRW_KAGUYA_CSTDINT})
 target_compile_features(lcunittest PRIVATE cxx_std_17)
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS}
     ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${LUA_LIBRARIES})
+
+# Isolated codec-aware checks; the ordinary persistence suite deliberately
+# keeps libdxfrw's headers and link requirements private.
+if(WITH_PERSISTENCE)
+    target_link_libraries(lcunittest libdxfrw::libdxfrw)
+    add_executable(lclayoutgraphtest persistence/layout_graph_test.cpp)
+    target_compile_features(lclayoutgraphtest PRIVATE cxx_std_17)
+    target_link_libraries(lclayoutgraphtest PRIVATE persistence lckernel libdxfrw::libdxfrw ${Boost_LIBRARIES})
+    if(MSVC)
+        target_link_libraries(lclayoutgraphtest PRIVATE GTest::gtest)
+    else()
+        target_link_libraries(lclayoutgraphtest PRIVATE gtest)
+    endif()
+endif()

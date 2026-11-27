@@ -66,7 +66,11 @@ void AddLayerDialog::accept() {
         layer = std::make_shared<const lc::meta::Layer>(
                     ui->name->text().toStdString(),
                     *lineWidth,
-                    colorSelect->color()
+                    colorSelect->color(),
+                    nullptr,
+                    _oldLayer && _oldLayer->isFrozen(),
+                    _oldLayer && _oldLayer->isOff(),
+                    _oldLayer && _oldLayer->isLocked()
                 );
     }
     else {
@@ -75,7 +79,9 @@ void AddLayerDialog::accept() {
                     *lineWidth,
                     colorSelect->color(),
                     linePattern,
-                    false
+                    _oldLayer && _oldLayer->isFrozen(),
+                    _oldLayer && _oldLayer->isOff(),
+                    _oldLayer && _oldLayer->isLocked()
                 );
     }
 

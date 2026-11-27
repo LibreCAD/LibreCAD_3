@@ -13,8 +13,10 @@ DECLARE_SHORT_SHARED_PTR(Document)
 }
 
 namespace operation {
+class Builder;
 class EntityBuilder: public DocumentOperation {
     friend class lc::operation::Base;
+    friend class lc::operation::Builder;
 
 public:
     /**
@@ -37,6 +39,11 @@ public:
      */
     EntityBuilder* appendOperation(Base_SPtr operation);
 
+    // By default an operation that modifies an existing entity on a locked
+    // layer is rejected as a whole. Explicit callers can override that policy.
+    void setAllowLockedLayerEdits(bool allow) { _allowLockedLayerEdits = allow; }
+    bool blockedByLockedLayer() const { return _blockedByLockedLayer; }
+
     virtual void undo() const;
     virtual void redo() const;
 
@@ -50,11 +57,26 @@ protected:
     virtual void processInternal();
 
 private:
+    struct ProjectedEntity {
+        entity::CADEntity_CSPtr source;
+        bool sameObject;
+        bool removal = false;
+    };
+    bool buildPreflightProbe(EntityBuilder& probe) const;
+    bool projectKnownStack(std::vector<ProjectedEntity>& projected) const;
+    bool touchesLockedLayer() const;
+    bool rejectLockedCompoundUpdate();
     std::vector<Base_SPtr> _stack;
+    bool _allowLockedLayerEdits = false;
+    bool _blockedByLockedLayer = false;
     std::vector<entity::CADEntity_CSPtr> _workingBuffer;
 
     std::vector<entity::CADEntity_CSPtr> _entitiesThatWhereUpdated;
     std::vector<entity::CADEntity_CSPtr> _entitiesThatNeedsRemoval;
+    // Last applied journal, restored if a later execution is refused.
+    std::vector<entity::CADEntity_CSPtr> _committedWorkingBuffer;
+    std::vector<entity::CADEntity_CSPtr> _committedUpdates;
+    std::vector<entity::CADEntity_CSPtr> _committedRemovals;
 };
 
 DECLARE_SHORT_SHARED_PTR(EntityBuilder)

@@ -1,10 +1,12 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <stdexcept>
 #include <cad/meta/customentitystorage.h>
 #include "documentimpl.h"
 #include <cad/primitive/insert.h>
 #include <cad/primitive/customentity.h>
+#include <cad/logger/logger.h>
 
 using namespace lc;
 using namespace lc::storage;
@@ -12,6 +14,7 @@ using namespace lc::storage;
 DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
     Document(),
     _storageManager(std::move(storageManager)) {
+    if (!_storageManager) throw std::invalid_argument("DocumentImpl requires a storage manager");
     _storageManager->addDocumentMetaType(std::make_shared<meta::Layer>("0", meta::MetaLineWidthByValue(1.0), Color(255, 255, 255)));
     //Add papers too
     _storageManager->addDocumentMetaType(std::make_shared<lc::meta::Block>("*Paper_Space", geo::Coordinate()));
@@ -47,8 +50,9 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
-    if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
-        removeEntity(cadEntity);
+    if (!cadEntity) { LOG_WARNING << "Cannot insert a null entity"; return; }
+    if (auto existing = _storageManager->entityByID(cadEntity->id())) {
+        removeEntity(existing);
     }
 
     _storageManager->insertEntity(cadEntity);
@@ -67,6 +71,7 @@ void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
 }
 
 void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
+    if (!entity) { LOG_WARNING << "Cannot remove a null entity"; return; }
     auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
     if (insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
         auto ces = std::dynamic_pointer_cast<const meta::CustomEntityStorage>(insert->displayBlock());

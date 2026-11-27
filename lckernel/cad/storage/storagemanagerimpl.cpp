@@ -61,7 +61,11 @@ entity::CADEntity_CSPtr StorageManagerImpl::entityByID(ID_DATATYPE id) const {
 }
 
 EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(meta::Layer_CSPtr layer) const {
-    return _entities.entitiesByLayer(layer);
+    auto result = _entities.entitiesByLayer(layer);
+    for (const auto& block : _blocksEntities) {
+        result.combine(block.second.entitiesByLayer(layer));
+    }
+    return result;
 }
 
 

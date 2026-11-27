@@ -77,6 +77,10 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                 entities.emplace_back(point, lc::geo::Coordinate(point->x(), point->y(), point->z()));
         });
     }
+    entities.erase(std::remove_if(entities.begin(), entities.end(), [](const lc::EntityDistance& candidate) {
+        const auto entity = candidate.entity();
+        return entity && entity->layer() && entity->layer()->isHidden();
+    }), entities.end());
     std::stable_sort(entities.begin(), entities.end(), [&](const lc::EntityDistance& a, const lc::EntityDistance& b) {
         return std::hypot(a.coordinate().x() - location.x(), a.coordinate().y() - location.y()) <
                std::hypot(b.coordinate().x() - location.x(), b.coordinate().y() - location.y());

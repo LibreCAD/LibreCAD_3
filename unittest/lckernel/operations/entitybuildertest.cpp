@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
+#include <cad/storage/undomanagerimpl.h>
 #include <cad/operations/entitybuilder.h>
+#include <cad/operations/layerops.h>
 #include <cad/primitive/line.h>
+#include <cad/meta/block.h>
 
 TEST(EntityBuilderTest, Append) {
     auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
@@ -50,6 +53,56 @@ TEST(EntityBuilderTest, Remove) {
     builder->execute();
 
     EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Entity was not deleted";
+}
+
+TEST(EntityBuilderTest, RemovingAbsentEntityDoesNotCreateItOnUndoOrRedo) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2, 3),
+                                                   lc::geo::Coordinate(4, 5, 6), document->layerByName("0"));
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(line);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    remove->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    remove->redo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+}
+
+TEST(EntityBuilderTest, RemovingStaleSnapshotRestoresCurrentEntityAndBlock) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    auto oldBlock = std::make_shared<lc::meta::Block>("OLD", lc::geo::Coordinate());
+    auto currentBlock = std::make_shared<lc::meta::Block>("CURRENT", lc::geo::Coordinate());
+    document->addDocumentMetaType(oldBlock); document->addDocumentMetaType(currentBlock);
+    auto stale = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2, 3),
+                                                    lc::geo::Coordinate(4, 5, 6), layer, nullptr, oldBlock);
+    auto current = stale->move(lc::geo::Coordinate(10, 0, 0))->modify(layer, nullptr, currentBlock);
+    document->insertEntity(current);
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(stale);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute(); EXPECT_EQ(document->entityByID(stale->id()), nullptr);
+    EXPECT_TRUE(document->entitiesByBlock(currentBlock).asVector().empty());
+    remove->undo(); EXPECT_EQ(document->entityByID(stale->id()), current);
+    EXPECT_TRUE(document->entitiesByBlock(oldBlock).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(currentBlock).asVector().size(), 1u);
+    remove->redo(); EXPECT_EQ(document->entityByID(stale->id()), nullptr);
+}
+
+TEST(EntityBuilderTest, RepeatedRemovalKeepsCommittedUndoJournal) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0),
+                                                   lc::geo::Coordinate(1, 0), document->layerByName("0"));
+    document->insertEntity(line);
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(line);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute(); remove->execute();
+    EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    remove->undo(); EXPECT_EQ(document->entityByID(line->id()), line);
+    remove->redo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
 }
 
 TEST(EntityBuilderTest, UndoRedo) {
@@ -325,4 +378,218 @@ TEST(EntityBuilderTest, SelectByLayer) {
 
     EXPECT_TRUE((firstEntity_isExpected1 && secondEntity_isExpected2) ||
                 (firstEntity_isExpected2 && secondEntity_isExpected1));
+}
+TEST(EntityBuilderTest, BlockEntityUpdateUndoAndMoveBetweenBlocks) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto first = std::make_shared<lc::meta::Block>("FIRST");
+    auto second = std::make_shared<lc::meta::Block>("SECOND");
+    document->addDocumentMetaType(first); document->addDocumentMetaType(second);
+    auto original = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0, 3), lc::geo::Coordinate(10, 0, 9),
+                                                       document->layerByName("0"), nullptr, first);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document); add->appendEntity(original); add->execute();
+    auto moved = original->move(lc::geo::Coordinate(5, 7, 11));
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(document); edit->appendEntity(moved); edit->execute();
+    ASSERT_EQ(document->entityByID(original->id()), moved);
+    auto movedLine = std::dynamic_pointer_cast<const lc::entity::Line>(moved); ASSERT_TRUE(movedLine);
+    EXPECT_DOUBLE_EQ(movedLine->start().z(), 14); EXPECT_DOUBLE_EQ(movedLine->end().z(), 20);
+    edit->undo();
+    EXPECT_EQ(document->entityByID(original->id()), original);
+    edit->redo();
+    EXPECT_EQ(document->entityByID(original->id()), moved);
+
+    auto relocated = moved->modify(moved->layer(), moved->metaInfo(), second);
+    auto transfer = std::make_shared<lc::operation::EntityBuilder>(document); transfer->appendEntity(relocated); transfer->execute();
+    EXPECT_TRUE(document->entitiesByBlock(first).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(second).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(original->id()), relocated);
+    transfer->undo();
+    EXPECT_TRUE(document->entitiesByBlock(second).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(first).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(original->id()), moved);
+    transfer->redo();
+    EXPECT_TRUE(document->entitiesByBlock(first).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(second).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(original->id()), relocated);
+
+    auto modelEntity = relocated->modify(relocated->layer(), relocated->metaInfo(), nullptr);
+    auto toModel = std::make_shared<lc::operation::EntityBuilder>(document); toModel->appendEntity(modelEntity); toModel->execute();
+    EXPECT_TRUE(document->entitiesByBlock(second).asVector().empty());
+    EXPECT_EQ(document->entityByID(original->id()), modelEntity);
+    toModel->undo();
+    EXPECT_TRUE(document->entityContainer().asVector().empty());
+    EXPECT_EQ(document->entityByID(original->id()), relocated);
+    toModel->redo();
+    EXPECT_TRUE(document->entitiesByBlock(second).asVector().empty());
+    EXPECT_EQ(document->entityByID(original->id()), modelEntity);
+}
+
+TEST(EntityBuilderTest, LockedLayerChangesAreAtomicAndExplicitlyOverrideable) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    const auto lockedLayer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                               lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(lockedLayer);
+    const auto unlockedLayer = document->layerByName("0");
+    const auto block = std::make_shared<lc::meta::Block>("LOCKED_BLOCK");
+    document->addDocumentMetaType(block);
+    const auto lockedLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), lockedLayer, nullptr, block);
+    const auto unlockedLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 1), lc::geo::Coordinate(1, 1), unlockedLayer, nullptr);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document);
+    add->appendEntity(lockedLine); add->appendEntity(unlockedLine); add->execute();
+    EXPECT_FALSE(add->blockedByLockedLayer());
+    ASSERT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    ASSERT_EQ(document->entityByID(unlockedLine->id()), unlockedLine);
+
+    // Copying reads the locked original and adds a new object; undo must not
+    // remove or rewrite the original.
+    auto copy = std::make_shared<lc::operation::EntityBuilder>(document);
+    copy->appendEntity(lockedLine);
+    copy->appendOperation(std::make_shared<lc::operation::Push>());
+    copy->appendOperation(std::make_shared<lc::operation::Copy>(lc::geo::Coordinate(2, 0)));
+    copy->execute();
+    EXPECT_FALSE(copy->blockedByLockedLayer());
+    EXPECT_EQ(document->entitiesByBlock(block).asVector().size(), 2u);
+    EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    copy->undo(); EXPECT_EQ(document->entitiesByBlock(block).asVector().size(), 1u);
+    copy->redo(); EXPECT_EQ(document->entitiesByBlock(block).asVector().size(), 2u);
+    copy->undo(); EXPECT_EQ(document->entitiesByBlock(block).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+
+    // An operation touching both layers must not partly edit the unlocked one
+    // or insert a new object when another participant is locked.
+    const auto newLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 2), lc::geo::Coordinate(1, 2), unlockedLayer, nullptr);
+    auto move = std::make_shared<lc::operation::EntityBuilder>(document);
+    move->appendEntity(lockedLine); move->appendEntity(unlockedLine); move->appendEntity(newLine);
+    move->appendOperation(std::make_shared<lc::operation::Push>());
+    move->appendOperation(std::make_shared<lc::operation::Move>(lc::geo::Coordinate(5, 0)));
+    move->execute();
+    EXPECT_TRUE(move->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), unlockedLine);
+    EXPECT_FALSE(document->entityByID(newLine->id()));
+    move->undo(); move->redo();
+    EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), unlockedLine);
+
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(lockedLine); remove->appendEntity(unlockedLine);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute();
+    EXPECT_TRUE(remove->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), unlockedLine);
+    remove->undo(); remove->redo();
+    EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), unlockedLine);
+
+    const auto moved = lockedLine->move(lc::geo::Coordinate(5, 0));
+    auto force = std::make_shared<lc::operation::EntityBuilder>(document);
+    force->setAllowLockedLayerEdits(true); force->appendEntity(moved); force->execute();
+    EXPECT_FALSE(force->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(lockedLine->id()), moved);
+    force->undo(); EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    force->redo(); EXPECT_EQ(document->entityByID(lockedLine->id()), moved);
+
+    // A stale unlocked snapshot cannot bypass the document's current lock.
+    const auto newlyLocked = lc::meta::Layer::withState(unlockedLayer, false, false, true);
+    auto lockLayer = std::make_shared<lc::operation::ReplaceLayer>(document, unlockedLayer, newlyLocked);
+    lockLayer->execute();
+    const auto current = document->entityByID(unlockedLine->id());
+    ASSERT_TRUE(current); ASSERT_TRUE(current->layer()->isLocked());
+    auto staleEdit = std::make_shared<lc::operation::EntityBuilder>(document);
+    staleEdit->appendEntity(unlockedLine->move(lc::geo::Coordinate(3, 0)));
+    staleEdit->execute();
+    EXPECT_TRUE(staleEdit->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), current);
+    EXPECT_FALSE(document->tryInsertEntity(unlockedLine->move(lc::geo::Coordinate(4, 0))));
+    EXPECT_FALSE(document->tryRemoveEntity(unlockedLine));
+    EXPECT_TRUE(document->tryInsertEntity(current)); // identical object is a no-op
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), current);
+    const auto created = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 3), lc::geo::Coordinate(1, 3), newlyLocked, nullptr);
+    EXPECT_TRUE(document->tryInsertEntity(created));
+    EXPECT_EQ(document->entityByID(created->id()), created);
+    EXPECT_FALSE(document->tryRemoveEntity(created));
+}
+
+TEST(EntityBuilderTest, NullStorageManagerIsRejected) {
+    EXPECT_THROW(std::make_shared<lc::storage::DocumentImpl>(nullptr), std::invalid_argument);
+}
+
+TEST(EntityBuilderTest, BlockedLockedEditPreservesUndoAndRedoHistory) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto undo = std::make_shared<lc::storage::UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(undo.get());
+    const auto lockedLayer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                               lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(lockedLayer);
+    const auto lockedLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), lockedLayer, nullptr);
+    document->insertEntity(lockedLine);
+    const auto freeLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 1), lc::geo::Coordinate(1, 1), document->layerByName("0"), nullptr);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document);
+    add->appendEntity(freeLine); add->execute();
+    ASSERT_TRUE(undo->canUndo());
+    undo->undo();
+    ASSERT_TRUE(undo->canRedo());
+    ASSERT_FALSE(undo->canUndo());
+    const auto rejectEdit = [&] {
+        auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+        edit->appendEntity(lockedLine->move(lc::geo::Coordinate(1, 0))); edit->execute();
+        EXPECT_TRUE(edit->blockedByLockedLayer());
+        EXPECT_EQ(document->entityByID(lockedLine->id()), lockedLine);
+    };
+    rejectEdit();
+    EXPECT_TRUE(undo->canRedo()); EXPECT_FALSE(undo->canUndo());
+    undo->redo();
+    ASSERT_EQ(document->entityByID(freeLine->id()), freeLine);
+    rejectEdit();
+    ASSERT_TRUE(undo->canUndo());
+    undo->undo();
+    EXPECT_FALSE(document->entityByID(freeLine->id()));
+    EXPECT_FALSE(undo->canUndo());
+    EXPECT_TRUE(undo->canRedo());
+}
+
+TEST(EntityBuilderTest, RefusedReuseKeepsPreviouslyCommittedUndoJournal) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto undo = std::make_shared<lc::storage::UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(undo.get());
+    const auto lockedLayer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                               lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(lockedLayer);
+    const auto locked = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), lockedLayer, nullptr);
+    document->insertEntity(locked);
+    const auto added = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 1), lc::geo::Coordinate(1, 1), document->layerByName("0"), nullptr);
+    auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+    builder->appendEntity(added); builder->execute();
+    ASSERT_EQ(document->entityByID(added->id()), added);
+    builder->appendEntity(locked->move(lc::geo::Coordinate(3, 0))); builder->execute();
+    ASSERT_TRUE(builder->blockedByLockedLayer());
+    ASSERT_EQ(document->entityByID(added->id()), added);
+    ASSERT_EQ(document->entityByID(locked->id()), locked);
+    ASSERT_TRUE(undo->canUndo()); undo->undo();
+    EXPECT_FALSE(document->entityByID(added->id()));
+    EXPECT_EQ(document->entityByID(locked->id()), locked);
+    ASSERT_TRUE(undo->canRedo()); undo->redo();
+    EXPECT_EQ(document->entityByID(added->id()), added);
+    EXPECT_EQ(document->entityByID(locked->id()), locked);
+}
+
+TEST(EntityBuilderTest, RefusedOperationRetriesInPlaceAfterExplicitOverride) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto layer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1), lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(layer);
+    auto original = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), layer, nullptr);
+    document->insertEntity(original);
+    auto moved = original->move(lc::geo::Coordinate(2, 0));
+    auto operation = std::make_shared<lc::operation::EntityBuilder>(document);
+    operation->appendEntity(moved); operation->execute();
+    ASSERT_TRUE(operation->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(original->id()), original);
+    operation->setAllowLockedLayerEdits(true); operation->execute();
+    EXPECT_FALSE(operation->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(original->id()), moved);
+    operation->undo(); EXPECT_EQ(document->entityByID(original->id()), original);
+    operation->redo(); EXPECT_EQ(document->entityByID(original->id()), moved);
 }

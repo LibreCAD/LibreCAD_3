@@ -1,6 +1,8 @@
 #include <cad/storage/documentlist.h>
 #include "document.h"
 #include "cad/operations/documentoperation.h"
+#include "cad/meta/layer.h"
+#include "cad/logger/logger.h"
 
 #include "cad/events/beginprocessevent.h"
 #include "cad/events/commitprocessevent.h"
@@ -29,6 +31,34 @@ Document::Document():
 
 Document::~Document() {
     storage::DocumentList::getInstance().removeDocument(this);
+}
+
+bool Document::tryInsertEntity(const entity::CADEntity_CSPtr& candidate) {
+    if (!candidate) return false;
+    const auto original = entityByID(candidate->id());
+    if (original && original->layer() && original->layer()->isLocked()) {
+        // Reinserting the identical immutable object is a no-op.
+        return original == candidate;
+    }
+    insertEntity(candidate);
+    return true;
+}
+
+bool Document::tryRemoveEntity(const entity::CADEntity_CSPtr& candidate) {
+    if (!candidate) return false;
+    const auto original = entityByID(candidate->id());
+    if (!original) return true;
+    if (original->layer() && original->layer()->isLocked()) return false;
+    removeEntity(original);
+    return true;
+}
+
+void Document::insertEntityIfUnlocked(const entity::CADEntity_CSPtr& entity) {
+    if (!tryInsertEntity(entity)) LOG_WARNING << "Entity update refused: invalid entity or locked layer";
+}
+
+void Document::removeEntityIfUnlocked(const entity::CADEntity_CSPtr& entity) {
+    if (!tryRemoveEntity(entity)) LOG_WARNING << "Entity removal refused: invalid entity or locked layer";
 }
 
 void Document::operationStart(const operation::DocumentOperation_SPtr& operation) {

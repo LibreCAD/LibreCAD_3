@@ -194,6 +194,24 @@ TEST(SelectionTest, ElevatedPointOnFrozenLayerIsNotSnapped) {
     EXPECT_DOUBLE_EQ(capture.value.z(), 0);
 }
 
+TEST(SelectionTest, ElevatedPointOnOffLayerIsNotSnapped) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    auto layer = std::make_shared<lc::meta::Layer>("OFF", lc::meta::MetaLineWidthByValue(1),
+                                                   lc::Color(), nullptr, false, true);
+    document->addDocumentMetaType(layer);
+    document->insertEntity(std::make_shared<lc::entity::Point>(lc::geo::Coordinate(3, 4, 100), layer));
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
+    lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10); snap.setMiddleSnappable(true);
+    struct Capture : Nano::Observer {
+        lc::geo::Coordinate value;
+        void receive(const lc::viewer::event::SnapPointEvent& event) { value = event.snapPoint(); }
+    } capture;
+    snap.snapPointEvents().connect<Capture, &Capture::receive>(capture);
+    snap.setDeviceLocation(3, 4);
+    EXPECT_DOUBLE_EQ(capture.value.z(), 0);
+}
+
 TEST(SelectionTest, MutatorsNotifyObservers) {
     auto document = std::make_shared<lc::storage::DocumentImpl>(
         std::make_shared<lc::storage::StorageManagerImpl>());

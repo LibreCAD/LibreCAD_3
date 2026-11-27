@@ -78,7 +78,13 @@ jobs:
             -DWITH_RENDERING_UNITTESTS=OFF
 
       - name: Build application and tests
-        run: cmake --build build --target tinyspline librecad lcunittest --parallel 3
+        run: cmake --build build --target tinyspline librecad lcunittest lclayoutgraphtest --parallel 3
+
+      - name: Check preserved layout graphs
+        run: >-
+          "$PYTHON_EXECUTABLE" scripts/run_required_gtests.py
+          --binary "$GITHUB_WORKSPACE/build/bin/lclayoutgraphtest"
+          --filter='LayoutGraph.*' --require-suite 'LayoutGraph.'
 
       - name: Require Python binding regression suites
         shell: bash

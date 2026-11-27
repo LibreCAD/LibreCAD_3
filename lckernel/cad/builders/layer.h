@@ -28,12 +28,16 @@ public:
     const Color& color() const;
     meta::DxfLinePatternByValue_CSPtr linePattern() const;
     bool isFrozen() const;
+    bool isOff() const;
+    bool isLocked() const;
 
     LayerBuilder* setName(const std::string& name);
     LayerBuilder* setLineWidth(const meta::MetaLineWidthByValue& lineWidth);
     LayerBuilder* setColor(const Color& color);
     LayerBuilder* setLinePattern(const meta::DxfLinePatternByValue_CSPtr& linePattern);
     LayerBuilder* setIsFrozen(bool isFrozen);
+    LayerBuilder* setIsOff(bool isOff);
+    LayerBuilder* setIsLocked(bool isLocked);
 
     meta::Layer_CSPtr build();
 
@@ -45,6 +49,8 @@ private:
     Color _color;
     meta::DxfLinePatternByValue_CSPtr _linePattern;
     bool _isFrozen;
+    bool _isOff;
+    bool _isLocked;
 };
 }
 }

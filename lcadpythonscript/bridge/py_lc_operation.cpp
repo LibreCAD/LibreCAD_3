@@ -40,6 +40,7 @@ void import_py_lc_operation_namespace(py::module_& m_op) {
                lc::operation::DocumentOperation>(m_op, "Builder")
         .def(py::init<lc::storage::Document_SPtr, const std::string&>())
         .def("append", &lc::operation::Builder::append)
+        .def("blockedByLockedLayer", &lc::operation::Builder::blockedByLockedLayer)
         .def("redo",   &lc::operation::Builder::redo)
         .def("undo",   &lc::operation::Builder::undo);
 
@@ -164,6 +165,8 @@ void import_py_lc_operation_namespace(py::module_& m_op) {
         .def("appendEntity",    &lc::operation::EntityBuilder::appendEntity)
         .def("appendOperation", &lc::operation::EntityBuilder::appendOperation)
         .def("processStack",    &lc::operation::EntityBuilder::processStack)
+        .def("setAllowLockedLayerEdits", &lc::operation::EntityBuilder::setAllowLockedLayerEdits)
+        .def("blockedByLockedLayer", &lc::operation::EntityBuilder::blockedByLockedLayer)
         .def("redo",            &lc::operation::EntityBuilder::redo)
         .def("undo",            &lc::operation::EntityBuilder::undo);
 }

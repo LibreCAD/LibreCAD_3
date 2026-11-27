@@ -112,8 +112,10 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
         for required in (
             "build-python-off", "-DWITH_PYTHONSCRIPT=OFF",
             "-DCMAKE_DISABLE_FIND_PACKAGE_Python=TRUE", "-DWITH_UNITTESTS=ON",
-            "--target librecad lcunittest", "scripts\\run_required_gtests.py",
+            "--target librecad lcunittest lclayoutgraphtest", "scripts\\run_required_gtests.py",
             '--filter="LuaRuntimeTest.*"', '--require-suite "LuaRuntimeTest."',
+            'bin\\lclayoutgraphtest.exe"', '--filter="LayoutGraph.*"',
+            '--require-suite "LayoutGraph."',
         ):
             self.assertIn(required, disabled)
         for required in (
@@ -123,7 +125,10 @@ class WindowsPackageSmokeContractTests(unittest.TestCase):
             '-DPython_EXECUTABLE="%Python_EXECUTABLE%"', "--target lcpythonscript",
         ):
             self.assertIn(required, no_persistence)
-        self.assertEqual(6, step.count("if errorlevel 1 exit /b 1"))
+        self.assertEqual(7, step.count("if errorlevel 1 exit /b 1"))
+        layout_run = next(line for line in disabled.splitlines()
+                          if 'bin\\lclayoutgraphtest.exe"' in line)
+        self.assertIn(layout_run + "\n          if errorlevel 1 exit /b 1", disabled)
         self.assertNotIn("conan install", step)
         self.assertNotIn("pip install", step)
 

@@ -52,12 +52,15 @@
 #include <cad/storage/storagemanagerimpl.h>
 
 #include <cad/meta/color.h>
+#include <cad/meta/metacolor.h>
+#include <cad/meta/icolor.h>
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
 #include <cad/meta/customentitystorage.h>
 
 #include <cad/operations/builder.h>
 #include <cad/operations/blockops.h>
+#include <cad/operations/layerops.h>
 #include <cad/operations/entitybuilder.h>
 
 #include <cad/geometry/geoarea.h>
@@ -181,6 +184,152 @@ std::map<std::string, std::size_t> entitiesInDocument(
 // rather than projecting the pair onto a plane.
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
+TEST(DxfRoundTripTest, ExplicitTrueColorSurvivesImportEditAndExport) {
+    const auto input = uniqueTmpDxf("true-color-source");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n0\nLINE\n5\n55\n100\nAcDbEntity\n8\n0\n62\n1\n"
+        "420\n13132850\n430\nTest$Copper\n100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n"
+        "0\nENDSEC\n0\nEOF\n"; }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 1u);
+    auto color = entities[0]->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+    ASSERT_TRUE(color); EXPECT_EQ(color->redI(), 200); EXPECT_EQ(color->greenI(), 100); EXPECT_EQ(color->blueI(), 50);
+    auto moved = entities[0]->move(lc::geo::Coordinate(10, 0, 0)); ASSERT_TRUE(moved);
+    doc->removeEntity(entities[0]); doc->insertEntity(moved);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004,
+                            lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output = uniqueTmpDxf("true-color-output");
+        const auto written = lc::persistence::File::exportFile(doc, output, type);
+        ASSERT_TRUE(written.ok); EXPECT_TRUE(written.loss.notes.empty());
+        auto reopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        auto read = reopened->entityContainer().asVector(); ASSERT_EQ(read.size(), 1u);
+        auto rgb = read[0]->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+        ASSERT_TRUE(rgb); EXPECT_EQ(rgb->redI(), 200); EXPECT_EQ(rgb->greenI(), 100); EXPECT_EQ(rgb->blueI(), 50);
+        const auto named = read[0]->metaInfo<lc::meta::MetaColorTrueColor>(lc::meta::MetaColor::LCMETANAME());
+        ASSERT_TRUE(named); EXPECT_EQ(named->sourceAci(), 1); EXPECT_EQ(named->name(), "Test$Copper");
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(read[0]); ASSERT_TRUE(line);
+        EXPECT_DOUBLE_EQ(line->start().x(), 11); EXPECT_DOUBLE_EQ(line->end().x(), 14);
+        boost::filesystem::remove(output);
+    }
+    const auto legacy = uniqueTmpDxf("true-color-legacy");
+    const auto converted = lc::persistence::File::exportFile(doc, legacy, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(converted.ok);
+    EXPECT_TRUE(std::any_of(converted.loss.notes.begin(), converted.loss.notes.end(), [](const std::string& note) {
+        return note.find("True colors were approximated") != std::string::npos;
+    }));
+    boost::filesystem::remove(legacy); boost::filesystem::remove(input);
+}
+
+TEST(DxfRoundTripTest, TrueBlackDowngradeDoesNotBecomeByBlock) {
+    const auto input = uniqueTmpDxf("true-black-source"), output = uniqueTmpDxf("true-black-r2000");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n0\nLINE\n5\n55\n100\nAcDbEntity\n8\n0\n62\n256\n420\n0\n"
+        "100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n0\nENDSEC\n0\nEOF\n"; }
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    const auto result = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    std::ifstream f(output); ASSERT_TRUE(f.good());
+    std::string code, value; bool line = false, found = false;
+    while (std::getline(f, code) && std::getline(f, value)) {
+        if (std::stoi(code) == 0) { if (line) break; line = value == "LINE"; }
+        else if (line && std::stoi(code) == 62) { found = true; EXPECT_GT(std::stoi(value), 0); EXPECT_LE(std::stoi(value), 255); }
+    }
+    EXPECT_TRUE(found);
+    f.close(); boost::filesystem::remove(input); boost::filesystem::remove(output);
+}
+
+TEST(DxfRoundTripTest, LayerTrueColorAndByLayerEntitiesSurviveRoundTrip) {
+    const auto input = uniqueTmpDxf("layer-rgb-source");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n5\n2\n70\n2\n"
+        "0\nLAYER\n5\n10\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\n0\n70\n0\n62\n1\n420\n13132850\n430\nTest$Copper\n6\nCONTINUOUS\n"
+        "0\nLAYER\n5\n60\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\nCOLOR_LAYER\n70\n0\n62\n-3\n420\n0\n6\nCONTINUOUS\n"
+        "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n"
+        "0\nLINE\n5\n70\n100\nAcDbEntity\n8\n0\n100\nAcDbLine\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n"
+        "0\nLINE\n5\n71\n100\nAcDbEntity\n8\ncolor_layer\n100\nAcDbLine\n10\n3\n20\n2\n30\n0\n11\n7\n21\n6\n31\n0\n"
+        "0\nENDSEC\n0\nEOF\n"; }
+    auto verify = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        const auto zero = doc->layerByName("0"), black = doc->layerByName("COLOR_LAYER");
+        ASSERT_TRUE(zero); ASSERT_TRUE(black); EXPECT_FALSE(zero->isOff()); EXPECT_TRUE(black->isOff());
+        EXPECT_EQ(zero->color().redI(), 200); EXPECT_EQ(zero->color().greenI(), 100); EXPECT_EQ(zero->color().blueI(), 50);
+        EXPECT_EQ(black->color().redI(), 0); EXPECT_EQ(black->color().greenI(), 0); EXPECT_EQ(black->color().blueI(), 0);
+        const auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 2u);
+        for (const auto& e : entities) {
+            const auto layer = doc->layerByName(e->layer()->name()); ASSERT_TRUE(layer);
+            EXPECT_EQ(e->layer(), layer);
+        }
+    };
+    auto doc = newDocument(); const auto imported = lc::persistence::File::importFile(doc,input,lc::persistence::File::LIBDXFRW);
+    ASSERT_TRUE(imported.ok); verify(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output=uniqueTmpDxf("layer-rgb-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc,output,type).ok);
+        auto reopened=newDocument(); const auto reread = lc::persistence::File::importFile(reopened,output,lc::persistence::File::LIBDXFRW);
+        ASSERT_TRUE(reread.ok);
+        verify(reopened); boost::filesystem::remove(output);
+    }
+    // Turn the imported off layer on and off through normal layer replacement.
+    const auto offLayer = doc->layerByName("COLOR_LAYER"); ASSERT_TRUE(offLayer); ASSERT_TRUE(offLayer->isOff());
+    auto onLayer = std::make_shared<lc::meta::Layer>(offLayer->name(), offLayer->lineWidth(), offLayer->color(),
+                                                     offLayer->linePattern(), offLayer->isFrozen(), false);
+    auto toggle = std::make_shared<lc::operation::Builder>(doc, "turn on");
+    toggle->append(std::make_shared<lc::operation::ReplaceLayer>(doc, offLayer, onLayer)); toggle->execute();
+    const auto onOutput = uniqueTmpDxf("layer-on-output");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, onOutput, lc::persistence::File::LIBDXFRW_DXF_R2004).ok);
+    auto onDoc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(onDoc, onOutput, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_TRUE(onDoc->layerByName("COLOR_LAYER")); EXPECT_FALSE(onDoc->layerByName("COLOR_LAYER")->isOff());
+    boost::filesystem::remove(onOutput);
+    auto againOff = std::make_shared<lc::meta::Layer>(onLayer->name(), onLayer->lineWidth(), onLayer->color(),
+                                                      onLayer->linePattern(), onLayer->isFrozen(), true);
+    auto toggleAgain = std::make_shared<lc::operation::Builder>(doc, "turn off");
+    toggleAgain->append(std::make_shared<lc::operation::ReplaceLayer>(doc, onLayer, againOff)); toggleAgain->execute();
+    const auto legacy = uniqueTmpDxf("layer-rgb-legacy");
+    const auto downgraded = lc::persistence::File::exportFile(doc, legacy, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(downgraded.ok);
+    EXPECT_TRUE(std::any_of(downgraded.loss.notes.begin(), downgraded.loss.notes.end(), [](const std::string& note) {
+        return note.find("Layer true colors or color names") != std::string::npos;
+    }));
+    auto oldDoc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(oldDoc, legacy, lc::persistence::File::LIBDXFRW).ok);
+    lc::iColor palette; auto nearestBlack = palette.intToColor(palette.colorToInt(lc::Color(0, 0, 0), 1));
+    ASSERT_TRUE(nearestBlack); ASSERT_TRUE(oldDoc->layerByName("COLOR_LAYER"));
+    auto oldColor = oldDoc->layerByName("COLOR_LAYER")->color(); EXPECT_TRUE(oldColor == nearestBlack->color());
+    boost::filesystem::remove(legacy);
+
+    // Replacing a layer with a new RGB must not reattach its stale source name.
+    const auto previous = doc->layerByName("0"); ASSERT_TRUE(previous);
+    const auto replacement = std::make_shared<lc::meta::Layer>("0", previous->lineWidth(), lc::Color(17, 34, 51), previous->linePattern(), previous->isFrozen());
+    auto edit = std::make_shared<lc::operation::Builder>(doc, "change layer color");
+    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, previous, replacement)); edit->execute();
+    const auto changed = uniqueTmpDxf("layer-rgb-changed");
+    const auto written = lc::persistence::File::exportFile(doc, changed, lc::persistence::File::LIBDXFRW_DXF_R2004);
+    ASSERT_TRUE(written.ok);
+    EXPECT_TRUE(std::any_of(written.loss.notes.begin(), written.loss.notes.end(), [](const std::string& note) {
+        return note.find("source color name") != std::string::npos;
+    }));
+    auto changedDoc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(changedDoc, changed, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_TRUE(changedDoc->layerByName("0"));
+    EXPECT_EQ(changedDoc->layerByName("0")->color().redI(), 17);
+    EXPECT_EQ(changedDoc->layerByName("0")->color().greenI(), 34);
+    EXPECT_EQ(changedDoc->layerByName("0")->color().blueI(), 51);
+    boost::filesystem::remove(changed); boost::filesystem::remove(input);
+}
+
+TEST(DxfRoundTripTest, MissingLayerUsesOneSharedFallback) {
+    const auto input = uniqueTmpDxf("missing-layer");
+    { std::ofstream f(input); f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+        "0\nSECTION\n2\nENTITIES\n"
+        "0\nLINE\n5\n70\n100\nAcDbEntity\n8\nMISSING\n100\nAcDbLine\n10\n1\n20\n2\n11\n4\n21\n6\n"
+        "0\nLINE\n5\n71\n100\nAcDbEntity\n8\nmissing\n100\nAcDbLine\n10\n3\n20\n2\n11\n7\n21\n6\n"
+        "0\nENDSEC\n0\nEOF\n"; }
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    const auto layer = doc->layerByName("MISSING"); ASSERT_TRUE(layer);
+    const auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 2u);
+    for (const auto& entity : entities) EXPECT_EQ(entity->layer(), layer);
+    boost::filesystem::remove(input);
+}
+
 TEST(DxfRoundTripTest, ThreeDimensionalSegmentInsertsWithoutThrowing) {
     auto doc = newDocument();
     auto layer = defaultLayer();
@@ -627,7 +776,8 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
                 vertexes, 0.0, 0.0, 0.0, /*closed=*/false,
                 lc::geo::Coordinate(0, 0, 1), layer)}));
 
-        const bool saved = lc::persistence::File::save(doc, path, type);
+        const auto exportResult = lc::persistence::File::exportFile(doc, path, type);
+        const bool saved = exportResult.ok;
 
         if (!saved) {
             // Only LIBOPENCAD_DWG may refuse: every DXF target must carry this
@@ -642,6 +792,9 @@ TEST(DxfRoundTripTest, EveryAdvertisedSaveTypeProducesAFile) {
 
         ASSERT_TRUE(boost::filesystem::exists(path)) << advertised.second;
         ASSERT_GT(boost::filesystem::file_size(path), 0u) << advertised.second;
+        if (type == lc::persistence::File::LIBDXFRW_DXF_R12 || type == lc::persistence::File::LIBDXFRW_DXF_R14 ||
+            type == lc::persistence::File::LIBDXFRW_DXB_R12 || type == lc::persistence::File::LIBDXFRW_DXB_R14)
+            EXPECT_EQ(exportResult.loss.droppedByType.count("layer lineweight"), 0u);
 
         std::ifstream written(path, std::ios::binary);
         const std::string head(
@@ -1337,6 +1490,38 @@ std::map<std::string, std::size_t> recordsInFile(const std::string& path) {
 std::string fixture(const char* name) {
     return std::string(UNITTEST_FIXTURES_DIR) + "/" + name;
 }
+
+// The historical raw-object controls start OBJECTS with an owned dictionary.
+// Give that dictionary a real root in a temporary copy so the test exercises
+// passthrough without relying on acceptance of a malformed root position.
+struct RootedObjectFixture {
+    std::string path = uniqueTmpDxf("rooted-objects");
+    bool valid = false;
+    explicit RootedObjectFixture(const char* name) {
+        std::ifstream in(fixture(name), std::ios::binary);
+        if (!in) return;
+        std::string text((std::istreambuf_iterator<char>(in)), {});
+        const std::string section = "0\nSECTION\n2\nOBJECTS\n";
+        const auto sectionPos = text.find(section);
+        if (sectionPos == std::string::npos) return;
+        const auto start = sectionPos + section.size();
+        const std::string first = "0\nDICTIONARY\n5\n";
+        if (text.compare(start, first.size(), first) != 0) return;
+        const auto handleStart = start + first.size();
+        const auto handleEnd = text.find('\n', handleStart);
+        const auto ownerCode = text.find("330\n", handleEnd);
+        if (handleEnd == std::string::npos || ownerCode == std::string::npos) return;
+        const auto ownerEnd = text.find('\n', ownerCode + 4);
+        if (ownerEnd == std::string::npos) return;
+        const auto handle = text.substr(handleStart, handleEnd - handleStart);
+        text.replace(ownerCode + 4, ownerEnd - ownerCode - 4, "C");
+        text.insert(start, "0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n3\nLC_ROOT\n350\n" + handle + "\n");
+        std::ofstream out(path, std::ios::binary);
+        out << text;
+        valid = static_cast<bool>(out);
+    }
+    ~RootedObjectFixture() { boost::system::error_code ignored; boost::filesystem::remove(path, ignored); }
+};
 
 }  // namespace
 
@@ -2060,12 +2245,13 @@ struct RecordIdentity {
     std::string handle;
     std::string owner;
 };
-std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) {
-    std::map<std::string, RecordIdentity> identities;
+std::vector<RecordIdentity> identitiesOfType(const std::string& path, const std::string& type) {
+    std::vector<RecordIdentity> identities;
     std::ifstream file(path);
     std::string code;
     std::string value;
     std::string record;
+    RecordIdentity identity;
 
     while (std::getline(file, code) && std::getline(file, value)) {
         while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) {
@@ -2079,16 +2265,18 @@ std::map<std::string, RecordIdentity> identitiesInFile(const std::string& path) 
         }
 
         if (group == "0") {
+            if (record == type) identities.push_back(identity);
             record = value;
-        } else if (record.empty()) {
+            identity = {};
+        } else if (record != type) {
             continue;
         } else if (group == "5") {
-            identities[record].handle = value;
-        } else if (group == "330" && identities[record].owner.empty()) {
-            identities[record].owner = value;
+            identity.handle = value;
+        } else if (group == "330" && identity.owner.empty()) {
+            identity.owner = value;
         }
     }
-
+    if (record == type) identities.push_back(identity);
     return identities;
 }
 
@@ -2691,7 +2879,8 @@ TEST(DxfRoundTripTest, UnmodelledEntitiesSurviveASave) {
 }
 
 TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
-    const std::string source = fixture("raw_objects.dxf");
+    const RootedObjectFixture rooted("raw_objects.dxf"); ASSERT_TRUE(rooted.valid);
+    const std::string& source = rooted.path;
     ASSERT_TRUE(boost::filesystem::exists(source));
 
     const auto before = recordsInSection(source, "OBJECTS");
@@ -2714,7 +2903,12 @@ TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
 
     auto after = recordsInSection(saved, "OBJECTS");
     EXPECT_EQ(after["DICTIONARYVAR"], 1u) << "A record LibreCAD does not model was destroyed.";
-    EXPECT_EQ(after["ACDBPLACEHOLDER"], 1u) << "A record LibreCAD does not model was destroyed.";
+    const auto variables = identitiesOfType(saved, "DICTIONARYVAR");
+    const auto placeholders = identitiesOfType(saved, "ACDBPLACEHOLDER");
+    ASSERT_EQ(variables.size(), 1u);
+    EXPECT_EQ(std::count_if(placeholders.begin(), placeholders.end(), [&](const auto& item) {
+        return !item.owner.empty() && item.owner == variables.front().owner;
+    }), 1) << "the source placeholder no longer belongs to its dictionary";
     EXPECT_GE(after["DICTIONARY"], before.at("DICTIONARY"))
         << "The source's dictionaries must all still be there.";
 
@@ -2738,7 +2932,8 @@ TEST(DxfRoundTripTest, UnmodelledRecordsSurviveASave) {
 //
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
-    const std::string source = fixture("raw_objects_low_handles.dxf");
+    const RootedObjectFixture rooted("raw_objects_low_handles.dxf"); ASSERT_TRUE(rooted.valid);
+    const std::string& source = rooted.path;
     ASSERT_TRUE(boost::filesystem::exists(source));
 
     // The fixture is raw_objects.dxf with its three preserved handles moved
@@ -2774,22 +2969,19 @@ TEST(DxfRoundTripTest, APreservedHandleDoesNotCollideWithTheCodecsOwn) {
     EXPECT_EQ(after.count("ACDBPLACEHOLDER"), 1u)
         << "a record LibreCAD does not model was destroyed";
 
-    const auto identities = identitiesInFile(saved);
-    ASSERT_EQ(identities.count("DICTIONARYVAR"), 1u);
-    ASSERT_EQ(identities.count("ACDBPLACEHOLDER"), 1u);
+    const auto variables = identitiesOfType(saved, "DICTIONARYVAR");
+    const auto placeholders = identitiesOfType(saved, "ACDBPLACEHOLDER");
+    ASSERT_EQ(variables.size(), 1u);
 
     // Both were owned by the fixture's own DICTIONARY. Whatever handle that
     // dictionary ended up with, the two 330s must still name it and each
     // other's -- a remap is only correct if every reference moved with the
     // handle it names.
-    EXPECT_EQ(identities.at("DICTIONARYVAR").owner,
-              identities.at("ACDBPLACEHOLDER").owner)
-        << "the two preserved records no longer agree on their owner";
-    EXPECT_NE(identities.at("DICTIONARYVAR").owner, "")
-        << "the preserved records lost their owner";
-    EXPECT_NE(identities.at("DICTIONARYVAR").handle,
-              identities.at("ACDBPLACEHOLDER").handle)
-        << "two preserved records were given one handle";
+    const auto placeholder = std::find_if(placeholders.begin(), placeholders.end(), [&](const auto& item) {
+        return !item.owner.empty() && item.owner == variables.front().owner;
+    });
+    ASSERT_NE(placeholder, placeholders.end()) << "the preserved records no longer agree on their owner";
+    EXPECT_NE(variables.front().handle, placeholder->handle) << "two preserved records were given one handle";
 
     boost::filesystem::remove(saved);
 }
@@ -3000,8 +3192,9 @@ TEST(DxfRoundTripTest, AMovedHandleDoesNotLandOnAnotherPreservedRecord) {
 // NOLINTNEXTLINE(readability-identifier-naming)
 TEST(DxfRoundTripTest, UnmodelledRecordsAreNotForcedIntoAnotherRevision) {
     auto doc = newDocument();
+    const RootedObjectFixture rooted("raw_objects.dxf"); ASSERT_TRUE(rooted.valid);
     ASSERT_TRUE(lc::persistence::File::importFile(
-        doc, fixture("raw_objects.dxf"), lc::persistence::File::Library::LIBDXFRW).ok);
+        doc, rooted.path, lc::persistence::File::Library::LIBDXFRW).ok);
 
     const struct {
         lc::persistence::File::Type type;
@@ -3207,6 +3400,162 @@ TEST(DxfRoundTripTest, DrawingUnitsSurviveASave) {
         boost::filesystem::remove(source);
         boost::filesystem::remove(resaved);
     }
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsRefuseAdditionalPaperSpaceWithoutOverwriting) {
+    for (const auto target : {lc::persistence::File::LIBDXFRW_DXF_R12,
+                              lc::persistence::File::LIBDXFRW_DXF_R14,
+                              lc::persistence::File::LIBDXFRW_DXB_R12,
+                              lc::persistence::File::LIBDXFRW_DXB_R14}) {
+        auto doc = newDocument();
+        auto mainPaper = std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(1, 2, 0), lc::geo::Coordinate(3, 4, 0),
+            doc->layerByName("0"), nullptr, doc->blockByName("*Paper_Space"));
+        auto extraPaper = std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(2, 3, 0), lc::geo::Coordinate(7, 11, 0),
+            doc->layerByName("0"), nullptr, doc->blockByName("*Paper_Space0"));
+        insertThroughBuilder(doc, {mainPaper, extraPaper});
+        const auto path = uniqueTmpDxf("legacy-paper-refusal");
+        { std::ofstream out(path, std::ios::binary); out << "existing destination"; }
+        const auto refused = lc::persistence::File::exportFile(doc, path, target);
+        EXPECT_FALSE(refused.ok);
+        ASSERT_FALSE(refused.diagnostics.empty());
+        EXPECT_NE(refused.diagnostics.front().message.find("paper-space"), std::string::npos);
+        { std::ifstream in(path, std::ios::binary);
+          EXPECT_EQ(std::string((std::istreambuf_iterator<char>(in)), {}), "existing destination"); }
+        doc->removeEntity(extraPaper);
+        const auto retry = lc::persistence::File::exportFile(doc, path, target);
+        ASSERT_TRUE(retry.ok);
+        auto reopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, path, lc::persistence::File::LIBDXFRW).ok);
+        auto primary = reopened->blockByName("*Paper_Space"); ASSERT_TRUE(primary);
+        auto entities = reopened->entitiesByBlock(primary).asVector(); ASSERT_EQ(entities.size(), 1u);
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entities.front()); ASSERT_TRUE(line);
+        EXPECT_DOUBLE_EQ(line->start().x(), 1); EXPECT_DOUBLE_EQ(line->end().y(), 4);
+        boost::filesystem::remove(path);
+    }
+}
+
+TEST(DxfRoundTripTest, R12ImportedExtraPaperBlockRetainsMetadataAndRefusesUnsafeSave) {
+    for (const bool includeHeader : {false, true}) {
+        const auto input = uniqueTmpDxf("r12-imported-paper");
+        const auto output = uniqueTmpDxf("r12-imported-paper-output");
+        {
+            std::ofstream out(input);
+            if (includeHeader)
+                out << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n";
+            out << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n8\n0\n2\n*PAPER_SPACE0\n"
+                   "70\n0\n10\n1\n20\n0\n30\n0\n3\n*PAPER_SPACE0\n1\n\n"
+                   "0\nLINE\n8\n0\n10\n2\n20\n3\n30\n0\n11\n7\n21\n11\n31\n0\n"
+                   "0\nENDBLK\n8\n0\n0\nENDSEC\n0\nEOF\n";
+        }
+        auto doc = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+        auto paper = doc->blockByName("*Paper_Space0"); ASSERT_TRUE(paper);
+        EXPECT_DOUBLE_EQ(paper->base().x(), 1);
+        ASSERT_EQ(doc->entitiesByBlock(paper).asVector().size(), 1u);
+        { std::ofstream out(output); out << "retain destination"; }
+        const auto refused = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R12);
+        EXPECT_FALSE(refused.ok);
+        { std::ifstream in(output); EXPECT_EQ(std::string((std::istreambuf_iterator<char>(in)), {}), "retain destination"); }
+        boost::filesystem::remove(input); boost::filesystem::remove(output);
+    }
+}
+
+TEST(DxfRoundTripTest, R14ImportedExtraPaperBlockRetainsMetadataAndRefusesUnsafeSave) {
+    for (const bool anonymous : {false, true}) {
+        const auto input = uniqueTmpDxf("r14-imported-paper");
+        const auto output = uniqueTmpDxf("r14-imported-paper-output");
+        {
+            std::ofstream out(input);
+            out << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1014\n0\nENDSEC\n"
+                   "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n34\n100\nAcDbEntity\n8\n0\n"
+                   "100\nAcDbBlockBegin\n2\n*Paper_Space0\n70\n" << (anonymous ? 1 : 0) <<
+                   "\n10\n1\n20\n0\n30\n0\n3\n*Paper_Space0\n1\n\n"
+                   "0\nLINE\n5\n52\n100\nAcDbEntity\n8\n0\n100\nAcDbLine\n"
+                   "10\n2\n20\n3\n30\n0\n11\n7\n21\n11\n31\n0\n"
+                   "0\nENDBLK\n5\n35\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockEnd\n"
+                   "0\nENDSEC\n0\nEOF\n";
+        }
+        auto doc = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+        auto paper = doc->blockByName("*Paper_Space0"); ASSERT_TRUE(paper);
+        EXPECT_DOUBLE_EQ(paper->base().x(), 1); EXPECT_EQ(paper->anonymous(), anonymous);
+        ASSERT_EQ(doc->entitiesByBlock(paper).asVector().size(), 1u);
+        { std::ofstream out(output); out << "retain destination"; }
+        const auto refused = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R14);
+        EXPECT_FALSE(refused.ok);
+        { std::ifstream in(output); EXPECT_EQ(std::string((std::istreambuf_iterator<char>(in)), {}), "retain destination"); }
+        boost::filesystem::remove(input); boost::filesystem::remove(output);
+    }
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsRefuseReferencedOrNondefaultExtraPaperSpace) {
+    const auto path = uniqueTmpDxf("legacy-paper-metadata");
+    auto doc = newDocument();
+    auto paper = doc->blockByName("*Paper_Space0"); ASSERT_TRUE(paper);
+    lc::builder::InsertBuilder builder;
+    builder.setDocument(doc); builder.setLayer(doc->layerByName("0"));
+    builder.setDisplayBlock(paper); builder.setCoordinate(lc::geo::Coordinate(0, 0));
+    auto insert = builder.build(); insertThroughBuilder(doc, {insert});
+    EXPECT_FALSE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R14).ok);
+    doc->removeEntity(insert);
+    doc->removeDocumentMetaType(paper);
+    auto movedPaper = std::make_shared<lc::meta::Block>("*Paper_Space0", lc::geo::Coordinate(1, 0, 0));
+    doc->addDocumentMetaType(movedPaper);
+    EXPECT_FALSE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R14).ok);
+    doc->removeDocumentMetaType(movedPaper); doc->addDocumentMetaType(paper);
+    EXPECT_TRUE(lc::persistence::File::exportFile(
+        doc, path, lc::persistence::File::LIBDXFRW_DXF_R14).ok);
+    boost::filesystem::remove(path);
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsReportExplicitLayerWidth) {
+    const auto source = uniqueTmpDxf("layer-width-source");
+    // DocumentImpl's numeric layer width is written explicitly by R2000.
+    // Once imported, it must be reported when an older target cannot carry it.
+    ASSERT_TRUE(lc::persistence::File::exportFile(
+        newDocument(), source, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    for (const auto target : {lc::persistence::File::LIBDXFRW_DXF_R12, lc::persistence::File::LIBDXFRW_DXF_R14}) {
+        const auto path = uniqueTmpDxf("legacy-layer-width");
+        const auto written = lc::persistence::File::exportFile(doc, path, target);
+        ASSERT_TRUE(written.ok);
+        EXPECT_EQ(written.loss.droppedByType.count("layer lineweight"), 1u);
+        boost::filesystem::remove(path);
+    }
+    boost::filesystem::remove(source);
+}
+
+TEST(DxfRoundTripTest, LegacyTargetsReportUnrepresentableUnitMetadata) {
+    const auto source = uniqueTmpDxf("unit-source");
+    {
+        std::ofstream dxf(source);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n"
+               "9\n$INSUNITS\n70\n1\n9\n$MEASUREMENT\n70\n0\n0\nENDSEC\n"
+               "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    for (const auto target : {lc::persistence::File::LIBDXFRW_DXF_R12, lc::persistence::File::LIBDXFRW_DXF_R14}) {
+        const auto path = uniqueTmpDxf("legacy-unit");
+        const auto written = lc::persistence::File::exportFile(doc, path, target);
+        ASSERT_TRUE(written.ok);
+        EXPECT_EQ(written.loss.droppedByType.count("$INSUNITS"), 1u);
+        EXPECT_EQ(written.loss.droppedByType.count("$MEASUREMENT"),
+                  target == lc::persistence::File::LIBDXFRW_DXF_R12 ? 1u : 0u);
+        std::ifstream in(path); const std::string text((std::istreambuf_iterator<char>(in)), {});
+        EXPECT_EQ(text.find("$INSUNITS"), std::string::npos);
+        if (target == lc::persistence::File::LIBDXFRW_DXF_R12)
+            EXPECT_EQ(text.find("$MEASUREMENT"), std::string::npos);
+        else EXPECT_NE(text.find("$MEASUREMENT"), std::string::npos);
+        in.close();
+        boost::filesystem::remove(path);
+    }
+    boost::filesystem::remove(source);
 }
 
 namespace {
@@ -3702,9 +4051,11 @@ TEST(DxfRoundTripTest, AnR12SaveSaysTheMultilineTextWasConverted) {
               std::string::npos) << written.loss.notes.front();
 
     ASSERT_FALSE(written.diagnostics.empty()) << "a note that reaches no caller is not a report";
-    EXPECT_EQ(written.diagnostics.front().code, "record-converted");
-    EXPECT_NE(written.diagnostics.front().message.find("TEXT record per line"),
-              std::string::npos) << written.diagnostics.front().message;
+    const auto explanation = std::find_if(written.diagnostics.begin(), written.diagnostics.end(), [](const auto& diagnostic) {
+        return diagnostic.message.find("TEXT record per line") != std::string::npos;
+    });
+    ASSERT_NE(explanation, written.diagnostics.end()) << "the conversion explanation did not reach the caller";
+    EXPECT_TRUE(explanation->code == "record-converted" || explanation->code == "record-not-in-revision");
 
     // And the bool overload still says the drawing was not written whole.
     EXPECT_FALSE(lc::persistence::File::save(
@@ -4067,4 +4418,257 @@ TEST(DxfRoundTripTest, ALinearDimensionKeepsItsAngleInDegreesInTheFile) {
     }
     ASSERT_NE(readBack, nullptr) << "the dimension did not survive the round trip";
     EXPECT_NEAR(readBack->angle(), M_PI / 2, 1e-9);
+}
+
+TEST(DxfRoundTripTest, RationalSplineKeepsWeightsOnSave) {
+    const std::string input = uniqueTmpDxf("rational-input");
+    const std::string output = uniqueTmpDxf("rational-output");
+    {
+        std::ofstream dxf(input);
+        dxf << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+            << "0\nSECTION\n2\nENTITIES\n0\nSPLINE\n8\n0\n70\n4\n71\n2\n72\n6\n73\n3\n74\n0\n"
+            << "40\n0\n40\n0\n40\n0\n40\n1\n40\n1\n40\n1\n"
+            << "10\n1\n20\n0\n30\n3\n41\n1\n"
+            << "10\n1\n20\n1\n30\n3\n41\n0.7071067811865476\n"
+            << "10\n0\n20\n1\n30\n3\n41\n1\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument();
+    const auto imported = lc::persistence::File::importFile(doc, input, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+    ASSERT_EQ(imported.loss.notes.size(), 1u);
+    EXPECT_NE(imported.loss.notes[0].find("displayed curve"), std::string::npos);
+    lc::entity::Spline_CSPtr spline;
+    for (const auto& entity : doc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) spline = value;
+    ASSERT_NE(spline, nullptr);
+    const std::vector<double> expected{1.0, 0.7071067811865476, 1.0};
+    EXPECT_EQ(spline->weights(), expected);
+    const auto checkWeights = [&expected](const lc::entity::CADEntity_CSPtr& entity) {
+        auto result = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+        ASSERT_NE(result, nullptr);
+        EXPECT_EQ(result->weights(), expected);
+    };
+    checkWeights(spline->move({2,3,0}));
+    checkWeights(spline->copy({2,3,0}));
+    checkWeights(spline->rotate({0,0,0}, 0.5));
+    checkWeights(spline->scale({0,0,0}, {2,3,1}));
+    checkWeights(spline->mirror({0,0,0}, {1,0,0}));
+    checkWeights(spline->modify(spline->layer(), spline->metaInfo(), spline->block()));
+    checkWeights(spline->setDragPoints(spline->dragPoints()));
+    checkWeights(spline->setProperties({}));
+    checkWeights(std::make_shared<lc::entity::Spline>(spline, true));
+    lc::builder::SplineBuilder builder;
+    builder.copy(spline);
+    EXPECT_EQ(builder.weights(), expected);
+    EXPECT_EQ(builder.build()->weights(), expected);
+    for (auto type : {lc::persistence::File::Type::LIBDXFRW_DXF_R2000,
+                      lc::persistence::File::Type::LIBDXFRW_DXB_R2000}) {
+        ASSERT_TRUE(lc::persistence::File::save(doc, output, type));
+        auto reopened = newDocument();
+        ASSERT_NO_THROW(lc::persistence::File::open(reopened, output, lc::persistence::File::Library::LIBDXFRW));
+        lc::entity::Spline_CSPtr readback;
+        for (const auto& entity : reopened->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) readback = value;
+        ASSERT_NE(readback, nullptr);
+        EXPECT_EQ(readback->weights(), expected);
+        EXPECT_NE(readback->flags() & lc::geo::Spline::RATIONAL, 0);
+    }
+    // Some producers include non-unit weights without setting the rational bit.
+    // The weights still affect geometry and must trigger the same warning.
+    std::ifstream in(input);
+    std::string source((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    in.close();
+    const auto flag = source.find("70\n4\n71\n2\n");
+    ASSERT_NE(flag, std::string::npos);
+    source.replace(flag, std::string("70\n4\n").size(), "70\n0\n");
+    { std::ofstream out(input, std::ios::trunc); out << source; }
+    auto unflagged = newDocument();
+    const auto unflaggedImport = lc::persistence::File::importFile(unflagged, input, lc::persistence::File::Library::LIBDXFRW);
+    ASSERT_TRUE(unflaggedImport.ok);
+    ASSERT_EQ(unflaggedImport.loss.notes.size(), 1u);
+    EXPECT_NE(unflaggedImport.loss.notes[0].find("displayed curve"), std::string::npos);
+    ASSERT_TRUE(lc::persistence::File::save(unflagged, output, lc::persistence::File::Type::LIBDXFRW_DXF_R2000));
+    auto unflaggedReopen = newDocument();
+    lc::persistence::File::open(unflaggedReopen, output, lc::persistence::File::Library::LIBDXFRW);
+    lc::entity::Spline_CSPtr unflaggedSpline;
+    for (const auto& entity : unflaggedReopen->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Spline>(entity)) unflaggedSpline = value;
+    ASSERT_NE(unflaggedSpline, nullptr);
+    EXPECT_EQ(unflaggedSpline->weights(), expected);
+    boost::filesystem::remove(input);
+    boost::filesystem::remove(output);
+}
+
+TEST(DxfRoundTripTest, BlockLayerVisibilitySurvivesSaveReopenAndUndo) {
+    const auto source = uniqueTmpDxf("block-layer-source");
+    {
+        std::ofstream f(source);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n"
+             "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n1\n"
+             "0\nLAYER\n2\nVISIBLE_LAYER\n70\n0\n62\n3\n6\nCONTINUOUS\n"
+             "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nBLOCKS\n"
+             "0\nBLOCK\n8\n0\n2\nBLOCK_A\n70\n0\n10\n0\n20\n0\n30\n0\n3\nBLOCK_A\n"
+             "0\nLINE\n8\nVISIBLE_LAYER\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n"
+             "0\nENDBLK\n8\n0\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n"
+             "0\nINSERT\n8\n0\n2\nBLOCK_A\n10\n10\n20\n20\n30\n0\n"
+             "0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto on = doc->layerByName("VISIBLE_LAYER"); ASSERT_TRUE(on); EXPECT_FALSE(on->isOff());
+    const auto block = doc->blockByName("BLOCK_A"); ASSERT_TRUE(block);
+    auto children = doc->entitiesByBlock(block).asVector(); ASSERT_EQ(children.size(), 1u);
+    const auto childId = children.front()->id();
+    auto off = std::make_shared<lc::meta::Layer>(on->name(), on->lineWidth(), on->color(), on->linePattern(), on->isFrozen(), true);
+    auto change = std::make_shared<lc::operation::Builder>(doc, "turn off");
+    change->append(std::make_shared<lc::operation::ReplaceLayer>(doc, on, off)); change->execute();
+    ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), off);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output = uniqueTmpDxf("block-layer-off");
+        const auto written = lc::persistence::File::exportFile(doc, output, type); ASSERT_TRUE(written.ok);
+        auto reopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        auto layer = reopened->layerByName("VISIBLE_LAYER"); ASSERT_TRUE(layer); EXPECT_TRUE(layer->isOff());
+        auto reopenedBlock = reopened->blockByName("BLOCK_A"); ASSERT_TRUE(reopenedBlock);
+        const auto reopenedChildren = reopened->entitiesByBlock(reopenedBlock).asVector(); ASSERT_EQ(reopenedChildren.size(), 1u);
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(reopenedChildren.front()); ASSERT_TRUE(line);
+        EXPECT_EQ(line->layer(), layer); EXPECT_DOUBLE_EQ(line->start().x(), 1); EXPECT_DOUBLE_EQ(line->end().y(), 6);
+        boost::filesystem::remove(output);
+    }
+    change->undo();
+    ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), on);
+    change->redo();
+    ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), off);
+    boost::filesystem::remove(source);
+}
+
+TEST(DxfRoundTripTest, FrozenAndLockedFlagsRoundTripIndependently) {
+    const auto source = uniqueTmpDxf("layer-state-source");
+    {
+        std::ofstream f(source);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n"
+             "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n3\n"
+             "0\nLAYER\n2\nFROZEN\n70\n1\n62\n3\n6\nCONTINUOUS\n"
+             "0\nLAYER\n2\nLOCKED\n70\n4\n62\n3\n6\nCONTINUOUS\n"
+             "0\nLAYER\n2\nBOTH\n70\n5\n62\n-3\n6\nCONTINUOUS\n"
+             "0\nENDTAB\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        auto frozen = doc->layerByName("FROZEN"), locked = doc->layerByName("LOCKED"), both = doc->layerByName("BOTH");
+        ASSERT_TRUE(frozen); ASSERT_TRUE(locked); ASSERT_TRUE(both);
+        EXPECT_TRUE(frozen->isFrozen()); EXPECT_FALSE(frozen->isLocked()); EXPECT_FALSE(frozen->isOff());
+        EXPECT_FALSE(locked->isFrozen()); EXPECT_TRUE(locked->isLocked()); EXPECT_FALSE(locked->isOff());
+        EXPECT_TRUE(both->isFrozen()); EXPECT_TRUE(both->isLocked()); EXPECT_TRUE(both->isOff());
+    };
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok); check(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        auto path = uniqueTmpDxf("layer-state-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, path, type).ok);
+        auto reopened = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(reopened, path, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened); boost::filesystem::remove(path);
+    }
+    boost::filesystem::remove(source);
+}
+
+TEST(DxfRoundTripTest, BlockEntityTransferUndoRedoSurvivesSaveReopen) {
+    auto doc = newDocument();
+    auto first = std::make_shared<lc::meta::Block>("BLOCK_FIRST");
+    auto second = std::make_shared<lc::meta::Block>("BLOCK_SECOND");
+    doc->addDocumentMetaType(first); doc->addDocumentMetaType(second);
+    auto original = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2, 3), lc::geo::Coordinate(4, 6, 9),
+                                                       doc->layerByName("0"), nullptr, first);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(doc); add->appendEntity(original); add->execute();
+    auto moved = original->move(lc::geo::Coordinate(5, 7, 11));
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(doc); edit->appendEntity(moved); edit->execute();
+    auto relocated = moved->modify(moved->layer(), moved->metaInfo(), second);
+    auto transfer = std::make_shared<lc::operation::EntityBuilder>(doc); transfer->appendEntity(relocated); transfer->execute();
+    auto checkSave = [&](lc::persistence::File::Type type, const char* populated, const char* empty) {
+        auto output = uniqueTmpDxf("block-transfer");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        auto destination = reopened->blockByName(populated), other = reopened->blockByName(empty);
+        ASSERT_TRUE(destination); ASSERT_TRUE(other);
+        auto children = reopened->entitiesByBlock(destination).asVector(); ASSERT_EQ(children.size(), 1u);
+        EXPECT_TRUE(reopened->entitiesByBlock(other).asVector().empty());
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(children.front()); ASSERT_TRUE(line);
+        EXPECT_DOUBLE_EQ(line->start().x(), 6); EXPECT_DOUBLE_EQ(line->start().y(), 9); EXPECT_DOUBLE_EQ(line->start().z(), 14);
+        EXPECT_DOUBLE_EQ(line->end().x(), 9); EXPECT_DOUBLE_EQ(line->end().y(), 13); EXPECT_DOUBLE_EQ(line->end().z(), 20);
+        boost::filesystem::remove(output);
+    };
+    checkSave(lc::persistence::File::LIBDXFRW_DXF_R2004, "BLOCK_SECOND", "BLOCK_FIRST");
+    transfer->undo();
+    checkSave(lc::persistence::File::LIBDXFRW_DXF_R2004, "BLOCK_FIRST", "BLOCK_SECOND");
+    transfer->redo();
+    checkSave(lc::persistence::File::LIBDXFRW_DXB_R2004, "BLOCK_SECOND", "BLOCK_FIRST");
+}
+
+TEST(DxfRoundTripTest, LayerStateChangesPreserveOnlyTheirOwnColorProvenance) {
+    const auto source = uniqueTmpDxf("layer-state-color-source");
+    {
+        std::ofstream f(source);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n5\n2\n70\n1\n"
+             "0\nLAYER\n5\n60\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n"
+             "2\nNAMED\n70\n0\n62\n-3\n420\n0\n430\nTest$Black\n6\nCONTINUOUS\n"
+             "0\nENDTAB\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto original = doc->layerByName("NAMED"); ASSERT_TRUE(original); ASSERT_TRUE(original->isOff());
+    const auto changed = lc::meta::Layer::withState(original, true, false, true); ASSERT_TRUE(changed);
+    auto edit = std::make_shared<lc::operation::Builder>(doc, "change state");
+    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, original, changed)); edit->execute();
+    auto checkAscii = [](const std::string& path, bool hasName, int index) {
+        std::ifstream f(path); std::string code, value; bool layer = false, named = false;
+        std::map<int, std::string> values;
+        while (std::getline(f, code) && std::getline(f, value)) {
+            const int group = std::stoi(code);
+            if (group == 0) {
+                if (layer && named) break;
+                layer = value == "LAYER"; named = false; values.clear();
+            } else if (layer) {
+                values[group] = value;
+                if (group == 2) named = value == "NAMED";
+            }
+        }
+        ASSERT_TRUE(named); ASSERT_EQ(values.count(62), 1u); EXPECT_EQ(std::stoi(values[62]), index);
+        ASSERT_EQ(values.count(420), 1u); EXPECT_EQ(std::stoi(values[420]), 0);
+        EXPECT_EQ(values.count(430) != 0, hasName);
+        if (hasName) EXPECT_EQ(values[430], "Test$Black");
+    };
+    const auto onOutput = uniqueTmpDxf("layer-state-color-on");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, onOutput, lc::persistence::File::LIBDXFRW_DXF_R2004).ok);
+    checkAscii(onOutput, true, 3); boost::filesystem::remove(onOutput);
+    const auto current = lc::meta::Layer::withState(changed, false, true, false); ASSERT_TRUE(current);
+    auto editAgain = std::make_shared<lc::operation::Builder>(doc, "change state again");
+    editAgain->append(std::make_shared<lc::operation::ReplaceLayer>(doc, changed, current)); editAgain->execute();
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output = uniqueTmpDxf("layer-state-color-output");
+        const auto result = lc::persistence::File::exportFile(doc, output, type); ASSERT_TRUE(result.ok);
+        EXPECT_TRUE(std::none_of(result.loss.notes.begin(), result.loss.notes.end(), [](const std::string& note) {
+            return note.find("source color name") != std::string::npos;
+        }));
+        if (type == lc::persistence::File::LIBDXFRW_DXF_R2004) checkAscii(output, true, -3);
+        else {
+            auto reopened = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            const auto ascii = uniqueTmpDxf("layer-state-color-ascii");
+            ASSERT_TRUE(lc::persistence::File::exportFile(reopened, ascii, lc::persistence::File::LIBDXFRW_DXF_R2004).ok);
+            checkAscii(ascii, true, -3); boost::filesystem::remove(ascii);
+        }
+        boost::filesystem::remove(output);
+    }
+    // A separately constructed replacement, even with equal RGB, is not a
+    // state-only descendant and must not inherit a stale source color name.
+    const auto unrelated = std::make_shared<lc::meta::Layer>("NAMED", current->lineWidth(), current->color(),
+        current->linePattern(), current->isFrozen(), current->isOff(), current->isLocked());
+    auto replace = std::make_shared<lc::operation::Builder>(doc, "replace color");
+    replace->append(std::make_shared<lc::operation::ReplaceLayer>(doc, current, unrelated)); replace->execute();
+    const auto output = uniqueTmpDxf("layer-state-color-replaced");
+    const auto result = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R2004);
+    ASSERT_TRUE(result.ok);
+    EXPECT_TRUE(std::any_of(result.loss.notes.begin(), result.loss.notes.end(), [](const std::string& note) {
+        return note.find("source color name") != std::string::npos;
+    }));
+    std::ifstream f(output); std::string text((std::istreambuf_iterator<char>(f)), {});
+    EXPECT_EQ(text.find("Test$Black"), std::string::npos); f.close();
+    boost::filesystem::remove(output); boost::filesystem::remove(source);
 }

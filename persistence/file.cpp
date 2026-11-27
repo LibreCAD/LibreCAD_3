@@ -296,6 +296,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
 
         builder->execute();
         reader.buildDeferredInserts();
+        reader.attachDwgProvenance();
 
         result.entitiesDelivered = reader.entitiesDelivered();
         result.failures = reader.failures();
@@ -321,6 +322,8 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
     switch(library) {
     case LIBDXFRW: {
         DXFimpl reader(document, builder);
+        const bool sourceIsBinary = isBinaryDxfFile(path);
+        reader.setSourceIsBinary(sourceIsBinary);
         dxfRW R(path.c_str());
 
         // The DXF compatibility profile is left at its default, StandaloneSafe.
@@ -355,7 +358,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
 
         // Whatever this build does not model rides on the document, so a later
         // save can put it back exactly as it arrived.
-        reader.attachPreservedRecords();
+        reader.attachPreservedRecords(result.ok && reader.failures().empty());
 
         const auto& header = reader.header();
         result.sourceVersionTag = header.acadVersion;
@@ -380,7 +383,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
         // every reader accepts.
         bool recognised = false;
         auto sourceType = typeForAcadVersion(header.acadVersion, &recognised);
-        if (isBinaryDxfFile(path)) {
+        if (sourceIsBinary) {
             sourceType = binaryVariantFor(sourceType);
         }
         result.variantId = variantIdForType(sourceType);
@@ -475,7 +478,8 @@ ExportResult File::exportFile(lc::storage::Document_SPtr document,
 
     if (!result.ok) {
         result.diagnostics.push_back(Diagnostic{
-            Severity::Error, "emit-failure", "The file could not be written at this revision"});
+            Severity::Error, "emit-failure", writer.writeFailureReason().empty()
+                ? "The file could not be written at this revision" : writer.writeFailureReason()});
     } else if (!result.loss.empty()) {
         // The file exists and holds the rest of the drawing. Saying so is the
         // point: before this, one such entity meant no file at all.
