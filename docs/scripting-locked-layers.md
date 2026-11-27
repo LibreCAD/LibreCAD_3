@@ -24,7 +24,7 @@ one group, explicitly override the entity operation. Custom operations that
 obtain locked objects outside their supplied inputs, entities created earlier
 in the group, and other layer-state changes are not yet guaranteed atomic;
 separate those operations when a locked entity may be involved. Forced line,
-circle and arc edits retain the current same-named source layer after a
+circle, arc, ellipse and spline edits retain the current same-named source layer after a
 layer-state change; verify layer metadata for other entity types or renamed
 layers before saving.
 Cyclic and null operation groups are rejected,

@@ -9,6 +9,8 @@
 #include <cad/storage/undomanagerimpl.h>
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
+#include <cad/primitive/ellipse.h>
+#include <cad/primitive/spline.h>
 
 using namespace lc;
 using namespace storage;
@@ -606,6 +608,86 @@ TEST(BuilderTest, ForcedCurvedEditRetainsCurrentLayerAndGeometry) {
         auto changeLayer = std::make_shared<lc::operation::EntityBuilder>(document);
         changeLayer->setAllowLockedLayerEdits(true);
         changeLayer->appendEntity(moved); changeLayer->execute();
+        EXPECT_EQ(document->entityByID(entity->id())->layer(), target);
+        changeLayer->undo(); verify();
+        changeLayer->redo(); EXPECT_EQ(document->entityByID(entity->id())->layer(), target);
+    }
+}
+
+TEST(BuilderTest, ForcedEllipseAndSplineEditsRetainCurrentLayerAndGeometry) {
+    for (bool isSpline : {false, true}) {
+        SCOPED_TRACE(isSpline ? "spline" : "ellipse");
+        auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+        auto layer = document->layerByName("0");
+        auto meta = lc::meta::MetaInfo::create();
+        lc::entity::CADEntity_CSPtr entity;
+        if (isSpline) {
+            entity = std::make_shared<lc::entity::Spline>(
+                std::vector<lc::geo::Coordinate>{{1, 2, 3}, {4, 5, 3}, {7, 8, 3}},
+                std::vector<double>{0, 0, 0, 1, 1, 1}, std::vector<lc::geo::Coordinate>{},
+                2, false, 0.01, 1, 2, 3, 4, 5, 6, 0, 0, 1,
+                lc::geo::Spline::RATIONAL, layer, meta, nullptr, std::vector<double>{1, 0.5, 1});
+        } else {
+            entity = std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(1, 2, 3),
+                lc::geo::Coordinate(4, 2, 0), 2, 0.25, 1.5, true, layer, meta);
+        }
+        document->insertEntity(entity);
+        auto locked = lc::meta::Layer::withState(layer, false, false, true);
+        auto lock = std::make_shared<lc::operation::ReplaceLayer>(document, layer, locked);
+        lock->execute();
+        auto candidate = entity->move(lc::geo::Coordinate(5, 6, 7));
+        auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+        edit->appendEntity(candidate);
+        edit->setAllowLockedLayerEdits(true);
+        edit->execute();
+        const auto verify = [&] {
+            auto result = document->entityByID(entity->id());
+            ASSERT_TRUE(result);
+            EXPECT_EQ(result->layer(), locked);
+            EXPECT_EQ(result->metaInfo(), meta);
+            if (isSpline) {
+                auto expected = std::dynamic_pointer_cast<const lc::entity::Spline>(candidate);
+                auto actual = std::dynamic_pointer_cast<const lc::entity::Spline>(result);
+                ASSERT_TRUE(expected); ASSERT_TRUE(actual);
+                EXPECT_EQ(actual->controlPoints(), expected->controlPoints());
+                EXPECT_EQ(actual->fitPoints(), expected->fitPoints());
+                EXPECT_EQ(actual->knotPoints(), expected->knotPoints());
+                EXPECT_EQ(actual->weights(), expected->weights());
+                EXPECT_EQ(actual->flags(), expected->flags());
+                EXPECT_EQ(actual->degree(), expected->degree());
+                EXPECT_EQ(actual->closed(), expected->closed());
+                EXPECT_DOUBLE_EQ(actual->fitTolerance(), expected->fitTolerance());
+                EXPECT_DOUBLE_EQ(actual->nX(), expected->nX());
+                EXPECT_DOUBLE_EQ(actual->nY(), expected->nY());
+                EXPECT_DOUBLE_EQ(actual->nZ(), expected->nZ());
+                EXPECT_DOUBLE_EQ(actual->startTanX(), expected->startTanX());
+                EXPECT_DOUBLE_EQ(actual->startTanY(), expected->startTanY());
+                EXPECT_DOUBLE_EQ(actual->startTanZ(), expected->startTanZ());
+                EXPECT_DOUBLE_EQ(actual->endTanX(), expected->endTanX());
+                EXPECT_DOUBLE_EQ(actual->endTanY(), expected->endTanY());
+                EXPECT_DOUBLE_EQ(actual->endTanZ(), expected->endTanZ());
+            } else {
+                auto expected = std::dynamic_pointer_cast<const lc::entity::Ellipse>(candidate);
+                auto actual = std::dynamic_pointer_cast<const lc::entity::Ellipse>(result);
+                ASSERT_TRUE(expected); ASSERT_TRUE(actual);
+                EXPECT_EQ(actual->center(), expected->center());
+                EXPECT_EQ(actual->majorP(), expected->majorP());
+                EXPECT_DOUBLE_EQ(actual->minorRadius(), expected->minorRadius());
+                EXPECT_DOUBLE_EQ(actual->startAngle(), expected->startAngle());
+                EXPECT_DOUBLE_EQ(actual->endAngle(), expected->endAngle());
+                EXPECT_EQ(actual->isReversed(), expected->isReversed());
+            }
+        };
+        verify();
+        edit->undo(); EXPECT_EQ(document->entityByID(entity->id())->layer(), locked);
+        edit->redo(); verify();
+
+        auto target = std::make_shared<lc::meta::Layer>("TARGET");
+        document->addDocumentMetaType(target);
+        auto changeLayer = std::make_shared<lc::operation::EntityBuilder>(document);
+        changeLayer->setAllowLockedLayerEdits(true);
+        changeLayer->appendEntity(entity->modify(target, entity->metaInfo(), entity->block()));
+        changeLayer->execute();
         EXPECT_EQ(document->entityByID(entity->id())->layer(), target);
         changeLayer->undo(); verify();
         changeLayer->redo(); EXPECT_EQ(document->entityByID(entity->id())->layer(), target);

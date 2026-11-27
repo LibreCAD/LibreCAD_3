@@ -209,7 +209,8 @@ void EntityBuilder::processInternal() {
         for (auto& candidate : _workingBuffer) {
             if (!candidate || !candidate->layer() ||
                 !(exactEntity<entity::Line>(candidate) || exactEntity<entity::Circle>(candidate) ||
-                  exactEntity<entity::Arc>(candidate))) continue;
+                  exactEntity<entity::Arc>(candidate) || exactEntity<entity::Ellipse>(candidate) ||
+                  exactEntity<entity::Spline>(candidate))) continue;
             const auto original = document()->entityByID(candidate->id());
             if (!original || !original->layer() || original->layer() == candidate->layer() ||
                 original->layer()->name() != candidate->layer()->name()) continue;
