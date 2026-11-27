@@ -505,7 +505,7 @@ public:
     static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
     void visitDocumentImages(const std::function<void(const lc::entity::Image_CSPtr&)>& visit,
                              bool emittedOnly = false) const;
-    std::unordered_set<std::uint32_t> skippedImageSourceHandles(bool& hasImages) const;
+    std::unordered_set<std::uint32_t> skippedImageSourceHandles(bool& hasImages, const PreservedRecords* source) const;
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     bool prepareImageDefinitionPlan();
 #endif

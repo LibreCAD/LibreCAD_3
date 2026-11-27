@@ -1904,24 +1904,24 @@ void DXFimpl::visitDocumentImages(const std::function<void(const lc::entity::Ima
     }
 }
 
-std::unordered_set<std::uint32_t> DXFimpl::skippedImageSourceHandles(bool& hasImages) const {
+std::unordered_set<std::uint32_t> DXFimpl::skippedImageSourceHandles(bool& hasImages, const PreservedRecords* source) const {
     hasImages = false;
     std::unordered_set<std::uint32_t> skipped;
     visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
         hasImages = true;
-        const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
-        if (source && _replay && source->sourceIdentity == _replay->imageSourceIdentity &&
-            source->definitionHandle != 0 && source->definitionHandle != DRW::NoHandle)
-            skipped.insert(source->definitionHandle);
+        const auto imageSource = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
+        if (source && imageSource && imageSource->sourceIdentity == source->imageSourceIdentity &&
+            imageSource->definitionHandle != 0 && imageSource->definitionHandle != DRW::NoHandle)
+            skipped.insert(imageSource->definitionHandle);
     });
-    if (!_replay) return skipped;
-    skipped.insert(_replay->sourceImageDefinitionHandles.begin(), _replay->sourceImageDefinitionHandles.end());
-    for (const auto& object : _replay->objects)
-        if (skipsSourceImageObject(object, hasImages, _replay.get()) && object.handle != 0)
+    if (!source) return skipped;
+    skipped.insert(source->sourceImageDefinitionHandles.begin(), source->sourceImageDefinitionHandles.end());
+    for (const auto& object : source->objects)
+        if (skipsSourceImageObject(object, hasImages, source) && object.handle != 0)
             skipped.insert(object.handle);
-    for (const auto& object : _replay->objects)
-        if (!skipsSourceImageObject(object, hasImages, _replay.get())) skipped.erase(object.handle);
-    for (const auto& entity : _replay->entities) skipped.erase(entity.handle);
+    for (const auto& object : source->objects)
+        if (!skipsSourceImageObject(object, hasImages, source)) skipped.erase(object.handle);
+    for (const auto& entity : source->entities) skipped.erase(entity.handle);
     return skipped;
 }
 
@@ -1989,7 +1989,7 @@ void DXFimpl::writeObjects() {
     // ones -- measured: without this, sample_AC1015_ascii comes back with two
     // reactors.
     bool documentHasImages = false;
-    const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages);
+    const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages, _replay.get());
 
     for (const auto& object : _replay->objects) {
         if (skipsSourceImageObject(object, documentHasImages, _replay.get())) {
@@ -2733,14 +2733,26 @@ bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
 bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
-    if (!_shelf || _replay != _shelf || _shelf->rootDictSourceAmbiguous ||
+    if (!_shelf || _shelf->rootDictSourceAmbiguous ||
         _shelf->rootDictSourceHandle != kRootDictionaryHandle ||
         !_shelf->entities.empty() || !_shelf->sections.empty() || !_shelf->classes.empty() ||
         _shelf->objects.size() > 512 || _shelf->rootDictEntries.empty() ||
         _shelf->rootDictEntries.size() > 128) return false;
     bool hasImages = false;
-    const auto skipped = skippedImageSourceHandles(hasImages);
+    const auto skipped = skippedImageSourceHandles(hasImages, _shelf.get());
     if (skipped.empty()) return false;
+    if (_replay != _shelf) {
+        // When binary output drops the raw graph, only admit an empty drawing
+        // with the standard blocks: no typed entity can carry a source edge.
+        if (_replay || !lc::persistence::File::isBinaryType(_exportType) ||
+            _shelf->version != _exportVersion || hasImages ||
+            !_document->entityContainer().asVector().empty()) return false;
+        for (const auto& block : _document->blocks()) {
+            if (!block || (block->name() != "*Model_Space" && block->name() != "*Paper_Space" &&
+                           block->name() != "*Paper_Space0") ||
+                !_document->entitiesByBlock(block).asVector().empty()) return false;
+        }
+    }
     bool sameSource = true;
     visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
         const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
@@ -3045,7 +3057,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         if (!_replay->rootDictEntries.empty()) {
             std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> emitted;
             bool documentHasImages = false;
-            const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages);
+            const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages, _replay.get());
             std::vector<DRW_RawDxfObject> plannedObjects;
             plannedObjects.reserve(_replay->objects.size());
             std::unordered_set<std::uint32_t> sanitizedDictionaries;
