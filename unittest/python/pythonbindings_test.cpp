@@ -1251,6 +1251,24 @@ stacked_group = lc.operation.Builder(document, "locked stacked compound")
 stacked_group.append(stacked)
 stacked_group.execute()
 assert stacked_group.blockedByLockedLayer()
+nested_child = lc.operation.EntityBuilder.new(document)
+nested_child.appendEntity(later)
+inner = lc.operation.Builder(document, "inner locked compound")
+outer = lc.operation.Builder(document, "outer locked compound")
+inner.append(nested_child)
+outer.append(inner)
+outer.execute()
+assert outer.blockedByLockedLayer() and inner.blockedByLockedLayer()
+try:
+    inner.append(outer)
+    raise AssertionError("cyclic operation group was accepted")
+except ValueError:
+    pass
+try:
+    lc.operation.Builder(None, "invalid")
+    raise AssertionError("null document was accepted")
+except ValueError:
+    pass
 assert not document.tryInsertEntity(later)
 assert not document.tryRemoveEntity(moved)
 assert document.insertEntity(later) is None

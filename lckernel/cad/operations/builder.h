@@ -29,6 +29,8 @@ protected:
     virtual void processInternal() override;
 
 private:
+    bool containsBuilder(const Builder* target, std::vector<const Builder*>& visited) const;
+    bool preflightLocked(std::vector<const Builder*>& active);
     std::vector<DocumentOperation_SPtr> _operations;
     std::vector<DocumentOperation_SPtr> _committedOperations;
     bool _blockedByLockedLayer = false;

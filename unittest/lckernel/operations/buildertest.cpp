@@ -238,8 +238,9 @@ TEST(BuilderTest, RefusedReuseKeepsPriorCompoundUndoJournal) {
     auto layer = std::make_shared<lc::meta::Layer>("PARTIAL");
     group->append(std::make_shared<lc::operation::AddLayer>(document, layer));
     auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
-    edit->appendEntity(locked->move(lc::geo::Coordinate(4, 0))); group->append(edit); group->execute();
-    EXPECT_TRUE(group->blockedByLockedLayer()); EXPECT_TRUE(edit->blockedByLockedLayer());
+    auto nested = std::make_shared<lc::operation::Builder>(document, "Nested");
+    edit->appendEntity(locked->move(lc::geo::Coordinate(4, 0))); nested->append(edit); group->append(nested); group->execute();
+    EXPECT_TRUE(group->blockedByLockedLayer()); EXPECT_TRUE(nested->blockedByLockedLayer()); EXPECT_TRUE(edit->blockedByLockedLayer());
     EXPECT_EQ(document->layerByName("PARTIAL"), nullptr);
     ASSERT_TRUE(history->canUndo()); history->undo();
     EXPECT_FALSE(document->entityByID(added->id()));
@@ -418,4 +419,56 @@ TEST(BuilderTest, LockedPreflightDoesNotCallEntityTransformsOrAllocateIds) {
         edit->setAllowLockedLayerEdits(true); group->execute();
         EXPECT_FALSE(group->blockedByLockedLayer()); EXPECT_EQ(calls, 1);
     }
+}
+
+TEST(BuilderTest, NestedLockedEditPreservesParentsAndUndoHistory) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto history = std::make_shared<UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<UndoManagerImpl, &UndoManagerImpl::on_CommitProcessEvent>(history.get());
+    auto lockedLayer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1), lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(lockedLayer);
+    auto locked = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), lockedLayer);
+    document->insertEntity(locked);
+    auto freeLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 1), lc::geo::Coordinate(1, 1), document->layerByName("0"));
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document); add->appendEntity(freeLine); add->execute();
+    history->undo(); ASSERT_TRUE(history->canRedo());
+    auto newLayer = std::make_shared<lc::meta::Layer>("OUTER");
+    auto block = std::make_shared<lc::meta::Block>("INNER");
+    auto outer = std::make_shared<lc::operation::Builder>(document, "Outer");
+    auto inner = std::make_shared<lc::operation::Builder>(document, "Inner");
+    auto deepest = std::make_shared<lc::operation::Builder>(document, "Deepest");
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+    edit->appendEntity(locked); edit->appendOperation(std::make_shared<lc::operation::Push>());
+    edit->appendOperation(std::make_shared<lc::operation::Move>(lc::geo::Coordinate(4, 0)));
+    deepest->append(edit);
+    inner->append(std::make_shared<lc::operation::AddBlock>(document, block)); inner->append(deepest);
+    outer->append(std::make_shared<lc::operation::AddLayer>(document, newLayer)); outer->append(inner);
+    outer->execute();
+    EXPECT_TRUE(outer->blockedByLockedLayer()); EXPECT_TRUE(inner->blockedByLockedLayer());
+    EXPECT_TRUE(deepest->blockedByLockedLayer()); EXPECT_TRUE(edit->blockedByLockedLayer());
+    EXPECT_FALSE(document->layerByName("OUTER")); EXPECT_FALSE(document->blockByName("INNER"));
+    EXPECT_EQ(document->entityByID(locked->id()), locked);
+    EXPECT_TRUE(history->canRedo()); EXPECT_FALSE(history->canUndo());
+    if (!outer->blockedByLockedLayer()) return;
+    edit->setAllowLockedLayerEdits(true); outer->execute();
+    EXPECT_FALSE(outer->blockedByLockedLayer()); EXPECT_FALSE(inner->blockedByLockedLayer());
+    EXPECT_EQ(document->layerByName("OUTER"), newLayer); EXPECT_EQ(document->blockByName("INNER"), block);
+    auto moved = document->entityByID(locked->id()); ASSERT_TRUE(moved); EXPECT_NE(moved, locked);
+    outer->undo(); EXPECT_FALSE(document->layerByName("OUTER")); EXPECT_FALSE(document->blockByName("INNER"));
+    EXPECT_EQ(document->entityByID(locked->id()), locked);
+    outer->redo(); EXPECT_EQ(document->entityByID(locked->id()), moved);
+}
+
+TEST(BuilderTest, RejectsCyclicAndNullOperationGroups) {
+    EXPECT_THROW(std::make_shared<lc::operation::Builder>(nullptr, "Invalid"), std::invalid_argument);
+    EXPECT_THROW(std::make_shared<lc::operation::EntityBuilder>(nullptr), std::invalid_argument);
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto outer = std::make_shared<lc::operation::Builder>(document, "Outer");
+    auto inner = std::make_shared<lc::operation::Builder>(document, "Inner");
+    EXPECT_THROW(outer->append(nullptr), std::invalid_argument);
+    EXPECT_THROW(outer->append(outer), std::invalid_argument);
+    outer->append(inner);
+    EXPECT_THROW(inner->append(outer), std::invalid_argument);
+    // Reusing a child without introducing a cycle is allowed.
+    outer->append(inner);
 }

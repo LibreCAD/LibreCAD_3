@@ -12,15 +12,16 @@ retried after unlocking or enabling the override. Undo and redo apply normally
 to an allowed operation.
 
 A compound `Builder` preflights direct edits and built-in entity-operation
-stacks against the lock state at the start of the group. It reports refusal
-through its own `blockedByLockedLayer()` method. Copying a supported built-in
-locked entity and filtering it out of an edit remain allowed. An unknown
-operation or an unqualified custom copy with a locked input is refused unless
-explicitly overridden. To unlock and edit in one
-group, explicitly override the entity operation. Nested groups, custom
-operations that obtain locked objects outside their supplied inputs, and
-layer-state changes during a group are not yet guaranteed atomic; separate
-those operations when a locked entity may be involved.
+stacks, including nested groups, against the lock state at the start of the
+group. It reports refusal through its own `blockedByLockedLayer()` method.
+Copying a supported built-in locked entity and filtering it out of an edit
+remain allowed. An unknown operation or an unqualified custom copy with a
+locked input is refused unless explicitly overridden. To unlock and edit in
+one group, explicitly override the entity operation. Custom operations that
+obtain locked objects outside their supplied inputs and layer-state changes
+during a group are not yet guaranteed atomic; separate those operations when
+a locked entity may be involved. Cyclic and null operation groups are rejected,
+and every document operation requires a non-null document.
 
 The script-facing document methods `insertEntity` and `removeEntity` also
 respect the lock. They keep their existing no-result interface and log a
