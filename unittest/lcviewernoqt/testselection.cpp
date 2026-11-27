@@ -135,6 +135,47 @@ TEST(SelectionTest, DragCoincidentPointsPreservesEachElevation) {
     EXPECT_EQ(document->entityByID(second->id()), b);
 }
 
+TEST(SelectionTest, DragOverlappingLineGripsUpdatesEntityOnce) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(
+        std::make_shared<lc::storage::StorageManagerImpl>());
+    auto history = std::make_shared<lc::storage::UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(history.get());
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(3, 4, 20),
+                                                  lc::geo::Coordinate(3, 4, 100), document->layerByName("0"));
+    document->insertEntity(line);
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
+    canvas->selectEntity(line);
+    struct Capture : Nano::Observer {
+        int added = 0;
+        int removed = 0;
+        void onAdd(const lc::event::AddEntityEvent&) { ++added; }
+        void onRemove(const lc::event::RemoveEntityEvent&) { ++removed; }
+    } capture;
+    document->addEntityEvent().connect<Capture, &Capture::onAdd>(capture);
+    document->removeEntityEvent().connect<Capture, &Capture::onRemove>(capture);
+    auto cursor = std::make_shared<lc::viewer::drawable::Cursor>(10, canvas, lc::Color(), lc::Color());
+    auto temporary = std::make_shared<lc::viewer::drawable::TempEntities>(canvas);
+    lc::viewer::manager::DragManager drag(canvas, cursor, temporary, 10);
+    cursor->onSnapPointEvent(lc::viewer::event::SnapPointEvent(lc::geo::Coordinate(3, 4)));
+    drag.onMouseMove(); drag.onMousePress(); ASSERT_TRUE(drag.entityDragged());
+    cursor->onSnapPointEvent(lc::viewer::event::SnapPointEvent(lc::geo::Coordinate(9, 10)));
+    drag.onMouseMove(); drag.onMouseRelease();
+    const auto moved = std::dynamic_pointer_cast<const lc::entity::Line>(document->entityByID(line->id()));
+    ASSERT_TRUE(moved);
+    EXPECT_DOUBLE_EQ(moved->start().x(), 9); EXPECT_DOUBLE_EQ(moved->start().y(), 10);
+    EXPECT_DOUBLE_EQ(moved->start().z(), 20);
+    EXPECT_DOUBLE_EQ(moved->end().x(), 9); EXPECT_DOUBLE_EQ(moved->end().y(), 10);
+    EXPECT_DOUBLE_EQ(moved->end().z(), 100);
+    EXPECT_EQ(capture.removed, 1); EXPECT_EQ(capture.added, 1);
+    ASSERT_TRUE(history->canUndo()); history->undo();
+    EXPECT_EQ(document->entityByID(line->id()), line);
+    ASSERT_TRUE(history->canRedo()); history->redo();
+    EXPECT_EQ(document->entityByID(line->id()), moved);
+    document->addEntityEvent().disconnect<Capture, &Capture::onAdd>(capture);
+    document->removeEntityEvent().disconnect<Capture, &Capture::onRemove>(capture);
+}
+
 TEST(SelectionTest, ElevatedPointOnFrozenLayerIsNotSnapped) {
     auto document = std::make_shared<lc::storage::DocumentImpl>(
         std::make_shared<lc::storage::StorageManagerImpl>());

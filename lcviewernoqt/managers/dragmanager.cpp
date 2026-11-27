@@ -102,6 +102,7 @@ void DragManager::onMousePress() {
         if(draggable) {
             auto entityDragPoints = draggable->dragPoints();
             auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::entity::UnmanagedDraggable>(draggable);
+            bool managedAdded = false;
             for(auto point : entityDragPoints) {
                 if(unmanagedDraggable) {
                     _entityDragged=true;//Unhandled has drag point everywhere for now
@@ -111,8 +112,11 @@ void DragManager::onMousePress() {
                 } else if(_toleranceArea.inArea(point.second)) {
                     _entityDragged=true;
                     _selectedPoint = point.second;
-                    _replacementEntities.push_back(drawable->entity());
-                    _entityBuilder->appendEntity(drawable->entity());
+                    if (!managedAdded) {
+                        _replacementEntities.push_back(drawable->entity());
+                        _entityBuilder->appendEntity(drawable->entity());
+                        managedAdded = true;
+                    }
                 }
             }
         }
