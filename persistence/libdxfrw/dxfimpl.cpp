@@ -1741,6 +1741,9 @@ void DXFimpl::writeObjects() {
 
     for (const auto& object : _replay->objects) {
         if (regeneratesImageObject(object, documentHasImages)) {
+            // The regenerated record has not been shown to retain the source
+            // record's metadata or identity.
+            ++_loss.droppedByType[object.name];
             continue;
         }
 

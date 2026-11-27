@@ -3210,7 +3210,8 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
                 "0\nDICTIONARY\n5\n90\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n"
                 "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
                 "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
-                "0\nIMAGEDEF_REACTOR\n5\n82\n330\n70\n100\nAcDbRasterImageDefReactor\n90\n2\n"
+                "0\nIMAGEDEF_REACTOR\n5\n82\n102\n{LC_TEST\n1\nreactor-metadata\n102\n}\n"
+                "330\n70\n100\nAcDbRasterImageDefReactor\n90\n2\n"
                 "0\nENDSEC\n0\nEOF\n";
         ASSERT_TRUE(file.good());
     }
@@ -3232,6 +3233,9 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const auto loss = result.loss.droppedByType.find("unreferenced dictionaries");
     ASSERT_NE(loss, result.loss.droppedByType.end());
     EXPECT_EQ(loss->second, 2u);
+    const auto skipped = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
+    ASSERT_NE(skipped, result.loss.droppedByType.end());
+    EXPECT_EQ(skipped->second, 1u);
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
   }
