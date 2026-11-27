@@ -501,7 +501,7 @@ public:
 
     static bool isAnonymousDimensionBlockName(const std::string& name);
     static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
-    bool hasDocumentImages() const;
+    std::unordered_set<std::uint32_t> skippedImageSourceHandles(bool& hasImages) const;
     unsigned int _nextDimensionBlock{1};
 
 
@@ -702,7 +702,6 @@ private:
 
     std::vector<DRW_Image> imageMapCache;
     std::size_t _sourceImageClipBytes{0};
-    std::unordered_set<std::uint32_t> _writtenImageSourceDefinitions;
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;

@@ -1799,15 +1799,31 @@ void DXFimpl::buildDeferredInserts() {
  * Write DXF Implementation BELOW
  *********************************************/
 
-bool DXFimpl::hasDocumentImages() const {
-    for (const auto& entity : _document->entityContainer().asVector())
-        if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) return true;
+std::unordered_set<std::uint32_t> DXFimpl::skippedImageSourceHandles(bool& hasImages) const {
+    hasImages = false;
+    std::unordered_set<std::uint32_t> skipped;
+    const auto collect = [&](const lc::entity::CADEntity_CSPtr& entity) {
+        const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+        if (!image) return;
+        hasImages = true;
+        const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
+        if (source && _replay && source->sourceIdentity == _replay->imageSourceIdentity &&
+            source->definitionHandle != 0 && source->definitionHandle != DRW::NoHandle)
+            skipped.insert(source->definitionHandle);
+    };
+    for (const auto& entity : _document->entityContainer().asVector()) collect(entity);
     for (const auto& block : _document->blocks()) {
         if (!block || isRegeneratedDimensionBlock(block)) continue;
-        for (const auto& entity : _document->entitiesByBlock(block).asVector())
-            if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) return true;
+        for (const auto& entity : _document->entitiesByBlock(block).asVector()) collect(entity);
     }
-    return false;
+    if (!_replay) return skipped;
+    for (const auto& object : _replay->objects)
+        if (regeneratesImageObject(object, hasImages) && object.handle != 0)
+            skipped.insert(object.handle);
+    for (const auto& object : _replay->objects)
+        if (!regeneratesImageObject(object, hasImages)) skipped.erase(object.handle);
+    for (const auto& entity : _replay->entities) skipped.erase(entity.handle);
+    return skipped;
 }
 
 void DXFimpl::writeObjects() {
@@ -1825,15 +1841,8 @@ void DXFimpl::writeObjects() {
     // of each for one image, so the preserved copies give way to the regenerated
     // ones -- measured: without this, sample_AC1015_ascii comes back with two
     // reactors.
-    const bool documentHasImages = hasDocumentImages();
-    auto skippedImageHandles = _writtenImageSourceDefinitions;
-    for (const auto& object : _replay->objects)
-        if (regeneratesImageObject(object, documentHasImages) && object.handle != 0)
-            skippedImageHandles.insert(object.handle);
-    // A colliding preserved record would make the source identity ambiguous.
-    for (const auto& object : _replay->objects)
-        if (!regeneratesImageObject(object, documentHasImages)) skippedImageHandles.erase(object.handle);
-    for (const auto& entity : _replay->entities) skippedImageHandles.erase(entity.handle);
+    bool documentHasImages = false;
+    const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages);
 
     for (const auto& object : _replay->objects) {
         if (regeneratesImageObject(object, documentHasImages)) {
@@ -2801,9 +2810,22 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         std::size_t detached = 0;
         if (!_replay->rootDictEntries.empty()) {
             std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> emitted;
-            const bool documentHasImages = hasDocumentImages();
+            bool documentHasImages = false;
+            const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages);
+            std::vector<DRW_RawDxfObject> plannedObjects;
+            plannedObjects.reserve(_replay->objects.size());
+            std::unordered_set<std::uint32_t> sanitizedDictionaries;
             for (const auto& object : _replay->objects) {
                 if (object.handle != 0 && !regeneratesImageObject(object, documentHasImages)) {
+                    if (object.name == "DICTIONARY" && !skippedImageHandles.empty()) {
+                        auto planned = object;
+                        if (dropRegeneratedImageEntries(planned, skippedImageHandles)) {
+                            sanitizedDictionaries.insert(planned.handle);
+                            plannedObjects.push_back(std::move(planned));
+                            emitted[object.handle] = &plannedObjects.back();
+                            continue;
+                        }
+                    }
                     emitted[object.handle] = &object;
                 }
             }
@@ -2830,8 +2852,28 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                         continue;
                     }
                     if (child == 0) continue;
-                    if (emitted.count(child)) parents[child].push_back(item.first);
-                    else markIncomplete(item.first);
+                    const auto target = emitted.find(child);
+                    if (target == emitted.end()) {
+                        markIncomplete(item.first);
+                        continue;
+                    }
+                    parents[child].push_back(item.first);
+                    if (sanitizedDictionaries.count(item.first)) {
+                        // After an entry is removed, reattach only the small
+                        // independently checked XRECORD profile. Other child
+                        // graphs remain detached until their owners and
+                        // references can be checked.
+                        const auto& record = *target->second;
+                        const auto& fields = record.groups;
+                        if (record.name != "XRECORD" || record.parentHandle != item.first ||
+                            fields.size() < 4 || fields[0].code() != 5 || fields[1].code() != 330 ||
+                            fields[2].code() != 100 || fields[2].type() != DRW_Variant::STRING ||
+                            !fields[2].content.s || *fields[2].content.s != "AcDbXrecord" ||
+                            fields[3].code() != 280 ||
+                            !std::all_of(fields.begin() + 4, fields.end(), [](const DRW_Variant& field) {
+                                return field.code() == 1 && field.type() == DRW_Variant::STRING;
+                            })) markIncomplete(item.first);
+                    }
                 }
             }
             for (std::size_t index = 0; index < pending.size(); ++index) {
@@ -2841,7 +2883,8 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
             }
 
             for (const auto& entry : _replay->rootDictEntries) {
-                if (!emitted.count(entry.second) || incomplete.count(entry.second)) {
+                if ((documentHasImages && upperName(entry.first) == "ACAD_IMAGE_DICT") ||
+                    !emitted.count(entry.second) || incomplete.count(entry.second)) {
                     detached++;
                     continue;
                 }
@@ -3649,9 +3692,6 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
     img.fade       = static_cast<int>(i->fade());
 
     if (const auto source = i->metaInfo<ImageDisplaySource>(ImageDisplaySource::key())) {
-        if (_replay && source->sourceIdentity == _replay->imageSourceIdentity &&
-            source->definitionHandle != 0 && source->definitionHandle != DRW::NoHandle)
-            _writtenImageSourceDefinitions.insert(source->definitionHandle);
         img.m_classVersion = source->classVersion;
         img.m_displayProps = source->displayProps;
         if (_exportVersion >= DRW::AC1024) {
