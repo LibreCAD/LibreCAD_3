@@ -1,5 +1,7 @@
 #include "builder.h"
 #include "entitybuilder.h"
+#include "layerops.h"
+#include "cad/meta/layer.h"
 #include <algorithm>
 #include <stdexcept>
 
@@ -47,16 +49,47 @@ void Builder::redo() const {
     }
 }
 
-bool Builder::preflightLocked(std::vector<const Builder*>& active) {
+bool Builder::preflightLocked(std::vector<const Builder*>& active, LayerTransitions& transitions) {
     if (std::find(active.begin(), active.end(), this) != active.end())
         throw std::logic_error("Cyclic operation group");
     active.push_back(this);
     _blockedByLockedLayer = false;
     for (const auto& operation : _operations) {
+        const auto layer = std::dynamic_pointer_cast<ReplaceLayer>(operation);
+        if (layer && layer->_oldLayer && layer->_newLayer) {
+            bool recordedSource = false;
+            for (auto& transition : transitions) {
+                if (transition.first == layer->_oldLayer) recordedSource = true;
+                if (transition.second == layer->_oldLayer) {
+                    transition.second = layer->_newLayer;
+                }
+            }
+            if (!recordedSource) transitions.emplace_back(layer->_oldLayer, layer->_newLayer);
+        }
         const auto entities = std::dynamic_pointer_cast<EntityBuilder>(operation);
         const auto nested = std::dynamic_pointer_cast<Builder>(operation);
-        if ((entities && entities->rejectLockedCompoundUpdate()) ||
-            (nested && nested->preflightLocked(active))) {
+        bool projectedLockedInput = false;
+        if (entities && !entities->_allowLockedLayerEdits) {
+            const auto projectedLocked = [&](const entity::CADEntity_CSPtr& candidate) {
+                if (!candidate) return false;
+                const auto original = document()->entityByID(candidate->id());
+                if (!original) return false;
+                return std::any_of(transitions.begin(), transitions.end(), [&](const auto& transition) {
+                    return original->layer() == transition.first && transition.second->isLocked();
+                });
+            };
+            projectedLockedInput = std::any_of(entities->_workingBuffer.begin(), entities->_workingBuffer.end(), projectedLocked) ||
+                std::any_of(entities->_entitiesThatNeedsRemoval.begin(), entities->_entitiesThatNeedsRemoval.end(), projectedLocked);
+            for (const auto& op : entities->_stack) {
+                const auto begin = std::dynamic_pointer_cast<Begin>(op);
+                if (!begin) continue;
+                const auto input = begin->getEntities();
+                projectedLockedInput = projectedLockedInput || std::any_of(input.begin(), input.end(), projectedLocked);
+            }
+            if (projectedLockedInput) entities->_blockedByLockedLayer = true;
+        }
+        if ((entities && (projectedLockedInput || entities->rejectLockedCompoundUpdate())) ||
+            (nested && nested->preflightLocked(active, transitions))) {
             _blockedByLockedLayer = true;
             break;
         }
@@ -67,7 +100,8 @@ bool Builder::preflightLocked(std::vector<const Builder*>& active) {
 
 void Builder::processInternal() {
     std::vector<const Builder*> active;
-    if (preflightLocked(active)) return;
+    LayerTransitions transitions;
+    if (preflightLocked(active, transitions)) return;
     // Keep the prior undo journal until every operation is applied.
     auto nextOperations = _operations;
     for(const auto& operation : _operations) {

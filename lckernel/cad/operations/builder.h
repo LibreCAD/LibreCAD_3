@@ -30,7 +30,8 @@ protected:
 
 private:
     bool containsBuilder(const Builder* target, std::vector<const Builder*>& visited) const;
-    bool preflightLocked(std::vector<const Builder*>& active);
+    using LayerTransitions = std::vector<std::pair<meta::Layer_CSPtr, meta::Layer_CSPtr>>;
+    bool preflightLocked(std::vector<const Builder*>& active, LayerTransitions& transitions);
     std::vector<DocumentOperation_SPtr> _operations;
     std::vector<DocumentOperation_SPtr> _committedOperations;
     bool _blockedByLockedLayer = false;
