@@ -3182,18 +3182,20 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2}) {
-    const bool inBlock = mode != 0;
-    const char* blockName = mode == 2 ? "*U1" : "LC_IMG";
-    SCOPED_TRACE(mode == 0 ? "model space" : mode == 1 ? "named block" : "anonymous block");
+  for (int mode : {0, 1, 2, 3, 4, 5}) {
+    const int space = mode % 3;
+    const bool modern = mode >= 3;
+    const bool inBlock = space != 0;
+    const char* blockName = space == 2 ? "*U1" : "LC_IMG";
+    SCOPED_TRACE(mode);
     const std::string source = uniqueTmpDxf("image-reactor-reference");
     const std::string saved = uniqueTmpDxf("image-reactor-reference-out");
     {
         std::ofstream file(source, std::ios::binary);
-        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n";
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\n" << (modern ? "AC1024" : "AC1015") << "\n0\nENDSEC\n";
         if (inBlock)
             file << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n61\n330\n60\n8\n0\n2\n"
-                 << blockName << "\n70\n" << (mode == 2 ? 1 : 0)
+                 << blockName << "\n70\n" << (space == 2 ? 1 : 0)
                  << "\n10\n0\n20\n0\n30\n0\n3\n" << blockName << "\n1\n\n";
         else file << "0\nSECTION\n2\nENTITIES\n";
         file << "0\nIMAGE\n5\n70\n";
@@ -3201,7 +3203,8 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         file << "8\n0\n100\nAcDbRasterImage\n90\n0\n"
                 "10\n1\n20\n2\n30\n3\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
                 "13\n2\n23\n3\n340\n81\n360\n82\n70\n3\n280\n1\n281\n50\n282\n50\n283\n0\n"
-                "71\n1\n91\n2\n14\n-0.5\n24\n-0.5\n14\n1.5\n24\n2.5\n";
+                "71\n2\n91\n3\n14\n0\n24\n0\n14\n1\n24\n0\n14\n1\n24\n2\n";
+        if (modern) file << "290\n1\n";
         if (inBlock) file << "0\nENDBLK\n5\n62\n330\n60\n8\n0\n";
         file << "0\nENDSEC\n"
                 "0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
@@ -3224,8 +3227,16 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         ASSERT_EQ(items.size(), 1u);
         ASSERT_TRUE(std::dynamic_pointer_cast<const lc::entity::Image>(items.front()));
         EXPECT_TRUE(doc->entityContainer().asVector().empty());
+    } else {
+        const auto items = doc->entityContainer().asVector();
+        ASSERT_EQ(items.size(), 1u);
+        auto image = std::dynamic_pointer_cast<const lc::entity::Image>(items.front());
+        ASSERT_TRUE(image);
+        doc->removeEntity(image);
+        doc->insertEntity(image->move(lc::geo::Coordinate(10, 0, 0)));
     }
-    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    const auto result = lc::persistence::File::exportFile(doc, saved, modern ?
+        lc::persistence::File::LIBDXFRW_DXF_R2010 : lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(result.ok);
     const auto names = rootDictNames(saved);
     EXPECT_EQ(names.count("ACAD_IMAGE_DICT"), 1u);
@@ -3236,9 +3247,99 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const auto skipped = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
     ASSERT_NE(skipped, result.loss.droppedByType.end());
     EXPECT_EQ(skipped->second, 1u);
+    const auto imageGroups = [](const std::string& path) {
+        std::ifstream file(path, std::ios::binary);
+        std::map<int, std::vector<std::string>> groups;
+        std::string code, value;
+        bool inImage = false;
+        while (std::getline(file, code) && std::getline(file, value)) {
+            if (!value.empty() && value.back() == '\r') value.pop_back();
+            const int number = std::stoi(code);
+            if (number == 0) {
+                if (inImage) break;
+                inImage = value == "IMAGE";
+            } else if (inImage) groups[number].push_back(value);
+        }
+        return groups;
+    };
+    auto groups = imageGroups(saved);
+    ASSERT_EQ(groups[70].size(), 1u);
+    EXPECT_EQ(std::stoi(groups[70][0]), 3);
+    ASSERT_EQ(groups[280].size(), 1u);
+    EXPECT_EQ(std::stoi(groups[280][0]), 1);
+    ASSERT_EQ(groups[71].size(), 1u);
+    EXPECT_EQ(std::stoi(groups[71][0]), 2);
+    ASSERT_EQ(groups[91].size(), 1u);
+    EXPECT_EQ(std::stoi(groups[91][0]), 3);
+    ASSERT_EQ(groups[14].size(), 3u);
+    ASSERT_EQ(groups[24].size(), 3u);
+    EXPECT_DOUBLE_EQ(std::stod(groups[14][0]), 0);
+    EXPECT_DOUBLE_EQ(std::stod(groups[24][0]), 0);
+    EXPECT_DOUBLE_EQ(std::stod(groups[14][1]), 1);
+    EXPECT_DOUBLE_EQ(std::stod(groups[24][1]), 0);
+    EXPECT_DOUBLE_EQ(std::stod(groups[14][2]), 1);
+    EXPECT_DOUBLE_EQ(std::stod(groups[24][2]), 2);
+    const std::string resaved = uniqueTmpDxf("image-clipping-resaved");
+    auto reopened = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(reopened, saved, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_TRUE(lc::persistence::File::exportFile(reopened, resaved, modern ?
+        lc::persistence::File::LIBDXFRW_DXF_R2010 : lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    const auto rereadGroups = imageGroups(resaved);
+    for (const int key : {70, 280, 71, 91, 14, 24, 290}) {
+        const auto before = groups.find(key);
+        const auto after = rereadGroups.find(key);
+        ASSERT_EQ(before == groups.end(), after == rereadGroups.end());
+        if (before != groups.end()) EXPECT_EQ(before->second, after->second);
+    }
+    boost::filesystem::remove(resaved);
+    if (modern) {
+        ASSERT_EQ(groups[290].size(), 1u);
+        EXPECT_EQ(std::stoi(groups[290][0]), 1);
+        const std::string downgraded = uniqueTmpDxf("image-clip-mode-downgraded");
+        const auto legacy = lc::persistence::File::exportFile(doc, downgraded, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(legacy.ok);
+        const auto omitted = legacy.loss.droppedByType.find("IMAGE clip mode");
+        ASSERT_NE(omitted, legacy.loss.droppedByType.end());
+        EXPECT_EQ(omitted->second, 1u);
+        boost::filesystem::remove(downgraded);
+    }
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
   }
+}
+
+TEST(DxfRoundTripTest, ImageClipStorageLimitReportsDroppedBoundary) {
+    const std::string source = uniqueTmpDxf("image-clip-budget");
+    const std::string saved = uniqueTmpDxf("image-clip-budget-out");
+    {
+        std::ofstream file(source, std::ios::binary);
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                "0\nSECTION\n2\nENTITIES\n";
+        for (int n = 0; n < 2; ++n) {
+            file << "0\nIMAGE\n5\n" << (n == 0 ? "70" : "71")
+                 << "\n8\n0\n100\nAcDbRasterImage\n90\n0\n"
+                    "10\n0\n20\n0\n30\n0\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
+                    "13\n2\n23\n3\n340\n81\n70\n3\n280\n1\n281\n50\n282\n50\n283\n0\n"
+                    "71\n2\n91\n90000\n";
+            for (int vertex = 0; vertex < 90000; ++vertex)
+                file << "14\n" << vertex % 2 << "\n24\n" << (vertex / 2) % 2 << "\n";
+        }
+        file << "0\nENDSEC\n0\nSECTION\n2\nOBJECTS\n"
+                "0\nIMAGEDEF\n5\n81\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
+                "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
+                "0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(file.good());
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_EQ(doc->entityContainer().asVector().size(), 2u);
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    const auto dropped = result.loss.droppedByType.find("IMAGE clipping");
+    ASSERT_NE(dropped, result.loss.droppedByType.end());
+    EXPECT_EQ(dropped->second, 1u);
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
 }
 
 // A layout is the page a drawing prints from. LibreCAD models none of it, and

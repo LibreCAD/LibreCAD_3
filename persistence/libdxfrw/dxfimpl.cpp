@@ -51,6 +51,25 @@
 using namespace lc::persistence;
 
 namespace {
+// Pixel-space clipping stays valid through the Image transforms, which change
+// its world-space axes rather than its pixel dimensions. Keep a bounded copy
+// with the entity metadata so copies retain the same source settings.
+class ImageDisplaySource final : public lc::meta::EntityMetaType {
+public:
+    static const std::string key() { return "_LC_IMAGE_DISPLAY_SOURCE"; }
+    const std::string id() const override { return key(); }
+    const std::string metaTypeID() const override { return key(); }
+    int classVersion{0};
+    int displayProps{0};
+    int clip{0};
+    int boundaryType{0};
+    bool clipMode{false};
+    bool boundaryDropped{false};
+    double width{0};
+    double height{0};
+    std::vector<DRW_Coord> boundary;
+};
+
 bool regeneratesImageObject(const DRW_RawDxfObject& object, bool hasImages) {
     return hasImages && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR");
 }
@@ -1519,11 +1538,28 @@ void DXFimpl::addImage(const DRW_Image* data) {
 void DXFimpl::linkImage(const DRW_ImageDef *data) {
     guarded("IMAGEDEF", nullptr, [&] {
         LOG_TRACE << "linkImage";
-        for(auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
+        for(auto image = imageMapCache.begin(); image != imageMapCache.end() /* not hoisted */; /* no increment */ ) {
             if (image->ref == data->handle) {
                 auto layer = _document->layerByName(image->layer);
 
                 std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*image);
+                if (!mf) mf = lc::meta::MetaInfo::create();
+                auto source = std::make_shared<ImageDisplaySource>();
+                source->classVersion = image->m_classVersion;
+                source->displayProps = image->m_displayProps;
+                source->clip = image->clip;
+                source->boundaryType = image->m_clipBoundaryType;
+                source->clipMode = image->clipMode;
+                source->width = image->sizeu;
+                source->height = image->sizev;
+                constexpr std::size_t kMaxImageClipBytes = 4u * 1024u * 1024u;
+                if (image->clipPath.size() > (kMaxImageClipBytes - _sourceImageClipBytes) / sizeof(DRW_Coord)) {
+                    source->boundaryDropped = true;
+                } else {
+                    _sourceImageClipBytes += image->clipPath.size() * sizeof(DRW_Coord);
+                    source->boundary = std::move(image->clipPath);
+                }
+                mf->add(source);
                 const lc::geo::Coordinate base(coord(image->basePoint));
                 const lc::geo::Coordinate uv(coord(image->secPoint));
                 const lc::geo::Coordinate vv(coord(image->vVector));
@@ -3549,6 +3585,23 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
     img.brightness = static_cast<int>(i->brightness());
     img.contrast   = static_cast<int>(i->contrast());
     img.fade       = static_cast<int>(i->fade());
+
+    if (const auto source = i->metaInfo<ImageDisplaySource>(ImageDisplaySource::key())) {
+        img.m_classVersion = source->classVersion;
+        img.m_displayProps = source->displayProps;
+        if (_exportVersion >= DRW::AC1024) {
+            img.clipMode = source->clipMode;
+        } else if (source->clipMode) {
+            ++_loss.droppedByType["IMAGE clip mode"];
+        }
+        if (!source->boundaryDropped && source->width == img.sizeu && source->height == img.sizev) {
+            img.clip = source->clip;
+            img.m_clipBoundaryType = source->boundaryType;
+            img.clipPath = source->boundary;
+        } else {
+            ++_loss.droppedByType["IMAGE clipping"];
+        }
+    }
 
     dxfW->writeImage(&img, i->name());
 }

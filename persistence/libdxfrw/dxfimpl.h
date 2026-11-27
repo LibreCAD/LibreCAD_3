@@ -700,6 +700,7 @@ private:
     lc::iColor icol;
 
     std::vector<DRW_Image> imageMapCache;
+    std::size_t _sourceImageClipBytes{0};
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;
