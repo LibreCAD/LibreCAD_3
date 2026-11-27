@@ -13,6 +13,7 @@
 #include "cad/math/intersect.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/primitive/line.h"
+#include "cad/primitive/image.h"
 
 namespace lc {
 namespace meta {
@@ -339,7 +340,12 @@ public:
 
             if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                 //--- May need to be implemented in another function later
-                lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
+                // IMAGE may have tilted edges: the nearest 3D point to a
+                // screen coordinate need not be the nearest projected point.
+                const auto image = projectToXY ?
+                    std::dynamic_pointer_cast<const lc::entity::Image>(item) : nullptr;
+                lc::geo::Coordinate eCoordinate = image ? image->nearestPointOnPathPlanar(point)
+                                                        : entity->nearestPointOnPath(point);
                 const auto query = projectToXY ? lc::geo::Coordinate(point.x(), point.y(), eCoordinate.z()) : point;
                 if (eCoordinate.distanceTo(query) < distance) {
                     entities.emplace_back(item, eCoordinate);

@@ -52,6 +52,7 @@ public:
             int maxNumberOfSnapPoints) const override;
 
     geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+    geo::Coordinate nearestPointOnPathPlanar(const geo::Coordinate &coord) const;
     geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
     CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
     CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;

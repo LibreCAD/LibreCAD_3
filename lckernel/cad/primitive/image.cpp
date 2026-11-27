@@ -16,6 +16,29 @@ std::array<geo::Coordinate, 4> imageCorners(const geo::Coordinate& base,
     const auto v = vv * height;
     return {{base, base + u, base + u + v, base + v}};
 }
+
+geo::Coordinate nearestImageBoundary(const std::array<geo::Coordinate, 4>& corners,
+                                      const geo::Coordinate& coord, bool planar) {
+    const auto metric = [planar](const geo::Coordinate& value) {
+        return planar ? geo::Coordinate(value.x(), value.y()) : value;
+    };
+    auto nearest = corners[0];
+    auto distance = metric(coord - nearest).squared();
+    for (std::size_t i = 0; i < corners.size(); ++i) {
+        const auto edge = corners[(i + 1) % corners.size()] - corners[i];
+        const auto measuredEdge = metric(edge);
+        const double lengthSquared = measuredEdge.squared();
+        const double t = lengthSquared == 0.0 ? 0.0 : std::max(0.0, std::min(1.0,
+            metric(coord - corners[i]).dot(measuredEdge) / lengthSquared));
+        const auto candidate = corners[i] + edge * t;
+        const double candidateDistance = metric(coord - candidate).squared();
+        if (candidateDistance < distance) {
+            nearest = candidate;
+            distance = candidateDistance;
+        }
+    }
+    return nearest;
+}
 }
 
 Image::Image(std::string name,
@@ -82,22 +105,11 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
 }
 
 geo::Coordinate Image::nearestPointOnPath(const geo::Coordinate& coord) const {
-    const auto corners = imageCorners(_base, _uv, _vv, _width, _height);
-    auto nearest = _base;
-    auto distance = (coord - nearest).squared();
-    for (std::size_t i = 0; i < corners.size(); ++i) {
-        const auto edge = corners[(i + 1) % corners.size()] - corners[i];
-        const double lengthSquared = edge.squared();
-        const double t = lengthSquared == 0.0 ? 0.0 :
-            std::max(0.0, std::min(1.0, (coord - corners[i]).dot(edge) / lengthSquared));
-        const auto candidate = corners[i] + edge * t;
-        const double candidateDistance = (coord - candidate).squared();
-        if (candidateDistance < distance) {
-            nearest = candidate;
-            distance = candidateDistance;
-        }
-    }
-    return nearest;
+    return nearestImageBoundary(imageCorners(_base, _uv, _vv, _width, _height), coord, false);
+}
+
+geo::Coordinate Image::nearestPointOnPathPlanar(const geo::Coordinate& coord) const {
+    return nearestImageBoundary(imageCorners(_base, _uv, _vv, _width, _height), coord, true);
 }
 
 geo::Coordinate Image::nearestPointOnEntity(const geo::Coordinate& coord) const {
