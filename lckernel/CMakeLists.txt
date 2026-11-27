@@ -174,6 +174,7 @@ cad/math/floatingpoint.h
 cad/math/equation.h
 cad/math/intersectionhandler.h
 cad/meta/color.h
+cad/meta/imagedisplaysource.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
 cad/meta/layer.h

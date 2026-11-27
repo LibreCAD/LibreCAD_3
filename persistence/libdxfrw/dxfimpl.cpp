@@ -45,6 +45,7 @@
 #include <cad/primitive/insert.h>
 #include <cad/operations/blockops.h>
 #include <cad/meta/customentitystorage.h>
+#include <cad/meta/imagedisplaysource.h>
 #include <cad/logger/logger.h>
 #include <cad/tools/maphelper.h>
 
@@ -56,7 +57,7 @@ namespace {
 // with the entity metadata so copies retain the same source settings.
 class ImageDisplaySource final : public lc::meta::EntityMetaType {
 public:
-    static const std::string key() { return "_LC_IMAGE_DISPLAY_SOURCE"; }
+    static const std::string key() { return lc::meta::detail::imageDisplaySourceKey(); }
     const std::string id() const override { return key(); }
     const std::string metaTypeID() const override { return key(); }
     int classVersion{0};

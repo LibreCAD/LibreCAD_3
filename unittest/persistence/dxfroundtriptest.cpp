@@ -3233,7 +3233,20 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         auto image = std::dynamic_pointer_cast<const lc::entity::Image>(items.front());
         ASSERT_TRUE(image);
         doc->removeEntity(image);
-        doc->insertEntity(image->move(lc::geo::Coordinate(10, 0, 0)));
+        auto moved = image->move(lc::geo::Coordinate(10, 0, 0));
+        ASSERT_TRUE(moved);
+        // A style editor may replace the complete metadata map.
+        auto style = lc::meta::MetaInfo::create();
+        style->add(std::make_shared<lc::meta::MetaColorByValue>(17, 34, 51));
+        auto edited = moved->modify(moved->layer(), style, moved->block());
+        ASSERT_TRUE(edited);
+        EXPECT_EQ(style->size(), 1u);
+        const auto color = edited->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+        ASSERT_TRUE(color);
+        EXPECT_EQ(color->redI(), 17);
+        EXPECT_EQ(color->greenI(), 34);
+        EXPECT_EQ(color->blueI(), 51);
+        doc->insertEntity(edited);
     }
     const auto result = lc::persistence::File::exportFile(doc, saved, modern ?
         lc::persistence::File::LIBDXFRW_DXF_R2010 : lc::persistence::File::LIBDXFRW_DXF_R2000);

@@ -5,6 +5,8 @@
 #include <cmath>
 
 #include "cad/geometry/geoarea.h"
+#include "cad/base/metainfo.h"
+#include "cad/meta/imagedisplaysource.h"
 
 using namespace lc;
 using namespace entity;
@@ -180,6 +182,23 @@ const geo::Area Image::boundingBox() const {
 }
 
 CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+    // A style edit can replace MetaInfo entirely, but it does not edit the
+    // image's pixel-space source display settings. Carry those forward while
+    // leaving the supplied style metadata untouched.
+    auto updatedMeta = metaInfo;
+    const auto originalMeta = this->metaInfo();
+    if (originalMeta) {
+        const auto source = originalMeta->find(meta::detail::imageDisplaySourceKey());
+        if (source != originalMeta->end()) {
+            const auto replacement = metaInfo ? metaInfo->find(source->first) : originalMeta->end();
+            if (!metaInfo || replacement == metaInfo->end() || replacement->second != source->second) {
+                auto copy = meta::MetaInfo::create();
+                if (metaInfo) copy->insert(metaInfo->begin(), metaInfo->end());
+                (*copy)[source->first] = source->second;
+                updatedMeta = copy;
+            }
+        }
+    }
     auto newImage = std::make_shared<Image>(
                         _name,
                         _base,
@@ -191,7 +210,7 @@ CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
                         _contrast,
                         _fade,
                         layer,
-                        metaInfo,
+                        updatedMeta,
                         block
                     );
     newImage->setID(id());
