@@ -3502,6 +3502,19 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
             }
         }
         emptyFile.close();
+        const std::string binaryEmptyPath = uniqueTmpDxf("image-last-removal-binary");
+        const auto binaryEmpty = lc::persistence::File::exportFile(doc, binaryEmptyPath,
+            lc::persistence::File::LIBDXFRW_DXB_R2000);
+        ASSERT_TRUE(binaryEmpty.ok);
+        EXPECT_GT(binaryEmpty.loss.droppedByType.count("unmodelled records"), 0u);
+        std::ifstream binaryFile(binaryEmptyPath, std::ios::binary);
+        const std::string binaryBytes((std::istreambuf_iterator<char>(binaryFile)), {});
+        EXPECT_EQ(binaryBytes.find("AutoCAD Binary DXF"), 0u);
+        auto binaryReopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(binaryReopened, binaryEmptyPath,
+            lc::persistence::File::LIBDXFRW).ok);
+        EXPECT_TRUE(binaryReopened->entityContainer().asVector().empty());
+        boost::filesystem::remove(binaryEmptyPath);
         doc->insertEntity(image);
         const auto restored = lc::persistence::File::exportFile(doc, emptyPath, lc::persistence::File::LIBDXFRW_DXF_R2000);
         ASSERT_TRUE(restored.ok);
