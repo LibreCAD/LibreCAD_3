@@ -58,7 +58,7 @@ protected:
 
 private:
     bool touchesLockedLayer() const;
-    bool rejectLockedDirectUpdate();
+    bool rejectLockedCompoundUpdate();
     std::vector<Base_SPtr> _stack;
     bool _allowLockedLayerEdits = false;
     bool _blockedByLockedLayer = false;

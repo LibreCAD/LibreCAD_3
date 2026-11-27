@@ -33,7 +33,7 @@ void Builder::processInternal() {
     _blockedByLockedLayer = false;
     for (const auto& operation : _operations) {
         const auto entities = std::dynamic_pointer_cast<EntityBuilder>(operation);
-        if (entities && entities->rejectLockedDirectUpdate()) {
+        if (entities && entities->rejectLockedCompoundUpdate()) {
             _blockedByLockedLayer = true;
             return;
         }
