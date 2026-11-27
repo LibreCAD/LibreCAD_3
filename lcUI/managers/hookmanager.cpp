@@ -29,6 +29,10 @@ void HookManager::onMouseEvent(std::string type,QMouseEvent* mouseEvent) {
     dispatch();
 };
 
+void HookManager::cancel() {
+    hookEvent.clear();
+};
+
 void HookManager::dispatch() {
     if(!hookEvent.nextDispatch) {
         bool lastResult = false; //handled?
