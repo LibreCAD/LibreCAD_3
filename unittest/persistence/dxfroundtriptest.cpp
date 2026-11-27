@@ -4440,3 +4440,46 @@ TEST(DxfRoundTripTest, RationalSplineKeepsWeightsOnSave) {
     boost::filesystem::remove(input);
     boost::filesystem::remove(output);
 }
+
+TEST(DxfRoundTripTest, BlockLayerVisibilitySurvivesSaveReopenAndUndo) {
+    const auto source = uniqueTmpDxf("block-layer-source");
+    {
+        std::ofstream f(source);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n"
+             "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n1\n"
+             "0\nLAYER\n2\nVISIBLE_LAYER\n70\n0\n62\n3\n6\nCONTINUOUS\n"
+             "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nBLOCKS\n"
+             "0\nBLOCK\n8\n0\n2\nBLOCK_A\n70\n0\n10\n0\n20\n0\n30\n0\n3\nBLOCK_A\n"
+             "0\nLINE\n8\nVISIBLE_LAYER\n10\n1\n20\n2\n30\n0\n11\n4\n21\n6\n31\n0\n"
+             "0\nENDBLK\n8\n0\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n"
+             "0\nINSERT\n8\n0\n2\nBLOCK_A\n10\n10\n20\n20\n30\n0\n"
+             "0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto on = doc->layerByName("VISIBLE_LAYER"); ASSERT_TRUE(on); EXPECT_FALSE(on->isOff());
+    const auto block = doc->blockByName("BLOCK_A"); ASSERT_TRUE(block);
+    auto children = doc->entitiesByBlock(block).asVector(); ASSERT_EQ(children.size(), 1u);
+    const auto childId = children.front()->id();
+    auto off = std::make_shared<lc::meta::Layer>(on->name(), on->lineWidth(), on->color(), on->linePattern(), on->isFrozen(), true);
+    auto change = std::make_shared<lc::operation::Builder>(doc, "turn off");
+    change->append(std::make_shared<lc::operation::ReplaceLayer>(doc, on, off)); change->execute();
+    ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), off);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output = uniqueTmpDxf("block-layer-off");
+        const auto written = lc::persistence::File::exportFile(doc, output, type); ASSERT_TRUE(written.ok);
+        auto reopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        auto layer = reopened->layerByName("VISIBLE_LAYER"); ASSERT_TRUE(layer); EXPECT_TRUE(layer->isOff());
+        auto reopenedBlock = reopened->blockByName("BLOCK_A"); ASSERT_TRUE(reopenedBlock);
+        const auto reopenedChildren = reopened->entitiesByBlock(reopenedBlock).asVector(); ASSERT_EQ(reopenedChildren.size(), 1u);
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(reopenedChildren.front()); ASSERT_TRUE(line);
+        EXPECT_EQ(line->layer(), layer); EXPECT_DOUBLE_EQ(line->start().x(), 1); EXPECT_DOUBLE_EQ(line->end().y(), 6);
+        boost::filesystem::remove(output);
+    }
+    change->undo();
+    ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), on);
+    change->redo();
+    ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), off);
+    boost::filesystem::remove(source);
+}
