@@ -22,6 +22,7 @@
 #include <cad/storage/storagemanagerimpl.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/line.h>
 
 namespace {
 
@@ -129,4 +130,28 @@ assert(m:underlined() == true, 'the entity lost underlined')
 assert(m:strikethrough() == false, 'the entity lost strikethrough')
 assert(m:text_value() == 'two\nlines', 'the entity lost the newline')
 )LUA"), "");
+}
+
+TEST_F(LuaTextBuilderFixture, LockedLayerOperationReportsRefusalAndAllowsExplicitOverride) {
+    auto layer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1), lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(layer);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), layer, nullptr);
+    document->insertEntity(line);
+    const auto err = lcLua->runString(R"LUA(
+local entities = document:entityContainer():asVector(32767)
+local moved = entities[1]:move(lc.geo.Coordinate(2, 0))
+local blocked = lc.operation.EntityBuilder.new(document)
+blocked:appendEntity(moved)
+blocked:execute()
+assert(blocked:blockedByLockedLayer())
+local force = lc.operation.EntityBuilder.new(document)
+force:setAllowLockedLayerEdits(true)
+force:appendEntity(moved)
+force:execute()
+assert(not force:blockedByLockedLayer())
+)LUA");
+    ASSERT_EQ(err, "") << err;
+    const auto moved = std::dynamic_pointer_cast<const lc::entity::Line>(document->entityByID(line->id()));
+    ASSERT_TRUE(moved);
+    EXPECT_DOUBLE_EQ(moved->start().x(), 2.0);
 }

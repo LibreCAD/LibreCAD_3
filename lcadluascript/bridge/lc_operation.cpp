@@ -176,6 +176,8 @@ void import_lc_operation_namespace(kaguya::State& state) {
     .addFunction("appendEntity", &lc::operation::EntityBuilder::appendEntity)
     .addFunction("appendOperation", &lc::operation::EntityBuilder::appendOperation)
     .addFunction("processStack", &lc::operation::EntityBuilder::processStack)
+    .addFunction("setAllowLockedLayerEdits", &lc::operation::EntityBuilder::setAllowLockedLayerEdits)
+    .addFunction("blockedByLockedLayer", &lc::operation::EntityBuilder::blockedByLockedLayer)
     .addFunction("redo", &lc::operation::EntityBuilder::redo)
     .addFunction("undo", &lc::operation::EntityBuilder::undo)
                                                       );

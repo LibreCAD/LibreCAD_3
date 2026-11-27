@@ -37,6 +37,11 @@ public:
      */
     EntityBuilder* appendOperation(Base_SPtr operation);
 
+    // By default an operation that modifies an existing entity on a locked
+    // layer is rejected as a whole. Explicit callers can override that policy.
+    void setAllowLockedLayerEdits(bool allow) { _allowLockedLayerEdits = allow; }
+    bool blockedByLockedLayer() const { return _blockedByLockedLayer; }
+
     virtual void undo() const;
     virtual void redo() const;
 
@@ -51,6 +56,8 @@ protected:
 
 private:
     std::vector<Base_SPtr> _stack;
+    bool _allowLockedLayerEdits = false;
+    bool _blockedByLockedLayer = false;
     std::vector<entity::CADEntity_CSPtr> _workingBuffer;
 
     std::vector<entity::CADEntity_CSPtr> _entitiesThatWhereUpdated;

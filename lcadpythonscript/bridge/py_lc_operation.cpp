@@ -164,6 +164,8 @@ void import_py_lc_operation_namespace(py::module_& m_op) {
         .def("appendEntity",    &lc::operation::EntityBuilder::appendEntity)
         .def("appendOperation", &lc::operation::EntityBuilder::appendOperation)
         .def("processStack",    &lc::operation::EntityBuilder::processStack)
+        .def("setAllowLockedLayerEdits", &lc::operation::EntityBuilder::setAllowLockedLayerEdits)
+        .def("blockedByLockedLayer", &lc::operation::EntityBuilder::blockedByLockedLayer)
         .def("redo",            &lc::operation::EntityBuilder::redo)
         .def("undo",            &lc::operation::EntityBuilder::undo);
 }

@@ -1,5 +1,7 @@
 #include "entitybuilder.h"
 #include "cad/storage/document.h"
+#include "cad/meta/layer.h"
+#include <algorithm>
 
 using namespace lc;
 using namespace operation;
@@ -19,7 +21,38 @@ EntityBuilder* EntityBuilder::appendOperation(Base_SPtr operation) {
 }
 
 void EntityBuilder::processInternal() {
+    _blockedByLockedLayer = false;
     processStack();
+
+    // Check the current document object, not the caller's possibly stale
+    // snapshot. New objects may be added to locked layers; existing ones may
+    // only be changed through the explicit override.
+    if (!_allowLockedLayerEdits) {
+        const auto locked = [this](const entity::CADEntity_CSPtr& candidate, bool removal) {
+            if (!candidate) return false;
+            const auto original = document()->entityByID(candidate->id());
+            return original && (removal || original != candidate) &&
+                   original->layer() && original->layer()->isLocked();
+        };
+        if (std::any_of(_workingBuffer.begin(), _workingBuffer.end(),
+                        [&](const auto& candidate) { return locked(candidate, false); }) ||
+            std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(),
+                        [&](const auto& candidate) { return locked(candidate, true); })) {
+            _blockedByLockedLayer = true;
+            _workingBuffer.clear();
+            _entitiesThatNeedsRemoval.clear();
+            _entitiesThatWhereUpdated.clear();
+            return;
+        }
+        // Copy operations retain the original object in the working buffer.
+        // Do not remove and reinsert an unchanged object on a locked layer.
+        _workingBuffer.erase(std::remove_if(_workingBuffer.begin(), _workingBuffer.end(),
+            [this](const entity::CADEntity_CSPtr& candidate) {
+                if (!candidate) return false;
+                const auto original = document()->entityByID(candidate->id());
+                return original == candidate && original->layer() && original->layer()->isLocked();
+            }), _workingBuffer.end());
+    }
 
     // Include entities in block containers as well as model space.
     for (const auto& entity : _workingBuffer) {
