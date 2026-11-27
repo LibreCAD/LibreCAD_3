@@ -23,8 +23,11 @@ void import_lc_operation_namespace(kaguya::State& state) {
                                                           );
 
     state["lc"]["operation"]["Builder"].setClass(kaguya::UserdataMetatable<lc::operation::Builder, lc::operation::DocumentOperation>()
-            .setConstructors<lc::operation::Builder(lc::storage::Document_SPtr, const std::string &)>()
+            .addStaticFunction("new", [](const lc::storage::Document_SPtr& document, const std::string& description) {
+                return std::make_shared<lc::operation::Builder>(document, description);
+            })
             .addFunction("append", &lc::operation::Builder::append)
+            .addFunction("blockedByLockedLayer", &lc::operation::Builder::blockedByLockedLayer)
             .addFunction("redo", &lc::operation::Builder::redo)
             .addFunction("undo", &lc::operation::Builder::undo)
                                                 );

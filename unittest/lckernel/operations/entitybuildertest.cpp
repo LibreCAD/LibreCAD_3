@@ -525,3 +525,21 @@ TEST(EntityBuilderTest, RefusedReuseKeepsPreviouslyCommittedUndoJournal) {
     EXPECT_EQ(document->entityByID(added->id()), added);
     EXPECT_EQ(document->entityByID(locked->id()), locked);
 }
+
+TEST(EntityBuilderTest, RefusedOperationRetriesInPlaceAfterExplicitOverride) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto layer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1), lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(layer);
+    auto original = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), layer, nullptr);
+    document->insertEntity(original);
+    auto moved = original->move(lc::geo::Coordinate(2, 0));
+    auto operation = std::make_shared<lc::operation::EntityBuilder>(document);
+    operation->appendEntity(moved); operation->execute();
+    ASSERT_TRUE(operation->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(original->id()), original);
+    operation->setAllowLockedLayerEdits(true); operation->execute();
+    EXPECT_FALSE(operation->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(original->id()), moved);
+    operation->undo(); EXPECT_EQ(document->entityByID(original->id()), original);
+    operation->redo(); EXPECT_EQ(document->entityByID(original->id()), moved);
+}

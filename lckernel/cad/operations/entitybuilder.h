@@ -13,8 +13,10 @@ DECLARE_SHORT_SHARED_PTR(Document)
 }
 
 namespace operation {
+class Builder;
 class EntityBuilder: public DocumentOperation {
     friend class lc::operation::Base;
+    friend class lc::operation::Builder;
 
 public:
     /**
@@ -55,6 +57,8 @@ protected:
     virtual void processInternal();
 
 private:
+    bool touchesLockedLayer() const;
+    bool rejectLockedDirectUpdate();
     std::vector<Base_SPtr> _stack;
     bool _allowLockedLayerEdits = false;
     bool _blockedByLockedLayer = false;

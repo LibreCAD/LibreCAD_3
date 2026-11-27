@@ -7,7 +7,16 @@ can be added to that layer. Changes to existing objects are refused by default.
 existing object on a locked layer. After `execute()`, call
 `blockedByLockedLayer()` to check whether this happened. To deliberately edit
 locked objects, call `setAllowLockedLayerEdits(true)` on that operation before
-executing it. Undo and redo apply normally to an allowed operation.
+executing it. A refused operation retains its pending edit, so it can be
+retried after unlocking or enabling the override. Undo and redo apply normally
+to an allowed operation.
+
+A compound `Builder` preflights direct entity replacements against the lock
+state at the start of the group and reports refusal through its own
+`blockedByLockedLayer()` method. To unlock and edit in one group, explicitly
+override the entity operation. Queued transform stacks, nested groups and
+layer-state changes during a group are not yet guaranteed atomic; separate
+those operations when a locked entity may be involved.
 
 The script-facing document methods `insertEntity` and `removeEntity` also
 respect the lock. They keep their existing no-result interface and log a

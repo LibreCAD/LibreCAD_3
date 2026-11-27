@@ -23,12 +23,15 @@ public:
 
     void undo() const override;
     void redo() const override;
+    bool blockedByLockedLayer() const { return _blockedByLockedLayer; }
 
 protected:
     virtual void processInternal() override;
 
 private:
     std::vector<DocumentOperation_SPtr> _operations;
+    std::vector<DocumentOperation_SPtr> _committedOperations;
+    bool _blockedByLockedLayer = false;
 };
 
 DECLARE_SHORT_SHARED_PTR(Builder)

@@ -97,7 +97,9 @@ void import_lc_storage_namespace(kaguya::State& state) {
                                                );
 
     state["lc"]["storage"]["DocumentImpl"].setClass(kaguya::UserdataMetatable<lc::storage::DocumentImpl, lc::storage::Document>()
-            .setConstructors<lc::storage::DocumentImpl(lc::storage::StorageManager_SPtr)>()
+            .addStaticFunction("new", [](const lc::storage::StorageManager_SPtr& manager) {
+                return std::make_shared<lc::storage::DocumentImpl>(manager);
+            })
             .addStaticFunction("create", [](const lc::storage::StorageManager_SPtr& manager) {
                 return std::make_shared<lc::storage::DocumentImpl>(manager);
             })
@@ -141,7 +143,7 @@ void import_lc_storage_namespace(kaguya::State& state) {
                                                       );
 
     state["lc"]["storage"]["StorageManagerImpl"].setClass(kaguya::UserdataMetatable<lc::storage::StorageManagerImpl, lc::storage::StorageManager>()
-            .setConstructors<lc::storage::StorageManagerImpl()>()
+            .addStaticFunction("new", [] { return std::make_shared<lc::storage::StorageManagerImpl>(); })
             .addStaticFunction("create", [] { return std::make_shared<lc::storage::StorageManagerImpl>(); })
             .addFunction("addDocumentMetaType", &lc::storage::StorageManagerImpl::addDocumentMetaType)
             .addFunction("allLayers", &lc::storage::StorageManagerImpl::allLayers)

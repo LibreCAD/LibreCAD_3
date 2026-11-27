@@ -2,6 +2,7 @@
 
 #include "cad/operations/documentoperation.h"
 #include "cad/operations/entitybuilder.h"
+#include "cad/operations/builder.h"
 #include "cad/operations/undoable.h"
 #include <nano-signal-slot/nano_signal_slot.hpp>
 
@@ -17,6 +18,8 @@ void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& eve
     // not consume an undo step or discard an existing redo history.
     const auto entities = std::dynamic_pointer_cast<operation::EntityBuilder>(event.operation());
     if (entities && entities->blockedByLockedLayer()) return;
+    const auto group = std::dynamic_pointer_cast<operation::Builder>(event.operation());
+    if (group && group->blockedByLockedLayer()) return;
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
     if (undoable != nullptr) {

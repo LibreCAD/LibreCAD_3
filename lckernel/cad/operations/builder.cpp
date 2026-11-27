@@ -1,4 +1,5 @@
 #include "builder.h"
+#include "entitybuilder.h"
 
 using namespace lc;
 using namespace operation;
@@ -17,19 +18,30 @@ void Builder::append(DocumentOperation_SPtr operation) {
 }
 
 void Builder::undo() const {
-    for(auto it = _operations.rbegin(); it != _operations.rend(); it++) {
+    for(auto it = _committedOperations.rbegin(); it != _committedOperations.rend(); it++) {
         (*it)->undo();
     }
 }
 
 void Builder::redo() const {
-    for(const auto& operation : _operations) {
+    for(const auto& operation : _committedOperations) {
         operation->redo();
     }
 }
 
 void Builder::processInternal() {
+    _blockedByLockedLayer = false;
+    for (const auto& operation : _operations) {
+        const auto entities = std::dynamic_pointer_cast<EntityBuilder>(operation);
+        if (entities && entities->rejectLockedDirectUpdate()) {
+            _blockedByLockedLayer = true;
+            return;
+        }
+    }
+    // Keep the prior undo journal until every operation is applied.
+    auto nextOperations = _operations;
     for(const auto& operation : _operations) {
         operation->processInternal();
     }
+    _committedOperations.swap(nextOperations);
 }

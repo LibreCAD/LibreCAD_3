@@ -20,12 +20,30 @@ EntityBuilder* EntityBuilder::appendOperation(Base_SPtr operation) {
     return this;
 }
 
+bool EntityBuilder::touchesLockedLayer() const {
+    const auto locked = [this](const entity::CADEntity_CSPtr& candidate, bool removal) {
+        if (!candidate) return false;
+        const auto original = document()->entityByID(candidate->id());
+        return original && (removal || original != candidate) &&
+               original->layer() && original->layer()->isLocked();
+    };
+    return std::any_of(_workingBuffer.begin(), _workingBuffer.end(),
+                       [&](const auto& candidate) { return locked(candidate, false); }) ||
+           std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(),
+                       [&](const auto& candidate) { return locked(candidate, true); });
+}
+
+bool EntityBuilder::rejectLockedDirectUpdate() {
+    // A queued operation stack must run in its original position inside the
+    // compound. Preflight only already-staged, direct replacements/removals.
+    if (!_stack.empty() || _allowLockedLayerEdits || !touchesLockedLayer()) return false;
+    // Retain the pending update for an explicit override or later unlock.
+    // Undo and redo use the separate committed journal.
+    _blockedByLockedLayer = true;
+    return true;
+}
+
 void EntityBuilder::processInternal() {
-    // Prepare a no-throw restoration of the last applied journal before
-    // processing a potentially rejected re-execution.
-    auto previousWorking = _committedWorkingBuffer;
-    auto previousUpdates = _committedUpdates;
-    auto previousRemovals = _committedRemovals;
     _blockedByLockedLayer = false;
     processStack();
 
@@ -33,20 +51,10 @@ void EntityBuilder::processInternal() {
     // snapshot. New objects may be added to locked layers; existing ones may
     // only be changed through the explicit override.
     if (!_allowLockedLayerEdits) {
-        const auto locked = [this](const entity::CADEntity_CSPtr& candidate, bool removal) {
-            if (!candidate) return false;
-            const auto original = document()->entityByID(candidate->id());
-            return original && (removal || original != candidate) &&
-                   original->layer() && original->layer()->isLocked();
-        };
-        if (std::any_of(_workingBuffer.begin(), _workingBuffer.end(),
-                        [&](const auto& candidate) { return locked(candidate, false); }) ||
-            std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(),
-                        [&](const auto& candidate) { return locked(candidate, true); })) {
+        if (touchesLockedLayer()) {
+            // Keep the staged work so the caller may unlock or explicitly
+            // override the guard and retry the same operation.
             _blockedByLockedLayer = true;
-            _workingBuffer.swap(previousWorking);
-            _entitiesThatNeedsRemoval.swap(previousRemovals);
-            _entitiesThatWhereUpdated.swap(previousUpdates);
             return;
         }
         // Copy operations retain the original object in the working buffer.
@@ -88,25 +96,25 @@ void EntityBuilder::processInternal() {
 }
 
 void EntityBuilder::undo() const {
-    for (const auto& entity : _workingBuffer) {
+    for (const auto& entity : _committedWorkingBuffer) {
         document()->removeEntity(entity);
     }
 
-    for (const auto& entity : _entitiesThatWhereUpdated) {
+    for (const auto& entity : _committedUpdates) {
         document()->insertEntity(entity);
     }
 
-    for (const auto& entity : _entitiesThatNeedsRemoval) {
+    for (const auto& entity : _committedRemovals) {
         document()->insertEntity(entity);
     }
 }
 
 void EntityBuilder::redo() const {
-    for (const auto& entity : _entitiesThatNeedsRemoval) {
+    for (const auto& entity : _committedRemovals) {
         document()->removeEntity(entity);
     }
 
-    for (const auto& entity : _workingBuffer) {
+    for (const auto& entity : _committedWorkingBuffer) {
         document()->insertEntity(entity);
     }
 }
