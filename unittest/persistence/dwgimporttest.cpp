@@ -1117,6 +1117,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
         if (inPolygon && group == 11) xdir = std::stod(value) == 2.0;
         if (inPolygon && group == 21) ydir = std::stod(value) == 5.0;
     }
+    f.close();
     if (asciiPreserved) EXPECT_TRUE(seenPolygon && fill && lineColorWritten && xdir && ydir);
     else EXPECT_FALSE(seenPolygon);
 
@@ -1321,6 +1322,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     std::ifstream original(input);
     std::string complexSource((std::istreambuf_iterator<char>(original)),
                               std::istreambuf_iterator<char>());
+    original.close();
     const auto countAt = complexSource.find("91\n1\n92\n2\n");
     ASSERT_NE(countAt, std::string::npos);
     complexSource.replace(countAt, std::string("91\n1\n92\n2\n").size(),
@@ -1355,6 +1357,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     std::ifstream edgeSourceFile(input);
     std::string edgeSource((std::istreambuf_iterator<char>(edgeSourceFile)),
                            std::istreambuf_iterator<char>());
+    edgeSourceFile.close();
     const std::string polyTags = "92\n2\n73\n1\n72\n0\n93\n3\n"
                                  "10\n1\n20\n2\n10\n4\n20\n2\n10\n3\n20\n5\n";
     const auto edgeAt = edgeSource.find(polyTags);
@@ -1408,6 +1411,7 @@ TEST(DwgImportTest, MpolygonSimpleBoundaryAndEditedFallback) {
     std::ifstream simpleFile(input);
     const std::string simpleSource((std::istreambuf_iterator<char>(simpleFile)),
                                    std::istreambuf_iterator<char>());
+    simpleFile.close();
     std::string hatchSource = simpleSource;
     auto replaceOnce = [](std::string& text, const std::string& from, const std::string& to) {
         const auto pos = text.find(from);
@@ -1785,6 +1789,7 @@ TEST(DwgImportTest, MpolygonLiftFallbackRetainsPlanarElevation) {
         }
     }
     EXPECT_TRUE(checkedElevation);
+    mixedFile.close();
     if (!capture) boost::filesystem::remove(mixedOutput);
     // Restore and retry using the same document after the refused plane.
     doc->removeEntity(mixed);
@@ -1926,6 +1931,7 @@ TEST(DwgImportTest, ElevatedMultiLoopHatchAndMpolygonRoundTrip) {
             }
         }
         EXPECT_TRUE(checkedElevation);
+        raw.close();
         if (!capture) boost::filesystem::remove(mixedOutput);
         doc->removeEntity(mixed);
         doc->insertEntity(original);
