@@ -2149,7 +2149,7 @@ exempted.
 | `unittest/`, test fixtures, test filters, `.github/workflows/` | Every gate whose acceptance tests or CI evidence change; PLAN-SYNC |
 | `.github/actionlint.yaml` | S7, PLAN-SYNC, all platforms whose runner labels it validates |
 | `scripts/`, `conanfile.py`, packaging/deployment configuration | S1, S3, S6, S7, applicable platform gate |
-| `doxygen/`, `README*`, scripting examples | S0, DOC; platform claims touched by the edit |
+| `doxygen/`, `README*`, scripting examples and `docs/scripting-locked-layers.md` | S0, DOC; platform claims touched by the edit |
 | `PYTHON_BINDING_IMPLEMENTATION_PLAN.md` | PLAN-SYNC and each gate whose requirement, state, evidence, or claim changes |
 
 Path mapping is a minimum, not a substitute for impact analysis: behavior and
@@ -2196,6 +2196,7 @@ minimum. Keep this table aligned with the coarser ownership guidance above.
 | `conanfile.py` | S1, S3, S6, S7, ALL_PLATFORMS |
 | `third_party/pybind11/` | S1, S3, S6, ALL_PLATFORMS |
 | `doxygen/` | S0, DOC |
+| `docs/scripting-locked-layers.md` | S0, DOC |
 | `README*` | S0, DOC |
 
 #### Explicit path exemptions
@@ -2737,6 +2738,7 @@ the specific next action.
 
 | Review date | Affected gates | Plan change | Validation scope |
 |---|---|---|---|
+| 2026-11-26 | S0, S1, S2, S3, S4, S5, S6, S7, DOC, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Guard locked-layer EntityBuilder and script-facing document edits; document explicit overrides and map that documentation to S0/DOC. Retain low-level storage and compound-transaction limits. No gate-state change. | On macOS ARM64, candidate `d23c27af`: 173 focused kernel, builder, layer, canvas, DXF/DWG, Lua and Python tests pass, including direct refusal, force, null-input and undo/redo controls. Codec-aware test target builds against the pinned submodule. Hosted platform jobs, native GUI and broader compound operations remain open. Checker coverage is against the actual PR base `60727c6c`; rerun after this receipt. |
 | 2026-11-26 | S1, S2, S3, S4, S5, S6, S7, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Preserve imported layer color provenance through state-only freeze, lock and visibility changes, without attaching it to unrelated replacements. No gate-state change. | macOS ARM64: 76 DXF round-trip, three export, ten entity-builder, nine canvas, three layer-operation, four offscreen layer UI, 17 DWG import and 17 layout tests pass. Low-level ezdxf tag readback verifies signed index, true black and color name in ASCII and binary and checks unrelated replacements; audits are clean. Old codec syntax passes. Non-state edits, color-book semantics, native GUI and other platforms remain open. |
 | 2026-11-26 | S1, S2, S3, S4, S5, S6, S7, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Add save/reopen coverage for 3D block entity transfer, undo and redo. No gate-state change. | macOS ARM64: generated R2004 ASCII after transfer and undo, and binary after redo, reopen with the line in exactly one expected block and all 3D coordinates intact. ezdxf independently verifies all three outputs with no audit errors or fixes. Other entity types, native GUI and platform qualification remain open. |
 | 2026-11-26 | S1, S2, S3, S4, S5, S6, S7, PLAN-SYNC, LINUX-X64, LINUX-ARM64, APPIMAGE-X64, SNAP-AMD64, WIN-X64, MAC-ARM64, MAC-X64 | Preserve block entity updates on undo and remove the existing entity from its real owner when an update changes blocks. No gate-state change. | macOS ARM64: a failing-before 3D LINE control checks same-block edits, transfers between two blocks and model space, identity, undo and redo. Ten entity-builder, nine canvas, 74 DXF round-trip, 17 DWG import and 17 layout tests pass. Native GUI and other platforms remain open. |
