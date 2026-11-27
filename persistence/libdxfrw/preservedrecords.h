@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -65,6 +66,7 @@ public:
     // Shared with IMAGE sidecars from this particular import. Handles from a
     // different document must never be interpreted in this source graph.
     std::shared_ptr<const void> imageSourceIdentity{std::make_shared<int>(0)};
+    std::set<std::uint32_t> sourceImageDefinitionHandles;
 
     // Preserve whether an imported layer's width was an implicit DXF default.
     // The kernel turns that into a numeric width; a legacy export must not
@@ -119,6 +121,7 @@ public:
      */
     std::vector<std::pair<std::string, std::uint32_t>> rootDictEntries;
     std::uint32_t rootDictSourceHandle{0};
+    std::uint32_t groupDictSourceHandle{0};
     bool rootDictSourceAmbiguous{false};
 
     /**

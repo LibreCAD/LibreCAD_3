@@ -3182,7 +3182,7 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}) {
+  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}) {
     const int space = mode >= 6 ? 0 : mode % 3;
     const bool modern = mode >= 3 && mode < 6;
     const bool extendedDictionary = mode == 6;
@@ -3196,6 +3196,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const bool invalidNestedRootOwner = mode == 14;
     const bool sourcePaper = mode == 15;
     const bool duplicateTarget = mode == 16;
+    const bool definitionMetadata = mode == 19;
     const int extraRecords = mode == 17 ? 252 : mode == 18 ? 253 : 0;
     const char* rootHandle = differentRoot ? "50" : "C";
     const bool inBlock = space != 0;
@@ -3240,8 +3241,10 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         for (int i = 0; i < extraRecords; ++i)
             file << "0\nXRECORD\n5\n" << std::hex << 0x200 + i << std::dec
                  << "\n330\n90\n100\nAcDbXrecord\n280\n1\n1\nextra\n";
-        file << "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
-                "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
+        file << "0\nIMAGEDEF\n5\n81\n330\n80\n";
+        if (definitionMetadata) file << "102\n{LC_DEF\n1\ncustom\n102\n}\n";
+        file << "100\nAcDbRasterImageDef\n90\n2\n1\nscratch.png\n"
+                "10\n2\n20\n3\n11\n0.25\n21\n0.5\n280\n1\n281\n5\n"
                 "0\nIMAGEDEF_REACTOR\n5\n82\n102\n{LC_TEST\n1\nreactor-metadata\n102\n}\n"
                 "330\n70\n100\nAcDbRasterImageDefReactor\n90\n2\n"
                 "0\nENDSEC\n0\nEOF\n";
@@ -3303,7 +3306,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
             if (group == 0) blockRecord = value == "BLOCK_RECORD";
             if (blockRecord && group == 2 && value == "*Paper_Space0") ++paper0;
         }
-        EXPECT_EQ(paper0, mode <= 5 || mode == 17 ? 0u : 1u);
+        EXPECT_EQ(paper0, mode <= 5 || mode == 17 || mode == 19 ? 0u : 1u);
     }
     const auto names = rootDictNames(saved);
     EXPECT_EQ(names.count("ACAD_IMAGE_DICT"), 1u);
@@ -3314,11 +3317,16 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const auto skipped = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
     ASSERT_NE(skipped, result.loss.droppedByType.end());
     EXPECT_EQ(skipped->second, 1u);
+    const auto definitionLoss = result.loss.droppedByType.find("IMAGEDEF metadata");
+    if (definitionMetadata) {
+        ASSERT_NE(definitionLoss, result.loss.droppedByType.end());
+        EXPECT_EQ(definitionLoss->second, 1u);
+    } else EXPECT_EQ(definitionLoss, result.loss.droppedByType.end());
     // Omitted source IMAGE objects must not leave dangling dictionary entries.
     // A handle from a different import must not authorize a removal.
     const auto droppedEntries = result.loss.droppedByType.find("dictionary entries");
     ASSERT_NE(droppedEntries, result.loss.droppedByType.end());
-    EXPECT_EQ(droppedEntries->second, extendedDictionary || foreignImage ? 1u : 2u);
+    EXPECT_EQ(droppedEntries->second, extendedDictionary ? 1u : 2u);
     {
         std::ifstream output(saved, std::ios::binary);
         std::string code, value;
@@ -3336,11 +3344,11 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
                 if (value == "OBSERVE") ++observeCount;
             }
         }
-        EXPECT_EQ(scratchCount, foreignImage ? 2u : 1u);
+        EXPECT_EQ(scratchCount, 1u);
         EXPECT_EQ(keepCount, 1u);
         EXPECT_EQ(observeCount, extendedDictionary ? 1u : 0u);
     }
-    const auto imageGroups = [](const std::string& path) {
+    const auto recordGroups = [](const std::string& path, const std::string& type) {
         std::ifstream file(path, std::ios::binary);
         std::map<int, std::vector<std::string>> groups;
         std::string code, value;
@@ -3350,12 +3358,22 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
             const int number = std::stoi(code);
             if (number == 0) {
                 if (inImage) break;
-                inImage = value == "IMAGE";
+                inImage = value == type;
             } else if (inImage) groups[number].push_back(value);
         }
         return groups;
     };
+    const auto imageGroups = [&](const std::string& path) { return recordGroups(path, "IMAGE"); };
     auto groups = imageGroups(saved);
+    auto definition = recordGroups(saved, "IMAGEDEF");
+    for (int key : {90, 10, 20, 11, 21, 280, 281}) ASSERT_EQ(definition[key].size(), 1u);
+    EXPECT_EQ(std::stoi(definition[90][0]), 2);
+    EXPECT_DOUBLE_EQ(std::stod(definition[10][0]), 2);
+    EXPECT_DOUBLE_EQ(std::stod(definition[20][0]), 3);
+    EXPECT_DOUBLE_EQ(std::stod(definition[11][0]), 0.25);
+    EXPECT_DOUBLE_EQ(std::stod(definition[21][0]), 0.5);
+    EXPECT_EQ(std::stoi(definition[280][0]), 1);
+    EXPECT_EQ(std::stoi(definition[281][0]), 5);
     ASSERT_EQ(groups[70].size(), 1u);
     EXPECT_EQ(std::stoi(groups[70][0]), 3);
     ASSERT_EQ(groups[280].size(), 1u);
@@ -3422,6 +3440,24 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         EXPECT_EQ(imageGroups(changed)[24], groups[24]);
         boost::filesystem::remove(changed);
 
+        auto renamed = std::make_shared<lc::entity::Image>("different.png", image->base(), image->uv(), image->vv(),
+            image->width(), image->height(), image->brightness(), image->contrast(), image->fade(),
+            image->layer(), image->metaInfo(), image->block());
+        doc->removeEntity(image);
+        doc->insertEntity(renamed);
+        const std::string renamedPath = uniqueTmpDxf("image-definition-path-change");
+        const auto renamedResult = lc::persistence::File::exportFile(doc, renamedPath, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(renamedResult.ok);
+        const auto fields = renamedResult.loss.droppedByType.find("IMAGEDEF fields");
+        ASSERT_NE(fields, renamedResult.loss.droppedByType.end());
+        EXPECT_EQ(fields->second, 1u);
+        auto renamedDefinition = recordGroups(renamedPath, "IMAGEDEF");
+        ASSERT_EQ(renamedDefinition[11].size(), 1u);
+        EXPECT_DOUBLE_EQ(std::stod(renamedDefinition[11][0]), 1);
+        doc->removeEntity(renamed);
+        doc->insertEntity(image);
+        boost::filesystem::remove(renamedPath);
+
         auto paper = doc->blockByName("*Paper_Space0");
         ASSERT_TRUE(paper);
         auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2), lc::geo::Coordinate(3, 4),
@@ -3475,6 +3511,215 @@ TEST(DxfRoundTripTest, ImageClipStorageLimitReportsDroppedBoundary) {
     ASSERT_NE(dropped, result.loss.droppedByType.end());
     EXPECT_EQ(dropped->second, 1u);
     boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
+    const std::string source = uniqueTmpDxf("image-definition-identities");
+    const std::string saved = uniqueTmpDxf("image-definition-identities-out");
+    {
+        std::ofstream file(source, std::ios::binary);
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                "0\nSECTION\n2\nENTITIES\n";
+        for (int n = 0; n < 2; ++n) {
+            file << "0\nIMAGE\n5\n" << (n ? "71" : "70") << "\n8\n0\n100\nAcDbRasterImage\n90\n0\n"
+                    "10\n0\n20\n0\n30\n0\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
+                    "13\n" << (n ? 8 : 2) << "\n23\n" << (n ? 9 : 3)
+                 << "\n340\n" << (n ? "83" : "81")
+                 << "\n70\n3\n280\n0\n281\n50\n282\n50\n283\n0\n71\n1\n91\n2\n"
+                    "14\n-0.5\n24\n-0.5\n14\n1.5\n24\n2.5\n";
+        }
+        file << "0\nENDSEC\n0\nSECTION\n2\nOBJECTS\n"
+                "0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n3\nACAD_IMAGE_DICT\n350\n80\n"
+                "0\nDICTIONARY\n5\n80\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nFIRST\n350\n81\n3\nSECOND\n350\n83\n";
+        for (int n = 0; n < 2; ++n)
+            file << "0\nIMAGEDEF\n5\n" << (n ? "83" : "81")
+                 << "\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nsame.png\n10\n" << (n ? 8 : 2)
+                 << "\n20\n" << (n ? 9 : 3) << "\n11\n" << (n ? 0.75 : 0.25)
+                 << "\n21\n" << (n ? 0.5 : 0.125) << "\n280\n1\n281\n5\n";
+        file << "0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(file.good());
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_EQ(doc->entityContainer().asVector().size(), 2u);
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    EXPECT_EQ(result.loss.droppedByType.count("IMAGEDEF identity"), 0u);
+    std::ifstream file(saved, std::ios::binary);
+    std::string code, value;
+    bool inDefinition = false;
+    bool inImage = false;
+    std::vector<std::pair<double, double>> sizes;
+    std::map<std::string, double> definitionWidths;
+    std::vector<std::pair<double, std::string>> imageReferences;
+    std::string handle, reference;
+    double imageWidth = 0;
+    double u = 0, v = 0;
+    while (std::getline(file, code) && std::getline(file, value)) {
+        if (!value.empty() && value.back() == '\r') value.pop_back();
+        const int group = std::stoi(code);
+        if (group == 0) {
+            if (inDefinition) { sizes.emplace_back(u, v); definitionWidths[handle] = u; }
+            if (inImage) imageReferences.emplace_back(imageWidth, reference);
+            inDefinition = value == "IMAGEDEF";
+            inImage = value == "IMAGE";
+            handle.clear(); reference.clear(); imageWidth = 0;
+            u = v = 0;
+        } else if (inDefinition && group == 5) handle = value;
+        else if (inDefinition && group == 10) u = std::stod(value);
+        else if (inDefinition && group == 20) v = std::stod(value);
+        else if (inImage && group == 13) imageWidth = std::stod(value);
+        else if (inImage && group == 340) reference = value;
+    }
+    std::sort(sizes.begin(), sizes.end());
+    ASSERT_EQ(sizes.size(), 2u);
+    EXPECT_EQ(sizes[0], std::make_pair(2.0, 3.0));
+    EXPECT_EQ(sizes[1], std::make_pair(8.0, 9.0));
+    ASSERT_EQ(imageReferences.size(), 2u);
+    EXPECT_NE(imageReferences[0].second, imageReferences[1].second);
+    for (const auto& ref : imageReferences) {
+        ASSERT_EQ(definitionWidths.count(ref.second), 1u);
+        EXPECT_DOUBLE_EQ(definitionWidths.at(ref.second), ref.first);
+    }
+    file.close();
+
+    const std::string binary = uniqueTmpDxf("image-definition-identities-binary");
+    const std::string binaryResaved = uniqueTmpDxf("image-definition-identities-binary-resaved");
+    const auto binaryResult = lc::persistence::File::exportFile(doc, binary, lc::persistence::File::LIBDXFRW_DXB_R2000);
+    ASSERT_TRUE(binaryResult.ok);
+    EXPECT_GT(binaryResult.loss.droppedByType.count("unmodelled records"), 0u);
+    auto binaryDoc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(binaryDoc, binary, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_EQ(binaryDoc->entityContainer().asVector().size(), 2u);
+    ASSERT_TRUE(lc::persistence::File::exportFile(binaryDoc, binaryResaved, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    std::ifstream binaryOutput(binaryResaved, std::ios::binary);
+    inDefinition = false;
+    std::vector<double> binaryWidths;
+    while (std::getline(binaryOutput, code) && std::getline(binaryOutput, value)) {
+        if (!value.empty() && value.back() == '\r') value.pop_back();
+        const int group = std::stoi(code);
+        if (group == 0) inDefinition = value == "IMAGEDEF";
+        else if (inDefinition && group == 10) binaryWidths.push_back(std::stod(value));
+    }
+    std::sort(binaryWidths.begin(), binaryWidths.end());
+    ASSERT_EQ(binaryWidths.size(), 2u);
+    EXPECT_DOUBLE_EQ(binaryWidths[0], 2);
+    EXPECT_DOUBLE_EQ(binaryWidths[1], 8);
+    binaryOutput.close();
+    boost::filesystem::remove(binary);
+    boost::filesystem::remove(binaryResaved);
+
+    std::ifstream originalFile(source, std::ios::binary);
+    const std::string original((std::istreambuf_iterator<char>(originalFile)), {});
+    originalFile.close();
+    auto lowHandles = original;
+    const auto replaceAll = [](std::string& text, const std::string& from, const std::string& to) {
+        for (std::size_t pos = 0; (pos = text.find(from, pos)) != std::string::npos; pos += to.size())
+            text.replace(pos, from.size(), to);
+    };
+    replaceAll(lowHandles, "\n81\n", "\nD\n");
+    replaceAll(lowHandles, "\n83\n", "\nE\n");
+    const std::string lowPath = uniqueTmpDxf("image-definition-low-handles");
+    { std::ofstream out(lowPath, std::ios::binary); out << lowHandles; }
+    auto lowDoc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(lowDoc, lowPath, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_TRUE(lc::persistence::File::exportFile(lowDoc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto lowReopened = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(lowReopened, saved, lc::persistence::File::LIBDXFRW).ok);
+    std::vector<double> lowWidths;
+    for (const auto& item : lowReopened->entityContainer().asVector()) {
+        const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(item);
+        ASSERT_TRUE(image);
+        lowWidths.push_back(image->width());
+    }
+    std::sort(lowWidths.begin(), lowWidths.end());
+    ASSERT_EQ(lowWidths.size(), 2u);
+    EXPECT_DOUBLE_EQ(lowWidths[0], 2);
+    EXPECT_DOUBLE_EQ(lowWidths[1], 8);
+    boost::filesystem::remove(lowPath);
+
+    auto collision = original;
+    const std::string end = "0\nENDSEC\n0\nEOF\n";
+    const auto endPos = collision.rfind(end);
+    ASSERT_NE(endPos, std::string::npos);
+    collision.insert(endPos, "0\nXRECORD\n5\n83\n330\nC\n100\nAcDbXrecord\n280\n1\n1\ncollision\n");
+    const std::string collisionPath = uniqueTmpDxf("image-definition-handle-collision");
+    { std::ofstream out(collisionPath, std::ios::binary); out << collision; }
+    auto collisionDoc = newDocument();
+    { std::ofstream out(saved, std::ios::binary); out << "existing destination"; }
+    EXPECT_FALSE(lc::persistence::File::importFile(collisionDoc, collisionPath, lc::persistence::File::LIBDXFRW).ok);
+    { std::ifstream in(saved, std::ios::binary);
+      EXPECT_EQ(std::string((std::istreambuf_iterator<char>(in)), {}), "existing destination"); }
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    boost::filesystem::remove(collisionPath);
+
+    // Retry after removing the second source definition and copying the first.
+    lc::entity::Image_CSPtr kept;
+    for (const auto& item : doc->entityContainer().asVector()) {
+        auto image = std::dynamic_pointer_cast<const lc::entity::Image>(item);
+        ASSERT_TRUE(image);
+        if (image->width() == 2) kept = image;
+        else doc->removeEntity(image);
+    }
+    ASSERT_TRUE(kept);
+    doc->insertEntity(kept->copy(lc::geo::Coordinate(10, 0, 0)));
+    const auto retried = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(retried.ok);
+    EXPECT_EQ(retried.loss.droppedByType.count("IMAGEDEF identity"), 0u);
+    const auto dropped = retried.loss.droppedByType.find("dictionary entries");
+    ASSERT_NE(dropped, retried.loss.droppedByType.end());
+    EXPECT_EQ(dropped->second, 2u);
+    std::ifstream reread(saved, std::ios::binary);
+    inDefinition = inImage = false;
+    std::size_t definitionCount = 0;
+    std::vector<std::string> references;
+    while (std::getline(reread, code) && std::getline(reread, value)) {
+        if (!value.empty() && value.back() == '\r') value.pop_back();
+        const int group = std::stoi(code);
+        if (group == 0) {
+            inDefinition = value == "IMAGEDEF";
+            inImage = value == "IMAGE";
+            if (inDefinition) ++definitionCount;
+        } else if (inImage && group == 340) references.push_back(value);
+        if (group == 5) EXPECT_NE(value, "83");
+    }
+    EXPECT_EQ(definitionCount, 1u);
+    ASSERT_EQ(references.size(), 2u);
+    EXPECT_EQ(references[0], references[1]);
+    reread.close();
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+TEST(DxfRoundTripTest, NewImageDefinitionUsesImagePixelDimensions) {
+    auto doc = newDocument();
+    auto image = std::make_shared<lc::entity::Image>("new-image.png", lc::geo::Coordinate(1, 2, 3),
+        lc::geo::Coordinate(1, 0, 0), lc::geo::Coordinate(0, 1, 0), 7, 9, 50, 50, 0,
+        doc->layerByName("0"));
+    doc->insertEntity(image);
+    const auto saved = uniqueTmpDxf("new-image-definition");
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    std::ifstream file(saved, std::ios::binary);
+    std::string code, value;
+    bool inDefinition = false;
+    std::map<int, std::string> fields;
+    while (std::getline(file, code) && std::getline(file, value)) {
+        if (!value.empty() && value.back() == '\r') value.pop_back();
+        const int group = std::stoi(code);
+        if (group == 0) {
+            if (inDefinition) break;
+            inDefinition = value == "IMAGEDEF";
+        } else if (inDefinition) fields[group] = value;
+    }
+    for (int group : {10, 20, 11, 21, 280}) ASSERT_EQ(fields.count(group), 1u);
+    EXPECT_DOUBLE_EQ(std::stod(fields[10]), 7);
+    EXPECT_DOUBLE_EQ(std::stod(fields[20]), 9);
+    EXPECT_DOUBLE_EQ(std::stod(fields[11]), 1);
+    EXPECT_DOUBLE_EQ(std::stod(fields[21]), 1);
+    EXPECT_EQ(std::stoi(fields[280]), 1);
+    file.close();
     boost::filesystem::remove(saved);
 }
 

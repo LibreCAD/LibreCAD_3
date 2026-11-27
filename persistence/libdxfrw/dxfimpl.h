@@ -8,6 +8,8 @@
 #define LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH 1
 #endif
 #include <iostream>
+#include <functional>
+#include <set>
 #include "../file.h"
 #include "../format.h"
 #include "../readguard.h"
@@ -501,7 +503,12 @@ public:
 
     static bool isAnonymousDimensionBlockName(const std::string& name);
     static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
+    void visitDocumentImages(const std::function<void(const lc::entity::Image_CSPtr&)>& visit,
+                             bool emittedOnly = false) const;
     std::unordered_set<std::uint32_t> skippedImageSourceHandles(bool& hasImages) const;
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    bool prepareImageDefinitionPlan();
+#endif
     unsigned int _nextDimensionBlock{1};
 
 
@@ -703,6 +710,16 @@ private:
 
     std::vector<DRW_Image> imageMapCache;
     std::size_t _sourceImageClipBytes{0};
+    std::size_t _sourceImageDefinitionPathBytes{0};
+    struct ImageDefinitionOutputBinding {
+        std::shared_ptr<const void> sourceIdentity;
+        std::uint32_t sourceHandle{0};
+    };
+    std::map<DRW_ImageDef*, ImageDefinitionOutputBinding> _emittedImageDefinitions;
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    std::map<std::shared_ptr<const void>, std::uint64_t, std::owner_less<std::shared_ptr<const void>>> _imageSourceGenerations;
+    std::set<std::pair<std::uint64_t, std::uint32_t>> _plannedImageDefinitions;
+#endif
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;

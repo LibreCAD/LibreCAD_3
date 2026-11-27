@@ -52,6 +52,21 @@
 using namespace lc::persistence;
 
 namespace {
+struct ImageDefinitionSource {
+    std::string path;
+    int version{0}, loaded{0}, resolution{0};
+    double u{0}, v{0}, up{0}, vp{0};
+    bool pathCaptured{false}, unmodeledMetadata{false};
+};
+
+bool validImageDefinitionSource(const ImageDefinitionSource& source, const std::string& path) {
+    return source.pathCaptured && !source.path.empty() && source.path == path &&
+        source.version >= 0 && source.version <= DRW_ImageDef::kMaxClassVersion &&
+        std::isfinite(source.u) && std::isfinite(source.v) &&
+        std::isfinite(source.up) && std::isfinite(source.vp) && source.u >= 0 && source.v >= 0 &&
+        source.loaded >= 0 && source.loaded <= 1 && source.resolution >= 0 && source.resolution <= 0xff;
+}
+
 // Pixel-space clipping stays valid through the Image transforms, which change
 // its world-space axes rather than its pixel dimensions. Keep a bounded copy
 // with the entity metadata so copies retain the same source settings.
@@ -68,6 +83,7 @@ public:
     bool boundaryDropped{false};
     std::uint32_t definitionHandle{0};
     std::shared_ptr<const void> sourceIdentity;
+    std::shared_ptr<const ImageDefinitionSource> definition;
     double width{0};
     double height{0};
     std::vector<DRW_Coord> boundary;
@@ -1627,12 +1643,32 @@ void DXFimpl::addImage(const DRW_Image* data) {
 void DXFimpl::linkImage(const DRW_ImageDef *data) {
     guarded("IMAGEDEF", nullptr, [&] {
         LOG_TRACE << "linkImage";
+        std::shared_ptr<ImageDefinitionSource> definition;
         for(auto image = imageMapCache.begin(); image != imageMapCache.end() /* not hoisted */; /* no increment */ ) {
             if (image->ref == data->handle) {
+                if (data->handle != 0 && data->handle != DRW::NoHandle)
+                    _preserved.sourceImageDefinitionHandles.insert(data->handle);
                 auto layer = _document->layerByName(image->layer);
 
                 std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*image);
                 if (!mf) mf = lc::meta::MetaInfo::create();
+                if (!definition) {
+                    definition = std::make_shared<ImageDefinitionSource>();
+                    constexpr std::size_t kMaxImageDefinitionPathBytes = 4u * 1024u * 1024u;
+                    if (data->name.size() <= kMaxImageDefinitionPathBytes - _sourceImageDefinitionPathBytes) {
+                        definition->path = data->name;
+                        definition->pathCaptured = true;
+                        _sourceImageDefinitionPathBytes += data->name.size();
+                    }
+                    definition->version = data->imgVersion;
+                    definition->u = data->u; definition->v = data->v;
+                    definition->up = data->up; definition->vp = data->vp;
+                    definition->loaded = data->loaded; definition->resolution = data->resolution;
+                    definition->unmodeledMetadata = !data->extData.empty() || !data->appData.empty() ||
+                        !data->reactorHandles.empty() || !data->reactors.empty() || data->xDictHandle != 0 ||
+                        data->hasDataStorageBinaryData() || !data->pendingAppIdResolutions.empty() ||
+                        !data->pendingLayerRefResolutions.empty();
+                }
                 auto source = std::make_shared<ImageDisplaySource>();
                 source->classVersion = image->m_classVersion;
                 source->displayProps = image->m_displayProps;
@@ -1641,6 +1677,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                 source->clipMode = image->clipMode;
                 source->definitionHandle = image->ref;
                 source->sourceIdentity = _preserved.imageSourceIdentity;
+                source->definition = definition;
                 source->width = image->sizeu;
                 source->height = image->sizev;
                 constexpr std::size_t kMaxImageClipBytes = 4u * 1024u * 1024u;
@@ -1838,24 +1875,39 @@ void DXFimpl::buildDeferredInserts() {
  * Write DXF Implementation BELOW
  *********************************************/
 
+void DXFimpl::visitDocumentImages(const std::function<void(const lc::entity::Image_CSPtr&)>& visit,
+                                  bool emittedOnly) const {
+#ifndef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    (void)emittedOnly;
+#endif
+    const auto collect = [&](const lc::entity::CADEntity_CSPtr& entity) {
+        const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+        if (image) visit(image);
+    };
+    for (const auto& entity : _document->entityContainer().asVector())
+        if (!entity->block()) collect(entity);
+    for (const auto& block : _document->blocks()) {
+        if (!block || isRegeneratedDimensionBlock(block)) continue;
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (emittedOnly && !_defaultLayouts.empty() && isModelSpaceName(block->name())) continue;
+#endif
+        for (const auto& entity : _document->entitiesByBlock(block).asVector()) collect(entity);
+    }
+}
+
 std::unordered_set<std::uint32_t> DXFimpl::skippedImageSourceHandles(bool& hasImages) const {
     hasImages = false;
     std::unordered_set<std::uint32_t> skipped;
-    const auto collect = [&](const lc::entity::CADEntity_CSPtr& entity) {
-        const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
-        if (!image) return;
+    visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
         hasImages = true;
         const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
         if (source && _replay && source->sourceIdentity == _replay->imageSourceIdentity &&
             source->definitionHandle != 0 && source->definitionHandle != DRW::NoHandle)
             skipped.insert(source->definitionHandle);
-    };
-    for (const auto& entity : _document->entityContainer().asVector()) collect(entity);
-    for (const auto& block : _document->blocks()) {
-        if (!block || isRegeneratedDimensionBlock(block)) continue;
-        for (const auto& entity : _document->entitiesByBlock(block).asVector()) collect(entity);
-    }
+    });
     if (!_replay) return skipped;
+    if (hasImages)
+        skipped.insert(_replay->sourceImageDefinitionHandles.begin(), _replay->sourceImageDefinitionHandles.end());
     for (const auto& object : _replay->objects)
         if (regeneratesImageObject(object, hasImages) && object.handle != 0)
             skipped.insert(object.handle);
@@ -1864,6 +1916,54 @@ std::unordered_set<std::uint32_t> DXFimpl::skippedImageSourceHandles(bool& hasIm
     for (const auto& entity : _replay->entities) skipped.erase(entity.handle);
     return skipped;
 }
+
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+bool DXFimpl::prepareImageDefinitionPlan() {
+    using Key = std::pair<std::uint64_t, std::uint32_t>;
+    std::map<Key, dxfRW::ImageDefinitionPlanEntry> definitions;
+    std::map<Key, std::shared_ptr<const ImageDefinitionSource>> sources;
+    bool ambiguous = false;
+    visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
+        const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
+        if (!source || !source->sourceIdentity || !source->definition ||
+            source->definitionHandle == 0 || source->definitionHandle == DRW::NoHandle ||
+            !validImageDefinitionSource(*source->definition, image->name())) return;
+        auto generation = _imageSourceGenerations.find(source->sourceIdentity);
+        if (generation == _imageSourceGenerations.end()) {
+            if (_imageSourceGenerations.size() >= 100000u) { ambiguous = true; return; }
+            const auto next = static_cast<std::uint64_t>(_imageSourceGenerations.size()) + 1;
+            generation = _imageSourceGenerations.emplace(source->sourceIdentity, next).first;
+        }
+        const Key key{generation->second, source->definitionHandle};
+        const auto& original = *source->definition;
+        const auto existing = definitions.find(key);
+        if (existing != definitions.end()) {
+            if (sources.at(key) != source->definition) ambiguous = true;
+            return;
+        }
+        if (definitions.size() >= 100000u) { ambiguous = true; return; }
+        dxfRW::ImageDefinitionPlanEntry entry;
+        entry.importGeneration = generation->second;
+        entry.sourceHandle = source->definitionHandle;
+        entry.definition.handle = source->definitionHandle;
+        entry.definition.name = original.path;
+        entry.definition.imgVersion = original.version;
+        entry.definition.u = original.u; entry.definition.v = original.v;
+        entry.definition.up = original.up; entry.definition.vp = original.vp;
+        entry.definition.loaded = original.loaded; entry.definition.resolution = original.resolution;
+        sources.emplace(key, source->definition);
+        definitions.emplace(key, std::move(entry));
+    }, true);
+    if (ambiguous) return false;
+    std::vector<dxfRW::ImageDefinitionPlanEntry> plan;
+    plan.reserve(definitions.size());
+    for (auto& item : definitions) {
+        _plannedImageDefinitions.insert(item.first);
+        plan.push_back(std::move(item.second));
+    }
+    return dxfW->setImageDefinitionPlan(std::move(plan));
+}
+#endif
 
 void DXFimpl::writeObjects() {
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
@@ -2061,7 +2161,7 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
         if (!root) {
             return;
         }
-        if (_preserved.rootDictSourceHandle != 0 && _preserved.rootDictSourceHandle != data.handle)
+        if (_preserved.rootDictSourceHandle != 0)
             _preserved.rootDictSourceAmbiguous = true;
         _preserved.rootDictSourceHandle = data.handle;
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
@@ -2071,6 +2171,10 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
         for (const auto& entry : data.m_entries) {
             if (entry.m_handle == 0 || entry.m_name.empty()) {
                 continue;
+            }
+            if (upperName(entry.m_name) == "ACAD_GROUP") {
+                if (_preserved.groupDictSourceHandle != 0) _preserved.rootDictSourceAmbiguous = true;
+                _preserved.groupDictSourceHandle = entry.m_handle;
             }
             // The codec writes its own entries for the dictionaries it
             // regenerates. Carrying the source's copy across would put a
@@ -2629,6 +2733,12 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     bool hasImages = false;
     const auto skipped = skippedImageSourceHandles(hasImages);
     if (!hasImages || skipped.empty()) return false;
+    bool sameSource = true;
+    visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
+        const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
+        if (!source || source->sourceIdentity != _shelf->imageSourceIdentity) sameSource = false;
+    });
+    if (!sameSource) return false;
     std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> objects;
     for (const auto& object : _shelf->objects) {
         if (object.handle == 0 || object.handle == kRootDictionaryHandle ||
@@ -2684,6 +2794,11 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     _mtextsAsText = 0;
     _mpolygonsWrittenAsHatch = 0;
     _dimensionBlocks.clear();
+    _emittedImageDefinitions.clear();
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    _imageSourceGenerations.clear();
+    _plannedImageDefinitions.clear();
+#endif
     _writeFailureReason.clear();
 
     //Default setting
@@ -2802,6 +2917,25 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     }
 
     if (_replay != nullptr) {
+        // A typed source IMAGEDEF is not in the raw replay list. Reserve its
+        // identity too, but never remap an ambiguous source collision into an
+        // unrelated preserved record or the regenerated root/group handles.
+        const auto& imageDefinitions = _replay->sourceImageDefinitionHandles;
+        const bool fixedCollision = !imageDefinitions.empty() &&
+            (_replay->rootDictSourceAmbiguous || imageDefinitions.count(_replay->rootDictSourceHandle) ||
+             imageDefinitions.count(_replay->groupDictSourceHandle));
+        const bool objectCollision = std::any_of(_replay->objects.begin(), _replay->objects.end(),
+            [&](const DRW_RawDxfObject& object) {
+                return object.name != "IMAGEDEF" && imageDefinitions.count(object.handle);
+            });
+        const bool entityCollision = std::any_of(_replay->entities.begin(), _replay->entities.end(),
+            [&](const DRW_RawDxfObject& entity) { return imageDefinitions.count(entity.handle); });
+        if (fixedCollision || objectCollision || entityCollision) {
+            _writeFailureReason = "An image definition shares a source handle with another object; preserve the original and repair the drawing.";
+            delete dxfW;
+            dxfW = nullptr;
+            return false;
+        }
         // Every preserved handle is claimed before the write starts, so the
         // handles the typed writers mint cannot collide with one being
         // re-emitted verbatim.
@@ -2858,6 +2992,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         for (const auto& entity : _replay->entities) {
             claim(entity.handle);
         }
+        for (const auto handle : _replay->sourceImageDefinitionHandles) claim(handle);
 
         for (const std::uint32_t handle : needFresh) {
             if (remap.count(handle) != 0) {
@@ -3028,6 +3163,14 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                     });
     if (_defaultLayouts.empty() && (primaryPaperHasContent || hasUnsafeAdditionalPaperSpace())) {
         _writeFailureReason = "The layout graph for paper-space contents or references cannot be retained in this output; preserve the original or use a supported ASCII DXF layout.";
+        delete dxfW;
+        dxfW = nullptr;
+        return false;
+    }
+#endif
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    if (exportVersion > DRW::AC1009 && !prepareImageDefinitionPlan()) {
+        _writeFailureReason = "The image definitions cannot be safely planned; preserve the original and review the image sources.";
         delete dxfW;
         dxfW = nullptr;
         return false;
@@ -3791,7 +3934,8 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
     img.contrast   = static_cast<int>(i->contrast());
     img.fade       = static_cast<int>(i->fade());
 
-    if (const auto source = i->metaInfo<ImageDisplaySource>(ImageDisplaySource::key())) {
+    const auto source = i->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
+    if (source) {
         img.m_classVersion = source->classVersion;
         img.m_displayProps = source->displayProps;
         if (_exportVersion >= DRW::AC1024) {
@@ -3808,7 +3952,43 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
         }
     }
 
-    dxfW->writeImage(&img, i->name());
+    DRW_ImageDef* definition = nullptr;
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    const auto generation = source ? _imageSourceGenerations.find(source->sourceIdentity) : _imageSourceGenerations.end();
+    if (source && source->definition && validImageDefinitionSource(*source->definition, i->name()) &&
+        generation != _imageSourceGenerations.end() &&
+        _plannedImageDefinitions.count({generation->second, source->definitionHandle}))
+        definition = dxfW->writeImage(&img, i->name(), generation->second, source->definitionHandle);
+    else
+#endif
+        definition = dxfW->writeImage(&img, i->name());
+    if (!definition) return;
+    const ImageDefinitionOutputBinding binding{source ? source->sourceIdentity : nullptr,
+                                               source ? source->definitionHandle : 0};
+    const auto inserted = _emittedImageDefinitions.emplace(definition, binding);
+    if (!inserted.second) {
+        if (source && (inserted.first->second.sourceIdentity != binding.sourceIdentity ||
+                       inserted.first->second.sourceHandle != binding.sourceHandle)) {
+            ++_loss.droppedByType["IMAGEDEF identity"];
+            if (source->definition && source->definition->unmodeledMetadata)
+                ++_loss.droppedByType["IMAGEDEF metadata"];
+        }
+        return;
+    }
+    const auto original = source ? source->definition : nullptr;
+    if (original && original->unmodeledMetadata) ++_loss.droppedByType["IMAGEDEF metadata"];
+    if (original && validImageDefinitionSource(*original, i->name())) {
+        definition->imgVersion = original->version;
+        definition->u = original->u; definition->v = original->v;
+        definition->up = original->up; definition->vp = original->vp;
+        definition->loaded = original->loaded; definition->resolution = original->resolution;
+    } else {
+        // A newly authored IMAGE has no source definition to replay.
+        definition->u = img.sizeu; definition->v = img.sizev;
+        definition->up = definition->vp = 1;
+        definition->loaded = 1; definition->resolution = 0;
+        if (source) ++_loss.droppedByType["IMAGEDEF fields"];
+    }
 }
 
 // Issue #412 phase 1: written from scratch — the reader ingests HATCH but
