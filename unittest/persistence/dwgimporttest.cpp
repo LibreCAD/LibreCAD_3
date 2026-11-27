@@ -14,6 +14,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -23,6 +25,10 @@
 
 #include <gtest/gtest.h>
 
+#include <cad/primitive/arc.h>
+#include <cad/primitive/ellipse.h>
+#include <cad/primitive/lwpolyline.h>
+#include <cad/primitive/spline.h>
 #include <cad/primitive/dimension.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
@@ -423,3 +429,664 @@ TEST(DwgImportTest, DwgIsRefusedWhenTheBuildHasNoReader) {
 }
 
 #endif
+
+TEST(DwgImportTest, ElevatedLineEdgeHatchRoundTrip) {
+    const std::string input = tmpPath("elevated-line-hatch");
+    {
+        std::ofstream f(input);
+        ASSERT_TRUE(f.good());
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n1\n92\n0\n93\n3\n"
+             "72\n1\n10\n1\n20\n2\n11\n4\n21\n2\n"
+             "72\n1\n10\n4\n20\n2\n11\n3\n21\n5\n"
+             "72\n1\n10\n3\n20\n5\n11\n1\n21\n2\n"
+             "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops.front().entities().size(), 3u);
+        const double expected[3][4] = {{1,2,4,2}, {4,2,3,5}, {3,5,1,2}};
+        std::size_t index = 0;
+        for (const auto& edge : loops.front().entities()) {
+            const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(edge);
+            ASSERT_NE(line, nullptr);
+            EXPECT_DOUBLE_EQ(line->start().x(), expected[index][0]);
+            EXPECT_DOUBLE_EQ(line->start().y(), expected[index][1]);
+            EXPECT_DOUBLE_EQ(line->end().x(), expected[index][2]);
+            EXPECT_DOUBLE_EQ(line->end().y(), expected[index][3]);
+            EXPECT_DOUBLE_EQ(line->start().z(), 3.0);
+            EXPECT_DOUBLE_EQ(line->end().z(), 3.0);
+            ++index;
+        }
+    };
+    auto doc = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    check(doc);
+    const char* capture = std::getenv("LC3_EDGE_CAPTURE");
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "/line-ascii.dxf" : "/line-binary.dxf") : tmpPath("elevated-line-hatch-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    lc::entity::Hatch_CSPtr original;
+    for (const auto& entity : doc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) original = value;
+    ASSERT_NE(original, nullptr);
+    const auto& edges = original->getRegion().loopList().front().entities();
+    std::vector<lc::entity::CADEntity_CSPtr> modified;
+    for (std::size_t i = 0; i < edges.size(); ++i) {
+        const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(edges[i]);
+        ASSERT_NE(line, nullptr);
+        const double z = i == 1 ? 4.0 : 3.0;
+        modified.push_back(std::make_shared<lc::entity::Line>(
+            lc::geo::Coordinate(line->start().x(), line->start().y(), z),
+            lc::geo::Coordinate(line->end().x(), line->end().y(), z), line->layer()));
+    }
+    lc::geo::Region mixedRegion;
+    mixedRegion.addLoop(lc::geo::Loop(modified));
+    auto mixed = std::make_shared<lc::entity::Hatch>(original->layer(), original->metaInfo(), original->block());
+    mixed->setRegion(mixedRegion);
+    mixed->setPatternName(original->getPatternName());
+    mixed->setSolid(original->isSolid());
+    doc->removeEntity(original);
+    doc->insertEntity(mixed);
+    const auto mixedOutput = capture ? std::string(capture) + "/mixed.dxf" : tmpPath("mixed-line-hatch");
+    const auto mixedResult = lc::persistence::File::exportFile(doc, mixedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(mixedResult.ok);
+    EXPECT_TRUE(std::any_of(mixedResult.loss.notes.begin(), mixedResult.loss.notes.end(),
+        [](const std::string& note) { return note.find("HATCH boundary elevation varies") != std::string::npos; }));
+    doc->removeEntity(mixed);
+    doc->insertEntity(original);
+    const auto retry = capture ? std::string(capture) + "/retry.dxf" : tmpPath("retry-line-hatch");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, retry, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto reopened = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(reopened, retry, lc::persistence::File::LIBDXFRW).ok);
+    check(reopened);
+    if (!capture) { boost::filesystem::remove(mixedOutput); boost::filesystem::remove(retry); }
+    boost::filesystem::remove(input);
+}
+
+TEST(DwgImportTest, ElevatedMixedLinePolylineHatchRoundTrip) {
+    const auto input = tmpPath("mixed-edge-paths");
+    {
+        std::ofstream f(input);
+        ASSERT_TRUE(f.good());
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n2\n92\n0\n93\n3\n"
+             "72\n1\n10\n1\n20\n2\n11\n4\n21\n2\n"
+             "72\n1\n10\n4\n20\n2\n11\n3\n21\n5\n"
+             "72\n1\n10\n3\n20\n5\n11\n1\n21\n2\n97\n0\n"
+             "92\n2\n73\n1\n72\n0\n93\n3\n"
+             "10\n7\n20\n2\n10\n9\n20\n2\n10\n8\n20\n4\n97\n0\n"
+             "75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 2u);
+        ASSERT_EQ(loops[0].entities().size(), 3u);
+        for (const auto& edge : loops[0].entities()) {
+            const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(edge);
+            ASSERT_NE(line, nullptr);
+            EXPECT_DOUBLE_EQ(line->start().z(), 3.0);
+            EXPECT_DOUBLE_EQ(line->end().z(), 3.0);
+        }
+        ASSERT_EQ(loops[1].entities().size(), 1u);
+        const auto polyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(loops[1].entities()[0]);
+        ASSERT_NE(polyline, nullptr);
+        ASSERT_EQ(polyline->vertex().size(), 3u);
+        for (const auto& vertex : polyline->vertex()) EXPECT_DOUBLE_EQ(vertex.location().z(), 3.0);
+    };
+    auto doc = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    check(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = tmpPath("mixed-edge-paths-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened);
+        boost::filesystem::remove(output);
+    }
+    boost::filesystem::remove(input);
+}
+
+TEST(DwgImportTest, ElevatedCurvedEdgeHatchRoundTrip) {
+    for (const bool ccw : {true, false}) {
+    SCOPED_TRACE(ccw ? "ccw" : "cw");
+    const auto input = tmpPath("elevated-curved-hatch");
+    {
+        std::ofstream f(input);
+        ASSERT_TRUE(f.good());
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n1\n92\n0\n93\n2\n"
+             "72\n2\n10\n1\n20\n2\n40\n2\n50\n0\n51\n180\n73\n1\n"
+             "72\n3\n10\n1\n20\n2\n11\n2\n21\n0\n40\n0.5\n50\n35\n51\n210\n73\n" << (ccw ? 1 : 0) << "\n"
+             "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const auto check = [ccw](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops.front().entities().size(), 2u);
+        const auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(loops[0].entities()[0]);
+        const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(loops[0].entities()[1]);
+        ASSERT_NE(arc, nullptr);
+        ASSERT_NE(ellipse, nullptr);
+        EXPECT_DOUBLE_EQ(arc->center().x(), 1.0);
+        EXPECT_DOUBLE_EQ(arc->center().y(), 2.0);
+        EXPECT_DOUBLE_EQ(arc->center().z(), 3.0);
+        EXPECT_DOUBLE_EQ(arc->radius(), 2.0);
+        EXPECT_DOUBLE_EQ(ellipse->center().x(), 1.0);
+        EXPECT_DOUBLE_EQ(ellipse->center().y(), 2.0);
+        EXPECT_DOUBLE_EQ(ellipse->center().z(), 3.0);
+        EXPECT_DOUBLE_EQ(ellipse->majorP().x(), 2.0);
+        EXPECT_DOUBLE_EQ(ellipse->majorP().y(), 0.0);
+        EXPECT_DOUBLE_EQ(ellipse->majorP().z(), 0.0);
+        EXPECT_EQ(ellipse->isReversed(), !ccw);
+    };
+    auto doc = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    check(doc);
+    const char* capture = std::getenv("LC3_CURVE_CAPTURE");
+    if (capture) {
+        std::ifstream from(input, std::ios::binary);
+        std::ofstream to(std::string(capture) + (ccw ? "/input-ccw.dxf" : "/input-cw.dxf"), std::ios::binary);
+        ASSERT_TRUE(from.good() && to.good());
+        to << from.rdbuf();
+        ASSERT_TRUE(to.good());
+    }
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) + (ccw ? "/ccw-" : "/cw-") + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf") : tmpPath("elevated-curved-hatch-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    lc::entity::Hatch_CSPtr original;
+    for (const auto& entity : doc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) original = value;
+    ASSERT_NE(original, nullptr);
+    const auto& edges = original->getRegion().loopList().front().entities();
+    ASSERT_EQ(edges.size(), 2u);
+    const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(edges[1]);
+    ASSERT_NE(ellipse, nullptr);
+    lc::geo::Region mixedRegion;
+    mixedRegion.addLoop(lc::geo::Loop({edges[0], ellipse->move(lc::geo::Coordinate(0, 0, 1))}));
+    auto mixed = std::make_shared<lc::entity::Hatch>(original->layer(), original->metaInfo(), original->block());
+    mixed->setRegion(mixedRegion);
+    mixed->setPatternName(original->getPatternName());
+    mixed->setSolid(original->isSolid());
+    doc->removeEntity(original);
+    doc->insertEntity(mixed);
+    const auto mixedOutput = capture ? std::string(capture) + (ccw ? "/ccw-mixed.dxf" : "/cw-mixed.dxf") : tmpPath("mixed-curved-hatch");
+    const auto mixedResult = lc::persistence::File::exportFile(doc, mixedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(mixedResult.ok);
+    EXPECT_TRUE(std::any_of(mixedResult.loss.notes.begin(), mixedResult.loss.notes.end(),
+        [](const std::string& note) { return note.find("HATCH boundary elevation varies") != std::string::npos; }));
+    doc->removeEntity(mixed);
+    doc->insertEntity(original);
+    const auto retry = capture ? std::string(capture) + (ccw ? "/ccw-retry.dxf" : "/cw-retry.dxf") : tmpPath("retry-curved-hatch");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, retry, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto reopened = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(reopened, retry, lc::persistence::File::LIBDXFRW).ok);
+    check(reopened);
+    if (!capture) { boost::filesystem::remove(mixedOutput); boost::filesystem::remove(retry); }
+    boost::filesystem::remove(input);
+    }
+}
+
+TEST(DwgImportTest, ElevatedSplineEdgeHatchRoundTrip) {
+    const auto input = tmpPath("elevated-spline-hatch");
+    {
+        std::ofstream f(input);
+        ASSERT_TRUE(f.good());
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n1\n92\n0\n93\n1\n"
+             "72\n4\n94\n2\n73\n0\n74\n0\n95\n6\n96\n3\n"
+             "40\n0\n40\n0\n40\n0\n40\n1\n40\n1\n40\n1\n"
+             "10\n1\n20\n2\n10\n2\n20\n4\n10\n3\n20\n2\n"
+             "97\n2\n11\n1\n21\n2\n11\n3\n21\n2\n"
+             "12\n1\n22\n2\n13\n1\n23\n-2\n"
+             "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc,
+                          const lc::geo::Coordinate& offset = lc::geo::Coordinate(0, 0, 0)) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops[0].entities().size(), 1u);
+        const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+        ASSERT_NE(spline, nullptr);
+        ASSERT_EQ(spline->controlPoints().size(), 3u);
+        EXPECT_EQ(spline->degree(), 2);
+        ASSERT_EQ(spline->fitPoints().size(), 2u);
+        const double fitXY[2][2] = {{1,2},{3,2}};
+        for (std::size_t i = 0; i < 2; ++i) {
+            EXPECT_DOUBLE_EQ(spline->fitPoints()[i].x(), fitXY[i][0] + offset.x());
+            EXPECT_DOUBLE_EQ(spline->fitPoints()[i].y(), fitXY[i][1] + offset.y());
+            EXPECT_DOUBLE_EQ(spline->fitPoints()[i].z(), 3.0 + offset.z());
+        }
+        EXPECT_DOUBLE_EQ(spline->startTanX(), 1.0);
+        EXPECT_DOUBLE_EQ(spline->startTanY(), 2.0);
+        EXPECT_DOUBLE_EQ(spline->startTanZ(), 0.0);
+        EXPECT_DOUBLE_EQ(spline->endTanX(), 1.0);
+        EXPECT_DOUBLE_EQ(spline->endTanY(), -2.0);
+        EXPECT_DOUBLE_EQ(spline->endTanZ(), 0.0);
+        const double xy[3][2] = {{1,2},{2,4},{3,2}};
+        for (std::size_t i = 0; i < 3; ++i) {
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].x(), xy[i][0] + offset.x());
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].y(), xy[i][1] + offset.y());
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), 3.0 + offset.z());
+        }
+    };
+    auto doc = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW).ok);
+    check(doc);
+    const char* capture = std::getenv("LC3_SPLINE_CAPTURE");
+    if (capture) {
+        std::ifstream from(input, std::ios::binary);
+        std::ofstream to(std::string(capture) + "/input.dxf", std::ios::binary);
+        ASSERT_TRUE(from.good() && to.good());
+        to << from.rdbuf();
+        ASSERT_TRUE(to.good());
+    }
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "/spline-ascii.dxf" : "/spline-binary.dxf") : tmpPath("elevated-spline-hatch-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    lc::entity::Hatch_CSPtr original;
+    for (const auto& entity : doc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) original = value;
+    ASSERT_NE(original, nullptr);
+    const lc::geo::Coordinate offset(2, 5, 7);
+    for (const bool copy : {false, true}) {
+        SCOPED_TRACE(copy ? "copy" : "move");
+        const auto transformed = copy ? original->copy(offset) : original->move(offset);
+        ASSERT_NE(transformed, nullptr);
+        doc->removeEntity(original);
+        doc->insertEntity(transformed);
+        check(doc, offset);
+        for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                                lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+            const auto output = capture ? std::string(capture) + (copy ? "/copied-" : "/moved-")
+                + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+                : tmpPath("translated-spline-hatch");
+            ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+            auto reopened = newDwgDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            check(reopened, offset);
+            if (!capture) boost::filesystem::remove(output);
+        }
+        doc->removeEntity(transformed);
+        doc->insertEntity(original);
+        check(doc);
+    }
+    const auto checkRotated = [](const std::shared_ptr<lc::storage::DocumentImpl>& target) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : target->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops[0].entities().size(), 1u);
+        const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+        ASSERT_NE(spline, nullptr);
+        ASSERT_EQ(spline->controlPoints().size(), 3u);
+        ASSERT_EQ(spline->fitPoints().size(), 2u);
+        const double xy[3][2] = {{28,11},{26,12},{28,13}};
+        for (std::size_t i = 0; i < 3; ++i) {
+            EXPECT_NEAR(spline->controlPoints()[i].x(), xy[i][0], 1e-12);
+            EXPECT_NEAR(spline->controlPoints()[i].y(), xy[i][1], 1e-12);
+            EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), 3.0);
+        }
+        EXPECT_NEAR(spline->fitPoints()[0].x(), 28.0, 1e-12);
+        EXPECT_NEAR(spline->fitPoints()[0].y(), 11.0, 1e-12);
+        EXPECT_DOUBLE_EQ(spline->fitPoints()[0].z(), 3.0);
+        EXPECT_NEAR(spline->fitPoints()[1].x(), 28.0, 1e-12);
+        EXPECT_NEAR(spline->fitPoints()[1].y(), 13.0, 1e-12);
+        EXPECT_DOUBLE_EQ(spline->fitPoints()[1].z(), 3.0);
+        EXPECT_NEAR(spline->startTanX(), -2.0, 1e-12);
+        EXPECT_NEAR(spline->startTanY(), 1.0, 1e-12);
+        EXPECT_NEAR(spline->endTanX(), 2.0, 1e-12);
+        EXPECT_NEAR(spline->endTanY(), 1.0, 1e-12);
+        EXPECT_DOUBLE_EQ(spline->startTanZ(), 0.0);
+        EXPECT_DOUBLE_EQ(spline->endTanZ(), 0.0);
+    };
+    const auto rotated = original->rotate(lc::geo::Coordinate(10, 20, 100), std::acos(-1.0) / 2.0);
+    ASSERT_NE(rotated, nullptr);
+    doc->removeEntity(original);
+    doc->insertEntity(rotated);
+    checkRotated(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                            lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto output = capture ? std::string(capture) + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "/rotated-ascii.dxf" : "/rotated-binary.dxf") : tmpPath("rotated-spline-hatch");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        checkRotated(reopened);
+        if (!capture) boost::filesystem::remove(output);
+    }
+    doc->removeEntity(rotated);
+    doc->insertEntity(original);
+    check(doc);
+    for (const bool scale : {true, false}) {
+        SCOPED_TRACE(scale ? "scale" : "mirror");
+        const auto transformed = scale
+            ? original->scale(lc::geo::Coordinate(10, 20, 1), lc::geo::Coordinate(2, 3, 2))
+            : original->mirror(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(0, 1, 0));
+        ASSERT_NE(transformed, nullptr);
+        doc->removeEntity(original);
+        doc->insertEntity(transformed);
+        const auto checkTransform = [scale](const std::shared_ptr<lc::storage::DocumentImpl>& target) {
+            lc::entity::Hatch_CSPtr hatch;
+            for (const auto& entity : target->entityContainer().asVector())
+                if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+            ASSERT_NE(hatch, nullptr);
+            const auto& loops = hatch->getRegion().loopList();
+            ASSERT_EQ(loops.size(), 1u);
+            ASSERT_EQ(loops[0].entities().size(), 1u);
+            const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+            ASSERT_NE(spline, nullptr);
+            ASSERT_EQ(spline->controlPoints().size(), 3u);
+            ASSERT_EQ(spline->fitPoints().size(), 2u);
+            const double source[3][2] = {{1,2},{2,4},{3,2}};
+            for (std::size_t i = 0; i < 3; ++i) {
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[i].x(), scale ? 2 * source[i][0] - 10 : -source[i][0]);
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[i].y(), scale ? 3 * source[i][1] - 40 : source[i][1]);
+                EXPECT_DOUBLE_EQ(spline->controlPoints()[i].z(), scale ? 5.0 : 3.0);
+            }
+            for (std::size_t i = 0; i < 2; ++i) {
+                const std::size_t sourceIndex = i == 0 ? 0 : 2;
+                EXPECT_DOUBLE_EQ(spline->fitPoints()[i].x(), scale ? 2 * source[sourceIndex][0] - 10 : -source[sourceIndex][0]);
+                EXPECT_DOUBLE_EQ(spline->fitPoints()[i].y(), scale ? 3 * source[sourceIndex][1] - 40 : source[sourceIndex][1]);
+                EXPECT_DOUBLE_EQ(spline->fitPoints()[i].z(), scale ? 5.0 : 3.0);
+            }
+            EXPECT_DOUBLE_EQ(spline->startTanX(), scale ? 2.0 : -1.0);
+            EXPECT_DOUBLE_EQ(spline->startTanY(), scale ? 6.0 : 2.0);
+            EXPECT_DOUBLE_EQ(spline->endTanX(), scale ? 2.0 : -1.0);
+            EXPECT_DOUBLE_EQ(spline->endTanY(), scale ? -6.0 : -2.0);
+        };
+        checkTransform(doc);
+        for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000,
+                                lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+            const auto output = capture ? std::string(capture) + (scale ? "/scaled-" : "/mirrored-")
+                + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+                : tmpPath("transformed-spline-hatch");
+            ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+            auto reopened = newDwgDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            checkTransform(reopened);
+            if (!capture) boost::filesystem::remove(output);
+        }
+        doc->removeEntity(transformed);
+        doc->insertEntity(original);
+        check(doc);
+    }
+    const auto& edges = original->getRegion().loopList().front().entities();
+    ASSERT_EQ(edges.size(), 1u);
+    const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(edges[0]);
+    ASSERT_NE(spline, nullptr);
+    const auto fitOnly = std::make_shared<lc::entity::Spline>(
+        std::vector<lc::geo::Coordinate>{}, std::vector<double>{}, spline->fitPoints(),
+        2, false, spline->fitTolerance(), spline->startTanX(), spline->startTanY(), spline->startTanZ(),
+        spline->endTanX(), spline->endTanY(), spline->endTanZ(),
+        spline->nX(), spline->nY(), spline->nZ(), spline->flags(), spline->layer());
+    for (const bool copy : {false, true}) {
+        const auto transformed = std::dynamic_pointer_cast<const lc::entity::Spline>(
+            copy ? fitOnly->copy(offset) : fitOnly->move(offset));
+        ASSERT_NE(transformed, nullptr);
+        ASSERT_TRUE(transformed->controlPoints().empty());
+        ASSERT_EQ(transformed->fitPoints().size(), 2u);
+        EXPECT_DOUBLE_EQ(transformed->fitPoints()[0].x(), 3.0);
+        EXPECT_DOUBLE_EQ(transformed->fitPoints()[0].y(), 7.0);
+        EXPECT_DOUBLE_EQ(transformed->fitPoints()[0].z(), 10.0);
+        EXPECT_DOUBLE_EQ(transformed->boundingBox().minP().x(), 3.0);
+        EXPECT_DOUBLE_EQ(transformed->boundingBox().maxP().x(), 5.0);
+    }
+    const auto fitRotated = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        fitOnly->rotate(lc::geo::Coordinate(10, 20, 100), std::acos(-1.0) / 2.0));
+    ASSERT_NE(fitRotated, nullptr);
+    ASSERT_TRUE(fitRotated->controlPoints().empty());
+    ASSERT_EQ(fitRotated->fitPoints().size(), 2u);
+    EXPECT_NEAR(fitRotated->fitPoints()[0].x(), 28.0, 1e-12);
+    EXPECT_NEAR(fitRotated->fitPoints()[0].y(), 11.0, 1e-12);
+    EXPECT_DOUBLE_EQ(fitRotated->fitPoints()[0].z(), 3.0);
+    const auto vectors = std::make_shared<lc::entity::Spline>(
+        spline->controlPoints(), spline->knotPoints(), spline->fitPoints(),
+        spline->degree(), spline->closed(), spline->fitTolerance(), 4, 5, 6, 7, 8, 9,
+        1, 2, 3, spline->flags(), spline->layer());
+    const auto rotatedVectors = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->rotate(lc::geo::Coordinate(10, 20, 100), std::acos(-1.0) / 2.0));
+    ASSERT_NE(rotatedVectors, nullptr);
+    EXPECT_NEAR(rotatedVectors->startTanX(), -5.0, 1e-12);
+    EXPECT_NEAR(rotatedVectors->startTanY(), 4.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotatedVectors->startTanZ(), 6.0);
+    EXPECT_NEAR(rotatedVectors->endTanX(), -8.0, 1e-12);
+    EXPECT_NEAR(rotatedVectors->endTanY(), 7.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotatedVectors->endTanZ(), 9.0);
+    EXPECT_NEAR(rotatedVectors->nX(), -2.0, 1e-12);
+    EXPECT_NEAR(rotatedVectors->nY(), 1.0, 1e-12);
+    EXPECT_DOUBLE_EQ(rotatedVectors->nZ(), 3.0);
+    const auto scaledFitOnly = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        fitOnly->scale(lc::geo::Coordinate(10, 20, 1), lc::geo::Coordinate(2, 3, 2)));
+    ASSERT_NE(scaledFitOnly, nullptr);
+    ASSERT_TRUE(scaledFitOnly->controlPoints().empty());
+    ASSERT_EQ(scaledFitOnly->fitPoints().size(), 2u);
+    EXPECT_DOUBLE_EQ(scaledFitOnly->fitPoints()[0].x(), -8.0);
+    EXPECT_DOUBLE_EQ(scaledFitOnly->fitPoints()[0].y(), -34.0);
+    EXPECT_DOUBLE_EQ(scaledFitOnly->fitPoints()[0].z(), 5.0);
+    const auto mirroredFitOnly = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        fitOnly->mirror(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(0, 1, 0)));
+    ASSERT_NE(mirroredFitOnly, nullptr);
+    ASSERT_TRUE(mirroredFitOnly->controlPoints().empty());
+    ASSERT_EQ(mirroredFitOnly->fitPoints().size(), 2u);
+    EXPECT_DOUBLE_EQ(mirroredFitOnly->fitPoints()[0].x(), -1.0);
+    EXPECT_DOUBLE_EQ(mirroredFitOnly->fitPoints()[0].y(), 2.0);
+    EXPECT_DOUBLE_EQ(mirroredFitOnly->fitPoints()[0].z(), 3.0);
+    const auto scaledVectors = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->scale(lc::geo::Coordinate(10, 20, 1), lc::geo::Coordinate(2, 3, 2)));
+    ASSERT_NE(scaledVectors, nullptr);
+    EXPECT_DOUBLE_EQ(scaledVectors->startTanX(), 8.0);
+    EXPECT_DOUBLE_EQ(scaledVectors->startTanY(), 15.0);
+    EXPECT_DOUBLE_EQ(scaledVectors->startTanZ(), 12.0);
+    EXPECT_NEAR(scaledVectors->nX() / scaledVectors->nZ(), 1.0 / 3.0, 1e-12);
+    EXPECT_NEAR(scaledVectors->nY() / scaledVectors->nZ(), 4.0 / 9.0, 1e-12);
+    const auto mirroredVectors = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->mirror(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(0, 1, 0)));
+    ASSERT_NE(mirroredVectors, nullptr);
+    EXPECT_DOUBLE_EQ(mirroredVectors->startTanX(), -4.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->startTanY(), 5.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->startTanZ(), 6.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->nX(), -1.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->nY(), 2.0);
+    EXPECT_DOUBLE_EQ(mirroredVectors->nZ(), 3.0);
+    const auto tiltedAxis = lc::geo::Coordinate(1, 1, 1);
+    const auto tiltedMirror = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis));
+    ASSERT_NE(tiltedMirror, nullptr);
+    const auto expectedControl = vectors->controlPoints()[0].mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis);
+    const auto expectedFit = vectors->fitPoints()[0].mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis);
+    const auto expectedTangent = lc::geo::Coordinate(4, 5, 6).mirror(lc::geo::Coordinate(0, 0, 0), tiltedAxis);
+    EXPECT_DOUBLE_EQ(tiltedMirror->controlPoints()[0].x(), expectedControl.x());
+    EXPECT_DOUBLE_EQ(tiltedMirror->controlPoints()[0].y(), expectedControl.y());
+    EXPECT_DOUBLE_EQ(tiltedMirror->controlPoints()[0].z(), expectedControl.z());
+    EXPECT_DOUBLE_EQ(tiltedMirror->fitPoints()[0].x(), expectedFit.x());
+    EXPECT_DOUBLE_EQ(tiltedMirror->fitPoints()[0].y(), expectedFit.y());
+    EXPECT_DOUBLE_EQ(tiltedMirror->fitPoints()[0].z(), expectedFit.z());
+    EXPECT_DOUBLE_EQ(tiltedMirror->startTanX(), expectedTangent.x());
+    EXPECT_DOUBLE_EQ(tiltedMirror->startTanY(), expectedTangent.y());
+    EXPECT_DOUBLE_EQ(tiltedMirror->startTanZ(), expectedTangent.z());
+    const auto singularScale = std::dynamic_pointer_cast<const lc::entity::Spline>(
+        vectors->scale(lc::geo::Coordinate(0, 0, 0), lc::geo::Coordinate(2, 0, 2)));
+    ASSERT_NE(singularScale, nullptr);
+    EXPECT_DOUBLE_EQ(singularScale->nX(), 1.0);
+    EXPECT_DOUBLE_EQ(singularScale->nY(), 2.0);
+    EXPECT_DOUBLE_EQ(singularScale->nZ(), 3.0);
+    auto points = spline->controlPoints();
+    ASSERT_EQ(points.size(), 3u);
+    points[1] = lc::geo::Coordinate(points[1].x(), points[1].y(), 4.0);
+    auto changed = std::make_shared<lc::entity::Spline>(points, spline->knotPoints(), spline->fitPoints(),
+        spline->degree(), spline->closed(), spline->fitTolerance(),
+        spline->startTanX(), spline->startTanY(), spline->startTanZ(),
+        spline->endTanX(), spline->endTanY(), spline->endTanZ(),
+        spline->nX(), spline->nY(), spline->nZ(), spline->flags(), spline->layer());
+    lc::geo::Region mixedRegion;
+    mixedRegion.addLoop(lc::geo::Loop({changed}));
+    auto mixed = std::make_shared<lc::entity::Hatch>(original->layer(), original->metaInfo(), original->block());
+    mixed->setRegion(mixedRegion);
+    mixed->setPatternName(original->getPatternName());
+    mixed->setSolid(original->isSolid());
+    doc->removeEntity(original);
+    doc->insertEntity(mixed);
+    const auto mixedOutput = capture ? std::string(capture) + "/mixed.dxf" : tmpPath("mixed-spline-hatch");
+    { std::ofstream sentinel(mixedOutput); sentinel << "previous destination"; }
+    const auto mixedResult = lc::persistence::File::exportFile(doc, mixedOutput, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    if (mixedResult.ok) {
+        EXPECT_TRUE(std::any_of(mixedResult.loss.notes.begin(), mixedResult.loss.notes.end(),
+            [](const std::string& note) { return note.find("HATCH boundary elevation varies") != std::string::npos; }));
+    } else {
+        std::ifstream sentinel(mixedOutput);
+        std::string value; std::getline(sentinel, value);
+        EXPECT_EQ(value, "previous destination");
+    }
+    doc->removeEntity(mixed);
+    doc->insertEntity(original);
+    const auto retry = capture ? std::string(capture) + "/retry.dxf" : tmpPath("retry-spline-hatch");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, retry, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    auto reopened = newDwgDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(reopened, retry, lc::persistence::File::LIBDXFRW).ok);
+    check(reopened);
+    if (!capture) { boost::filesystem::remove(mixedOutput); boost::filesystem::remove(retry); }
+    boost::filesystem::remove(input);
+}
+
+TEST(DwgImportTest, RationalHatchSplineWeightsSurviveSave) {
+    const auto input = tmpPath("rational-hatch-spline");
+    {
+        std::ofstream f(input);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nENTITIES\n0\nHATCH\n5\n55\n100\nAcDbEntity\n8\n0\n"
+             "100\nAcDbHatch\n10\n0\n20\n0\n30\n3\n210\n0\n220\n0\n230\n1\n"
+             "2\nSOLID\n70\n1\n71\n0\n91\n1\n92\n0\n93\n2\n"
+             "72\n4\n94\n2\n73\n1\n74\n0\n95\n6\n96\n3\n"
+             "40\n0\n40\n0\n40\n0\n40\n1\n40\n1\n40\n1\n"
+             "10\n1\n20\n0\n42\n1\n10\n1\n20\n1\n42\n0.7071067811865476\n10\n0\n20\n1\n42\n1\n97\n0\n"
+             "72\n1\n10\n0\n20\n1\n11\n1\n21\n0\n"
+             "97\n0\n75\n0\n76\n1\n78\n0\n98\n0\n0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(f.good());
+    }
+    const std::vector<double> weights{1,0.7071067811865476,1};
+    const auto check = [&weights](const std::shared_ptr<lc::storage::DocumentImpl>& doc, double elevation) {
+        lc::entity::Hatch_CSPtr hatch;
+        for (const auto& entity : doc->entityContainer().asVector())
+            if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) hatch = value;
+        ASSERT_NE(hatch, nullptr);
+        const auto& loops = hatch->getRegion().loopList();
+        ASSERT_EQ(loops.size(), 1u);
+        ASSERT_EQ(loops[0].entities().size(), 2u);
+        auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(loops[0].entities()[0]);
+        ASSERT_NE(spline, nullptr);
+        EXPECT_EQ(spline->weights(), weights);
+        EXPECT_NE(spline->flags() & lc::geo::Spline::RATIONAL, 0);
+        ASSERT_EQ(spline->controlPoints().size(), 3u);
+        EXPECT_DOUBLE_EQ(spline->controlPoints()[1].z(), elevation);
+    };
+    auto doc = newDwgDocument();
+    const auto imported = lc::persistence::File::importFile(doc, input, lc::persistence::File::LIBDXFRW);
+    ASSERT_TRUE(imported.ok);
+    ASSERT_EQ(imported.loss.notes.size(), 1u);
+    EXPECT_NE(imported.loss.notes[0].find("displayed curve"), std::string::npos);
+    check(doc, 3.0);
+    lc::entity::Hatch_CSPtr original;
+    for (const auto& entity : doc->entityContainer().asVector())
+        if (auto value = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity)) original = value;
+    ASSERT_NE(original, nullptr);
+    const char* capture = std::getenv("LC3_RATIONAL_HATCH_CAPTURE");
+    for (bool moved : {false, true}) {
+        if (moved) {
+            doc->removeEntity(original);
+            doc->insertEntity(original->move({2,5,4}));
+            check(doc, 7.0);
+        }
+        for (auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000, lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+            const auto output = capture ? std::string(capture) + (moved ? "/moved-" : "/initial-")
+                + (type == lc::persistence::File::LIBDXFRW_DXF_R2000 ? "ascii.dxf" : "binary.dxf")
+                : tmpPath("rational-hatch-output");
+            const auto exported = lc::persistence::File::exportFile(doc, output, type);
+            ASSERT_TRUE(exported.ok);
+            EXPECT_EQ(exported.loss.total(), 0u);
+            auto reopened = newDwgDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            check(reopened, moved ? 7.0 : 3.0);
+            if (!capture) boost::filesystem::remove(output);
+        }
+    }
+    // An edited spline with an incomplete weight vector must be reported as
+    // an omitted HATCH, rather than being silently padded by the older codec.
+    const auto& originalEdges = original->getRegion().loopList()[0].entities();
+    const auto sourceSpline = std::dynamic_pointer_cast<const lc::entity::Spline>(originalEdges[0]);
+    ASSERT_NE(sourceSpline, nullptr);
+    lc::builder::SplineBuilder builder;
+    builder.copy(sourceSpline);
+    builder.setWeights({1.0});
+    lc::geo::Region invalidRegion;
+    invalidRegion.addLoop(lc::geo::Loop({builder.build(), originalEdges[1]}));
+    auto invalidHatch = std::make_shared<lc::entity::Hatch>(original, false);
+    invalidHatch->setRegion(invalidRegion);
+    auto invalidDoc = newDwgDocument();
+    invalidDoc->insertEntity(invalidHatch);
+    const auto retryPath = tmpPath("rational-hatch-invalid");
+    for (auto type : {lc::persistence::File::LIBDXFRW_DXF_R2000, lc::persistence::File::LIBDXFRW_DXB_R2000}) {
+        const auto failed = lc::persistence::File::exportFile(invalidDoc, retryPath, type);
+        EXPECT_TRUE(!failed.ok || failed.loss.total() > 0u);
+        auto corrected = newDwgDocument();
+        corrected->insertEntity(original);
+        const auto retried = lc::persistence::File::exportFile(corrected, retryPath, type);
+        ASSERT_TRUE(retried.ok);
+        EXPECT_EQ(retried.loss.total(), 0u);
+        auto reopened = newDwgDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reopened, retryPath, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened, 3.0);
+    }
+    boost::filesystem::remove(retryPath);
+    boost::filesystem::remove(input);
+}
