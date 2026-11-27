@@ -3182,7 +3182,7 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}) {
+  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}) {
     const int space = mode >= 6 ? 0 : mode % 3;
     const bool modern = mode >= 3 && mode < 6;
     const bool extendedDictionary = mode == 6;
@@ -3196,6 +3196,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const bool invalidNestedRootOwner = mode == 14;
     const bool sourcePaper = mode == 15;
     const bool duplicateTarget = mode == 16;
+    const int extraRecords = mode == 17 ? 252 : mode == 18 ? 253 : 0;
     const char* rootHandle = differentRoot ? "50" : "C";
     const bool inBlock = space != 0;
     const char* blockName = space == 2 ? "*U1" : "LC_IMG";
@@ -3230,10 +3231,15 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         if (extendedDictionary) file << "102\n{LC_TEST\n1\ncustom\n102\n}\n";
         file << "100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n3\nKEEP\n350\n91\n";
         if (duplicateTarget) file << "3\nALIAS\n350\n91\n";
+        for (int i = 0; i < extraRecords; ++i)
+            file << "3\nEXTRA_" << i << "\n350\n" << std::hex << 0x200 + i << std::dec << "\n";
         if (nested) file << "0\nDICTIONARY\n5\n92\n330\n" << (invalidNestedRootOwner ? "93" : "C") << "\n100\nAcDbDictionary\n281\n1\n3\nCHILD\n350\n90\n";
         file <<
                 "0\nXRECORD\n5\n91\n330\n" << (invalidOwner ? "92" : "90") << "\n100\nAcDbXrecord\n280\n1\n1\nkeep-value\n";
         if (unmodeledChild) file << "340\n92\n";
+        for (int i = 0; i < extraRecords; ++i)
+            file << "0\nXRECORD\n5\n" << std::hex << 0x200 + i << std::dec
+                 << "\n330\n90\n100\nAcDbXrecord\n280\n1\n1\nextra\n";
         file << "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
                 "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
                 "0\nIMAGEDEF_REACTOR\n5\n82\n102\n{LC_TEST\n1\nreactor-metadata\n102\n}\n"
@@ -3297,7 +3303,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
             if (group == 0) blockRecord = value == "BLOCK_RECORD";
             if (blockRecord && group == 2 && value == "*Paper_Space0") ++paper0;
         }
-        EXPECT_EQ(paper0, mode <= 5 ? 0u : 1u);
+        EXPECT_EQ(paper0, mode <= 5 || mode == 17 ? 0u : 1u);
     }
     const auto names = rootDictNames(saved);
     EXPECT_EQ(names.count("ACAD_IMAGE_DICT"), 1u);
