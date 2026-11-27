@@ -430,7 +430,7 @@ TEST(BuilderTest, GroupMayEditEntityCreatedEarlierOnUnlockedLayer) {
 }
 
 TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
-    for (int kind = 0; kind != 5; ++kind) for (int variant = 0; variant != 12; ++variant) {
+    for (int kind = 0; kind != 5; ++kind) for (int variant = 0; variant != 18; ++variant) {
         const bool nested = (variant & 1) != 0;
         const int mode = variant / 2;
         SCOPED_TRACE(kind);
@@ -455,12 +455,18 @@ TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
         create->appendEntity(line);
         if (mode == 5) create->appendOperation(std::make_shared<lc::operation::SelectByLayer>(layer));
         else create->appendOperation(std::make_shared<lc::operation::Push>());
-        if (mode == 1) create->appendOperation(std::make_shared<lc::operation::Copy>(lc::geo::Coordinate(2, 0)));
+        if (mode == 8) create->appendOperation(std::make_shared<lc::operation::Begin>());
+        if (mode == 1 || mode == 7 || mode == 8) {
+            create->appendOperation(std::make_shared<lc::operation::Copy>(lc::geo::Coordinate(2, 0)));
+            if (mode == 7) create->appendOperation(std::make_shared<lc::operation::Remove>());
+            if (mode == 8) create->appendOperation(std::make_shared<lc::operation::Loop>(2));
+        }
         else if (mode == 2) create->appendOperation(std::make_shared<lc::operation::Rotate>(lc::geo::Coordinate(), 0.5));
         else if (mode == 3) create->appendOperation(std::make_shared<lc::operation::Scale>(lc::geo::Coordinate(), lc::geo::Coordinate(2, 3, 1)));
         else {
-            if (mode == 4) create->appendOperation(std::make_shared<lc::operation::Begin>());
+            if (mode == 4 || mode == 6) create->appendOperation(std::make_shared<lc::operation::Begin>());
             create->appendOperation(std::make_shared<lc::operation::Move>(lc::geo::Coordinate(2, 0)));
+            if (mode == 6) create->appendOperation(std::make_shared<lc::operation::Loop>(2));
         }
         auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
         edit->appendEntity(line->move(lc::geo::Coordinate(10, 0)));
@@ -487,12 +493,57 @@ TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
         if (kind == 2) { auto value = std::dynamic_pointer_cast<const lc::entity::Arc>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->center().x(), 11); }
         if (kind == 3) { auto value = std::dynamic_pointer_cast<const lc::entity::Ellipse>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->center().x(), 11); }
         if (kind == 4) { auto value = std::dynamic_pointer_cast<const lc::entity::Spline>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->controlPoints().at(0).x(), 11); }
-        EXPECT_EQ(document->entityContainer().asVector().size(), mode == 1 ? 2u : 1u);
+        const auto expectedCount = mode == 1 ? 2u : mode == 8 ? 4u : 1u;
+        EXPECT_EQ(document->entityContainer().asVector().size(), expectedCount);
         group->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
         EXPECT_TRUE(document->entityContainer().asVector().empty());
         group->redo(); EXPECT_EQ(document->entityByID(line->id()), moved);
-        EXPECT_EQ(document->entityContainer().asVector().size(), mode == 1 ? 2u : 1u);
+        EXPECT_EQ(document->entityContainer().asVector().size(), expectedCount);
     }
+}
+
+TEST(BuilderTest, GroupMayReinsertNewEntityAfterForcedLockedRemoval) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto locked = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                    lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(locked);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0),
+                                                  lc::geo::Coordinate(1, 0), locked);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document);
+    add->appendEntity(line);
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->setAllowLockedLayerEdits(true); remove->appendEntity(line);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    auto reinsert = std::make_shared<lc::operation::EntityBuilder>(document);
+    reinsert->appendEntity(line);
+    auto group = std::make_shared<lc::operation::Builder>(document, "Create remove reinsert");
+    group->append(add); group->append(remove); group->append(reinsert);
+    group->execute(); EXPECT_FALSE(group->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(line->id()), line);
+    group->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    group->redo(); EXPECT_EQ(document->entityByID(line->id()), line);
+}
+
+TEST(BuilderTest, GroupMayInsertAfterRemovingAnAbsentEntity) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto locked = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                    lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(locked);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0),
+                                                  lc::geo::Coordinate(1, 0), locked);
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(line);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document);
+    add->appendEntity(line);
+    auto group = std::make_shared<lc::operation::Builder>(document, "Remove absent then insert");
+    group->append(remove); group->append(add);
+    group->execute(); EXPECT_FALSE(group->blockedByLockedLayer());
+    EXPECT_EQ(document->entityByID(line->id()), line);
+    group->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    group->redo(); EXPECT_EQ(document->entityByID(line->id()), line);
 }
 
 TEST(BuilderTest, GroupDoesNotProjectStackInputThatIsNotEmitted) {

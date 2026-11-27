@@ -137,7 +137,7 @@ Base_SPtr cloneExactOperation(const Base_SPtr& operation) {
 }
 }
 
-bool EntityBuilder::buildPreflightProbe(EntityBuilder& probe, bool forProjection) const {
+bool EntityBuilder::buildPreflightProbe(EntityBuilder& probe) const {
     // Built-in stacks only transform the supplied buffers. Clone them and use
     // shadows so neither entity transforms nor stateful Begin/Loop callbacks
     // can affect the real document, pending work, or global entity IDs.
@@ -164,9 +164,6 @@ bool EntityBuilder::buildPreflightProbe(EntityBuilder& probe, bool forProjection
     }
     std::unordered_map<const Base*, Base_SPtr> clones;
     for (const auto& operation : _stack) {
-        // Projection does not yet model removals or loop-generated outputs.
-        if (forProjection && operation && (typeid(*operation) == typeid(Remove) || typeid(*operation) == typeid(Loop)))
-            return false;
         const auto existing = clones.find(operation.get());
         if (existing != clones.end()) {
             probe._stack.push_back(existing->second);
@@ -199,11 +196,12 @@ bool EntityBuilder::buildPreflightProbe(EntityBuilder& probe, bool forProjection
 }
 
 bool EntityBuilder::projectKnownStack(std::vector<ProjectedEntity>& projected) const {
-    if (_stack.empty() || !_entitiesThatNeedsRemoval.empty()) return false;
+    if (_stack.empty()) return false;
     const auto isNew = [this](const entity::CADEntity_CSPtr& candidate) {
         return candidate && !document()->entityByID(candidate->id());
     };
-    bool hasNewInput = std::any_of(_workingBuffer.begin(), _workingBuffer.end(), isNew);
+    bool hasNewInput = std::any_of(_workingBuffer.begin(), _workingBuffer.end(), isNew) ||
+                       std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(), isNew);
     for (const auto& operation : _stack) {
         const auto begin = std::dynamic_pointer_cast<Begin>(operation);
         if (!begin) continue;
@@ -212,13 +210,18 @@ bool EntityBuilder::projectKnownStack(std::vector<ProjectedEntity>& projected) c
     }
     if (!hasNewInput) return true;
     EntityBuilder probe(document());
-    if (!buildPreflightProbe(probe, true)) return false;
-    for (const auto& value : probe._workingBuffer) {
-        const auto shadow = std::dynamic_pointer_cast<const PreflightEntity>(value);
-        if (!shadow || !shadow->safeCopy() || shadow->derivedCopy() ||
-            !hasKnownProjectionSemantics(shadow->source()) || document()->entityByID(shadow->id())) continue;
-        projected.push_back({shadow->source(), !shadow->changed()});
-    }
+    if (!buildPreflightProbe(probe)) return false;
+    const auto collect = [&](const std::vector<entity::CADEntity_CSPtr>& values, bool removal) {
+        for (const auto& value : values) {
+            const auto shadow = std::dynamic_pointer_cast<const PreflightEntity>(value);
+            if (!shadow || !shadow->safeCopy() || shadow->derivedCopy() ||
+                !hasKnownProjectionSemantics(shadow->source()) || document()->entityByID(shadow->id())) continue;
+            projected.push_back({shadow->source(), !shadow->changed(), removal});
+        }
+    };
+    // Actual EntityBuilder processing removes before inserting its output.
+    collect(probe._entitiesThatNeedsRemoval, true);
+    collect(probe._workingBuffer, false);
     return true;
 }
 
@@ -245,7 +248,7 @@ bool EntityBuilder::rejectLockedCompoundUpdate() {
     if (!lockedInput) return false;
 
     EntityBuilder probe(document());
-    if (!buildPreflightProbe(probe, false)) { _blockedByLockedLayer = true; return true; }
+    if (!buildPreflightProbe(probe)) { _blockedByLockedLayer = true; return true; }
     if (!probe.touchesLockedLayer()) return false;
     _blockedByLockedLayer = true;
     return true;

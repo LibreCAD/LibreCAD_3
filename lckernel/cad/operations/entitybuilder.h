@@ -60,8 +60,9 @@ private:
     struct ProjectedEntity {
         entity::CADEntity_CSPtr source;
         bool sameObject;
+        bool removal = false;
     };
-    bool buildPreflightProbe(EntityBuilder& probe, bool forProjection) const;
+    bool buildPreflightProbe(EntityBuilder& probe) const;
     bool projectKnownStack(std::vector<ProjectedEntity>& projected) const;
     bool touchesLockedLayer() const;
     bool rejectLockedCompoundUpdate();

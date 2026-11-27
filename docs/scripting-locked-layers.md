@@ -23,9 +23,9 @@ locked input is refused unless explicitly overridden. To unlock and edit in
 one group, explicitly override the entity operation. Directly staged entities
 created earlier in the group are checked before later edits, including nested
 groups and layer replacements. This check also covers source identities for
-lines, circles, arcs, ellipses and splines emitted by the built-in push, move,
-copy, rotate, scale, begin and layer-selection operations. Generated copy
-identities, loop and remove stacks, other entity types, custom operations that
+lines, circles, arcs, ellipses and splines emitted by built-in push, move,
+copy, rotate, scale, begin, loop, remove and layer-selection operations.
+Generated copy identities, other entity types, custom operations that
 obtain objects outside their supplied inputs, and other layer-state changes are
 not yet guaranteed atomic;
 separate those operations when a locked entity may be involved. Forced line,

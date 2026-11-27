@@ -113,6 +113,8 @@ bool Builder::preflightLocked(std::vector<const Builder*>& active, LayerTransiti
         if (entities) {
             std::vector<EntityBuilder::ProjectedEntity> projected;
             if (entities->_stack.empty()) {
+                for (const auto& candidate : entities->_entitiesThatNeedsRemoval)
+                    projected.push_back({candidate, true, true});
                 for (const auto& candidate : entities->_workingBuffer)
                     projected.push_back({candidate, true});
             } else {
@@ -136,6 +138,10 @@ bool Builder::preflightLocked(std::vector<const Builder*>& active, LayerTransiti
             for (const auto& projectedEntity : projected) {
                 const auto& candidate = projectedEntity.source;
                 if (!candidate || document()->entityByID(candidate->id())) continue;
+                if (projectedEntity.removal) {
+                    stagedEntities.erase(candidate->id());
+                    continue;
+                }
                 const auto previous = stagedEntities.find(candidate->id());
                 auto actualLayer = candidate->layer();
                 bool sameObject = projectedEntity.sameObject;
