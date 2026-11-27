@@ -93,13 +93,14 @@ bool hasKnownCopySemantics(const entity::CADEntity_CSPtr& value) {
            exactEntity<entity::Spline>(value) || exactEntity<entity::Text>(value);
 }
 
-// Projection needs more than copy semantics: every admitted transform must
-// retain the source ID and layer. For example LWPolyline rotate allocates a new
-// ID, while IMAGE rotate can return null, so do not infer those outcomes here.
+// Projection needs more than copy semantics: transforms admitted by the
+// preflight stack must retain the source ID and layer. For example LWPolyline
+// rotate allocates a new ID, so do not infer that outcome here.
 bool hasKnownProjectionSemantics(const entity::CADEntity_CSPtr& value) {
     return exactEntity<entity::Line>(value) || exactEntity<entity::Circle>(value) ||
            exactEntity<entity::Arc>(value) || exactEntity<entity::Ellipse>(value) ||
-           exactEntity<entity::Spline>(value) || exactEntity<entity::Point>(value);
+           exactEntity<entity::Spline>(value) || exactEntity<entity::Point>(value) ||
+           exactEntity<entity::Image>(value);
 }
 }
 

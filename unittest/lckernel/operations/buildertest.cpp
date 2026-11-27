@@ -11,6 +11,7 @@
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
 #include <cad/primitive/ellipse.h>
+#include <cad/primitive/image.h>
 #include <cad/primitive/point.h>
 #include <cad/primitive/spline.h>
 
@@ -432,7 +433,7 @@ TEST(BuilderTest, GroupMayEditEntityCreatedEarlierOnUnlockedLayer) {
 }
 
 TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
-    for (int kind = 0; kind != 6; ++kind) for (int variant = 0; variant != 18; ++variant) {
+    for (int kind = 0; kind != 7; ++kind) for (int variant = 0; variant != 18; ++variant) {
         const bool nested = (variant & 1) != 0;
         const int mode = variant / 2;
         SCOPED_TRACE(kind);
@@ -453,7 +454,9 @@ TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
             std::vector<double>{0, 0, 0, 1, 1, 1}, std::vector<lc::geo::Coordinate>{},
             2, false, 0.01, 1, 2, 3, 4, 5, 6, 0, 0, 1,
             lc::geo::Spline::RATIONAL, layer, nullptr, nullptr, std::vector<double>{1, 0.5, 1});
-        else line = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(1, 2, 3), layer);
+        else if (kind == 5) line = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(1, 2, 3), layer);
+        else line = std::make_shared<lc::entity::Image>("image.png", lc::geo::Coordinate(1, 2, 3),
+            lc::geo::Coordinate(1, 0, 1), lc::geo::Coordinate(0, 1, -1), 2, 3, 40, 60, 10, layer, nullptr);
         auto create = std::make_shared<lc::operation::EntityBuilder>(document);
         create->appendEntity(line);
         if (mode == 5) create->appendOperation(std::make_shared<lc::operation::SelectByLayer>(layer));
@@ -497,6 +500,7 @@ TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
         if (kind == 3) { auto value = std::dynamic_pointer_cast<const lc::entity::Ellipse>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->center().x(), 11); }
         if (kind == 4) { auto value = std::dynamic_pointer_cast<const lc::entity::Spline>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->controlPoints().at(0).x(), 11); }
         if (kind == 5) { auto value = std::dynamic_pointer_cast<const lc::entity::Point>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->x(), 11); EXPECT_DOUBLE_EQ(value->z(), 3); }
+        if (kind == 6) { auto value = std::dynamic_pointer_cast<const lc::entity::Image>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->base().x(), 11); EXPECT_DOUBLE_EQ(value->base().z(), 3); }
         const auto expectedCount = mode == 1 ? 2u : mode == 8 ? 4u : 1u;
         EXPECT_EQ(document->entityContainer().asVector().size(), expectedCount);
         group->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
@@ -1085,6 +1089,48 @@ TEST(BuilderTest, PointLayerReplacementAndTransformsPreserve3dCoordinate) {
     change->setAllowLockedLayerEdits(true); change->appendEntity(moved->modify(target, metadata, nullptr)); change->execute();
     EXPECT_EQ(document->entityByID(point->id())->layer(), target);
     change->undo(); verify(); change->redo(); EXPECT_EQ(document->entityByID(point->id())->layer(), target);
+}
+
+TEST(BuilderTest, ImageForcedEditRebindsCurrentLayerAndPreservesGeometry) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    auto metadata = lc::meta::MetaInfo::create();
+    auto image = std::make_shared<lc::entity::Image>("image.png", lc::geo::Coordinate(1, 2, 3),
+        lc::geo::Coordinate(1, 0, 1), lc::geo::Coordinate(0, 1, -1), 2, 3, 40, 60, 10, layer, metadata);
+    document->insertEntity(image);
+    auto moved = std::dynamic_pointer_cast<const lc::entity::Image>(image->move(lc::geo::Coordinate(5, 6, 7)));
+    ASSERT_TRUE(moved);
+    auto locked = lc::meta::Layer::withState(layer, false, false, true);
+    auto lock = std::make_shared<lc::operation::ReplaceLayer>(document, layer, locked);
+    lock->execute();
+    auto lockedImage = std::dynamic_pointer_cast<const lc::entity::Image>(document->entityByID(image->id()));
+    ASSERT_TRUE(lockedImage); ASSERT_EQ(lockedImage->layer(), locked);
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+    edit->appendEntity(moved); edit->execute();
+    EXPECT_TRUE(edit->blockedByLockedLayer()); EXPECT_EQ(document->entityByID(image->id()), lockedImage);
+    edit->setAllowLockedLayerEdits(true); edit->execute();
+    const auto verify = [&] {
+        auto result = std::dynamic_pointer_cast<const lc::entity::Image>(document->entityByID(image->id()));
+        ASSERT_TRUE(result); EXPECT_EQ(result->layer(), locked); EXPECT_EQ(result->metaInfo(), metadata);
+        EXPECT_EQ(result->base(), lc::geo::Coordinate(6, 8, 10));
+        EXPECT_EQ(result->uv(), image->uv()); EXPECT_EQ(result->vv(), image->vv());
+    };
+    verify(); edit->undo(); EXPECT_EQ(document->entityByID(image->id()), lockedImage);
+    edit->redo(); verify();
+    auto rotate = std::make_shared<lc::operation::EntityBuilder>(document);
+    rotate->setAllowLockedLayerEdits(true);
+    rotate->appendEntity(moved);
+    rotate->appendOperation(std::make_shared<lc::operation::Push>());
+    rotate->appendOperation(std::make_shared<lc::operation::Rotate>(lc::geo::Coordinate(), std::acos(-1.) / 2));
+    rotate->execute();
+    const auto verifyRotation = [&] {
+        auto result = std::dynamic_pointer_cast<const lc::entity::Image>(document->entityByID(image->id()));
+        ASSERT_TRUE(result); EXPECT_EQ(result->layer(), locked); EXPECT_EQ(result->metaInfo(), metadata);
+        EXPECT_NEAR(result->base().x(), -8, 1e-12); EXPECT_NEAR(result->base().y(), 6, 1e-12);
+        EXPECT_DOUBLE_EQ(result->base().z(), 10); EXPECT_DOUBLE_EQ(result->uv().z(), 1);
+        EXPECT_DOUBLE_EQ(result->vv().z(), -1);
+    };
+    verifyRotation(); rotate->undo(); verify(); rotate->redo(); verifyRotation();
 }
 
 TEST(BuilderTest, PointQueriesAndDragRoundTripPreserve3dCoordinate) {
