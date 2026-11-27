@@ -3107,6 +3107,75 @@ TEST(DxfRoundTripTest, PreservedDictionariesAreNamedFromTheRootAgain) {
     boost::filesystem::remove(saved);
 }
 
+TEST(DxfRoundTripTest, CyclicDictionariesCannotHideMissingDescendants) {
+    const std::string source = uniqueTmpDxf("cyclic-dictionaries");
+    const std::string saved = uniqueTmpDxf("cyclic-dictionaries-out");
+    {
+        std::ofstream file(source, std::ios::binary);
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nSECTION\n2\nOBJECTS\n"
+                "0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
+                "3\nLC_A\n350\n90\n3\nLC_B\n350\n91\n3\nLC_GOOD\n350\n92\n"
+                "3\nLC_UPSTREAM\n350\n94\n"
+                "0\nDICTIONARY\n5\n90\n330\nC\n100\nAcDbDictionary\n281\n1\n"
+                "3\nB\n350\n91\n3\nMISSING\n350\n99\n"
+                "0\nDICTIONARY\n5\n91\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nA\n350\n90\n"
+                "0\nDICTIONARY\n5\n92\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nD\n350\n93\n"
+                "0\nDICTIONARY\n5\n93\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nC\n350\n92\n"
+                "0\nDICTIONARY\n5\n94\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nB\n350\n91\n"
+                "0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(file.good());
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("LC_A"), 0u);
+    EXPECT_EQ(names.count("LC_B"), 0u);
+    EXPECT_EQ(names.count("LC_UPSTREAM"), 0u);
+    EXPECT_EQ(names.count("LC_GOOD"), 1u);
+    const auto loss = result.loss.droppedByType.find("unreferenced dictionaries");
+    ASSERT_NE(loss, result.loss.droppedByType.end());
+    EXPECT_EQ(loss->second, 3u);
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
+    const std::string source = uniqueTmpDxf("deep-dictionary-cycle");
+    const std::string saved = uniqueTmpDxf("deep-dictionary-cycle-out");
+    {
+        std::ofstream file(source, std::ios::binary);
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nSECTION\n2\nOBJECTS\n"
+                "0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
+                "3\nLC_FIRST\n350\n100\n3\nLC_MIDDLE\n350\n300\n3\nLC_SAFE\n350\n800\n";
+        for (unsigned index = 0; index < 1024; ++index) {
+            file << "0\nDICTIONARY\n5\n" << std::hex << 0x100u + index
+                 << "\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nNEXT\n350\n"
+                 << (index == 1023 ? 0x100u : 0x101u + index) << '\n';
+            if (index == 1023) file << "3\nMISSING\n350\n900\n";
+        }
+        file << "0\nDICTIONARY\n5\n800\n330\nC\n100\nAcDbDictionary\n281\n1\n"
+                "0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(file.good());
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    const auto names = rootDictNames(saved);
+    EXPECT_EQ(names.count("LC_FIRST"), 0u);
+    EXPECT_EQ(names.count("LC_MIDDLE"), 0u);
+    EXPECT_EQ(names.count("LC_SAFE"), 1u);
+    const auto loss = result.loss.droppedByType.find("unreferenced dictionaries");
+    ASSERT_NE(loss, result.loss.droppedByType.end());
+    EXPECT_EQ(loss->second, 2u);
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
 // A layout is the page a drawing prints from. LibreCAD models none of it, and
 // libdxfrw parses LAYOUT and PLOTSETTINGS into typed objects instead of handing
 // them to the raw passthrough net, so unlike a record this build has never

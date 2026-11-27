@@ -11,6 +11,8 @@
 #include <map>
 #include <set>
 #include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
@@ -2689,64 +2691,47 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         std::vector<std::pair<std::string, std::string>> rootEntries;
         std::size_t detached = 0;
         if (!_replay->rootDictEntries.empty()) {
-            std::map<std::uint32_t, const DRW_RawDxfObject*> emitted;
+            std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> emitted;
             for (const auto& object : _replay->objects) {
                 if (object.handle != 0) {
                     emitted[object.handle] = &object;
                 }
             }
 
-            // Answers are remembered, not just cycle-guarded. Dictionaries
-            // form a graph, not a tree -- several of them name the same
-            // material or visual style -- and re-walking each shared subtree
-            // once per path that reaches it is exponential in the depth.
-            std::set<std::uint32_t> walking;
-            std::map<std::uint32_t, bool> settled;
-            const std::function<bool(std::uint32_t)> wholeSubtreeSurvives =
-                [&](std::uint32_t handle) -> bool {
-                    const auto remembered = settled.find(handle);
-                    if (remembered != settled.end()) {
-                        return remembered->second;
+            // Mark missing targets, then propagate failure to every parent.
+            // This visits shared edges once and handles cycles without caching
+            // an optimistic result before the whole cycle has been checked.
+            std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> parents;
+            std::unordered_set<std::uint32_t> incomplete;
+            std::vector<std::uint32_t> pending;
+            const auto markIncomplete = [&](std::uint32_t handle) {
+                if (incomplete.insert(handle).second) pending.push_back(handle);
+            };
+            for (const auto& item : emitted) {
+                for (const auto& group : item.second->groups) {
+                    // Ignore owners and reactors: they can point back to the
+                    // root, which is regenerated rather than raw-replayed.
+                    if (group.code() != 350 && group.code() != 360) continue;
+                    if (group.type() != DRW_Variant::STRING || group.content.s == nullptr) continue;
+                    std::uint32_t child = 0;
+                    try {
+                        child = static_cast<std::uint32_t>(std::stoul(*group.content.s, nullptr, 16));
+                    } catch (const std::exception&) {
+                        continue;
                     }
-                    const auto found = emitted.find(handle);
-                    if (found == emitted.end()) {
-                        settled[handle] = false;
-                        return false;
-                    }
-                    if (!walking.insert(handle).second) {
-                        return true;  // already on this path; not a reason to refuse
-                    }
-                    bool survives = true;
-                    for (const auto& group : found->second->groups) {
-                        // 350 and 360 are what a dictionary names its entries
-                        // with. Owners (330) and reactors are left out on
-                        // purpose: they point back at the root, which the
-                        // codec regenerates rather than re-emits.
-                        if (group.code() != 350 && group.code() != 360) {
-                            continue;
-                        }
-                        if (group.type() != DRW_Variant::STRING || group.content.s == nullptr) {
-                            continue;
-                        }
-                        std::uint32_t child = 0;
-                        try {
-                            child = static_cast<std::uint32_t>(
-                                std::stoul(*group.content.s, nullptr, 16));
-                        } catch (const std::exception&) {
-                            continue;  // not a handle; nothing to resolve
-                        }
-                        if (child != 0 && !wholeSubtreeSurvives(child)) {
-                            survives = false;
-                            break;
-                        }
-                    }
-                    walking.erase(handle);
-                    settled[handle] = survives;
-                    return survives;
-                };
+                    if (child == 0) continue;
+                    if (emitted.count(child)) parents[child].push_back(item.first);
+                    else markIncomplete(item.first);
+                }
+            }
+            for (std::size_t index = 0; index < pending.size(); ++index) {
+                const auto found = parents.find(pending[index]);
+                if (found == parents.end()) continue;
+                for (const auto parent : found->second) markIncomplete(parent);
+            }
 
             for (const auto& entry : _replay->rootDictEntries) {
-                if (!wholeSubtreeSurvives(entry.second)) {
+                if (!emitted.count(entry.second) || incomplete.count(entry.second)) {
                     detached++;
                     continue;
                 }
