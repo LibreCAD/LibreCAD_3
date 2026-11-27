@@ -62,6 +62,10 @@ private:
 
     std::vector<entity::CADEntity_CSPtr> _entitiesThatWhereUpdated;
     std::vector<entity::CADEntity_CSPtr> _entitiesThatNeedsRemoval;
+    // Last applied journal, restored if a later execution is refused.
+    std::vector<entity::CADEntity_CSPtr> _committedWorkingBuffer;
+    std::vector<entity::CADEntity_CSPtr> _committedUpdates;
+    std::vector<entity::CADEntity_CSPtr> _committedRemovals;
 };
 
 DECLARE_SHORT_SHARED_PTR(EntityBuilder)

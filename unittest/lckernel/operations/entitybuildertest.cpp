@@ -499,3 +499,29 @@ TEST(EntityBuilderTest, BlockedLockedEditPreservesUndoAndRedoHistory) {
     EXPECT_FALSE(undo->canUndo());
     EXPECT_TRUE(undo->canRedo());
 }
+
+TEST(EntityBuilderTest, RefusedReuseKeepsPreviouslyCommittedUndoJournal) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto undo = std::make_shared<lc::storage::UndoManagerImpl>(10);
+    document->commitProcessEvent().connect<lc::storage::UndoManagerImpl,
+        &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(undo.get());
+    const auto lockedLayer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+                                                               lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(lockedLayer);
+    const auto locked = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), lockedLayer, nullptr);
+    document->insertEntity(locked);
+    const auto added = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 1), lc::geo::Coordinate(1, 1), document->layerByName("0"), nullptr);
+    auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+    builder->appendEntity(added); builder->execute();
+    ASSERT_EQ(document->entityByID(added->id()), added);
+    builder->appendEntity(locked->move(lc::geo::Coordinate(3, 0))); builder->execute();
+    ASSERT_TRUE(builder->blockedByLockedLayer());
+    ASSERT_EQ(document->entityByID(added->id()), added);
+    ASSERT_EQ(document->entityByID(locked->id()), locked);
+    ASSERT_TRUE(undo->canUndo()); undo->undo();
+    EXPECT_FALSE(document->entityByID(added->id()));
+    EXPECT_EQ(document->entityByID(locked->id()), locked);
+    ASSERT_TRUE(undo->canRedo()); undo->redo();
+    EXPECT_EQ(document->entityByID(added->id()), added);
+    EXPECT_EQ(document->entityByID(locked->id()), locked);
+}

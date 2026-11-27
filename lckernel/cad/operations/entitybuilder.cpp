@@ -21,6 +21,11 @@ EntityBuilder* EntityBuilder::appendOperation(Base_SPtr operation) {
 }
 
 void EntityBuilder::processInternal() {
+    // Prepare a no-throw restoration of the last applied journal before
+    // processing a potentially rejected re-execution.
+    auto previousWorking = _committedWorkingBuffer;
+    auto previousUpdates = _committedUpdates;
+    auto previousRemovals = _committedRemovals;
     _blockedByLockedLayer = false;
     processStack();
 
@@ -39,9 +44,9 @@ void EntityBuilder::processInternal() {
             std::any_of(_entitiesThatNeedsRemoval.begin(), _entitiesThatNeedsRemoval.end(),
                         [&](const auto& candidate) { return locked(candidate, true); })) {
             _blockedByLockedLayer = true;
-            _workingBuffer.clear();
-            _entitiesThatNeedsRemoval.clear();
-            _entitiesThatWhereUpdated.clear();
+            _workingBuffer.swap(previousWorking);
+            _entitiesThatNeedsRemoval.swap(previousRemovals);
+            _entitiesThatWhereUpdated.swap(previousUpdates);
             return;
         }
         // Copy operations retain the original object in the working buffer.
@@ -63,6 +68,11 @@ void EntityBuilder::processInternal() {
         }
     }
 
+    // Allocate the next undo journal before making any document changes.
+    auto nextWorking = _workingBuffer;
+    auto nextUpdates = _entitiesThatWhereUpdated;
+    auto nextRemovals = _entitiesThatNeedsRemoval;
+
     // Remove entities
     for (const auto& entity : _entitiesThatNeedsRemoval) {
         document()->removeEntity(entity);
@@ -72,6 +82,9 @@ void EntityBuilder::processInternal() {
     for (const auto& entity : _workingBuffer) {
         document()->insertEntity(entity);
     }
+    _committedWorkingBuffer.swap(nextWorking);
+    _committedUpdates.swap(nextUpdates);
+    _committedRemovals.swap(nextRemovals);
 }
 
 void EntityBuilder::undo() const {
