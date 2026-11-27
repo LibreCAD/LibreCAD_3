@@ -423,9 +423,13 @@ TEST(CanvasScaleTest, ElevatedPointCanBeSelectedAndSnappedInPlanarView) {
     auto point = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(2, 3, 70), doc->layerByName("0"));
     auto insert = std::make_shared<lc::operation::EntityBuilder>(doc); insert->appendEntity(point); insert->execute();
     const auto flags = lc::SimpleSnapConstrain();
-    EXPECT_TRUE(doc->entityContainer().getEntityPathsNearCoordinate(lc::geo::Coordinate(2, 3), 1, flags).empty());
+    using Container = lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>;
+    using OriginalQuery = std::vector<lc::EntityDistance> (Container::*)(
+        const lc::geo::Coordinate&, double, lc::SimpleSnapConstrain) const;
+    const auto originalQuery = static_cast<OriginalQuery>(&Container::getEntityPathsNearCoordinate);
+    EXPECT_TRUE((doc->entityContainer().*originalQuery)(lc::geo::Coordinate(2, 3), 1, flags).empty());
     EXPECT_EQ(doc->entityContainer().getEntityPathsNearCoordinate(lc::geo::Coordinate(2, 3, 70), 1, flags).size(), 1u);
-    EXPECT_EQ(doc->entityContainer().getEntityPathsNearCoordinate(lc::geo::Coordinate(2, 3), 1, flags, true).size(), 1u);
+    EXPECT_EQ(doc->entityContainer().getEntityPathsNearCoordinatePlanar(lc::geo::Coordinate(2, 3), 1, flags).size(), 1u);
     auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
     canvas->selectPoint(2, 3);
     EXPECT_EQ(canvas->selectedDrawables().size(), 1u);

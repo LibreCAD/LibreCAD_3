@@ -55,8 +55,8 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // this way we can get more efficiently snap to entities outside the cursor's 'range' so the
     // person can 'pick' a entity onceand then it would stay in the list of entities to
     // consider for snapping. THis will mostly lickly be lines only
-    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
-            realDistanceForPixels, _snapConstrain, true);
+    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinatePlanar(location,
+            realDistanceForPixels, _snapConstrain);
     entities.erase(std::remove_if(entities.begin(), entities.end(), [](const lc::EntityDistance& candidate) {
         const auto entity = candidate.entity();
         return entity && entity->layer() && entity->layer()->isHidden();

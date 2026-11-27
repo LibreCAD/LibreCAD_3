@@ -314,8 +314,19 @@ public:
      * \return List of entities near this coordinate. This includes entities where it's path is close to point
      */
     std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point,
+            double distance, lc::SimpleSnapConstrain snapConstrain) const {
+        return getEntityPathsNearCoordinateImpl(point, distance, snapConstrain, false);
+    }
+
+    // Planar hit testing retains the resulting coordinate elevation.
+    std::vector<lc::EntityDistance> getEntityPathsNearCoordinatePlanar(const lc::geo::Coordinate& point,
+            double distance, lc::SimpleSnapConstrain snapConstrain) const {
+        return getEntityPathsNearCoordinateImpl(point, distance, snapConstrain, true);
+    }
+
+    std::vector<lc::EntityDistance> getEntityPathsNearCoordinateImpl(const lc::geo::Coordinate& point,
             double distance,
-            lc::SimpleSnapConstrain _snapConstrain, bool projectToXY = false) const {
+            lc::SimpleSnapConstrain _snapConstrain, bool projectToXY) const {
 
         const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(), point.y()) + distance / 2.,
                                         lc::geo::Coordinate(point.x(), point.y()) + distance / 2.);
