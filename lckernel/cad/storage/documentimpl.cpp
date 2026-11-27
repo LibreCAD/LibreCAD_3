@@ -47,8 +47,8 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
-    if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
-        removeEntity(cadEntity);
+    if (auto existing = _storageManager->entityByID(cadEntity->id())) {
+        removeEntity(existing);
     }
 
     _storageManager->insertEntity(cadEntity);

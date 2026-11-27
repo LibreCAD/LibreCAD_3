@@ -21,11 +21,9 @@ EntityBuilder* EntityBuilder::appendOperation(Base_SPtr operation) {
 void EntityBuilder::processInternal() {
     processStack();
 
-    auto ec = document()->entityContainer();
-
-    // Build a buffer with all entities we need to remove during a undo cycle
+    // Include entities in block containers as well as model space.
     for (const auto& entity : _workingBuffer) {
-        auto org = ec.entityByID(entity->id());
+        auto org = document()->entityByID(entity->id());
 
         if (org != nullptr) {
             _entitiesThatWhereUpdated.push_back(org);

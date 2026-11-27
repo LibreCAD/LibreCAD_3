@@ -3,6 +3,7 @@
 #include <cad/storage/storagemanagerimpl.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/primitive/line.h>
+#include <cad/meta/block.h>
 
 TEST(EntityBuilderTest, Append) {
     auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
@@ -325,4 +326,47 @@ TEST(EntityBuilderTest, SelectByLayer) {
 
     EXPECT_TRUE((firstEntity_isExpected1 && secondEntity_isExpected2) ||
                 (firstEntity_isExpected2 && secondEntity_isExpected1));
+}
+TEST(EntityBuilderTest, BlockEntityUpdateUndoAndMoveBetweenBlocks) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto first = std::make_shared<lc::meta::Block>("FIRST");
+    auto second = std::make_shared<lc::meta::Block>("SECOND");
+    document->addDocumentMetaType(first); document->addDocumentMetaType(second);
+    auto original = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0, 3), lc::geo::Coordinate(10, 0, 9),
+                                                       document->layerByName("0"), nullptr, first);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(document); add->appendEntity(original); add->execute();
+    auto moved = original->move(lc::geo::Coordinate(5, 7, 11));
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(document); edit->appendEntity(moved); edit->execute();
+    ASSERT_EQ(document->entityByID(original->id()), moved);
+    auto movedLine = std::dynamic_pointer_cast<const lc::entity::Line>(moved); ASSERT_TRUE(movedLine);
+    EXPECT_DOUBLE_EQ(movedLine->start().z(), 14); EXPECT_DOUBLE_EQ(movedLine->end().z(), 20);
+    edit->undo();
+    EXPECT_EQ(document->entityByID(original->id()), original);
+    edit->redo();
+    EXPECT_EQ(document->entityByID(original->id()), moved);
+
+    auto relocated = moved->modify(moved->layer(), moved->metaInfo(), second);
+    auto transfer = std::make_shared<lc::operation::EntityBuilder>(document); transfer->appendEntity(relocated); transfer->execute();
+    EXPECT_TRUE(document->entitiesByBlock(first).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(second).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(original->id()), relocated);
+    transfer->undo();
+    EXPECT_TRUE(document->entitiesByBlock(second).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(first).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(original->id()), moved);
+    transfer->redo();
+    EXPECT_TRUE(document->entitiesByBlock(first).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(second).asVector().size(), 1u);
+    EXPECT_EQ(document->entityByID(original->id()), relocated);
+
+    auto modelEntity = relocated->modify(relocated->layer(), relocated->metaInfo(), nullptr);
+    auto toModel = std::make_shared<lc::operation::EntityBuilder>(document); toModel->appendEntity(modelEntity); toModel->execute();
+    EXPECT_TRUE(document->entitiesByBlock(second).asVector().empty());
+    EXPECT_EQ(document->entityByID(original->id()), modelEntity);
+    toModel->undo();
+    EXPECT_TRUE(document->entityContainer().asVector().empty());
+    EXPECT_EQ(document->entityByID(original->id()), relocated);
+    toModel->redo();
+    EXPECT_TRUE(document->entitiesByBlock(second).asVector().empty());
+    EXPECT_EQ(document->entityByID(original->id()), modelEntity);
 }
