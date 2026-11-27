@@ -202,11 +202,14 @@ void EntityBuilder::processInternal() {
 
     // A layer-state replacement creates new immutable layer and entity
     // objects. A forced edit may still carry the old same-named layer from a
-    // previously captured line. Rebind that selected built-in profile to the
-    // current source layer without overriding an intentional layer move.
+    // previously captured entity. Rebind only built-in types whose modify
+    // implementation preserves their geometry and identity, without overriding
+    // an intentional layer move.
     if (_allowLockedLayerEdits) {
         for (auto& candidate : _workingBuffer) {
-            if (!candidate || !exactEntity<entity::Line>(candidate) || !candidate->layer()) continue;
+            if (!candidate || !candidate->layer() ||
+                !(exactEntity<entity::Line>(candidate) || exactEntity<entity::Circle>(candidate) ||
+                  exactEntity<entity::Arc>(candidate))) continue;
             const auto original = document()->entityByID(candidate->id());
             if (!original || !original->layer() || original->layer() == candidate->layer() ||
                 original->layer()->name() != candidate->layer()->name()) continue;

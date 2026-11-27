@@ -7,6 +7,8 @@
 #include <cad/operations/entitybuilder.h>
 #include <cad/operations/entityops.h>
 #include <cad/storage/undomanagerimpl.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/circle.h>
 
 using namespace lc;
 using namespace storage;
@@ -553,4 +555,59 @@ TEST(BuilderTest, ForcedLineEditPreservesIntentionalDifferentLayer) {
     EXPECT_EQ(document->entityByID(line->id())->layer(), target);
     edit->undo(); EXPECT_EQ(document->entityByID(line->id())->layer(), locked);
     edit->redo(); EXPECT_EQ(document->entityByID(line->id())->layer(), target);
+}
+
+TEST(BuilderTest, ForcedCurvedEditRetainsCurrentLayerAndGeometry) {
+    for (const bool isArc : {false, true}) {
+        SCOPED_TRACE(isArc ? "arc" : "circle");
+        auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+        auto layer = document->layerByName("0");
+        auto meta = lc::meta::MetaInfo::create();
+        lc::entity::CADEntity_CSPtr entity;
+        if (isArc)
+            entity = std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(1, 2, 3), 4, 0.25, 1.5, true, layer, meta);
+        else
+            entity = std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(1, 2, 3), 4, layer, meta);
+        document->insertEntity(entity);
+        auto locked = lc::meta::Layer::withState(layer, false, false, true);
+        auto lock = std::make_shared<lc::operation::ReplaceLayer>(document, layer, locked);
+        lock->execute();
+        auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+        edit->appendEntity(entity->move(lc::geo::Coordinate(5, 6)));
+        edit->setAllowLockedLayerEdits(true);
+        edit->execute();
+        const auto verify = [&] {
+            auto result = document->entityByID(entity->id());
+            ASSERT_TRUE(result);
+            EXPECT_EQ(result->layer(), locked);
+            EXPECT_EQ(result->metaInfo(), meta);
+            if (isArc) {
+                auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(result);
+                ASSERT_TRUE(arc);
+                EXPECT_DOUBLE_EQ(arc->center().x(), 6); EXPECT_DOUBLE_EQ(arc->center().y(), 8);
+                EXPECT_DOUBLE_EQ(arc->center().z(), 3);
+                EXPECT_DOUBLE_EQ(arc->radius(), 4); EXPECT_DOUBLE_EQ(arc->startAngle(), 0.25);
+                EXPECT_DOUBLE_EQ(arc->endAngle(), 1.5); EXPECT_TRUE(arc->CCW());
+            } else {
+                auto circle = std::dynamic_pointer_cast<const lc::entity::Circle>(result);
+                ASSERT_TRUE(circle);
+                EXPECT_DOUBLE_EQ(circle->center().x(), 6); EXPECT_DOUBLE_EQ(circle->center().y(), 8);
+                EXPECT_DOUBLE_EQ(circle->center().z(), 3);
+                EXPECT_DOUBLE_EQ(circle->radius(), 4);
+            }
+        };
+        verify();
+        edit->undo(); EXPECT_EQ(document->entityByID(entity->id())->layer(), locked);
+        edit->redo(); verify();
+
+        auto target = std::make_shared<lc::meta::Layer>("TARGET");
+        document->addDocumentMetaType(target);
+        auto moved = entity->modify(target, entity->metaInfo(), entity->block());
+        auto changeLayer = std::make_shared<lc::operation::EntityBuilder>(document);
+        changeLayer->setAllowLockedLayerEdits(true);
+        changeLayer->appendEntity(moved); changeLayer->execute();
+        EXPECT_EQ(document->entityByID(entity->id())->layer(), target);
+        changeLayer->undo(); verify();
+        changeLayer->redo(); EXPECT_EQ(document->entityByID(entity->id())->layer(), target);
+    }
 }
