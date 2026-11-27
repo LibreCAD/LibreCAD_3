@@ -2022,6 +2022,9 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
         if (!root) {
             return;
         }
+        if (_preserved.rootDictSourceHandle != 0 && _preserved.rootDictSourceHandle != data.handle)
+            _preserved.rootDictSourceAmbiguous = true;
+        _preserved.rootDictSourceHandle = data.handle;
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
         _sourceRootHandle = data.handle;
 #endif
@@ -2883,8 +2886,13 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
             }
 
             for (const auto& entry : _replay->rootDictEntries) {
+                const auto object = emitted.find(entry.second);
+                const bool uncheckedRootOwner = sanitizedDictionaries.count(entry.second) &&
+                    (_replay->rootDictSourceAmbiguous || _replay->rootDictSourceHandle != kRootDictionaryHandle ||
+                     object == emitted.end() ||
+                     object->second->parentHandle != kRootDictionaryHandle);
                 if ((documentHasImages && upperName(entry.first) == "ACAD_IMAGE_DICT") ||
-                    !emitted.count(entry.second) || incomplete.count(entry.second)) {
+                    object == emitted.end() || incomplete.count(entry.second) || uncheckedRootOwner) {
                     detached++;
                     continue;
                 }

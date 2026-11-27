@@ -118,6 +118,8 @@ public:
      * splice back the ones whose targets it actually re-emits.
      */
     std::vector<std::pair<std::string, std::uint32_t>> rootDictEntries;
+    std::uint32_t rootDictSourceHandle{0};
+    bool rootDictSourceAmbiguous{false};
 
     /**
      * Header variables the drawing set and LibreCAD cannot otherwise remember.
