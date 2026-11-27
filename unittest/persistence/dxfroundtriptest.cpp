@@ -77,6 +77,7 @@
 #include <cad/primitive/dimordinate.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/line.h>
+#include <cad/primitive/point.h>
 #include <cad/primitive/insert.h>
 #include <cad/primitive/mtext.h>
 #include <cad/primitive/lwpolyline.h>
@@ -3523,8 +3524,22 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
             lc::persistence::File::LIBDXFRW_DXB_R2000).ok);
         std::ifstream withLine(binaryEmptyPath, std::ios::binary);
         const std::string lineBytes((std::istreambuf_iterator<char>(withLine)), {});
-        EXPECT_NE(lineBytes.find("*Paper_Space0"), std::string::npos);
+        EXPECT_EQ(lineBytes.find("*Paper_Space0"), std::string::npos);
         withLine.close();
+        auto lineReopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(lineReopened, binaryEmptyPath,
+            lc::persistence::File::LIBDXFRW).ok);
+        ASSERT_EQ(lineReopened->entityContainer().asVector().size(), 1u);
+        EXPECT_TRUE(std::dynamic_pointer_cast<const lc::entity::Line>(lineReopened->entityContainer().asVector().front()));
+        auto point = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(4, 5, 6), doc->layerByName("0"));
+        doc->insertEntity(point);
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, binaryEmptyPath,
+            lc::persistence::File::LIBDXFRW_DXB_R2000).ok);
+        std::ifstream withPoint(binaryEmptyPath, std::ios::binary);
+        const std::string pointBytes((std::istreambuf_iterator<char>(withPoint)), {});
+        EXPECT_NE(pointBytes.find("*Paper_Space0"), std::string::npos);
+        withPoint.close();
+        doc->removeEntity(point);
         doc->removeEntity(modelLine);
         ASSERT_TRUE(lc::persistence::File::exportFile(doc, binaryEmptyPath,
             lc::persistence::File::LIBDXFRW_DXB_R2000).ok);
@@ -3554,6 +3569,32 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         const auto restored = lc::persistence::File::exportFile(doc, emptyPath, lc::persistence::File::LIBDXFRW_DXF_R2000);
         ASSERT_TRUE(restored.ok);
         EXPECT_EQ(imageGroups(emptyPath)[14], groups[14]);
+        const std::string restoredBinary = uniqueTmpDxf("image-restored-binary");
+        const auto restoredResult = lc::persistence::File::exportFile(doc, restoredBinary,
+            lc::persistence::File::LIBDXFRW_DXB_R2000);
+        ASSERT_TRUE(restoredResult.ok);
+        EXPECT_GT(restoredResult.loss.droppedByType.count("unmodelled records"), 0u);
+        std::ifstream restoredFile(restoredBinary, std::ios::binary);
+        const std::string restoredBytes((std::istreambuf_iterator<char>(restoredFile)), {});
+        EXPECT_EQ(restoredBytes.find("*Paper_Space0"), std::string::npos);
+        restoredFile.close();
+        auto restoredDocument = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(restoredDocument, restoredBinary,
+            lc::persistence::File::LIBDXFRW).ok);
+        EXPECT_EQ(restoredDocument->entityContainer().asVector().size(), 1u);
+        doc->insertEntity(modelLine);
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, restoredBinary,
+            lc::persistence::File::LIBDXFRW_DXB_R2000).ok);
+        std::ifstream mixedFile(restoredBinary, std::ios::binary);
+        const std::string mixedBytes((std::istreambuf_iterator<char>(mixedFile)), {});
+        EXPECT_EQ(mixedBytes.find("*Paper_Space0"), std::string::npos);
+        mixedFile.close();
+        auto mixedDocument = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(mixedDocument, restoredBinary,
+            lc::persistence::File::LIBDXFRW).ok);
+        EXPECT_EQ(mixedDocument->entityContainer().asVector().size(), 2u);
+        doc->removeEntity(modelLine);
+        boost::filesystem::remove(restoredBinary);
         boost::filesystem::remove(emptyPath);
     }
     if (sourcePaper) {
@@ -3580,6 +3621,16 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         EXPECT_NE(binary.find("*Paper_Space0"), std::string::npos);
         binaryOutput.close();
         boost::filesystem::remove(binaryPath);
+    }
+    if (foreignImage || unmodeledChild) {
+        const std::string guardedBinary = uniqueTmpDxf("image-guarded-source-binary");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, guardedBinary,
+            lc::persistence::File::LIBDXFRW_DXB_R2000).ok);
+        std::ifstream in(guardedBinary, std::ios::binary);
+        const std::string bytes((std::istreambuf_iterator<char>(in)), {});
+        EXPECT_NE(bytes.find("*Paper_Space0"), std::string::npos);
+        in.close();
+        boost::filesystem::remove(guardedBinary);
     }
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
@@ -3755,6 +3806,9 @@ TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
     const auto binaryResult = lc::persistence::File::exportFile(doc, binary, lc::persistence::File::LIBDXFRW_DXB_R2000);
     ASSERT_TRUE(binaryResult.ok);
     EXPECT_GT(binaryResult.loss.droppedByType.count("unmodelled records"), 0u);
+    { std::ifstream in(binary, std::ios::binary);
+      const std::string bytes((std::istreambuf_iterator<char>(in)), {});
+      EXPECT_EQ(bytes.find("*Paper_Space0"), std::string::npos); }
     auto binaryDoc = newDocument();
     ASSERT_TRUE(lc::persistence::File::importFile(binaryDoc, binary, lc::persistence::File::LIBDXFRW).ok);
     ASSERT_EQ(binaryDoc->entityContainer().asVector().size(), 2u);

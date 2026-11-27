@@ -2742,11 +2742,15 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     const auto skipped = skippedImageSourceHandles(hasImages, _shelf.get());
     if (skipped.empty()) return false;
     if (_replay != _shelf) {
-        // When binary output drops the raw graph, only admit an empty drawing
-        // with the standard blocks: no typed entity can carry a source edge.
+        // When binary output drops the raw graph, admit only standard blocks
+        // and model-space writers whose fields cannot replay a source edge.
         if (_replay || !lc::persistence::File::isBinaryType(_exportType) ||
-            _shelf->version != _exportVersion || hasImages ||
-            !_document->entityContainer().asVector().empty()) return false;
+            _shelf->version != _exportVersion) return false;
+        for (const auto& entity : _document->entityContainer().asVector()) {
+            if (!entity || entity->block() ||
+                (!std::dynamic_pointer_cast<const lc::entity::Line>(entity) &&
+                 !std::dynamic_pointer_cast<const lc::entity::Image>(entity))) return false;
+        }
         for (const auto& block : _document->blocks()) {
             if (!block || (block->name() != "*Model_Space" && block->name() != "*Paper_Space" &&
                            block->name() != "*Paper_Space0") ||
