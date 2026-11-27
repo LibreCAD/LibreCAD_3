@@ -39,6 +39,7 @@
 #include <cad/const.h>
 #include <cad/math/floatingpoint.h>
 #include <cmath>
+#include <set>
 
 #include <typeinfo>
 
@@ -60,6 +61,32 @@ lc::meta::Layer_CSPtr effectiveLayer(const lc::entity::CADEntity_CSPtr& entity,
 }
 bool layerIsOff(const lc::entity::CADEntity_CSPtr& entity) {
     return entity && entity->layer() && entity->layer()->isOff();
+}
+void includeVisibleBounds(const lc::entity::CADEntity_CSPtr& entity,
+                          const lc::entity::Insert_CSPtr& parent,
+                          const lc::meta::Layer_CSPtr& inheritedLayer,
+                          const lc::geo::Coordinate& offset,
+                          std::set<const lc::meta::Block*>& activeBlocks,
+                          lc::geo::Area& bounds, bool& haveBounds) {
+    if (!entity) return;
+    const auto layer = effectiveLayer(entity, parent, inheritedLayer);
+    if (layer && layer->isOff()) return;
+    const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+    if (insert) {
+        const auto& block = insert->displayBlock();
+        if (!block || !activeBlocks.insert(block.get()).second) return;
+        const auto childOffset = offset + insert->position() - block->base();
+        insert->document()->entitiesByBlock(block).each<const lc::entity::CADEntity>(
+            [&](lc::entity::CADEntity_CSPtr child) {
+                includeVisibleBounds(child, insert, layer, childOffset, activeBlocks, bounds, haveBounds);
+            });
+        activeBlocks.erase(block.get());
+        return;
+    }
+    const auto entityBounds = entity->boundingBox();
+    const lc::geo::Area translated(entityBounds.minP() + offset, entityBounds.maxP() + offset);
+    bounds = haveBounds ? bounds.merge(translated) : translated;
+    haveBounds = true;
 }
 }
 
@@ -252,10 +279,10 @@ void DocumentCanvas::autoScale(LcPainter& painter) {
 
     lc::geo::Area extends;
     bool haveVisibleEntity = false;
+    std::set<const lc::meta::Block*> activeBlocks;
     entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr entity) {
-        if (layerIsOff(entity)) return;
-        extends = haveVisibleEntity ? extends.merge(entity->boundingBox()) : entity->boundingBox();
-        haveVisibleEntity = true;
+        includeVisibleBounds(entity, nullptr, nullptr, lc::geo::Coordinate(0, 0),
+                             activeBlocks, extends, haveVisibleEntity);
     });
     if (!haveVisibleEntity) return;
     double width = extends.width();

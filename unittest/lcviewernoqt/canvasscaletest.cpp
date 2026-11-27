@@ -308,15 +308,69 @@ TEST(CanvasScaleTest, NestedInsertLayerZeroInheritsVisibility) {
     doc->addDocumentMetaType(outer); doc->addDocumentMetaType(inner);
     auto children = std::make_shared<lc::operation::EntityBuilder>(doc);
     children->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0), lc::geo::Coordinate(3,3), zeroOff, nullptr, inner));
-    children->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,1), lc::geo::Coordinate(3,4), off, nullptr, outer));
+    children->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,10000), lc::geo::Coordinate(3,10003), off, nullptr, outer));
     children->execute();
     lc::builder::InsertBuilder nested; nested.setDocument(doc); nested.setDisplayBlock(inner); nested.setLayer(zeroOff); nested.setBlock(outer);
     nested.setCoordinate(lc::geo::Coordinate(0,0));
     auto nestedInsert = nested.build();
     auto place = std::make_shared<lc::operation::EntityBuilder>(doc); place->appendEntity(nestedInsert); place->execute();
     lc::builder::InsertBuilder top; top.setDocument(doc); top.setDisplayBlock(outer); top.setLayer(on); top.setCoordinate(lc::geo::Coordinate(0,0));
-    auto parent = top.build(); auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc); canvas->newDeviceSize(800,600);
+    auto parent = top.build();
+    auto parentPlacement = std::make_shared<lc::operation::EntityBuilder>(doc);
+    parentPlacement->appendEntity(parent); parentPlacement->execute();
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc); canvas->newDeviceSize(800,600);
     auto drawable = lc::viewer::DocumentCanvas::asDrawable(parent); ASSERT_TRUE(drawable);
     canvas->drawEntity(painter, drawable);
     EXPECT_EQ(painter.draws, 1);
+    canvas->autoScale(painter);
+    EXPECT_GT(painter.scale(), 1.0);
+}
+
+TEST(CanvasScaleTest, FitExcludesHiddenInsertChildren) {
+    class CountingPainter : public TransformPainter {
+    public:
+        void source_rgba(double, double, double, double) override { ++draws; }
+        int draws{0};
+    };
+    auto doc = makeDocument();
+    auto off = std::make_shared<lc::meta::Layer>("OFF", lc::meta::MetaLineWidthByValue(1),
+        lc::Color(255, 0, 0), nullptr, false, true);
+    doc->addDocumentMetaType(off);
+    auto block = std::make_shared<lc::meta::Block>("FIT_BLOCK");
+    doc->addDocumentMetaType(block);
+    auto entities = std::make_shared<lc::operation::EntityBuilder>(doc);
+    entities->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0),
+        lc::geo::Coordinate(100, 0), doc->layerByName("0"), nullptr, block));
+    entities->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 10000),
+        lc::geo::Coordinate(100, 10000), off, nullptr, block));
+    entities->execute();
+    lc::builder::InsertBuilder insert;
+    insert.setDocument(doc); insert.setDisplayBlock(block); insert.setLayer(doc->layerByName("0"));
+    insert.setCoordinate(lc::geo::Coordinate(10, 20));
+    auto placement = std::make_shared<lc::operation::EntityBuilder>(doc);
+    auto parent = insert.build(); placement->appendEntity(parent); placement->execute();
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc); canvas->newDeviceSize(800, 600);
+    auto drawable = canvas->getDrawable(parent); ASSERT_TRUE(drawable);
+    CountingPainter initiallyDrawn;
+    canvas->drawEntity(initiallyDrawn, drawable); EXPECT_EQ(initiallyDrawn.draws, 1);
+    TransformPainter visibleOnly;
+    canvas->autoScale(visibleOnly);
+    EXPECT_GT(visibleOnly.scale(), 1.0);
+
+    auto on = std::make_shared<lc::meta::Layer>("OFF", off->lineWidth(), off->color(), nullptr, false, false);
+    auto edit = std::make_shared<lc::operation::Builder>(doc, "turn layer on");
+    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, off, on)); edit->execute();
+    CountingPainter afterToggle;
+    canvas->drawEntity(afterToggle, drawable); EXPECT_EQ(afterToggle.draws, 2);
+    TransformPainter allVisible;
+    canvas->autoScale(allVisible);
+    EXPECT_LT(allVisible.scale(), 1.0);
+    edit->undo();
+    TransformPainter hiddenAgain;
+    canvas->autoScale(hiddenAgain);
+    EXPECT_GT(hiddenAgain.scale(), 1.0);
+    edit->redo();
+    TransformPainter visibleAgain;
+    canvas->autoScale(visibleAgain);
+    EXPECT_LT(visibleAgain.scale(), 1.0);
 }
