@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <cmath>
 #include <cad/operations/builder.h>
 #include <cad/storage/documentimpl.h>
 #include <cad/storage/storagemanagerimpl.h>
@@ -10,6 +11,7 @@
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
 #include <cad/primitive/ellipse.h>
+#include <cad/primitive/point.h>
 #include <cad/primitive/spline.h>
 
 using namespace lc;
@@ -430,7 +432,7 @@ TEST(BuilderTest, GroupMayEditEntityCreatedEarlierOnUnlockedLayer) {
 }
 
 TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
-    for (int kind = 0; kind != 5; ++kind) for (int variant = 0; variant != 18; ++variant) {
+    for (int kind = 0; kind != 6; ++kind) for (int variant = 0; variant != 18; ++variant) {
         const bool nested = (variant & 1) != 0;
         const int mode = variant / 2;
         SCOPED_TRACE(kind);
@@ -446,11 +448,12 @@ TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
         else if (kind == 2) line = std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(1, 2, 3), 4, 0.25, 1.5, true, layer);
         else if (kind == 3) line = std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(1, 2, 3),
                                                                           lc::geo::Coordinate(4, 2), 2, 0.25, 1.5, true, layer);
-        else line = std::make_shared<lc::entity::Spline>(
+        else if (kind == 4) line = std::make_shared<lc::entity::Spline>(
             std::vector<lc::geo::Coordinate>{{1, 2, 3}, {4, 5, 3}, {7, 8, 3}},
             std::vector<double>{0, 0, 0, 1, 1, 1}, std::vector<lc::geo::Coordinate>{},
             2, false, 0.01, 1, 2, 3, 4, 5, 6, 0, 0, 1,
             lc::geo::Spline::RATIONAL, layer, nullptr, nullptr, std::vector<double>{1, 0.5, 1});
+        else line = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(1, 2, 3), layer);
         auto create = std::make_shared<lc::operation::EntityBuilder>(document);
         create->appendEntity(line);
         if (mode == 5) create->appendOperation(std::make_shared<lc::operation::SelectByLayer>(layer));
@@ -493,6 +496,7 @@ TEST(BuilderTest, GroupPreflightsNewEntityProducedByBuiltInStack) {
         if (kind == 2) { auto value = std::dynamic_pointer_cast<const lc::entity::Arc>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->center().x(), 11); }
         if (kind == 3) { auto value = std::dynamic_pointer_cast<const lc::entity::Ellipse>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->center().x(), 11); }
         if (kind == 4) { auto value = std::dynamic_pointer_cast<const lc::entity::Spline>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->controlPoints().at(0).x(), 11); }
+        if (kind == 5) { auto value = std::dynamic_pointer_cast<const lc::entity::Point>(moved); ASSERT_TRUE(value); EXPECT_DOUBLE_EQ(value->x(), 11); EXPECT_DOUBLE_EQ(value->z(), 3); }
         const auto expectedCount = mode == 1 ? 2u : mode == 8 ? 4u : 1u;
         EXPECT_EQ(document->entityContainer().asVector().size(), expectedCount);
         group->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
@@ -1033,4 +1037,47 @@ TEST(BuilderTest, ForcedEllipseAndSplineEditsRetainCurrentLayerAndGeometry) {
         changeLayer->undo(); verify();
         changeLayer->redo(); EXPECT_EQ(document->entityByID(entity->id())->layer(), target);
     }
+}
+
+TEST(BuilderTest, PointLayerReplacementAndTransformsPreserve3dCoordinate) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    auto metadata = lc::meta::MetaInfo::create();
+    auto point = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(1, 2, 3), layer, metadata);
+    document->insertEntity(point);
+    auto moved = std::dynamic_pointer_cast<const lc::entity::Point>(point->move(lc::geo::Coordinate(5, 6, 7)));
+    auto copied = std::dynamic_pointer_cast<const lc::entity::Point>(point->copy(lc::geo::Coordinate(5, 6, 7)));
+    auto rotated = std::dynamic_pointer_cast<const lc::entity::Point>(point->rotate(lc::geo::Coordinate(), std::acos(-1.0) / 2));
+    auto scaled = std::dynamic_pointer_cast<const lc::entity::Point>(point->scale(lc::geo::Coordinate(), lc::geo::Coordinate(2, 3, 4)));
+    auto mirrored = std::dynamic_pointer_cast<const lc::entity::Point>(point->mirror(lc::geo::Coordinate(), lc::geo::Coordinate(1, 0)));
+    ASSERT_TRUE(moved); ASSERT_TRUE(copied); ASSERT_TRUE(rotated); ASSERT_TRUE(scaled); ASSERT_TRUE(mirrored);
+    EXPECT_EQ(moved->id(), point->id()); EXPECT_NE(copied->id(), point->id());
+    EXPECT_DOUBLE_EQ(moved->x(), 6); EXPECT_DOUBLE_EQ(moved->y(), 8); EXPECT_DOUBLE_EQ(moved->z(), 10);
+    EXPECT_DOUBLE_EQ(copied->x(), 6); EXPECT_DOUBLE_EQ(copied->y(), 8); EXPECT_DOUBLE_EQ(copied->z(), 10);
+    EXPECT_NEAR(rotated->x(), -2, 1e-12); EXPECT_NEAR(rotated->y(), 1, 1e-12); EXPECT_DOUBLE_EQ(rotated->z(), 3);
+    EXPECT_DOUBLE_EQ(scaled->x(), 2); EXPECT_DOUBLE_EQ(scaled->y(), 6); EXPECT_DOUBLE_EQ(scaled->z(), 12);
+    EXPECT_DOUBLE_EQ(mirrored->z(), 3);
+    auto sameIdCopy = std::make_shared<lc::entity::Point>(point, true);
+    EXPECT_EQ(sameIdCopy->id(), point->id()); EXPECT_DOUBLE_EQ(sameIdCopy->z(), 3);
+    auto locked = lc::meta::Layer::withState(layer, false, false, true);
+    auto lock = std::make_shared<lc::operation::ReplaceLayer>(document, layer, locked);
+    lock->execute();
+    auto lockedPoint = std::dynamic_pointer_cast<const lc::entity::Point>(document->entityByID(point->id()));
+    ASSERT_TRUE(lockedPoint); EXPECT_EQ(lockedPoint->layer(), locked); EXPECT_DOUBLE_EQ(lockedPoint->z(), 3);
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+    edit->appendEntity(moved); edit->execute();
+    EXPECT_TRUE(edit->blockedByLockedLayer()); EXPECT_EQ(document->entityByID(point->id()), lockedPoint);
+    edit->setAllowLockedLayerEdits(true); edit->execute();
+    auto verify = [&] {
+        auto result = std::dynamic_pointer_cast<const lc::entity::Point>(document->entityByID(point->id()));
+        ASSERT_TRUE(result); EXPECT_EQ(result->layer(), locked); EXPECT_EQ(result->metaInfo(), metadata);
+        EXPECT_DOUBLE_EQ(result->x(), 6); EXPECT_DOUBLE_EQ(result->y(), 8); EXPECT_DOUBLE_EQ(result->z(), 10);
+    };
+    verify(); edit->undo(); EXPECT_EQ(document->entityByID(point->id()), lockedPoint);
+    edit->redo(); verify();
+    auto target = std::make_shared<lc::meta::Layer>("POINT_TARGET"); document->addDocumentMetaType(target);
+    auto change = std::make_shared<lc::operation::EntityBuilder>(document);
+    change->setAllowLockedLayerEdits(true); change->appendEntity(moved->modify(target, metadata, nullptr)); change->execute();
+    EXPECT_EQ(document->entityByID(point->id())->layer(), target);
+    change->undo(); verify(); change->redo(); EXPECT_EQ(document->entityByID(point->id())->layer(), target);
 }

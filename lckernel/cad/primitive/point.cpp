@@ -16,7 +16,7 @@ Point::Point(geo::Coordinate coord,
     geo::Coordinate(std::move(coord)) {
 }
 
-Point::Point(const Point_CSPtr& other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
+Point::Point(const Point_CSPtr& other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y(), other->z()) {
 }
 
 Point::Point(const builder::PointBuilder& builder) :
@@ -25,33 +25,33 @@ Point::Point(const builder::PointBuilder& builder) :
 }
 
 CADEntity_CSPtr Point::move(const geo::Coordinate& offset) const {
-    auto newCoordinate = std::make_shared<Point>(this->x() + offset.x(), this->y() + offset.y(), layer(), metaInfo(), block());
+    auto newCoordinate = std::make_shared<Point>(geo::Coordinate(this->x(), this->y(), this->z()) + offset, layer(), metaInfo(), block());
     newCoordinate->setID(this->id());
     return newCoordinate;
 }
 
 CADEntity_CSPtr Point::copy(const geo::Coordinate& offset) const {
-    auto newCoordinate = std::make_shared<Point>(this->x() + offset.x(), this->y() + offset.y(), layer(), metaInfo(), block());
+    auto newCoordinate = std::make_shared<Point>(geo::Coordinate(this->x(), this->y(), this->z()) + offset, layer(), metaInfo(), block());
     return newCoordinate;
 }
 
 CADEntity_CSPtr Point::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    auto rotcord = geo::Coordinate(this->x(), this->y()).rotate(rotation_center, rotation_angle);
-    auto newCoordinate = std::make_shared<Point>(rotcord.x(), rotcord.y(), layer(), metaInfo(), block());
+    auto rotcord = geo::Coordinate(this->x(), this->y(), this->z()).rotate(rotation_center, rotation_angle);
+    auto newCoordinate = std::make_shared<Point>(rotcord, layer(), metaInfo(), block());
     newCoordinate->setID(this->id());
     return newCoordinate;
 }
 
 CADEntity_CSPtr Point::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    auto rotcord = geo::Coordinate(this->x(), this->y()).scale(scale_center, scale_factor);
-    auto newCoordinate = std::make_shared<Point>(rotcord.x(), rotcord.y(), layer(), metaInfo(), block());
+    auto rotcord = geo::Coordinate(this->x(), this->y(), this->z()).scale(scale_center, scale_factor);
+    auto newCoordinate = std::make_shared<Point>(rotcord, layer(), metaInfo(), block());
     newCoordinate->setID(this->id());
     return newCoordinate;
 }
 
 CADEntity_CSPtr Point::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    auto rotcord = geo::Coordinate(this->x(), this->y()).rotate(axis1, axis2);
-    auto newCoordinate = std::make_shared<Point>(rotcord.x(), rotcord.y(), layer(), metaInfo(), block());
+    auto rotcord = geo::Coordinate(this->x(), this->y(), this->z()).rotate(axis1, axis2);
+    auto newCoordinate = std::make_shared<Point>(rotcord, layer(), metaInfo(), block());
     newCoordinate->setID(this->id());
     return newCoordinate;
 }
@@ -61,7 +61,7 @@ const geo::Area Point::boundingBox() const {
 }
 
 CADEntity_CSPtr Point::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
-    auto newEntity = std::make_shared<Point>(this->x(), this->y(),
+    auto newEntity = std::make_shared<Point>(geo::Coordinate(this->x(), this->y(), this->z()),
                      layer,
                      metaInfo,
                      block
