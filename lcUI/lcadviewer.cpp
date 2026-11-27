@@ -3,6 +3,7 @@
 #include <QtGui>
 #include <QVBoxLayout>
 #include <iostream>
+#include <QLabel>
 #include <QOpenGLContext>
 #include <QSurfaceFormat>
 #include <cad/logger/logger.h>
@@ -11,6 +12,19 @@
 
 using namespace lc;
 using namespace lc::ui;
+
+QString LCADViewer::glInitializationFailureMessage(const QString& detail)
+{
+    QString message = tr("The drawing canvas could not initialize OpenGL.");
+    if (!detail.isEmpty()) {
+        message += QStringLiteral("\n\n") + detail;
+    }
+    message += QStringLiteral("\n\n")
+        + tr("If this system uses a Wayland session, start LibreCAD from a "
+             "terminal with QT_QPA_PLATFORM=xcb set in the environment and "
+             "try again.");
+    return message;
+}
 
 LCADViewer::LCADViewer(QWidget *parent) :
     QOpenGLWidget(parent),
@@ -22,6 +36,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
     _zoomMax(20.0),
     _scaleLineWidth(false),
     _autoScalePending(false),
+    _glFailureOverlay(nullptr),
     _backgroundPainter(nullptr),
     _documentPainter(nullptr),
     _foregroundPainter(nullptr)
@@ -30,6 +45,15 @@ LCADViewer::LCADViewer(QWidget *parent) :
     this->_altKeyActive = false;
     this->_ctrlKeyActive = false;
     setCursor(Qt::BlankCursor);
+
+    _glFailureOverlay = new QLabel(this);
+    _glFailureOverlay->setWordWrap(true);
+    _glFailureOverlay->setAlignment(Qt::AlignCenter);
+    _glFailureOverlay->setTextFormat(Qt::PlainText);
+    _glFailureOverlay->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _glFailureOverlay->setStyleSheet(
+        QStringLiteral("QLabel { background-color: #1e1e1e; color: #f0f0f0; padding: 24px; }"));
+    _glFailureOverlay->hide();
 
     QSurfaceFormat format;
     format.setMajorVersion(3);
@@ -125,7 +149,7 @@ void LCADViewer::initializeGL()
     makeCurrent();
     QOpenGLContext* glContext = QOpenGLContext::currentContext();
     if (glContext == nullptr) {
-        LOG_ERROR << "LCADViewer initialized without a current OpenGL context" << std::endl;
+        reportGlInitializationFailure(tr("No current OpenGL context is available."));
         return;
     }
 
@@ -144,15 +168,52 @@ void LCADViewer::initializeGL()
 
     std::string glewError;
     if (!initialiseGlew(glewError)) {
-        LOG_ERROR << glewError << std::endl;
+        reportGlInitializationFailure(QString::fromStdString(glewError));
         return;
     }
+
+    // A recreated context may succeed after an earlier failure.
+    _glInitializationFailure.clear();
+    _glFailureOverlay->hide();
 
     deletePainters();
     createPainters(width, height);
     _documentPainter->create_resources();
     if (_docCanvas != nullptr) {
         _docCanvas->autoScale(*_documentPainter);
+    }
+}
+
+void LCADViewer::reportGlInitializationFailure(const QString& detail)
+{
+    if (!_glInitializationFailure.isEmpty()) {
+        // initializeGL() runs again when the context is recreated; report the
+        // failure once instead of repeating the same user-facing error.
+        return;
+    }
+
+    LOG_ERROR << "OpenGL initialization failed: " << detail.toStdString() << std::endl;
+    _glInitializationFailure = glInitializationFailureMessage(detail);
+    _hookManager.cancel();
+    startSelectPos = QPoint();
+    _mouseScrollKeyActive = false;
+
+    // Show the explanation inside the viewer instead of opening a dialog.
+    // initializeGL() runs while the widget is being realized, and this path is
+    // only reachable when the platform's GL setup is already failing; an
+    // in-canvas overlay needs neither a second platform window nor a nested
+    // event loop to become visible.
+    _glFailureOverlay->setText(_glInitializationFailure);
+    _glFailureOverlay->setGeometry(rect());
+    _glFailureOverlay->show();
+    _glFailureOverlay->raise();
+}
+
+void LCADViewer::resizeEvent(QResizeEvent* event)
+{
+    QOpenGLWidget::resizeEvent(event);
+    if (_glFailureOverlay != nullptr) {
+        _glFailureOverlay->setGeometry(rect());
     }
 }
 
@@ -168,7 +229,14 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
     if (hasValidContext) {
         makeCurrent();
     }
-    deletePainters();
+    if (_glInitializationFailure.isEmpty()) {
+        deletePainters();
+    }
+    else if (_docCanvas != nullptr) {
+        // Keep old-context painters alive until a working context can release
+        // them. The new canvas must not retain their pointers in the meantime.
+        _docCanvas->setPainter(nullptr);
+    }
 
     // Use this canvas's painter, not a closure borrowing a future/dead viewer.
     _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, nullptr, viewport);
@@ -179,7 +247,8 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
     _docCanvas->selectionChanged().connect<LCADViewer, &LCADViewer::_selectionChanged>(this);
 
-    if (hasValidContext && QOpenGLContext::currentContext() == widgetContext) {
+    if (_glInitializationFailure.isEmpty() && hasValidContext
+        && QOpenGLContext::currentContext() == widgetContext) {
         createPainters(size().width(), size().height());
         _documentPainter->create_resources();
         doneCurrent();
@@ -262,7 +331,7 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
 
 void LCADViewer::resizeGL(int width, int height)
 {
-    if (_docCanvas == nullptr || _documentPainter == nullptr) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr || _documentPainter == nullptr) {
         return;
     }
 
@@ -273,6 +342,11 @@ void LCADViewer::resizeGL(int width, int height)
 }
 
 void LCADViewer::wheelEvent(QWheelEvent *event) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr || _documentPainter == nullptr) {
+        event->accept();
+        return;
+    }
+
     // Make 10% for 15deg turn, enable slow zoom for mouse with more precision
     // May be use accumulation if very sensitive
     QOpenGLWidget::makeCurrent();
@@ -296,6 +370,10 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
 }
 
 bool LCADViewer::dragHandler(lc::ui::HookEvent& e) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr || _documentPainter == nullptr) {
+        return true;
+    }
+
     //It shouldn't happen during operation
     // And should be strong check
     // Drag
@@ -323,6 +401,10 @@ bool LCADViewer::dragHandler(lc::ui::HookEvent& e) {
 
 // Select should always be at last
 bool LCADViewer::selectHandler(lc::ui::HookEvent& e) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr || _documentPainter == nullptr) {
+        return true;
+    }
+
     /**
     * Select works this way
     * if we click and release mouse, no move point mode
@@ -364,6 +446,10 @@ bool LCADViewer::selectHandler(lc::ui::HookEvent& e) {
 };
 
 bool LCADViewer::panHandler(lc::ui::HookEvent& e) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr || _documentPainter == nullptr) {
+        return true;
+    }
+
     /**
     * Pan, work with middle mouse only
     * Check click, move and release
@@ -399,6 +485,11 @@ bool LCADViewer::panHandler(lc::ui::HookEvent& e) {
 };
 
 void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
+    if (!_glInitializationFailure.isEmpty()) {
+        event->accept();
+        return;
+    }
+
     QWidget::mouseMoveEvent(event);
     _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
     _hookManager.onMouseEvent("move", event);
@@ -408,6 +499,11 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 
 void LCADViewer::mousePressEvent(QMouseEvent *event)
 {
+    if (!_glInitializationFailure.isEmpty()) {
+        event->accept();
+        return;
+    }
+
     QWidget::mousePressEvent(event);
     _hookManager.onMouseEvent("press", event);
     if (event->buttons() != Qt::RightButton) {
@@ -417,6 +513,11 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
 
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
+    if (!_glInitializationFailure.isEmpty()) {
+        event->accept();
+        return;
+    }
+
     _hookManager.onMouseEvent("release", event);
     emit mouseReleaseEvent();
     update();
@@ -440,7 +541,7 @@ bool LCADViewer::operationActive() const {
 
 void LCADViewer::paintGL()
 {
-    if (_docCanvas == nullptr || _documentPainter == nullptr) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr || _documentPainter == nullptr) {
         return;
     }
 
@@ -500,6 +601,11 @@ void LCADViewer::setContextMenuManagerId(int contextMenuManagerId) {
 }
 
 void LCADViewer::contextMenuEvent(QContextMenuEvent* event) {
+    if (!_glInitializationFailure.isEmpty() || _docCanvas == nullptr) {
+        event->accept();
+        return;
+    }
+
     lc::ui::api::Menu menu("ContextMenu", this);
     ContextMenuManager::GetContextMenuManager(_contextMenuManagerId)->generateMenu(&menu, documentCanvas()->selectedEntities().asVector());
     menu.exec(event->globalPos());
