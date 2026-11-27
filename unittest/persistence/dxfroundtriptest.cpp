@@ -4543,3 +4543,74 @@ TEST(DxfRoundTripTest, BlockEntityTransferUndoRedoSurvivesSaveReopen) {
     transfer->redo();
     checkSave(lc::persistence::File::LIBDXFRW_DXB_R2004, "BLOCK_SECOND", "BLOCK_FIRST");
 }
+
+TEST(DxfRoundTripTest, LayerStateChangesPreserveOnlyTheirOwnColorProvenance) {
+    const auto source = uniqueTmpDxf("layer-state-color-source");
+    {
+        std::ofstream f(source);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1018\n0\nENDSEC\n"
+             "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n5\n2\n70\n1\n"
+             "0\nLAYER\n5\n60\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n"
+             "2\nNAMED\n70\n0\n62\n-3\n420\n0\n430\nTest$Black\n6\nCONTINUOUS\n"
+             "0\nENDTAB\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto original = doc->layerByName("NAMED"); ASSERT_TRUE(original); ASSERT_TRUE(original->isOff());
+    const auto changed = lc::meta::Layer::withState(original, true, false, true); ASSERT_TRUE(changed);
+    auto edit = std::make_shared<lc::operation::Builder>(doc, "change state");
+    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, original, changed)); edit->execute();
+    auto checkAscii = [](const std::string& path, bool hasName, int index) {
+        std::ifstream f(path); std::string code, value; bool layer = false, named = false;
+        std::map<int, std::string> values;
+        while (std::getline(f, code) && std::getline(f, value)) {
+            const int group = std::stoi(code);
+            if (group == 0) {
+                if (layer && named) break;
+                layer = value == "LAYER"; named = false; values.clear();
+            } else if (layer) {
+                values[group] = value;
+                if (group == 2) named = value == "NAMED";
+            }
+        }
+        ASSERT_TRUE(named); ASSERT_EQ(values.count(62), 1u); EXPECT_EQ(std::stoi(values[62]), index);
+        ASSERT_EQ(values.count(420), 1u); EXPECT_EQ(std::stoi(values[420]), 0);
+        EXPECT_EQ(values.count(430) != 0, hasName);
+        if (hasName) EXPECT_EQ(values[430], "Test$Black");
+    };
+    const auto onOutput = uniqueTmpDxf("layer-state-color-on");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, onOutput, lc::persistence::File::LIBDXFRW_DXF_R2004).ok);
+    checkAscii(onOutput, true, 3); boost::filesystem::remove(onOutput);
+    const auto current = lc::meta::Layer::withState(changed, false, true, false); ASSERT_TRUE(current);
+    auto editAgain = std::make_shared<lc::operation::Builder>(doc, "change state again");
+    editAgain->append(std::make_shared<lc::operation::ReplaceLayer>(doc, changed, current)); editAgain->execute();
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        const auto output = uniqueTmpDxf("layer-state-color-output");
+        const auto result = lc::persistence::File::exportFile(doc, output, type); ASSERT_TRUE(result.ok);
+        EXPECT_TRUE(std::none_of(result.loss.notes.begin(), result.loss.notes.end(), [](const std::string& note) {
+            return note.find("source color name") != std::string::npos;
+        }));
+        if (type == lc::persistence::File::LIBDXFRW_DXF_R2004) checkAscii(output, true, -3);
+        else {
+            auto reopened = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+            const auto ascii = uniqueTmpDxf("layer-state-color-ascii");
+            ASSERT_TRUE(lc::persistence::File::exportFile(reopened, ascii, lc::persistence::File::LIBDXFRW_DXF_R2004).ok);
+            checkAscii(ascii, true, -3); boost::filesystem::remove(ascii);
+        }
+        boost::filesystem::remove(output);
+    }
+    // A separately constructed replacement, even with equal RGB, is not a
+    // state-only descendant and must not inherit a stale source color name.
+    const auto unrelated = std::make_shared<lc::meta::Layer>("NAMED", current->lineWidth(), current->color(),
+        current->linePattern(), current->isFrozen(), current->isOff(), current->isLocked());
+    auto replace = std::make_shared<lc::operation::Builder>(doc, "replace color");
+    replace->append(std::make_shared<lc::operation::ReplaceLayer>(doc, current, unrelated)); replace->execute();
+    const auto output = uniqueTmpDxf("layer-state-color-replaced");
+    const auto result = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R2004);
+    ASSERT_TRUE(result.ok);
+    EXPECT_TRUE(std::any_of(result.loss.notes.begin(), result.loss.notes.end(), [](const std::string& note) {
+        return note.find("source color name") != std::string::npos;
+    }));
+    std::ifstream f(output); std::string text((std::istreambuf_iterator<char>(f)), {});
+    EXPECT_EQ(text.find("Test$Black"), std::string::npos); f.close();
+    boost::filesystem::remove(output); boost::filesystem::remove(source);
+}

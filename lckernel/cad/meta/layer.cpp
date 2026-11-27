@@ -68,6 +68,19 @@ bool Layer::isLocked() const {
     return _isLocked;
 }
 
+std::shared_ptr<const Layer> Layer::withState(const std::shared_ptr<const Layer>& source,
+                                              bool frozen, bool off, bool locked) {
+    if (!source) return nullptr;
+    auto result = std::make_shared<Layer>(source->_name, source->_lineWidth, source->_color,
+                                          source->_linepattern, frozen, off, locked);
+    result->_colorSource = source->_colorSource ? source->_colorSource : source;
+    return result;
+}
+
+bool Layer::retainsColorFrom(const std::shared_ptr<const Layer>& source) const {
+    return source && (source.get() == this || _colorSource == source);
+}
+
 const std::string Layer::name() const {
     return _name;
 }

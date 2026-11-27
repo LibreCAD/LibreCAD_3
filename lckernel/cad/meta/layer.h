@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "cad/const.h"
 
@@ -51,6 +52,11 @@ public:
     bool isLocked() const;
     bool isHidden() const { return _isOff || _isFrozen; }
 
+    // Only state changes preserve the identity of an imported color.
+    static std::shared_ptr<const Layer> withState(const std::shared_ptr<const Layer>& source,
+                                                  bool frozen, bool off, bool locked);
+    bool retainsColorFrom(const std::shared_ptr<const Layer>& source) const;
+
     virtual const std::string name() const;
 
     bool operator==(const Layer& layer) const {
@@ -67,6 +73,7 @@ private:
     bool _isFrozen;
     bool _isOff;
     bool _isLocked;
+    std::shared_ptr<const Layer> _colorSource;
 
     friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
         os << "Layer(name=" << layer.name() << " lineWidth=" << layer.lineWidth() << " color="

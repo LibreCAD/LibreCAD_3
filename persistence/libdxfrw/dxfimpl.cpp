@@ -1761,7 +1761,7 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
         const auto found = _shelf->sourceLayerColors.find(layer->name());
         if (found != _shelf->sourceLayerColors.end()) original = &found->second;
     }
-    const bool unchanged = original && original->layer.lock() == layer;
+    const bool unchanged = original && layer->retainsColorFrom(original->layer.lock());
     const bool explicitRgb = unchanged && original->rgb >= 0 && original->rgb <= 0xFFFFFF;
     const auto indexed = icol_inst.intToColor(lay.color);
     const bool needsRgb = explicitRgb || !indexed || !(indexed->color() == col);

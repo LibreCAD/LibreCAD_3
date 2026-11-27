@@ -104,15 +104,7 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
             return;
         }
 
-        auto newLayer = std::make_shared<const lc::meta::Layer>(
-                            layer->name(),
-                            layer->lineWidth(),
-                            layer->color(),
-                            layer->linePattern(),
-                            frozen,
-                            off,
-                            locked
-                        );
+        auto newLayer = lc::meta::Layer::withState(layer, frozen, off, locked);
 
         replaceLayer(layer, newLayer);
     }
