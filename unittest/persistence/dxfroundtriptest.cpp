@@ -3496,6 +3496,7 @@ TEST(DxfRoundTripTest, LegacyTargetsReportUnrepresentableUnitMetadata) {
         if (target == lc::persistence::File::LIBDXFRW_DXF_R12)
             EXPECT_EQ(text.find("$MEASUREMENT"), std::string::npos);
         else EXPECT_NE(text.find("$MEASUREMENT"), std::string::npos);
+        in.close();
         boost::filesystem::remove(path);
     }
     boost::filesystem::remove(source);
@@ -4420,6 +4421,7 @@ TEST(DxfRoundTripTest, RationalSplineKeepsWeightsOnSave) {
     // The weights still affect geometry and must trigger the same warning.
     std::ifstream in(input);
     std::string source((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    in.close();
     const auto flag = source.find("70\n4\n71\n2\n");
     ASSERT_NE(flag, std::string::npos);
     source.replace(flag, std::string("70\n4\n").size(), "70\n0\n");
