@@ -1,4 +1,5 @@
 #include "documentcanvas.h"
+#include <cmath>
 #include <cad/meta/metacolor.h>
 #include <cad/storage/document.h>
 #include <cad/storage/quadtree.h>
@@ -1041,7 +1042,7 @@ void DocumentCanvas::selectPoint(double x, double y) {
 
         if(snapable) {
             auto nearestPoint = snapable->nearestPointOnEntity(point);
-            auto distance = nearestPoint.distanceTo(point);
+            auto distance = std::hypot(nearestPoint.x() - point.x(), nearestPoint.y() - point.y());
             //std::cout << nearestPoint << std::endl;
             //std::cout << point << std::endl;
             if (distance>mwh)

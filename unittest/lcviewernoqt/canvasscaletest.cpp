@@ -7,6 +7,7 @@
 #include <cad/operations/builder.h>
 #include <cad/operations/layerops.h>
 #include <cad/primitive/line.h>
+#include <cad/primitive/point.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/insert.h>
 #include <cad/builders/insert.h>
@@ -410,5 +411,33 @@ TEST(CanvasScaleTest, FrozenAndLockedLayersHaveDifferentBehavior) {
     EXPECT_NEAR(receiver.point.x(), 2.5, 1e-12); EXPECT_NEAR(receiver.point.y(), 12.5, 1e-12);
     snap.setDeviceLocation(2, 10003);
     EXPECT_DOUBLE_EQ(receiver.point.x(), 2); EXPECT_DOUBLE_EQ(receiver.point.y(), 10003);
+    snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
+}
+
+TEST(CanvasScaleTest, ElevatedPointCanBeSelectedAndSnappedInPlanarView) {
+    struct Receiver {
+        lc::geo::Coordinate point;
+        void onSnap(const lc::viewer::event::SnapPointEvent& event) { point = event.snapPoint(); }
+    } receiver;
+    auto doc = makeDocument();
+    auto point = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(2, 3, 70), doc->layerByName("0"));
+    auto insert = std::make_shared<lc::operation::EntityBuilder>(doc); insert->appendEntity(point); insert->execute();
+    const auto flags = lc::SimpleSnapConstrain();
+    EXPECT_TRUE(doc->entityContainer().getEntityPathsNearCoordinate(lc::geo::Coordinate(2, 3), 1, flags).empty());
+    EXPECT_EQ(doc->entityContainer().getEntityPathsNearCoordinate(lc::geo::Coordinate(2, 3, 70), 1, flags).size(), 1u);
+    EXPECT_EQ(doc->entityContainer().getEntityPathsNearCoordinate(lc::geo::Coordinate(2, 3), 1, flags, true).size(), 1u);
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
+    canvas->selectPoint(2, 3);
+    EXPECT_EQ(canvas->selectedDrawables().size(), 1u);
+    auto competitor = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(4, 3, 0), doc->layerByName("0"));
+    auto addCompetitor = std::make_shared<lc::operation::EntityBuilder>(doc);
+    addCompetitor->appendEntity(competitor); addCompetitor->execute();
+    lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10);
+    snap.setMiddleSnappable(true);
+    snap.snapPointEvents().connect<Receiver, &Receiver::onSnap>(&receiver);
+    snap.setDeviceLocation(2, 3);
+    EXPECT_DOUBLE_EQ(receiver.point.x(), 2); EXPECT_DOUBLE_EQ(receiver.point.y(), 3); EXPECT_DOUBLE_EQ(receiver.point.z(), 70);
+    snap.setDeviceLocation(100, 100);
+    EXPECT_DOUBLE_EQ(receiver.point.x(), 100); EXPECT_DOUBLE_EQ(receiver.point.y(), 100); EXPECT_DOUBLE_EQ(receiver.point.z(), 0);
     snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
 }

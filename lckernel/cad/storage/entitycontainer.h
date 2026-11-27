@@ -315,7 +315,7 @@ public:
      */
     std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point,
             double distance,
-            lc::SimpleSnapConstrain _snapConstrain) const {
+            lc::SimpleSnapConstrain _snapConstrain, bool projectToXY = false) const {
 
         const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(), point.y()) + distance / 2.,
                                         lc::geo::Coordinate(point.x(), point.y()) + distance / 2.);
@@ -329,11 +329,12 @@ public:
             if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                 //--- May need to be implemented in another function later
                 lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-                if (eCoordinate.distanceTo(point) < distance) {
+                const auto query = projectToXY ? lc::geo::Coordinate(point.x(), point.y(), eCoordinate.z()) : point;
+                if (eCoordinate.distanceTo(query) < distance) {
                     entities.emplace_back(item, eCoordinate);
                 }
                 else {//check if snapConstrain is set
-                    std::vector<lc::EntityCoordinate> points = entity->snapPoints(point, _snapConstrain, distance, 1);
+                    std::vector<lc::EntityCoordinate> points = entity->snapPoints(query, _snapConstrain, distance, 1);
                     if(points.size()) {
                         entities.emplace_back(item,points.at(0).coordinate());
                     }
