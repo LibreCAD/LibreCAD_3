@@ -358,7 +358,7 @@ ImportResult File::importFile(lc::storage::Document_SPtr document,
 
         // Whatever this build does not model rides on the document, so a later
         // save can put it back exactly as it arrived.
-        reader.attachPreservedRecords(result.ok);
+        reader.attachPreservedRecords(result.ok && reader.failures().empty());
 
         const auto& header = reader.header();
         result.sourceVersionTag = header.acadVersion;

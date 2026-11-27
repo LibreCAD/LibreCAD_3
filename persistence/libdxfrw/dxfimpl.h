@@ -213,19 +213,19 @@ public:
     // layouts, plot settings, table styles, dictionaries, another
     // application's custom data -- while the drawing still looked right.
     void addRawDxfObject(const DRW_RawDxfObject& data) override {
-        _preserved.objects.push_back(data);
+        guarded("RAW OBJECT", nullptr, [&] { _preserved.objects.push_back(data); });
     }
 
     void addRawDxfEntity(const DRW_RawDxfObject& data) override {
-        _preserved.entities.push_back(data);
+        guarded("RAW ENTITY", nullptr, [&] { _preserved.entities.push_back(data); });
     }
 
     void addRawDxfSection(const DRW_RawDxfSection& data) override {
-        _preserved.sections.push_back(data);
+        guarded("RAW SECTION", nullptr, [&] { _preserved.sections.push_back(data); });
     }
 
     void addDxfClass(const DRW_Class& data) override {
-        _preserved.classes.push_back(data);
+        guarded("CLASS", nullptr, [&] { _preserved.classes.push_back(data); });
     }
 
     /**
@@ -576,11 +576,13 @@ public:
      * found them.
      */
     template<typename Body>
-    void guarded(const char* recordKind, const DRW_Entity* entity, Body body) {
+    bool guarded(const char* recordKind, const DRW_Entity* entity, Body body) {
         std::string reason;
         if (!runGuarded(body, reason)) {
             recordFailure(recordKind, entity, reason.c_str());
+            return false;
         }
+        return true;
     }
 
     /**

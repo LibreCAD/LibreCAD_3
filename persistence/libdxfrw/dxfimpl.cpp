@@ -1968,11 +1968,15 @@ bool rawHandle(const DRW_Variant& value, std::uint32_t expected) {
 }
 
 void DXFimpl::addDxfLayoutSource(const DRW_Layout& layout, const DRW_RawDxfObject& source) {
-    if (_sourceLayouts.size() >= 3 || !smallLayoutSource(source)) {
+    if (!guarded("LAYOUT source", nullptr, [&] {
+        if (_sourceLayouts.size() >= 3 || !smallLayoutSource(source)) {
+            _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        _sourceLayouts.emplace_back(layout, source);
+    })) {
         _unmatchedSourceLayoutBlock = true;
-        return;
     }
-    _sourceLayouts.emplace_back(layout, source);
 }
 
 #ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
@@ -1986,37 +1990,51 @@ bool DXFimpl::retainDxfBlockRecordSource(const DRW_Block_Record& row) const {
 #endif
 
 void DXFimpl::addDxfBlockRecordSource(const DRW_Block_Record& block, const DRW_RawDxfObject& source) {
-    if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") {
-        _hasOtherBlockRecords = true;
-        if (block.layoutHandle != 0) _unmatchedSourceLayoutBlock = true;
-        return;
-    }
-    if (_sourceLayoutBlocks.size() >= 3 || !smallLayoutSource(source)) {
+    if (!guarded("BLOCK_RECORD source", nullptr, [&] {
+        if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") {
+            _hasOtherBlockRecords = true;
+            if (block.layoutHandle != 0) _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        if (_sourceLayoutBlocks.size() >= 3 || !smallLayoutSource(source)) {
+            _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        _sourceLayoutBlocks.emplace_back(block, source);
+    })) {
         _unmatchedSourceLayoutBlock = true;
-        return;
     }
-    _sourceLayoutBlocks.emplace_back(block, source);
 }
 
 void DXFimpl::addDxfBlockBeginSource(const DRW_Block& block, const DRW_RawDxfObject& source) {
-    _activeSourceLayoutBody = -1;
-    if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") return;
-    if (_sourceLayoutBodies.size() >= 3 || !smallLayoutSource(source)) {
+    if (!guarded("BLOCK source", nullptr, [&] {
+        _activeSourceLayoutBody = -1;
+        if (block.name != "*Model_Space" && block.name != "*Paper_Space" && block.name != "*Paper_Space0") return;
+        if (_sourceLayoutBodies.size() >= 3 || !smallLayoutSource(source)) {
+            _unmatchedSourceLayoutBlock = true;
+            return;
+        }
+        _sourceLayoutBodies.push_back({block, DRW_Block{}, source, DRW_RawDxfObject{}, false});
+        _activeSourceLayoutBody = static_cast<int>(_sourceLayoutBodies.size() - 1);
+    })) {
+        _activeSourceLayoutBody = -1;
         _unmatchedSourceLayoutBlock = true;
-        return;
     }
-    _sourceLayoutBodies.push_back({block, DRW_Block{}, source, DRW_RawDxfObject{}, false});
-    _activeSourceLayoutBody = static_cast<int>(_sourceLayoutBodies.size() - 1);
 }
 
 void DXFimpl::addDxfBlockEndSource(const DRW_Block& block, const DRW_RawDxfObject& source) {
-    if (_activeSourceLayoutBody < 0) return;
-    auto& body = _sourceLayoutBodies[static_cast<std::size_t>(_activeSourceLayoutBody)];
-    _activeSourceLayoutBody = -1;
-    if (!smallLayoutSource(source)) { _unmatchedSourceLayoutBlock = true; return; }
-    body.end = block;
-    body.rawEnd = source;
-    body.hasEnd = true;
+    if (!guarded("ENDBLK source", nullptr, [&] {
+        if (_activeSourceLayoutBody < 0) return;
+        auto& body = _sourceLayoutBodies[static_cast<std::size_t>(_activeSourceLayoutBody)];
+        _activeSourceLayoutBody = -1;
+        if (!smallLayoutSource(source)) { _unmatchedSourceLayoutBlock = true; return; }
+        body.end = block;
+        body.rawEnd = source;
+        body.hasEnd = true;
+    })) {
+        _activeSourceLayoutBody = -1;
+        _unmatchedSourceLayoutBlock = true;
+    }
 }
 
 bool DXFimpl::acceptSourceLayoutGraph() {
