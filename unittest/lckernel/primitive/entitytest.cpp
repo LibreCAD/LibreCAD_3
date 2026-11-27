@@ -1031,6 +1031,14 @@ TEST(VectorGeometryTest, PlanarProjectionInterpolatesElevation) {
     EXPECT_EQ(planar.nearestPointOnPathPlanar(geo::Coordinate(2, 1)), geo::Coordinate(2, 0));
 }
 
+TEST(VectorGeometryTest, DegeneratePathReturnsItsPoint) {
+    const geo::Coordinate point(2, 3, 70);
+    const geo::Vector zero(point, point);
+    EXPECT_EQ(zero.nearestPointOnPath(geo::Coordinate(4, 5, 6)), point);
+    EXPECT_EQ(zero.nearestPointOnEntity(geo::Coordinate(4, 5, 6)), point);
+    EXPECT_EQ(zero.nearestPointOnPathPlanar(geo::Coordinate(4, 5)), point);
+}
+
 TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
     auto layer = std::make_shared<Layer>();
     auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),

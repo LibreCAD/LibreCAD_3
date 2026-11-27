@@ -38,8 +38,10 @@ public:
      */
     inline const Coordinate nearestPointOnPath(const Coordinate& coord) const {
         Coordinate direction = this->end() - this->start();
+        const double lengthSquared = direction.squared();
+        if (lengthSquared == 0.0) return start();
         Coordinate vpc = coord - this->start();
-        vpc = start() + direction * Coordinate(vpc).dot(direction) / direction.squared();
+        vpc = start() + direction * Coordinate(vpc).dot(direction) / lengthSquared;
         return vpc;
     }
 
