@@ -37,12 +37,7 @@ public:
      * Return the neatrest point on the entities path
      */
     inline const Coordinate nearestPointOnPath(const Coordinate& coord) const {
-        Coordinate direction = this->end() - this->start();
-        const double lengthSquared = direction.squared();
-        if (lengthSquared == 0.0) return start();
-        Coordinate vpc = coord - this->start();
-        vpc = start() + direction * Coordinate(vpc).dot(direction) / lengthSquared;
-        return vpc;
+        return _start + (_end - _start) * spatialProjectionParameter(coord);
     }
 
     // Project in XY while interpolating the original elevation.
@@ -59,23 +54,10 @@ public:
      * Return the nearest point on the entity
      */
     inline const Coordinate nearestPointOnEntity(const Coordinate& coord) const {
-        const auto vpc = nearestPointOnPath(coord);
-        // Note, I could use Area for this but didn't want that dependency here
-        const geo::Coordinate minP(Coordinate(std::min(_start.x()- LCTOLERANCE, _end.x()- LCTOLERANCE), std::min(_start.y()-
-                                              LCTOLERANCE, _end.y()-
-                                              LCTOLERANCE)));
-        const geo::Coordinate maxP(Coordinate(std::max(_start.x()+ LCTOLERANCE, _end.x()+ LCTOLERANCE), std::max(_start.y()+
-                                              LCTOLERANCE, _end.y()+
-                                              LCTOLERANCE)));
-
-        bool inArea = (vpc.x() >= minP.x() && vpc.x() <= maxP.x() && vpc.y() >= minP.y() && vpc.y() <= maxP.y());
-        if (inArea) {
-            return vpc;
-        } else {
-            const double dStart = coord.distanceTo(start());
-            const double dEnd = coord.distanceTo(end());
-            return dStart < dEnd?start():end();
-        }
+        const double t = spatialProjectionParameter(coord);
+        if (t <= 0.0) return _start;
+        if (t >= 1.0) return _end;
+        return _start + (_end - _start) * t;
     }
     /*
     inline bool isCoordinateOnPath(const Coordinate& coord) const {
@@ -135,6 +117,12 @@ public:
     }
 
 private:
+    double spatialProjectionParameter(const Coordinate& coord) const {
+        const auto edge = _end - _start;
+        const double lengthSquared = edge.squared();
+        return lengthSquared == 0.0 ? 0.0 : (coord - _start).dot(edge) / lengthSquared;
+    }
+
     double planarProjectionParameter(const Coordinate& coord) const {
         const auto edge = _end - _start;
         const double lengthSquared = edge.x() * edge.x() + edge.y() * edge.y();

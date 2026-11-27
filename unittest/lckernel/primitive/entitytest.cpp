@@ -1039,6 +1039,31 @@ TEST(VectorGeometryTest, DegeneratePathReturnsItsPoint) {
     EXPECT_EQ(zero.nearestPointOnPathPlanar(geo::Coordinate(4, 5)), point);
 }
 
+TEST(VectorGeometryTest, SpatialSegmentClampsToItsEndpoints) {
+    const geo::Vector vertical(geo::Coordinate(2, 3, 70), geo::Coordinate(2, 3, 74));
+    EXPECT_EQ(vertical.nearestPointOnEntity(geo::Coordinate(2, 3, 100)), geo::Coordinate(2, 3, 74));
+    EXPECT_EQ(vertical.nearestPointOnEntity(geo::Coordinate(2, 3, 60)), geo::Coordinate(2, 3, 70));
+    EXPECT_EQ(vertical.nearestPointOnEntity(geo::Coordinate(4, 3, 72)), geo::Coordinate(2, 3, 72));
+    EXPECT_EQ(vertical.nearestPointOnPath(geo::Coordinate(2, 3, 100)), geo::Coordinate(2, 3, 100));
+    const geo::Vector planar(geo::Coordinate(0, 0), geo::Coordinate(4, 0));
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(6, 1)), geo::Coordinate(4, 0));
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(2, 1)), geo::Coordinate(2, 0));
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(4 + LCTOLERANCE / 2, 1)), geo::Coordinate(4, 0));
+}
+
+TEST(VectorGeometryTest, EntitySnapReturnsTheBoundedPoint) {
+    auto layer = std::make_shared<Layer>();
+    const Line line(geo::Coordinate(2, 3, 70), geo::Coordinate(2, 3, 74), layer);
+    const auto onEntity = line.snapPoints(geo::Coordinate(2, 3, 74.05),
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITY, 0, 0), 0.1, 1);
+    ASSERT_EQ(onEntity.size(), 1u);
+    EXPECT_EQ(onEntity.front().coordinate(), geo::Coordinate(2, 3, 74));
+    const auto onPath = line.snapPoints(geo::Coordinate(2, 3, 74.05),
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
+    ASSERT_EQ(onPath.size(), 1u);
+    EXPECT_EQ(onPath.front().coordinate(), geo::Coordinate(2, 3, 74.05));
+}
+
 TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
     auto layer = std::make_shared<Layer>();
     auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),
