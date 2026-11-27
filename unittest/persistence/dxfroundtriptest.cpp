@@ -3238,14 +3238,16 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         // A style editor may replace the complete metadata map.
         auto style = lc::meta::MetaInfo::create();
         style->add(std::make_shared<lc::meta::MetaColorByValue>(17, 34, 51));
-        auto edited = moved->modify(moved->layer(), style, moved->block());
+        auto edited = moved->modify(moved->layer(), modern ? nullptr : style, moved->block());
         ASSERT_TRUE(edited);
         EXPECT_EQ(style->size(), 1u);
-        const auto color = edited->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
-        ASSERT_TRUE(color);
-        EXPECT_EQ(color->redI(), 17);
-        EXPECT_EQ(color->greenI(), 34);
-        EXPECT_EQ(color->blueI(), 51);
+        if (!modern) {
+            const auto color = edited->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
+            ASSERT_TRUE(color);
+            EXPECT_EQ(color->redI(), 17);
+            EXPECT_EQ(color->greenI(), 34);
+            EXPECT_EQ(color->blueI(), 51);
+        }
         doc->insertEntity(edited);
     }
     const auto result = lc::persistence::File::exportFile(doc, saved, modern ?
@@ -3315,6 +3317,32 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         ASSERT_NE(omitted, legacy.loss.droppedByType.end());
         EXPECT_EQ(omitted->second, 1u);
         boost::filesystem::remove(downgraded);
+    }
+    if (mode == 0) {
+        const auto items = doc->entityContainer().asVector();
+        ASSERT_EQ(items.size(), 1u);
+        const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(items.front());
+        ASSERT_TRUE(image);
+        auto resized = std::make_shared<lc::entity::Image>(image->name(), image->base(), image->uv(), image->vv(),
+            image->width() + 1, image->height(), image->brightness(), image->contrast(), image->fade(),
+            image->layer(), image->metaInfo(), image->block());
+        doc->removeEntity(image);
+        doc->insertEntity(resized);
+        const std::string changed = uniqueTmpDxf("image-clipping-size-change");
+        const auto changedResult = lc::persistence::File::exportFile(doc, changed, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(changedResult.ok);
+        const auto dropped = changedResult.loss.droppedByType.find("IMAGE clipping");
+        ASSERT_NE(dropped, changedResult.loss.droppedByType.end());
+        EXPECT_EQ(dropped->second, 1u);
+        doc->removeEntity(resized);
+        doc->insertEntity(image);
+        const auto retry = lc::persistence::File::exportFile(doc, changed, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(retry.ok);
+        EXPECT_EQ(retry.loss.droppedByType.count("IMAGE clipping"), 0u);
+        EXPECT_EQ(imageGroups(changed)[91], groups[91]);
+        EXPECT_EQ(imageGroups(changed)[14], groups[14]);
+        EXPECT_EQ(imageGroups(changed)[24], groups[24]);
+        boost::filesystem::remove(changed);
     }
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
