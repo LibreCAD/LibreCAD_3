@@ -267,17 +267,17 @@ public:
     }
 
     /**
-     * Scales the vector by given factors with 0/0 as center
+     * Scales the vector about the origin.
      */
     inline Coordinate scale(const double& scale_factor) const {
-        return Coordinate(_x * scale_factor, _y * scale_factor);
+        return *this * scale_factor;
     }
 
     /**
-     * Scales the vector by given factors with 0/0 as center
+     * Scales each component by its corresponding factor about the origin.
      */
     inline  Coordinate scale(const Coordinate& scale_factor) const {
-        return Coordinate(_x * scale_factor.x(), _y * scale_factor.y());
+        return *this * scale_factor;
     }
 
     /**

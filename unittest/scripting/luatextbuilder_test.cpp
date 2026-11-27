@@ -99,6 +99,14 @@ assert(t:valign() == lc.TextConst.VATop, 'the entity lost the valign')
 )LUA"), "");
 }
 
+TEST_F(LuaTextBuilderFixture, CoordinateScalePreservesSpatialComponents) {
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local point = lc.geo.Coordinate(3, 4, 7)
+assert(point:scale(-2):z() == -14)
+assert(point:scale(lc.geo.Coordinate(2, -3, 4)):z() == 28)
+)LUA"), "");
+}
+
 // The four flags that make an MText an MText. They round-trip through the
 // builder and the property editor and were reachable from neither language.
 // NOLINTNEXTLINE(readability-identifier-naming)

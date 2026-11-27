@@ -65,7 +65,10 @@ TEST_F(PythonFixture, CoordinateArithmeticEqualsCpp) {
         "assert abs(a.magnitude() - a_mag_cpp) < 1e-12\n"
         "assert abs(a.angle() - a_ang_cpp) < 1e-12\n"
         "b = lc.geo.Coordinate(6.0, 8.0)\n"
-        "assert abs(a.distanceTo(b) - a.magnitude()) < 1e-12\n",
+        "assert abs(a.distanceTo(b) - a.magnitude()) < 1e-12\n"
+        "spatial = lc.geo.Coordinate(3.0, 4.0, 7.0)\n"
+        "assert spatial.scale(-2.0).z() == -14.0\n"
+        "assert spatial.scale(lc.geo.Coordinate(2.0, -3.0, 4.0)).z() == 28.0\n",
         ns);
     ASSERT_EQ(err, "") << err;
 }
