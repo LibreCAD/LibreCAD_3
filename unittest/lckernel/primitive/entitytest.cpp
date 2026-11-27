@@ -1020,6 +1020,17 @@ TEST(TextBoundingBoxTest, AnImpossibleFactorGivesTheBoxSingleSpacing) {
     }
 }
 
+TEST(VectorGeometryTest, PlanarProjectionInterpolatesElevation) {
+    const geo::Vector tilted(geo::Coordinate(2, 3, 70), geo::Coordinate(6, 3, 74));
+    EXPECT_EQ(tilted.nearestPointOnPathPlanar(geo::Coordinate(4, 5)), geo::Coordinate(4, 3, 72));
+    EXPECT_EQ(tilted.nearestPointOnPathPlanar(geo::Coordinate(8, 3)), geo::Coordinate(8, 3, 76));
+    EXPECT_EQ(tilted.nearestPointOnEntityPlanar(geo::Coordinate(8, 3)), geo::Coordinate(6, 3, 74));
+    const geo::Vector vertical(geo::Coordinate(2, 3, 70), geo::Coordinate(2, 3, 74));
+    EXPECT_EQ(vertical.nearestPointOnEntityPlanar(geo::Coordinate(4, 3)), geo::Coordinate(2, 3, 70));
+    const geo::Vector planar(geo::Coordinate(0, 0), geo::Coordinate(4, 0));
+    EXPECT_EQ(planar.nearestPointOnPathPlanar(geo::Coordinate(2, 1)), geo::Coordinate(2, 0));
+}
+
 TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
     auto layer = std::make_shared<Layer>();
     auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),

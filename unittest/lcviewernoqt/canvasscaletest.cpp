@@ -503,6 +503,32 @@ TEST(CanvasScaleTest, TiltedImageCanBeSelectedAndSnappedInPlanarView) {
     snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
 }
 
+TEST(CanvasScaleTest, TiltedLineCanBeSelectedAndSnappedInPlanarView) {
+    struct Receiver {
+        lc::geo::Coordinate point;
+        void onSnap(const lc::viewer::event::SnapPointEvent& event) { point = event.snapPoint(); }
+    } receiver;
+    auto doc = makeDocument();
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(2, 3, 70),
+        lc::geo::Coordinate(6, 3, 74), doc->layerByName("0"));
+    auto insert = std::make_shared<lc::operation::EntityBuilder>(doc);
+    insert->appendEntity(line); insert->execute();
+    const auto found = doc->entityContainer().getEntityPathsNearCoordinatePlanar(
+        lc::geo::Coordinate(4, 3), 0.1, lc::SimpleSnapConstrain());
+    ASSERT_EQ(found.size(), 1u);
+    EXPECT_EQ(found.front().coordinate(), lc::geo::Coordinate(4, 3, 72));
+    EXPECT_NE(line->nearestPointOnPath(lc::geo::Coordinate(4, 3, 0)), found.front().coordinate());
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
+    canvas->selectPoint(4, 3);
+    ASSERT_EQ(canvas->selectedDrawables().size(), 1u);
+    lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10);
+    snap.setEntitySnappable(true);
+    snap.snapPointEvents().connect<Receiver, &Receiver::onSnap>(&receiver);
+    snap.setDeviceLocation(4, 3);
+    EXPECT_EQ(receiver.point, lc::geo::Coordinate(4, 3, 72));
+    snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
+}
+
 TEST(CanvasScaleTest, ElevatedCircleAndArcCanBeSelectedAndSnappedInPlanarView) {
     struct Receiver {
         lc::geo::Coordinate point;

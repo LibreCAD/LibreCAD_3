@@ -340,12 +340,15 @@ public:
 
             if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                 //--- May need to be implemented in another function later
-                // IMAGE may have tilted edges: the nearest 3D point to a
+                // For tilted IMAGE edges and LINEs, the nearest 3D point to a
                 // screen coordinate need not be the nearest projected point.
                 const auto image = projectToXY ?
                     std::dynamic_pointer_cast<const lc::entity::Image>(item) : nullptr;
+                const auto line = projectToXY && !image ?
+                    std::dynamic_pointer_cast<const lc::entity::Line>(item) : nullptr;
                 lc::geo::Coordinate eCoordinate = image ? image->nearestPointOnPathPlanar(point)
-                                                        : entity->nearestPointOnPath(point);
+                    : line ? line->nearestPointOnPathPlanar(point)
+                           : entity->nearestPointOnPath(point);
                 const auto query = projectToXY ? lc::geo::Coordinate(point.x(), point.y(), eCoordinate.z()) : point;
                 if (eCoordinate.distanceTo(query) < distance) {
                     entities.emplace_back(item, eCoordinate);

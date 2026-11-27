@@ -43,6 +43,16 @@ public:
         return vpc;
     }
 
+    // Project in XY while interpolating the original elevation.
+    inline Coordinate nearestPointOnPathPlanar(const Coordinate& coord) const {
+        return _start + (_end - _start) * planarProjectionParameter(coord);
+    }
+
+    inline Coordinate nearestPointOnEntityPlanar(const Coordinate& coord) const {
+        const double t = std::max(0.0, std::min(1.0, planarProjectionParameter(coord)));
+        return _start + (_end - _start) * t;
+    }
+
     /**
      * Return the nearest point on the entity
      */
@@ -123,6 +133,13 @@ public:
     }
 
 private:
+    double planarProjectionParameter(const Coordinate& coord) const {
+        const auto edge = _end - _start;
+        const double lengthSquared = edge.x() * edge.x() + edge.y() * edge.y();
+        return lengthSquared == 0.0 ? 0.0 :
+            ((coord.x() - _start.x()) * edge.x() + (coord.y() - _start.y()) * edge.y()) / lengthSquared;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Vector& e) {
         os << "Vector(start=" << e._start << " end=" << e._end << ")";
         return os;

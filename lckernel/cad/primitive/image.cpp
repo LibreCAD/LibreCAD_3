@@ -26,11 +26,16 @@ geo::Coordinate nearestImageBoundary(const std::array<geo::Coordinate, 4>& corne
     auto distance = metric(coord - nearest).squared();
     for (std::size_t i = 0; i < corners.size(); ++i) {
         const auto edge = corners[(i + 1) % corners.size()] - corners[i];
-        const auto measuredEdge = metric(edge);
-        const double lengthSquared = measuredEdge.squared();
-        const double t = lengthSquared == 0.0 ? 0.0 : std::max(0.0, std::min(1.0,
-            metric(coord - corners[i]).dot(measuredEdge) / lengthSquared));
-        const auto candidate = corners[i] + edge * t;
+        auto candidate = corners[i];
+        if (planar) {
+            candidate = geo::Vector(corners[i], corners[(i + 1) % corners.size()])
+                            .nearestPointOnEntityPlanar(coord);
+        } else {
+            const double lengthSquared = edge.squared();
+            const double t = lengthSquared == 0.0 ? 0.0 : std::max(0.0, std::min(1.0,
+                (coord - corners[i]).dot(edge) / lengthSquared));
+            candidate = corners[i] + edge * t;
+        }
         const double candidateDistance = metric(coord - candidate).squared();
         if (candidateDistance < distance) {
             nearest = candidate;
