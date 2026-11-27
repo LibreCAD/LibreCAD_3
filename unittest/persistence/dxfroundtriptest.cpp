@@ -3182,7 +3182,7 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}) {
+  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}) {
     const int space = mode >= 6 ? 0 : mode % 3;
     const bool modern = mode >= 3 && mode < 6;
     const bool extendedDictionary = mode == 6;
@@ -3191,6 +3191,9 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const bool unmodeledChild = mode == 9;
     const bool invalidDictionaryOwner = mode == 10;
     const bool differentRoot = mode == 11;
+    const bool nested = mode == 12 || mode == 13 || mode == 14;
+    const bool invalidNestedOwner = mode == 13;
+    const bool invalidNestedRootOwner = mode == 14;
     const char* rootHandle = differentRoot ? "50" : "C";
     const bool inBlock = space != 0;
     const char* blockName = space == 2 ? "*U1" : "LC_IMG";
@@ -3215,11 +3218,13 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         if (inBlock) file << "0\nENDBLK\n5\n62\n330\n60\n8\n0\n";
         file << "0\nENDSEC\n"
                 "0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\n" << rootHandle << "\n330\n0\n100\nAcDbDictionary\n281\n1\n"
-                "3\nACAD_IMAGE_DICT\n350\n80\n3\nLC_REACTOR\n350\n90\n"
+                "3\nACAD_IMAGE_DICT\n350\n80\n3\nLC_REACTOR\n350\n" << (nested ? "92" : "90") << "\n"
                 "0\nDICTIONARY\n5\n80\n330\n" << rootHandle << "\n100\nAcDbDictionary\n281\n1\n3\nscratch\n350\n81\n"
-                "0\nDICTIONARY\n5\n90\n330\n" << (invalidDictionaryOwner ? "92" : rootHandle) << "\n";
+                "0\nDICTIONARY\n5\n90\n330\n" << (invalidDictionaryOwner ? "92" : invalidNestedOwner ? "93" : nested ? "92" : rootHandle) << "\n";
         if (extendedDictionary) file << "102\n{LC_TEST\n1\ncustom\n102\n}\n";
-        file << "100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n3\nKEEP\n350\n91\n"
+        file << "100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n3\nKEEP\n350\n91\n";
+        if (nested) file << "0\nDICTIONARY\n5\n92\n330\n" << (invalidNestedRootOwner ? "93" : "C") << "\n100\nAcDbDictionary\n281\n1\n3\nCHILD\n350\n90\n";
+        file <<
                 "0\nXRECORD\n5\n91\n330\n" << (invalidOwner ? "92" : "90") << "\n100\nAcDbXrecord\n280\n1\n1\nkeep-value\n";
         if (unmodeledChild) file << "340\n92\n";
         file << "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
@@ -3276,10 +3281,10 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     ASSERT_TRUE(result.ok);
     const auto names = rootDictNames(saved);
     EXPECT_EQ(names.count("ACAD_IMAGE_DICT"), 1u);
-    EXPECT_EQ(names.count("LC_REACTOR"), extendedDictionary || invalidOwner || unmodeledChild || invalidDictionaryOwner || differentRoot ? 0u : 1u);
+    EXPECT_EQ(names.count("LC_REACTOR"), extendedDictionary || invalidOwner || unmodeledChild || invalidDictionaryOwner || differentRoot || invalidNestedOwner || invalidNestedRootOwner ? 0u : 1u);
     const auto loss = result.loss.droppedByType.find("unreferenced dictionaries");
     ASSERT_NE(loss, result.loss.droppedByType.end());
-    EXPECT_EQ(loss->second, extendedDictionary || invalidOwner || unmodeledChild || invalidDictionaryOwner || differentRoot ? 2u : 1u);
+    EXPECT_EQ(loss->second, extendedDictionary || invalidOwner || unmodeledChild || invalidDictionaryOwner || differentRoot || invalidNestedOwner || invalidNestedRootOwner ? 2u : 1u);
     const auto skipped = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
     ASSERT_NE(skipped, result.loss.droppedByType.end());
     EXPECT_EQ(skipped->second, 1u);

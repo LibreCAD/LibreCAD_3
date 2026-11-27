@@ -2879,6 +2879,19 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                     }
                 }
             }
+            // Any root reaching a filtered dictionary also needs a valid
+            // ownership chain. Propagate once through shared paths and cycles.
+            std::unordered_set<std::uint32_t> reachesSanitized = sanitizedDictionaries;
+            std::vector<std::uint32_t> ownerCheck(sanitizedDictionaries.begin(), sanitizedDictionaries.end());
+            for (std::size_t index = 0; index < ownerCheck.size(); ++index) {
+                const auto child = ownerCheck[index];
+                const auto found = parents.find(child);
+                if (found == parents.end()) continue;
+                for (const auto parent : found->second) {
+                    if (emitted.at(child)->parentHandle != parent) markIncomplete(parent);
+                    if (reachesSanitized.insert(parent).second) ownerCheck.push_back(parent);
+                }
+            }
             for (std::size_t index = 0; index < pending.size(); ++index) {
                 const auto found = parents.find(pending[index]);
                 if (found == parents.end()) continue;
@@ -2887,7 +2900,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 
             for (const auto& entry : _replay->rootDictEntries) {
                 const auto object = emitted.find(entry.second);
-                const bool uncheckedRootOwner = sanitizedDictionaries.count(entry.second) &&
+                const bool uncheckedRootOwner = reachesSanitized.count(entry.second) &&
                     (_replay->rootDictSourceAmbiguous || _replay->rootDictSourceHandle != kRootDictionaryHandle ||
                      object == emitted.end() ||
                      object->second->parentHandle != kRootDictionaryHandle);
