@@ -4511,3 +4511,35 @@ TEST(DxfRoundTripTest, FrozenAndLockedFlagsRoundTripIndependently) {
     }
     boost::filesystem::remove(source);
 }
+
+TEST(DxfRoundTripTest, BlockEntityTransferUndoRedoSurvivesSaveReopen) {
+    auto doc = newDocument();
+    auto first = std::make_shared<lc::meta::Block>("BLOCK_FIRST");
+    auto second = std::make_shared<lc::meta::Block>("BLOCK_SECOND");
+    doc->addDocumentMetaType(first); doc->addDocumentMetaType(second);
+    auto original = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2, 3), lc::geo::Coordinate(4, 6, 9),
+                                                       doc->layerByName("0"), nullptr, first);
+    auto add = std::make_shared<lc::operation::EntityBuilder>(doc); add->appendEntity(original); add->execute();
+    auto moved = original->move(lc::geo::Coordinate(5, 7, 11));
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(doc); edit->appendEntity(moved); edit->execute();
+    auto relocated = moved->modify(moved->layer(), moved->metaInfo(), second);
+    auto transfer = std::make_shared<lc::operation::EntityBuilder>(doc); transfer->appendEntity(relocated); transfer->execute();
+    auto checkSave = [&](lc::persistence::File::Type type, const char* populated, const char* empty) {
+        auto output = uniqueTmpDxf("block-transfer");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, output, type).ok);
+        auto reopened = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(reopened, output, lc::persistence::File::LIBDXFRW).ok);
+        auto destination = reopened->blockByName(populated), other = reopened->blockByName(empty);
+        ASSERT_TRUE(destination); ASSERT_TRUE(other);
+        auto children = reopened->entitiesByBlock(destination).asVector(); ASSERT_EQ(children.size(), 1u);
+        EXPECT_TRUE(reopened->entitiesByBlock(other).asVector().empty());
+        auto line = std::dynamic_pointer_cast<const lc::entity::Line>(children.front()); ASSERT_TRUE(line);
+        EXPECT_DOUBLE_EQ(line->start().x(), 6); EXPECT_DOUBLE_EQ(line->start().y(), 9); EXPECT_DOUBLE_EQ(line->start().z(), 14);
+        EXPECT_DOUBLE_EQ(line->end().x(), 9); EXPECT_DOUBLE_EQ(line->end().y(), 13); EXPECT_DOUBLE_EQ(line->end().z(), 20);
+        boost::filesystem::remove(output);
+    };
+    checkSave(lc::persistence::File::LIBDXFRW_DXF_R2004, "BLOCK_SECOND", "BLOCK_FIRST");
+    transfer->undo();
+    checkSave(lc::persistence::File::LIBDXFRW_DXF_R2004, "BLOCK_FIRST", "BLOCK_SECOND");
+    transfer->redo();
+    checkSave(lc::persistence::File::LIBDXFRW_DXB_R2004, "BLOCK_SECOND", "BLOCK_FIRST");
+}
