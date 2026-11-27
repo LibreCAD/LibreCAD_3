@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace lc;
 using namespace operation;
@@ -304,10 +305,21 @@ void EntityBuilder::processInternal() {
     // Allocate the next undo journal before making any document changes.
     auto nextWorking = _workingBuffer;
     auto nextUpdates = _entitiesThatWhereUpdated;
-    auto nextRemovals = _entitiesThatNeedsRemoval;
+    auto nextRemovals = _committedRemovals;
+    std::vector<entity::CADEntity_CSPtr> currentRemovals;
+    std::unordered_set<ID_DATATYPE> recordedIds, currentIds;
+    for (const auto& entity : nextRemovals) recordedIds.insert(entity->id());
+    for (const auto& requested : _entitiesThatNeedsRemoval) {
+        if (!requested) continue;
+        const auto current = document()->entityByID(requested->id());
+        if (!current || !currentIds.insert(current->id()).second) continue;
+        currentRemovals.push_back(current);
+        if (recordedIds.insert(current->id()).second) nextRemovals.push_back(current);
+    }
 
-    // Remove entities
-    for (const auto& entity : _entitiesThatNeedsRemoval) {
+    // Resolve stale snapshots to the actual current object and block. Only
+    // entities present before a committed removal belong in the undo journal.
+    for (const auto& entity : currentRemovals) {
         document()->removeEntity(entity);
     }
 

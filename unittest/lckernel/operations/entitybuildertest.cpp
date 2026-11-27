@@ -55,6 +55,56 @@ TEST(EntityBuilderTest, Remove) {
     EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Entity was not deleted";
 }
 
+TEST(EntityBuilderTest, RemovingAbsentEntityDoesNotCreateItOnUndoOrRedo) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2, 3),
+                                                   lc::geo::Coordinate(4, 5, 6), document->layerByName("0"));
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(line);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    remove->undo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    remove->redo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+}
+
+TEST(EntityBuilderTest, RemovingStaleSnapshotRestoresCurrentEntityAndBlock) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    auto oldBlock = std::make_shared<lc::meta::Block>("OLD", lc::geo::Coordinate());
+    auto currentBlock = std::make_shared<lc::meta::Block>("CURRENT", lc::geo::Coordinate());
+    document->addDocumentMetaType(oldBlock); document->addDocumentMetaType(currentBlock);
+    auto stale = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(1, 2, 3),
+                                                    lc::geo::Coordinate(4, 5, 6), layer, nullptr, oldBlock);
+    auto current = stale->move(lc::geo::Coordinate(10, 0, 0))->modify(layer, nullptr, currentBlock);
+    document->insertEntity(current);
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(stale);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute(); EXPECT_EQ(document->entityByID(stale->id()), nullptr);
+    EXPECT_TRUE(document->entitiesByBlock(currentBlock).asVector().empty());
+    remove->undo(); EXPECT_EQ(document->entityByID(stale->id()), current);
+    EXPECT_TRUE(document->entitiesByBlock(oldBlock).asVector().empty());
+    ASSERT_EQ(document->entitiesByBlock(currentBlock).asVector().size(), 1u);
+    remove->redo(); EXPECT_EQ(document->entityByID(stale->id()), nullptr);
+}
+
+TEST(EntityBuilderTest, RepeatedRemovalKeepsCommittedUndoJournal) {
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0),
+                                                   lc::geo::Coordinate(1, 0), document->layerByName("0"));
+    document->insertEntity(line);
+    auto remove = std::make_shared<lc::operation::EntityBuilder>(document);
+    remove->appendEntity(line);
+    remove->appendOperation(std::make_shared<lc::operation::Push>());
+    remove->appendOperation(std::make_shared<lc::operation::Remove>());
+    remove->execute(); remove->execute();
+    EXPECT_EQ(document->entityByID(line->id()), nullptr);
+    remove->undo(); EXPECT_EQ(document->entityByID(line->id()), line);
+    remove->redo(); EXPECT_EQ(document->entityByID(line->id()), nullptr);
+}
+
 TEST(EntityBuilderTest, UndoRedo) {
     auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
     auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
