@@ -75,6 +75,53 @@ bool regeneratesImageObject(const DRW_RawDxfObject& object, bool hasImages) {
     return hasImages && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR");
 }
 
+// Remove only ordinary, fully recognized dictionary entries that still point
+// to source raster objects the writer will replace with new identities.
+// Unknown fields or application groups leave the complete object untouched.
+std::size_t dropRegeneratedImageEntries(DRW_RawDxfObject& object,
+                                        const std::unordered_set<std::uint32_t>& skipped) {
+    const auto& groups = object.groups;
+    if (object.name != "DICTIONARY" || groups.size() < 3 ||
+        object.rawValues.size() != groups.size() || groups[0].code() != 5 ||
+        groups[1].code() != 330 || groups[2].code() != 100 ||
+        groups[2].type() != DRW_Variant::STRING || !groups[2].content.s ||
+        *groups[2].content.s != "AcDbDictionary") return 0;
+    std::size_t pos = 3;
+    if (pos < groups.size() && groups[pos].code() == 280) ++pos;
+    if (pos < groups.size() && groups[pos].code() == 281) ++pos;
+    std::vector<bool> remove(groups.size(), false);
+    std::size_t count = 0;
+    while (pos < groups.size()) {
+        if (pos + 1 >= groups.size() || groups[pos].code() != 3 ||
+            groups[pos].type() != DRW_Variant::STRING || !groups[pos].content.s ||
+            groups[pos].content.s->empty() || groups[pos + 1].code() != 350 ||
+            groups[pos + 1].type() != DRW_Variant::STRING || !groups[pos + 1].content.s) return 0;
+        const auto& hex = *groups[pos + 1].content.s;
+        if (hex.empty() || hex.size() > 8 ||
+            !std::all_of(hex.begin(), hex.end(), [](unsigned char c) { return std::isxdigit(c); })) return 0;
+        const auto handle = static_cast<std::uint32_t>(std::stoul(hex, nullptr, 16));
+        if (skipped.count(handle)) {
+            remove[pos] = remove[pos + 1] = true;
+            ++count;
+        }
+        pos += 2;
+    }
+    if (count == 0) return 0;
+    std::vector<DRW_Variant> keptGroups;
+    std::vector<UTF8STRING> keptRaw;
+    keptGroups.reserve(groups.size() - 2 * count);
+    keptRaw.reserve(groups.size() - 2 * count);
+    for (std::size_t i = 0; i < groups.size(); ++i) {
+        if (!remove[i]) {
+            keptGroups.push_back(std::move(object.groups[i]));
+            keptRaw.push_back(std::move(object.rawValues[i]));
+        }
+    }
+    object.groups = std::move(keptGroups);
+    object.rawValues = std::move(keptRaw);
+    return count;
+}
+
 std::string upperName(std::string name) {
     std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
         return static_cast<char>(std::toupper(c));
@@ -1775,6 +1822,10 @@ void DXFimpl::writeObjects() {
     // ones -- measured: without this, sample_AC1015_ascii comes back with two
     // reactors.
     const bool documentHasImages = hasDocumentImages();
+    std::unordered_set<std::uint32_t> skippedImageHandles;
+    for (const auto& object : _replay->objects)
+        if (regeneratesImageObject(object, documentHasImages) && object.handle != 0)
+            skippedImageHandles.insert(object.handle);
 
     for (const auto& object : _replay->objects) {
         if (regeneratesImageObject(object, documentHasImages)) {
@@ -1785,10 +1836,12 @@ void DXFimpl::writeObjects() {
         }
 
         DRW_RawDxfObject copy = object;
+        const auto droppedEntries = dropRegeneratedImageEntries(copy, skippedImageHandles);
         if (!dxfW->writeRawDxfObject(&copy)) {
             LOG_ERROR << "libdxfrw refused to re-emit a preserved " << object.name << " record";
             return;
         }
+        if (droppedEntries) _loss.droppedByType["dictionary entries"] += droppedEntries;
     }
 }
 

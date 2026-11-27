@@ -3182,9 +3182,10 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5}) {
+  for (int mode : {0, 1, 2, 3, 4, 5, 6}) {
     const int space = mode % 3;
-    const bool modern = mode >= 3;
+    const bool modern = mode >= 3 && mode < 6;
+    const bool extendedDictionary = mode == 6;
     const bool inBlock = space != 0;
     const char* blockName = space == 2 ? "*U1" : "LC_IMG";
     SCOPED_TRACE(mode);
@@ -3210,7 +3211,10 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
                 "0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
                 "3\nACAD_IMAGE_DICT\n350\n80\n3\nLC_REACTOR\n350\n90\n"
                 "0\nDICTIONARY\n5\n80\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nscratch\n350\n81\n"
-                "0\nDICTIONARY\n5\n90\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n"
+                "0\nDICTIONARY\n5\n90\n330\nC\n";
+        if (extendedDictionary) file << "102\n{LC_TEST\n1\ncustom\n102\n}\n";
+        file << "100\nAcDbDictionary\n281\n1\n3\nOBSERVE\n350\n82\n3\nKEEP\n350\n91\n"
+                "0\nXRECORD\n5\n91\n330\n90\n100\nAcDbXrecord\n280\n1\n1\nkeep-value\n"
                 "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
                 "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
                 "0\nIMAGEDEF_REACTOR\n5\n82\n102\n{LC_TEST\n1\nreactor-metadata\n102\n}\n"
@@ -3262,6 +3266,36 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const auto skipped = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
     ASSERT_NE(skipped, result.loss.droppedByType.end());
     EXPECT_EQ(skipped->second, 1u);
+    // The raw reactor is omitted. Its old dictionary entry must not be
+    // emitted as a dangling reference; unrelated entries must survive.
+    const auto droppedEntries = result.loss.droppedByType.find("dictionary entries");
+    if (extendedDictionary) {
+        EXPECT_EQ(droppedEntries, result.loss.droppedByType.end());
+    } else {
+        ASSERT_NE(droppedEntries, result.loss.droppedByType.end());
+        EXPECT_EQ(droppedEntries->second, 1u);
+    }
+    {
+        std::ifstream output(saved, std::ios::binary);
+        std::string code, value;
+        bool dictionary = false;
+        std::size_t scratchCount = 0;
+        std::size_t keepCount = 0;
+        std::size_t observeCount = 0;
+        while (std::getline(output, code) && std::getline(output, value)) {
+            if (!value.empty() && value.back() == '\r') value.pop_back();
+            const int group = std::stoi(code);
+            if (group == 0) dictionary = value == "DICTIONARY";
+            if (dictionary && group == 3) {
+                if (value == "scratch") ++scratchCount;
+                if (value == "KEEP") ++keepCount;
+                if (value == "OBSERVE") ++observeCount;
+            }
+        }
+        EXPECT_EQ(scratchCount, 2u); // the typed source definition remains unresolved
+        EXPECT_EQ(keepCount, 1u);
+        EXPECT_EQ(observeCount, extendedDictionary ? 1u : 0u);
+    }
     const auto imageGroups = [](const std::string& path) {
         std::ifstream file(path, std::ios::binary);
         std::map<int, std::vector<std::string>> groups;
