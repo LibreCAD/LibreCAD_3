@@ -250,7 +250,7 @@ TEST(DxfRoundTripTest, LayerTrueColorAndByLayerEntitiesSurviveRoundTrip) {
         "0\nENDSEC\n0\nEOF\n"; }
     auto verify = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
         const auto zero = doc->layerByName("0"), black = doc->layerByName("COLOR_LAYER");
-        ASSERT_TRUE(zero); ASSERT_TRUE(black);
+        ASSERT_TRUE(zero); ASSERT_TRUE(black); EXPECT_FALSE(zero->isOff()); EXPECT_TRUE(black->isOff());
         EXPECT_EQ(zero->color().redI(), 200); EXPECT_EQ(zero->color().greenI(), 100); EXPECT_EQ(zero->color().blueI(), 50);
         EXPECT_EQ(black->color().redI(), 0); EXPECT_EQ(black->color().greenI(), 0); EXPECT_EQ(black->color().blueI(), 0);
         const auto entities = doc->entityContainer().asVector(); ASSERT_EQ(entities.size(), 2u);
@@ -260,19 +260,29 @@ TEST(DxfRoundTripTest, LayerTrueColorAndByLayerEntitiesSurviveRoundTrip) {
         }
     };
     auto doc = newDocument(); const auto imported = lc::persistence::File::importFile(doc,input,lc::persistence::File::LIBDXFRW);
-    ASSERT_TRUE(imported.ok);
-    const auto reportsOff = [](const auto& notes) { return std::any_of(notes.begin(), notes.end(), [](const std::string& note) {
-        return note.find("Layer on/off state") != std::string::npos;
-    }); };
-    EXPECT_TRUE(reportsOff(imported.loss.notes));
-    verify(doc);
+    ASSERT_TRUE(imported.ok); verify(doc);
     for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
         const auto output=uniqueTmpDxf("layer-rgb-output");
         ASSERT_TRUE(lc::persistence::File::exportFile(doc,output,type).ok);
         auto reopened=newDocument(); const auto reread = lc::persistence::File::importFile(reopened,output,lc::persistence::File::LIBDXFRW);
-        ASSERT_TRUE(reread.ok); EXPECT_TRUE(reportsOff(reread.loss.notes));
+        ASSERT_TRUE(reread.ok);
         verify(reopened); boost::filesystem::remove(output);
     }
+    // Turn the imported off layer on and off through normal layer replacement.
+    const auto offLayer = doc->layerByName("COLOR_LAYER"); ASSERT_TRUE(offLayer); ASSERT_TRUE(offLayer->isOff());
+    auto onLayer = std::make_shared<lc::meta::Layer>(offLayer->name(), offLayer->lineWidth(), offLayer->color(),
+                                                     offLayer->linePattern(), offLayer->isFrozen(), false);
+    auto toggle = std::make_shared<lc::operation::Builder>(doc, "turn on");
+    toggle->append(std::make_shared<lc::operation::ReplaceLayer>(doc, offLayer, onLayer)); toggle->execute();
+    const auto onOutput = uniqueTmpDxf("layer-on-output");
+    ASSERT_TRUE(lc::persistence::File::exportFile(doc, onOutput, lc::persistence::File::LIBDXFRW_DXF_R2004).ok);
+    auto onDoc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(onDoc, onOutput, lc::persistence::File::LIBDXFRW).ok);
+    ASSERT_TRUE(onDoc->layerByName("COLOR_LAYER")); EXPECT_FALSE(onDoc->layerByName("COLOR_LAYER")->isOff());
+    boost::filesystem::remove(onOutput);
+    auto againOff = std::make_shared<lc::meta::Layer>(onLayer->name(), onLayer->lineWidth(), onLayer->color(),
+                                                      onLayer->linePattern(), onLayer->isFrozen(), true);
+    auto toggleAgain = std::make_shared<lc::operation::Builder>(doc, "turn off");
+    toggleAgain->append(std::make_shared<lc::operation::ReplaceLayer>(doc, onLayer, againOff)); toggleAgain->execute();
     const auto legacy = uniqueTmpDxf("layer-rgb-legacy");
     const auto downgraded = lc::persistence::File::exportFile(doc, legacy, lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(downgraded.ok);

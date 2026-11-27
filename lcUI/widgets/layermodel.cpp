@@ -33,10 +33,16 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
 
     auto layer = _layers.at(index.row());
 
-    if(role == Qt::DisplayRole && index.column() == NAME) {
+    if (role == Qt::DisplayRole && index.column() == NAME) {
         return layer->name().c_str();
     }
-    else if(role == Qt::DecorationRole) {
+    if (role == Qt::DisplayRole && index.column() == VISIBILITY) {
+        return layer->isOff() ? tr("Off") : tr("On");
+    }
+    if (role == Qt::ToolTipRole && index.column() == VISIBILITY) {
+        return layer->isOff() ? tr("Turn layer on") : tr("Turn layer off");
+    }
+    if(role == Qt::DecorationRole) {
         switch (index.column()) {
         case EDIT:
             return _editIcon;

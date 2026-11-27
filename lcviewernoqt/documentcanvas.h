@@ -55,6 +55,9 @@ public:
      */
     void drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
                     const lc::entity::Insert_CSPtr& insert = nullptr);
+    void drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
+                    const lc::entity::Insert_CSPtr& insert,
+                    const lc::meta::Layer_CSPtr& inheritedLayer);
 
     /**
     * @brief drawCachedEntity

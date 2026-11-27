@@ -80,10 +80,15 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
     auto layer = model->layerAt(index.row());
     if(index.column() != LayerModel::NAME) {
         auto locked = layer->isFrozen();
+        auto off = layer->isOff();
 
         switch (index.column()) {
         case LayerModel::LOCKED:
             locked = !locked;
+            break;
+
+        case LayerModel::VISIBILITY:
+            off = !off;
             break;
 
         case LayerModel::EDIT:
@@ -99,7 +104,8 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
                             layer->lineWidth(),
                             layer->color(),
                             layer->linePattern(),
-                            locked
+                            locked,
+                            off
                         );
 
         replaceLayer(layer, newLayer);
@@ -116,7 +122,8 @@ void Layers::changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& na
                         layer->lineWidth(),
                         layer->color(),
                         layer->linePattern(),
-                        layer->isFrozen()
+                        layer->isFrozen(),
+                        layer->isOff()
                     );
 
     replaceLayer(layer, newLayer);

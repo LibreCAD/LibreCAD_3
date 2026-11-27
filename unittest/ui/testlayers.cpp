@@ -91,6 +91,19 @@ TEST(LayersTest, Edition) {
     delete mdiChild;
 }
 
+TEST(LayersTest, ToggleLayerVisibility) {
+    ensureUiApplication();
+    auto mdiChild = new CadMdiChild; mdiChild->newDocument();
+    auto layers = new LayersTest(mdiChild);
+    layers->selectLayer(0);
+    ASSERT_FALSE(mdiChild->activeLayer()->isOff());
+    layers->cellClick(LayerModel::VISIBILITY, 0);
+    ASSERT_TRUE(mdiChild->activeLayer()->isOff());
+    layers->cellClick(LayerModel::VISIBILITY, 0);
+    EXPECT_FALSE(mdiChild->activeLayer()->isOff());
+    delete layers; delete mdiChild;
+}
+
 TEST(LayersTest, Remove) {
     ensureUiApplication();
     auto mdiChild = new CadMdiChild;

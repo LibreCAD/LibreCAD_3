@@ -39,11 +39,14 @@ void LCVInsert::draw(lc::viewer::LcPainter& _painter, const lc::viewer::LcDrawOp
 }
 
 void LCVInsert::draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter) const {
-    auto shared = _insert->shared_from_this();
+    draw(docCanvas, painter, _insert->layer());
+}
 
-    for(auto entity : _entities) {
-        docCanvas->drawEntity(painter, entity.second, shared);
-    }
+void LCVInsert::draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter,
+                     const lc::meta::Layer_CSPtr& inheritedLayer) const {
+    auto shared = _insert->shared_from_this();
+    for (const auto& entity : _entities)
+        docCanvas->drawEntity(painter, entity.second, shared, inheritedLayer);
 }
 
 void LCVInsert::on_addEntityEvent(const lc::event::AddEntityEvent& event) {

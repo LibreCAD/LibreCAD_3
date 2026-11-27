@@ -742,15 +742,10 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         const auto color = data.color24 >= 0 && data.color24 <= 0xFFFFFF
             ? lc::Color((data.color24 >> 16) & 0xFF, (data.color24 >> 8) & 0xFF, data.color24 & 0xFF)
             : col->color();
-        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), color, lp, isFrozen);
+        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), color, lp, isFrozen, data.color < 0);
         if (!data.name.empty() && data.name[0] != '*') {
             _layers[upperName(data.name)] = layer;
             _preserved.sourceLayerColors[data.name] = {layer, data.color, data.color24, data.colorName};
-        }
-        if (data.color < 0) {
-            const std::string note = "Layer on/off state is not represented for editing.";
-            if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
-                _loss.notes.push_back(note);
         }
         _preserved.sourceLayerWeights[data.name] = {
             lw->width(), data.lWeight == DRW_LW_Conv::widthDefault};
@@ -1773,7 +1768,8 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     if (unchanged && (!explicitRgb || _exportVersion > DRW::AC1015) &&
         original->aci != 0 && original->aci >= -255 && original->aci <= 255)
         lay.color = original->aci;
-    if (unchanged && original->aci < 0 && lay.color > 0) lay.color = -lay.color;
+    if (lay.color < 0) lay.color = -lay.color;
+    if (layer->isOff()) lay.color = -lay.color;
     if (_exportVersion > DRW::AC1015) {
         if (needsRgb)
             lay.color24 = (static_cast<int>(col.redI()) << 16)
@@ -1784,8 +1780,8 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
         if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
             _loss.notes.push_back(note);
     }
-    if (original && !unchanged && (!original->name.empty() || original->aci < 0)) {
-        const std::string note = "Editing a layer may discard its source color name or on/off state.";
+    if (original && !unchanged && !original->name.empty()) {
+        const std::string note = "Editing a layer may discard its source color name.";
         if (std::find(_loss.notes.begin(), _loss.notes.end(), note) == _loss.notes.end())
             _loss.notes.push_back(note);
     }

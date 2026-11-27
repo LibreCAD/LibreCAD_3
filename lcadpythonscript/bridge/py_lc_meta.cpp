@@ -141,6 +141,7 @@ void import_py_lc_meta_namespace(py::module_& m_meta) {
         .def("color",             &lc::meta::Layer::color)
         .def("id",                &lc::meta::Layer::id)
         .def("isFrozen",          &lc::meta::Layer::isFrozen)
+        .def("isOff",             &lc::meta::Layer::isOff)
         .def("linePattern",       &lc::meta::Layer::linePattern)
         .def("lineWidth",         &lc::meta::Layer::lineWidth)
         .def("metaTypeID",        &lc::meta::Layer::metaTypeID)

@@ -75,11 +75,13 @@ void import_py_lc_builder_namespace(py::module_& m_builder) {
         .def("build",          &lc::builder::LayerBuilder::build)
         .def("color",          &lc::builder::LayerBuilder::color)
         .def("isFrozen",       &lc::builder::LayerBuilder::isFrozen)
+        .def("isOff",          &lc::builder::LayerBuilder::isOff)
         .def("linePattern",    &lc::builder::LayerBuilder::linePattern)
         .def("lineWidth",      &lc::builder::LayerBuilder::lineWidth)
         .def("name",           &lc::builder::LayerBuilder::name)
         .def("setColor",       &lc::builder::LayerBuilder::setColor)
         .def("setIsFrozen",    &lc::builder::LayerBuilder::setIsFrozen)
+        .def("setIsOff",       &lc::builder::LayerBuilder::setIsOff)
         .def("setLinePattern", &lc::builder::LayerBuilder::setLinePattern)
         .def("setLineWidth",   &lc::builder::LayerBuilder::setLineWidth)
         .def("setName",        &lc::builder::LayerBuilder::setName);
