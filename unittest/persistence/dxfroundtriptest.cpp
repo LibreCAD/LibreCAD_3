@@ -3116,6 +3116,7 @@ TEST(DxfRoundTripTest, CyclicDictionariesCannotHideMissingDescendants) {
                 "0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nSECTION\n2\nOBJECTS\n"
                 "0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
                 "3\nLC_A\n350\n90\n3\nLC_B\n350\n91\n3\nLC_GOOD\n350\n92\n"
+                "3\nLC_BFIRST\n350\n96\n3\nLC_AFOLLOW\n350\n95\n"
                 "3\nLC_UPSTREAM\n350\n94\n"
                 "0\nDICTIONARY\n5\n90\n330\nC\n100\nAcDbDictionary\n281\n1\n"
                 "3\nB\n350\n91\n3\nMISSING\n350\n99\n"
@@ -3123,6 +3124,8 @@ TEST(DxfRoundTripTest, CyclicDictionariesCannotHideMissingDescendants) {
                 "0\nDICTIONARY\n5\n92\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nD\n350\n93\n"
                 "0\nDICTIONARY\n5\n93\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nC\n350\n92\n"
                 "0\nDICTIONARY\n5\n94\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nB\n350\n91\n"
+                "0\nDICTIONARY\n5\n95\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nB\n350\n96\n3\nMISSING\n350\n99\n"
+                "0\nDICTIONARY\n5\n96\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nA\n350\n95\n"
                 "0\nENDSEC\n0\nEOF\n";
         ASSERT_TRUE(file.good());
     }
@@ -3134,10 +3137,12 @@ TEST(DxfRoundTripTest, CyclicDictionariesCannotHideMissingDescendants) {
     EXPECT_EQ(names.count("LC_A"), 0u);
     EXPECT_EQ(names.count("LC_B"), 0u);
     EXPECT_EQ(names.count("LC_UPSTREAM"), 0u);
+    EXPECT_EQ(names.count("LC_BFIRST"), 0u);
+    EXPECT_EQ(names.count("LC_AFOLLOW"), 0u);
     EXPECT_EQ(names.count("LC_GOOD"), 1u);
     const auto loss = result.loss.droppedByType.find("unreferenced dictionaries");
     ASSERT_NE(loss, result.loss.droppedByType.end());
-    EXPECT_EQ(loss->second, 3u);
+    EXPECT_EQ(loss->second, 5u);
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
 }
