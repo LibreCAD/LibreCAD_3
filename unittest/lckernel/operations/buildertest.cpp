@@ -1142,6 +1142,37 @@ TEST(BuilderTest, AreaMergePreservesElevationRange) {
     EXPECT_DOUBLE_EQ(withArea.maxP().z(), 12);
 }
 
+TEST(BuilderTest, AreaFromSizePreservesOriginElevation) {
+    for (double z : {-4., 0., 4.}) {
+        const lc::geo::Area area(lc::geo::Coordinate(1, 2, z), -3, 5);
+        EXPECT_DOUBLE_EQ(area.minP().x(), -2);
+        EXPECT_DOUBLE_EQ(area.maxP().x(), 1);
+        EXPECT_DOUBLE_EQ(area.minP().y(), 2);
+        EXPECT_DOUBLE_EQ(area.maxP().y(), 7);
+        EXPECT_DOUBLE_EQ(area.minP().z(), z);
+        EXPECT_DOUBLE_EQ(area.maxP().z(), z);
+    }
+}
+
+TEST(BuilderTest, SplinePointHullTracksElevationOnMove) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto layer = document->layerByName("0");
+    const std::vector<lc::geo::Coordinate> points{{0, 1, 10}, {2, 3, -4}, {4, 1, 7}};
+    const std::vector<lc::geo::Coordinate> empty;
+    for (bool fitOnly : {false, true}) {
+        auto spline = std::make_shared<lc::entity::Spline>(fitOnly ? empty : points,
+                fitOnly ? std::vector<double>{} : std::vector<double>{0, 0, 0, 1, 1, 1},
+                fitOnly ? points : empty, 2, false, 0.,
+                0., 0., 0., 0., 0., 0., 0., 0., 1.,
+                static_cast<lc::geo::Spline::splineflag>(0), layer);
+        EXPECT_DOUBLE_EQ(spline->boundingBox().minP().z(), -4);
+        EXPECT_DOUBLE_EQ(spline->boundingBox().maxP().z(), 10);
+        const auto moved = spline->move(lc::geo::Coordinate(0, 0, 5));
+        EXPECT_DOUBLE_EQ(moved->boundingBox().minP().z(), 1);
+        EXPECT_DOUBLE_EQ(moved->boundingBox().maxP().z(), 15);
+    }
+}
+
 TEST(BuilderTest, ElevatedEllipseBoundsKeepTheirPlane) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
     auto layer = document->layerByName("0");

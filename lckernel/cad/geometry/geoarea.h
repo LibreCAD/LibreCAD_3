@@ -38,7 +38,7 @@ public:
      * @param width
      * @param height
      */
-    explicit Area(const Coordinate& coord, double width, double height) : Area(coord, Coordinate(coord.x() + width, coord.y() + height)) {
+    explicit Area(const Coordinate& coord, double width, double height) : Area(coord, coord + Coordinate(width, height)) {
     }
 
     //explicit Area(const Area &a) : _minP(a._minP), _maxP(a._maxP) {}
