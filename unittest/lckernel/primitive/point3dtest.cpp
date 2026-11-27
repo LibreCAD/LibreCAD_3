@@ -74,3 +74,16 @@ TEST(Point3D, BoundsSnapAndDragRetainElevation) {
     ASSERT_NE(dragged, nullptr);
     EXPECT_EQ(dragged->id(), point->id());
 }
+
+TEST(Point3D, MirrorIsIndependentOfAxisMagnitude) {
+    const auto point = std::make_shared<Point>(Coordinate(3, 4, 7), nullptr);
+    for (const double length : {1e-300, 1e-200, 1e200, 1e300}) {
+        const auto mirrored = asPoint(point->mirror(Coordinate(0, 0), Coordinate(length, length)));
+        expectPosition(mirrored, 4, 3, 7);
+        const auto spatial = asPoint(point->mirror(Coordinate(0, 0, 0), Coordinate(length, length, length)));
+        ASSERT_NE(spatial, nullptr);
+        EXPECT_NEAR(spatial->x(), 19.0 / 3.0, 1e-12);
+        EXPECT_NEAR(spatial->y(), 16.0 / 3.0, 1e-12);
+        EXPECT_NEAR(spatial->z(), 7.0 / 3.0, 1e-12);
+    }
+}
