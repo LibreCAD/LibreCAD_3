@@ -11,6 +11,7 @@
 #include <cad/primitive/arc.h>
 #include <cad/primitive/circle.h>
 #include <cad/primitive/ellipse.h>
+#include <cad/primitive/image.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/insert.h>
 #include <cad/builders/insert.h>
@@ -446,6 +447,30 @@ TEST(CanvasScaleTest, ElevatedPointCanBeSelectedAndSnappedInPlanarView) {
     EXPECT_DOUBLE_EQ(receiver.point.x(), 2); EXPECT_DOUBLE_EQ(receiver.point.y(), 3); EXPECT_DOUBLE_EQ(receiver.point.z(), 70);
     snap.setDeviceLocation(100, 100);
     EXPECT_DOUBLE_EQ(receiver.point.x(), 100); EXPECT_DOUBLE_EQ(receiver.point.y(), 100); EXPECT_DOUBLE_EQ(receiver.point.z(), 0);
+    snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
+}
+
+TEST(CanvasScaleTest, ElevatedImageCanBeSelectedAndSnappedInPlanarView) {
+    struct Receiver {
+        lc::geo::Coordinate point;
+        void onSnap(const lc::viewer::event::SnapPointEvent& event) { point = event.snapPoint(); }
+    } receiver;
+    auto doc = makeDocument();
+    auto image = std::make_shared<lc::entity::Image>("scratch.png", lc::geo::Coordinate(2, 3, 70),
+        lc::geo::Coordinate(1, 0, 0), lc::geo::Coordinate(0, 1, 0), 4, 5, 50, 50, 0,
+        doc->layerByName("0"), nullptr);
+    auto insert = std::make_shared<lc::operation::EntityBuilder>(doc);
+    insert->appendEntity(image); insert->execute();
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc);
+    canvas->selectPoint(2, 3);
+    ASSERT_EQ(canvas->selectedDrawables().size(), 1u);
+    lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10);
+    snap.setMiddleSnappable(true);
+    snap.snapPointEvents().connect<Receiver, &Receiver::onSnap>(&receiver);
+    snap.setDeviceLocation(2, 3);
+    EXPECT_EQ(receiver.point, lc::geo::Coordinate(2, 3, 70));
+    snap.setDeviceLocation(100, 100);
+    EXPECT_EQ(receiver.point, lc::geo::Coordinate(100, 100, 0));
     snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
 }
 
