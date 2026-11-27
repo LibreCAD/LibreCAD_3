@@ -30,6 +30,16 @@ std::string bytes(const std::filesystem::path& path) {
     std::ifstream in(path, std::ios::binary);
     return {std::istreambuf_iterator<char>(in), {}};
 }
+std::string asciiText(const std::filesystem::path& path) {
+    const auto input = bytes(path);
+    std::string text;
+    text.reserve(input.size());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+        if (input[i] == '\r' && i + 1 < input.size() && input[i + 1] == '\n') continue;
+        text.push_back(input[i]);
+    }
+    return text;
+}
 std::string groupInRecord(const std::string& contents, const std::string& kind,
                           int identityCode, const std::string& identity, int wantedCode) {
     std::istringstream in(contents); std::string code, value;
@@ -66,11 +76,18 @@ void expectPaperLine(const std::shared_ptr<Document>& doc, const char* name) {
     EXPECT_EQ(line->start().x(), 2); EXPECT_EQ(line->start().y(), 3);
     EXPECT_EQ(line->end().x(), 7); EXPECT_EQ(line->end().y(), 11);
 }
+TEST(LayoutGraph, AsciiLineNormalizationDoesNotChangeRawBytes) {
+    Scratch dir; const auto path = dir.path / "line-endings.dxf";
+    const std::string input = "  0\r\nLAYOUT\r\n1\nvalue\rX\n";
+    { std::ofstream out(path, std::ios::binary); out.write(input.data(), input.size()); }
+    EXPECT_EQ(bytes(path), input);
+    EXPECT_EQ(asciiText(path), "  0\nLAYOUT\n1\nvalue\rX\n");
+}
 TEST(LayoutGraph, SavesReopensAndRetriesWithoutLosingPaperContents) {
     Scratch dir; auto first = dir.path / "first.dxf", second = dir.path / "second.dxf";
     auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space"); insertPaperLine(doc, "*Paper_Space0");
     ASSERT_TRUE(File::exportFile(doc, first.string(), File::LIBDXFRW_DXF_R2004).ok);
-    auto input = bytes(first); ASSERT_NE(input.find("  0\nLAYOUT\n"), std::string::npos);
+    auto input = asciiText(first); ASSERT_NE(input.find("  0\nLAYOUT\n"), std::string::npos);
     auto reopened = makeDocument(); auto read = File::importFile(reopened, first.string(), File::LIBDXFRW);
     ASSERT_TRUE(read.ok); EXPECT_EQ(read.loss.droppedByType.count("LAYOUT"), 0u);
     expectPaperLine(reopened, "*Paper_Space"); expectPaperLine(reopened, "*Paper_Space0");
@@ -251,7 +268,7 @@ TEST(LayoutGraph, ExtraAsciiRawRecordRefusesBinaryAndAllowsAsciiRetry) {
     Scratch dir; const auto original = dir.path / "original.dxf", changed = dir.path / "changed.dxf", output = dir.path / "output.dxf";
     auto doc = makeDocument(); insertPaperLine(doc, "*Paper_Space0");
     ASSERT_TRUE(File::exportFile(doc, original.string(), File::LIBDXFRW_DXF_R2004).ok);
-    auto input = bytes(original); const auto end = input.rfind("  0\nENDSEC\n"); ASSERT_NE(end, std::string::npos);
+    auto input = asciiText(original); const auto end = input.rfind("  0\nENDSEC\n"); ASSERT_NE(end, std::string::npos);
     input.insert(end, "  0\nXRECORD\n  5\nABC\n330\nC\n100\nAcDbXrecord\n280\n     1\n");
     { std::ofstream out(changed); out << input; }
     auto imported = makeDocument(); const auto read = File::importFile(imported, changed.string(), File::LIBDXFRW);
@@ -298,7 +315,7 @@ TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
     auto originalDoc = makeDocument(); insertPaperLine(originalDoc, "*Paper_Space0");
     ASSERT_TRUE(File::exportFile(originalDoc, original.string(), File::LIBDXFRW_DXF_R2004).ok);
-    auto input = bytes(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
+    auto input = asciiText(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
     const auto subclass = input.find("100\nAcDbPlotSettings\n", layout); ASSERT_NE(subclass, std::string::npos);
     input.insert(subclass, "102\n{ACAD_REACTORS\n330\nC\n102\n}\n"); { std::ofstream out(changed); out << input; }
     auto imported = makeDocument(); const auto read = File::importFile(imported, changed.string(), File::LIBDXFRW);
@@ -313,7 +330,7 @@ TEST(LayoutGraph, UnrecognizedLayoutSourceRemainsReported) {
 TEST(LayoutGraph, UnmodeledPaperBlockMetadataRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
     ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
-    auto input = bytes(original); const auto block = input.find("  0\nBLOCK\n  5\n1C\n"); ASSERT_NE(block, std::string::npos);
+    auto input = asciiText(original); const auto block = input.find("  0\nBLOCK\n  5\n1C\n"); ASSERT_NE(block, std::string::npos);
     const auto subclass = input.find("100\nAcDbBlockBegin\n", block); ASSERT_NE(subclass, std::string::npos);
     input.insert(subclass, " 62\n     1\n"); { std::ofstream out(changed); out << input; }
     auto read = File::importFile(makeDocument(), changed.string(), File::LIBDXFRW);
@@ -322,7 +339,7 @@ TEST(LayoutGraph, UnmodeledPaperBlockMetadataRemainsReported) {
 TEST(LayoutGraph, ExternalPlotResourceRemainsReported) {
     Scratch dir; auto original = dir.path / "first.dxf", changed = dir.path / "changed.dxf";
     ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
-    auto input = bytes(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
+    auto input = asciiText(original); const auto layout = input.find("  0\nLAYOUT\n"); ASSERT_NE(layout, std::string::npos);
     const auto printer = input.find("  2\n\n", layout); ASSERT_NE(printer, std::string::npos);
     input.insert(printer + 4, "MissingPrinter.pc3"); { std::ofstream out(changed); out << input; }
     auto read = File::importFile(makeDocument(), changed.string(), File::LIBDXFRW);
@@ -331,7 +348,7 @@ TEST(LayoutGraph, ExternalPlotResourceRemainsReported) {
 TEST(LayoutGraph, RemapsReferencesToThePreservedPaperBlockBoundary) {
     Scratch dir; auto original = dir.path / "original.dxf", source = dir.path / "source.dxf", output = dir.path / "output.dxf";
     ASSERT_TRUE(File::exportFile(makeDocument(), original.string(), File::LIBDXFRW_DXF_R2004).ok);
-    auto data = bytes(original);
+    auto data = asciiText(original);
     const auto oldBegin = groupInRecord(data, "BLOCK", 2, "*Paper_Space0", 5); ASSERT_FALSE(oldBegin.empty());
     const auto oldOwner = groupInRecord(data, "BLOCK", 2, "*Paper_Space0", 330); ASSERT_FALSE(oldOwner.empty());
     const auto oldEnd = groupInRecord(data, "ENDBLK", 330, oldOwner, 5); ASSERT_FALSE(oldEnd.empty());
@@ -344,7 +361,7 @@ TEST(LayoutGraph, RemapsReferencesToThePreservedPaperBlockBoundary) {
     auto doc = makeDocument(); const auto imported = File::importFile(doc, source.string(), File::LIBDXFRW);
     ASSERT_TRUE(imported.ok); EXPECT_EQ(imported.loss.droppedByType.count("LAYOUT"), 0u);
     ASSERT_TRUE(File::exportFile(doc, output.string(), File::LIBDXFRW_DXF_R2004).ok);
-    const auto result = bytes(output);
+    const auto result = asciiText(output);
     const auto newBegin = groupInRecord(result, "BLOCK", 2, "*Paper_Space0", 5);
     const auto newOwner = groupInRecord(result, "BLOCK", 2, "*Paper_Space0", 330);
     const auto newEnd = groupInRecord(result, "ENDBLK", 330, newOwner, 5);
