@@ -109,6 +109,7 @@ void import_lc_meta_namespace(kaguya::State& state) {
                                           .addFunction("id", &lc::meta::Layer::id)
                                           .addFunction("isFrozen", &lc::meta::Layer::isFrozen)
                                           .addFunction("isOff", &lc::meta::Layer::isOff)
+                                          .addFunction("isLocked", &lc::meta::Layer::isLocked)
                                           .addFunction("linePattern", &lc::meta::Layer::linePattern)
                                           .addFunction("lineWidth", &lc::meta::Layer::lineWidth)
                                           .addFunction("metaTypeID", &lc::meta::Layer::metaTypeID)

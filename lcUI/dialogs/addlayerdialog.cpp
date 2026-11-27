@@ -69,7 +69,8 @@ void AddLayerDialog::accept() {
                     colorSelect->color(),
                     nullptr,
                     _oldLayer && _oldLayer->isFrozen(),
-                    _oldLayer && _oldLayer->isOff()
+                    _oldLayer && _oldLayer->isOff(),
+                    _oldLayer && _oldLayer->isLocked()
                 );
     }
     else {
@@ -79,7 +80,8 @@ void AddLayerDialog::accept() {
                     colorSelect->color(),
                     linePattern,
                     _oldLayer && _oldLayer->isFrozen(),
-                    _oldLayer && _oldLayer->isOff()
+                    _oldLayer && _oldLayer->isOff(),
+                    _oldLayer && _oldLayer->isLocked()
                 );
     }
 

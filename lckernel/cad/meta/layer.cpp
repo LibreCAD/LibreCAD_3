@@ -15,6 +15,11 @@ Layer::Layer(std::string name,
 
 Layer::Layer(std::string name, const MetaLineWidthByValue& lineWidth, const Color& color,
              DxfLinePatternByValue_CSPtr linepattern, bool frozen, bool off) :
+    Layer(std::move(name), lineWidth, color, std::move(linepattern), frozen, off, false) {
+}
+
+Layer::Layer(std::string name, const MetaLineWidthByValue& lineWidth, const Color& color,
+             DxfLinePatternByValue_CSPtr linepattern, bool frozen, bool off, bool locked) :
     EntityMetaType(),
     DocumentMetaType(),
     _name(std::move(name)),
@@ -22,7 +27,8 @@ Layer::Layer(std::string name, const MetaLineWidthByValue& lineWidth, const Colo
     _color(color),
     _linepattern(std::move(linepattern)),
     _isFrozen(frozen),
-    _isOff(off) {
+    _isOff(off),
+    _isLocked(locked) {
     assert(!tools::StringHelper::isBlank(_name) && "Name cannot be blank");
 }
 
@@ -34,7 +40,8 @@ Layer::Layer(const builder::LayerBuilder& builder) :
     _color(builder.color()),
     _linepattern(builder.linePattern()),
     _isFrozen(builder.isFrozen()),
-    _isOff(builder.isOff()) {
+    _isOff(builder.isOff()),
+    _isLocked(builder.isLocked()) {
 }
 
 lc::Color Layer::color() const {
@@ -55,6 +62,10 @@ bool Layer::isFrozen() const {
 
 bool Layer::isOff() const {
     return _isOff;
+}
+
+bool Layer::isLocked() const {
+    return _isLocked;
 }
 
 const std::string Layer::name() const {

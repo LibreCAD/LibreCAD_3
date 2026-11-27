@@ -298,19 +298,19 @@ TEST(CanvasScaleTest, NestedInsertLayerZeroInheritsVisibility) {
         int draws{0};
     } painter;
     auto doc = makeDocument(); auto originalZero = doc->layerByName("0");
-    auto zeroOff = std::make_shared<lc::meta::Layer>("0", originalZero->lineWidth(), originalZero->color(), nullptr, false, true);
-    auto edit = std::make_shared<lc::operation::Builder>(doc, "turn zero off");
-    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, originalZero, zeroOff)); edit->execute();
+    auto zeroFrozen = std::make_shared<lc::meta::Layer>("0", originalZero->lineWidth(), originalZero->color(), nullptr, true, false);
+    auto edit = std::make_shared<lc::operation::Builder>(doc, "freeze layer zero");
+    edit->append(std::make_shared<lc::operation::ReplaceLayer>(doc, originalZero, zeroFrozen)); edit->execute();
     auto on = std::make_shared<lc::meta::Layer>("ON", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255), nullptr, false, false);
     auto off = std::make_shared<lc::meta::Layer>("OFF", lc::meta::MetaLineWidthByValue(1), lc::Color(255,0,0), nullptr, false, true);
     doc->addDocumentMetaType(on); doc->addDocumentMetaType(off);
     auto outer = std::make_shared<lc::meta::Block>("OUTER"); auto inner = std::make_shared<lc::meta::Block>("INNER");
     doc->addDocumentMetaType(outer); doc->addDocumentMetaType(inner);
     auto children = std::make_shared<lc::operation::EntityBuilder>(doc);
-    children->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0), lc::geo::Coordinate(3,3), zeroOff, nullptr, inner));
+    children->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0), lc::geo::Coordinate(3,3), zeroFrozen, nullptr, inner));
     children->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,10000), lc::geo::Coordinate(3,10003), off, nullptr, outer));
     children->execute();
-    lc::builder::InsertBuilder nested; nested.setDocument(doc); nested.setDisplayBlock(inner); nested.setLayer(zeroOff); nested.setBlock(outer);
+    lc::builder::InsertBuilder nested; nested.setDocument(doc); nested.setDisplayBlock(inner); nested.setLayer(zeroFrozen); nested.setBlock(outer);
     nested.setCoordinate(lc::geo::Coordinate(0,0));
     auto nestedInsert = nested.build();
     auto place = std::make_shared<lc::operation::EntityBuilder>(doc); place->appendEntity(nestedInsert); place->execute();
@@ -373,4 +373,42 @@ TEST(CanvasScaleTest, FitExcludesHiddenInsertChildren) {
     TransformPainter visibleAgain;
     canvas->autoScale(visibleAgain);
     EXPECT_LT(visibleAgain.scale(), 1.0);
+}
+
+TEST(CanvasScaleTest, FrozenAndLockedLayersHaveDifferentBehavior) {
+    class CountingPainter : public TransformPainter {
+    public:
+        void source_rgba(double, double, double, double) override { ++draws; }
+        int draws{0};
+    } painter;
+    struct Receiver {
+        lc::geo::Coordinate point;
+        void onSnap(const lc::viewer::event::SnapPointEvent& event) { point = event.snapPoint(); }
+    } receiver;
+    auto doc = makeDocument();
+    auto frozen = std::make_shared<lc::meta::Layer>("FROZEN", lc::meta::MetaLineWidthByValue(1),
+        lc::Color(255, 0, 0), nullptr, true, false, false);
+    auto locked = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1),
+        lc::Color(0, 255, 0), nullptr, false, false, true);
+    doc->addDocumentMetaType(frozen); doc->addDocumentMetaType(locked);
+    auto visibleLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(10, 0), doc->layerByName("0"));
+    auto lockedLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 10), lc::geo::Coordinate(10, 20), locked);
+    auto frozenLine = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 10000), lc::geo::Coordinate(10, 10010), frozen);
+    auto builder = std::make_shared<lc::operation::EntityBuilder>(doc);
+    builder->appendEntity(visibleLine); builder->appendEntity(lockedLine); builder->appendEntity(frozenLine); builder->execute();
+    auto canvas = std::make_shared<lc::viewer::DocumentCanvas>(doc); canvas->newDeviceSize(800, 600);
+    canvas->drawEntity(painter, canvas->getDrawable(lockedLine)); EXPECT_EQ(painter.draws, 1);
+    canvas->drawEntity(painter, canvas->getDrawable(frozenLine)); EXPECT_EQ(painter.draws, 1);
+    canvas->autoScale(painter); EXPECT_GT(painter.scale(), 1.0);
+    canvas->selectAll(); ASSERT_EQ(canvas->selectedDrawables().size(), 1u);
+    EXPECT_EQ(canvas->selectedDrawables()[0]->entity()->id(), visibleLine->id());
+    canvas->removeSelection(); canvas->selectEntity(lockedLine); EXPECT_TRUE(canvas->selectedDrawables().empty());
+    canvas->selectEntity(frozenLine); EXPECT_TRUE(canvas->selectedDrawables().empty());
+    lc::viewer::manager::SnapManagerImpl snap(canvas, nullptr, 10);
+    snap.setEntitySnappable(true); snap.snapPointEvents().connect<Receiver, &Receiver::onSnap>(&receiver);
+    snap.setDeviceLocation(2, 13);
+    EXPECT_NEAR(receiver.point.x(), 2.5, 1e-12); EXPECT_NEAR(receiver.point.y(), 12.5, 1e-12);
+    snap.setDeviceLocation(2, 10003);
+    EXPECT_DOUBLE_EQ(receiver.point.x(), 2); EXPECT_DOUBLE_EQ(receiver.point.y(), 10003);
+    snap.snapPointEvents().disconnect<Receiver, &Receiver::onSnap>(&receiver);
 }

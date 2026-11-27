@@ -10,7 +10,8 @@ LayerBuilder::LayerBuilder() :
     _color(),
     _linePattern(nullptr),
     _isFrozen(false),
-    _isOff(false) {
+    _isOff(false),
+    _isLocked(false) {
 
 }
 
@@ -36,6 +37,10 @@ bool LayerBuilder::isFrozen() const {
 
 bool LayerBuilder::isOff() const {
     return _isOff;
+}
+
+bool LayerBuilder::isLocked() const {
+    return _isLocked;
 }
 
 LayerBuilder* LayerBuilder::setName(const std::string& name) {
@@ -66,6 +71,11 @@ LayerBuilder* LayerBuilder::setIsFrozen(bool isFrozen) {
 
 LayerBuilder* LayerBuilder::setIsOff(bool isOff) {
     _isOff = isOff;
+    return this;
+}
+
+LayerBuilder* LayerBuilder::setIsLocked(bool isLocked) {
+    _isLocked = isLocked;
     return this;
 }
 

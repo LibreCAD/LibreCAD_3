@@ -21,6 +21,7 @@ public:
         EDIT,
         LOCKED,
         VISIBILITY,
+        FROZEN,
         LAST
     };
 

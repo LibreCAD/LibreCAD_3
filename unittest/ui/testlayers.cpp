@@ -75,17 +75,17 @@ TEST(LayersTest, Edition) {
     /*
      * Trigger locked
      */
-    bool locked = mdiChild->activeLayer()->isFrozen();
+    bool locked = mdiChild->activeLayer()->isLocked();
 
     layers->cellClick(LayerModel::LOCKED, 0);
     locked = !locked;
 
-    ASSERT_EQ(locked, mdiChild->activeLayer()->isFrozen()) << "Locked value didn't change";
+    ASSERT_EQ(locked, mdiChild->activeLayer()->isLocked()) << "Locked value didn't change";
 
     layers->cellClick(LayerModel::LOCKED, 0);
     locked = !locked;
 
-    EXPECT_EQ(locked, mdiChild->activeLayer()->isFrozen()) << "Locked value didn't change";
+    EXPECT_EQ(locked, mdiChild->activeLayer()->isLocked()) << "Locked value didn't change";
 
     delete layers;
     delete mdiChild;
@@ -249,4 +249,17 @@ TEST(LayersTest, ButtonClickTest) {
     }
     EXPECT_TRUE(found);
     ensureUiApplication().closeAllWindows();
+}
+
+TEST(LayersTest, FreezeAndLockAreIndependent) {
+    ensureUiApplication();
+    auto mdiChild = new CadMdiChild; mdiChild->newDocument();
+    auto layers = new LayersTest(mdiChild); layers->selectLayer(0);
+    layers->cellClick(LayerModel::FROZEN, 0);
+    ASSERT_TRUE(mdiChild->activeLayer()->isFrozen()); EXPECT_FALSE(mdiChild->activeLayer()->isLocked());
+    layers->cellClick(LayerModel::LOCKED, 0);
+    ASSERT_TRUE(mdiChild->activeLayer()->isFrozen()); ASSERT_TRUE(mdiChild->activeLayer()->isLocked());
+    layers->cellClick(LayerModel::FROZEN, 0);
+    EXPECT_FALSE(mdiChild->activeLayer()->isFrozen()); EXPECT_TRUE(mdiChild->activeLayer()->isLocked());
+    delete layers; delete mdiChild;
 }

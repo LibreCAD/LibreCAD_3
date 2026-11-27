@@ -74,3 +74,13 @@ TEST(LayerOps, ReplaceAndRemoveCoverBlockEntitiesAndPreserveInsertIdentity) {
     EXPECT_TRUE(document->entityByID(lineId)); EXPECT_TRUE(document->entityByID(insertId));
     EXPECT_TRUE(document->entityByID(imageId));
 }
+
+TEST(LayerOps, BuilderKeepsFrozenOffAndLockedIndependent) {
+    lc::builder::LayerBuilder builder;
+    builder.setName("STATES"); builder.setIsFrozen(true); builder.setIsOff(false); builder.setIsLocked(true);
+    const auto layer = builder.build(); ASSERT_TRUE(layer);
+    EXPECT_TRUE(layer->isFrozen()); EXPECT_FALSE(layer->isOff()); EXPECT_TRUE(layer->isLocked());
+    builder.setIsFrozen(false); builder.setIsOff(true); builder.setIsLocked(false);
+    const auto another = builder.build(); ASSERT_TRUE(another);
+    EXPECT_FALSE(another->isFrozen()); EXPECT_TRUE(another->isOff()); EXPECT_FALSE(another->isLocked());
+}

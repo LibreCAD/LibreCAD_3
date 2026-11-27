@@ -58,7 +58,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
             realDistanceForPixels, _snapConstrain);
     entities.erase(std::remove_if(entities.begin(), entities.end(), [](const lc::EntityDistance& candidate) {
         const auto entity = candidate.entity();
-        return entity && entity->layer() && entity->layer()->isOff();
+        return entity && entity->layer() && entity->layer()->isHidden();
     }), entities.end());
     std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
 

@@ -742,7 +742,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         const auto color = data.color24 >= 0 && data.color24 <= 0xFFFFFF
             ? lc::Color((data.color24 >> 16) & 0xFF, (data.color24 >> 8) & 0xFF, data.color24 & 0xFF)
             : col->color();
-        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), color, lp, isFrozen, data.color < 0);
+        auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), color, lp, isFrozen, data.color < 0, (data.flags & 4) != 0);
         if (!data.name.empty() && data.name[0] != '*') {
             _layers[upperName(data.name)] = layer;
             _preserved.sourceLayerColors[data.name] = {layer, data.color, data.color24, data.colorName};
@@ -1823,7 +1823,7 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
         lay.lineType = lp->name();
     }
 
-    lay.flags = layer->isFrozen() ? 0x01 : 0x00;
+    lay.flags = (layer->isFrozen() ? 0x01 : 0x00) | (layer->isLocked() ? 0x04 : 0x00);
 
     dxfW->writeLayer(&lay);
 }

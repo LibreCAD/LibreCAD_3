@@ -4483,3 +4483,31 @@ TEST(DxfRoundTripTest, BlockLayerVisibilitySurvivesSaveReopenAndUndo) {
     ASSERT_TRUE(doc->entityByID(childId)); EXPECT_EQ(doc->entityByID(childId)->layer(), off);
     boost::filesystem::remove(source);
 }
+
+TEST(DxfRoundTripTest, FrozenAndLockedFlagsRoundTripIndependently) {
+    const auto source = uniqueTmpDxf("layer-state-source");
+    {
+        std::ofstream f(source);
+        f << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n"
+             "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n3\n"
+             "0\nLAYER\n2\nFROZEN\n70\n1\n62\n3\n6\nCONTINUOUS\n"
+             "0\nLAYER\n2\nLOCKED\n70\n4\n62\n3\n6\nCONTINUOUS\n"
+             "0\nLAYER\n2\nBOTH\n70\n5\n62\n-3\n6\nCONTINUOUS\n"
+             "0\nENDTAB\n0\nENDSEC\n0\nEOF\n";
+    }
+    auto check = [](const std::shared_ptr<lc::storage::DocumentImpl>& doc) {
+        auto frozen = doc->layerByName("FROZEN"), locked = doc->layerByName("LOCKED"), both = doc->layerByName("BOTH");
+        ASSERT_TRUE(frozen); ASSERT_TRUE(locked); ASSERT_TRUE(both);
+        EXPECT_TRUE(frozen->isFrozen()); EXPECT_FALSE(frozen->isLocked()); EXPECT_FALSE(frozen->isOff());
+        EXPECT_FALSE(locked->isFrozen()); EXPECT_TRUE(locked->isLocked()); EXPECT_FALSE(locked->isOff());
+        EXPECT_TRUE(both->isFrozen()); EXPECT_TRUE(both->isLocked()); EXPECT_TRUE(both->isOff());
+    };
+    auto doc = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok); check(doc);
+    for (const auto type : {lc::persistence::File::LIBDXFRW_DXF_R2004, lc::persistence::File::LIBDXFRW_DXB_R2004}) {
+        auto path = uniqueTmpDxf("layer-state-output");
+        ASSERT_TRUE(lc::persistence::File::exportFile(doc, path, type).ok);
+        auto reopened = newDocument(); ASSERT_TRUE(lc::persistence::File::importFile(reopened, path, lc::persistence::File::LIBDXFRW).ok);
+        check(reopened); boost::filesystem::remove(path);
+    }
+    boost::filesystem::remove(source);
+}

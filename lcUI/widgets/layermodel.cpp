@@ -39,6 +39,12 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::DisplayRole && index.column() == VISIBILITY) {
         return layer->isOff() ? tr("Off") : tr("On");
     }
+    if (role == Qt::DisplayRole && index.column() == FROZEN) {
+        return layer->isFrozen() ? tr("Frozen") : tr("Thawed");
+    }
+    if (role == Qt::ToolTipRole && index.column() == FROZEN) {
+        return layer->isFrozen() ? tr("Thaw layer") : tr("Freeze layer");
+    }
     if (role == Qt::ToolTipRole && index.column() == VISIBILITY) {
         return layer->isOff() ? tr("Turn layer on") : tr("Turn layer off");
     }
@@ -48,7 +54,7 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
             return _editIcon;
 
         case LOCKED:
-            if (layer->isFrozen()) {
+            if (layer->isLocked()) {
                 return _lockedIcon;
             }
             return _unlockedIcon;

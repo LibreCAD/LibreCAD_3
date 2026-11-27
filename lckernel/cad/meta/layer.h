@@ -23,6 +23,8 @@ public:
          );
     Layer(std::string name, const MetaLineWidthByValue& lineWidth, const Color& color,
           DxfLinePatternByValue_CSPtr linepattern, bool frozen, bool off);
+    Layer(std::string name, const MetaLineWidthByValue& lineWidth, const Color& color,
+          DxfLinePatternByValue_CSPtr linepattern, bool frozen, bool off, bool locked);
 
     virtual ~Layer() = default;
 
@@ -46,6 +48,8 @@ public:
 
     bool isFrozen() const;
     bool isOff() const;
+    bool isLocked() const;
+    bool isHidden() const { return _isOff || _isFrozen; }
 
     virtual const std::string name() const;
 
@@ -62,6 +66,7 @@ private:
     DxfLinePatternByValue_CSPtr _linepattern;
     bool _isFrozen;
     bool _isOff;
+    bool _isLocked;
 
     friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
         os << "Layer(name=" << layer.name() << " lineWidth=" << layer.lineWidth() << " color="
