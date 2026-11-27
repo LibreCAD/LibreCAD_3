@@ -1056,7 +1056,12 @@ TEST(BuilderTest, PointLayerReplacementAndTransformsPreserve3dCoordinate) {
     EXPECT_DOUBLE_EQ(copied->x(), 6); EXPECT_DOUBLE_EQ(copied->y(), 8); EXPECT_DOUBLE_EQ(copied->z(), 10);
     EXPECT_NEAR(rotated->x(), -2, 1e-12); EXPECT_NEAR(rotated->y(), 1, 1e-12); EXPECT_DOUBLE_EQ(rotated->z(), 3);
     EXPECT_DOUBLE_EQ(scaled->x(), 2); EXPECT_DOUBLE_EQ(scaled->y(), 6); EXPECT_DOUBLE_EQ(scaled->z(), 12);
-    EXPECT_DOUBLE_EQ(mirrored->z(), 3);
+    EXPECT_DOUBLE_EQ(mirrored->x(), 1); EXPECT_DOUBLE_EQ(mirrored->y(), -2); EXPECT_DOUBLE_EQ(mirrored->z(), -3);
+    EXPECT_EQ(mirrored->id(), point->id()); EXPECT_EQ(mirrored->layer(), layer);
+    auto shiftedMirror = std::dynamic_pointer_cast<const lc::entity::Point>(point->mirror(
+        lc::geo::Coordinate(2, 0, 3), lc::geo::Coordinate(2, 1, 3)));
+    ASSERT_TRUE(shiftedMirror); EXPECT_DOUBLE_EQ(shiftedMirror->x(), 3);
+    EXPECT_DOUBLE_EQ(shiftedMirror->y(), 2); EXPECT_DOUBLE_EQ(shiftedMirror->z(), 3);
     auto sameIdCopy = std::make_shared<lc::entity::Point>(point, true);
     EXPECT_EQ(sameIdCopy->id(), point->id()); EXPECT_DOUBLE_EQ(sameIdCopy->z(), 3);
     auto locked = lc::meta::Layer::withState(layer, false, false, true);

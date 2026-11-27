@@ -50,7 +50,7 @@ CADEntity_CSPtr Point::scale(const geo::Coordinate& scale_center, const geo::Coo
 }
 
 CADEntity_CSPtr Point::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    auto rotcord = geo::Coordinate(this->x(), this->y(), this->z()).rotate(axis1, axis2);
+    auto rotcord = geo::Coordinate(this->x(), this->y(), this->z()).mirror(axis1, axis2);
     auto newCoordinate = std::make_shared<Point>(rotcord, layer(), metaInfo(), block());
     newCoordinate->setID(this->id());
     return newCoordinate;
