@@ -1,5 +1,7 @@
 #include "image.h"
 
+#include <algorithm>
+#include <cmath>
 
 #include "cad/geometry/geoarea.h"
 
@@ -93,11 +95,12 @@ geo::Coordinate Image::nearestPointOnEntity(const geo::Coordinate& coord) const 
     return geo::Coordinate();
 }
 
-CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Image::withGeometry(const geo::Coordinate& base, const geo::Coordinate& uv,
+                                    const geo::Coordinate& vv) const {
     auto newImage = std::make_shared<Image>(_name,
-                                            _base + offset,
-                                            _uv,
-                                            _vv,
+                                            base,
+                                            uv,
+                                            vv,
                                             _width,
                                             _height,
                                             _brightness,
@@ -108,6 +111,10 @@ CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
                                            );
     newImage->setID(this->id());
     return newImage;
+}
+
+CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
+    return withGeometry(_base + offset, _uv, _vv);
 }
 
 CADEntity_CSPtr Image::copy(const geo::Coordinate& offset) const {
@@ -127,17 +134,26 @@ CADEntity_CSPtr Image::copy(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Image::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
-    // auto newImage = std::make_shared<Image>(_bottomLeft.rotate(rotation_center, rotation_angle),
-    //                                           _topRight.rotate(rotation_center, rotation_angle), layer());
-    // newImage->setID(this->id());
-    return nullptr;
+    return withGeometry(_base.rotate(rotation_center, rotation_angle),
+                        _uv.rotate(rotation_angle), _vv.rotate(rotation_angle));
 }
 
 CADEntity_CSPtr Image::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-//   auto newImage = std::make_shared<Image>(_bottomLeft.scale(scale_center, scale_factor),
-    //                                           _topRight.scale(scale_center, scale_factor), layer());
-    //newImage->setID(this->id());
-    return nullptr;
+    return withGeometry(_base.scale(scale_center, scale_factor),
+                        _uv * scale_factor, _vv * scale_factor);
+}
+
+CADEntity_CSPtr Image::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    const auto direction = axis2 - axis1;
+    if (!std::isfinite(direction.x()) || !std::isfinite(direction.y())
+        || !std::isfinite(direction.z())) return nullptr;
+    const double largest = std::max({std::abs(direction.x()), std::abs(direction.y()),
+                                     std::abs(direction.z())});
+    if (largest == 0.) return nullptr;
+    const auto axis = direction / largest;
+    const geo::Coordinate origin;
+    return withGeometry(axis1 + (_base - axis1).mirror(origin, axis),
+                        _uv.mirror(origin, axis), _vv.mirror(origin, axis));
 }
 
 const geo::Area Image::boundingBox() const {

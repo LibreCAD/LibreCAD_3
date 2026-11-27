@@ -58,9 +58,7 @@ public:
     CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
     CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                           const geo::Coordinate &scale_factor) const override;
-    CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override {
-        return NULL; /// @todo no return statement, implement in image.cpp
-    }
+    CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;
 
     /**
      * @brief boundingBox of the entity
@@ -118,6 +116,8 @@ public:
     }
 
 private:
+    CADEntity_CSPtr withGeometry(const geo::Coordinate& base, const geo::Coordinate& uv,
+                                const geo::Coordinate& vv) const;
     std::string _name;
     geo::Coordinate _base;
     geo::Coordinate _uv;

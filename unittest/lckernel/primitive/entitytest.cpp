@@ -2,10 +2,12 @@
 #include "entitytest.h"
 #include <iostream>
 #include <memory>
+#include <limits>
 #include <cad/operations/layerops.h>
 #include <cad/primitive/text.h>
 #include <cad/primitive/mtext.h>
 #include <cad/primitive/image.h>
+#include <cad/meta/block.h>
 #include <cad/primitive/textconst.h>
 #include <cmath>
 
@@ -1042,4 +1044,61 @@ TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
                          geo::Coordinate(0, 1), -4, -5, 50, 50, 0, layer, nullptr);
     EXPECT_EQ(elevated.boundingBox().minP(), geo::Coordinate(-3, -3, 9));
     EXPECT_EQ(elevated.boundingBox().maxP(), geo::Coordinate(1, 2, 9));
+}
+
+TEST(ImageTransformTest, PreservesSpatialAxesAndMetadata) {
+    auto layer = std::make_shared<Layer>();
+    auto metadata = lc::meta::MetaInfo::create();
+    auto block = std::make_shared<lc::meta::Block>("image-block");
+    auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),
+        geo::Coordinate(2, -1, 3), geo::Coordinate(-1, 4, -2),
+        2, 3, 40, 60, 10, layer, metadata, block);
+    const auto checkIdentity = [&](const std::shared_ptr<const Image>& result) {
+        ASSERT_TRUE(result);
+        EXPECT_EQ(result->id(), image->id());
+        EXPECT_EQ(result->layer(), layer);
+        EXPECT_EQ(result->metaInfo(), metadata);
+        EXPECT_EQ(result->block(), block);
+        EXPECT_EQ(result->name(), image->name());
+        EXPECT_DOUBLE_EQ(result->width(), 2);
+        EXPECT_DOUBLE_EQ(result->height(), 3);
+        EXPECT_DOUBLE_EQ(result->brightness(), 40);
+        EXPECT_DOUBLE_EQ(result->contrast(), 60);
+        EXPECT_DOUBLE_EQ(result->fade(), 10);
+    };
+    auto rotated = std::dynamic_pointer_cast<const Image>(image->rotate(geo::Coordinate(1, 2, 99), std::acos(-1.) / 2));
+    ASSERT_TRUE(rotated); checkIdentity(rotated);
+    EXPECT_NEAR(rotated->base().x(), -17, 1e-12); EXPECT_NEAR(rotated->base().y(), 11, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated->base().z(), 30);
+    EXPECT_NEAR(rotated->uv().x(), 1, 1e-12); EXPECT_NEAR(rotated->uv().y(), 2, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated->uv().z(), 3);
+    EXPECT_NEAR(rotated->vv().x(), -4, 1e-12); EXPECT_NEAR(rotated->vv().y(), -1, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated->vv().z(), -2);
+    auto scaled = std::dynamic_pointer_cast<const Image>(image->scale(geo::Coordinate(1, 2, 3), geo::Coordinate(2, 3, 4)));
+    ASSERT_TRUE(scaled); checkIdentity(scaled);
+    EXPECT_EQ(scaled->base(), geo::Coordinate(19, 56, 111));
+    EXPECT_EQ(scaled->uv(), geo::Coordinate(4, -3, 12));
+    EXPECT_EQ(scaled->vv(), geo::Coordinate(-2, 12, -8));
+    auto mirrored = std::dynamic_pointer_cast<const Image>(image->mirror(geo::Coordinate(), geo::Coordinate(1, 0)));
+    ASSERT_TRUE(mirrored); checkIdentity(mirrored);
+    EXPECT_EQ(mirrored->base(), geo::Coordinate(10, -20, -30));
+    EXPECT_EQ(mirrored->uv(), geo::Coordinate(2, 1, -3));
+    EXPECT_EQ(mirrored->vv(), geo::Coordinate(-1, -4, 2));
+    for (const double length : {1e-200, 1e200}) {
+        auto extreme = std::dynamic_pointer_cast<const Image>(image->mirror(geo::Coordinate(), geo::Coordinate(length, 0)));
+        ASSERT_TRUE(extreme);
+        EXPECT_EQ(extreme->base(), mirrored->base());
+        EXPECT_EQ(extreme->uv(), mirrored->uv());
+        EXPECT_EQ(extreme->vv(), mirrored->vv());
+    }
+    EXPECT_FALSE(image->mirror(geo::Coordinate(1, 2), geo::Coordinate(1, 2)));
+    EXPECT_FALSE(image->mirror(geo::Coordinate(),
+                               geo::Coordinate(1, std::numeric_limits<double>::quiet_NaN(), 0)));
+    const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
+                       geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
+    auto planarScale = std::dynamic_pointer_cast<const Image>(planar.scale(geo::Coordinate(), geo::Coordinate(2, 3, 1)));
+    ASSERT_TRUE(planarScale);
+    EXPECT_EQ(planarScale->base(), geo::Coordinate(2, 6, 0));
+    EXPECT_EQ(planarScale->uv(), geo::Coordinate(2, 0, 0));
+    EXPECT_EQ(planarScale->vv(), geo::Coordinate(0, 3, 0));
 }
