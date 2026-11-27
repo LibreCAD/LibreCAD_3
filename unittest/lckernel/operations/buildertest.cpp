@@ -498,13 +498,16 @@ TEST(BuilderTest, LockThenNestedEditRefusesBeforeChangingDocument) {
     if (!outer->blockedByLockedLayer()) return;
     edit->setAllowLockedLayerEdits(true); outer->execute();
     EXPECT_FALSE(outer->blockedByLockedLayer()); EXPECT_TRUE(document->layerByName("0")->isLocked());
-    EXPECT_NE(document->entityByID(line->id()), line);
+    auto moved = std::dynamic_pointer_cast<const lc::entity::Line>(document->entityByID(line->id()));
+    ASSERT_TRUE(moved); EXPECT_NE(moved, line); EXPECT_EQ(moved->layer(), lockedLayer);
+    EXPECT_DOUBLE_EQ(moved->start().x(), 5.0);
     outer->undo(); EXPECT_EQ(document->layerByName("0"), originalLayer);
     auto restored = std::dynamic_pointer_cast<const lc::entity::Line>(document->entityByID(line->id()));
     ASSERT_TRUE(restored); EXPECT_EQ(restored->layer(), originalLayer);
     EXPECT_DOUBLE_EQ(restored->start().x(), line->start().x());
     EXPECT_DOUBLE_EQ(restored->end().x(), line->end().x());
     outer->redo(); EXPECT_TRUE(document->layerByName("0")->isLocked());
+    EXPECT_EQ(document->entityByID(line->id())->layer(), lockedLayer);
 }
 
 TEST(BuilderTest, LayerLockPreflightTracksChainedReplacementsAndUnrelatedEdits) {
@@ -533,4 +536,21 @@ TEST(BuilderTest, LayerLockPreflightTracksChainedReplacementsAndUnrelatedEdits) 
     unrelated->append(freeEdit); unrelated->execute();
     EXPECT_FALSE(unrelated->blockedByLockedLayer()); EXPECT_EQ(document->entityByID(freeLine->id()), moved);
     unrelated->undo(); EXPECT_EQ(document->entityByID(freeLine->id()), freeLine);
+}
+
+TEST(BuilderTest, ForcedLineEditPreservesIntentionalDifferentLayer) {
+    auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
+    auto originalLayer = document->layerByName("0");
+    auto target = std::make_shared<lc::meta::Layer>("TARGET"); document->addDocumentMetaType(target);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), originalLayer);
+    document->insertEntity(line);
+    auto locked = lc::meta::Layer::withState(originalLayer, false, false, true);
+    auto lock = std::make_shared<lc::operation::ReplaceLayer>(document, originalLayer, locked); lock->execute();
+    auto movedToLayer = line->modify(target, line->metaInfo(), line->block());
+    auto edit = std::make_shared<lc::operation::EntityBuilder>(document);
+    edit->setAllowLockedLayerEdits(true); edit->appendEntity(movedToLayer); edit->execute();
+    EXPECT_EQ(document->entityByID(line->id()), movedToLayer);
+    EXPECT_EQ(document->entityByID(line->id())->layer(), target);
+    edit->undo(); EXPECT_EQ(document->entityByID(line->id())->layer(), locked);
+    edit->redo(); EXPECT_EQ(document->entityByID(line->id())->layer(), target);
 }

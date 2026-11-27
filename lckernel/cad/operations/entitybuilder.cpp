@@ -200,6 +200,20 @@ void EntityBuilder::processInternal() {
     _blockedByLockedLayer = false;
     processStack();
 
+    // A layer-state replacement creates new immutable layer and entity
+    // objects. A forced edit may still carry the old same-named layer from a
+    // previously captured line. Rebind that selected built-in profile to the
+    // current source layer without overriding an intentional layer move.
+    if (_allowLockedLayerEdits) {
+        for (auto& candidate : _workingBuffer) {
+            if (!candidate || !exactEntity<entity::Line>(candidate) || !candidate->layer()) continue;
+            const auto original = document()->entityByID(candidate->id());
+            if (!original || !original->layer() || original->layer() == candidate->layer() ||
+                original->layer()->name() != candidate->layer()->name()) continue;
+            candidate = candidate->modify(original->layer(), candidate->metaInfo(), candidate->block());
+        }
+    }
+
     // Check the current document object, not the caller's possibly stale
     // snapshot. New objects may be added to locked layers; existing ones may
     // only be changed through the explicit override.
