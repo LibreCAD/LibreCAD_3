@@ -62,6 +62,10 @@ public:
         return objects.size() + entities.size() + sections.size();
     }
 
+    // Shared with IMAGE sidecars from this particular import. Handles from a
+    // different document must never be interpreted in this source graph.
+    std::shared_ptr<const void> imageSourceIdentity{std::make_shared<int>(0)};
+
     // Preserve whether an imported layer's width was an implicit DXF default.
     // The kernel turns that into a numeric width; a legacy export must not
     // report that unchanged synthesized value as lost user data.

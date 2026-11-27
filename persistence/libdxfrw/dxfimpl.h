@@ -26,6 +26,7 @@
 #include <cad/base/metainfo.h>
 #include <cad/meta/icolor.h>
 #include <tuple>
+#include <unordered_set>
 #include <cad/meta/block.h>
 #include <cad/operations/builder.h>
 
@@ -701,6 +702,7 @@ private:
 
     std::vector<DRW_Image> imageMapCache;
     std::size_t _sourceImageClipBytes{0};
+    std::unordered_set<std::uint32_t> _writtenImageSourceDefinitions;
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;

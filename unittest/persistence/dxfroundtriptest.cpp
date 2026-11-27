@@ -3182,10 +3182,11 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5, 6}) {
-    const int space = mode % 3;
+  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7}) {
+    const int space = mode >= 6 ? 0 : mode % 3;
     const bool modern = mode >= 3 && mode < 6;
     const bool extendedDictionary = mode == 6;
+    const bool foreignImage = mode == 7;
     const bool inBlock = space != 0;
     const char* blockName = space == 2 ? "*U1" : "LC_IMG";
     SCOPED_TRACE(mode);
@@ -3224,6 +3225,16 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     }
     auto doc = newDocument();
     ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    if (foreignImage) {
+        auto foreign = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(foreign, source, lc::persistence::File::LIBDXFRW).ok);
+        const auto current = doc->entityContainer().asVector();
+        const auto replacement = foreign->entityContainer().asVector();
+        ASSERT_EQ(current.size(), 1u);
+        ASSERT_EQ(replacement.size(), 1u);
+        doc->removeEntity(current.front());
+        doc->insertEntity(replacement.front());
+    }
     if (inBlock) {
         auto block = doc->blockByName(blockName);
         ASSERT_TRUE(block);
@@ -3266,15 +3277,11 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const auto skipped = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
     ASSERT_NE(skipped, result.loss.droppedByType.end());
     EXPECT_EQ(skipped->second, 1u);
-    // The raw reactor is omitted. Its old dictionary entry must not be
-    // emitted as a dangling reference; unrelated entries must survive.
+    // Omitted source IMAGE objects must not leave dangling dictionary entries.
+    // A handle from a different import must not authorize a removal.
     const auto droppedEntries = result.loss.droppedByType.find("dictionary entries");
-    if (extendedDictionary) {
-        EXPECT_EQ(droppedEntries, result.loss.droppedByType.end());
-    } else {
-        ASSERT_NE(droppedEntries, result.loss.droppedByType.end());
-        EXPECT_EQ(droppedEntries->second, 1u);
-    }
+    ASSERT_NE(droppedEntries, result.loss.droppedByType.end());
+    EXPECT_EQ(droppedEntries->second, extendedDictionary || foreignImage ? 1u : 2u);
     {
         std::ifstream output(saved, std::ios::binary);
         std::string code, value;
@@ -3292,7 +3299,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
                 if (value == "OBSERVE") ++observeCount;
             }
         }
-        EXPECT_EQ(scratchCount, 2u); // the typed source definition remains unresolved
+        EXPECT_EQ(scratchCount, foreignImage ? 2u : 1u);
         EXPECT_EQ(keepCount, 1u);
         EXPECT_EQ(observeCount, extendedDictionary ? 1u : 0u);
     }

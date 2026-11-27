@@ -66,6 +66,8 @@ public:
     int boundaryType{0};
     bool clipMode{false};
     bool boundaryDropped{false};
+    std::uint32_t definitionHandle{0};
+    std::shared_ptr<const void> sourceIdentity;
     double width{0};
     double height{0};
     std::vector<DRW_Coord> boundary;
@@ -1598,6 +1600,8 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                 source->clip = image->clip;
                 source->boundaryType = image->m_clipBoundaryType;
                 source->clipMode = image->clipMode;
+                source->definitionHandle = image->ref;
+                source->sourceIdentity = _preserved.imageSourceIdentity;
                 source->width = image->sizeu;
                 source->height = image->sizev;
                 constexpr std::size_t kMaxImageClipBytes = 4u * 1024u * 1024u;
@@ -1822,10 +1826,14 @@ void DXFimpl::writeObjects() {
     // ones -- measured: without this, sample_AC1015_ascii comes back with two
     // reactors.
     const bool documentHasImages = hasDocumentImages();
-    std::unordered_set<std::uint32_t> skippedImageHandles;
+    auto skippedImageHandles = _writtenImageSourceDefinitions;
     for (const auto& object : _replay->objects)
         if (regeneratesImageObject(object, documentHasImages) && object.handle != 0)
             skippedImageHandles.insert(object.handle);
+    // A colliding preserved record would make the source identity ambiguous.
+    for (const auto& object : _replay->objects)
+        if (!regeneratesImageObject(object, documentHasImages)) skippedImageHandles.erase(object.handle);
+    for (const auto& entity : _replay->entities) skippedImageHandles.erase(entity.handle);
 
     for (const auto& object : _replay->objects) {
         if (regeneratesImageObject(object, documentHasImages)) {
@@ -3641,6 +3649,9 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
     img.fade       = static_cast<int>(i->fade());
 
     if (const auto source = i->metaInfo<ImageDisplaySource>(ImageDisplaySource::key())) {
+        if (_replay && source->sourceIdentity == _replay->imageSourceIdentity &&
+            source->definitionHandle != 0 && source->definitionHandle != DRW::NoHandle)
+            _writtenImageSourceDefinitions.insert(source->definitionHandle);
         img.m_classVersion = source->classVersion;
         img.m_displayProps = source->displayProps;
         if (_exportVersion >= DRW::AC1024) {
