@@ -9,6 +9,15 @@
 using namespace lc;
 using namespace entity;
 
+namespace {
+std::array<geo::Coordinate, 4> imageCorners(const geo::Coordinate& base,
+        const geo::Coordinate& uv, const geo::Coordinate& vv, double width, double height) {
+    const auto u = uv * width;
+    const auto v = vv * height;
+    return {{base, base + u, base + u + v, base + v}};
+}
+}
+
 Image::Image(std::string name,
              geo::Coordinate base,
              geo::Coordinate uv,
@@ -52,22 +61,19 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
     std::vector<EntityCoordinate> points;
 
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
-        /// @todo Add logical constrain
-    }
-
-
-    const geo::Coordinate npoe = nearestPointOnPath(coord);
-    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
-        points.emplace_back(npoe, 2);
-    }
-
-    /** @todo
-    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
-        if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
-            points.emplace_back(npoe, 3);
+        const auto corners = imageCorners(_base, _uv, _vv, _width, _height);
+        for (std::size_t i = 0; i < corners.size(); ++i) {
+            points.emplace_back(corners[i], 4 + static_cast<int>(i));
         }
     }
-    */
+
+    if (constrain.constrain() & (SimpleSnapConstrain::ON_ENTITYPATH | SimpleSnapConstrain::ON_ENTITY)) {
+        const auto nearest = nearestPointOnPath(coord);
+        if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)
+            points.emplace_back(nearest, 2);
+        if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)
+            points.emplace_back(nearest, 3);
+    }
 
     // Cleanup array of snappoints
     Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
@@ -76,15 +82,11 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
 }
 
 geo::Coordinate Image::nearestPointOnPath(const geo::Coordinate& coord) const {
-    const auto u = _uv * _width;
-    const auto v = _vv * _height;
-    const std::array<geo::Coordinate, 5> corners = {
-        _base, _base + u, _base + u + v, _base + v, _base
-    };
+    const auto corners = imageCorners(_base, _uv, _vv, _width, _height);
     auto nearest = _base;
     auto distance = (coord - nearest).squared();
-    for (std::size_t i = 0; i + 1 < corners.size(); ++i) {
-        const auto edge = corners[i + 1] - corners[i];
+    for (std::size_t i = 0; i < corners.size(); ++i) {
+        const auto edge = corners[(i + 1) % corners.size()] - corners[i];
         const double lengthSquared = edge.squared();
         const double t = lengthSquared == 0.0 ? 0.0 :
             std::max(0.0, std::min(1.0, (coord - corners[i]).dot(edge) / lengthSquared));
@@ -164,9 +166,8 @@ CADEntity_CSPtr Image::mirror(const geo::Coordinate& axis1, const geo::Coordinat
 }
 
 const geo::Area Image::boundingBox() const {
-    const auto u = _uv * _width;
-    const auto v = _vv * _height;
-    return geo::Area(_base, _base + u).merge(_base + v).merge(_base + u + v);
+    const auto corners = imageCorners(_base, _uv, _vv, _width, _height);
+    return geo::Area(corners[0], corners[1]).merge(corners[2]).merge(corners[3]);
 }
 
 CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {

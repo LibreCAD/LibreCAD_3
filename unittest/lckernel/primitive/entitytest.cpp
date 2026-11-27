@@ -1059,6 +1059,7 @@ TEST(ImageGeometryTest, FindsNearestBoundaryPointInThreeDimensions) {
         lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
     ASSERT_EQ(snaps.size(), 1u);
     EXPECT_EQ(snaps.front().coordinate(), geo::Coordinate(12, 20, 31));
+    EXPECT_EQ(snaps.front().pointId(), 2);
     const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
                        geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
     EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(3, 1)), geo::Coordinate(3, 2));
@@ -1068,6 +1069,23 @@ TEST(ImageGeometryTest, FindsNearestBoundaryPointInThreeDimensions) {
     const Image segment("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(0, 0, 1),
                         geo::Coordinate(), 4, 5, 50, 50, 0, layer, nullptr);
     EXPECT_EQ(segment.nearestPointOnEntity(geo::Coordinate(2, 2, 20)), geo::Coordinate(1, 2, 13));
+}
+
+TEST(ImageGeometryTest, SnapsToCornersAndBoundary) {
+    auto layer = std::make_shared<Layer>();
+    const Image image("scratch.png", geo::Coordinate(10, 20, 30),
+                      geo::Coordinate(2, 0, 1), geo::Coordinate(0, 3, 0),
+                      2, 2, 50, 50, 0, layer, nullptr);
+    const auto corners = image.snapPoints(geo::Coordinate(14, 26, 32),
+                                         lc::SimpleSnapConstrain(), 0.1, 1);
+    ASSERT_EQ(corners.size(), 1u);
+    EXPECT_EQ(corners.front().coordinate(), geo::Coordinate(14, 26, 32));
+    const lc::SimpleSnapConstrain onEntity(lc::SimpleSnapConstrain::ON_ENTITY, 0, 0);
+    const auto boundary = image.snapPoints(geo::Coordinate(12, 19.99, 31), onEntity, 0.1, 1);
+    ASSERT_EQ(boundary.size(), 1u);
+    EXPECT_EQ(boundary.front().coordinate(), geo::Coordinate(12, 20, 31));
+    EXPECT_EQ(boundary.front().pointId(), 3);
+    EXPECT_TRUE(image.snapPoints(geo::Coordinate(12, 10, 31), onEntity, 0.1, 1).empty());
 }
 
 TEST(ImageTransformTest, PreservesSpatialAxesAndMetadata) {
