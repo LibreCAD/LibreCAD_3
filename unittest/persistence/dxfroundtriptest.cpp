@@ -3177,15 +3177,28 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
+  for (int mode : {0, 1, 2}) {
+    const bool inBlock = mode != 0;
+    const char* blockName = mode == 2 ? "*U1" : "LC_IMG";
+    SCOPED_TRACE(mode == 0 ? "model space" : mode == 1 ? "named block" : "anonymous block");
     const std::string source = uniqueTmpDxf("image-reactor-reference");
     const std::string saved = uniqueTmpDxf("image-reactor-reference-out");
     {
         std::ofstream file(source, std::ios::binary);
-        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
-                "0\nSECTION\n2\nENTITIES\n0\nIMAGE\n5\n70\n8\n0\n100\nAcDbRasterImage\n90\n0\n"
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n";
+        if (inBlock)
+            file << "0\nSECTION\n2\nBLOCKS\n0\nBLOCK\n5\n61\n330\n60\n8\n0\n2\n"
+                 << blockName << "\n70\n" << (mode == 2 ? 1 : 0)
+                 << "\n10\n0\n20\n0\n30\n0\n3\n" << blockName << "\n1\n\n";
+        else file << "0\nSECTION\n2\nENTITIES\n";
+        file << "0\nIMAGE\n5\n70\n";
+        if (inBlock) file << "330\n60\n";
+        file << "8\n0\n100\nAcDbRasterImage\n90\n0\n"
                 "10\n1\n20\n2\n30\n3\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
                 "13\n2\n23\n3\n340\n81\n360\n82\n70\n3\n280\n1\n281\n50\n282\n50\n283\n0\n"
-                "71\n1\n91\n2\n14\n-0.5\n24\n-0.5\n14\n1.5\n24\n2.5\n0\nENDSEC\n"
+                "71\n1\n91\n2\n14\n-0.5\n24\n-0.5\n14\n1.5\n24\n2.5\n";
+        if (inBlock) file << "0\nENDBLK\n5\n62\n330\n60\n8\n0\n";
+        file << "0\nENDSEC\n"
                 "0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
                 "3\nACAD_IMAGE_DICT\n350\n80\n3\nLC_REACTOR\n350\n90\n"
                 "0\nDICTIONARY\n5\n80\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nscratch\n350\n81\n"
@@ -3198,6 +3211,14 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     }
     auto doc = newDocument();
     ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    if (inBlock) {
+        auto block = doc->blockByName(blockName);
+        ASSERT_TRUE(block);
+        const auto items = doc->entitiesByBlock(block).asVector();
+        ASSERT_EQ(items.size(), 1u);
+        ASSERT_TRUE(std::dynamic_pointer_cast<const lc::entity::Image>(items.front()));
+        EXPECT_TRUE(doc->entityContainer().asVector().empty());
+    }
     const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(result.ok);
     const auto names = rootDictNames(saved);
@@ -3208,6 +3229,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     EXPECT_EQ(loss->second, 2u);
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
+  }
 }
 
 // A layout is the page a drawing prints from. LibreCAD models none of it, and

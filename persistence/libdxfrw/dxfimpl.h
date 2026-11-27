@@ -500,6 +500,7 @@ public:
 
     static bool isAnonymousDimensionBlockName(const std::string& name);
     static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
+    bool hasDocumentImages() const;
     unsigned int _nextDimensionBlock{1};
 
 

@@ -51,12 +51,6 @@
 using namespace lc::persistence;
 
 namespace {
-bool hasDocumentImages(const std::shared_ptr<lc::storage::Document>& document) {
-    for (const auto& entity : document->entityContainer().asVector())
-        if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) return true;
-    return false;
-}
-
 bool regeneratesImageObject(const DRW_RawDxfObject& object, bool hasImages) {
     return hasImages && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR");
 }
@@ -1717,6 +1711,17 @@ void DXFimpl::buildDeferredInserts() {
  * Write DXF Implementation BELOW
  *********************************************/
 
+bool DXFimpl::hasDocumentImages() const {
+    for (const auto& entity : _document->entityContainer().asVector())
+        if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) return true;
+    for (const auto& block : _document->blocks()) {
+        if (!block || isRegeneratedDimensionBlock(block)) continue;
+        for (const auto& entity : _document->entitiesByBlock(block).asVector())
+            if (std::dynamic_pointer_cast<const lc::entity::Image>(entity)) return true;
+    }
+    return false;
+}
+
 void DXFimpl::writeObjects() {
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
     if (!_defaultLayoutsFromSource)
@@ -1732,7 +1737,7 @@ void DXFimpl::writeObjects() {
     // of each for one image, so the preserved copies give way to the regenerated
     // ones -- measured: without this, sample_AC1015_ascii comes back with two
     // reactors.
-    const bool documentHasImages = hasDocumentImages(_document);
+    const bool documentHasImages = hasDocumentImages();
 
     for (const auto& object : _replay->objects) {
         if (regeneratesImageObject(object, documentHasImages)) {
@@ -2695,7 +2700,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         std::size_t detached = 0;
         if (!_replay->rootDictEntries.empty()) {
             std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> emitted;
-            const bool documentHasImages = hasDocumentImages(_document);
+            const bool documentHasImages = hasDocumentImages();
             for (const auto& object : _replay->objects) {
                 if (object.handle != 0 && !regeneratesImageObject(object, documentHasImages)) {
                     emitted[object.handle] = &object;
