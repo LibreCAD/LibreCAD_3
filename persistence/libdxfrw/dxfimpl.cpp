@@ -93,6 +93,13 @@ bool regeneratesImageObject(const DRW_RawDxfObject& object, bool hasImages) {
     return hasImages && (object.name == "IMAGEDEF" || object.name == "IMAGEDEF_REACTOR");
 }
 
+bool skipsSourceImageObject(const DRW_RawDxfObject& object, bool hasImages,
+                            const PreservedRecords* source) {
+    return regeneratesImageObject(object, hasImages) ||
+        (!hasImages && source && object.name == "IMAGEDEF_REACTOR" &&
+         source->sourceImageReactorHandles.count(object.handle));
+}
+
 bool sourceHandle(const DRW_Variant& value, std::uint32_t& handle) {
     if (value.type() != DRW_Variant::STRING || !value.content.s) return false;
     const auto& hex = *value.content.s;
@@ -1648,6 +1655,8 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
             if (image->ref == data->handle) {
                 if (data->handle != 0 && data->handle != DRW::NoHandle)
                     _preserved.sourceImageDefinitionHandles.insert(data->handle);
+                if (image->m_imageDefReactorHandle != 0 && image->m_imageDefReactorHandle != DRW::NoHandle)
+                    _preserved.sourceImageReactorHandles.insert(image->m_imageDefReactorHandle);
                 auto layer = _document->layerByName(image->layer);
 
                 std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*image);
@@ -1906,13 +1915,12 @@ std::unordered_set<std::uint32_t> DXFimpl::skippedImageSourceHandles(bool& hasIm
             skipped.insert(source->definitionHandle);
     });
     if (!_replay) return skipped;
-    if (hasImages)
-        skipped.insert(_replay->sourceImageDefinitionHandles.begin(), _replay->sourceImageDefinitionHandles.end());
+    skipped.insert(_replay->sourceImageDefinitionHandles.begin(), _replay->sourceImageDefinitionHandles.end());
     for (const auto& object : _replay->objects)
-        if (regeneratesImageObject(object, hasImages) && object.handle != 0)
+        if (skipsSourceImageObject(object, hasImages, _replay.get()) && object.handle != 0)
             skipped.insert(object.handle);
     for (const auto& object : _replay->objects)
-        if (!regeneratesImageObject(object, hasImages)) skipped.erase(object.handle);
+        if (!skipsSourceImageObject(object, hasImages, _replay.get())) skipped.erase(object.handle);
     for (const auto& entity : _replay->entities) skipped.erase(entity.handle);
     return skipped;
 }
@@ -1984,7 +1992,7 @@ void DXFimpl::writeObjects() {
     const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages);
 
     for (const auto& object : _replay->objects) {
-        if (regeneratesImageObject(object, documentHasImages)) {
+        if (skipsSourceImageObject(object, documentHasImages, _replay.get())) {
             // The regenerated record has not been shown to retain the source
             // record's metadata or identity.
             ++_loss.droppedByType[object.name];
@@ -3042,7 +3050,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
             plannedObjects.reserve(_replay->objects.size());
             std::unordered_set<std::uint32_t> sanitizedDictionaries;
             for (const auto& object : _replay->objects) {
-                if (object.handle != 0 && !regeneratesImageObject(object, documentHasImages)) {
+                if (object.handle != 0 && !skipsSourceImageObject(object, documentHasImages, _replay.get())) {
                     if (object.name == "DICTIONARY" && !skippedImageHandles.empty()) {
                         auto planned = object;
                         if (dropRegeneratedImageEntries(planned, skippedImageHandles)) {
@@ -3176,6 +3184,26 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         return false;
     }
 #endif
+    if (_shelf && !_shelf->sourceImageDefinitionHandles.empty()) {
+        std::unordered_set<std::uint32_t> retained;
+        if (variantCarriesRecord(File::variantIdForType(_exportType), "IMAGE")) {
+            visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
+                const auto source = image->metaInfo<ImageDisplaySource>(ImageDisplaySource::key());
+                if (source && source->sourceIdentity == _shelf->imageSourceIdentity && source->definition &&
+                    validImageDefinitionSource(*source->definition, image->name()))
+                    retained.insert(source->definitionHandle);
+            }, true);
+        }
+        if (_replay) {
+            bool hasImages = false;
+            visitDocumentImages([&](const lc::entity::Image_CSPtr&) { hasImages = true; });
+            for (const auto& object : _replay->objects)
+                if (object.name == "IMAGEDEF" && !skipsSourceImageObject(object, hasImages, _replay.get()))
+                    retained.insert(object.handle);
+        }
+        for (const auto handle : _shelf->sourceImageDefinitionHandles)
+            if (!retained.count(handle)) ++_loss.droppedByType["IMAGEDEF"];
+    }
     bool success = dxfW->write(this, exportVersion, isBinary);
 
     if (!success) {

@@ -3474,6 +3474,38 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         ASSERT_TRUE(lc::persistence::File::importFile(retryDoc, protectedPath, lc::persistence::File::LIBDXFRW).ok);
         ASSERT_EQ(retryDoc->entityContainer().asVector().size(), 1u);
         boost::filesystem::remove(protectedPath);
+
+        // Deleting the last IMAGE must not leave its source reactor or a
+        // dictionary entry that can bind to an unrelated generated handle.
+        doc->removeEntity(image);
+        const std::string emptyPath = uniqueTmpDxf("image-last-removal");
+        const auto empty = lc::persistence::File::exportFile(doc, emptyPath, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(empty.ok);
+        const auto removedReactor = empty.loss.droppedByType.find("IMAGEDEF_REACTOR");
+        ASSERT_NE(removedReactor, empty.loss.droppedByType.end());
+        EXPECT_EQ(removedReactor->second, 1u);
+        const auto removedDefinition = empty.loss.droppedByType.find("IMAGEDEF");
+        ASSERT_NE(removedDefinition, empty.loss.droppedByType.end());
+        EXPECT_EQ(removedDefinition->second, 1u);
+        const auto removedEntries = empty.loss.droppedByType.find("dictionary entries");
+        ASSERT_NE(removedEntries, empty.loss.droppedByType.end());
+        EXPECT_EQ(removedEntries->second, 2u);
+        std::ifstream emptyFile(emptyPath, std::ios::binary);
+        std::string emptyCode, emptyValue;
+        while (std::getline(emptyFile, emptyCode) && std::getline(emptyFile, emptyValue)) {
+            if (!emptyValue.empty() && emptyValue.back() == '\r') emptyValue.pop_back();
+            if (std::stoi(emptyCode) == 0) {
+                EXPECT_NE(emptyValue, "IMAGE");
+                EXPECT_NE(emptyValue, "IMAGEDEF");
+                EXPECT_NE(emptyValue, "IMAGEDEF_REACTOR");
+            }
+        }
+        emptyFile.close();
+        doc->insertEntity(image);
+        const auto restored = lc::persistence::File::exportFile(doc, emptyPath, lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(restored.ok);
+        EXPECT_EQ(imageGroups(emptyPath)[14], groups[14]);
+        boost::filesystem::remove(emptyPath);
     }
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
@@ -3510,6 +3542,55 @@ TEST(DxfRoundTripTest, ImageClipStorageLimitReportsDroppedBoundary) {
     const auto dropped = result.loss.droppedByType.find("IMAGE clipping");
     ASSERT_NE(dropped, result.loss.droppedByType.end());
     EXPECT_EQ(dropped->second, 1u);
+    boost::filesystem::remove(source);
+    boost::filesystem::remove(saved);
+}
+
+TEST(DxfRoundTripTest, RemovingLastImageDoesNotDiscardUnrelatedRawReactor) {
+    const std::string source = uniqueTmpDxf("image-unrelated-reactor");
+    const std::string saved = uniqueTmpDxf("image-unrelated-reactor-out");
+    {
+        std::ofstream file(source, std::ios::binary);
+        file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
+                "0\nSECTION\n2\nENTITIES\n0\nIMAGE\n5\n70\n8\n0\n100\nAcDbRasterImage\n90\n0\n"
+                "10\n0\n20\n0\n30\n0\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
+                "13\n2\n23\n3\n340\n81\n360\n82\n70\n3\n280\n0\n281\n50\n282\n50\n283\n0\n"
+                "71\n1\n91\n2\n14\n-0.5\n24\n-0.5\n14\n1.5\n24\n2.5\n0\nENDSEC\n"
+                "0\nSECTION\n2\nOBJECTS\n0\nDICTIONARY\n5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n"
+                "3\nACAD_IMAGE_DICT\n350\n80\n3\nLC_OTHER\n350\n90\n"
+                "0\nDICTIONARY\n5\n80\n330\nC\n100\nAcDbDictionary\n281\n1\n3\nFIRST\n350\n81\n"
+                "0\nDICTIONARY\n5\n90\n330\nC\n100\nAcDbDictionary\n281\n1\n"
+                "3\nIMAGE_LINK\n350\n82\n3\nOTHER_LINK\n350\n84\n"
+                "0\nIMAGEDEF\n5\n81\n330\n80\n100\nAcDbRasterImageDef\n90\n0\n1\nscratch.png\n"
+                "10\n2\n20\n3\n11\n1\n21\n1\n280\n1\n281\n0\n"
+                "0\nIMAGEDEF_REACTOR\n5\n82\n330\n70\n100\nAcDbRasterImageDefReactor\n90\n2\n"
+                "0\nIMAGEDEF_REACTOR\n5\n84\n330\n72\n100\nAcDbRasterImageDefReactor\n90\n2\n"
+                "0\nENDSEC\n0\nEOF\n";
+        ASSERT_TRUE(file.good());
+    }
+    auto doc = newDocument();
+    ASSERT_TRUE(lc::persistence::File::importFile(doc, source, lc::persistence::File::LIBDXFRW).ok);
+    const auto images = doc->entityContainer().asVector();
+    ASSERT_EQ(images.size(), 1u);
+    doc->removeEntity(images.front());
+    const auto result = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(result.ok);
+    const auto lost = result.loss.droppedByType.find("IMAGEDEF_REACTOR");
+    ASSERT_NE(lost, result.loss.droppedByType.end());
+    EXPECT_EQ(lost->second, 1u);
+    std::ifstream file(saved, std::ios::binary);
+    std::string code, value;
+    bool reactor = false;
+    std::vector<std::string> handles;
+    while (std::getline(file, code) && std::getline(file, value)) {
+        if (!value.empty() && value.back() == '\r') value.pop_back();
+        const int group = std::stoi(code);
+        if (group == 0) reactor = value == "IMAGEDEF_REACTOR";
+        else if (reactor && group == 5) handles.push_back(value);
+    }
+    ASSERT_EQ(handles.size(), 1u);
+    EXPECT_EQ(handles.front(), "84");
+    file.close();
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
 }
@@ -3667,6 +3748,9 @@ TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
     const auto retried = lc::persistence::File::exportFile(doc, saved, lc::persistence::File::LIBDXFRW_DXF_R2000);
     ASSERT_TRUE(retried.ok);
     EXPECT_EQ(retried.loss.droppedByType.count("IMAGEDEF identity"), 0u);
+    const auto removedDefinition = retried.loss.droppedByType.find("IMAGEDEF");
+    ASSERT_NE(removedDefinition, retried.loss.droppedByType.end());
+    EXPECT_EQ(removedDefinition->second, 1u);
     const auto dropped = retried.loss.droppedByType.find("dictionary entries");
     ASSERT_NE(dropped, retried.loss.droppedByType.end());
     EXPECT_EQ(dropped->second, 2u);

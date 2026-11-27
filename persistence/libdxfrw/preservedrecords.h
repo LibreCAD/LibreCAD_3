@@ -67,6 +67,7 @@ public:
     // different document must never be interpreted in this source graph.
     std::shared_ptr<const void> imageSourceIdentity{std::make_shared<int>(0)};
     std::set<std::uint32_t> sourceImageDefinitionHandles;
+    std::set<std::uint32_t> sourceImageReactorHandles;
 
     // Preserve whether an imported layer's width was an implicit DXF default.
     // The kernel turns that into a numeric width; a legacy export must not
