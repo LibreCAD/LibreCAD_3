@@ -46,16 +46,19 @@ namespace {
 class PreflightEntity final : public entity::CADEntity {
 public:
     PreflightEntity(const entity::CADEntity_CSPtr& source, bool changed, bool fresh, bool safeCopy)
-        : CADEntity(source, true), _changed(changed), _fresh(fresh), _safeCopy(safeCopy) {}
+        : CADEntity(source, true), _source(source), _changed(changed), _fresh(fresh), _safeCopy(safeCopy) {}
     bool changed() const { return _changed; }
     bool fresh() const { return _fresh; }
+    bool safeCopy() const { return _safeCopy; }
+    bool derivedCopy() const { return _derivedCopy; }
+    entity::CADEntity_CSPtr source() const { return _source; }
     entity::CADEntity_CSPtr move(const geo::Coordinate&) const override { return edited(); }
     entity::CADEntity_CSPtr rotate(const geo::Coordinate&, double) const override { return edited(); }
     entity::CADEntity_CSPtr scale(const geo::Coordinate&, const geo::Coordinate&) const override { return edited(); }
     entity::CADEntity_CSPtr mirror(const geo::Coordinate&, const geo::Coordinate&) const override { return edited(); }
     entity::CADEntity_CSPtr copy(const geo::Coordinate&) const override {
         auto result = std::make_shared<PreflightEntity>(*this);
-        if (_safeCopy) result->_fresh = true;
+        if (_safeCopy) { result->_fresh = true; result->_derivedCopy = true; }
         else result->_changed = true; // unknown copy semantics: fail closed on a locked source
         return result;
     }
@@ -68,7 +71,8 @@ private:
         result->_changed = true;
         return result;
     }
-    bool _changed, _fresh, _safeCopy;
+    entity::CADEntity_CSPtr _source;
+    bool _changed, _fresh, _safeCopy, _derivedCopy = false;
 };
 
 template<typename T>
@@ -86,6 +90,15 @@ bool hasKnownCopySemantics(const entity::CADEntity_CSPtr& value) {
            exactEntity<entity::Line>(value) || exactEntity<entity::LWPolyline>(value) ||
            exactEntity<entity::MText>(value) || exactEntity<entity::Point>(value) ||
            exactEntity<entity::Spline>(value) || exactEntity<entity::Text>(value);
+}
+
+// Projection needs more than copy semantics: every admitted transform must
+// retain the source ID and layer. For example LWPolyline rotate allocates a new
+// ID, while IMAGE rotate can return null, so do not infer those outcomes here.
+bool hasKnownProjectionSemantics(const entity::CADEntity_CSPtr& value) {
+    return exactEntity<entity::Line>(value) || exactEntity<entity::Circle>(value) ||
+           exactEntity<entity::Arc>(value) || exactEntity<entity::Ellipse>(value) ||
+           exactEntity<entity::Spline>(value);
 }
 }
 
@@ -123,6 +136,91 @@ Base_SPtr cloneExactOperation(const Base_SPtr& operation) {
 }
 }
 
+bool EntityBuilder::buildPreflightProbe(EntityBuilder& probe, bool forProjection) const {
+    // Built-in stacks only transform the supplied buffers. Clone them and use
+    // shadows so neither entity transforms nor stateful Begin/Loop callbacks
+    // can affect the real document, pending work, or global entity IDs.
+    std::unordered_map<const entity::CADEntity*, entity::CADEntity_CSPtr> shadows;
+    const auto shadowFor = [&](const entity::CADEntity_CSPtr& value) -> entity::CADEntity_CSPtr {
+        if (!value || value->id() == 0) return {};
+        const auto found = shadows.find(value.get());
+        if (found != shadows.end()) return found->second;
+        const auto original = document()->entityByID(value->id());
+        auto shadow = std::make_shared<PreflightEntity>(value, original && original != value,
+                                                        !original, hasKnownCopySemantics(value));
+        shadows.emplace(value.get(), shadow);
+        return shadow;
+    };
+    for (const auto& value : _workingBuffer) {
+        auto shadow = shadowFor(value);
+        if (!shadow) return false;
+        probe._workingBuffer.push_back(std::move(shadow));
+    }
+    for (const auto& value : _entitiesThatNeedsRemoval) {
+        auto shadow = shadowFor(value);
+        if (!shadow) return false;
+        probe._entitiesThatNeedsRemoval.push_back(std::move(shadow));
+    }
+    std::unordered_map<const Base*, Base_SPtr> clones;
+    for (const auto& operation : _stack) {
+        // Projection does not yet model removals or loop-generated outputs.
+        if (forProjection && operation && (typeid(*operation) == typeid(Remove) || typeid(*operation) == typeid(Loop)))
+            return false;
+        const auto existing = clones.find(operation.get());
+        if (existing != clones.end()) {
+            probe._stack.push_back(existing->second);
+            continue;
+        }
+        Base_SPtr clone;
+        if (!(clone = cloneExactOperation<Begin>(operation)) &&
+            !(clone = cloneExactOperation<Loop>(operation)) &&
+            !(clone = cloneExactOperation<Move>(operation)) &&
+            !(clone = cloneExactOperation<Copy>(operation)) &&
+            !(clone = cloneExactOperation<Scale>(operation)) &&
+            !(clone = cloneExactOperation<Rotate>(operation)) &&
+            !(clone = cloneExactOperation<Push>(operation)) &&
+            !(clone = cloneExactOperation<SelectByLayer>(operation)) &&
+            !(clone = cloneExactOperation<Remove>(operation))) {
+            // Unknown operations must not run merely to inspect them.
+            return false;
+        }
+        if (auto begin = std::dynamic_pointer_cast<Begin>(clone)) {
+            for (auto& value : begin->_entities) {
+                value = shadowFor(value);
+                if (!value) return false;
+            }
+        }
+        clones.emplace(operation.get(), clone);
+        probe._stack.push_back(std::move(clone));
+    }
+    probe.processStack();
+    return true;
+}
+
+bool EntityBuilder::projectKnownStack(std::vector<ProjectedEntity>& projected) const {
+    if (_stack.empty() || !_entitiesThatNeedsRemoval.empty()) return false;
+    const auto isNew = [this](const entity::CADEntity_CSPtr& candidate) {
+        return candidate && !document()->entityByID(candidate->id());
+    };
+    bool hasNewInput = std::any_of(_workingBuffer.begin(), _workingBuffer.end(), isNew);
+    for (const auto& operation : _stack) {
+        const auto begin = std::dynamic_pointer_cast<Begin>(operation);
+        if (!begin) continue;
+        const auto inputs = begin->getEntities();
+        hasNewInput = hasNewInput || std::any_of(inputs.begin(), inputs.end(), isNew);
+    }
+    if (!hasNewInput) return true;
+    EntityBuilder probe(document());
+    if (!buildPreflightProbe(probe, true)) return false;
+    for (const auto& value : probe._workingBuffer) {
+        const auto shadow = std::dynamic_pointer_cast<const PreflightEntity>(value);
+        if (!shadow || !shadow->safeCopy() || shadow->derivedCopy() ||
+            !hasKnownProjectionSemantics(shadow->source()) || document()->entityByID(shadow->id())) continue;
+        projected.push_back({shadow->source(), !shadow->changed()});
+    }
+    return true;
+}
+
 bool EntityBuilder::rejectLockedCompoundUpdate() {
     if (_allowLockedLayerEdits) return false;
     if (_stack.empty()) {
@@ -145,63 +243,8 @@ bool EntityBuilder::rejectLockedCompoundUpdate() {
     }
     if (!lockedInput) return false;
 
-    // Built-in stacks only transform the supplied buffers. Clone them and use
-    // shadows so neither entity transforms nor stateful Begin/Loop callbacks
-    // can affect the real document, pending work, or global entity IDs.
     EntityBuilder probe(document());
-    std::unordered_map<const entity::CADEntity*, entity::CADEntity_CSPtr> shadows;
-    const auto shadowFor = [&](const entity::CADEntity_CSPtr& value) -> entity::CADEntity_CSPtr {
-        if (!value) return {};
-        const auto found = shadows.find(value.get());
-        if (found != shadows.end()) return found->second;
-        const auto original = document()->entityByID(value->id());
-        auto shadow = std::make_shared<PreflightEntity>(value, original && original != value,
-                                                        !original, hasKnownCopySemantics(value));
-        shadows.emplace(value.get(), shadow);
-        return shadow;
-    };
-    for (const auto& value : _workingBuffer) {
-        auto shadow = shadowFor(value);
-        if (!shadow) { _blockedByLockedLayer = true; return true; }
-        probe._workingBuffer.push_back(std::move(shadow));
-    }
-    for (const auto& value : _entitiesThatNeedsRemoval) {
-        auto shadow = shadowFor(value);
-        if (!shadow) { _blockedByLockedLayer = true; return true; }
-        probe._entitiesThatNeedsRemoval.push_back(std::move(shadow));
-    }
-    std::unordered_map<const Base*, Base_SPtr> clones;
-    for (const auto& operation : _stack) {
-        const auto existing = clones.find(operation.get());
-        if (existing != clones.end()) {
-            probe._stack.push_back(existing->second);
-            continue;
-        }
-        Base_SPtr clone;
-        if (!(clone = cloneExactOperation<Begin>(operation)) &&
-            !(clone = cloneExactOperation<Loop>(operation)) &&
-            !(clone = cloneExactOperation<Move>(operation)) &&
-            !(clone = cloneExactOperation<Copy>(operation)) &&
-            !(clone = cloneExactOperation<Scale>(operation)) &&
-            !(clone = cloneExactOperation<Rotate>(operation)) &&
-            !(clone = cloneExactOperation<Push>(operation)) &&
-            !(clone = cloneExactOperation<SelectByLayer>(operation)) &&
-            !(clone = cloneExactOperation<Remove>(operation))) {
-            // An unknown operation may modify the locked input; do not run it
-            // merely to inspect it. The caller may explicitly override.
-            _blockedByLockedLayer = true;
-            return true;
-        }
-        if (auto begin = std::dynamic_pointer_cast<Begin>(clone)) {
-            for (auto& value : begin->_entities) {
-                value = shadowFor(value);
-                if (!value) { _blockedByLockedLayer = true; return true; }
-            }
-        }
-        clones.emplace(operation.get(), clone);
-        probe._stack.push_back(std::move(clone));
-    }
-    probe.processStack();
+    if (!buildPreflightProbe(probe, false)) { _blockedByLockedLayer = true; return true; }
     if (!probe.touchesLockedLayer()) return false;
     _blockedByLockedLayer = true;
     return true;

@@ -57,6 +57,12 @@ protected:
     virtual void processInternal();
 
 private:
+    struct ProjectedEntity {
+        entity::CADEntity_CSPtr source;
+        bool sameObject;
+    };
+    bool buildPreflightProbe(EntityBuilder& probe, bool forProjection) const;
+    bool projectKnownStack(std::vector<ProjectedEntity>& projected) const;
     bool touchesLockedLayer() const;
     bool rejectLockedCompoundUpdate();
     std::vector<Base_SPtr> _stack;

@@ -110,17 +110,38 @@ bool Builder::preflightLocked(std::vector<const Builder*>& active, LayerTransiti
             _blockedByLockedLayer = true;
             break;
         }
-        // Directly staged new entities are known without running a potentially
-        // stateful operation. Make them visible to later nested preflight steps.
-        if (entities && entities->_stack.empty()) {
-            for (const auto& candidate : entities->_workingBuffer) {
+        if (entities) {
+            std::vector<EntityBuilder::ProjectedEntity> projected;
+            if (entities->_stack.empty()) {
+                for (const auto& candidate : entities->_workingBuffer)
+                    projected.push_back({candidate, true});
+            } else {
+                // A stack may replace an input object. Do not assume a later
+                // occurrence of the old pointer is still an unchanged object.
+                const auto invalidate = [&](const entity::CADEntity_CSPtr& candidate) {
+                    if (!candidate) return;
+                    const auto staged = stagedEntities.find(candidate->id());
+                    if (staged != stagedEntities.end()) staged->second.sameObject = false;
+                };
+                for (const auto& candidate : entities->_workingBuffer) invalidate(candidate);
+                for (const auto& candidate : entities->_entitiesThatNeedsRemoval) invalidate(candidate);
+                for (const auto& op : entities->_stack) {
+                    const auto begin = std::dynamic_pointer_cast<Begin>(op);
+                    if (begin) for (const auto& candidate : begin->getEntities()) invalidate(candidate);
+                }
+                // Known stacks can be projected using cloned operations and
+                // shadow entities without consuming IDs or mutating inputs.
+                entities->projectKnownStack(projected);
+            }
+            for (const auto& projectedEntity : projected) {
+                const auto& candidate = projectedEntity.source;
                 if (!candidate || document()->entityByID(candidate->id())) continue;
                 const auto previous = stagedEntities.find(candidate->id());
                 auto actualLayer = candidate->layer();
-                bool sameObject = true;
+                bool sameObject = projectedEntity.sameObject;
                 if (previous != stagedEntities.end()) {
                     const auto& state = previous->second;
-                    if (!entities->_allowLockedLayerEdits && state.sameObject &&
+                    if (!entities->_allowLockedLayerEdits && sameObject && state.sameObject &&
                         state.entity == candidate && state.layer == actualLayer &&
                         state.layer && state.layer->isLocked()) continue;
                     // The forced-edit rebind retains the current same-named
@@ -133,20 +154,6 @@ bool Builder::preflightLocked(std::vector<const Builder*>& active, LayerTransiti
                     }
                 }
                 stagedEntities[candidate->id()] = {candidate, actualLayer, sameObject};
-            }
-        } else if (entities) {
-            // A stack may replace an input object. Do not assume a later
-            // occurrence of the old pointer is still an unchanged object.
-            const auto invalidate = [&](const entity::CADEntity_CSPtr& candidate) {
-                if (!candidate) return;
-                const auto staged = stagedEntities.find(candidate->id());
-                if (staged != stagedEntities.end()) staged->second.sameObject = false;
-            };
-            for (const auto& candidate : entities->_workingBuffer) invalidate(candidate);
-            for (const auto& candidate : entities->_entitiesThatNeedsRemoval) invalidate(candidate);
-            for (const auto& op : entities->_stack) {
-                const auto begin = std::dynamic_pointer_cast<Begin>(op);
-                if (begin) for (const auto& candidate : begin->getEntities()) invalidate(candidate);
             }
         }
     }

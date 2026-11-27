@@ -22,9 +22,12 @@ remain allowed. An unknown operation or an unqualified custom copy with a
 locked input is refused unless explicitly overridden. To unlock and edit in
 one group, explicitly override the entity operation. Directly staged entities
 created earlier in the group are checked before later edits, including nested
-groups and layer replacements. Custom operations that obtain locked objects
-outside their supplied inputs, entities created by operation stacks, and other
-layer-state changes are not yet guaranteed atomic;
+groups and layer replacements. This check also covers source identities for
+lines, circles, arcs, ellipses and splines emitted by the built-in push, move,
+copy, rotate, scale, begin and layer-selection operations. Generated copy
+identities, loop and remove stacks, other entity types, custom operations that
+obtain objects outside their supplied inputs, and other layer-state changes are
+not yet guaranteed atomic;
 separate those operations when a locked entity may be involved. Forced line,
 circle, arc, ellipse and spline edits retain the current same-named source layer after a
 layer-state change; verify layer metadata for other entity types or renamed
