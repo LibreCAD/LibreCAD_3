@@ -67,6 +67,7 @@
 #include <cad/geometry/georegion.h>
 
 #include <cad/primitive/dimension.h>
+#include <cad/primitive/image.h>
 #include <cad/primitive/dimlinear.h>
 #include <cad/builders/dimlinear.h>
 #include <cad/primitive/dimaligned.h>
@@ -172,6 +173,59 @@ std::map<std::string, std::size_t> entitiesInDocument(
 
 
 }  // namespace
+
+TEST(DxfRoundTripTest, TransformedImageRetainsSpatialGeometry) {
+    for (auto type : {lc::persistence::File::LIBDXFRW_DXF_R2010,
+                      lc::persistence::File::LIBDXFRW_DXB_R2010}) {
+        SCOPED_TRACE(static_cast<int>(type));
+        const std::string path = uniqueTmpDxf("image-spatial");
+        auto doc = newDocument();
+        auto image = std::make_shared<lc::entity::Image>("scratch.png",
+            lc::geo::Coordinate(10, 20, 30), lc::geo::Coordinate(1, 0, 0.5),
+            lc::geo::Coordinate(0, 1, -0.25), 2, 3, 40, 60, 10, doc->layerByName("0"));
+        auto transformed = std::dynamic_pointer_cast<const lc::entity::Image>(
+            image->scale(lc::geo::Coordinate(), lc::geo::Coordinate(2, 3, 1)));
+        ASSERT_TRUE(transformed);
+        insertThroughBuilder(doc, {transformed});
+        ASSERT_TRUE(lc::persistence::File::save(doc, path, type));
+        auto reopened = newDocument();
+        const auto result = lc::persistence::File::importFile(reopened, path, lc::persistence::File::LIBDXFRW);
+        ASSERT_TRUE(result.ok);
+        std::vector<std::shared_ptr<const lc::entity::Image>> images;
+        for (const auto& entity : reopened->entityContainer().asVector())
+            if (auto found = std::dynamic_pointer_cast<const lc::entity::Image>(entity)) images.push_back(found);
+        ASSERT_EQ(images.size(), 1u);
+        EXPECT_EQ(images[0]->base(), lc::geo::Coordinate(20, 60, 30));
+        EXPECT_EQ(images[0]->uv(), lc::geo::Coordinate(2, 0, 0.5));
+        EXPECT_EQ(images[0]->vv(), lc::geo::Coordinate(0, 3, -0.25));
+        EXPECT_DOUBLE_EQ(images[0]->width(), 2); EXPECT_DOUBLE_EQ(images[0]->height(), 3);
+        EXPECT_DOUBLE_EQ(images[0]->brightness(), 40); EXPECT_DOUBLE_EQ(images[0]->contrast(), 60);
+        EXPECT_DOUBLE_EQ(images[0]->fade(), 10);
+        EXPECT_EQ(images[0]->boundingBox().minP(), lc::geo::Coordinate(20, 60, 29.25));
+        EXPECT_EQ(images[0]->boundingBox().maxP(), lc::geo::Coordinate(24, 69, 31));
+        const std::string second = uniqueTmpDxf("image-spatial-resave");
+        // The current consumer cannot yet close the source IMAGE dictionary
+        // graph, or replay these raw records as binary. Report either loss.
+        const auto resave = lc::persistence::File::exportFile(reopened, second, type);
+        ASSERT_TRUE(resave.ok);
+        const auto lossName = type == lc::persistence::File::LIBDXFRW_DXF_R2010
+            ? "unreferenced dictionaries" : "unmodelled records";
+        const auto loss = resave.loss.droppedByType.find(lossName);
+        ASSERT_NE(loss, resave.loss.droppedByType.end());
+        EXPECT_GT(loss->second, 0u);
+        auto reread = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(reread, second, lc::persistence::File::LIBDXFRW).ok);
+        std::vector<std::shared_ptr<const lc::entity::Image>> rereadImages;
+        for (const auto& entity : reread->entityContainer().asVector())
+            if (auto found = std::dynamic_pointer_cast<const lc::entity::Image>(entity)) rereadImages.push_back(found);
+        ASSERT_EQ(rereadImages.size(), 1u);
+        EXPECT_EQ(rereadImages[0]->base(), images[0]->base());
+        EXPECT_EQ(rereadImages[0]->uv(), images[0]->uv());
+        EXPECT_EQ(rereadImages[0]->vv(), images[0]->vv());
+        boost::filesystem::remove(path);
+        boost::filesystem::remove(second);
+    }
+}
 
 // The filed task: "LibreCAD 3 crashes opening DXFs with 3D segments".
 //
