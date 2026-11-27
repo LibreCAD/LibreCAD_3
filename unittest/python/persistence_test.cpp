@@ -390,8 +390,16 @@ assert file_type in lc.persistence.File.getAvailableFileTypes(), format_id
 export_result = lc.persistence.File.exportFile(document, dxf_path, file_type)
 assert export_result.ok is True, list(export_result.diagnostics)
 assert export_result.variantId == format_id, export_result.variantId
-assert export_result.loss.total() == 0, export_result.loss.droppedByType
-assert list(export_result.diagnostics) == [], list(export_result.diagnostics)
+if version_tag in ('AC1009', 'AC1014'):
+    assert export_result.loss.total() == 1, export_result.loss.droppedByType
+    assert dict(export_result.loss.droppedByType) == {'layer lineweight': 1}
+    assert len(export_result.diagnostics) == 1
+    assert export_result.diagnostics[0].severity == lc.persistence.Severity.Warning
+    assert export_result.diagnostics[0].code == 'record-not-in-revision'
+    assert 'layer lineweight' in export_result.diagnostics[0].message
+else:
+    assert export_result.loss.total() == 0, export_result.loss.droppedByType
+    assert list(export_result.diagnostics) == [], list(export_result.diagnostics)
 )PY";
         ASSERT_EQ(lcpy.runString(exportScript.c_str(), exportNamespace), "")
             << "Python export failed for " << format.id;
