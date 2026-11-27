@@ -450,4 +450,16 @@ TEST(EntityBuilderTest, LockedLayerChangesAreAtomicAndExplicitlyOverrideable) {
     staleEdit->execute();
     EXPECT_TRUE(staleEdit->blockedByLockedLayer());
     EXPECT_EQ(document->entityByID(unlockedLine->id()), current);
+    EXPECT_FALSE(document->tryInsertEntity(unlockedLine->move(lc::geo::Coordinate(4, 0))));
+    EXPECT_FALSE(document->tryRemoveEntity(unlockedLine));
+    EXPECT_TRUE(document->tryInsertEntity(current)); // identical object is a no-op
+    EXPECT_EQ(document->entityByID(unlockedLine->id()), current);
+    const auto created = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 3), lc::geo::Coordinate(1, 3), newlyLocked, nullptr);
+    EXPECT_TRUE(document->tryInsertEntity(created));
+    EXPECT_EQ(document->entityByID(created->id()), created);
+    EXPECT_FALSE(document->tryRemoveEntity(created));
+}
+
+TEST(EntityBuilderTest, NullStorageManagerIsRejected) {
+    EXPECT_THROW(std::make_shared<lc::storage::DocumentImpl>(nullptr), std::invalid_argument);
 }

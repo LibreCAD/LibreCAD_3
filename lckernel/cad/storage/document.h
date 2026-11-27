@@ -161,6 +161,13 @@ public:
      */
     virtual void removeEntity(const entity::CADEntity_CSPtr& entity) = 0;
 
+    // Script-facing guarded mutations. Raw virtual methods remain available
+    // to import, undo and callers explicitly overriding locked-layer policy.
+    bool tryInsertEntity(const entity::CADEntity_CSPtr& entity);
+    bool tryRemoveEntity(const entity::CADEntity_CSPtr& entity);
+    void insertEntityIfUnlocked(const entity::CADEntity_CSPtr& entity);
+    void removeEntityIfUnlocked(const entity::CADEntity_CSPtr& entity);
+
     /**
     *  \brief add a new layer to the document
     *  \param layer layer to be added.

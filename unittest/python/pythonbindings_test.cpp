@@ -1236,6 +1236,29 @@ force.setAllowLockedLayerEdits(True)
 force.appendEntity(moved)
 force.execute()
 assert not force.blockedByLockedLayer()
+later = moved.move(lc.geo.Coordinate(3, 0))
+assert not document.tryInsertEntity(later)
+assert not document.tryRemoveEntity(moved)
+assert document.insertEntity(later) is None
+assert document.removeEntity(moved) is None
+assert document.entityContainer().asVector(32767)[0].start().x() == 2.0
+document.forceInsertEntity(later)
+assert document.entityContainer().asVector(32767)[0].start().x() == 5.0
+document.forceRemoveEntity(later)
+assert len(document.entityContainer().asVector(32767)) == 0
+assert document.tryInsertEntity(moved)  # adding a new object on the locked layer
+document.forceInsertEntity(None)
+document.forceRemoveEntity(None)
+try:
+    lc.storage.DocumentImpl(None)
+    raise AssertionError("null storage manager was accepted")
+except ValueError:
+    pass
+other = lc.storage.DocumentImpl(lc.storage.StorageManagerImpl())
+assert other.tryInsertEntity(moved)
+assert not other.tryRemoveEntity(moved)
+other.forceRemoveEntity(moved)
+assert len(other.entityContainer().asVector(32767)) == 0
 )py", ns);
     ASSERT_EQ(err, "") << err;
     const auto moved = std::dynamic_pointer_cast<const lc::entity::Line>(doc->entityByID(line->id()));
