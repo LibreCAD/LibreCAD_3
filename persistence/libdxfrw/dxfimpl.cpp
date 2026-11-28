@@ -63,6 +63,8 @@ struct ImageDefinitionSource {
     std::vector<std::weak_ptr<const lc::meta::Layer>> xdataLayers;
 };
 
+bool sourceHandle(const DRW_Variant& value, std::uint32_t& handle);
+
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
 bool simpleImageAscii(const std::string& value, std::size_t limit) {
     return value.size() <= limit && std::all_of(value.begin(), value.end(), [](unsigned char c) {
@@ -157,6 +159,14 @@ bool captureSimpleImageDefinitionXdata(const std::vector<DRW_Variant*>& source,
                         value->activeDwgLayerReference() || !simpleImageAscii(*value->content.s, 255) ||
                         !charge(value->content.s->size())) return false;
                     break;
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+                case 1005: {
+                    std::uint32_t handle = 0;
+                    if (!sourceHandle(*value, handle) || handle == 0 || handle == DRW::NoHandle ||
+                        !charge(value->content.s->size())) return false;
+                    break;
+                }
+#endif
                 case 1002:
                     if (value->type() != DRW_Variant::STRING || !value->content.s || !charge(value->content.s->size())) return false;
                     if (*value->content.s == "{") { if (++depth > 16) return false; }
@@ -174,7 +184,7 @@ bool captureSimpleImageDefinitionXdata(const std::vector<DRW_Variant*>& source,
                     if (value->type() != DRW_Variant::INTEGER) return false;
                     break;
                 default:
-                    return false; // Handle, layer and opaque values need separate graph proof.
+                    return false; // Other reference and opaque values need separate graph proof.
                 }
             }
             return depth == 0;
@@ -2176,42 +2186,13 @@ bool DXFimpl::prepareImageDefinitionPlan() {
         entry.definition.up = original.up; entry.definition.vp = original.vp;
         entry.definition.loaded = original.loaded; entry.definition.resolution = original.resolution;
         entry.definition.appData = original.appData;
-        for (std::size_t begin = 0; begin < original.xdata.size();) {
-            std::size_t end = begin + 1;
-            while (end < original.xdata.size() && original.xdata[end].code() != 1001) ++end;
-            bool layersValid = original.xdataLayers.size() == original.xdata.size();
-            for (std::size_t i = begin; layersValid && i < end; ++i) {
-                const auto& value = original.xdata[i];
-                if (value.code() != 1003) continue;
-                const auto captured = original.xdataLayers[i].lock();
-                const auto current = value.content.s ? _document->layerByName(*value.content.s) : nullptr;
-                layersValid = _shelf && source->sourceIdentity == _shelf->imageSourceIdentity && captured && current &&
-                    current->retainsColorFrom(captured) && upperName(current->name()) == upperName(*value.content.s);
-            }
-            if (!layersValid) {
-                _imageXdataPartialSources.insert(key);
-            } else {
-                for (std::size_t i = begin; i < end; ++i) {
-                    const auto& value = original.xdata[i];
-                    if (!entry.definition.addExtData(std::make_unique<DRW_Variant>(value))) { ambiguous = true; return; }
-                    if (value.code() == 1001 && value.content.s)
-                        _imageXdataAppIds.emplace(upperName(*value.content.s), *value.content.s);
-                }
-            }
-            begin = end;
-        }
         sources.emplace(key, source->definition);
         definitions.emplace(key, std::move(entry));
     }, true);
     if (ambiguous) return false;
-    std::vector<dxfRW::ImageDefinitionPlanEntry> plan;
-    plan.reserve(definitions.size());
-    for (auto& item : definitions) {
-        _plannedImageDefinitions.insert(item.first);
-        plan.push_back(std::move(item.second));
-    }
-    if (!dxfW->setImageDefinitionPlan(std::move(plan))) return false;
+    for (const auto& item : definitions) _plannedImageDefinitions.insert(item.first);
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    std::uint64_t boundGeneration = 0;
     if (_shelf && _replay == _shelf && !_shelf->sourceWasDwg && !_shelf->rootDictSourceAmbiguous &&
         _shelf->simpleImageRoot && _shelf->simpleImageDictionary &&
         _shelf->simpleImageRootVersion == _exportVersion && _shelf->version == _exportVersion &&
@@ -2229,14 +2210,61 @@ bool DXFimpl::prepareImageDefinitionPlan() {
         }
         if (safe && physical && physical->m_version == _exportVersion &&
             dict.parentHandle == _shelf->simpleImageRoot->handle && simpleImageDictionaryMatches(dict, *physical)) {
-            if (!dxfW->setGeneratedDictionarySourceRecords(
-                    std::make_unique<DRW_Dictionary>(*_shelf->simpleImageRoot), nullptr,
-                    std::make_unique<DRW_Dictionary>(dict), generation->second)) return false;
             _boundSourceImageDictionary = dict.handle;
-            const auto loss = _loss.droppedByType.find("unreferenced dictionaries");
-            if (loss != _loss.droppedByType.end() && loss->second > 0 && --loss->second == 0)
-                _loss.droppedByType.erase(loss);
+            boundGeneration = generation->second;
         }
+    }
+#endif
+    std::vector<dxfRW::ImageDefinitionPlanEntry> plan;
+    plan.reserve(definitions.size());
+    for (auto& item : definitions) {
+        const auto& key = item.first;
+        auto& entry = item.second;
+        const auto& original = *sources.at(key);
+        const auto sourceGeneration = _shelf ? _imageSourceGenerations.find(_shelf->imageSourceIdentity) : _imageSourceGenerations.end();
+        for (std::size_t begin = 0; begin < original.xdata.size();) {
+            std::size_t end = begin + 1;
+            while (end < original.xdata.size() && original.xdata[end].code() != 1001) ++end;
+            bool valid = original.xdataLayers.size() == original.xdata.size();
+            for (std::size_t i = begin; valid && i < end; ++i) {
+                const auto& value = original.xdata[i];
+                if (value.code() == 1003) {
+                    const auto captured = original.xdataLayers[i].lock();
+                    const auto current = value.content.s ? _document->layerByName(*value.content.s) : nullptr;
+                    valid = sourceGeneration != _imageSourceGenerations.end() && sourceGeneration->second == key.first &&
+                        captured && current && current->retainsColorFrom(captured) &&
+                        upperName(current->name()) == upperName(*value.content.s);
+                }
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+                if (value.code() == 1005) {
+                    std::uint32_t target = 0;
+                    valid = boundGeneration != 0 && key.first == boundGeneration && sourceHandle(value, target) &&
+                        _plannedImageDefinitions.count({boundGeneration, target}) != 0;
+                }
+#endif
+            }
+            if (!valid) _imageXdataPartialSources.insert(key);
+            else {
+                for (std::size_t i = begin; i < end; ++i) {
+                    const auto& value = original.xdata[i];
+                    if (!entry.definition.addExtData(std::make_unique<DRW_Variant>(value))) return false;
+                    if (value.code() == 1001 && value.content.s)
+                        _imageXdataAppIds.emplace(upperName(*value.content.s), *value.content.s);
+                }
+            }
+            begin = end;
+        }
+        plan.push_back(std::move(entry));
+    }
+    if (!dxfW->setImageDefinitionPlan(std::move(plan))) return false;
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    if (boundGeneration != 0) {
+        if (!dxfW->setGeneratedDictionarySourceRecords(
+                std::make_unique<DRW_Dictionary>(*_shelf->simpleImageRoot), nullptr,
+                std::make_unique<DRW_Dictionary>(*_shelf->simpleImageDictionary), boundGeneration)) return false;
+        const auto loss = _loss.droppedByType.find("unreferenced dictionaries");
+        if (loss != _loss.droppedByType.end() && loss->second > 0 && --loss->second == 0)
+            _loss.droppedByType.erase(loss);
     }
 #endif
     return true;
