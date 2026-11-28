@@ -166,7 +166,11 @@ public:
         (void)data;
     }
 
-    void addAppId(const DRW_AppId& data) override {}
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    void addAppId(const DRW_AppId& data) override;
+#else
+    void addAppId(const DRW_AppId& data) override { (void)data; }
+#endif
 
     void addRay(const DRW_Ray& data) override {
         recordLoss("RAY");
@@ -713,7 +717,7 @@ private:
     std::vector<DRW_Image> imageMapCache;
     std::size_t _sourceImageClipBytes{0};
     std::size_t _sourceImageDefinitionPathBytes{0};
-    std::size_t _sourceImageDefinitionAppDataBytes{0};
+    std::size_t _sourceImageDefinitionMetadataBytes{0};
     struct ImageDefinitionOutputBinding {
         std::shared_ptr<const void> sourceIdentity;
         std::uint32_t sourceHandle{0};
@@ -722,6 +726,8 @@ private:
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     std::map<std::shared_ptr<const void>, std::uint64_t, std::owner_less<std::shared_ptr<const void>>> _imageSourceGenerations;
     std::set<std::pair<std::uint64_t, std::uint32_t>> _plannedImageDefinitions;
+    std::map<std::string, std::string> _imageXdataAppIds;
+    std::map<std::string, bool> _sourceImageAppIds;
 #endif
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;

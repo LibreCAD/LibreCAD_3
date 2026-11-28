@@ -59,9 +59,16 @@ struct ImageDefinitionSource {
     double u{0}, v{0}, up{0}, vp{0};
     bool pathCaptured{false}, unmodeledMetadata{false};
     std::list<std::list<DRW_Variant>> appData;
+    std::vector<DRW_Variant> xdata;
 };
 
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+bool simpleImageAscii(const std::string& value, std::size_t limit) {
+    return value.size() <= limit && std::all_of(value.begin(), value.end(), [](unsigned char c) {
+        return c >= 0x20 && c <= 0x7e && c != '\\';
+    });
+}
+
 bool captureSimpleImageDefinitionAppData(const std::list<std::list<DRW_Variant>>& source,
                                          std::list<std::list<DRW_Variant>>& target,
                                          std::size_t& retainedBytes) {
@@ -69,11 +76,6 @@ bool captureSimpleImageDefinitionAppData(const std::list<std::list<DRW_Variant>>
     if (source.size() > 64 || retainedBytes > kMaxBytes) return false;
     std::size_t items = 0;
     bool allRetained = true;
-    const auto safeText = [](const std::string& value) {
-        return value.size() <= 255 && std::all_of(value.begin(), value.end(), [](unsigned char c) {
-            return c >= 0x20 && c <= 0x7e && c != '\\';
-        });
-    };
     for (const auto& group : source) {
         std::size_t cost = 0;
         const auto charge = [&](std::size_t bytes) {
@@ -86,7 +88,7 @@ bool captureSimpleImageDefinitionAppData(const std::list<std::list<DRW_Variant>>
                 !charge(sizeof(group) + 2 * sizeof(void*))) return false;
             const auto current = group.begin();
             if (current->code() != 102 || current->type() != DRW_Variant::STRING || !current->content.s ||
-                current->content.s->empty() || !safeText(*current->content.s)) return false;
+                current->content.s->empty() || !simpleImageAscii(*current->content.s, 255)) return false;
             std::string marker = *current->content.s;
             if (marker.front() == '{') marker.erase(marker.begin());
             if (marker.empty() || marker.size() > 254 || marker.find_first_of("{}") != std::string::npos) return false;
@@ -95,7 +97,7 @@ bool captureSimpleImageDefinitionAppData(const std::list<std::list<DRW_Variant>>
             for (auto it = group.begin(); it != group.end(); ++it) {
                 const bool first = it == group.begin();
                 const bool last = std::next(it) == group.end();
-                if (it->type() != DRW_Variant::STRING || !it->content.s || !safeText(*it->content.s) ||
+                if (it->type() != DRW_Variant::STRING || !it->content.s || !simpleImageAscii(*it->content.s, 255) ||
                     (first ? it->code() != 102 : last ? (it->code() != 102 || *it->content.s != "}") : it->code() != 1) ||
                     !charge(sizeof(DRW_Variant) + 2 * sizeof(void*)) || !charge(it->content.s->size())) return false;
             }
@@ -105,6 +107,78 @@ bool captureSimpleImageDefinitionAppData(const std::list<std::list<DRW_Variant>>
         target.push_back(group);
         items += group.size();
         retainedBytes += cost;
+    }
+    return allRetained;
+}
+
+bool captureSimpleImageDefinitionXdata(const std::vector<DRW_Variant*>& source,
+                                       std::vector<DRW_Variant>& target, std::size_t& retainedBytes) {
+    constexpr std::size_t kMaxBytes = 4u * 1024u * 1024u;
+    if (source.size() > 128 || retainedBytes > kMaxBytes) return false;
+    std::set<std::string> seen;
+    bool allRetained = true;
+    for (std::size_t begin = 0; begin < source.size();) {
+        if (!source[begin] || source[begin]->code() != 1001) return false;
+        std::size_t end = begin + 1;
+        while (end < source.size() && source[end] && source[end]->code() != 1001) ++end;
+        if (end < source.size() && !source[end]) return false;
+        std::size_t cost = 0;
+        const auto charge = [&](std::size_t bytes) {
+            if (bytes > kMaxBytes - retainedBytes - cost) return false;
+            cost += bytes;
+            return true;
+        };
+        std::string key;
+        const bool safe = [&]() {
+            const auto* app = source[begin];
+            if (app->type() != DRW_Variant::STRING || !app->content.s || app->content.s->empty() ||
+                !simpleImageAscii(*app->content.s, 31) ||
+                !std::all_of(app->content.s->begin(), app->content.s->end(), [](unsigned char c) {
+                    return std::isalnum(c) || c == '_' || c == '$' || c == '-';
+                })) return false;
+            key = *app->content.s;
+            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+            if (seen.count(key)) return false;
+            unsigned depth = 0;
+            for (std::size_t i = begin; i < end; ++i) {
+                const auto* value = source[i];
+                if (!value || !charge(sizeof(DRW_Variant) + sizeof(void*))) return false;
+                switch (value->code()) {
+                case 1001:
+                    if (i != begin || !charge(value->content.s->size())) return false;
+                    break;
+                case 1000:
+                    if (value->type() != DRW_Variant::STRING || !value->content.s ||
+                        !simpleImageAscii(*value->content.s, 255) || !charge(value->content.s->size())) return false;
+                    break;
+                case 1002:
+                    if (value->type() != DRW_Variant::STRING || !value->content.s || !charge(value->content.s->size())) return false;
+                    if (*value->content.s == "{") { if (++depth > 16) return false; }
+                    else if (*value->content.s == "}") { if (!depth) return false; --depth; }
+                    else return false;
+                    break;
+                case 1040: case 1041: case 1042:
+                    if (value->type() != DRW_Variant::DOUBLE || !std::isfinite(value->content.d)) return false;
+                    break;
+                case 1070:
+                    if (value->type() != DRW_Variant::INTEGER || value->i_val() < std::numeric_limits<std::int16_t>::min() ||
+                        value->i_val() > std::numeric_limits<std::int16_t>::max()) return false;
+                    break;
+                case 1071:
+                    if (value->type() != DRW_Variant::INTEGER) return false;
+                    break;
+                default:
+                    return false; // Handle, layer and opaque values need separate graph proof.
+                }
+            }
+            return depth == 0;
+        }();
+        if (safe) {
+            for (std::size_t i = begin; i < end; ++i) target.push_back(*source[i]);
+            retainedBytes += cost;
+            seen.insert(key);
+        } else allRetained = false;
+        begin = end;
     }
     return allRetained;
 }
@@ -1698,6 +1772,22 @@ void DXFimpl::addImage(const DRW_Image* data) {
     });
 }
 
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+void DXFimpl::addAppId(const DRW_AppId& data) {
+    guarded("APPID", nullptr, [&] {
+        if (data.name.empty() || !simpleImageAscii(data.name, 31)) return;
+        const auto key = upperName(data.name);
+        const bool simple = data.flags == 0 && data.unknown71 == 0 && data.extData.empty() &&
+            data.appData.empty() && data.reactorHandles.empty() && data.xDictHandle == 0 &&
+            !data.hasDataStorageBinaryData() && data.pendingAppIdResolutions.empty() &&
+            data.pendingLayerRefResolutions.empty();
+        const auto found = _sourceImageAppIds.find(key);
+        if (found != _sourceImageAppIds.end()) { found->second = false; return; }
+        if (_sourceImageAppIds.size() < 4096) _sourceImageAppIds.emplace(key, simple);
+    });
+}
+#endif
+
 void DXFimpl::linkImage(const DRW_ImageDef *data) {
     guarded("IMAGEDEF", nullptr, [&] {
         LOG_TRACE << "linkImage";
@@ -1728,9 +1818,20 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
                     if (!appDataRetained)
                         appDataRetained = captureSimpleImageDefinitionAppData(data->appData, definition->appData,
-                                                                              _sourceImageDefinitionAppDataBytes);
+                                                                              _sourceImageDefinitionMetadataBytes);
 #endif
-                    definition->unmodeledMetadata = !data->extData.empty() || !appDataRetained ||
+                    bool xdataRetained = data->extData.empty();
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+                    if (!xdataRetained && data->pendingAppIdResolutions.empty() && data->pendingLayerRefResolutions.empty())
+                        xdataRetained = captureSimpleImageDefinitionXdata(data->extData, definition->xdata,
+                                                                          _sourceImageDefinitionMetadataBytes);
+                    for (const auto& value : definition->xdata) {
+                        if (value.code() != 1001 || !value.content.s) continue;
+                        const auto appId = _sourceImageAppIds.find(upperName(*value.content.s));
+                        if (appId == _sourceImageAppIds.end() || !appId->second) xdataRetained = false;
+                    }
+#endif
+                    definition->unmodeledMetadata = !xdataRetained || !appDataRetained ||
                         !data->reactorHandles.empty() || !data->reactors.empty() || data->xDictHandle != 0 ||
                         data->hasDataStorageBinaryData() || !data->pendingAppIdResolutions.empty() ||
                         !data->pendingLayerRefResolutions.empty();
@@ -2017,6 +2118,11 @@ bool DXFimpl::prepareImageDefinitionPlan() {
         entry.definition.up = original.up; entry.definition.vp = original.vp;
         entry.definition.loaded = original.loaded; entry.definition.resolution = original.resolution;
         entry.definition.appData = original.appData;
+        for (const auto& value : original.xdata) {
+            if (!entry.definition.addExtData(std::make_unique<DRW_Variant>(value))) { ambiguous = true; return; }
+            if (value.code() == 1001 && value.content.s)
+                _imageXdataAppIds.emplace(upperName(*value.content.s), *value.content.s);
+        }
         sources.emplace(key, source->definition);
         definitions.emplace(key, std::move(entry));
     }, true);
@@ -2943,6 +3049,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     _imageSourceGenerations.clear();
     _plannedImageDefinitions.clear();
+    _imageXdataAppIds.clear();
 #endif
     _writeFailureReason.clear();
 
@@ -3842,6 +3949,14 @@ void DXFimpl::writeAppId() {
     DRW_AppId ai;
     ai.name ="LibreCad";
     dxfW->writeAppId(&ai);
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    for (const auto& entry : _imageXdataAppIds) {
+        if (entry.first == "ACAD" || entry.first == "LIBRECAD") continue;
+        DRW_AppId extra;
+        extra.name = entry.second;
+        dxfW->writeAppId(&extra);
+    }
+#endif
 }
 
 // Issue #412 phase 3: writeHeader was defaulted to empty; drawings saved by
@@ -4143,13 +4258,13 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
                        inserted.first->second.sourceHandle != binding.sourceHandle)) {
             ++_loss.droppedByType["IMAGEDEF identity"];
             if (source->definition && (source->definition->unmodeledMetadata ||
-                                       (!usedSourcePlan && !source->definition->appData.empty())))
+                                       (!usedSourcePlan && (!source->definition->appData.empty() || !source->definition->xdata.empty()))))
                 ++_loss.droppedByType["IMAGEDEF metadata"];
         }
         return;
     }
     const auto original = source ? source->definition : nullptr;
-    if (original && (original->unmodeledMetadata || (!usedSourcePlan && !original->appData.empty())))
+    if (original && (original->unmodeledMetadata || (!usedSourcePlan && (!original->appData.empty() || !original->xdata.empty()))))
         ++_loss.droppedByType["IMAGEDEF metadata"];
     if (original && validImageDefinitionSource(*original, i->name())) {
         definition->imgVersion = original->version;
