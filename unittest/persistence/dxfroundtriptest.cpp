@@ -3200,7 +3200,7 @@ TEST(DxfRoundTripTest, DeepSharedDictionaryCyclePropagatesMissingTarget) {
 }
 
 TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
-  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21}) {
+  for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27}) {
     const int space = mode >= 6 ? 0 : mode % 3;
     const bool modern = mode >= 3 && mode < 6;
     const bool extendedDictionary = mode == 6;
@@ -3215,6 +3215,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     const bool sourcePaper = mode == 15;
     const bool duplicateTarget = mode == 16;
     const bool definitionMetadata = mode == 19;
+    const bool unsafeDefinitionMetadata = mode >= 22 && mode != 26;
     const bool escapedText = mode == 20;
     const bool longText = mode == 21;
     const int extraRecords = mode == 17 ? 252 : mode == 18 ? 253 : 0;
@@ -3263,7 +3264,14 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
             file << "0\nXRECORD\n5\n" << std::hex << 0x200 + i << std::dec
                  << "\n330\n90\n100\nAcDbXrecord\n280\n1\n1\nextra\n";
         file << "0\nIMAGEDEF\n5\n81\n330\n80\n";
-        if (definitionMetadata) file << "102\n{LC_DEF\n1\ncustom\n102\n}\n";
+        if (definitionMetadata || unsafeDefinitionMetadata || mode == 26) {
+            file << "102\n{LC_DEF\n1\n" << (mode == 23 ? std::string(256, 'A') : "custom") << '\n';
+            if (mode == 22) file << "330\n90\n";
+            if (mode == 24) file << "102\n{NESTED\n1\nvalue\n102\n}\n";
+            for (int i = 0; i < (mode == 26 ? 125 : mode == 27 ? 126 : 0); ++i) file << "1\nx\n";
+            file << "102\n}\n";
+            if (mode == 25) file << "102\n{LC_OTHER\n330\n90\n102\n}\n";
+        }
         file << "100\nAcDbRasterImageDef\n90\n2\n1\nscratch.png\n"
                 "10\n2\n20\n3\n11\n0.25\n21\n0.5\n280\n1\n281\n5\n"
                 "0\nIMAGEDEF_REACTOR\n5\n82\n102\n{LC_TEST\n1\nreactor-metadata\n102\n}\n"
@@ -3339,7 +3347,7 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     ASSERT_NE(skipped, result.loss.droppedByType.end());
     EXPECT_EQ(skipped->second, 1u);
     const auto definitionLoss = result.loss.droppedByType.find("IMAGEDEF metadata");
-    if (definitionMetadata) {
+    if (unsafeDefinitionMetadata) {
         ASSERT_NE(definitionLoss, result.loss.droppedByType.end());
         EXPECT_EQ(definitionLoss->second, 1u);
     } else EXPECT_EQ(definitionLoss, result.loss.droppedByType.end());
@@ -3395,6 +3403,16 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     EXPECT_DOUBLE_EQ(std::stod(definition[21][0]), 0.5);
     EXPECT_EQ(std::stoi(definition[280][0]), 1);
     EXPECT_EQ(std::stoi(definition[281][0]), 5);
+    if (definitionMetadata || mode == 25 || mode == 26) {
+        EXPECT_NE(std::find(definition[102].begin(), definition[102].end(), "{LC_DEF"), definition[102].end());
+        ASSERT_EQ(definition[1].size(), mode == 26 ? 127u : 2u);
+        EXPECT_EQ(definition[1][0], "custom");
+        EXPECT_EQ(definition[1].back(), "scratch.png");
+        if (mode == 25)
+            EXPECT_EQ(std::find(definition[102].begin(), definition[102].end(), "{LC_OTHER"), definition[102].end());
+    } else if (unsafeDefinitionMetadata) {
+        EXPECT_EQ(std::find(definition[102].begin(), definition[102].end(), "{LC_DEF"), definition[102].end());
+    }
     ASSERT_EQ(groups[70].size(), 1u);
     EXPECT_EQ(std::stoi(groups[70][0]), 3);
     ASSERT_EQ(groups[280].size(), 1u);
@@ -3417,6 +3435,57 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
     ASSERT_TRUE(lc::persistence::File::exportFile(reopened, resaved, modern ?
         lc::persistence::File::LIBDXFRW_DXF_R2010 : lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
     const auto rereadGroups = imageGroups(resaved);
+    if (definitionMetadata) {
+        const auto resavedDefinition = recordGroups(resaved, "IMAGEDEF");
+        ASSERT_TRUE(resavedDefinition.count(102));
+        const auto& appGroups = resavedDefinition.at(102);
+        EXPECT_NE(std::find(appGroups.begin(), appGroups.end(), "{LC_DEF"), appGroups.end());
+        ASSERT_TRUE(resavedDefinition.count(1));
+        EXPECT_NE(std::find(resavedDefinition.at(1).begin(), resavedDefinition.at(1).end(), "custom"), resavedDefinition.at(1).end());
+
+        const auto items = doc->entityContainer().asVector();
+        ASSERT_EQ(items.size(), 1u);
+        const auto sourceImage = std::dynamic_pointer_cast<const lc::entity::Image>(items.front());
+        ASSERT_TRUE(sourceImage);
+        const auto copied = sourceImage->copy(lc::geo::Coordinate(5, 0, 0));
+        doc->insertEntity(copied);
+        const std::string metadataBinary = uniqueTmpDxf("image-definition-appdata-binary");
+        const auto binaryResult = lc::persistence::File::exportFile(doc, metadataBinary,
+            lc::persistence::File::LIBDXFRW_DXB_R2000);
+        ASSERT_TRUE(binaryResult.ok);
+        EXPECT_EQ(binaryResult.loss.droppedByType.count("IMAGEDEF metadata"), 0u);
+        auto binaryDocument = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(binaryDocument, metadataBinary,
+            lc::persistence::File::LIBDXFRW).ok);
+        EXPECT_EQ(binaryDocument->entityContainer().asVector().size(), 2u);
+        const std::string metadataReopened = uniqueTmpDxf("image-definition-appdata-reopened");
+        ASSERT_TRUE(lc::persistence::File::exportFile(binaryDocument, metadataReopened,
+            lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+        const auto binaryDefinition = recordGroups(metadataReopened, "IMAGEDEF");
+        ASSERT_TRUE(binaryDefinition.count(102));
+        EXPECT_NE(std::find(binaryDefinition.at(102).begin(), binaryDefinition.at(102).end(), "{LC_DEF"), binaryDefinition.at(102).end());
+        ASSERT_TRUE(binaryDefinition.count(1));
+        EXPECT_NE(std::find(binaryDefinition.at(1).begin(), binaryDefinition.at(1).end(), "custom"), binaryDefinition.at(1).end());
+        doc->removeEntity(copied);
+        auto renamed = std::make_shared<lc::entity::Image>("renamed.png", sourceImage->base(), sourceImage->uv(),
+            sourceImage->vv(), sourceImage->width(), sourceImage->height(), sourceImage->brightness(),
+            sourceImage->contrast(), sourceImage->fade(), sourceImage->layer(), sourceImage->metaInfo(), sourceImage->block());
+        doc->removeEntity(sourceImage);
+        doc->insertEntity(renamed);
+        lc::persistence::DXFimpl retryWriter(doc);
+        ASSERT_TRUE(retryWriter.writeDXF(metadataReopened, lc::persistence::File::LIBDXFRW_DXF_R2000));
+        EXPECT_EQ(retryWriter.loss().droppedByType.at("IMAGEDEF fields"), 1u);
+        EXPECT_EQ(retryWriter.loss().droppedByType.at("IMAGEDEF metadata"), 1u);
+        doc->removeEntity(renamed);
+        doc->insertEntity(sourceImage);
+        ASSERT_TRUE(retryWriter.writeDXF(metadataReopened, lc::persistence::File::LIBDXFRW_DXF_R2000));
+        EXPECT_EQ(retryWriter.loss().droppedByType.count("IMAGEDEF metadata"), 0u);
+        const auto retriedDefinition = recordGroups(metadataReopened, "IMAGEDEF");
+        ASSERT_TRUE(retriedDefinition.count(1));
+        EXPECT_NE(std::find(retriedDefinition.at(1).begin(), retriedDefinition.at(1).end(), "custom"), retriedDefinition.at(1).end());
+        boost::filesystem::remove(metadataBinary);
+        boost::filesystem::remove(metadataReopened);
+    }
     for (const int key : {70, 280, 71, 91, 14, 24, 290}) {
         const auto before = groups.find(key);
         const auto after = rereadGroups.find(key);

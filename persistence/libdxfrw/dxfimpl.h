@@ -713,6 +713,7 @@ private:
     std::vector<DRW_Image> imageMapCache;
     std::size_t _sourceImageClipBytes{0};
     std::size_t _sourceImageDefinitionPathBytes{0};
+    std::size_t _sourceImageDefinitionAppDataBytes{0};
     struct ImageDefinitionOutputBinding {
         std::shared_ptr<const void> sourceIdentity;
         std::uint32_t sourceHandle{0};

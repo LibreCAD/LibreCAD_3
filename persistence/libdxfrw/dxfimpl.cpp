@@ -8,6 +8,7 @@
 #include <cmath>
 #include <limits>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -57,7 +58,57 @@ struct ImageDefinitionSource {
     int version{0}, loaded{0}, resolution{0};
     double u{0}, v{0}, up{0}, vp{0};
     bool pathCaptured{false}, unmodeledMetadata{false};
+    std::list<std::list<DRW_Variant>> appData;
 };
+
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+bool captureSimpleImageDefinitionAppData(const std::list<std::list<DRW_Variant>>& source,
+                                         std::list<std::list<DRW_Variant>>& target,
+                                         std::size_t& retainedBytes) {
+    constexpr std::size_t kMaxBytes = 4u * 1024u * 1024u;
+    if (source.size() > 64 || retainedBytes > kMaxBytes) return false;
+    std::size_t items = 0;
+    bool allRetained = true;
+    const auto safeText = [](const std::string& value) {
+        return value.size() <= 255 && std::all_of(value.begin(), value.end(), [](unsigned char c) {
+            return c >= 0x20 && c <= 0x7e && c != '\\';
+        });
+    };
+    for (const auto& group : source) {
+        std::size_t cost = 0;
+        const auto charge = [&](std::size_t bytes) {
+            if (bytes > kMaxBytes - retainedBytes - cost) return false;
+            cost += bytes;
+            return true;
+        };
+        const bool safe = [&]() {
+            if (group.size() < 2 || group.size() > 128 || items > 128 - group.size() ||
+                !charge(sizeof(group) + 2 * sizeof(void*))) return false;
+            const auto current = group.begin();
+            if (current->code() != 102 || current->type() != DRW_Variant::STRING || !current->content.s ||
+                current->content.s->empty() || !safeText(*current->content.s)) return false;
+            std::string marker = *current->content.s;
+            if (marker.front() == '{') marker.erase(marker.begin());
+            if (marker.empty() || marker.size() > 254 || marker.find_first_of("{}") != std::string::npos) return false;
+            std::transform(marker.begin(), marker.end(), marker.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+            if (marker == "ACAD_REACTORS" || marker == "ACAD_XDICTIONARY") return false;
+            for (auto it = group.begin(); it != group.end(); ++it) {
+                const bool first = it == group.begin();
+                const bool last = std::next(it) == group.end();
+                if (it->type() != DRW_Variant::STRING || !it->content.s || !safeText(*it->content.s) ||
+                    (first ? it->code() != 102 : last ? (it->code() != 102 || *it->content.s != "}") : it->code() != 1) ||
+                    !charge(sizeof(DRW_Variant) + 2 * sizeof(void*)) || !charge(it->content.s->size())) return false;
+            }
+            return true;
+        }();
+        if (!safe) { allRetained = false; continue; }
+        target.push_back(group);
+        items += group.size();
+        retainedBytes += cost;
+    }
+    return allRetained;
+}
+#endif
 
 bool validImageDefinitionSource(const ImageDefinitionSource& source, const std::string& path) {
     return source.pathCaptured && !source.path.empty() && source.path == path &&
@@ -1673,7 +1724,13 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                     definition->u = data->u; definition->v = data->v;
                     definition->up = data->up; definition->vp = data->vp;
                     definition->loaded = data->loaded; definition->resolution = data->resolution;
-                    definition->unmodeledMetadata = !data->extData.empty() || !data->appData.empty() ||
+                    bool appDataRetained = data->appData.empty();
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+                    if (!appDataRetained)
+                        appDataRetained = captureSimpleImageDefinitionAppData(data->appData, definition->appData,
+                                                                              _sourceImageDefinitionAppDataBytes);
+#endif
+                    definition->unmodeledMetadata = !data->extData.empty() || !appDataRetained ||
                         !data->reactorHandles.empty() || !data->reactors.empty() || data->xDictHandle != 0 ||
                         data->hasDataStorageBinaryData() || !data->pendingAppIdResolutions.empty() ||
                         !data->pendingLayerRefResolutions.empty();
@@ -1959,6 +2016,7 @@ bool DXFimpl::prepareImageDefinitionPlan() {
         entry.definition.u = original.u; entry.definition.v = original.v;
         entry.definition.up = original.up; entry.definition.vp = original.vp;
         entry.definition.loaded = original.loaded; entry.definition.resolution = original.resolution;
+        entry.definition.appData = original.appData;
         sources.emplace(key, source->definition);
         definitions.emplace(key, std::move(entry));
     }, true);
@@ -4064,12 +4122,15 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
     }
 
     DRW_ImageDef* definition = nullptr;
+    bool usedSourcePlan = false;
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     const auto generation = source ? _imageSourceGenerations.find(source->sourceIdentity) : _imageSourceGenerations.end();
     if (source && source->definition && validImageDefinitionSource(*source->definition, i->name()) &&
         generation != _imageSourceGenerations.end() &&
-        _plannedImageDefinitions.count({generation->second, source->definitionHandle}))
+        _plannedImageDefinitions.count({generation->second, source->definitionHandle})) {
         definition = dxfW->writeImage(&img, i->name(), generation->second, source->definitionHandle);
+        usedSourcePlan = definition != nullptr;
+    }
     else
 #endif
         definition = dxfW->writeImage(&img, i->name());
@@ -4081,13 +4142,15 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
         if (source && (inserted.first->second.sourceIdentity != binding.sourceIdentity ||
                        inserted.first->second.sourceHandle != binding.sourceHandle)) {
             ++_loss.droppedByType["IMAGEDEF identity"];
-            if (source->definition && source->definition->unmodeledMetadata)
+            if (source->definition && (source->definition->unmodeledMetadata ||
+                                       (!usedSourcePlan && !source->definition->appData.empty())))
                 ++_loss.droppedByType["IMAGEDEF metadata"];
         }
         return;
     }
     const auto original = source ? source->definition : nullptr;
-    if (original && original->unmodeledMetadata) ++_loss.droppedByType["IMAGEDEF metadata"];
+    if (original && (original->unmodeledMetadata || (!usedSourcePlan && !original->appData.empty())))
+        ++_loss.droppedByType["IMAGEDEF metadata"];
     if (original && validImageDefinitionSource(*original, i->name())) {
         definition->imgVersion = original->version;
         definition->u = original->u; definition->v = original->v;
