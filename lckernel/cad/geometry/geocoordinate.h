@@ -217,7 +217,7 @@ public:
     inline Coordinate rotate(const Coordinate& angleVector) const {
         double x0 = _x * angleVector.x() - _y * angleVector.y();
         double y0 = _x * angleVector.y() + _y * angleVector.x();
-        return Coordinate(x0, y0);
+        return Coordinate(x0, y0, _z);
     }
 
     /**
@@ -238,7 +238,8 @@ public:
      * @return
      */
     inline Coordinate rotate(const geo::Coordinate& point, const Coordinate& angleVector) const {
-        return point + (*this - point).rotate(angleVector);
+        const auto rotated = (*this - point).rotate(angleVector);
+        return Coordinate(point.x() + rotated.x(), point.y() + rotated.y(), _z);
     }
 
     /**
@@ -266,17 +267,17 @@ public:
     }
 
     /**
-     * Scales the vector by given factors with 0/0 as center
+     * Scales the vector about the origin.
      */
     inline Coordinate scale(const double& scale_factor) const {
-        return Coordinate(_x * scale_factor, _y * scale_factor);
+        return *this * scale_factor;
     }
 
     /**
-     * Scales the vector by given factors with 0/0 as center
+     * Scales each component by its corresponding factor about the origin.
      */
     inline  Coordinate scale(const Coordinate& scale_factor) const {
-        return Coordinate(_x * scale_factor.x(), _y * scale_factor.y());
+        return *this * scale_factor;
     }
 
     /**

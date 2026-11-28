@@ -2,9 +2,12 @@
 #include "entitytest.h"
 #include <iostream>
 #include <memory>
+#include <limits>
 #include <cad/operations/layerops.h>
 #include <cad/primitive/text.h>
 #include <cad/primitive/mtext.h>
+#include <cad/primitive/image.h>
+#include <cad/meta/block.h>
 #include <cad/primitive/textconst.h>
 #include <cmath>
 
@@ -1015,4 +1018,200 @@ TEST(TextBoundingBoxTest, AnImpossibleFactorGivesTheBoxSingleSpacing) {
         EXPECT_DOUBLE_EQ(heightFor(impossible), single)
             << "a factor of " << impossible << " is not one DXF allows";
     }
+}
+
+TEST(VectorGeometryTest, PlanarProjectionInterpolatesElevation) {
+    const geo::Vector tilted(geo::Coordinate(2, 3, 70), geo::Coordinate(6, 3, 74));
+    EXPECT_EQ(tilted.nearestPointOnPathPlanar(geo::Coordinate(4, 5)), geo::Coordinate(4, 3, 72));
+    EXPECT_EQ(tilted.nearestPointOnPathPlanar(geo::Coordinate(8, 3)), geo::Coordinate(8, 3, 76));
+    EXPECT_EQ(tilted.nearestPointOnEntityPlanar(geo::Coordinate(8, 3)), geo::Coordinate(6, 3, 74));
+    const geo::Vector vertical(geo::Coordinate(2, 3, 70), geo::Coordinate(2, 3, 74));
+    EXPECT_EQ(vertical.nearestPointOnEntityPlanar(geo::Coordinate(4, 3)), geo::Coordinate(2, 3, 70));
+    const geo::Vector planar(geo::Coordinate(0, 0), geo::Coordinate(4, 0));
+    EXPECT_EQ(planar.nearestPointOnPathPlanar(geo::Coordinate(2, 1)), geo::Coordinate(2, 0));
+}
+
+TEST(VectorGeometryTest, DegeneratePathReturnsItsPoint) {
+    const geo::Coordinate point(2, 3, 70);
+    const geo::Vector zero(point, point);
+    EXPECT_EQ(zero.nearestPointOnPath(geo::Coordinate(4, 5, 6)), point);
+    EXPECT_EQ(zero.nearestPointOnEntity(geo::Coordinate(4, 5, 6)), point);
+    EXPECT_EQ(zero.nearestPointOnPathPlanar(geo::Coordinate(4, 5)), point);
+}
+
+TEST(VectorGeometryTest, SpatialSegmentClampsToItsEndpoints) {
+    const geo::Vector vertical(geo::Coordinate(2, 3, 70), geo::Coordinate(2, 3, 74));
+    EXPECT_EQ(vertical.nearestPointOnEntity(geo::Coordinate(2, 3, 100)), geo::Coordinate(2, 3, 74));
+    EXPECT_EQ(vertical.nearestPointOnEntity(geo::Coordinate(2, 3, 60)), geo::Coordinate(2, 3, 70));
+    EXPECT_EQ(vertical.nearestPointOnEntity(geo::Coordinate(4, 3, 72)), geo::Coordinate(2, 3, 72));
+    EXPECT_EQ(vertical.nearestPointOnPath(geo::Coordinate(2, 3, 100)), geo::Coordinate(2, 3, 100));
+    const geo::Vector planar(geo::Coordinate(0, 0), geo::Coordinate(4, 0));
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(6, 1)), geo::Coordinate(4, 0));
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(2, 1)), geo::Coordinate(2, 0));
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(4 + LCTOLERANCE / 2, 1)), geo::Coordinate(4, 0));
+}
+
+TEST(VectorGeometryTest, EntitySnapReturnsTheBoundedPoint) {
+    auto layer = std::make_shared<Layer>();
+    const Line line(geo::Coordinate(2, 3, 70), geo::Coordinate(2, 3, 74), layer);
+    const auto onEntity = line.snapPoints(geo::Coordinate(2, 3, 74.05),
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITY, 0, 0), 0.1, 1);
+    ASSERT_EQ(onEntity.size(), 1u);
+    EXPECT_EQ(onEntity.front().coordinate(), geo::Coordinate(2, 3, 74));
+    const auto onPath = line.snapPoints(geo::Coordinate(2, 3, 74.05),
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
+    ASSERT_EQ(onPath.size(), 1u);
+    EXPECT_EQ(onPath.front().coordinate(), geo::Coordinate(2, 3, 74.05));
+}
+
+TEST(ArcGeometryTest, WrappedArcChoosesAndSnapsItsNearestEndpoint) {
+    auto layer = std::make_shared<Layer>();
+    const Arc arc(geo::Coordinate(0, 0, 9), 10, 350 * M_PI / 180,
+                  10 * M_PI / 180, true, layer);
+    const auto query = geo::Coordinate(0, 0, 9) + geo::Coordinate(-20 * M_PI / 180) * 10;
+    EXPECT_EQ(arc.nearestPointOnEntity(query), arc.startP());
+    const auto nearStart = geo::Coordinate(0, 0, 9) + geo::Coordinate(-10.1 * M_PI / 180) * 10;
+    const auto snapped = arc.snapPoints(nearStart,
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITY, 0, 0), 0.1, 1);
+    ASSERT_EQ(snapped.size(), 1u);
+    EXPECT_EQ(snapped.front().coordinate(), arc.startP());
+    const auto path = arc.snapPoints(nearStart,
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
+    ASSERT_EQ(path.size(), 1u);
+    EXPECT_NEAR(path.front().coordinate().distanceTo(nearStart), 0, 1e-12);
+    const Arc clockwise(geo::Coordinate(0, 0, 9), 10, 10 * M_PI / 180,
+                        350 * M_PI / 180, false, layer);
+    const auto clockwiseQuery = geo::Coordinate(0, 0, 9) + geo::Coordinate(20 * M_PI / 180) * 10;
+    EXPECT_EQ(clockwise.nearestPointOnEntity(clockwiseQuery), clockwise.startP());
+}
+
+TEST(ImageBoundingBoxTest, PreservesSpatialCornersAndPlanarSelection) {
+    auto layer = std::make_shared<Layer>();
+    auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),
+        geo::Coordinate(2, -1, 3), geo::Coordinate(-1, 4, -2),
+        2, 3, 50, 50, 0, layer, nullptr);
+    const auto bounds = image->boundingBox();
+    EXPECT_EQ(bounds.minP(), geo::Coordinate(7, 18, 24));
+    EXPECT_EQ(bounds.maxP(), geo::Coordinate(14, 32, 36));
+    EXPECT_TRUE(bounds.inArea(geo::Coordinate(10, 20, -100)));
+    EXPECT_FALSE(bounds.inArea(geo::Coordinate(6, 20, 30)));
+    auto moved = std::dynamic_pointer_cast<const Image>(image->move(geo::Coordinate(3, -5, 7)));
+    ASSERT_TRUE(moved);
+    EXPECT_EQ(moved->boundingBox().minP(), geo::Coordinate(10, 13, 31));
+    EXPECT_EQ(moved->boundingBox().maxP(), geo::Coordinate(17, 27, 43));
+    EXPECT_EQ(moved->id(), image->id());
+
+    const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
+                       geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(planar.boundingBox().minP(), geo::Coordinate(1, 2, 0));
+    EXPECT_EQ(planar.boundingBox().maxP(), geo::Coordinate(5, 7, 0));
+    const Image elevated("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(1, 0),
+                         geo::Coordinate(0, 1), -4, -5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(elevated.boundingBox().minP(), geo::Coordinate(-3, -3, 9));
+    EXPECT_EQ(elevated.boundingBox().maxP(), geo::Coordinate(1, 2, 9));
+}
+
+TEST(ImageGeometryTest, FindsNearestBoundaryPointInThreeDimensions) {
+    auto layer = std::make_shared<Layer>();
+    const Image tilted("scratch.png", geo::Coordinate(10, 20, 30),
+                       geo::Coordinate(2, 0, 1), geo::Coordinate(0, 3, 0),
+                       2, 2, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(tilted.nearestPointOnEntity(geo::Coordinate(12, 19, 31)),
+              geo::Coordinate(12, 20, 31));
+    EXPECT_EQ(tilted.nearestPointOnPath(geo::Coordinate(15, 19, 33)),
+              geo::Coordinate(14, 20, 32));
+    const auto snaps = tilted.snapPoints(geo::Coordinate(12, 19.99, 31),
+        lc::SimpleSnapConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH, 0, 0), 0.1, 1);
+    ASSERT_EQ(snaps.size(), 1u);
+    EXPECT_EQ(snaps.front().coordinate(), geo::Coordinate(12, 20, 31));
+    EXPECT_EQ(snaps.front().pointId(), 2);
+    const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
+                       geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(planar.nearestPointOnEntity(geo::Coordinate(3, 1)), geo::Coordinate(3, 2));
+    const Image point("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(),
+                      geo::Coordinate(), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(point.nearestPointOnEntity(geo::Coordinate(3, 4, 9)), geo::Coordinate(1, 2, 9));
+    const Image segment("scratch.png", geo::Coordinate(1, 2, 9), geo::Coordinate(0, 0, 1),
+                        geo::Coordinate(), 4, 5, 50, 50, 0, layer, nullptr);
+    EXPECT_EQ(segment.nearestPointOnEntity(geo::Coordinate(2, 2, 20)), geo::Coordinate(1, 2, 13));
+}
+
+TEST(ImageGeometryTest, SnapsToCornersAndBoundary) {
+    auto layer = std::make_shared<Layer>();
+    const Image image("scratch.png", geo::Coordinate(10, 20, 30),
+                      geo::Coordinate(2, 0, 1), geo::Coordinate(0, 3, 0),
+                      2, 2, 50, 50, 0, layer, nullptr);
+    const auto corners = image.snapPoints(geo::Coordinate(14, 26, 32),
+                                         lc::SimpleSnapConstrain(), 0.1, 1);
+    ASSERT_EQ(corners.size(), 1u);
+    EXPECT_EQ(corners.front().coordinate(), geo::Coordinate(14, 26, 32));
+    const lc::SimpleSnapConstrain onEntity(lc::SimpleSnapConstrain::ON_ENTITY, 0, 0);
+    const auto boundary = image.snapPoints(geo::Coordinate(12, 19.99, 31), onEntity, 0.1, 1);
+    ASSERT_EQ(boundary.size(), 1u);
+    EXPECT_EQ(boundary.front().coordinate(), geo::Coordinate(12, 20, 31));
+    EXPECT_EQ(boundary.front().pointId(), 3);
+    EXPECT_TRUE(image.snapPoints(geo::Coordinate(12, 10, 31), onEntity, 0.1, 1).empty());
+}
+
+TEST(ImageTransformTest, PreservesSpatialAxesAndMetadata) {
+    auto layer = std::make_shared<Layer>();
+    auto metadata = lc::meta::MetaInfo::create();
+    auto block = std::make_shared<lc::meta::Block>("image-block");
+    auto image = std::make_shared<Image>("scratch.png", geo::Coordinate(10, 20, 30),
+        geo::Coordinate(2, -1, 3), geo::Coordinate(-1, 4, -2),
+        2, 3, 40, 60, 10, layer, metadata, block);
+    const auto checkIdentity = [&](const std::shared_ptr<const Image>& result) {
+        ASSERT_TRUE(result);
+        EXPECT_EQ(result->id(), image->id());
+        EXPECT_EQ(result->layer(), layer);
+        EXPECT_EQ(result->metaInfo(), metadata);
+        EXPECT_EQ(result->block(), block);
+        EXPECT_EQ(result->name(), image->name());
+        EXPECT_DOUBLE_EQ(result->width(), 2);
+        EXPECT_DOUBLE_EQ(result->height(), 3);
+        EXPECT_DOUBLE_EQ(result->brightness(), 40);
+        EXPECT_DOUBLE_EQ(result->contrast(), 60);
+        EXPECT_DOUBLE_EQ(result->fade(), 10);
+    };
+    auto rotated = std::dynamic_pointer_cast<const Image>(image->rotate(geo::Coordinate(1, 2, 99), std::acos(-1.) / 2));
+    ASSERT_TRUE(rotated); checkIdentity(rotated);
+    EXPECT_NEAR(rotated->base().x(), -17, 1e-12); EXPECT_NEAR(rotated->base().y(), 11, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated->base().z(), 30);
+    EXPECT_NEAR(rotated->uv().x(), 1, 1e-12); EXPECT_NEAR(rotated->uv().y(), 2, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated->uv().z(), 3);
+    EXPECT_NEAR(rotated->vv().x(), -4, 1e-12); EXPECT_NEAR(rotated->vv().y(), -1, 1e-12);
+    EXPECT_DOUBLE_EQ(rotated->vv().z(), -2);
+    auto scaled = std::dynamic_pointer_cast<const Image>(image->scale(geo::Coordinate(1, 2, 3), geo::Coordinate(2, 3, 4)));
+    ASSERT_TRUE(scaled); checkIdentity(scaled);
+    EXPECT_EQ(scaled->base(), geo::Coordinate(19, 56, 111));
+    EXPECT_EQ(scaled->uv(), geo::Coordinate(4, -3, 12));
+    EXPECT_EQ(scaled->vv(), geo::Coordinate(-2, 12, -8));
+    auto mirrored = std::dynamic_pointer_cast<const Image>(image->mirror(geo::Coordinate(), geo::Coordinate(1, 0)));
+    ASSERT_TRUE(mirrored); checkIdentity(mirrored);
+    EXPECT_EQ(mirrored->base(), geo::Coordinate(10, -20, -30));
+    EXPECT_EQ(mirrored->uv(), geo::Coordinate(2, 1, -3));
+    EXPECT_EQ(mirrored->vv(), geo::Coordinate(-1, -4, 2));
+    for (const double length : {1e-200, 1e200}) {
+        auto extreme = std::dynamic_pointer_cast<const Image>(image->mirror(geo::Coordinate(), geo::Coordinate(length, 0)));
+        ASSERT_TRUE(extreme);
+        EXPECT_EQ(extreme->base(), mirrored->base());
+        EXPECT_EQ(extreme->uv(), mirrored->uv());
+        EXPECT_EQ(extreme->vv(), mirrored->vv());
+    }
+    EXPECT_FALSE(image->mirror(geo::Coordinate(1, 2), geo::Coordinate(1, 2)));
+    EXPECT_FALSE(image->mirror(geo::Coordinate(),
+                               geo::Coordinate(1, std::numeric_limits<double>::quiet_NaN(), 0)));
+    EXPECT_EQ(image->base(), geo::Coordinate(10, 20, 30));
+    auto retried = std::dynamic_pointer_cast<const Image>(image->mirror(geo::Coordinate(), geo::Coordinate(1, 0)));
+    ASSERT_TRUE(retried);
+    EXPECT_EQ(retried->base(), mirrored->base());
+    EXPECT_EQ(retried->uv(), mirrored->uv());
+    EXPECT_EQ(retried->vv(), mirrored->vv());
+    const Image planar("scratch.png", geo::Coordinate(1, 2), geo::Coordinate(1, 0),
+                       geo::Coordinate(0, 1), 4, 5, 50, 50, 0, layer, nullptr);
+    auto planarScale = std::dynamic_pointer_cast<const Image>(planar.scale(geo::Coordinate(), geo::Coordinate(2, 3, 1)));
+    ASSERT_TRUE(planarScale);
+    EXPECT_EQ(planarScale->base(), geo::Coordinate(2, 6, 0));
+    EXPECT_EQ(planarScale->uv(), geo::Coordinate(2, 0, 0));
+    EXPECT_EQ(planarScale->vv(), geo::Coordinate(0, 3, 0));
 }

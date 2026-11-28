@@ -9,7 +9,9 @@ LayerBuilder::LayerBuilder() :
     _lineWidth(1),
     _color(),
     _linePattern(nullptr),
-    _isFrozen(false) {
+    _isFrozen(false),
+    _isOff(false),
+    _isLocked(false) {
 
 }
 
@@ -31,6 +33,14 @@ meta::DxfLinePatternByValue_CSPtr LayerBuilder::linePattern() const {
 
 bool LayerBuilder::isFrozen() const {
     return _isFrozen;
+}
+
+bool LayerBuilder::isOff() const {
+    return _isOff;
+}
+
+bool LayerBuilder::isLocked() const {
+    return _isLocked;
 }
 
 LayerBuilder* LayerBuilder::setName(const std::string& name) {
@@ -56,6 +66,16 @@ LayerBuilder* LayerBuilder::setLinePattern(const meta::DxfLinePatternByValue_CSP
 
 LayerBuilder* LayerBuilder::setIsFrozen(bool isFrozen) {
     _isFrozen = isFrozen;
+    return this;
+}
+
+LayerBuilder* LayerBuilder::setIsOff(bool isOff) {
+    _isOff = isOff;
+    return this;
+}
+
+LayerBuilder* LayerBuilder::setIsLocked(bool isLocked) {
+    _isLocked = isLocked;
     return this;
 }
 

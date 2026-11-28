@@ -22,6 +22,7 @@
 #include <cad/storage/storagemanagerimpl.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
+#include <cad/primitive/line.h>
 
 namespace {
 
@@ -98,6 +99,14 @@ assert(t:valign() == lc.TextConst.VATop, 'the entity lost the valign')
 )LUA"), "");
 }
 
+TEST_F(LuaTextBuilderFixture, CoordinateScalePreservesSpatialComponents) {
+    EXPECT_EQ(lcLua->runString(R"LUA(
+local point = lc.geo.Coordinate(3, 4, 7)
+assert(point:scale(-2):z() == -14)
+assert(point:scale(lc.geo.Coordinate(2, -3, 4)):z() == 28)
+)LUA"), "");
+}
+
 // The four flags that make an MText an MText. They round-trip through the
 // builder and the property editor and were reachable from neither language.
 // NOLINTNEXTLINE(readability-identifier-naming)
@@ -129,4 +138,75 @@ assert(m:underlined() == true, 'the entity lost underlined')
 assert(m:strikethrough() == false, 'the entity lost strikethrough')
 assert(m:text_value() == 'two\nlines', 'the entity lost the newline')
 )LUA"), "");
+}
+
+TEST_F(LuaTextBuilderFixture, LockedLayerOperationReportsRefusalAndAllowsExplicitOverride) {
+    auto layer = std::make_shared<lc::meta::Layer>("LOCKED", lc::meta::MetaLineWidthByValue(1), lc::Color(), nullptr, false, false, true);
+    document->addDocumentMetaType(layer);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0, 0), lc::geo::Coordinate(1, 0), layer, nullptr);
+    document->insertEntity(line);
+    const auto err = lcLua->runString(R"LUA(
+local entities = document:entityContainer():asVector(32767)
+local moved = entities[1]:move(lc.geo.Coordinate(2, 0))
+local blocked = lc.operation.EntityBuilder.new(document)
+blocked:appendEntity(moved)
+blocked:execute()
+assert(blocked:blockedByLockedLayer())
+local force = lc.operation.EntityBuilder.new(document)
+force:setAllowLockedLayerEdits(true)
+force:appendEntity(moved)
+force:execute()
+assert(not force:blockedByLockedLayer())
+local later = moved:move(lc.geo.Coordinate(3, 0))
+local child = lc.operation.EntityBuilder.new(document)
+child:appendEntity(later)
+local group = lc.operation.Builder(document, 'locked compound')
+group:append(child)
+group:execute()
+assert(group:blockedByLockedLayer())
+local stacked = lc.operation.EntityBuilder.new(document)
+stacked:appendEntity(moved)
+stacked:appendOperation(lc.operation.Push.new())
+stacked:appendOperation(lc.operation.Move.new(lc.geo.Coordinate(3, 0)))
+local stackedGroup = lc.operation.Builder(document, 'locked stacked compound')
+stackedGroup:append(stacked)
+stackedGroup:execute()
+assert(stackedGroup:blockedByLockedLayer())
+local nestedChild = lc.operation.EntityBuilder.new(document)
+nestedChild:appendEntity(later)
+local inner = lc.operation.Builder(document, 'inner locked compound')
+local outer = lc.operation.Builder(document, 'outer locked compound')
+inner:append(nestedChild)
+outer:append(inner)
+outer:execute()
+assert(outer:blockedByLockedLayer() and inner:blockedByLockedLayer())
+assert(not pcall(function() inner:append(outer) end))
+assert(not pcall(function() lc.operation.Builder(nil, 'invalid') end))
+assert(not document:tryInsertEntity(later))
+assert(not document:tryRemoveEntity(moved))
+document:insertEntity(later)
+document:removeEntity(moved)
+assert(#document:entityContainer():asVector(32767) == 1)
+document:forceInsertEntity(later)
+document:forceRemoveEntity(later)
+assert(#document:entityContainer():asVector(32767) == 0)
+assert(document:tryInsertEntity(moved)) -- creation on a locked layer remains allowed
+document:forceInsertEntity(nil)
+document:forceRemoveEntity(nil)
+assert(not pcall(function() lc.storage.DocumentImpl.create(nil) end))
+assert(not pcall(function() lc.storage.DocumentImpl(nil) end))
+local legacy = lc.storage.DocumentImpl(lc.storage.StorageManagerImpl())
+assert(legacy:tryInsertEntity(moved))
+assert(not legacy:tryRemoveEntity(moved))
+legacy:forceRemoveEntity(moved)
+local other = lc.storage.DocumentImpl.create(lc.storage.StorageManagerImpl.create())
+assert(other:tryInsertEntity(moved))
+assert(not other:tryRemoveEntity(moved))
+other:forceRemoveEntity(moved)
+assert(#other:entityContainer():asVector(32767) == 0)
+)LUA");
+    ASSERT_EQ(err, "") << err;
+    const auto moved = std::dynamic_pointer_cast<const lc::entity::Line>(document->entityByID(line->id()));
+    ASSERT_TRUE(moved);
+    EXPECT_DOUBLE_EQ(moved->start().x(), 2.0);
 }

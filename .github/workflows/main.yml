@@ -456,10 +456,12 @@ jobs:
             -DWITH_PYTHONSCRIPT=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Python=TRUE ^
             -DWITH_UNITTESTS=ON -DWITH_RENDERING_UNITTESTS=OFF
           if errorlevel 1 exit /b 1
-          cmake --build "${{ github.workspace }}\build-python-off" --config Release --target librecad lcunittest --parallel 3
+          cmake --build "${{ github.workspace }}\build-python-off" --config Release --target librecad lcunittest lclayoutgraphtest --parallel 3
           if errorlevel 1 exit /b 1
           set "QT_QPA_PLATFORM=offscreen"
           "%Python_EXECUTABLE%" scripts\run_required_gtests.py --binary "${{ github.workspace }}\build-python-off\bin\lcunittest.exe" --filter="LuaRuntimeTest.*" --require-suite "LuaRuntimeTest."
+          if errorlevel 1 exit /b 1
+          "%Python_EXECUTABLE%" scripts\run_required_gtests.py --binary "${{ github.workspace }}\build-python-off\bin\lclayoutgraphtest.exe" --filter="LayoutGraph.*" --require-suite "LayoutGraph."
           if errorlevel 1 exit /b 1
           REM Binding-only: persistence-OFF is not a supported GUI configuration.
           cmake -S "${{ github.workspace }}" -B "${{ github.workspace }}\build-python-no-persistence" ^
@@ -602,7 +604,7 @@ jobs:
             -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
 
       - name: Build the tests
-        run: cmake --build build-asan --target lcunittest
+        run: cmake --build build-asan --target lcunittest lclayoutgraphtest
 
       # halt_on_error: a sanitizer finding must fail the job, not be logged and
       # walked past.
@@ -610,7 +612,9 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
-        run: ./build-asan/bin/lcunittest --gtest_filter='DwgImportTest.*'
+        run: |
+          ./build-asan/bin/lcunittest --gtest_filter='DwgImportTest.*'
+          python3 scripts/run_required_gtests.py --binary ./build-asan/bin/lclayoutgraphtest --filter='LayoutGraph.*' --require-suite 'LayoutGraph.'
 
   # BuildWindows has to install Qt, build every target and package an
   # installer before it tells us anything, and it has not reached a build in a

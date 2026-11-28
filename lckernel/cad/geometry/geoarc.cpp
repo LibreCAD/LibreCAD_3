@@ -94,8 +94,8 @@ Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
     }
 
     // Find out if angle is closer to start or end and return the appropriate coordinate
-    const auto ad1 = std::abs(angle - _startAngle);
-    const auto ad2 = std::abs(angle - _endAngle);
+    const auto ad1 = std::abs(std::remainder(angle - _startAngle, 2. * M_PI));
+    const auto ad2 = std::abs(std::remainder(angle - _endAngle, 2. * M_PI));
 
     if (ad1 <= ad2) {
         return startP();
@@ -137,16 +137,16 @@ Area Arc::boundingBox() const {
     const double p3 = 1.5 * M_PI;
 
     if ((maths::Math::isAngleBetween(p0, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x() + _radius, _center.y()));
+        area = area.merge(_center + Coordinate(_radius, 0.));
     }
     if ((maths::Math::isAngleBetween(p1, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x(), _center.y() + _radius));
+        area = area.merge(_center + Coordinate(0., _radius));
     }
     if ((maths::Math::isAngleBetween(p2, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x() - _radius, _center.y()));
+        area = area.merge(_center + Coordinate(-_radius, 0.));
     }
     if ((maths::Math::isAngleBetween(p3, startAngle, endAngle, _CCW))) {
-        area = area.merge(Coordinate(_center.x(), _center.y() - _radius));
+        area = area.merge(_center + Coordinate(0., -_radius));
     }
     return area;
 }

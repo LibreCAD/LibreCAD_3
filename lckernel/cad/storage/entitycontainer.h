@@ -13,6 +13,7 @@
 #include "cad/math/intersect.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/primitive/line.h"
+#include "cad/primitive/image.h"
 
 namespace lc {
 namespace meta {
@@ -314,8 +315,19 @@ public:
      * \return List of entities near this coordinate. This includes entities where it's path is close to point
      */
     std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point,
+            double distance, lc::SimpleSnapConstrain snapConstrain) const {
+        return getEntityPathsNearCoordinateImpl(point, distance, snapConstrain, false);
+    }
+
+    // Planar hit testing retains the resulting coordinate elevation.
+    std::vector<lc::EntityDistance> getEntityPathsNearCoordinatePlanar(const lc::geo::Coordinate& point,
+            double distance, lc::SimpleSnapConstrain snapConstrain) const {
+        return getEntityPathsNearCoordinateImpl(point, distance, snapConstrain, true);
+    }
+
+    std::vector<lc::EntityDistance> getEntityPathsNearCoordinateImpl(const lc::geo::Coordinate& point,
             double distance,
-            lc::SimpleSnapConstrain _snapConstrain) const {
+            lc::SimpleSnapConstrain _snapConstrain, bool projectToXY) const {
 
         const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(), point.y()) + distance / 2.,
                                         lc::geo::Coordinate(point.x(), point.y()) + distance / 2.);
@@ -328,12 +340,21 @@ public:
 
             if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                 //--- May need to be implemented in another function later
-                lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-                if (eCoordinate.distanceTo(point) < distance) {
+                // For tilted IMAGE edges and LINEs, the nearest 3D point to a
+                // screen coordinate need not be the nearest projected point.
+                const auto image = projectToXY ?
+                    std::dynamic_pointer_cast<const lc::entity::Image>(item) : nullptr;
+                const auto line = projectToXY && !image ?
+                    std::dynamic_pointer_cast<const lc::entity::Line>(item) : nullptr;
+                lc::geo::Coordinate eCoordinate = image ? image->nearestPointOnPathPlanar(point)
+                    : line ? line->nearestPointOnPathPlanar(point)
+                           : entity->nearestPointOnPath(point);
+                const auto query = projectToXY ? lc::geo::Coordinate(point.x(), point.y(), eCoordinate.z()) : point;
+                if (eCoordinate.distanceTo(query) < distance) {
                     entities.emplace_back(item, eCoordinate);
                 }
                 else {//check if snapConstrain is set
-                    std::vector<lc::EntityCoordinate> points = entity->snapPoints(point, _snapConstrain, distance, 1);
+                    std::vector<lc::EntityCoordinate> points = entity->snapPoints(query, _snapConstrain, distance, 1);
                     if(points.size()) {
                         entities.emplace_back(item,points.at(0).coordinate());
                     }

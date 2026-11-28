@@ -86,6 +86,7 @@ CADEntity_CSPtr Insert::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr met
     auto builder = builder::InsertBuilder();
 
     /// @todo a copy should be made, instead of setting every attribute manually
+    builder.setID(id());
     builder.setCoordinate(_position);
     builder.setDisplayBlock(_displayBlock);
     builder.setDocument(_document);

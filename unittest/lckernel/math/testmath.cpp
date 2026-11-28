@@ -42,6 +42,11 @@ TEST(MathTest, correctAngle) {
 }
 
 TEST(MathTest, isAngleBetween) {
+    EXPECT_FALSE(Math::isAngleBetween(-20 * M_PI / 180, 350 * M_PI / 180, 10 * M_PI / 180, true));
+    EXPECT_TRUE(Math::isAngleBetween(0, 350 * M_PI / 180, 10 * M_PI / 180, true));
+    EXPECT_FALSE(Math::isAngleBetween(20 * M_PI / 180, 10 * M_PI / 180, 350 * M_PI / 180, false));
+    EXPECT_TRUE(Math::isAngleBetween(0, 10 * M_PI / 180, 350 * M_PI / 180, false));
+    EXPECT_TRUE(Math::isAngleBetween(1, 0, 2 * M_PI, true));
     EXPECT_TRUE (Math::isAngleBetween(0.5 * M_PI, 0., M_PI, true));
     EXPECT_TRUE (Math::isAngleBetween(-0.5 * M_PI, M_PI, 0., true));
     EXPECT_TRUE (Math::isAngleBetween(-0.5 * M_PI, -M_PI, 0, true));

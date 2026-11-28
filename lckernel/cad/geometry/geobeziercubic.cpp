@@ -19,39 +19,7 @@ CubicBezier::CubicBezier(const CubicBezier &bez) :
 }
 
 const Area CubicBezier::boundingBox() const {
-    auto v1 =(_pointB - _pointA)*3;
-    auto v2 = (_pointC - _pointB)*3;
-    auto v3 = (_pointD - _pointC)*3;
-
-    auto a = v1 - (v2*2) + v3;
-    auto b = (v2 - v1)*2;
-    const auto& c = v1;
-
-    std::vector<double> x_roots = lc::maths::Math::quadraticSolver({b.x()/a.x(), c.x()/a.x()});
-    std::vector<double> y_roots = lc::maths::Math::quadraticSolver({b.y()/a.y(), b.y()/a.y()});
-
-    std::vector<double> x_{_pointA.x(), _pointD.x() };
-    std::vector<double> y_{_pointA.y(), _pointD.y() };
-
-
-    for(const double tx_ : x_roots) {
-        if(tx_ > 0. && tx_ < 1.0) {
-            auto bez1 = DirectValueAt(tx_);
-            x_.push_back(bez1.x());
-            y_.push_back(bez1.y());
-        }
-    }
-    for(const double ty_ : y_roots) {
-        if(ty_ > 0. && ty_ < 1.0) {
-            auto bez2 = DirectValueAt(ty_);
-            x_.push_back(bez2.x());
-            y_.push_back(bez2.y());
-        }
-    }
-    std::sort(x_.begin(), x_.end());
-    std::sort(y_.begin(), y_.end());
-
-    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back(),y_.back()));
+    return boundsForControlPoints();
 }
 
 Coordinate CubicBezier::nearestPointOnPath(const Coordinate& coord) const {

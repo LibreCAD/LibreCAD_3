@@ -1,12 +1,44 @@
 #include "image.h"
 
-
 #include <algorithm>
-#include <cad/math/helpermethods.h>
+#include <array>
+#include <cmath>
+
 #include "cad/geometry/geoarea.h"
+#include "cad/base/metainfo.h"
+#include "cad/meta/imagedisplaysource.h"
 
 using namespace lc;
 using namespace entity;
+
+namespace {
+std::array<geo::Coordinate, 4> imageCorners(const geo::Coordinate& base,
+        const geo::Coordinate& uv, const geo::Coordinate& vv, double width, double height) {
+    const auto u = uv * width;
+    const auto v = vv * height;
+    return {{base, base + u, base + u + v, base + v}};
+}
+
+geo::Coordinate nearestImageBoundary(const std::array<geo::Coordinate, 4>& corners,
+                                      const geo::Coordinate& coord, bool planar) {
+    const auto metric = [planar](const geo::Coordinate& value) {
+        return planar ? geo::Coordinate(value.x(), value.y()) : value;
+    };
+    auto nearest = corners[0];
+    auto distance = metric(coord - nearest).squared();
+    for (std::size_t i = 0; i < corners.size(); ++i) {
+        const geo::Vector edge(corners[i], corners[(i + 1) % corners.size()]);
+        const auto candidate = planar ? edge.nearestPointOnEntityPlanar(coord)
+                                      : edge.nearestPointOnEntity(coord);
+        const double candidateDistance = metric(coord - candidate).squared();
+        if (candidateDistance < distance) {
+            nearest = candidate;
+            distance = candidateDistance;
+        }
+    }
+    return nearest;
+}
+}
 
 Image::Image(std::string name,
              geo::Coordinate base,
@@ -51,22 +83,19 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
     std::vector<EntityCoordinate> points;
 
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
-        /// @todo Add logical constrain
-    }
-
-
-    const geo::Coordinate npoe = nearestPointOnPath(coord);
-    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
-        points.emplace_back(npoe, 2);
-    }
-
-    /** @todo
-    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
-        if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
-            points.emplace_back(npoe, 3);
+        const auto corners = imageCorners(_base, _uv, _vv, _width, _height);
+        for (std::size_t i = 0; i < corners.size(); ++i) {
+            points.emplace_back(corners[i], 4 + static_cast<int>(i));
         }
     }
-    */
+
+    if (constrain.constrain() & (SimpleSnapConstrain::ON_ENTITYPATH | SimpleSnapConstrain::ON_ENTITY)) {
+        const auto nearest = nearestPointOnPath(coord);
+        if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)
+            points.emplace_back(nearest, 2);
+        if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)
+            points.emplace_back(nearest, 3);
+    }
 
     // Cleanup array of snappoints
     Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
@@ -75,31 +104,23 @@ std::vector<EntityCoordinate> Image::snapPoints(const geo::Coordinate& coord, co
 }
 
 geo::Coordinate Image::nearestPointOnPath(const geo::Coordinate& coord) const {
-    std::vector<geo::Coordinate> points;
-    /** @todo nearestPointOnPath
-        auto v1 = geo::Vector(_bottomLeft, geo::Coordinate(_bottomLeft.x(), _topRight.y()));
-        auto v2 = geo::Vector(_bottomLeft, geo::Coordinate(_topRight.x(), _bottomLeft.y()));
-        auto v3 = geo::Vector(_topRight, geo::Coordinate(_topRight.x(), _bottomLeft.y()));
-        auto v4 = geo::Vector(_topRight, geo::Coordinate(_bottomLeft.x(), _topRight.y()));
+    return nearestImageBoundary(imageCorners(_base, _uv, _vv, _width, _height), coord, false);
+}
 
-        points.push_back(v1.nearestPointOnEntity(coord));
-        points.push_back(v2.nearestPointOnEntity(coord));
-        points.push_back(v3.nearestPointOnEntity(coord));
-        points.push_back(v4.nearestPointOnEntity(coord));
-        std::sort(points.begin(), points.end(), geo::CoordinateDistanceSort(coord));
-    */
-    return geo::Coordinate();
+geo::Coordinate Image::nearestPointOnPathPlanar(const geo::Coordinate& coord) const {
+    return nearestImageBoundary(imageCorners(_base, _uv, _vv, _width, _height), coord, true);
 }
 
 geo::Coordinate Image::nearestPointOnEntity(const geo::Coordinate& coord) const {
-    return geo::Coordinate();
+    return nearestPointOnPath(coord);
 }
 
-CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Image::withGeometry(const geo::Coordinate& base, const geo::Coordinate& uv,
+                                    const geo::Coordinate& vv) const {
     auto newImage = std::make_shared<Image>(_name,
-                                            _base + offset,
-                                            _uv,
-                                            _vv,
+                                            base,
+                                            uv,
+                                            vv,
                                             _width,
                                             _height,
                                             _brightness,
@@ -110,6 +131,10 @@ CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
                                            );
     newImage->setID(this->id());
     return newImage;
+}
+
+CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
+    return withGeometry(_base + offset, _uv, _vv);
 }
 
 CADEntity_CSPtr Image::copy(const geo::Coordinate& offset) const {
@@ -129,45 +154,51 @@ CADEntity_CSPtr Image::copy(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Image::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
-    // auto newImage = std::make_shared<Image>(_bottomLeft.rotate(rotation_center, rotation_angle),
-    //                                           _topRight.rotate(rotation_center, rotation_angle), layer());
-    // newImage->setID(this->id());
-    return nullptr;
+    return withGeometry(_base.rotate(rotation_center, rotation_angle),
+                        _uv.rotate(rotation_angle), _vv.rotate(rotation_angle));
 }
 
 CADEntity_CSPtr Image::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-//   auto newImage = std::make_shared<Image>(_bottomLeft.scale(scale_center, scale_factor),
-    //                                           _topRight.scale(scale_center, scale_factor), layer());
-    //newImage->setID(this->id());
-    return nullptr;
+    return withGeometry(_base.scale(scale_center, scale_factor),
+                        _uv * scale_factor, _vv * scale_factor);
+}
+
+CADEntity_CSPtr Image::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    const auto direction = axis2 - axis1;
+    if (!std::isfinite(direction.x()) || !std::isfinite(direction.y())
+        || !std::isfinite(direction.z())) return nullptr;
+    const double largest = std::max({std::abs(direction.x()), std::abs(direction.y()),
+                                     std::abs(direction.z())});
+    if (largest == 0.) return nullptr;
+    const auto axis = direction / largest;
+    const geo::Coordinate origin;
+    return withGeometry(axis1 + (_base - axis1).mirror(origin, axis),
+                        _uv.mirror(origin, axis), _vv.mirror(origin, axis));
 }
 
 const geo::Area Image::boundingBox() const {
-    std::vector<geo::Coordinate> c;
-//    c.emplace_back(_base);
-//    c.emplace_back(_base.x(), _base.y() + _height);
-//    c.emplace_back(_base.x()+_width, _base.y() + _height);
-//    c.emplace_back(_base.x()+_width, _base.y());
-
-    // Create 4 corners
-    c.emplace_back(0.,0.);
-    c.emplace_back(0., _height);
-    c.emplace_back(_width, _height);
-    c.emplace_back(_width, 0.);
-
-    // Apply Transform
-    std::vector<geo::Coordinate> c2 = maths::HelperMethods::transform2d<geo::Coordinate>(c, _uv.x(), _uv.y(), _vv.x(), _vv.y(), _base.x(), _base.y());
-
-    // get bounding box
-    geo::Area area = geo::Area(c2.at(0), 0.,0.);
-    std::for_each(c2.begin(), c2.end(), [&](geo::Coordinate c) {
-        area = area.merge(c);
-    });
-
-    return area;
+    const auto corners = imageCorners(_base, _uv, _vv, _width, _height);
+    return geo::Area(corners[0], corners[1]).merge(corners[2]).merge(corners[3]);
 }
 
 CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+    // A style edit can replace MetaInfo entirely, but it does not edit the
+    // image's pixel-space source display settings. Carry those forward while
+    // leaving the supplied style metadata untouched.
+    auto updatedMeta = metaInfo;
+    const auto originalMeta = this->metaInfo();
+    if (originalMeta) {
+        const auto source = originalMeta->find(meta::detail::imageDisplaySourceKey());
+        if (source != originalMeta->end()) {
+            const auto replacement = metaInfo ? metaInfo->find(source->first) : originalMeta->end();
+            if (!metaInfo || replacement == metaInfo->end() || replacement->second != source->second) {
+                auto copy = meta::MetaInfo::create();
+                if (metaInfo) copy->insert(metaInfo->begin(), metaInfo->end());
+                (*copy)[source->first] = source->second;
+                updatedMeta = copy;
+            }
+        }
+    }
     auto newImage = std::make_shared<Image>(
                         _name,
                         _base,
@@ -179,8 +210,9 @@ CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
                         _contrast,
                         _fade,
                         layer,
-                        metaInfo,
+                        updatedMeta,
                         block
                     );
+    newImage->setID(id());
     return newImage;
 }

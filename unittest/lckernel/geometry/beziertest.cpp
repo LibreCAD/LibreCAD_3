@@ -10,6 +10,63 @@
 #define PI 3.14159265
 #define TRD PI/180
 
+TEST(BEZIER_QUADRATIC, BoundsIncludeSpatialExtrema) {
+    lc::geo::Bezier curve({0, 0, -2}, {2, 5, 8}, {4, 0, -2});
+    const auto bounds = curve.boundingBox();
+    EXPECT_NEAR(bounds.minP().x(), 0, 1e-12);
+    EXPECT_NEAR(bounds.maxP().x(), 4, 1e-12);
+    EXPECT_NEAR(bounds.maxP().y(), 2.5, 1e-12);
+    EXPECT_NEAR(bounds.minP().z(), -2, 1e-12);
+    EXPECT_NEAR(bounds.maxP().z(), 3, 1e-12);
+}
+
+TEST(BEZIER_CUBIC, BoundsIncludeIndependentAxisExtrema) {
+    lc::geo::CubicBezier curve({0, 0, 0}, {1, 4, 10}, {3, -2, -10}, {4, 0, 0});
+    const auto bounds = curve.boundingBox();
+    const double firstY = (5. - std::sqrt(7.)) / 9.;
+    const double secondY = (5. + std::sqrt(7.)) / 9.;
+    const double zExtreme = 5. / std::sqrt(3.);
+    EXPECT_NEAR(bounds.minP().x(), 0, 1e-12);
+    EXPECT_NEAR(bounds.maxP().x(), 4, 1e-12);
+    EXPECT_NEAR(bounds.maxP().y(), curve.DirectValueAt(firstY).y(), 1e-12);
+    EXPECT_NEAR(bounds.minP().y(), curve.DirectValueAt(secondY).y(), 1e-12);
+    EXPECT_NEAR(bounds.minP().z(), -zExtreme, 1e-12);
+    EXPECT_NEAR(bounds.maxP().z(), zExtreme, 1e-12);
+    for (int i = 0; i <= 1000; ++i) {
+        const auto p = curve.DirectValueAt(i / 1000.);
+        EXPECT_GE(p.x(), bounds.minP().x() - 1e-12);
+        EXPECT_LE(p.x(), bounds.maxP().x() + 1e-12);
+        EXPECT_GE(p.y(), bounds.minP().y() - 1e-12);
+        EXPECT_LE(p.y(), bounds.maxP().y() + 1e-12);
+        EXPECT_GE(p.z(), bounds.minP().z() - 1e-12);
+        EXPECT_LE(p.z(), bounds.maxP().z() + 1e-12);
+    }
+}
+
+TEST(BEZIER_CUBIC, BoundsHandleLinearAndConstantDerivatives) {
+    lc::geo::CubicBezier curve({0, 0, 5}, {1, 4, 5}, {2, 4, 5}, {3, 0, 5});
+    const auto bounds = curve.boundingBox();
+    EXPECT_DOUBLE_EQ(bounds.minP().x(), 0);
+    EXPECT_DOUBLE_EQ(bounds.maxP().x(), 3);
+    EXPECT_DOUBLE_EQ(bounds.minP().y(), 0);
+    EXPECT_DOUBLE_EQ(bounds.maxP().y(), 3);
+    EXPECT_DOUBLE_EQ(bounds.minP().z(), 5);
+    EXPECT_DOUBLE_EQ(bounds.maxP().z(), 5);
+}
+
+TEST(BEZIER_CUBIC, BoundsRetainSmallCurvatureAtLargeOffset) {
+    constexpr double offset = 1.e15;
+    lc::geo::CubicBezier curve({0, offset, 5}, {1, offset + 4, 5},
+                               {3, offset - 2, 5}, {4, offset, 5});
+    const auto bounds = curve.boundingBox();
+    const double firstY = (5. - std::sqrt(7.)) / 9.;
+    const double secondY = (5. + std::sqrt(7.)) / 9.;
+    EXPECT_NEAR(bounds.maxP().y(), curve.DirectValueAt(firstY).y(), 0.25);
+    EXPECT_NEAR(bounds.minP().y(), curve.DirectValueAt(secondY).y(), 0.25);
+    EXPECT_GT(bounds.maxP().y(), offset);
+    EXPECT_LT(bounds.minP().y(), offset);
+}
+
 TEST(BEZIER_QUADRATIC, LENGTH) {
     auto p1 = lc::geo::Coordinate(50,230);
     auto p2 = lc::geo::Coordinate(50,50);

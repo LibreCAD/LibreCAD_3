@@ -21,6 +21,10 @@ public:
     BezierBase() {}
     virtual ~BezierBase() {}
 
+protected:
+    const Area boundsForControlPoints() const;
+
+public:
     /**
      * @brief boundingBox of the bezier
      * @return Area of the bounding box

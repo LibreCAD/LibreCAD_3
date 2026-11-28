@@ -3,7 +3,16 @@
 #include <libdxfrw.h>
 #include <drw_interface.h>
 #include <drw_base.h>
+
+#if defined(LIBDXFRW_HAS_DXF_STAGED_LAYOUT_LINK_INSPECTOR) && defined(LIBDXFRW_HAS_DXF_FIXED_PAPER_SPACE_WRITER)
+#define LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH 1
+#endif
+#if defined(LIBDXFRW_HAS_DXF_DICTIONARY_SOURCE_HANDLERS) && defined(LIBDXFRW_HAS_DXF_STAGED_DICTIONARY_INSPECTOR) && defined(LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR)
+#define LC3_HAS_SOURCE_IMAGE_DICTIONARY 1
+#endif
 #include <iostream>
+#include <functional>
+#include <set>
 #include "../file.h"
 #include "../format.h"
 #include "../readguard.h"
@@ -22,6 +31,7 @@
 #include <cad/base/metainfo.h>
 #include <cad/meta/icolor.h>
 #include <tuple>
+#include <unordered_set>
 #include <cad/meta/block.h>
 #include <cad/operations/builder.h>
 
@@ -57,10 +67,12 @@ struct DrawingHeader {
 
     /** $INSUNITS as the raw DXF code, and as the kernel's enum. */
     int insUnitsCode{0};
+    bool hasInsUnits{false};
     lc::Units units{lc::Units::None};
 
     /** $MEASUREMENT: 0 = imperial (English), 1 = metric. */
     int measurement{0};
+    bool hasMeasurement{false};
 
     /** $LTSCALE, the global line-type scale. */
     double lineTypeScale{1.0};
@@ -71,7 +83,21 @@ struct DrawingHeader {
     lc::geo::Coordinate extMax;
 };
 
-class DXFimpl : public DRW_Interface {
+class DXFimpl : public DRW_Interface
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+              , public DRW_DxfRootDictionarySourceHandler
+              , public DRW_DxfDictionarySourceHandler
+#endif
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+              , public DRW_DxfFixedPaperSpaceWriter
+              , public DRW_DxfLayoutSourceHandler
+              , public DRW_DxfBlockRecordSourceHandler
+              , public DRW_DxfBlockSourceHandler
+#ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
+              , public DRW_DxfBlockRecordSourceSelector
+#endif
+#endif
+{
 public:
 
     DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation::Builder_SPtr builder);
@@ -89,6 +115,9 @@ public:
     void setSourceIsDwg(bool isDwg) {
         _sourceIsDwg = isDwg;
     }
+
+    // Binary source replay is restricted to the checked layout profile.
+    void setSourceIsBinary(bool isBinary) { _sourceIsBinary = isBinary; }
 
     // READ FUNCTIONALITY
     void addHeader(const DRW_Header* data) override;
@@ -144,7 +173,11 @@ public:
         (void)data;
     }
 
-    void addAppId(const DRW_AppId& data) override {}
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    void addAppId(const DRW_AppId& data) override;
+#else
+    void addAppId(const DRW_AppId& data) override { (void)data; }
+#endif
 
     void addRay(const DRW_Ray& data) override {
         recordLoss("RAY");
@@ -174,25 +207,12 @@ public:
 
     void addViewport(const DRW_Viewport& data) override;
 
-    /**
-     * A layout is the page a drawing is printed from: its paper size, its
-     * viewports, its title block. LibreCAD models none of it, and libdxfrw
-     * parses LAYOUT and PLOTSETTINGS into typed objects rather than offering
-     * them to the raw passthrough net -- so unlike a record this build has
-     * never heard of, they cannot be kept verbatim and put back. Every save
-     * destroys them.
-     *
-     * They are counted here because that is the only place this build sees
-     * them at all: the writer is built from a document and has no idea they
-     * existed. Counting is not keeping, but it is the difference between a
-     * user who knows their layouts are gone and one who finds out later.
-     *
-     * The real fix belongs upstream, where processLayout and processPlotSettings
-     * need the addRawDxfObject call their siblings processScale, processSun and
-     * processDictionaryVar already make.
-     */
+    /** Count unsupported layouts. After a complete DXF read, the bounded
+     * plain layout graph may be retained and removed from this loss count;
+     * all other layouts continue to be reported. */
     void addLayout(const DRW_Layout& data) override {
         (void)data;
+        _preserved.hasSourceLayouts = true;
         recordLoss("LAYOUT");
     }
 
@@ -207,19 +227,19 @@ public:
     // layouts, plot settings, table styles, dictionaries, another
     // application's custom data -- while the drawing still looked right.
     void addRawDxfObject(const DRW_RawDxfObject& data) override {
-        _preserved.objects.push_back(data);
+        guarded("RAW OBJECT", nullptr, [&] { _preserved.objects.push_back(data); });
     }
 
     void addRawDxfEntity(const DRW_RawDxfObject& data) override {
-        _preserved.entities.push_back(data);
+        guarded("RAW ENTITY", nullptr, [&] { _preserved.entities.push_back(data); });
     }
 
     void addRawDxfSection(const DRW_RawDxfSection& data) override {
-        _preserved.sections.push_back(data);
+        guarded("RAW SECTION", nullptr, [&] { _preserved.sections.push_back(data); });
     }
 
     void addDxfClass(const DRW_Class& data) override {
-        _preserved.classes.push_back(data);
+        guarded("CLASS", nullptr, [&] { _preserved.classes.push_back(data); });
     }
 
     /**
@@ -234,6 +254,15 @@ public:
      */
     void addDictionary(const DRW_Dictionary& data) override;
 
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    bool wantsDxfRootDictionarySource() const override { return !imageMapCache.empty(); }
+    void addDxfRootDictionarySource(const DRW_Dictionary&, const DRW_RawDxfObject&) override;
+    bool wantsDxfDictionarySource() const override {
+        return _preserved.simpleImageRootBinary && !_preserved.simpleImageGroupDictionary && !_ambiguousSimpleImageGroup;
+    }
+    void addDxfDictionarySource(const DRW_Dictionary&, const DRW_RawDxfObject&) override;
+#endif
+
     /** What this read is holding on to for the next save. */
     const PreservedRecords& preserved() const {
         return _preserved;
@@ -244,7 +273,8 @@ public:
      * survives from this read to the next save: File::save builds a fresh
      * writer from a document and knows nothing about where it came from.
      */
-    void attachPreservedRecords();
+    void attachPreservedRecords(bool completeRead);
+    void attachDwgProvenance();
 
     void addLine(const DRW_Line& data) override;
 
@@ -314,6 +344,7 @@ public:
 
     // WRITE FUNCTIONALITY
     bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
+    const std::string& writeFailureReason() const { return _writeFailureReason; }
 
     void writeHeader(DRW_Header& data) override;
 
@@ -336,6 +367,26 @@ public:
     void writeAppId() override;
 
     void writeObjects() override;
+
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    bool finalizeDxfWrite() override;
+    bool wantsDxfLayoutSource() const override { return true; }
+    void addDxfLayoutSource(const DRW_Layout&, const DRW_RawDxfObject&) override;
+    bool wantsDxfBlockRecordSource() const override { return true; }
+#ifdef LIBDXFRW_HAS_DXF_BLOCK_RECORD_SOURCE_SELECTOR
+    bool retainDxfBlockRecordSource(const DRW_Block_Record& row) const override;
+#endif
+    void addDxfBlockRecordSource(const DRW_Block_Record&, const DRW_RawDxfObject&) override;
+    bool wantsDxfBlockSource() const override {
+        return !_sourceIsBinary || (!_hasOtherBlockRecords &&
+               !_unmatchedSourceLayoutBlock && _sourceLayoutBlocks.size() == 3);
+    }
+    void addDxfBlockBeginSource(const DRW_Block&, const DRW_RawDxfObject&) override;
+    void addDxfBlockEndSource(const DRW_Block&, const DRW_RawDxfObject&) override;
+#endif
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    bool writeDxfFixedPaperSpaceContents() override;
+#endif
 
     void addPlotSettings(const DRW_PlotSettings *data) override {
         (void)data;
@@ -468,9 +519,16 @@ public:
     /// DRW_Block::flags at zero, so the anonymous bit a DXF carries is simply
     /// not there and the naming convention has to stand in for it.
     bool _sourceIsDwg{false};
+    bool _sourceIsBinary{false};
 
     static bool isAnonymousDimensionBlockName(const std::string& name);
     static bool isRegeneratedDimensionBlock(const lc::meta::Block_CSPtr& block);
+    void visitDocumentImages(const std::function<void(const lc::entity::Image_CSPtr&)>& visit,
+                             bool emittedOnly = false) const;
+    std::unordered_set<std::uint32_t> skippedImageSourceHandles(bool& hasImages, const PreservedRecords* source) const;
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    bool prepareImageDefinitionPlan();
+#endif
     unsigned int _nextDimensionBlock{1};
 
 
@@ -519,6 +577,9 @@ public:
     std::size_t _entitiesDelivered{0};
     std::size_t _attributesWithoutTags{0};
     std::size_t _mtextsAsText{0};
+    std::size_t _mpolygonsAsHatch{0};
+    std::size_t _mpolygonsWithNondefaultPlane{0};
+    std::size_t _mpolygonsWrittenAsHatch{0};
 
     void recordLoss(const char* recordKind) {
         _loss.droppedByType[recordKind]++;
@@ -544,11 +605,13 @@ public:
      * found them.
      */
     template<typename Body>
-    void guarded(const char* recordKind, const DRW_Entity* entity, Body body) {
+    bool guarded(const char* recordKind, const DRW_Entity* entity, Body body) {
         std::string reason;
         if (!runGuarded(body, reason)) {
             recordFailure(recordKind, entity, reason.c_str());
+            return false;
         }
+        return true;
     }
 
     /**
@@ -582,7 +645,7 @@ private:
     * can be be read with just one routine
     */
 
-    dxfRW* dxfW;
+    dxfRW* dxfW{nullptr};
 
     /**
      * The DXF revision the current write targets. R12 cannot carry several
@@ -606,8 +669,39 @@ private:
      */
     std::shared_ptr<const PreservedRecords> _shelf;
 
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+    bool prepareDefaultLayoutGraph();
+    bool acceptSourceLayoutGraph();
+    std::vector<dxfRW::DxfLayoutOutputLinks> defaultLayoutOutputLinks() const;
+    std::vector<std::pair<DRW_Layout, DRW_RawDxfObject>> _sourceLayouts;
+    std::vector<std::pair<DRW_Block_Record, DRW_RawDxfObject>> _sourceLayoutBlocks;
+    struct SourceBlockPair {
+        DRW_Block begin;
+        DRW_Block end;
+        DRW_RawDxfObject rawBegin;
+        DRW_RawDxfObject rawEnd;
+        bool hasEnd{false};
+    };
+    std::vector<SourceBlockPair> _sourceLayoutBodies;
+    int _activeSourceLayoutBody{-1};
+    mutable bool _sourceHasPaperSpace0{false};
+    bool _unmatchedSourceLayoutBlock{false};
+    mutable bool _hasOtherBlockRecords{false};
+    std::uint32_t _sourceRootHandle{0};
+    std::vector<DRW_Layout> _defaultLayouts;
+    std::uint32_t _defaultLayoutDictionary{0};
+    bool _defaultLayoutWriteOk{true};
+    bool _defaultLayoutsFromSource{false};
+#endif
+
     /** The target of the current write, for the format-capability check. */
     lc::persistence::File::Type _exportType{lc::persistence::File::LIBDXFRW_DXF_R2010};
+    std::string _writeFailureReason;
+    bool hasUnsafeAdditionalPaperSpace() const;
+    bool mayOmitUnusedDefaultPaper() const;
+    bool hasCheckedImageGraphWithoutPaper() const;
+    bool hasCheckedBinaryImageEntities() const;
+    bool canTranscodeCheckedImageGraph() const;
 
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
@@ -620,7 +714,7 @@ private:
     static bool isModelSpaceName(const std::string& name);
 
     // this function adds layer too if not found: issue with some files
-    lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data) const;
+    lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data);
 
     /** Build an MText value using the owning entity's layer, metadata and block. */
     std::shared_ptr<lc::entity::MText> makeMText(
@@ -637,6 +731,27 @@ private:
     lc::iColor icol;
 
     std::vector<DRW_Image> imageMapCache;
+    std::size_t _sourceImageClipBytes{0};
+    std::size_t _sourceImageDefinitionPathBytes{0};
+    std::size_t _sourceImageDefinitionMetadataBytes{0};
+    struct ImageDefinitionOutputBinding {
+        std::shared_ptr<const void> sourceIdentity;
+        std::uint32_t sourceHandle{0};
+    };
+    std::map<DRW_ImageDef*, ImageDefinitionOutputBinding> _emittedImageDefinitions;
+#ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
+    std::map<std::shared_ptr<const void>, std::uint64_t, std::owner_less<std::shared_ptr<const void>>> _imageSourceGenerations;
+    std::set<std::pair<std::uint64_t, std::uint32_t>> _plannedImageDefinitions;
+    std::set<std::pair<std::uint64_t, std::uint32_t>> _imageXdataPartialSources;
+    std::map<std::string, std::string> _imageXdataAppIds;
+    std::map<std::string, bool> _sourceImageAppIds;
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    std::uint32_t _boundSourceImageDictionary{0};
+    bool _ambiguousSimpleImageDictionary{false};
+    bool _ambiguousSimpleImageGroup{false};
+#endif
+#endif
+    std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
     std::map<int, lc::meta::Block_CSPtr> _handleBlock;
 

@@ -4,6 +4,9 @@
 #include <cad/base/visitor.h>
 #include <cad/base/cadentity.h>
 #include <cad/math/intersect.h>
+#include <cad/meta/layer.h>
+#include <algorithm>
+#include <cmath>
 
 using namespace lc;
 using namespace lc::viewer;
@@ -52,9 +55,17 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // this way we can get more efficiently snap to entities outside the cursor's 'range' so the
     // person can 'pick' a entity onceand then it would stay in the list of entities to
     // consider for snapping. THis will mostly lickly be lines only
-    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
+    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinatePlanar(location,
             realDistanceForPixels, _snapConstrain);
-    std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
+    entities.erase(std::remove_if(entities.begin(), entities.end(), [](const lc::EntityDistance& candidate) {
+        const auto entity = candidate.entity();
+        return entity && entity->layer() && entity->layer()->isHidden();
+    }), entities.end());
+    std::sort(entities.begin(), entities.end(), [&](const lc::EntityDistance& a, const lc::EntityDistance& b) {
+        const auto first = a.coordinate(), second = b.coordinate();
+        return std::hypot(first.x() - location.x(), first.y() - location.y()) <
+               std::hypot(second.x() - location.x(), second.y() - location.y());
+    });
 
     // Emit Snappoint event if a entity intersects with a other entity
     if (entities.size() > 1 && _snapIntersections) {
@@ -98,7 +109,8 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
             if (captr) {
                 // Locale snap points
-                std::vector<lc::EntityCoordinate> sp = captr->snapPoints(location, _snapConstrain,
+                const auto query = lc::geo::Coordinate(location.x(), location.y(), entity.coordinate().z());
+                std::vector<lc::EntityCoordinate> sp = captr->snapPoints(query, _snapConstrain,
                                                        realDistanceForPixels, 10);
                 // When a snappoint was found, emit it
                 if (!sp.empty()) {

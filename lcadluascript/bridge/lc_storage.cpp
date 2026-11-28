@@ -8,6 +8,8 @@
 #include "lc_storage.h"
 
 void import_lc_storage_namespace(kaguya::State& state) {
+    using ImplVoid = void (lc::storage::DocumentImpl::*)(const lc::entity::CADEntity_CSPtr&);
+    using ImplBool = bool (lc::storage::DocumentImpl::*)(const lc::entity::CADEntity_CSPtr&);
     state["lc"]["storage"] = kaguya::NewTable();
 
     state["lc"]["storage"]["QuadTreeSub"].setClass(kaguya::UserdataMetatable<lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>>()
@@ -80,18 +82,27 @@ void import_lc_storage_namespace(kaguya::State& state) {
             .addFunction("entitiesByBlock", &lc::storage::Document::entitiesByBlock)
             .addFunction("entitiesByLayer", &lc::storage::Document::entitiesByLayer)
             .addFunction("entityContainer", &lc::storage::Document::entityContainer)
-            .addFunction("insertEntity", &lc::storage::Document::insertEntity)
+            .addFunction("insertEntity", &lc::storage::Document::insertEntityIfUnlocked)
+            .addFunction("tryInsertEntity", &lc::storage::Document::tryInsertEntity)
+            .addFunction("forceInsertEntity", &lc::storage::Document::insertEntity)
             .addFunction("layerByName", &lc::storage::Document::layerByName)
             .addFunction("linePatternByName", &lc::storage::Document::linePatternByName)
             .addFunction("linePatterns", &lc::storage::Document::linePatterns)
             .addFunction("removeDocumentMetaType", &lc::storage::Document::removeDocumentMetaType)
-            .addFunction("removeEntity", &lc::storage::Document::removeEntity)
+            .addFunction("removeEntity", &lc::storage::Document::removeEntityIfUnlocked)
+            .addFunction("tryRemoveEntity", &lc::storage::Document::tryRemoveEntity)
+            .addFunction("forceRemoveEntity", &lc::storage::Document::removeEntity)
             .addFunction("replaceDocumentMetaType", &lc::storage::Document::replaceDocumentMetaType)
             .addFunction("waitingCustomEntities", &lc::storage::Document::waitingCustomEntities)
                                                );
 
     state["lc"]["storage"]["DocumentImpl"].setClass(kaguya::UserdataMetatable<lc::storage::DocumentImpl, lc::storage::Document>()
-            .setConstructors<lc::storage::DocumentImpl(lc::storage::StorageManager_SPtr)>()
+            .addStaticFunction("new", [](const lc::storage::StorageManager_SPtr& manager) {
+                return std::make_shared<lc::storage::DocumentImpl>(manager);
+            })
+            .addStaticFunction("create", [](const lc::storage::StorageManager_SPtr& manager) {
+                return std::make_shared<lc::storage::DocumentImpl>(manager);
+            })
             .addFunction("addDocumentMetaType", &lc::storage::DocumentImpl::addDocumentMetaType)
             .addFunction("allLayers", &lc::storage::DocumentImpl::allLayers)
             .addFunction("allMetaTypes", &lc::storage::DocumentImpl::allMetaTypes)
@@ -99,12 +110,16 @@ void import_lc_storage_namespace(kaguya::State& state) {
             .addFunction("entitiesByBlock", &lc::storage::DocumentImpl::entitiesByBlock)
             .addFunction("entitiesByLayer", &lc::storage::DocumentImpl::entitiesByLayer)
             .addFunction("entityContainer", &lc::storage::DocumentImpl::entityContainer)
-            .addFunction("insertEntity", &lc::storage::DocumentImpl::insertEntity)
+            .addFunction("insertEntity", static_cast<ImplVoid>(&lc::storage::Document::insertEntityIfUnlocked))
+            .addFunction("tryInsertEntity", static_cast<ImplBool>(&lc::storage::Document::tryInsertEntity))
+            .addFunction("forceInsertEntity", &lc::storage::DocumentImpl::insertEntity)
             .addFunction("layerByName", &lc::storage::DocumentImpl::layerByName)
             .addFunction("linePatternByName", &lc::storage::DocumentImpl::linePatternByName)
             .addFunction("linePatterns", &lc::storage::DocumentImpl::linePatterns)
             .addFunction("removeDocumentMetaType", &lc::storage::DocumentImpl::removeDocumentMetaType)
-            .addFunction("removeEntity", &lc::storage::DocumentImpl::removeEntity)
+            .addFunction("removeEntity", static_cast<ImplVoid>(&lc::storage::Document::removeEntityIfUnlocked))
+            .addFunction("tryRemoveEntity", static_cast<ImplBool>(&lc::storage::Document::tryRemoveEntity))
+            .addFunction("forceRemoveEntity", &lc::storage::DocumentImpl::removeEntity)
             .addFunction("replaceDocumentMetaType", &lc::storage::DocumentImpl::replaceDocumentMetaType)
             .addFunction("waitingCustomEntities", &lc::storage::DocumentImpl::waitingCustomEntities)
                                                    );
@@ -128,7 +143,8 @@ void import_lc_storage_namespace(kaguya::State& state) {
                                                       );
 
     state["lc"]["storage"]["StorageManagerImpl"].setClass(kaguya::UserdataMetatable<lc::storage::StorageManagerImpl, lc::storage::StorageManager>()
-            .setConstructors<lc::storage::StorageManagerImpl()>()
+            .addStaticFunction("new", [] { return std::make_shared<lc::storage::StorageManagerImpl>(); })
+            .addStaticFunction("create", [] { return std::make_shared<lc::storage::StorageManagerImpl>(); })
             .addFunction("addDocumentMetaType", &lc::storage::StorageManagerImpl::addDocumentMetaType)
             .addFunction("allLayers", &lc::storage::StorageManagerImpl::allLayers)
             .addFunction("allMetaTypes", &lc::storage::StorageManagerImpl::allMetaTypes)

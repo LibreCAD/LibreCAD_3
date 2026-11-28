@@ -51,8 +51,9 @@ std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord,
     }
 
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
-        if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
-            points.emplace_back(npoe, 3);
+        const auto nearest = this->nearestPointOnEntity(coord);
+        if (nearest.distanceTo(coord)<minDistanceToSnap) {
+            points.emplace_back(nearest, 3);
         }
     }
 
