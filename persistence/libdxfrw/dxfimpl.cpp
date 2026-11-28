@@ -2732,6 +2732,20 @@ bool DXFimpl::hasUnsafeAdditionalPaperSpace() const {
 }
 
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+bool DXFimpl::hasCheckedBinaryImageEntities() const {
+    for (const auto& entity : _document->entityContainer().asVector()) {
+        if (!entity || entity->block() ||
+            (!std::dynamic_pointer_cast<const lc::entity::Line>(entity) &&
+             !std::dynamic_pointer_cast<const lc::entity::Image>(entity))) return false;
+    }
+    for (const auto& block : _document->blocks()) {
+        if (!block || (block->name() != "*Model_Space" && block->name() != "*Paper_Space" &&
+                       block->name() != "*Paper_Space0") ||
+            !_document->entitiesByBlock(block).asVector().empty()) return false;
+    }
+    return true;
+}
+
 bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     if (!_shelf || _shelf->rootDictSourceAmbiguous ||
         _shelf->rootDictSourceHandle != kRootDictionaryHandle ||
@@ -2745,17 +2759,7 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
         // When binary output drops the raw graph, admit only standard blocks
         // and model-space writers whose fields cannot replay a source edge.
         if (_replay || !lc::persistence::File::isBinaryType(_exportType) ||
-            _shelf->version != _exportVersion) return false;
-        for (const auto& entity : _document->entityContainer().asVector()) {
-            if (!entity || entity->block() ||
-                (!std::dynamic_pointer_cast<const lc::entity::Line>(entity) &&
-                 !std::dynamic_pointer_cast<const lc::entity::Image>(entity))) return false;
-        }
-        for (const auto& block : _document->blocks()) {
-            if (!block || (block->name() != "*Model_Space" && block->name() != "*Paper_Space" &&
-                           block->name() != "*Paper_Space0") ||
-                !_document->entitiesByBlock(block).asVector().empty()) return false;
-        }
+            _shelf->version != _exportVersion || !hasCheckedBinaryImageEntities()) return false;
     }
     bool sameSource = true;
     visitDocumentImages([&](const lc::entity::Image_CSPtr& image) {
@@ -2799,6 +2803,43 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     }
     for (const auto& object : _shelf->objects)
         if (object.name == "XRECORD" && !referenced.count(object.handle)) return false;
+    return true;
+}
+
+bool DXFimpl::canTranscodeCheckedImageGraph() const {
+    if (!_shelf || _replay != _shelf || _shelf->sourceWasDwg ||
+        !_shelf->mayOmitSyntheticPaperSpace0 || _shelf->hasSourceLayouts ||
+        !hasCheckedBinaryImageEntities() || !hasCheckedImageGraphWithoutPaper()) return false;
+    // The raw writer uses typed strings for binary output. Admit only bounded
+    // printable ASCII whose captured and decoded spellings agree; escaping and
+    // legacy code pages need their own round-trip proof.
+    const auto safeText = [](const std::string& value) {
+        return value.size() <= 255 && std::all_of(value.begin(), value.end(), [](unsigned char c) {
+            return c >= 0x20 && c <= 0x7e && c != '\\';
+        });
+    };
+    for (const auto& entry : _shelf->rootDictEntries) {
+        const auto name = upperName(entry.first);
+        if (!safeText(entry.first) || name == "ACAD_GROUP" ||
+            name == "ACAD_PLOTSTYLENAME" || name == "ACAD_LAYOUT") return false;
+    }
+    bool hasImages = false;
+    skippedImageSourceHandles(hasImages, _shelf.get());
+    for (const auto& object : _shelf->objects) {
+        if (skipsSourceImageObject(object, hasImages, _shelf.get())) continue;
+        if (!object.hasRawValues || object.m_version != _exportVersion ||
+            object.groups.size() != object.rawValues.size()) return false;
+        for (std::size_t i = 0; i < object.groups.size(); ++i) {
+            const auto& group = object.groups[i];
+            if (group.type() == DRW_Variant::STRING) {
+                if (!group.content.s || !safeText(*group.content.s) ||
+                    *group.content.s != object.rawValues[i]) return false;
+            } else if (group.type() == DRW_Variant::INTEGER) {
+                if (group.i_val() < std::numeric_limits<std::int16_t>::min() ||
+                    group.i_val() > std::numeric_limits<std::int16_t>::max()) return false;
+            } else return false;
+        }
+    }
     return true;
 }
 
@@ -2923,7 +2964,11 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
             std::all_of(_replay->objects.begin(), _replay->objects.end(),
                         [](const DRW_RawDxfObject& object) { return object.hasRawValues; });
 
-        const bool checkedEncodingGraph = _replay->checkedBinaryLayoutGraph;
+        bool checkedEncodingGraph = _replay->checkedBinaryLayoutGraph;
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+        if (isBinary && sameRevision && !checkedEncodingGraph)
+            checkedEncodingGraph = canTranscodeCheckedImageGraph();
+#endif
         if (!sameRevision || (isBinary && !checkedEncodingGraph) ||
             (!isBinary && !verbatimAvailable && !checkedEncodingGraph)) {
             const char* reason = !sameRevision ? "the revision differs from the one it was read as"

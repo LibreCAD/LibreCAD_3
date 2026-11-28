@@ -680,6 +680,8 @@ private:
     bool hasUnsafeAdditionalPaperSpace() const;
     bool mayOmitUnusedDefaultPaper() const;
     bool hasCheckedImageGraphWithoutPaper() const;
+    bool hasCheckedBinaryImageEntities() const;
+    bool canTranscodeCheckedImageGraph() const;
 
     lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
