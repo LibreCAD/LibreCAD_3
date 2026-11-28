@@ -207,15 +207,30 @@ TEST(DxfRoundTripTest, TransformedImageRetainsSpatialGeometry) {
         EXPECT_EQ(images[0]->boundingBox().minP(), lc::geo::Coordinate(20, 60, 29.25));
         EXPECT_EQ(images[0]->boundingBox().maxP(), lc::geo::Coordinate(24, 69, 31));
         const std::string second = uniqueTmpDxf("image-spatial-resave");
-        // The current consumer cannot yet close the source IMAGE dictionary
-        // graph, or replay these raw records as binary. Report either loss.
+        // Source IMAGE dictionary identity is still incomplete. A codec that
+        // cannot replay this graph must report its raw-record loss instead.
         const auto resave = lc::persistence::File::exportFile(reopened, second, type);
         ASSERT_TRUE(resave.ok);
-        const auto lossName = type == lc::persistence::File::LIBDXFRW_DXF_R2010
-            ? "unreferenced dictionaries" : "unmodelled records";
-        const auto loss = resave.loss.droppedByType.find(lossName);
-        ASSERT_NE(loss, resave.loss.droppedByType.end());
-        EXPECT_GT(loss->second, 0u);
+        EXPECT_TRUE(resave.loss.droppedByType.count("unreferenced dictionaries") ||
+                    resave.loss.droppedByType.count("unmodelled records"));
+        if (type == lc::persistence::File::LIBDXFRW_DXB_R2010) {
+            const std::string ascii = uniqueTmpDxf("image-spatial-binary-to-ascii");
+            const auto converted = lc::persistence::File::exportFile(reopened, ascii,
+                lc::persistence::File::LIBDXFRW_DXF_R2010);
+            ASSERT_TRUE(converted.ok);
+            EXPECT_EQ(converted.loss.droppedByType.count("unmodelled records"), 0u);
+            auto convertedDocument = newDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(convertedDocument, ascii,
+                lc::persistence::File::LIBDXFRW).ok);
+            ASSERT_EQ(convertedDocument->entityContainer().asVector().size(), 1u);
+            const auto convertedImage = std::dynamic_pointer_cast<const lc::entity::Image>(
+                convertedDocument->entityContainer().asVector().front());
+            ASSERT_TRUE(convertedImage);
+            EXPECT_EQ(convertedImage->base(), images[0]->base());
+            EXPECT_EQ(convertedImage->uv(), images[0]->uv());
+            EXPECT_EQ(convertedImage->vv(), images[0]->vv());
+            boost::filesystem::remove(ascii);
+        }
         auto reread = newDocument();
         ASSERT_TRUE(lc::persistence::File::importFile(reread, second, lc::persistence::File::LIBDXFRW).ok);
         std::vector<std::shared_ptr<const lc::entity::Image>> rereadImages;
@@ -3602,6 +3617,53 @@ TEST(DxfRoundTripTest, RegeneratedImageReactorDoesNotCloseRawDictionary) {
         ASSERT_TRUE(lc::persistence::File::importFile(restoredDocument, restoredBinary,
             lc::persistence::File::LIBDXFRW).ok);
         EXPECT_EQ(restoredDocument->entityContainer().asVector().size(), 1u);
+        const std::string asciiAfterBinary = uniqueTmpDxf("image-binary-to-ascii");
+        const auto binaryRoundtrip = lc::persistence::File::exportFile(restoredDocument, asciiAfterBinary,
+            lc::persistence::File::LIBDXFRW_DXF_R2000);
+        ASSERT_TRUE(binaryRoundtrip.ok);
+        EXPECT_EQ(binaryRoundtrip.loss.droppedByType.count("unmodelled records"), 0u);
+        EXPECT_EQ(rootDictNames(asciiAfterBinary).count("LC_REACTOR"), 1u);
+        const auto roundtripRecord = recordGroups(asciiAfterBinary, "XRECORD");
+        ASSERT_EQ(roundtripRecord.at(1).size(), 1u);
+        EXPECT_EQ(roundtripRecord.at(1).front(), "keep-value");
+        const std::string binaryAfterBinary = uniqueTmpDxf("image-binary-to-binary");
+        const auto binaryAgain = lc::persistence::File::exportFile(restoredDocument, binaryAfterBinary,
+            lc::persistence::File::LIBDXFRW_DXB_R2000);
+        ASSERT_TRUE(binaryAgain.ok);
+        EXPECT_EQ(binaryAgain.loss.droppedByType.count("unmodelled records"), 0u);
+        auto twiceReopened = newDocument();
+        ASSERT_TRUE(lc::persistence::File::importFile(twiceReopened, binaryAfterBinary,
+            lc::persistence::File::LIBDXFRW).ok);
+        EXPECT_EQ(twiceReopened->entityContainer().asVector().size(), 1u);
+        boost::filesystem::remove(binaryAfterBinary);
+
+        const auto restoredMeta = restoredDocument->allMetaTypes();
+        const auto restoredShelfIt = restoredMeta.find(lc::persistence::PreservedRecords::kId);
+        ASSERT_NE(restoredShelfIt, restoredMeta.end());
+        const auto originalShelf = std::dynamic_pointer_cast<const lc::persistence::PreservedRecords>(restoredShelfIt->second);
+        ASSERT_TRUE(originalShelf);
+        lc::persistence::DXFimpl reverseWriter(restoredDocument);
+        for (int mutation = 0; mutation < 3; ++mutation) {
+            auto altered = std::make_shared<lc::persistence::PreservedRecords>(*originalShelf);
+            if (mutation == 0) {
+                ASSERT_EQ(altered->classes.size(), 2u);
+                altered->classes.front().className = "unexpected";
+            } else {
+                const auto object = std::find_if(altered->objects.begin(), altered->objects.end(),
+                    [mutation](const auto& item) { return item.name == (mutation == 1 ? "ACDBDICTIONARYWDFLT" : "XRECORD"); });
+                ASSERT_NE(object, altered->objects.end());
+                if (mutation == 1) object->groups.back() = DRW_Variant(340, std::string("ABC"));
+                else object->groups.back() = DRW_Variant(1, std::string("unsafe\\text"));
+            }
+            restoredDocument->replaceDocumentMetaType(originalShelf, altered);
+            ASSERT_TRUE(reverseWriter.writeDXF(asciiAfterBinary, lc::persistence::File::LIBDXFRW_DXF_R2000));
+            EXPECT_GT(reverseWriter.loss().droppedByType.count("unmodelled records"), 0u);
+            restoredDocument->replaceDocumentMetaType(altered, originalShelf);
+            ASSERT_TRUE(reverseWriter.writeDXF(asciiAfterBinary, lc::persistence::File::LIBDXFRW_DXF_R2000));
+            EXPECT_EQ(reverseWriter.loss().droppedByType.count("unmodelled records"), 0u);
+            EXPECT_EQ(rootDictNames(asciiAfterBinary).count("LC_REACTOR"), 1u);
+        }
+        boost::filesystem::remove(asciiAfterBinary);
         doc->insertEntity(modelLine);
         ASSERT_TRUE(lc::persistence::File::exportFile(doc, restoredBinary,
             lc::persistence::File::LIBDXFRW_DXB_R2000).ok);
@@ -3838,7 +3900,9 @@ TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
     auto binaryDoc = newDocument();
     ASSERT_TRUE(lc::persistence::File::importFile(binaryDoc, binary, lc::persistence::File::LIBDXFRW).ok);
     ASSERT_EQ(binaryDoc->entityContainer().asVector().size(), 2u);
-    ASSERT_TRUE(lc::persistence::File::exportFile(binaryDoc, binaryResaved, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+    const auto binaryResaveResult = lc::persistence::File::exportFile(binaryDoc, binaryResaved, lc::persistence::File::LIBDXFRW_DXF_R2000);
+    ASSERT_TRUE(binaryResaveResult.ok);
+    EXPECT_EQ(binaryResaveResult.loss.droppedByType.count("unmodelled records"), 0u);
     std::ifstream binaryOutput(binaryResaved, std::ios::binary);
     inDefinition = false;
     std::vector<double> binaryWidths;

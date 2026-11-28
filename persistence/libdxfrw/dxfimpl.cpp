@@ -2239,6 +2239,44 @@ bool rawHandle(const DRW_Variant& value, std::uint32_t expected) {
         return used == value.content.s->size() && parsed == expected;
     } catch (const std::exception&) { return false; }
 }
+
+bool checkedNormalPlotPair(const PreservedRecords& source, DRW::Version version, bool sourceBinary,
+                           std::uint32_t excluded, std::uint32_t& plotHandle, std::uint32_t& placeholderHandle) {
+    if (source.classes.size() != 2) return false;
+    const auto expectedClass = [&](const char* name, const char* type) {
+        return std::count_if(source.classes.begin(), source.classes.end(), [&](const auto& cls) {
+            return cls.recName == name && cls.className == type && cls.appName == "ObjectDBX Classes" &&
+                cls.proxyFlag == 0 && cls.instanceCount == (version == DRW::AC1015 ? 0 : 1) &&
+                cls.wasaProxyFlag == 0 && cls.entityFlag == 0;
+        }) == 1;
+    };
+    if (!expectedClass("ACDBDICTIONARYWDFLT", "AcDbDictionaryWithDefault") ||
+        !expectedClass("ACDBPLACEHOLDER", "AcDbPlaceHolder")) return false;
+    const auto root = std::find_if(source.rootDictEntries.begin(), source.rootDictEntries.end(),
+        [](const auto& entry) { return entry.first == "ACAD_PLOTSTYLENAME"; });
+    if (root == source.rootDictEntries.end() || !root->second || root->second == excluded ||
+        std::count_if(source.rootDictEntries.begin(), source.rootDictEntries.end(),
+            [](const auto& entry) { return entry.first == "ACAD_PLOTSTYLENAME"; }) != 1) return false;
+    const auto plot = std::find_if(source.objects.begin(), source.objects.end(),
+        [&](const auto& object) { return object.handle == root->second; });
+    if (plot == source.objects.end() || plot->name != "ACDBDICTIONARYWDFLT" ||
+        plot->m_version != version || plot->hasRawValues == sourceBinary || plot->parentHandle != 0xCu ||
+        !rawCodes(*plot, {5,330,100,281,3,350,100,340}) ||
+        !rawHandle(plot->groups[0], plot->handle) || !rawHandle(plot->groups[1], 0xCu) ||
+        !rawText(plot->groups[2], "AcDbDictionary") || !rawNumber(plot->groups[3], 1) ||
+        !rawText(plot->groups[4], "Normal") || !rawText(plot->groups[6], "AcDbDictionaryWithDefault")) return false;
+    const auto placeholder = std::find_if(source.objects.begin(), source.objects.end(),
+        [&](const auto& object) { return object.name == "ACDBPLACEHOLDER"; });
+    if (placeholder == source.objects.end() || placeholder->m_version != version ||
+        placeholder->hasRawValues == sourceBinary || !placeholder->handle || placeholder->handle == DRW::NoHandle ||
+        placeholder->handle == plot->handle || placeholder->handle == excluded || placeholder->parentHandle != plot->handle ||
+        !rawCodes(*placeholder, {5,330}) || !rawHandle(placeholder->groups[0], placeholder->handle) ||
+        !rawHandle(placeholder->groups[1], plot->handle) || !rawHandle(plot->groups[5], placeholder->handle) ||
+        !rawHandle(plot->groups[7], placeholder->handle)) return false;
+    plotHandle = plot->handle;
+    placeholderHandle = placeholder->handle;
+    return true;
+}
 }
 
 void DXFimpl::addDxfLayoutSource(const DRW_Layout& layout, const DRW_RawDxfObject& source) {
@@ -2339,40 +2377,10 @@ bool DXFimpl::acceptSourceLayoutGraph() {
         if (_hasOtherBlockRecords || _preserved.objects.size() != 3 || !_preserved.entities.empty() ||
             !_preserved.sections.empty() || _preserved.classes.size() != 2 ||
             _preserved.rootDictEntries.size() != 2) return false;
-        const auto expectedClass = [&](const char* name, const char* type) {
-            return std::count_if(_preserved.classes.begin(), _preserved.classes.end(),
-                [&](const auto& cls) {
-                    return cls.recName == name && cls.className == type &&
-                        cls.appName == "ObjectDBX Classes" && cls.proxyFlag == 0 &&
-                        cls.instanceCount == (dictionary->m_version == DRW::AC1015 ? 0 : 1) &&
-                        cls.wasaProxyFlag == 0 && cls.entityFlag == 0;
-                }) == 1;
-        };
-        if (!expectedClass("ACDBDICTIONARYWDFLT", "AcDbDictionaryWithDefault") ||
-            !expectedClass("ACDBPLACEHOLDER", "AcDbPlaceHolder")) return false;
-        const auto plotEntry = std::find_if(_preserved.rootDictEntries.begin(), _preserved.rootDictEntries.end(),
-            [](const auto& entry) { return entry.first == "ACAD_PLOTSTYLENAME"; });
-        if (plotEntry == _preserved.rootDictEntries.end() || !plotEntry->second ||
-            plotEntry->second == dictionaryHandle) return false;
-        const auto plot = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
-            [&](const auto& object) { return object.handle == plotEntry->second; });
-        if (plot == _preserved.objects.end() || plot->name != "ACDBDICTIONARYWDFLT" ||
-            plot->hasRawValues == _sourceIsBinary || plot->parentHandle != 0xCu ||
-            !rawCodes(*plot, {5,330,100,281,3,350,100,340}) ||
-            !rawHandle(plot->groups[0], plot->handle) || !rawHandle(plot->groups[1], 0xCu) ||
-            !rawText(plot->groups[2], "AcDbDictionary") || !rawNumber(plot->groups[3], 1) ||
-            !rawText(plot->groups[4], "Normal") || !rawText(plot->groups[6], "AcDbDictionaryWithDefault")) return false;
-        const auto placeholder = std::find_if(_preserved.objects.begin(), _preserved.objects.end(),
-            [&](const auto& object) { return object.name == "ACDBPLACEHOLDER"; });
-        if (placeholder == _preserved.objects.end() || placeholder->hasRawValues == _sourceIsBinary ||
-            !placeholder->handle || placeholder->handle == DRW::NoHandle ||
-            placeholder->handle == plot->handle || placeholder->handle == dictionaryHandle ||
-            placeholder->parentHandle != plot->handle || !rawCodes(*placeholder, {5,330}) ||
-            !rawHandle(placeholder->groups[0], placeholder->handle) ||
-            !rawHandle(placeholder->groups[1], plot->handle) ||
-            !rawHandle(plot->groups[5], placeholder->handle) ||
-            !rawHandle(plot->groups[7], placeholder->handle) || dictionary->hasRawValues == _sourceIsBinary) return false;
-        return true;
+        std::uint32_t plot = 0, placeholder = 0;
+        return dictionary->hasRawValues != _sourceIsBinary &&
+            checkedNormalPlotPair(_preserved, dictionary->m_version, _sourceIsBinary,
+                                  dictionaryHandle, plot, placeholder);
     }();
     if (_sourceIsBinary && !binaryCompatible) return false;
     const char* names[] = {"Model", "Layout1", "Layout2"};
@@ -2749,9 +2757,12 @@ bool DXFimpl::hasCheckedBinaryImageEntities() const {
 bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     if (!_shelf || _shelf->rootDictSourceAmbiguous ||
         _shelf->rootDictSourceHandle != kRootDictionaryHandle ||
-        !_shelf->entities.empty() || !_shelf->sections.empty() || !_shelf->classes.empty() ||
+        !_shelf->entities.empty() || !_shelf->sections.empty() ||
         _shelf->objects.size() > 512 || _shelf->rootDictEntries.empty() ||
         _shelf->rootDictEntries.size() > 128) return false;
+    std::uint32_t plot = 0, placeholder = 0;
+    if (!_shelf->classes.empty() &&
+        !checkedNormalPlotPair(*_shelf, _shelf->version, true, 0, plot, placeholder)) return false;
     bool hasImages = false;
     const auto skipped = skippedImageSourceHandles(hasImages, _shelf.get());
     if (skipped.empty()) return false;
@@ -2769,7 +2780,7 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
     if (!sameSource) return false;
     std::unordered_map<std::uint32_t, const DRW_RawDxfObject*> objects;
     for (const auto& object : _shelf->objects) {
-        if (object.handle == 0 || object.handle == kRootDictionaryHandle ||
+        if (object.handle == 0 || object.handle == DRW::NoHandle || object.handle == kRootDictionaryHandle ||
             object.groups.size() > 512 || !objects.emplace(object.handle, &object).second) return false;
     }
     std::unordered_set<std::uint32_t> roots;
@@ -2778,18 +2789,23 @@ bool DXFimpl::hasCheckedImageGraphWithoutPaper() const {
         const auto object = objects.find(entry.second);
         if (entry.first.empty() || !rootNames.insert(upperName(entry.first)).second ||
             !roots.insert(entry.second).second || object == objects.end() ||
-            object->second->name != "DICTIONARY") return false;
+            (entry.second == plot ? entry.first != "ACAD_PLOTSTYLENAME" :
+             object->second->name != "DICTIONARY")) return false;
     }
     std::unordered_set<std::uint32_t> referenced;
     for (const auto& object : _shelf->objects) {
+        if (object.handle == plot || object.handle == placeholder) continue;
         if (skipsSourceImageObject(object, hasImages, _shelf.get())) {
             if (!skipped.count(object.handle)) return false;
             continue;
         }
         if (object.name == "XRECORD") continue;
-        if (object.parentHandle != kRootDictionaryHandle || !roots.count(object.handle)) return false;
+        if (object.parentHandle != kRootDictionaryHandle) return false;
         std::vector<std::pair<std::size_t, std::uint32_t>> entries;
         if (!ordinaryDictionaryEntries(object, entries)) return false;
+        // Binary outputs can contain an unreferenced empty source dictionary
+        // after regenerating the IMAGE dictionary. Keep that bounded carrier.
+        if (!roots.count(object.handle) && (object.hasRawValues || !entries.empty())) return false;
         std::set<std::string> names;
         std::unordered_set<std::uint32_t> targets;
         for (const auto& entry : entries) {
@@ -2810,9 +2826,9 @@ bool DXFimpl::canTranscodeCheckedImageGraph() const {
     if (!_shelf || _replay != _shelf || _shelf->sourceWasDwg ||
         !_shelf->mayOmitSyntheticPaperSpace0 || _shelf->hasSourceLayouts ||
         !hasCheckedBinaryImageEntities() || !hasCheckedImageGraphWithoutPaper()) return false;
-    // The raw writer uses typed strings for binary output. Admit only bounded
-    // printable ASCII whose captured and decoded spellings agree; escaping and
-    // legacy code pages need their own round-trip proof.
+    // Typed replay admits bounded printable ASCII; captured and decoded
+    // spellings must agree when present. Escaping and legacy code pages need
+    // their own round-trip proof.
     const auto safeText = [](const std::string& value) {
         return value.size() <= 255 && std::all_of(value.begin(), value.end(), [](unsigned char c) {
             return c >= 0x20 && c <= 0x7e && c != '\\';
@@ -2821,19 +2837,25 @@ bool DXFimpl::canTranscodeCheckedImageGraph() const {
     for (const auto& entry : _shelf->rootDictEntries) {
         const auto name = upperName(entry.first);
         if (!safeText(entry.first) || name == "ACAD_GROUP" ||
-            name == "ACAD_PLOTSTYLENAME" || name == "ACAD_LAYOUT") return false;
+            (name == "ACAD_PLOTSTYLENAME" && _shelf->classes.empty()) ||
+            name == "ACAD_LAYOUT") return false;
     }
     bool hasImages = false;
     skippedImageSourceHandles(hasImages, _shelf.get());
+    bool sourceEncodingKnown = false, sourceHasRawValues = false;
     for (const auto& object : _shelf->objects) {
         if (skipsSourceImageObject(object, hasImages, _shelf.get())) continue;
-        if (!object.hasRawValues || object.m_version != _exportVersion ||
+        if (!sourceEncodingKnown) {
+            sourceEncodingKnown = true;
+            sourceHasRawValues = object.hasRawValues;
+        }
+        if (object.hasRawValues != sourceHasRawValues || object.m_version != _exportVersion ||
             object.groups.size() != object.rawValues.size()) return false;
         for (std::size_t i = 0; i < object.groups.size(); ++i) {
             const auto& group = object.groups[i];
             if (group.type() == DRW_Variant::STRING) {
                 if (!group.content.s || !safeText(*group.content.s) ||
-                    *group.content.s != object.rawValues[i]) return false;
+                    (sourceHasRawValues ? *group.content.s != object.rawValues[i] : !object.rawValues[i].empty())) return false;
             } else if (group.type() == DRW_Variant::INTEGER) {
                 if (group.i_val() < std::numeric_limits<std::int16_t>::min() ||
                     group.i_val() > std::numeric_limits<std::int16_t>::max()) return false;
@@ -2966,7 +2988,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 
         bool checkedEncodingGraph = _replay->checkedBinaryLayoutGraph;
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
-        if (isBinary && sameRevision && !checkedEncodingGraph)
+        if (sameRevision && !checkedEncodingGraph && (isBinary || !verbatimAvailable))
             checkedEncodingGraph = canTranscodeCheckedImageGraph();
 #endif
         if (!sameRevision || (isBinary && !checkedEncodingGraph) ||
