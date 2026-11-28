@@ -726,6 +726,7 @@ private:
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     std::map<std::shared_ptr<const void>, std::uint64_t, std::owner_less<std::shared_ptr<const void>>> _imageSourceGenerations;
     std::set<std::pair<std::uint64_t, std::uint32_t>> _plannedImageDefinitions;
+    std::set<std::pair<std::uint64_t, std::uint32_t>> _imageXdataPartialSources;
     std::map<std::string, std::string> _imageXdataAppIds;
     std::map<std::string, bool> _sourceImageAppIds;
 #endif

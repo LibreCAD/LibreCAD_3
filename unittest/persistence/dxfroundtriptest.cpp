@@ -4100,14 +4100,14 @@ TEST(DxfRoundTripTest, ImageDefinitionXdataRetainsValuesAndRegistersAppIds) {
         }
         return fields;
     };
-    for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) {
+    for (int mode : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}) {
         SCOPED_TRACE(mode);
         const std::string source = uniqueTmpDxf("image-definition-xdata-source");
         const std::string output = uniqueTmpDxf("image-definition-xdata-output");
         {
             std::ofstream file(source, std::ios::binary);
             file << "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
-                    "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nAPPID\n5\n9\n70\n" << (mode == 9 ? 2 : 3) << '\n' <<
+                    "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nAPPID\n5\n9\n70\n" << (mode == 9 ? 2 : (mode == 5 || mode == 13 ? 4 : 3)) << '\n' <<
                     "0\nAPPID\n5\n12\n330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nACAD\n70\n0\n"
                     "0\nAPPID\n5\n40\n330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nLibreCad\n70\n0\n";
             if (mode != 9) {
@@ -4116,7 +4116,13 @@ TEST(DxfRoundTripTest, ImageDefinitionXdataRetainsValuesAndRegistersAppIds) {
                 file << "330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nLC_META\n70\n"
                      << (mode == 8 ? 16 : 0) << '\n';
             }
-            file << "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
+            if (mode == 5 || mode == 13)
+                file << "0\nAPPID\n5\n42\n330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n2\nLAYERREF\n70\n0\n";
+            file << "0\nENDTAB\n";
+            if (mode == 5)
+                file << "0\nTABLE\n2\nLAYER\n5\n2\n70\n1\n0\nLAYER\n5\n20\n330\n2\n"
+                        "100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\nREF\n70\n0\n62\n7\n6\nCONTINUOUS\n0\nENDTAB\n";
+            file << "0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
             for (int n = 0; n < 2; ++n)
                 file << "0\nIMAGE\n5\n" << (n ? "71" : "70") << "\n100\nAcDbEntity\n8\n0\n100\nAcDbRasterImage\n90\n0\n"
                         "10\n0\n20\n0\n30\n0\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n"
@@ -4132,7 +4138,7 @@ TEST(DxfRoundTripTest, ImageDefinitionXdataRetainsValuesAndRegistersAppIds) {
             if (mode == 1) file << "1001\nBADREF\n1005\n90\n";
             if (mode == 2) file << "1001\nLONG\n1000\n" << std::string(256, 'A') << '\n';
             if (mode == 4) file << "1001\nWIDE\n1070\n32768\n";
-            if (mode == 5) file << "1001\nLAYERREF\n1003\n0\n";
+            if (mode == 5 || mode == 13) file << "1001\nLAYERREF\n1003\n" << (mode == 5 ? "ref" : "MISSING") << '\n';
             if (mode == 6) file << "1001\nUNBALANCED\n1002\n{\n1000\nincomplete\n";
             if (mode == 10) file << "1001\nbad name\n1000\nvalue\n";
             if (mode == 11) file << "1001\n" << std::string(32, 'A') << "\n1000\nvalue\n";
@@ -4150,10 +4156,11 @@ TEST(DxfRoundTripTest, ImageDefinitionXdataRetainsValuesAndRegistersAppIds) {
         ASSERT_EQ(doc->entityContainer().asVector().size(), 2u);
         const auto result = lc::persistence::File::exportFile(doc, output, lc::persistence::File::LIBDXFRW_DXF_R2000);
         ASSERT_TRUE(result.ok);
-        EXPECT_EQ(result.loss.droppedByType.count("IMAGEDEF metadata"), mode == 0 || mode == 7 ? 0u : 1u);
+        EXPECT_EQ(result.loss.droppedByType.count("IMAGEDEF metadata"), mode == 0 || mode == 5 || mode == 7 ? 0u : 1u);
         const auto data = readGroups(output, "IMAGEDEF");
         ASSERT_TRUE(data.count(1001));
-        EXPECT_EQ(data.at(1001), (std::vector<std::string>{"LC_META", "ACAD", "LibreCad"}));
+        EXPECT_EQ(data.at(1001), (mode == 5 ? std::vector<std::string>{"LAYERREF", "LC_META", "ACAD", "LibreCad"} :
+                                             std::vector<std::string>{"LC_META", "ACAD", "LibreCad"}));
         EXPECT_EQ(data.at(1000), (std::vector<std::string>{"payload", "nested", "builtin", "own"}));
         EXPECT_EQ(data.at(1002), (std::vector<std::string>{"{", "}"}));
         EXPECT_EQ(std::stoi(data.at(1070).at(0)), -123);
@@ -4166,10 +4173,69 @@ TEST(DxfRoundTripTest, ImageDefinitionXdataRetainsValuesAndRegistersAppIds) {
         EXPECT_EQ(std::count(appids.begin(), appids.end(), "BADREF"), 0);
         EXPECT_EQ(std::count(appids.begin(), appids.end(), "LONG"), 0);
         EXPECT_EQ(std::count(appids.begin(), appids.end(), "WIDE"), 0);
-        EXPECT_EQ(std::count(appids.begin(), appids.end(), "LAYERREF"), 0);
+        EXPECT_EQ(std::count(appids.begin(), appids.end(), "LAYERREF"), mode == 5 ? 1 : 0);
         EXPECT_EQ(std::count(appids.begin(), appids.end(), "UNBALANCED"), 0);
         EXPECT_EQ(std::count(appids.begin(), appids.end(), "bad name"), 0);
         EXPECT_EQ(std::count(appids.begin(), appids.end(), std::string(32, 'A')), 0);
+        if (mode == 5) {
+            EXPECT_EQ(data.at(1003), (std::vector<std::string>{"ref"}));
+            const auto originalLayer = doc->layerByName("REF");
+            ASSERT_TRUE(originalLayer);
+            lc::persistence::DXFimpl retry(doc);
+            const auto assertLayerGroup = [&](bool expected) {
+                ASSERT_TRUE(retry.writeDXF(output, lc::persistence::File::LIBDXFRW_DXF_R2000));
+                EXPECT_EQ(retry.loss().droppedByType.count("IMAGEDEF metadata"), expected ? 0u : 1u);
+                const auto fields = readGroups(output, "IMAGEDEF");
+                EXPECT_EQ(fields.count(1003), expected ? 1u : 0u);
+                if (expected) EXPECT_EQ(fields.at(1003), (std::vector<std::string>{"ref"}));
+                EXPECT_EQ(fields.at(1001), (expected ? std::vector<std::string>{"LAYERREF", "LC_META", "ACAD", "LibreCad"} :
+                                                        std::vector<std::string>{"LC_META", "ACAD", "LibreCad"}));
+                const auto currentAppIds = readGroups(output, "APPID").at(2);
+                EXPECT_EQ(std::count(currentAppIds.begin(), currentAppIds.end(), "LAYERREF"), expected ? 1 : 0);
+            };
+            doc->removeDocumentMetaType(originalLayer);
+            assertLayerGroup(false);
+            auto replacement = std::make_shared<lc::meta::Layer>("REF");
+            doc->addDocumentMetaType(replacement);
+            assertLayerGroup(false);
+            doc->removeDocumentMetaType(replacement);
+            auto renamedLayer = std::make_shared<lc::meta::Layer>("RENAMED");
+            doc->addDocumentMetaType(renamedLayer);
+            assertLayerGroup(false);
+            doc->removeDocumentMetaType(renamedLayer);
+            doc->addDocumentMetaType(originalLayer);
+            assertLayerGroup(true);
+            const auto stateChange = lc::meta::Layer::withState(originalLayer, false, true, false);
+            doc->replaceDocumentMetaType(originalLayer, stateChange);
+            assertLayerGroup(true);
+            doc->replaceDocumentMetaType(stateChange, originalLayer);
+            auto foreign = newDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(foreign, source, lc::persistence::File::LIBDXFRW).ok);
+            const auto foreignImages = foreign->entityContainer().asVector();
+            const auto originalImages = doc->entityContainer().asVector();
+            ASSERT_EQ(foreignImages.size(), 2u);
+            ASSERT_EQ(originalImages.size(), 2u);
+            for (const auto& image : originalImages) doc->removeEntity(image);
+            doc->insertEntity(foreignImages.front());
+            assertLayerGroup(false);
+            doc->removeEntity(foreignImages.front());
+            for (const auto& image : originalImages) doc->insertEntity(image);
+            assertLayerGroup(true);
+            const std::string layerBinary = uniqueTmpDxf("image-definition-xdata-layer-binary");
+            const auto layerResult = lc::persistence::File::exportFile(doc, layerBinary,
+                lc::persistence::File::LIBDXFRW_DXB_R2000);
+            ASSERT_TRUE(layerResult.ok);
+            EXPECT_EQ(layerResult.loss.droppedByType.count("IMAGEDEF metadata"), 0u);
+            auto layerReopened = newDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(layerReopened, layerBinary,
+                lc::persistence::File::LIBDXFRW).ok);
+            const std::string layerAscii = uniqueTmpDxf("image-definition-xdata-layer-ascii");
+            ASSERT_TRUE(lc::persistence::File::exportFile(layerReopened, layerAscii,
+                lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+            EXPECT_EQ(readGroups(layerAscii, "IMAGEDEF").at(1003), (std::vector<std::string>{"ref"}));
+            boost::filesystem::remove(layerBinary);
+            boost::filesystem::remove(layerAscii);
+        }
         if (mode == 0) {
             const std::string binary = uniqueTmpDxf("image-definition-xdata-binary");
             ASSERT_TRUE(lc::persistence::File::exportFile(doc, binary, lc::persistence::File::LIBDXFRW_DXB_R2000).ok);

@@ -60,6 +60,7 @@ struct ImageDefinitionSource {
     bool pathCaptured{false}, unmodeledMetadata{false};
     std::list<std::list<DRW_Variant>> appData;
     std::vector<DRW_Variant> xdata;
+    std::vector<std::weak_ptr<const lc::meta::Layer>> xdataLayers;
 };
 
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
@@ -142,7 +143,7 @@ bool captureSimpleImageDefinitionXdata(const std::vector<DRW_Variant*>& source,
             unsigned depth = 0;
             for (std::size_t i = begin; i < end; ++i) {
                 const auto* value = source[i];
-                if (!value || !charge(sizeof(DRW_Variant) + sizeof(void*))) return false;
+                if (!value || !charge(sizeof(DRW_Variant) + sizeof(void*) + sizeof(std::weak_ptr<const lc::meta::Layer>))) return false;
                 switch (value->code()) {
                 case 1001:
                     if (i != begin || !charge(value->content.s->size())) return false;
@@ -150,6 +151,11 @@ bool captureSimpleImageDefinitionXdata(const std::vector<DRW_Variant*>& source,
                 case 1000:
                     if (value->type() != DRW_Variant::STRING || !value->content.s ||
                         !simpleImageAscii(*value->content.s, 255) || !charge(value->content.s->size())) return false;
+                    break;
+                case 1003:
+                    if (value->type() != DRW_Variant::STRING || !value->content.s || value->content.s->empty() ||
+                        value->activeDwgLayerReference() || !simpleImageAscii(*value->content.s, 255) ||
+                        !charge(value->content.s->size())) return false;
                     break;
                 case 1002:
                     if (value->type() != DRW_Variant::STRING || !value->content.s || !charge(value->content.s->size())) return false;
@@ -1825,6 +1831,14 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                     if (!xdataRetained && data->pendingAppIdResolutions.empty() && data->pendingLayerRefResolutions.empty())
                         xdataRetained = captureSimpleImageDefinitionXdata(data->extData, definition->xdata,
                                                                           _sourceImageDefinitionMetadataBytes);
+                    definition->xdataLayers.resize(definition->xdata.size());
+                    for (std::size_t i = 0; i < definition->xdata.size(); ++i) {
+                        const auto& value = definition->xdata[i];
+                        if (value.code() != 1003 || !value.content.s) continue;
+                        const auto pending = _layers.find(upperName(*value.content.s));
+                        definition->xdataLayers[i] = pending != _layers.end() ? pending->second :
+                            _document->layerByName(*value.content.s);
+                    }
                     for (const auto& value : definition->xdata) {
                         if (value.code() != 1001 || !value.content.s) continue;
                         const auto appId = _sourceImageAppIds.find(upperName(*value.content.s));
@@ -2118,10 +2132,29 @@ bool DXFimpl::prepareImageDefinitionPlan() {
         entry.definition.up = original.up; entry.definition.vp = original.vp;
         entry.definition.loaded = original.loaded; entry.definition.resolution = original.resolution;
         entry.definition.appData = original.appData;
-        for (const auto& value : original.xdata) {
-            if (!entry.definition.addExtData(std::make_unique<DRW_Variant>(value))) { ambiguous = true; return; }
-            if (value.code() == 1001 && value.content.s)
-                _imageXdataAppIds.emplace(upperName(*value.content.s), *value.content.s);
+        for (std::size_t begin = 0; begin < original.xdata.size();) {
+            std::size_t end = begin + 1;
+            while (end < original.xdata.size() && original.xdata[end].code() != 1001) ++end;
+            bool layersValid = original.xdataLayers.size() == original.xdata.size();
+            for (std::size_t i = begin; layersValid && i < end; ++i) {
+                const auto& value = original.xdata[i];
+                if (value.code() != 1003) continue;
+                const auto captured = original.xdataLayers[i].lock();
+                const auto current = value.content.s ? _document->layerByName(*value.content.s) : nullptr;
+                layersValid = _shelf && source->sourceIdentity == _shelf->imageSourceIdentity && captured && current &&
+                    current->retainsColorFrom(captured) && upperName(current->name()) == upperName(*value.content.s);
+            }
+            if (!layersValid) {
+                _imageXdataPartialSources.insert(key);
+            } else {
+                for (std::size_t i = begin; i < end; ++i) {
+                    const auto& value = original.xdata[i];
+                    if (!entry.definition.addExtData(std::make_unique<DRW_Variant>(value))) { ambiguous = true; return; }
+                    if (value.code() == 1001 && value.content.s)
+                        _imageXdataAppIds.emplace(upperName(*value.content.s), *value.content.s);
+                }
+            }
+            begin = end;
         }
         sources.emplace(key, source->definition);
         definitions.emplace(key, std::move(entry));
@@ -3049,6 +3082,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     _imageSourceGenerations.clear();
     _plannedImageDefinitions.clear();
+    _imageXdataPartialSources.clear();
     _imageXdataAppIds.clear();
 #endif
     _writeFailureReason.clear();
@@ -4238,6 +4272,7 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
 
     DRW_ImageDef* definition = nullptr;
     bool usedSourcePlan = false;
+    bool droppedPlannedXdata = false;
 #ifdef LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR
     const auto generation = source ? _imageSourceGenerations.find(source->sourceIdentity) : _imageSourceGenerations.end();
     if (source && source->definition && validImageDefinitionSource(*source->definition, i->name()) &&
@@ -4245,6 +4280,7 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
         _plannedImageDefinitions.count({generation->second, source->definitionHandle})) {
         definition = dxfW->writeImage(&img, i->name(), generation->second, source->definitionHandle);
         usedSourcePlan = definition != nullptr;
+        droppedPlannedXdata = _imageXdataPartialSources.count({generation->second, source->definitionHandle}) != 0;
     }
     else
 #endif
@@ -4257,14 +4293,14 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
         if (source && (inserted.first->second.sourceIdentity != binding.sourceIdentity ||
                        inserted.first->second.sourceHandle != binding.sourceHandle)) {
             ++_loss.droppedByType["IMAGEDEF identity"];
-            if (source->definition && (source->definition->unmodeledMetadata ||
+            if (source->definition && (source->definition->unmodeledMetadata || droppedPlannedXdata ||
                                        (!usedSourcePlan && (!source->definition->appData.empty() || !source->definition->xdata.empty()))))
                 ++_loss.droppedByType["IMAGEDEF metadata"];
         }
         return;
     }
     const auto original = source ? source->definition : nullptr;
-    if (original && (original->unmodeledMetadata || (!usedSourcePlan && (!original->appData.empty() || !original->xdata.empty()))))
+    if (original && (original->unmodeledMetadata || droppedPlannedXdata || (!usedSourcePlan && (!original->appData.empty() || !original->xdata.empty()))))
         ++_loss.droppedByType["IMAGEDEF metadata"];
     if (original && validImageDefinitionSource(*original, i->name())) {
         definition->imgVersion = original->version;
