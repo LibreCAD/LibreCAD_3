@@ -86,6 +86,7 @@ struct DrawingHeader {
 class DXFimpl : public DRW_Interface
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
               , public DRW_DxfRootDictionarySourceHandler
+              , public DRW_DxfDictionarySourceHandler
 #endif
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
               , public DRW_DxfFixedPaperSpaceWriter
@@ -256,6 +257,10 @@ public:
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
     bool wantsDxfRootDictionarySource() const override { return !imageMapCache.empty(); }
     void addDxfRootDictionarySource(const DRW_Dictionary&, const DRW_RawDxfObject&) override;
+    bool wantsDxfDictionarySource() const override {
+        return _preserved.simpleImageRootBinary && !_preserved.simpleImageGroupDictionary && !_ambiguousSimpleImageGroup;
+    }
+    void addDxfDictionarySource(const DRW_Dictionary&, const DRW_RawDxfObject&) override;
 #endif
 
     /** What this read is holding on to for the next save. */
@@ -743,6 +748,7 @@ private:
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
     std::uint32_t _boundSourceImageDictionary{0};
     bool _ambiguousSimpleImageDictionary{false};
+    bool _ambiguousSimpleImageGroup{false};
 #endif
 #endif
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;

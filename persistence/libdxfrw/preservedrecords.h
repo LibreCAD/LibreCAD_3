@@ -70,7 +70,9 @@ public:
     std::set<std::uint32_t> sourceImageReactorHandles;
     std::shared_ptr<const DRW_Dictionary> simpleImageRoot;
     std::shared_ptr<const DRW_Dictionary> simpleImageDictionary;
+    std::shared_ptr<const DRW_Dictionary> simpleImageGroupDictionary;
     DRW::Version simpleImageRootVersion{DRW::UNKNOWNV};
+    bool simpleImageRootBinary{false};
 
     // Preserve whether an imported layer's width was an implicit DXF default.
     // The kernel turns that into a numeric width; a legacy export must not

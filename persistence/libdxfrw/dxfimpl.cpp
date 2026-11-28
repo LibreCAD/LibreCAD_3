@@ -285,9 +285,9 @@ bool ordinaryDictionaryEntries(const DRW_RawDxfObject& object,
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
 // Admit only a bounded, metadata-free source dictionary whose physical pairs
 // agree with its typed view. Other dictionaries retain the existing fallback.
-bool simpleImageDictionaryTyped(const DRW_Dictionary& dict) {
+bool simpleImageDictionaryTyped(const DRW_Dictionary& dict, bool allowEmpty = false) {
     if (dict.tType != DRW::DICTIONARY || dict.handle == 0 || dict.handle == DRW::NoHandle ||
-        dict.m_entries.empty() || dict.m_entries.size() > 128 || !dict.hasCompleteDxfEntries() ||
+        (!allowEmpty && dict.m_entries.empty()) || dict.m_entries.size() > 128 || !dict.hasCompleteDxfEntries() ||
         !dict.hasCompleteDwgEntries() || dict.hardOwner < 0 || dict.hardOwner > 1 ||
         dict.cloning < 0 || dict.cloning > 32767 || dict.countCap || dict.hasDataStorageBinaryData() ||
         !dict.appData.empty() || !dict.extData.empty() || !dict.reactorHandles.empty() ||
@@ -306,9 +306,9 @@ bool simpleImageDictionaryTyped(const DRW_Dictionary& dict) {
     return true;
 }
 
-bool simpleImageDictionaryMatches(const DRW_Dictionary& dict, const DRW_RawDxfObject& raw) {
+bool simpleImageDictionaryMatches(const DRW_Dictionary& dict, const DRW_RawDxfObject& raw, bool allowEmpty = false) {
     std::vector<std::pair<std::size_t, std::uint32_t>> entries;
-    if (!simpleImageDictionaryTyped(dict) || !raw.hasRawValues || raw.m_version < DRW::AC1015 ||
+    if (!simpleImageDictionaryTyped(dict, allowEmpty) || raw.m_version < DRW::AC1015 ||
         raw.groups.size() > 3 + 2 + 2 * 128 ||
         raw.handle != dict.handle || raw.parentHandle != dict.parentHandle ||
         !ordinaryDictionaryEntries(raw, entries) || entries.size() != dict.m_entries.size()) return false;
@@ -320,7 +320,7 @@ bool simpleImageDictionaryMatches(const DRW_Dictionary& dict, const DRW_RawDxfOb
         const auto pos = entries[i].first;
         if (entries[i].second != dict.m_entries[i].m_handle ||
             *raw.groups[pos].content.s != dict.m_entries[i].m_name ||
-            raw.rawValues[pos] != dict.m_entries[i].m_name) return false;
+            (raw.hasRawValues ? raw.rawValues[pos] != dict.m_entries[i].m_name : !raw.rawValues[pos].empty())) return false;
     }
     return true;
 }
@@ -2196,19 +2196,32 @@ bool DXFimpl::prepareImageDefinitionPlan() {
     if (_shelf && _replay == _shelf && !_shelf->sourceWasDwg && !_shelf->rootDictSourceAmbiguous &&
         _shelf->simpleImageRoot && _shelf->simpleImageDictionary &&
         _shelf->simpleImageRootVersion == _exportVersion && _shelf->version == _exportVersion &&
-        _shelf->entities.empty() && _shelf->sections.empty() && _shelf->classes.empty() &&
+        _shelf->entities.empty() && _shelf->sections.empty() &&
         !_shelf->hasSourceLayouts && _imageSourceGenerations.size() == 1) {
         const auto generation = _imageSourceGenerations.find(_shelf->imageSourceIdentity);
         const auto& dict = *_shelf->simpleImageDictionary;
         const DRW_RawDxfObject* physical = nullptr;
+        unsigned plotCount = 0, placeholderCount = 0;
         bool safe = generation != _imageSourceGenerations.end() && dict.m_entries.size() == definitions.size();
+        const bool binaryRoot = _shelf->simpleImageRootBinary;
+        if (binaryRoot) {
+#ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
+            safe = safe && _shelf->simpleImageGroupDictionary && hasCheckedImageGraphWithoutPaper();
+#else
+            safe = false;
+#endif
+        } else if (!_shelf->classes.empty()) safe = false;
         for (const auto& entry : dict.m_entries)
             if (!safe || !_plannedImageDefinitions.count({generation->second, entry.m_handle})) safe = false;
         for (const auto& object : _shelf->objects) {
             if (object.name == "DICTIONARY" && object.handle == dict.handle && !physical) physical = &object;
+            else if (binaryRoot && object.name == "ACDBDICTIONARYWDFLT") ++plotCount;
+            else if (binaryRoot && object.name == "ACDBPLACEHOLDER") ++placeholderCount;
             else if (object.name != "IMAGEDEF_REACTOR" || !_shelf->sourceImageReactorHandles.count(object.handle)) safe = false;
         }
+        if (binaryRoot && (plotCount != 1 || placeholderCount != 1)) safe = false;
         if (safe && physical && physical->m_version == _exportVersion &&
+            physical->hasRawValues != binaryRoot &&
             dict.parentHandle == _shelf->simpleImageRoot->handle && simpleImageDictionaryMatches(dict, *physical)) {
             _boundSourceImageDictionary = dict.handle;
             boundGeneration = generation->second;
@@ -2260,7 +2273,8 @@ bool DXFimpl::prepareImageDefinitionPlan() {
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
     if (boundGeneration != 0) {
         if (!dxfW->setGeneratedDictionarySourceRecords(
-                std::make_unique<DRW_Dictionary>(*_shelf->simpleImageRoot), nullptr,
+                std::make_unique<DRW_Dictionary>(*_shelf->simpleImageRoot),
+                _shelf->simpleImageRootBinary ? std::make_unique<DRW_Dictionary>(*_shelf->simpleImageGroupDictionary) : nullptr,
                 std::make_unique<DRW_Dictionary>(*_shelf->simpleImageDictionary), boundGeneration)) return false;
         const auto loss = _loss.droppedByType.find("unreferenced dictionaries");
         if (loss != _loss.droppedByType.end() && loss->second > 0 && --loss->second == 0)
@@ -2445,13 +2459,32 @@ constexpr std::uint32_t kGroupDictionaryHandle = 0xD;
 #ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
 void DXFimpl::addDxfRootDictionarySource(const DRW_Dictionary& data, const DRW_RawDxfObject& raw) {
     guarded("ROOT IMAGE DICTIONARY", nullptr, [&] {
+        const bool ordinaryAscii = raw.hasRawValues && data.m_entries.size() == 1;
+        const bool generatedBinary = !raw.hasRawValues && data.m_entries.size() == 3 &&
+            data.m_entries[1].m_name == "ACAD_GROUP" && data.m_entries[1].m_handle == kGroupDictionaryHandle &&
+            data.m_entries[2].m_name == "ACAD_PLOTSTYLENAME";
         if (data.handle != kRootDictionaryHandle || data.parentHandle != 0 ||
-            data.m_entries.size() != 1 || data.m_entries.front().m_name != "ACAD_IMAGE_DICT" ||
+            (!ordinaryAscii && !generatedBinary) || data.m_entries.front().m_name != "ACAD_IMAGE_DICT" ||
             data.m_entries.front().m_handle == kRootDictionaryHandle ||
             data.m_entries.front().m_handle == kGroupDictionaryHandle ||
             !simpleImageDictionaryMatches(data, raw)) return;
         _preserved.simpleImageRoot = std::make_shared<DRW_Dictionary>(data);
         _preserved.simpleImageRootVersion = raw.m_version;
+        _preserved.simpleImageRootBinary = !raw.hasRawValues;
+    });
+}
+
+void DXFimpl::addDxfDictionarySource(const DRW_Dictionary& data, const DRW_RawDxfObject& raw) {
+    guarded("GROUP DICTIONARY source", nullptr, [&] {
+        if (!_preserved.simpleImageRootBinary || data.handle != kGroupDictionaryHandle) return;
+        if (_preserved.simpleImageGroupDictionary || _ambiguousSimpleImageGroup) {
+            _preserved.simpleImageGroupDictionary.reset();
+            _ambiguousSimpleImageGroup = true;
+        } else if (data.parentHandle == kRootDictionaryHandle && data.m_entries.empty() &&
+                   !raw.hasRawValues && raw.m_version == _preserved.simpleImageRootVersion &&
+                   simpleImageDictionaryMatches(data, raw, true)) {
+            _preserved.simpleImageGroupDictionary = std::make_shared<DRW_Dictionary>(data);
+        } else _ambiguousSimpleImageGroup = true;
     });
 }
 #endif
@@ -2488,6 +2521,12 @@ void DXFimpl::addDictionary(const DRW_Dictionary& data) {
         // ACAD_GROUP is regenerated too, and its entries name groups rather
         // than children of the root.
         if (data.handle == kGroupDictionaryHandle) {
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+            if (_preserved.simpleImageGroupDictionary) {
+                _preserved.simpleImageGroupDictionary.reset();
+                _ambiguousSimpleImageGroup = true;
+            }
+#endif
             return;
         }
 

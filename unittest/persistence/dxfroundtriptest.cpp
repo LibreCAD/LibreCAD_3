@@ -4257,6 +4257,47 @@ TEST(DxfRoundTripTest, ImageDefinitionXdataRetainsValuesAndRegistersAppIds) {
             const std::string binaryHandle = uniqueTmpDxf("image-definition-xdata-handle-binary");
             ASSERT_TRUE(retry.writeDXF(binaryHandle, lc::persistence::File::LIBDXFRW_DXB_R2000));
             EXPECT_EQ(retry.loss().droppedByType.count("IMAGEDEF metadata"), 0u);
+            auto reopened = newDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(reopened, binaryHandle, lc::persistence::File::LIBDXFRW).ok);
+            ASSERT_TRUE(lc::persistence::File::exportFile(reopened, output, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+            const auto reopenedData = readGroups(output, "IMAGEDEF");
+            ASSERT_TRUE(reopenedData.count(1005));
+            std::ifstream reopenedFile(output, std::ios::binary);
+            second.clear();
+            while (std::getline(reopenedFile, line) && std::getline(reopenedFile, next)) {
+                if (std::stoi(line) == 3 && next == "SECOND" && std::getline(reopenedFile, line) &&
+                    std::getline(reopenedFile, next) && std::stoi(line) == 350) second = next;
+            }
+            ASSERT_FALSE(second.empty());
+            EXPECT_EQ(reopenedData.at(1005).front(), second);
+            lc::entity::Image_CSPtr reopenedTarget;
+            for (const auto& entity : reopened->entityContainer().asVector()) {
+                const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+                if (image && image->width() == 8) reopenedTarget = image;
+            }
+            ASSERT_TRUE(reopenedTarget);
+            const std::string binaryRetryPath = uniqueTmpDxf("image-definition-xdata-handle-binary-retry");
+            lc::persistence::DXFimpl binaryRetry(reopened);
+            reopened->removeEntity(reopenedTarget);
+            ASSERT_TRUE(binaryRetry.writeDXF(output, lc::persistence::File::LIBDXFRW_DXF_R2000));
+            EXPECT_GE(binaryRetry.loss().droppedByType.at("IMAGEDEF metadata"), 1u);
+            EXPECT_EQ(readGroups(output, "IMAGEDEF").count(1005), 0u);
+            reopened->insertEntity(reopenedTarget);
+            ASSERT_TRUE(binaryRetry.writeDXF(binaryRetryPath, lc::persistence::File::LIBDXFRW_DXB_R2000));
+            auto binaryAgain = newDocument();
+            ASSERT_TRUE(lc::persistence::File::importFile(binaryAgain, binaryRetryPath, lc::persistence::File::LIBDXFRW).ok);
+            ASSERT_TRUE(lc::persistence::File::exportFile(binaryAgain, output, lc::persistence::File::LIBDXFRW_DXF_R2000).ok);
+            const auto againData = readGroups(output, "IMAGEDEF");
+            ASSERT_TRUE(againData.count(1005));
+            std::ifstream againFile(output, std::ios::binary);
+            second.clear();
+            while (std::getline(againFile, line) && std::getline(againFile, next)) {
+                if (std::stoi(line) == 3 && next == "SECOND" && std::getline(againFile, line) &&
+                    std::getline(againFile, next) && std::stoi(line) == 350) second = next;
+            }
+            ASSERT_FALSE(second.empty());
+            EXPECT_EQ(againData.at(1005).front(), second);
+            boost::filesystem::remove(binaryRetryPath);
             boost::filesystem::remove(binaryHandle);
         }
         if (mode == 5) {
