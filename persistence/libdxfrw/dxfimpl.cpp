@@ -272,6 +272,50 @@ bool ordinaryDictionaryEntries(const DRW_RawDxfObject& object,
     return true;
 }
 
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+// Admit only a bounded, metadata-free source dictionary whose physical pairs
+// agree with its typed view. Other dictionaries retain the existing fallback.
+bool simpleImageDictionaryTyped(const DRW_Dictionary& dict) {
+    if (dict.tType != DRW::DICTIONARY || dict.handle == 0 || dict.handle == DRW::NoHandle ||
+        dict.m_entries.empty() || dict.m_entries.size() > 128 || !dict.hasCompleteDxfEntries() ||
+        !dict.hasCompleteDwgEntries() || dict.hardOwner < 0 || dict.hardOwner > 1 ||
+        dict.cloning < 0 || dict.cloning > 32767 || dict.countCap || dict.hasDataStorageBinaryData() ||
+        !dict.appData.empty() || !dict.extData.empty() || !dict.reactorHandles.empty() ||
+        !dict.pendingAppIdResolutions.empty() || !dict.pendingLayerRefResolutions.empty() ||
+        dict.xDictHandle != 0) return false;
+    std::set<std::string> names;
+    std::set<std::uint32_t> handles;
+    for (const auto& entry : dict.m_entries) {
+        if (entry.m_name.empty() || !simpleImageAscii(entry.m_name, 255) || entry.m_handle == 0 ||
+            entry.m_handle == DRW::NoHandle ||
+            entry.m_dxfHandleCode != DRW_Dictionary::Entry::DxfHandleCode::SoftOwner) return false;
+        auto name = entry.m_name;
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+        if (!names.insert(name).second || !handles.insert(entry.m_handle).second) return false;
+    }
+    return true;
+}
+
+bool simpleImageDictionaryMatches(const DRW_Dictionary& dict, const DRW_RawDxfObject& raw) {
+    std::vector<std::pair<std::size_t, std::uint32_t>> entries;
+    if (!simpleImageDictionaryTyped(dict) || !raw.hasRawValues || raw.m_version < DRW::AC1015 ||
+        raw.groups.size() > 3 + 2 + 2 * 128 ||
+        raw.handle != dict.handle || raw.parentHandle != dict.parentHandle ||
+        !ordinaryDictionaryEntries(raw, entries) || entries.size() != dict.m_entries.size()) return false;
+    for (const auto& group : raw.groups) {
+        if ((group.code() == 280 && group.content.i != dict.hardOwner) ||
+            (group.code() == 281 && group.content.i != dict.cloning)) return false;
+    }
+    for (std::size_t i = 0; i < entries.size(); ++i) {
+        const auto pos = entries[i].first;
+        if (entries[i].second != dict.m_entries[i].m_handle ||
+            *raw.groups[pos].content.s != dict.m_entries[i].m_name ||
+            raw.rawValues[pos] != dict.m_entries[i].m_name) return false;
+    }
+    return true;
+}
+#endif
+
 bool simpleTextXRecord(const DRW_RawDxfObject& record, std::uint32_t expectedOwner) {
     const auto& fields = record.groups;
     std::uint32_t handle = 0, owner = 0;
@@ -2166,7 +2210,36 @@ bool DXFimpl::prepareImageDefinitionPlan() {
         _plannedImageDefinitions.insert(item.first);
         plan.push_back(std::move(item.second));
     }
-    return dxfW->setImageDefinitionPlan(std::move(plan));
+    if (!dxfW->setImageDefinitionPlan(std::move(plan))) return false;
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    if (_shelf && _replay == _shelf && !_shelf->sourceWasDwg && !_shelf->rootDictSourceAmbiguous &&
+        _shelf->simpleImageRoot && _shelf->simpleImageDictionary &&
+        _shelf->simpleImageRootVersion == _exportVersion && _shelf->version == _exportVersion &&
+        _shelf->entities.empty() && _shelf->sections.empty() && _shelf->classes.empty() &&
+        !_shelf->hasSourceLayouts && _imageSourceGenerations.size() == 1) {
+        const auto generation = _imageSourceGenerations.find(_shelf->imageSourceIdentity);
+        const auto& dict = *_shelf->simpleImageDictionary;
+        const DRW_RawDxfObject* physical = nullptr;
+        bool safe = generation != _imageSourceGenerations.end() && dict.m_entries.size() == definitions.size();
+        for (const auto& entry : dict.m_entries)
+            if (!safe || !_plannedImageDefinitions.count({generation->second, entry.m_handle})) safe = false;
+        for (const auto& object : _shelf->objects) {
+            if (object.name == "DICTIONARY" && object.handle == dict.handle && !physical) physical = &object;
+            else if (object.name != "IMAGEDEF_REACTOR" || !_shelf->sourceImageReactorHandles.count(object.handle)) safe = false;
+        }
+        if (safe && physical && physical->m_version == _exportVersion &&
+            dict.parentHandle == _shelf->simpleImageRoot->handle && simpleImageDictionaryMatches(dict, *physical)) {
+            if (!dxfW->setGeneratedDictionarySourceRecords(
+                    std::make_unique<DRW_Dictionary>(*_shelf->simpleImageRoot), nullptr,
+                    std::make_unique<DRW_Dictionary>(dict), generation->second)) return false;
+            _boundSourceImageDictionary = dict.handle;
+            const auto loss = _loss.droppedByType.find("unreferenced dictionaries");
+            if (loss != _loss.droppedByType.end() && loss->second > 0 && --loss->second == 0)
+                _loss.droppedByType.erase(loss);
+        }
+    }
+#endif
+    return true;
 }
 #endif
 
@@ -2189,6 +2262,10 @@ void DXFimpl::writeObjects() {
     const auto skippedImageHandles = skippedImageSourceHandles(documentHasImages, _replay.get());
 
     for (const auto& object : _replay->objects) {
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+        if (_boundSourceImageDictionary != 0 && object.name == "DICTIONARY" &&
+            object.handle == _boundSourceImageDictionary) continue;
+#endif
         if (skipsSourceImageObject(object, documentHasImages, _replay.get())) {
             // The regenerated record has not been shown to retain the source
             // record's metadata or identity.
@@ -2337,8 +2414,33 @@ constexpr std::uint32_t kGroupDictionaryHandle = 0xD;
 
 }  // namespace
 
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+void DXFimpl::addDxfRootDictionarySource(const DRW_Dictionary& data, const DRW_RawDxfObject& raw) {
+    guarded("ROOT IMAGE DICTIONARY", nullptr, [&] {
+        if (data.handle != kRootDictionaryHandle || data.parentHandle != 0 ||
+            data.m_entries.size() != 1 || data.m_entries.front().m_name != "ACAD_IMAGE_DICT" ||
+            data.m_entries.front().m_handle == kRootDictionaryHandle ||
+            data.m_entries.front().m_handle == kGroupDictionaryHandle ||
+            !simpleImageDictionaryMatches(data, raw)) return;
+        _preserved.simpleImageRoot = std::make_shared<DRW_Dictionary>(data);
+        _preserved.simpleImageRootVersion = raw.m_version;
+    });
+}
+#endif
+
 void DXFimpl::addDictionary(const DRW_Dictionary& data) {
     guarded("DICTIONARY", nullptr, [&] {
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+        if (_preserved.simpleImageRoot &&
+            data.handle == _preserved.simpleImageRoot->m_entries.front().m_handle) {
+            if (_preserved.simpleImageDictionary || _ambiguousSimpleImageDictionary) {
+                _preserved.simpleImageDictionary.reset();
+                _ambiguousSimpleImageDictionary = true;
+            } else if (simpleImageDictionaryTyped(data)) {
+                _preserved.simpleImageDictionary = std::make_shared<DRW_Dictionary>(data);
+            } else _ambiguousSimpleImageDictionary = true;
+        }
+#endif
         // libdxfrw calls this for every DICTIONARY, root or not, and separately
         // routes the non-root ones into the raw net. Only the root's entries
         // are wanted here: every other dictionary is re-emitted verbatim,
@@ -3084,6 +3186,9 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
     _plannedImageDefinitions.clear();
     _imageXdataPartialSources.clear();
     _imageXdataAppIds.clear();
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    _boundSourceImageDictionary = 0;
+#endif
 #endif
     _writeFailureReason.clear();
 
@@ -3426,8 +3531,6 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
                 // Written, but with nothing naming them: a reader is entitled
                 // to prune them. Saying so is the difference between a save
                 // the user can act on and one that looks complete.
-                LOG_WARNING << filename << " carries " << detached
-                            << " dictionary/dictionaries this build cannot re-attach to the root";
                 _loss.droppedByType["unreferenced dictionaries"] += detached;
             }
         }
@@ -3466,6 +3569,10 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type 
         return false;
     }
 #endif
+    const auto detached = _loss.droppedByType.find("unreferenced dictionaries");
+    if (detached != _loss.droppedByType.end() && detached->second > 0)
+        LOG_WARNING << filename << " carries " << detached->second
+                    << " dictionary/dictionaries this build cannot re-attach to the root";
     if (_shelf && !_shelf->sourceImageDefinitionHandles.empty()) {
         std::unordered_set<std::uint32_t> retained;
         if (variantCarriesRecord(File::variantIdForType(_exportType), "IMAGE")) {

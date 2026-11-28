@@ -68,6 +68,9 @@ public:
     std::shared_ptr<const void> imageSourceIdentity{std::make_shared<int>(0)};
     std::set<std::uint32_t> sourceImageDefinitionHandles;
     std::set<std::uint32_t> sourceImageReactorHandles;
+    std::shared_ptr<const DRW_Dictionary> simpleImageRoot;
+    std::shared_ptr<const DRW_Dictionary> simpleImageDictionary;
+    DRW::Version simpleImageRootVersion{DRW::UNKNOWNV};
 
     // Preserve whether an imported layer's width was an implicit DXF default.
     // The kernel turns that into a numeric width; a legacy export must not

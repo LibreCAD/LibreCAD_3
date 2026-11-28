@@ -3957,6 +3957,25 @@ TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
         EXPECT_DOUBLE_EQ(definitionWidths.at(ref.second), ref.first);
     }
     file.close();
+    EXPECT_EQ(result.loss.droppedByType.count("unreferenced dictionaries"), 0u);
+    std::ifstream dictionaryFile(saved, std::ios::binary);
+    bool dictionary = false;
+    std::string pendingKey;
+    std::map<std::string, std::string> sourceKeys;
+    while (std::getline(dictionaryFile, code) && std::getline(dictionaryFile, value)) {
+        if (!value.empty() && value.back() == '\r') value.pop_back();
+        const int group = std::stoi(code);
+        if (group == 0) { dictionary = value == "DICTIONARY"; pendingKey.clear(); }
+        else if (dictionary && group == 3) pendingKey = value;
+        else if (dictionary && group == 350 && (pendingKey == "FIRST" || pendingKey == "SECOND")) {
+            EXPECT_TRUE(sourceKeys.emplace(pendingKey, value).second);
+            pendingKey.clear();
+        }
+    }
+    ASSERT_EQ(sourceKeys.size(), 2u);
+    EXPECT_DOUBLE_EQ(definitionWidths.at(sourceKeys.at("FIRST")), 2);
+    EXPECT_DOUBLE_EQ(definitionWidths.at(sourceKeys.at("SECOND")), 8);
+    dictionaryFile.close();
 
     const std::string binary = uniqueTmpDxf("image-definition-identities-binary");
     const std::string binaryResaved = uniqueTmpDxf("image-definition-identities-binary-resaved");
@@ -4044,12 +4063,15 @@ TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
     boost::filesystem::remove(collisionPath);
 
     // Retry after removing the second source definition and copying the first.
-    lc::entity::Image_CSPtr kept;
+    lc::persistence::DXFimpl reusable(doc);
+    ASSERT_TRUE(reusable.writeDXF(saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+    EXPECT_EQ(reusable.loss().droppedByType.count("unreferenced dictionaries"), 0u);
+    lc::entity::Image_CSPtr kept, removed;
     for (const auto& item : doc->entityContainer().asVector()) {
         auto image = std::dynamic_pointer_cast<const lc::entity::Image>(item);
         ASSERT_TRUE(image);
         if (image->width() == 2) kept = image;
-        else doc->removeEntity(image);
+        else { removed = image; doc->removeEntity(image); }
     }
     ASSERT_TRUE(kept);
     doc->insertEntity(kept->copy(lc::geo::Coordinate(10, 0, 0)));
@@ -4080,6 +4102,16 @@ TEST(DxfRoundTripTest, DistinctImageDefinitionsWithSamePathRemainDistinct) {
     ASSERT_EQ(references.size(), 2u);
     EXPECT_EQ(references[0], references[1]);
     reread.close();
+    ASSERT_TRUE(removed);
+    ASSERT_TRUE(reusable.writeDXF(saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+    EXPECT_EQ(reusable.loss().droppedByType.at("unreferenced dictionaries"), 1u);
+    doc->insertEntity(removed);
+    ASSERT_TRUE(reusable.writeDXF(saved, lc::persistence::File::LIBDXFRW_DXF_R2000));
+    EXPECT_EQ(reusable.loss().droppedByType.count("unreferenced dictionaries"), 0u);
+    std::ifstream restored(saved, std::ios::binary);
+    const std::string restoredText((std::istreambuf_iterator<char>(restored)), {});
+    EXPECT_NE(restoredText.find("FIRST\n"), std::string::npos);
+    EXPECT_NE(restoredText.find("SECOND\n"), std::string::npos);
     boost::filesystem::remove(source);
     boost::filesystem::remove(saved);
 }

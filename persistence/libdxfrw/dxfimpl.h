@@ -7,6 +7,9 @@
 #if defined(LIBDXFRW_HAS_DXF_STAGED_LAYOUT_LINK_INSPECTOR) && defined(LIBDXFRW_HAS_DXF_FIXED_PAPER_SPACE_WRITER)
 #define LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH 1
 #endif
+#if defined(LIBDXFRW_HAS_DXF_DICTIONARY_SOURCE_HANDLERS) && defined(LIBDXFRW_HAS_DXF_STAGED_DICTIONARY_INSPECTOR) && defined(LIBDXFRW_HAS_DXF_STAGED_IMAGE_DEFINITION_SCALAR_INSPECTOR)
+#define LC3_HAS_SOURCE_IMAGE_DICTIONARY 1
+#endif
 #include <iostream>
 #include <functional>
 #include <set>
@@ -81,6 +84,9 @@ struct DrawingHeader {
 };
 
 class DXFimpl : public DRW_Interface
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+              , public DRW_DxfRootDictionarySourceHandler
+#endif
 #ifdef LC3_HAS_CHECKED_DEFAULT_LAYOUT_GRAPH
               , public DRW_DxfFixedPaperSpaceWriter
               , public DRW_DxfLayoutSourceHandler
@@ -246,6 +252,11 @@ public:
      * names for the ones it really does re-emit.
      */
     void addDictionary(const DRW_Dictionary& data) override;
+
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    bool wantsDxfRootDictionarySource() const override { return !imageMapCache.empty(); }
+    void addDxfRootDictionarySource(const DRW_Dictionary&, const DRW_RawDxfObject&) override;
+#endif
 
     /** What this read is holding on to for the next save. */
     const PreservedRecords& preserved() const {
@@ -729,6 +740,10 @@ private:
     std::set<std::pair<std::uint64_t, std::uint32_t>> _imageXdataPartialSources;
     std::map<std::string, std::string> _imageXdataAppIds;
     std::map<std::string, bool> _sourceImageAppIds;
+#ifdef LC3_HAS_SOURCE_IMAGE_DICTIONARY
+    std::uint32_t _boundSourceImageDictionary{0};
+    bool _ambiguousSimpleImageDictionary{false};
+#endif
 #endif
     std::map<std::string, lc::meta::Layer_CSPtr> _layers;
     std::map<std::string, lc::meta::Block_CSPtr> _blocks;
